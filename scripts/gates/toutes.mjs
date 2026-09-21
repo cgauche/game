@@ -320,6 +320,10 @@ export const ECRIT_LU = {
         '`check-source-tables.test.mjs` IMPORTE le détecteur des tables cassées, dont l’unique écriture ' +
         '(la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
         '(scripts/raw/check-source-tables.mjs:194) ; le banc ne fait que LIRE le stock (`readStock`)',
+      'scripts/raw/source-puces-stock.json':
+        '`check-source-puces.test.mjs` IMPORTE le détecteur des puces lues comme un jeton, dont l’unique ' +
+        'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
+        '(scripts/raw/check-source-puces.mjs:159) ; le banc ne fait que LIRE le stock (`readStock`)',
       'scripts/raw/source-format-stock.json':
         '`check-source-format.test.mjs` IMPORTE le détecteur du format des extractions, dont l’unique ' +
         'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
@@ -405,6 +409,20 @@ export const ECRIT_LU = {
       'LIT le registre de livres, le parseur de tables (src/data/source/decoupe.ts), les dossiers à `dir` de ' +
       'Source/ et son stock nominatif scripts/raw/source-tables-stock.json ; le seul module écrivain ' +
       'atteint est le détecteur lui-même, dont l’écriture est fermée par sa porte `--ecrire-stock`',
+  },
+  'raw:check-source-puces': {
+    ecrit: [],
+    ecritFerme: {
+      'scripts/raw/source-puces-stock.json':
+        'le stock NOMINATIF des puces lues comme un jeton ne se réécrit que sous `--ecrire-stock` ' +
+        '(scripts/raw/check-source-puces.mjs:159), option que la commande de .github/workflows/ci.yml ' +
+        'ne passe pas ; sans elle la gate COMPARE le stock à sa mesure et ne touche à rien',
+    },
+    lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/'],
+    raison:
+      'LIT le registre de livres, le normaliseur de citations (src/data/source/decoupe.ts), les dossiers ' +
+      'à `dir` de Source/ et son stock nominatif scripts/raw/source-puces-stock.json ; le seul module ' +
+      'écrivain atteint est le détecteur lui-même, dont l’écriture est fermée par sa porte `--ecrire-stock`',
   },
   'raw:check-source-format': {
     ecrit: [],
@@ -502,7 +520,8 @@ export const LANES = [
     nom: 'docs',
     gates: [
       'docs:check', 'docs:empreinte', 'test:raw', 'raw:check-refs', 'raw:check-code-refs',
-      'raw:check-folio-continuity', 'raw:check-source-tables', 'raw:check-source-format', 'test:docs',
+      'raw:check-folio-continuity', 'raw:check-source-tables', 'raw:check-source-format',
+      'raw:check-source-puces', 'test:docs',
       'agents:check', 'build',
     ],
     raison:

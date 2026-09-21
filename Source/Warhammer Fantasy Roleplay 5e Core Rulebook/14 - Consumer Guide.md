@@ -10,19 +10,21 @@ The Trappings you receive from your Class and Career (see **Chapter 2: Character
 
 #### **TRAPPING LISTS**
 
-- 0 **Weapons:** Page 301, 303
-- 0 **Armour:** Page 307
-- 0 **Packs and Containers:** Page 308
-- 0 **Clothing and Accessories:** Page 308
-- 0 **Food, Drink, and Lodging:** Page 309
-- 0 **Tools and Kits:** Page 310
-- 0 **Books and Documents:** Page 311
-- 0 **Trade Tools and Workshops:** Page 312
-- 0 **Animals and Vehicles:** Page 312
-- 0 **Poisons:** Page 313
-- 0 **Herbs and Remedies:** Page 314
-- 0 **Prosthetics:** Page 315
-- 0 **Miscellaneous Trappings:** Page 316
+- **Weapons:** Page 301, 303
+- **Armour:** Page 307
+- **Packs and Containers:** Page 308
+- **Clothing and Accessories:** Page 308
+- **Food, Drink, and Lodging:** Page 309
+- **Tools and Kits:** Page 310
+- **Books and Documents:** Page 311
+- **Trade Tools and Workshops:** Page 312
+- **Animals and Vehicles:** Page 312
+- **Poisons:** Page 313
+- **Herbs and Remedies:** Page 314
+- **Prosthetics:** Page 315
+- **Miscellaneous Trappings:** Page 316
+- Magical Items: Page 315
+- **Hirelings:** Page 317
 
 # **MONEY**
 
@@ -42,9 +44,9 @@ This is usually abbreviated to:
 
 Characters of a given Status most frequently use the coinage associated with their status.
 
-- 0 **Brass Tier:** The poorest members of society are unlikely to see a gold coin in their lifetimes. They live humble lives, subsisting on plain foods and sleeping in shared rooms.
-- 0 **Silver Tier:** The swelling middle classes may use pennies for ale and gold for major purchases, but shillings are their standard currency.
-- 0 **Gold Tier:** The wealthiest elites rarely bother themselves with pennies, occasionally use silver to pay their underlings, and often enjoy the awe producing a gold coin can inspire in their social inferiors.
+- **Brass Tier:** The poorest members of society are unlikely to see a gold coin in their lifetimes. They live humble lives, subsisting on plain foods and sleeping in shared rooms.
+- **Silver Tier:** The swelling middle classes may use pennies for ale and gold for major purchases, but shillings are their standard currency.
+- **Gold Tier:** The wealthiest elites rarely bother themselves with pennies, occasionally use silver to pay their underlings, and often enjoy the awe producing a gold coin can inspire in their social inferiors.
 
 For GMs preferring hard numbers, spending around half your Status every day is usually enough to maintain appearances, though you may be living a little frugally. So, if you have a Status of Silver 4, spending at least 2 shillings per day will do for food and board, where if you have Brass 2 Status, you need only spend a pfennig a day.
 
@@ -95,8 +97,8 @@ Once you know an item's Availability, check it on the following table to see if 
 
 If you fail an Availability Test for *Scarce* or *Rare* items, you can either reroll when you arrive at a new settlement or you can try again next week if the settlement is Town-size or larger.
 
-- 0 The GM may overrule Availability as dictated by local details. For example, basic rowboats are automatically available if the adventure is located in a fishing village that features a renowned boat-builder.
-- 0 Availability percentages can be increased by +10% or +20% if you are especially diligent, belong to a relevant Career such as Merchant or Fence, or spend an entire day shopping and making Gossip Tests.
+- The GM may overrule Availability as dictated by local details. For example, basic rowboats are automatically available if the adventure is located in a fishing village that features a renowned boat-builder.
+- Availability percentages can be increased by +10% or +20% if you are especially diligent, belong to a relevant Career such as Merchant or Fence, or spend an entire day shopping and making Gossip Tests.
 
 # **Bargaining and Trading**
 
@@ -228,13 +230,13 @@ Characters who exceed their Encumbrance capacity are slowed and prone to fatigue
 
 Weapons used across the Empire vary according to provincial preference, religious requirement, individual inclination, and trusty old tradition. Here you will find a selection of the most commonly wielded melee and ranged weapons, which are presented using the following format.
 
-- 0 **Weapon Group:** Each weapon is listed by its Weapon Group. If a weapon is two-handed, it is marked (2H).
-- 0 **Price:** The price for an average example of the weapon.
-- 0 **Enc:** The Encumbrance for the weapon.
-- 0 **Availability:** The Availability of the weapon.
-- 0 **Reach/Range:** The weapon's length, or the range of the weapon in yards.
-- 0 **Damage:** The weapon's Weapon Damage, which is added to your SL to hit. Weapons with a Damage of – deal no Damage.
-- 0 **Qualities and Flaws:** Any Weapon Qualities or Flaws the weapon possesses.
+- **Weapon Group:** Each weapon is listed by its Weapon Group. If a weapon is two-handed, it is marked (2H).
+- **Price:** The price for an average example of the weapon.
+- **Enc:** The Encumbrance for the weapon.
+- **Availability:** The Availability of the weapon.
+- **Reach/Range:** The weapon's length, or the range of the weapon in yards.
+- **Damage:** The weapon's Weapon Damage, which is added to your SL to hit. Weapons with a Damage of – deal no Damage.
+- **Qualities and Flaws:** Any Weapon Qualities or Flaws the weapon possesses.
 
 Strength Bonus is abbreviated to SB in the weapon tables.
 
@@ -258,13 +260,13 @@ Unskilled Characters add the *Dangerous* Weapon Flaw.
 
 The lengths of the weapons are progressively bigger as follows.
 
-- 0 **Personal:** Your legs and fists, perhaps your head, and anything attached to those
-- 0 **Very Short:** Less than a foot in length
-- 0 **Short:** Up to 2 feet in length
-- 0 **Average:** Up to 3 feet long
-- 0 **Long:** Up to 6 foot long
-- 0 **Very Long:** Up to 10 feet in length; can Engage enemies up to 4 yards away, rather than just 2
-- 0 **Massive:** Anything over 10 feet long; can Engage enemies up to 6 yards away, rather than just 2
+- **Personal:** Your legs and fists, perhaps your head, and anything attached to those
+- **Very Short:** Less than a foot in length
+- **Short:** Up to 2 feet in length
+- **Average:** Up to 3 feet long
+- **Long:** Up to 6 foot long
+- **Very Long:** Up to 10 feet in length; can Engage enemies up to 4 yards away, rather than just 2
+- **Massive:** Anything over 10 feet long; can Engage enemies up to 6 yards away, rather than just 2
 
 # **Weapon Reach and Defence**
 
@@ -533,14 +535,14 @@ Some weapons are not very good at penetrating armour. All AP are doubled against
 
 Armour is listed in the following format:
 
-- 0 **Armour Type:** Each armour is listed by type.
-- 0 **Price:** The price to buy an average piece of the armour.
-- 0 **Enc:** The Encumbrance for the armour.
-- 0 **Availability:** The Availability of the armour.
-- 0 **Penalty:** Any penalty for wearing that specific piece of Armour in addition to those opposed by Encumbrance (page 299). **Note:** Some armour brings a penalty if you wear any of it, such as wearing any chain brings a penalty of –1 SL to Stealth Tests.
-- 0 **Locations:** The Hit Locations the Armour protects.
-- 0 **AP:** The number of Armour Points the armour provides to the protected Hit Locations.
-- 0 **Qualities and Flaws:** Any Armour Qualities or Flaws the armour may possess.
+- **Armour Type:** Each armour is listed by type.
+- **Price:** The price to buy an average piece of the armour.
+- **Enc:** The Encumbrance for the armour.
+- **Availability:** The Availability of the armour.
+- **Penalty:** Any penalty for wearing that specific piece of Armour in addition to those opposed by Encumbrance (page 299). **Note:** Some armour brings a penalty if you wear any of it, such as wearing any chain brings a penalty of –1 SL to Stealth Tests.
+- **Locations:** The Hit Locations the Armour protects.
+- **AP:** The number of Armour Points the armour provides to the protected Hit Locations.
+- **Qualities and Flaws:** Any Armour Qualities or Flaws the armour may possess.
 
 # **Armour Qualities**
 
@@ -858,9 +860,9 @@ Trade Tools are needed if you wish to take a Trade Test to make or fix something
 
 **Artisan:** The potential range of tools used by artisans is wide. Sample packages include:
 
-- 0 **Carpenter:** Hammer and nails, saw, measuring rod, chalk, and plumb lines. Workshops also include lathes, planes, clamps, and a supply of lumber.
-- 0 **Engraver:** Gravers, punches, wax, acid, hammer, and chisels. Workshops also include dies and presses.
-- 0 **Smith:** Hammer, tongs, punches, swages, bits, and augers.
+- **Carpenter:** Hammer and nails, saw, measuring rod, chalk, and plumb lines. Workshops also include lathes, planes, clamps, and a supply of lumber.
+- **Engraver:** Gravers, punches, wax, acid, hammer, and chisels. Workshops also include dies and presses.
+- **Smith:** Hammer, tongs, punches, swages, bits, and augers.
 
 Workshops also include an anvil, furnace, swage block, sledgehammers, and metal ingots.
 
@@ -1119,9 +1121,9 @@ If the job at hand is unexpectedly dangerous, Hirelings will expect double the n
 
 If you are looking for the cost of a hireling you should refer to their status tier and adjust as follows according to the length of time they are hired for.
 
-- 0 **A quick job:** equal to their status tier.
-- 0 **A day rate:** equal to their status tier times 3.
-- 0 **A weekly cost:** equal to their status tier times 24.
+- **A quick job:** equal to their status tier.
+- **A day rate:** equal to their status tier times 3.
+- **A weekly cost:** equal to their status tier times 24.
 
 # **Henchmen**
 

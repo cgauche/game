@@ -158,9 +158,9 @@ If the Casting Test is successful, calculate the SL and compare it to the CN of 
 
 If you roll doubles on a successful Casting Test, you cause a Critical Casting. Roll on the **Minor Miscast Table** (page 238). Note that the *Instinctive Diction* Talent may help mitigate the risk of Miscasts. If you Critically Cast, you may choose one of the three extra effects:
 
-- 0 Critical Damage: If the Spell causes Damage, it also inflicts a Critical Wound to the Hit Location struck (or the Body if none is defined).
-- 0 Total Power: The Spell is cast. You may add the tens digit of your Casting Test to your SL for the purpose of Overcasting.
-- 0 Unstoppable Force: The Spell may not be dispelled (see page 237).
+- Critical Damage: If the Spell causes Damage, it also inflicts a Critical Wound to the Hit Location struck (or the Body if none is defined).
+- Total Power: The Spell is cast. You may add the tens digit of your Casting Test to your SL for the purpose of Overcasting.
+- Unstoppable Force: The Spell may not be dispelled (see page 237).
 
 Petty Spells do not cause Critical Casting or a Minor Miscast on a Critical.
 
@@ -222,9 +222,9 @@ Such places can be a boon to Wizards who know how to draw upon that magic, howev
 
 If a Casting Test generates SL beyond those required to cast a spell, you can spend the remaining SL on Overcasting. You can spend a number of SL equal to your Intelligence Bonus plus Willpower Bonus in this way.
 
-- 0 Overcasting can add additional Range, Area of Effect, Duration, or Targets to the Spell. If the Spell is a *magic missile*, it can also add to the Damage. Spells may have additional options in their descriptions.
-- 0 Spells with a Range of 'You' only ever target the spellcaster. Spells with a range of 'Touch' or a duration of 'Instant' or 'Special' may not be extended. Spells with no Area of Effect may not have their area increased.
-- 0 Petty Spells cannot be Overcast.
+- Overcasting can add additional Range, Area of Effect, Duration, or Targets to the Spell. If the Spell is a *magic missile*, it can also add to the Damage. Spells may have additional options in their descriptions.
+- Spells with a Range of 'You' only ever target the spellcaster. Spells with a range of 'Touch' or a duration of 'Instant' or 'Special' may not be extended. Spells with no Area of Effect may not have their area increased.
+- Petty Spells cannot be Overcast.
 
 #### **OVERCAST TABLE**
 
@@ -598,13 +598,13 @@ Choose a target within 20 + Willpower Bonus yards and make a **Challenging (+0 S
 
 Breath inflicts Willpower Bonus Damage. The effects of this spell vary depending on the Lore used to cast it.
 
-- 0 **Acid** *(Metal):* Damage is increased by 4. Weapons and armour carried by affected targets each suffer 1 Damage.
-- 0 **Cold** *(Beasts, Light, Necromancy):* Damage is increased by 2. Targets gain a *Fatigued* Condition. Until it is removed, their weapons gain the *Slow* Flaw.
-- 0 **Electricity** *(Heavens):* Damage is increased by 2. Damage ignores metal armour. Targets gain a *Stunned* Condition.
-- 0 **Fire** *(Fire, Daemonology, Waaagh!, and Tzeentch Chaos Lores):* Damage is increased by 5. Targets gain an *Ablaze*  Condition.
+- **Acid** *(Metal):* Damage is increased by 4. Weapons and armour carried by affected targets each suffer 1 Damage.
+- **Cold** *(Beasts, Light, Necromancy):* Damage is increased by 2. Targets gain a *Fatigued* Condition. Until it is removed, their weapons gain the *Slow* Flaw.
+- **Electricity** *(Heavens):* Damage is increased by 2. Damage ignores metal armour. Targets gain a *Stunned* Condition.
+- **Fire** *(Fire, Daemonology, Waaagh!, and Tzeentch Chaos Lores):* Damage is increased by 5. Targets gain an *Ablaze*  Condition.
 
-- 0 **Poison** *(Death, Life, Witchcraft, Skaven, and Nurgle or Slaanesh Chaos Lores):* Damage is increased by 2. Targets gain a *Poisoned* Condition.
-- 0 **Smoke** *(Shadows):* The spell inflicts no Damage. Instead, the affected area fills with smoke, blocking line of sight and causing *Suffocation* (page 169) for Willpower Bonus Rounds.
+- **Poison** *(Death, Life, Witchcraft, Skaven, and Nurgle or Slaanesh Chaos Lores):* Damage is increased by 2. Targets gain a *Poisoned* Condition.
+- **Smoke** *(Shadows):* The spell inflicts no Damage. Instead, the affected area fills with smoke, blocking line of sight and causing *Suffocation* (page 169) for Willpower Bonus Rounds.
 
 # **Bridge**
 
@@ -1098,10 +1098,10 @@ Touching the earth, your senses flow through the *Ghyran* tracing the nearby are
 
 You cause *Ghyran* to flood an area that is blighted or desolate. As examples of the Spell's power, you may target either a dry riverbed, well, field, or a domestic animal. If you successfully cast the Spell, the target bursts to life:
 
-- 0 A dry river begins to flow once again.
-- 0 A dry or polluted well becomes clean and fresh.
-- 0 A planted field, vineyard, or orchard bursts into life, with all its crops immediately reaching full ripeness.
-- 0 A sick or unproductive animal is cured of all diseases and becomes energetic and eager once more.
+- A dry river begins to flow once again.
+- A dry or polluted well becomes clean and fresh.
+- A planted field, vineyard, or orchard bursts into life, with all its crops immediately reaching full ripeness.
+- A sick or unproductive animal is cured of all diseases and becomes energetic and eager once more.
 
 #### **Regenerate**
 
@@ -1213,8 +1213,8 @@ You encase a single non-magical weapon with heavy bands of *Chamon*, enhancing i
 
 Calling on the Golden Wind, you alter the density of your target's belongings, raising or lowering their weight. For the duration of the Spell, choose one effect for everyone within the area of effect:
 
-- 0 Count as two steps more Overburdened.
-- 0 Do not count as Overburdened.
+- Count as two steps more Overburdened.
+- Do not count as Overburdened.
 
 See page 299 for details on Encumbrance.
 
@@ -1416,10 +1416,10 @@ Ingredients for Witchcraft only reduce Miscast level if you roll 01–40 on a Mi
 
 You cause an area to become blighted or desolate. For example you may target either a tavern, well, field, or a domestic animal. If you successfully cast the Spell, the target suffers from a blight:
 
-- 0 All food and drink in a blighted tavern immediately spoils.
-- 0 A blighted well becomes instantly brackish and stagnant.
-- 0 Any crops currently planted in a blighted field rot overnight.
-- 0 A blighted animal sickens. The afflicted beast no longer produces anything (cows produce no milk, coats and hides grow mangy and unusable) and will die in 10 - SL days.
+- All food and drink in a blighted tavern immediately spoils.
+- A blighted well becomes instantly brackish and stagnant.
+- Any crops currently planted in a blighted field rot overnight.
+- A blighted animal sickens. The afflicted beast no longer produces anything (cows produce no milk, coats and hides grow mangy and unusable) and will die in 10 - SL days.
 
 # **Creeping Menace**
 
@@ -1437,9 +1437,9 @@ You summon a swarm of creeping, slithering creatures to harass your foes. Each t
 
 Stabbing a crude representation of your target — a doll or puppet — you inflict crippling pain. When successfully cast, choose which Hit Location to stab:
 
-- 0 **Body**  Target doubles up in agony, gaining +1 *Fatigued*, and must pass a **Hard (-2 SL) Endurance** Test or fall *Prone*.
-- 0 **Head**  Target gains a *Stunned* Condition, and must pass an **Average (+2 SL) Endurance** Test or gain -SL additional *Stunned*.
-- 0 **Limb**  Limb becomes useless, as if amputated (see page 177).
+- **Body**  Target doubles up in agony, gaining +1 *Fatigued*, and must pass a **Hard (-2 SL) Endurance** Test or fall *Prone*.
+- **Head**  Target gains a *Stunned* Condition, and must pass an **Average (+2 SL) Endurance** Test or gain -SL additional *Stunned*.
+- **Limb**  Limb becomes useless, as if amputated (see page 177).
 
 *Fatigued* and *Stunned* last for the duration. You may stab the doll again to affect an additional, unaffected Location by using an Action to take an **Average (+2 SL) Channelling** Test.
 

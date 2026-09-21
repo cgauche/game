@@ -18,9 +18,9 @@ All Skills are associated with a single Characteristic, noted in the Skill's des
 
 There are three types of Skill:
 
-- 0 **Basic Skills** can be used by anyone, even without any Advances.
-- 0 **Advanced Skills** can only be used if you have at least one Advance in the Skill.
-- 0 **Grouped Skills** are groups of related skills, each one covering a particular area of specialisation, eg. Lore (Empire) and Lore (Tilea).
+- **Basic Skills** can be used by anyone, even without any Advances.
+- **Advanced Skills** can only be used if you have at least one Advance in the Skill.
+- **Grouped Skills** are groups of related skills, each one covering a particular area of specialisation, eg. Lore (Empire) and Lore (Tilea).
 
 ### **Basic and Advanced Skills**
 

@@ -117,11 +117,11 @@ The cult is prevalent in coastal regions and communities relying on the sea. It 
 
 Penances from Manann often involve hazardous, maritime pilgrimages, tests of sailing skills, or expeditions against the sea god's enemies, especially followers of the heretical Cult of Stromfels, god of predators.
 
-- 0 No whistling or swearing when at sea or on holy ground.
-- 0 Never harm an albatross.
-- 0 First catch to Manann.
-- 0 A silver and fish to every Manannite temple and shrine approached.
-- 0 Hunt down the servants of Stromfels wherever they may hide.
+- No whistling or swearing when at sea or on holy ground.
+- Never harm an albatross.
+- First catch to Manann.
+- A silver and fish to every Manannite temple and shrine approached.
+- Hunt down the servants of Stromfels wherever they may hide.
 
 # **THE CULT OF MORR, GOD OF DEATH**
 
@@ -157,11 +157,11 @@ Temples of Morr are within gardens of Morr: great graveyards wrapped with black 
 
 Morr's penances typically involve hunting necromancers and destroying undead, or finding and restoring burial places and holy sites fallen to disuse and disrepair. He also occasionally requires servants of Khaine be stopped from fulfilling their dark deeds.
 
-- 0 Respect and protect the dead.
-- 0 Hunt down necromancers and the undead wherever they may gather.
-- 0 Pay heed to your dreams.
-- 0 Never refuse to conduct a funeral service.
-- 0 At no time be a party to raising the dead, unless allowed by Morr.
+- Respect and protect the dead.
+- Hunt down necromancers and the undead wherever they may gather.
+- Pay heed to your dreams.
+- Never refuse to conduct a funeral service.
+- At no time be a party to raising the dead, unless allowed by Morr.
 
 # **THE CULT OF MYRMIDIA, GODDESS OF STRATEGY**
 
@@ -199,15 +199,15 @@ Penances from Myrmidia are usually military in nature. A cultist may be ordered 
 
 #### **Strictures**
 
-0 Act with honour and dignity in all matters.
+- Act with honour and dignity in all matters.
 
-0 Respect prisoners of war, and never kill an enemy who surrenders.
+- Respect prisoners of war, and never kill an enemy who surrenders.
 
-0 Show no mercy to the unrepentant enemies of Humanity.
+- Show no mercy to the unrepentant enemies of Humanity.
 
-0 Obey all honourable orders.
+- Obey all honourable orders.
 
-0 Preserve the weak from the horrors of war.
+- Preserve the weak from the horrors of war.
 
 # **THE CULT OF RANALD, GOD OF TRICKERY**
 
@@ -243,11 +243,11 @@ Ranald has no formal temple organisation, although the cult maintains seemingly 
 
 Ranald's penances usually involve stealing into locked and guarded locations to recover precious items or leave a token. Humiliating oppressors of the poor is also common — perhaps by framing a brutal watch captain for a ludicrous crime, for example, or locking him in his own cells. Ranald often sends favoured and disfavoured cultists alike on a Pilgrimage of Fingers, a set of tasks proving capability and loyalty.
 
-- 0 One coin in ten belongs to Ranald.
-- 0 Never betray another to the authorities; there is no greater sin than informing.
-- 0 Violence is prohibited except in self-defence.
-- 0 It is better to live free and die than live under oppression.
-- 208 209 0 There is no honour among thieves, but there is amongst Ranaldans.
+- One coin in ten belongs to Ranald.
+- Never betray another to the authorities; there is no greater sin than informing.
+- Violence is prohibited except in self-defence.
+- It is better to live free and die than live under oppression.
+- There is no honour among thieves, but there is amongst Ranaldans.
 
 # **THE CULT OF RHYA, GODDESS OF FERTILITY**
 
@@ -281,11 +281,11 @@ Shrines to Rhya are usually simple statues of the goddess, often piled high with
 
 Rhyan penances may involve replanting devastated areas, helping broken households, and maintaining sacred groves. It is also common to find Rhyans tasked to protect helpless families, which can often put them at odds with local bailiffs and law enforcement.
 
-- 0 Defend families, children, and crops from all harm.
-- 0 Never feel shame for the flesh Rhya gave you.
-- 0 Life is sacred, do no harm lest another life is in danger.
-- 0 Never judge whom another loves.
-- 0 Interrupt the work of the Prince of Excess wherever it may thirst.
+- Defend families, children, and crops from all harm.
+- Never feel shame for the flesh Rhya gave you.
+- Life is sacred, do no harm lest another life is in danger.
+- Never judge whom another loves.
+- Interrupt the work of the Prince of Excess wherever it may thirst.
 
 # **THE CULT OF SHALLYA, GODDESS OF MERCY**
 
@@ -323,11 +323,11 @@ The high temple of all Shallya's cult is in Couronne, Bretonnia, built over a fa
 
 Penances set by Shallya always involve helping the sick, poor, or downtrodden. A cultist might be sent to a village struck by a plague to tend the sick until the disease has passed. Shallya often tasks her servants to help the wounded at war, or patrol popular pilgrimage routes for those unable to complete their journeys due to ill health.
 
-- 0 Always render assistance without judgement, based only on a person's need.
-- 0 Never kill, except in self-defence.
-- 0 Suffer not pestilence, nor those who would spread it.
-- 0 Shallya's work is never done, so turn not to self-indulgence.
-- 0 Never take up arms; a walking stick and courage will suffice.
+- Always render assistance without judgement, based only on a person's need.
+- Never kill, except in self-defence.
+- Suffer not pestilence, nor those who would spread it.
+- Shallya's work is never done, so turn not to self-indulgence.
+- Never take up arms; a walking stick and courage will suffice.
 
 # **THE CULT OF SIGMAR, GOD OF THE EMPIRE**
 
@@ -365,11 +365,11 @@ Every city, town, and village in the Empire has at least one temple to Sigmar. T
 
 Sigmarite cultists may be ordered to destroy a cell of Chaos worshippers, or expose a corrupt official who is secretly in league with the Ruinous Powers or a foreign power. It is also common to be tasked with building, or rebuilding, local communities to better promote unity and strength in the Empire.
 
-- 0 Obey your orders.
-- 0 Aid dwarf-folk, never do them harm.
-- 0 Promote the unity of the Empire.
-- 0 Bear true allegiance to the imperial throne.
-- 0 Root out orcs and goblins, Chaos worshippers, and foul witches without mercy.
+- Obey your orders.
+- Aid dwarf-folk, never do them harm.
+- Promote the unity of the Empire.
+- Bear true allegiance to the imperial throne.
+- Root out orcs and goblins, Chaos worshippers, and foul witches without mercy.
 
 # **THE CULT OF TAAL, GOD OF THE WILD**
 
@@ -405,11 +405,11 @@ Officially, the Hierarch leads the cult from there, though he spends most of his
 
 Taal's penances usually involve clearing diseased or mutated monsters from wild areas, replanting sacred trees, and maintaining groves important to the cult. A cultist might also be ordered to climb a high mountain and leave a stone on a cairn at the top, or clear an obstruction at the top of a waterfall. Whatever the specific task that must be undertaken, Taal's penances almost always challenge the cultist to survive in the wild.
 
-- 0 Offer a prayer of thanks for every animal taken.
-- 0 Spend a week alone communing with the wilderness every year.
-- 0 Eschew metal armour; clad yourself in the hides of Taal.
-- 0 Rely on your own skill, not the advances of gunpowder or cold technology.
-- 0 Never harm an animal except in self-defence or for food or sacrifice.
+- Offer a prayer of thanks for every animal taken.
+- Spend a week alone communing with the wilderness every year.
+- Eschew metal armour; clad yourself in the hides of Taal.
+- Rely on your own skill, not the advances of gunpowder or cold technology.
+- Never harm an animal except in self-defence or for food or sacrifice.
 
 # **THE CULT OF ULRIC, GOD OF WOLVES, WAR, AND WINTER**
 
@@ -439,11 +439,11 @@ Temples resemble fortified keeps and are normally square. The interior of the ma
 
 Penances set by Ulric are almost always tests of strength, courage, and martial skill. Slaying a powerful monster, or clearing out a nest of beastmen or outlaws, are typical tasks.
 
-- 0 Obey your betters.
-- 0 Defend your honour in all matters, and never refuse a challenge.
-- 0 Stand honest and true; outside an ambush, trickery and deception are forbidden.
-- 0 Only wear pelts from wolves killed by weapons crafted of your own hands.
-- 0 Blackpowder weapons are not befitting a follower of Ulric.
+- Obey your betters.
+- Defend your honour in all matters, and never refuse a challenge.
+- Stand honest and true; outside an ambush, trickery and deception are forbidden.
+- Only wear pelts from wolves killed by weapons crafted of your own hands.
+- Blackpowder weapons are not befitting a follower of Ulric.
 
 # **THE CULT OF VERENA, GODDESS OF WISDOM**
 
@@ -481,11 +481,11 @@ Temples to Verena can be found in most cities and larger towns, generally situat
 
 Penances set by Verena normally involve the recovery or preservation of knowledge, the righting of an injustice, or the resolution of a dispute. Cultists may also be sent to recover a long-forgotten book of lore, or to mediate in a difficult quarrel. This could be anything from a farmers' boundary dispute to unpicking the complicated politics of two realms on the brink of war.
 
-- 0 Never refuse to arbitrate a dispute when asked.
-- 0 Always tell the truth without fear or favour.
-- 0 Protect knowledge at all costs.
-- 0 Combat must be a last resort when all alternative routes are fruitless.
-- 0 Never become a tool of injustice or heresy.
+- Never refuse to arbitrate a dispute when asked.
+- Always tell the truth without fear or favour.
+- Protect knowledge at all costs.
+- Combat must be a last resort when all alternative routes are fruitless.
+- Never become a tool of injustice or heresy.
 
 The dwarfs venerate their ancient ancestors, valuing tradition above all else. Though the Time of the Ancestor Gods was many thousands of years ago (roughly –5500 IC as scholars reckon it), the dwarfs still hold records of that time in their oldest holds. Many names echo from that era, creating a broad, inter-related pantheon, but three ancestor gods are of especial importance and are known by all dwarfs: Grimnir, Grungni, and Valaya, each a progenitor of the species as a whole.
 
@@ -645,11 +645,11 @@ Blessings are minor manifestations of divine will; a Character with the *Bless* 
 
 ### **PRAYER FORMAT**
 
-- 0 The name of the Blessing or Miracle
-- 0 **Range:** A range in yards, or marked as 'Touch', showing you need to touch your target.
-- 0 **Target:** The number of targets affected; it may just be you.
-- 0 **Duration:** The duration of the prayer, usually expressed as 'Instant' or as a number of Rounds.
-- 0 The description of what the prayer does.
+- The name of the Blessing or Miracle
+- **Range:** A range in yards, or marked as 'Touch', showing you need to touch your target.
+- **Target:** The number of targets affected; it may just be you.
+- **Duration:** The duration of the prayer, usually expressed as 'Instant' or as a number of Rounds.
+- The description of what the prayer does.
 
 #### **Petty Concerns**
 
@@ -659,9 +659,9 @@ Even gentle Shallya grows irritated when the Blessed abuse their privileges. If 
 
 For every +2 SL you score in a Pray Test when attempting a Blessing, you may choose one of the following benefits:
 
-- 0 **Range:** +6 yards
-- 0 **Targets:** +1
-- 0 **Duration:** +6 Rounds
+- **Range:** +6 yards
+- **Targets:** +1
+- **Duration:** +6 Rounds
 
 If the Blessing in question has a Duration of 'Instant', you may not extend the Duration. You may choose the same option more than once. For instance, if you rolled +4 SL on a *Blessing of Healing*, you could heal three targets you were touching, two targets up to 6 yards away, or one target up to 12 yards away.
 
@@ -1035,11 +1035,11 @@ You call on Ranald to let your target negotiate the riddles of reality. Your tar
 
 You smile at Ranald as you cheekily ask others what, exactly, is wealth? For each target affected, choose one option:
 
-- 0 The target's purse appears empty.
-- 0 The target's purse appears full.
-- 0 The target's attire appears cheap and unremarkable.
-- 0 The target's attire appears rich and finely crafted.
-- 0 A single valuable item is impossible to perceive.
+- The target's purse appears empty.
+- The target's purse appears full.
+- The target's attire appears cheap and unremarkable.
+- The target's attire appears rich and finely crafted.
+- A single valuable item is impossible to perceive.
 
 For every +2 SL, you may select an additional effect for one of your targets.
 
@@ -1093,8 +1093,8 @@ You chant Rhya's song of revitalisation. All targets remove 1 Condition. If this
 
 You lay hands upon an injured or diseased target as you sing your prayers. Choose one of the following effects:
 
-- 0 Heal Fellowship Bonus Wounds.
-- 0 Cure 1 naturally occurring disease.
+- Heal Fellowship Bonus Wounds.
+- Cure 1 naturally occurring disease.
 
 For every + 2 SL, you may choose another effect, and may choose the same effect repeatedly. This Miracle is slow, with the effects taking at least 10 minutes to manifest. If interrupted, the Miracle will need to be attempted again.
 

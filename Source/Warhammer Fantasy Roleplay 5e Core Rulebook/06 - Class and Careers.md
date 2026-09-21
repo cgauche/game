@@ -22,9 +22,9 @@ The summary and illustration at the top of the eight Careers in your chosen Clas
 
 You can move to the next level in your Career by improving your abilities and collecting the trappings it requires. Tick one of the boxes between the levels of your Career on you Character Sheet each time you:
 
-- 0 Advance a Career Skill or Characteristic
-- 0 Gain a Talent from your Career
-- 0 Acquire a Trapping from the next level of your Career
+- Advance a Career Skill or Characteristic
+- Gain a Talent from your Career
+- Acquire a Trapping from the next level of your Career
 
 When you have filled the ten boxes, you can take the Advance Career Endeavour on page 196 to move to the next Level.
 

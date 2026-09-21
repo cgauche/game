@@ -91,16 +91,16 @@ The Career Advancement Tracker tracks your progress through your Career. Each ti
 
 **Characteristics:** Your innate abilities, and the starting score for your Skills. The first digit (the 'tens' value) is your **Characteristic Bonus**, used in many rules. For example, your **Strength Bonus (SB)** is added to the damage you deal with melee attacks. Strength **37** gives an **SB of 3**, while **42** gives an **SB of 4**.
 
-- 0 **Weapon Skill:** aptitude for fighting hand-to-hand, with or without a weapon.
-- 0 **Ballistic Skill:** effectiveness with ranged weapons like bows and throwing knives.
-- 0 **Strength:** damage caused in fights, lifting weights, swimming and climbing.
-- 0 **Toughness:** physical hardiness, resisting damage, surviving harsh conditions and poisons.
-- 0 **Initiative:** thought/reaction speed, especially in battle or under pressure.
-- 0 **Agility:** coordination and athleticism, used in running, riding, leaping, or dodging.
-- 0 **Dexterity:** performing delicate manual tasks like playing a musical instrument or skilled manufacturing.
-- 0 **Intelligence:** powers of thought, analysis, and understanding. Useful for healing, evaluating, and general knowledge.
-- 0 **Willpower:** strength of mind, determination and focus.
-- 0 **Fellowship:** making a good impression and getting on with people.
+- **Weapon Skill:** aptitude for fighting hand-to-hand, with or without a weapon.
+- **Ballistic Skill:** effectiveness with ranged weapons like bows and throwing knives.
+- **Strength:** damage caused in fights, lifting weights, swimming and climbing.
+- **Toughness:** physical hardiness, resisting damage, surviving harsh conditions and poisons.
+- **Initiative:** thought/reaction speed, especially in battle or under pressure.
+- **Agility:** coordination and athleticism, used in running, riding, leaping, or dodging.
+- **Dexterity:** performing delicate manual tasks like playing a musical instrument or skilled manufacturing.
+- **Intelligence:** powers of thought, analysis, and understanding. Useful for healing, evaluating, and general knowledge.
+- **Willpower:** strength of mind, determination and focus.
+- **Fellowship:** making a good impression and getting on with people.
 
 |                                                          | WEALTH                                                      | ENCUMBRANCE     |       |          |                   |                    |        | CORRUPTION & MUTATION                            |       |  |  |  |  |
 |----------------------------------------------------------|-------------------------------------------------------------|-----------------|-------|----------|-------------------|--------------------|--------|--------------------------------------------------|-------|--|--|--|--|
@@ -135,9 +135,9 @@ The Career Advancement Tracker tracks your progress through your Career. Each ti
 
 #### **There are three types of Skill:**
 
-- 0 Basic Skills can be used by anyone, even without any Advances.
-- 0 Advanced Skills can only be used if you have at least one Advance in the Skill.
-- 0 Grouped Skills cover broad areas. When you take an Advance, choose a specialization such as Lore (Empire) or Lore (Tilea).
+- Basic Skills can be used by anyone, even without any Advances.
+- Advanced Skills can only be used if you have at least one Advance in the Skill.
+- Grouped Skills cover broad areas. When you take an Advance, choose a specialization such as Lore (Empire) or Lore (Tilea).
 
 - **Armour:** record your Armour (page 307) here, and write the total Armour Points (APs) in the Armour diagram on the front of the sheet.
 - **Corruption and Mutation:** exposure to Chaos leads to Corruption and Mutation (page 187), but your Character begins the game without such curses.
@@ -612,10 +612,10 @@ II
 
 Copy the following to your Character Sheet in the appropriate place:
 
-- 0 Your Class and Career, and note your Career's page in the rulebook as you will refer back to it
-- 0 Note which 3 Characteristics you can advance in the first level of your Career — these are the most important to your starting Career Skills
-- 0 Tick the boxes on your Character Sheet next to the 10 Skills listed in the first level of your Career — these are your Career Skills. If the Skills aren't printed on your sheet, it means they are Advanced or Group Skills, which you must write onto the sheet in the box provided
-- 0 Your Career's Status (Brass/Silver/Gold) and Standing (the number after Status)
+- Your Class and Career, and note your Career's page in the rulebook as you will refer back to it
+- Note which 3 Characteristics you can advance in the first level of your Career — these are the most important to your starting Career Skills
+- Tick the boxes on your Character Sheet next to the 10 Skills listed in the first level of your Career — these are your Career Skills. If the Skills aren't printed on your sheet, it means they are Advanced or Group Skills, which you must write onto the sheet in the box provided
+- Your Career's Status (Brass/Silver/Gold) and Standing (the number after Status)
 
 #### **RANDOM CLASS AND CAREER TABLE**
 
@@ -691,8 +691,8 @@ Your Skills are used frequently in the game to determine if you succeed when you
 
 Your starting Skill Advances come from your Species and Career:
 
-- 0 Assign the Advances listed for your Species (pages 26–35).
-- 0 Assign **8 Advances** among the Career Skills you selected in step 2 (page 36).
+- Assign the Advances listed for your Species (pages 26–35).
+- Assign **8 Advances** among the Career Skills you selected in step 2 (page 36).
 
 #### **CHARACTERISTIC TABLE**
 
@@ -719,9 +719,9 @@ When you have allocated all your Advances, complete the Skills section of your C
 
 If the Skills aren't printed on your sheet, it means they are Advanced or Group Skills, which you must write onto the sheet in the box provided.
 
-- 0 *Basic Skills* can be used by any Character, even without Advances in the Skill
-- 0 *Advanced Skills* can only be used by Characters with an Advance in the Skill
-- 0 *Group Skills* cover broad areas, and you choose a specialization when you gain Advances, for example Lore (Empire) or Lore (Tilea)
+- *Basic Skills* can be used by any Character, even without Advances in the Skill
+- *Advanced Skills* can only be used by Characters with an Advance in the Skill
+- *Group Skills* cover broad areas, and you choose a specialization when you gain Advances, for example Lore (Empire) or Lore (Tilea)
 
 # **CLASS TRAPPINGS**
 
@@ -742,9 +742,9 @@ Talents are your special abilities, tricks, and techniques with individual game 
 
 Trappings are your equipment, clothes, weapons, and other carried items.
 
-- 0 All Characters begin with Clothing, a Dagger, and a Pouch.
-- 0 You also begin play with all of the Trappings from your Career's first level.
-- 0 Finally, you start with some Trappings common to your Class, as shown in the Class Trappings table.
+- All Characters begin with Clothing, a Dagger, and a Pouch.
+- You also begin play with all of the Trappings from your Career's first level.
+- Finally, you start with some Trappings common to your Class, as shown in the Class Trappings table.
 
 You begin the game with an amount of coins decided by your Status:
 
@@ -810,17 +810,17 @@ If you are creating a Character who is a spellcaster or miracle worker of some s
 
 A spellcaster has various options in order to cast a Spell, such as reading from grimoires, but a sensible starting suite of abilities would include:
 
-- 0 The *Second Sight* Talent, without which you may not perceive the Winds of Magic.
-- 0 At least one advance in the Language (Magick) Skill.
-- 0 At least one advance in the Channelling Skill, with a specialisation appropriate to the type of magic you wish to work with. For example, a Wizard using the Lore of Shadows would need Channelling (*Ulgu*).
-- 0 The *Petty Magic* Talent, in order to begin learning spells to cast.
+- The *Second Sight* Talent, without which you may not perceive the Winds of Magic.
+- At least one advance in the Language (Magick) Skill.
+- At least one advance in the Channelling Skill, with a specialisation appropriate to the type of magic you wish to work with. For example, a Wizard using the Lore of Shadows would need Channelling (*Ulgu*).
+- The *Petty Magic* Talent, in order to begin learning spells to cast.
 
 This may be quite a lot to acquire as a starting character, but once you have the necessary Skills and Talents you will be able to increase your repertoire of spells when you gain experience. See **Chapter 8: Magic** for details of the effects of Spells and how to cast them.
 
 Priests have a slightly easier time, reflecting the fact that their Blessings and Miracles are not as varied and powerful as Spells. In order to begin play as a Priest capable of working Blessings a Character will need:
 
-- 0 The *Bless (Deity)* Talent, appropriate to the god you have chosen to worship.
-- 0 At least one advance in the Pray Skill.
+- The *Bless (Deity)* Talent, appropriate to the god you have chosen to worship.
+- At least one advance in the Pray Skill.
 
 See **Chapter 7: Religion and Belief** for details of Blessings, and how to work Miracles.
 
@@ -838,9 +838,9 @@ Choose a long-term goal your Character may work towards for months or even years
 
 #### Examples include:
 
-- 0 Owning your own coaching inn.
-- 0 Building your village into a thriving town.
-- 0 Ridding the Colleges of Magic of Elven influence.
+- Owning your own coaching inn.
+- Building your village into a thriving town.
+- Ridding the Colleges of Magic of Elven influence.
 
 ## **Achieving Your Ambitions**
 
@@ -852,8 +852,8 @@ Choose a long-term goal your Character may work towards for months or even years
 
 At the start of Character creation you discussed the kind of group you wanted to create (see **Fitting In**, page 22). Now you know who your Characters are, you can add some more details of how and why they associate with each other. Some ways to do this are:
 
-- 0 Weaving your Characters into each others' backstories, building their shared history and reasons for sticking together.
-- 0 Describe how your Character knows the Characters of the players sitting to your left and right.
+- Weaving your Characters into each others' backstories, building their shared history and reasons for sticking together.
+- Describe how your Character knows the Characters of the players sitting to your left and right.
 
 ## **QUESTIONS**
 
@@ -897,12 +897,12 @@ Discuss your Party Ambition with the GM as a group, to make sure it fits the cam
 
 Now that you have completed Character Creation, there are a few things you may wish to do next.
 
-- 0 The rules of the game are in **Chapter 5**. If you just want to get to grips with the basics as quickly as possible, read pages 130 and 131.
-- 0 You can learn what your Skills and Talents do in **Chapter 4**.
-- 0 An explanation of your Character's Trappings, including their weapons and armour, can be found in **Chapter 11**.
-- 0 Bookmark your Career in **Chapter 3**. You may make a copy of this page for personal use if you wish.
-- 0 If your Character is a Priest, the rules for Blessings and Miracles can be found in **Chapter 7**.
-- 0 If your Character uses magic, the rules for Spells can be found in **Chapter 8**.
-- 0 As you survive the trials of the Old World and acquire XP, you'll want to improve your Character in various ways. The rules for this can be found on page 191.
-- 0 A summary of useful information for new players, as well as free adventures, character sheets, and other content, can be found on www.[cubicle7games.com.](http://cubicle7games.com)
-- 0 Enjoy your grim and perilous adventures!
+- The rules of the game are in **Chapter 5**. If you just want to get to grips with the basics as quickly as possible, read pages 130 and 131.
+- You can learn what your Skills and Talents do in **Chapter 4**.
+- An explanation of your Character's Trappings, including their weapons and armour, can be found in **Chapter 11**.
+- Bookmark your Career in **Chapter 3**. You may make a copy of this page for personal use if you wish.
+- If your Character is a Priest, the rules for Blessings and Miracles can be found in **Chapter 7**.
+- If your Character uses magic, the rules for Spells can be found in **Chapter 8**.
+- As you survive the trials of the Old World and acquire XP, you'll want to improve your Character in various ways. The rules for this can be found on page 191.
+- A summary of useful information for new players, as well as free adventures, character sheets, and other content, can be found on www.[cubicle7games.com.](http://cubicle7games.com)
+- Enjoy your grim and perilous adventures!

@@ -12,10 +12,10 @@ These rules exist to help you explore the world of **Warhammer Fantasy Roleplay*
 
 Roleplaying games work best with minimal interruption to the narrative flow, so bear these things in mind to help you have the best games possible:
 
-- 0 **To roll or not to roll.** You don't need to roll dice to determine the outcome of every action. If success or failure would have little impact on the progression of the story, the GM can simply decide what happens next.
-- 0 **Know what you're rolling.** Understanding the rules lets players judge the risks before they act. Before rolling dice, make sure that everyone involved knows what is being rolled for and the chances of success or failure.
+- **To roll or not to roll.** You don't need to roll dice to determine the outcome of every action. If success or failure would have little impact on the progression of the story, the GM can simply decide what happens next.
+- **Know what you're rolling.** Understanding the rules lets players judge the risks before they act. Before rolling dice, make sure that everyone involved knows what is being rolled for and the chances of success or failure.
 
-0 **Don't get bogged down.** The rules provide a framework for your adventures, but in something as free form as roleplaying they can't anticipate every situation that may arise. If you come up against a situation not covered in the rules, modify them as you see fit to reach a solution everyone agrees with. The important thing is to keep the game flowing and have fun.
+- **Don't get bogged down.** The rules provide a framework for your adventures, but in something as free form as roleplaying they can't anticipate every situation that may arise. If you come up against a situation not covered in the rules, modify them as you see fit to reach a solution everyone agrees with. The important thing is to keep the game flowing and have fun.
 
 # **TESTS**
 
@@ -23,14 +23,14 @@ At the core of the rules are Tests. Can you persuade a suspicious watchman to le
 
 # MAKING A TEST
 
-- 0 Player describes what their Character is trying to do.
-- 0 GM determines if a Test is required. If it is, GM explains any factors affecting the action that would be obvious to the Character.
-- 0 If the player still wishes to proceed, the GM decides what Skill or Characteristic to Test.
+- Player describes what their Character is trying to do.
+- GM determines if a Test is required. If it is, GM explains any factors affecting the action that would be obvious to the Character.
+- If the player still wishes to proceed, the GM decides what Skill or Characteristic to Test.
 
 # **ROLL DICE**
 
-- 0 Player rolls the dice, a d100, trying to get equal or lower than their Skill. If they do, they have succeeded.
-- 0 If it's important to know how well or badly they did, we use the Test's **Success Level** (SL). Subtract the first digit of your roll from the first digit of the Skill or Characteristic being tested to see how many SL you've generated, as shown below.
+- Player rolls the dice, a d100, trying to get equal or lower than their Skill. If they do, they have succeeded.
+- If it's important to know how well or badly they did, we use the Test's **Success Level** (SL). Subtract the first digit of your roll from the first digit of the Skill or Characteristic being tested to see how many SL you've generated, as shown below.
 
 **CHECK YOUR SKILL OR CHARACTERISTIC**
 
@@ -38,8 +38,8 @@ At the core of the rules are Tests. Can you persuade a suspicious watchman to le
 
 Sometimes, SL modifiers will adjust the result of a Test to 0 SL.
 
-- 0 If your dice roll was less than or equal to the skill being tested, the outcome is a Marginal Success (+0 SL).
-- 0 If it was higher, the outcome is a Marginal Failure (-0 SL).
+- If your dice roll was less than or equal to the skill being tested, the outcome is a Marginal Success (+0 SL).
+- If it was higher, the outcome is a Marginal Failure (-0 SL).
 
 ### **DARKNESS AND TESTS**
 
@@ -57,8 +57,8 @@ No matter the odds, hope is always present, and success is never guaranteed. A r
 
 Sometimes talent, luck, or an unfortunate lack of either means you do far better, or worse, than expected. When you roll a double, work out the final SL of the Test as normal:
 
-- 0 Success (+0 SL or more) becomes a Critical Success — treat it as Astounding (+5 SL) unless there's an even better outcome!
-- 0 Failure (-0 SL or worse) means a Fumble. Treat the result as an Astounding Failure (-5 SL) instead, unless it would otherwise be worse…
+- Success (+0 SL or more) becomes a Critical Success — treat it as Astounding (+5 SL) unless there's an even better outcome!
+- Failure (-0 SL or worse) means a Fumble. Treat the result as an Astounding Failure (-5 SL) instead, unless it would otherwise be worse…
 
 Combat Melee Tests work differently. The Critical/Fumble doesn't modify your SL, instead a Critical inflicts a Critical Wound (page 171) on your opponent, and you roll on the **Oops Table** for a Fumble. Then proceed with the results of the Test as normal.
 
@@ -72,8 +72,8 @@ Advantage and Disadvantage cancel each other out. If you have multiple sources o
 
 Not all Tests are as simple as the one above. The Success Level of a Test can be modified by how difficult it is to succeed, or by the Character's abilities and equipment:
 
-- 0 Difficulty set by the GM, with easier tasks giving an SL bonus and harder ones giving a penalty (see **Difficulty Table**).
-- 0 Character's modifiers come from Talents, equipment, Spells, and other effects. These will be clear on the player's Character Sheet.
+- Difficulty set by the GM, with easier tasks giving an SL bonus and harder ones giving a penalty (see **Difficulty Table**).
+- Character's modifiers come from Talents, equipment, Spells, and other effects. These will be clear on the player's Character Sheet.
 
 Combine any SL bonuses or penalties from the Difficulty with the Character's modifiers to arrive at the final SL modifier for the roll. This could turn a success into a failure, or prise victory from the jaws of defeat!
 
@@ -103,9 +103,9 @@ If an action isn't covered by a Skill, you can make a Characteristic Test instea
 
 # **SUMMARY & OUTCOME**
 
-- 0 Rolling equal to or under your Skill gives you positive SL, rolling above it gives you negative SL.
-- 0 Difficulty or Character modifiers adjust the SL
-- 0 A positive SL result means you succeed, and a negative SL result means you fail.
+- Rolling equal to or under your Skill gives you positive SL, rolling above it gives you negative SL.
+- Difficulty or Character modifiers adjust the SL
+- A positive SL result means you succeed, and a negative SL result means you fail.
 
 Often, you will only need to know whether a Test results in a success or failure. If it's important to know just how well you have passed, or how badly you have failed, consult the **Outcomes Table** below. The GM uses the descriptions in the table to decide what happens as a result of your action. There are lots of example outcome tables for a variety of actions, along with specific advice on how to use the rules, later in this chapter.
 
@@ -166,9 +166,9 @@ Whether it is guts, luck, or the favour of the gods, Fate and Fortune smile upon
 
 #### **Spend a Fortune Point to:**
 
-- 0 Gain Advantage on a Test before rolling.
-- 0 Reroll a Test, keeping the new result. You may spend another Fortune to reroll again.
-- 0 Remove one Condition (page 184).
+- Gain Advantage on a Test before rolling.
+- Reroll a Test, keeping the new result. You may spend another Fortune to reroll again.
+- Remove one Condition (page 184).
 
 #### **Replenishing Fortune**
 
@@ -182,14 +182,14 @@ Fate points are far more precious than Fortune. They mark you as a Character of 
 
 You may spend a Fate Point to delay your appointment with Morr in the following ways:
 
-- 0 **How Did That Miss?** After any dice are rolled for an attack against you, but before Damage is calculated, Opposed Test outcomes resolved or Critical Hits are determined, spend a Fate Point to negate the effects of that attack. The blow misses, the spell fizzles, or you otherwise escape by the skin of your teeth. Play then continues as normal.
-- 0 **Not Today!** Instead of dying, your Character is knocked unconscious, left for dead, swept away by a river, or otherwise removed from the encounter. Whatever the circumstances, your Character survives, but takes no further part in the current encounter.
+- **How Did That Miss?** After any dice are rolled for an attack against you, but before Damage is calculated, Opposed Test outcomes resolved or Critical Hits are determined, spend a Fate Point to negate the effects of that attack. The blow misses, the spell fizzles, or you otherwise escape by the skin of your teeth. Play then continues as normal.
+- **Not Today!** Instead of dying, your Character is knocked unconscious, left for dead, swept away by a river, or otherwise removed from the encounter. Whatever the circumstances, your Character survives, but takes no further part in the current encounter.
 
 #### **Achieving the Impossible**
 
 You may spend a Fate Point to succeed where failure seems certain.
 
-0 **I Will Not Fail!** Instead of rolling a Test, choose the result instead. You automatically succeed, even in the direst circumstances. In an Opposed Test, you win by at least +1 SL. If you choose to score a Critical, you may pick the Hit Location instead of rolling randomly.
+- **I Will Not Fail!** Instead of rolling a Test, choose the result instead. You automatically succeed, even in the direst circumstances. In an Opposed Test, you win by at least +1 SL. If you choose to score a Critical, you may pick the Hit Location instead of rolling randomly.
 
 #### **Replenishing Fate**
 
@@ -199,18 +199,18 @@ You may spend a Fate Point to succeed where failure seems certain.
 
 The core rules on the preceding pages are everything you need to know to start playing **Warhammer Fantasy Roleplay**. The following sections cover specific applications of the rules in greater detail, and deal with the situations you are most likely to encounter.
 
-- 0 **Theft and Skullduggery**, page 134
-- 0 **Flattery, Bribery, and Status**, page 140
-- 0 **Nosing Around**, page 146
-- 0 **Life Beyond the Walls**, page 152
-- 0 **Cunning Crafts**, page 153
-- 0 **Getting Around**, page 156
-- 0 **Combat**, page 161
-- 0 **Injury, Healing, and Death**, page 170
-- 0 **Disease and Infection**, page 179
-- 0 **Psychology**, page 183
-- 0 **Conditions**, page 184
-- 0 **Corruption and Mutation**, page 187
+- **Theft and Skullduggery**, page 134
+- **Flattery, Bribery, and Status**, page 140
+- **Nosing Around**, page 146
+- **Life Beyond the Walls**, page 152
+- **Cunning Crafts**, page 153
+- **Getting Around**, page 156
+- **Combat**, page 161
+- **Injury, Healing, and Death**, page 170
+- **Disease and Infection**, page 179
+- **Psychology**, page 183
+- **Conditions**, page 184
+- **Corruption and Mutation**, page 187
 
 # **THEFT AND SKULLDUGGERY**
 
@@ -486,9 +486,9 @@ Old World society is rigidly stratified. Commoners know their place, while the e
 
 Your Status is determined by your current Career level:
 
-- 0 **Gold:** The rulers of society, their advisers, protectors, magistrates, and the independently wealthy. Reaching Gold usually requires talent, success, and more than a little luck.
-- 0 **Silver:** Skilled professionals, merchants, artisans, and respected tradesfolk. Though not wealthy or powerful, they enjoy a comfortable and respectable place in society.
-- 0 **Brass:** Labourers, peasants, unskilled workers, and the poor. This Tier also includes many criminals, ne'er-do-wells, and those with no steady livelihood.
+- **Gold:** The rulers of society, their advisers, protectors, magistrates, and the independently wealthy. Reaching Gold usually requires talent, success, and more than a little luck.
+- **Silver:** Skilled professionals, merchants, artisans, and respected tradesfolk. Though not wealthy or powerful, they enjoy a comfortable and respectable place in society.
+- **Brass:** Labourers, peasants, unskilled workers, and the poor. This Tier also includes many criminals, ne'er-do-wells, and those with no steady livelihood.
 
 The number after your Status is your Standing, your social position relative to others of your Status.
 
@@ -1214,9 +1214,9 @@ Combat uses the same core rules as the rest of the game, but actions are resolve
 
 In combat, the exact timing of actions matters more, so time is organised into:
 
-- 0 **Rounds:** A Round is enough time for all Characters to attempt a Test and move into position. It is normally just a few seconds, the GM can decide exactly how long if necessary.
-- 0 **Turns:** During a Round, each combatant has a Turn to perform an Action and a Move.
-- 0 **Initiative Order:** Each combatant usually takes their Turn in order of their *Initiative* Characteristic, from highest to lowest.
+- **Rounds:** A Round is enough time for all Characters to attempt a Test and move into position. It is normally just a few seconds, the GM can decide exactly how long if necessary.
+- **Turns:** During a Round, each combatant has a Turn to perform an Action and a Move.
+- **Initiative Order:** Each combatant usually takes their Turn in order of their *Initiative* Characteristic, from highest to lowest.
 
 # **Combat Summary**
 
@@ -1453,9 +1453,9 @@ There are some extra considerations that apply to ranged attacks:
 | 1–8  | The weapon fails to fire. If a gun, it must be reloaded. If an explosive, it is a dud.               |
 | 9–10 | Catastrophe! The weapon explodes, dealing full Damage to your primary arm with +0 SL for the hit. |
 
-- 0 Ranged Attacks cannot normally be opposed with Melee Skills. At Point Blank Range (page 166), however, the target may oppose the attack with Dodge.
-- 0 You cannot make Ranged Attacks while Engaged, unless your weapon has the Pistol Quality (see page 305).
-- 0 If you make a Ranged Attack against a target you are Engaged with, they may oppose the attack with any Melee Skill.
+- Ranged Attacks cannot normally be opposed with Melee Skills. At Point Blank Range (page 166), however, the target may oppose the attack with Dodge.
+- You cannot make Ranged Attacks while Engaged, unless your weapon has the Pistol Quality (see page 305).
+- If you make a Ranged Attack against a target you are Engaged with, they may oppose the attack with any Melee Skill.
 
 #### **Weapon Groups**
 
@@ -1465,25 +1465,25 @@ If you are using a Melee Weapon from a Weapon Group you have no Advances in, you
 
 Ranged Weapons are typically more complicated, and you cannot make Ranged Attacks with a weapon from a Weapon Group you have no Advances in, save for a few exceptions:
 
-- 0 Ranged (Engineering) can be used with Blackpowder and Explosive weapons.
-- 0 You may also use Engineering Weapons with Ranged (Blackpowder), but such Tests are always at least Hard (-2 SL).
-- 0 You may make a Ballistic Skill Test to attack with Crossbow and Throwing weapons, but these attacks are always at least Difficult (-1 SL).
+- Ranged (Engineering) can be used with Blackpowder and Explosive weapons.
+- You may also use Engineering Weapons with Ranged (Blackpowder), but such Tests are always at least Hard (-2 SL).
+- You may make a Ballistic Skill Test to attack with Crossbow and Throwing weapons, but these attacks are always at least Difficult (-1 SL).
 
 #### **Melee Weapon Group Special Rules**
 
 Some Melee Weapon Groups have special rules.
 
-- 0 On foot, you may use a two handed Cavalry Weapon with Melee (Two-handed) with no penalty, if you prefer.
-- 0 Single-handed Cavalry Weapons count as Improvised Weapons when on foot.
-- 0 You may use a Fencing Weapon with Melee (Basic), but cannot use its Qualities when doing so.
-- 0 Using a Flail without any Advances in Melee (Flail) causes such weapons to gain the *Dangerous* Flaw.
+- On foot, you may use a two handed Cavalry Weapon with Melee (Two-handed) with no penalty, if you prefer.
+- Single-handed Cavalry Weapons count as Improvised Weapons when on foot.
+- You may use a Fencing Weapon with Melee (Basic), but cannot use its Qualities when doing so.
+- Using a Flail without any Advances in Melee (Flail) causes such weapons to gain the *Dangerous* Flaw.
 
 #### **Melee Weapon Reach**
 
 Weapon reach (page 300) has the following impacts:
 
-- 0 When opposing a Melee Attack Test, you gain +1 SL if the attacker's weapon is shorter than yours.
-- 0 If your weapon is Very Long, you can Engage enemies up to 4 yards away, or 6 yards if its Reach is Massive.
+- When opposing a Melee Attack Test, you gain +1 SL if the attacker's weapon is shorter than yours.
+- If your weapon is Very Long, you can Engage enemies up to 4 yards away, or 6 yards if its Reach is Massive.
 
 # **Combat Modifiers**
 
@@ -1549,9 +1549,9 @@ Some warriors fight with a weapon in each hand, such as a sword and sword-breake
 
 When fighting with two weapons:
 
-- 0 You may wield any two one-handed weapons.
-- 0 After attacking with one weapon, you may spend Momentum (page 168) to immediately attack with the weapon in your other hand.
-- 0 Attacks made with your off hand suffer -2 SL.
+- You may wield any two one-handed weapons.
+- After attacking with one weapon, you may spend Momentum (page 168) to immediately attack with the weapon in your other hand.
+- Attacks made with your off hand suffer -2 SL.
 
 **Note:** The *Ambidextrous* and *Dual Wielder* Talents can mitigate penalties associated with two-weapon fighting.
 
@@ -1563,9 +1563,9 @@ Not every fight in **WFRP** involves guns or swords. Many conflicts are settled 
 
 Instead of inflicting damage with an unarmed attack, you can attempt to Grapple and immobilise your opponent. You must declare this is your intent before rolling to hit your opponent. If you win the Opposed Test, you and your opponent are Grappling and your opponent gains an *Entangled* Condition (page 186). If you begin your Turn Grappling, you must make an Opposed Strength Test for your Action. If you win, you can do one of the following:
 
-- 0 Deal SB + SL Damage using your Strength Test roll to determine the Hit Location affected. You ignore any Armour Points as you wrench arms and pull muscles.
-- 0 Give your opponent an *Entangled* Condition, plus one more for each SL after the first.
-- 0 Remove an *Entangled* Condition from yourself, plus one more for each SL after the first.
+- Deal SB + SL Damage using your Strength Test roll to determine the Hit Location affected. You ignore any Armour Points as you wrench arms and pull muscles.
+- Give your opponent an *Entangled* Condition, plus one more for each SL after the first.
+- Remove an *Entangled* Condition from yourself, plus one more for each SL after the first.
 
 # **Undamaging and Unarmed Attacks**
 
@@ -1575,12 +1575,12 @@ For those lacking claws, fangs, or some other natural enchancement, attacks made
 
 Riding into combat, sword swinging, guns blazing, is not only terrifying for those on the receiving end, it also brings bonuses to the rider. Mounted combat uses the same rules as any other combat, with the following additions:
 
-- 0 For the purposes of their Move, riders count as having the Movement Attribute of their mount. Further, riders take Ride Tests as Free Actions for any Tests to Sprint, Leap, Charge, or similar, and use their mount's Movement Attribute.
-- 0 Any Melee Test made with a Cavalry weapon by a rider against a target smaller than their mount gains Advantage.
-- 0 You choose whether to target a rider or their mount. If you attempt to hit the rider in melee, touch them, or similar, you suffer Disadvantage on the Test if you are smaller Size than the mount (see page 360), unless your weapon has a reach of Long or greater.
-- 0 A mount without the *Skittish* Trait (see page 361) is effectively another combatant, and may use its own Action to attack targets.
-- 0 When Charging, you may count as having your mount's Strength Bonus for the purpose of calculating Weapon Damage.
-- 0 When riding, you suffer Disadvantage on Dodge Tests unless you have the *Trick Rider* Talent.
+- For the purposes of their Move, riders count as having the Movement Attribute of their mount. Further, riders take Ride Tests as Free Actions for any Tests to Sprint, Leap, Charge, or similar, and use their mount's Movement Attribute.
+- Any Melee Test made with a Cavalry weapon by a rider against a target smaller than their mount gains Advantage.
+- You choose whether to target a rider or their mount. If you attempt to hit the rider in melee, touch them, or similar, you suffer Disadvantage on the Test if you are smaller Size than the mount (see page 360), unless your weapon has a reach of Long or greater.
+- A mount without the *Skittish* Trait (see page 361) is effectively another combatant, and may use its own Action to attack targets.
+- When Charging, you may count as having your mount's Strength Bonus for the purpose of calculating Weapon Damage.
+- When riding, you suffer Disadvantage on Dodge Tests unless you have the *Trick Rider* Talent.
 
 **Note:** Most mounts are bigger than Characters, meaning they may cause *Fear* and gain other combat advantages as explained on page 360.
 
@@ -1738,9 +1738,9 @@ If you have received any Critical Wounds, you are said to be Critically Wounded.
 
 Several Critical Wound results and conditions cannot be resolved until you receive some kind of Medical Attention. All of the following count as Medical Attention, as could other means and effects, at the GM's discretion.
 
-- 0 Successful use of the *Heal* Skill.
-- 0 Application of a Bandage, Healing Poultice, or similar.
-- 0 Successful use of a Prayer or Spell that heals Wounds.
+- Successful use of the *Heal* Skill.
+- Application of a Bandage, Healing Poultice, or similar.
+- Successful use of a Prayer or Spell that heals Wounds.
 
 #### **Surgery**
 
@@ -1970,13 +1970,13 @@ A disease can be diagnosed with the Heal Skill. The Difficulty of this Test is d
 
 # **Disease Format**
 
-- 0 **Name:** The name of the disease
-- 0 A description of the disease
-- 0 **Contraction:** How the disease is contracted
-- 0 **Incubation:** How long before the victim demonstrates any Symptoms
-- 0 **Duration:** How long the Symptoms of the disease last if untreated. At the end of the duration, the disease will come to an end.
-- 0 **Symptoms:** The effects of the disease on the victim. See **Symptoms** (page 181) for a list of all the Symptoms and how they affect a Character.
-- 0 **Permanent:** Some diseases are so horrendous they carry permanent consequences. This section is only included if the affliction has such long-term effects.
+- **Name:** The name of the disease
+- A description of the disease
+- **Contraction:** How the disease is contracted
+- **Incubation:** How long before the victim demonstrates any Symptoms
+- **Duration:** How long the Symptoms of the disease last if untreated. At the end of the duration, the disease will come to an end.
+- **Symptoms:** The effects of the disease on the victim. See **Symptoms** (page 181) for a list of all the Symptoms and how they affect a Character.
+- **Permanent:** Some diseases are so horrendous they carry permanent consequences. This section is only included if the affliction has such long-term effects.
 
 # **The Litany of Pestilence**
 
@@ -2235,12 +2235,19 @@ You can also be subject to multiple, different Conditions at once. When this occ
 
 # **COMPLETE CONDITION LIST**
 
-- 0 *Ablaze* 0 *Besmirched*
-- 0 *Bleeding* 0 *Blinded*
-- 0 *Broken* 0 *Deafened*
-- 0 *Entangled* 0 *Fatigued*
-- 0 *Poisoned* 0 *Prone*
-- 0 *Stunned* 0 *Surprised* 0 *Unconscious*
+- *Ablaze*
+- *Besmirched*
+- *Bleeding*
+- *Blinded*
+- *Broken*
+- *Deafened*
+- *Entangled*
+- *Fatigued*
+- *Poisoned*
+- *Prone*
+- *Stunned*
+- *Surprised*
+- *Unconscious*
 
 #### **CONDITIONS AND FORTUNE**
 
@@ -2364,31 +2371,31 @@ V **Surprised** Multiple exposures, or exposure to multiple sources, may increas
 
 There are two types of exposure:
 
-- 0 **Exposure:** You have physical contact with the listed source for at least 1 Turn, or spend at least 1 hour in its vicinity or under its influence.
-- 0 **Prolonged Exposure:** You have physical contact with the listed source for at least 1 hour, or spend at least 6 hours in its vicinity or under its influence.
+- **Exposure:** You have physical contact with the listed source for at least 1 Turn, or spend at least 1 hour in its vicinity or under its influence.
+- **Prolonged Exposure:** You have physical contact with the listed source for at least 1 hour, or spend at least 6 hours in its vicinity or under its influence.
 
 #### **Minor Corruption**
 
 These Corrupting Influences, although relatively trivial, still endanger a weak soul. If you fail a Test to resist Minor Corruption, gain 1 Corruption Point.
 
-- 0 **Exposure** to a creature with the *Corruption (Minor)* Trait, refined warpstone, or a profane artefact
-- 0 **Prolonged Exposure** to Chaos worshippers, Chaos cult temples, skaven, mutant lairs, and similar
+- **Exposure** to a creature with the *Corruption (Minor)* Trait, refined warpstone, or a profane artefact
+- **Prolonged Exposure** to Chaos worshippers, Chaos cult temples, skaven, mutant lairs, and similar
 
 # **Moderate Corruption**
 
 Moderate Corrupting Influences are a danger to every soul and should be avoided under all circumstances. If you fail the Test, gain 2 Corruption Points. On a Marginal Success (+0 SL), gain 1 Corruption Point. On a Success (1+ SL), you gain no Corruption Points.
 
-- 0 **Exposure** to a creature with the *Corruption (Moderate)* Trait or warpstone
-- 0 **Prolonged Exposure** to refined warpstone or a Chaos-tainted artefact
+- **Exposure** to a creature with the *Corruption (Moderate)* Trait or warpstone
+- **Prolonged Exposure** to refined warpstone or a Chaos-tainted artefact
 
 #### **Major Corruption**
 
 Few mortals can withstand a Major Corrupting Influence for long. Remain in its presence, and Chaos will begin to reshape you. For each failed Major Corruption Test, gain 3 Corruption Points. If you succeed with a Marginal Success (+0 SL), gain 2 Corruption Points. On a Success (1–3 SL), you gain 1 Corruption Point. Only if you score an Impressive Success (4+ SL) do you gain no Corruption Points.
 
-- 0 **Exposure** to a creature with the *Corruption (Major)* Trait
-- 0 **Prolonged Exposure** to warpstone
-- 0 Making a deal with a daemon
-- 0 Consuming refined warpstone
+- **Exposure** to a creature with the *Corruption (Major)* Trait
+- **Prolonged Exposure** to warpstone
+- Making a deal with a daemon
+- Consuming refined warpstone
 
 # **Corrupting**
 
@@ -2483,7 +2490,7 @@ As Corruption Points mount and the grip of the Ruinous Powers tightens around yo
 | 91–95 | Unholy Rage | +10 Weapon Skill, subject to Frenzy (see page 184) |
 | 96–00 | Worried Jitters | +5 Agility, -5 Fellowship |
 
-- 0 Cleansing a profane temple dedicated to the Dark Gods — though doing so may expose you to even greater corruption.
-- 0 Completing a holy pilgrimage and receiving a blessing from a high priest at its end.
-- 0 Destroying, or otherwise rendering safe, an unholy artefact, foiling the schemes of the Ruinous Powers.
-- 0 Joining a holy order and dedicating your life to a deity opposed to Chaos.
+- Cleansing a profane temple dedicated to the Dark Gods — though doing so may expose you to even greater corruption.
+- Completing a holy pilgrimage and receiving a blessing from a high priest at its end.
+- Destroying, or otherwise rendering safe, an unholy artefact, foiling the schemes of the Ruinous Powers.
+- Joining a holy order and dedicating your life to a deity opposed to Chaos.

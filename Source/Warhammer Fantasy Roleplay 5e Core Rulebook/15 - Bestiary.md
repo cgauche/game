@@ -40,13 +40,13 @@ XII
 
 ### **BESTIARY FORMAT**
 
-- 0 **Name:** The creature's name.
-- 0 The creature's description.
-- 0 **Attributes:** The creature's 12 Attributes.
-- 0 **Attacks:** A summary of the attacks the creature can usually make. Where numbers appear such as (30/+7), the number before the slash is the Melee or Ranged Skill used to make the attack, and the number after the slash is the damage added after determining if the attack hits. Where a creature does extra damage due to being a particular Size, this is factored in.
-- 0 **Armour:** A summary of the creature's defences. Often there are options to add extra items of armour to a creature.
-- 0 **Traits:** The Creature Traits the creature almost always has. Skills and Talents may also be listed in the case of more detailed creatures.
-- 0 **Optional:** Common Creature Traits the creature may be given when creating your own.
+- **Name:** The creature's name.
+- The creature's description.
+- **Attributes:** The creature's 12 Attributes.
+- **Attacks:** A summary of the attacks the creature can usually make. Where numbers appear such as (30/+7), the number before the slash is the Melee or Ranged Skill used to make the attack, and the number after the slash is the damage added after determining if the attack hits. Where a creature does extra damage due to being a particular Size, this is factored in.
+- **Armour:** A summary of the creature's defences. Often there are options to add extra items of armour to a creature.
+- **Traits:** The Creature Traits the creature almost always has. Skills and Talents may also be listed in the case of more detailed creatures.
+- **Optional:** Common Creature Traits the creature may be given when creating your own.
 
 # **THE PEOPLES OF THE REIKLAND**
 
@@ -2426,12 +2426,12 @@ The creature can bounce high, perhaps with powerful limbs, magic, or stubby wing
 
 The creature's breath is a powerful weapon. As a ranged attack, they can activate their *Breath* as a Free Attack, targeting 1 creature they can see within 20 + Toughness Bonus yards and all creatures within SB yards of that target. The attacker makes an Opposed Ballistic Skill/Dodge Test against all targets (the attacker's single roll Opposed by each individual target). If a creature without a BS makes a Breath Attack, count it as having a BS of 30. Losing targets take Rating Damage. Further, if the Trait has any of the following Types in parentheses, apply the associated rules.
 
-- 0 **Acid:** Inflicts Damage of TB +4. All weapons and armour carried by the targets suffer 1 Damage.
-- 0 **Cold:** Inflicts Damage of SB +2. Targets gain a *Fatigued* Condition; until they lose the Condition, their weapons gain the *Slow* Flaw.
-- 0 **Electricity:** Inflicts Damage of SB +2. Damage ignores metal armour. Targets gain a *Stunned* Condition.
-- 0 **Fire:** Inflicts Damage of SB +3. Targets gain an *Ablaze* Condition.
-- 0 **Poison:** Inflicts Damage of TB +2. Targets gain a *Poisoned* Condition.
-- 0 **Smoke:** The area fills with smoke, blocking line of sight and causing Suffocation (page 169) for Toughness Bonus Rounds.
+- **Acid:** Inflicts Damage of TB +4. All weapons and armour carried by the targets suffer 1 Damage.
+- **Cold:** Inflicts Damage of SB +2. Targets gain a *Fatigued* Condition; until they lose the Condition, their weapons gain the *Slow* Flaw.
+- **Electricity:** Inflicts Damage of SB +2. Damage ignores metal armour. Targets gain a *Stunned* Condition.
+- **Fire:** Inflicts Damage of SB +3. Targets gain an *Ablaze* Condition.
+- **Poison:** Inflicts Damage of TB +2. Targets gain a *Poisoned* Condition.
+- **Smoke:** The area fills with smoke, blocking line of sight and causing Suffocation (page 169) for Toughness Bonus Rounds.
 
 The creature is immune to their own *Breath*. This attack is *Magical*.
 
@@ -2605,11 +2605,11 @@ This Trait represents creatures whose size differs from the game standard (i.e. 
 
 Large creatures do more Damage when they land a hit. These modifiers don't apply to Ranged Attacks or extra attacks. NPC profiles already include these modifiers.
 
-- 0 **Small:** Damage as normal
-- 0 **Average:** Damage as normal
-- 0 **Large:** Damage as normal plus additional SB Damage
-- 0 **Enormous:** Damage as normal plus additional SB Damage
-- 0 **Monstrous:** Damage as normal plus additional (2 x SB) Damage
+- **Small:** Damage as normal
+- **Average:** Damage as normal
+- **Large:** Damage as normal plus additional SB Damage
+- **Enormous:** Damage as normal plus additional SB Damage
+- **Monstrous:** Damage as normal plus additional (2 x SB) Damage
 
 #### **Defending Against Big Creatures**
 
@@ -2631,11 +2631,11 @@ During Opposed Strength Tests (and similar), if one creature is 2 or more *Size*
 
 Larger creatures count as several creatures for the sake of working out if they are outnumbered in combat.
 
-- 0 **Small:** Counts as 1 creature
-- 0 **Average:** Counts as 1 creature
-- 0 **Large:** Counts as 2 creatures
-- 0 **Enormous:** Counts as 3 creatures
-- 0 **Monstrous:** Counts as 4 creatures
+- **Small:** Counts as 1 creature
+- **Average:** Counts as 1 creature
+- **Large:** Counts as 2 creatures
+- **Enormous:** Counts as 3 creatures
+- **Monstrous:** Counts as 4 creatures
 
 So, you would need 4 *Size (Average)* creatures to outnumber a *Size (Large)* creature by 2 to 1, or 3 *Size (Large)* creatures to outnumber a *Size (Monstrous)* creature by 2 to 1.
 

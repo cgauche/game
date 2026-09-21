@@ -265,6 +265,11 @@ const ATTENDU = {
     // l'unique écriture (régénération du stock) est fermée par `--ecrire-stock` sous `isMain`
     // (check-source-tables.mjs:194) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
     'scripts/raw/check-source-tables.mjs',
+    // +1 le 2026-09-21 (#1820 R4) : `check-source-puces.test.mjs` importe le détecteur des puces
+    // lues comme un jeton, dont l'unique écriture (régénération du stock) est fermée par
+    // `--ecrire-stock` sous `isMain` (check-source-puces.mjs:159) — déclarée en `ecritFerme` de
+    // `test:raw` (ECRIT_LU).
+    'scripts/raw/check-source-puces.mjs',
     // +1 le 2026-09-14 (#1739 H-0) : `check-source-format.test.mjs` importe le détecteur du format
     // des extractions, dont l'unique écriture (régénération du stock) est fermée par `--ecrire-stock`
     // sous `isMain` (check-source-format.mjs:396) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
@@ -345,6 +350,11 @@ const ATTENDU = {
   // `--ecrire-stock` (check-source-format.mjs:396) que ci.yml ne passe pas ; déclarée en
   // `ecritFerme` sur `scripts/raw/source-format-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
   'raw:check-source-format': ['scripts/raw/check-source-format.mjs'],
+  // +1 le 2026-09-21 (#1820 R4) : la gate neuve est le détecteur des PUCES lues comme un jeton, qui
+  // porte UN `writeFileSync` — la régénération de son stock nominatif, fermée par la porte
+  // `--ecrire-stock` (check-source-puces.mjs:159) que ci.yml ne passe pas ; déclarée en
+  // `ecritFerme` sur `scripts/raw/source-puces-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
+  'raw:check-source-puces': ['scripts/raw/check-source-puces.mjs'],
   'raw:reanchor': ['scripts/docs/lib/empreinte-sources.mjs', 'scripts/raw/reanchor.mjs'],
   'server:typecheck': [],
 }

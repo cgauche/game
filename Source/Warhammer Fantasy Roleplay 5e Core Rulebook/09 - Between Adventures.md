@@ -16,14 +16,14 @@ The Between Adventures part of a game should be quickly resolved at the end of a
 
 # **DURING DOWNTIME**
 
-- 0 Characters recover all Wounds.
-- 0 Players may spend XP to purchase Characteristics, Skills, and Talents.
-- 0 The GM rolls a Regional Event table to determine what's taking place in the world around the Characters.
-- 0 Each player rolls a Character Event to find out what's happening to their Character during Downtime.
-- 0 Characters may purchase items and Trappings from shops before they undertake Endeavours.
-- 0 Each Character engages in a variety of activities called Endeavours and resolves any matters that arise from their choices.
-- 0 Aside from money gained or saved due to Endeavours, all of the Characters' money is spent.
-- 0 Characters are then ready to start their next adventure.
+- Characters recover all Wounds.
+- Players may spend XP to purchase Characteristics, Skills, and Talents.
+- The GM rolls a Regional Event table to determine what's taking place in the world around the Characters.
+- Each player rolls a Character Event to find out what's happening to their Character during Downtime.
+- Characters may purchase items and Trappings from shops before they undertake Endeavours.
+- Each Character engages in a variety of activities called Endeavours and resolves any matters that arise from their choices.
+- Aside from money gained or saved due to Endeavours, all of the Characters' money is spent.
+- Characters are then ready to start their next adventure.
 
 Between adventures, you may spend XP to advance your Characteristics and Skills, acquire new Talents, and advance your Career Level. Your Career Level determines what Characteristics, Skills, and Talents are available to you.
 
@@ -328,14 +328,14 @@ All the money remaining at the end of your 'Between Adventures' phase is lost be
 
 #### **Invest with Banking House**
 
-- 0 Gold and Silver Status Characters only.
-- 0 Determine risk and reward choose a number between 1 and 10 (or roll 1d10). This is the rate of interest you will accrue, and also how risky the investment is.
-- 0 Withdrawing funds requires another *Banking* Endeavour, either immediately after the initial Endeavour, or after subsequent adventures. Roll 1d100: if you roll equal to or less than the risk and reward number, the venture has failed and you have lost all of your money. If you roll over the interest rate, you receive your initial funds, plus the interest accrued.
+- Gold and Silver Status Characters only.
+- Determine risk and reward choose a number between 1 and 10 (or roll 1d10). This is the rate of interest you will accrue, and also how risky the investment is.
+- Withdrawing funds requires another *Banking* Endeavour, either immediately after the initial Endeavour, or after subsequent adventures. Roll 1d100: if you roll equal to or less than the risk and reward number, the venture has failed and you have lost all of your money. If you roll over the interest rate, you receive your initial funds, plus the interest accrued.
 
 #### **Stash the Loot**
 
-- 0 Hide/bury/give to someone for safekeeping a high risk option available to all Characters
-- 0 Withdraw money from a stash before the start of an adventure without undertaking an Endeavour. Roll 1d100: if you roll 10 or lower, your stash has been found and you have lost all your money, otherwise you receive your initial funds. If you successfully withdraw your funds they are available for you when you start your next adventure, in addition to any funds secured via an *Income* Endeavour.
+- Hide/bury/give to someone for safekeeping a high risk option available to all Characters
+- Withdraw money from a stash before the start of an adventure without undertaking an Endeavour. Roll 1d100: if you roll 10 or lower, your stash has been found and you have lost all your money, otherwise you receive your initial funds. If you successfully withdraw your funds they are available for you when you start your next adventure, in addition to any funds secured via an *Income* Endeavour.
 
 **Example:** *Gerhard and Ulli's courage in the face of a horde of goblins (not to mention some judicious looting) has earned them a haul worth 10 gold crowns each. The ever-prudent Gerhard decides to place his money with the esteemed Fooger's Counting House in Marienburg. The GM rolls 1d10 with a result of 6. Gerhard will earn 6% interest on his deposit (12 silver shillings, see page 296), and the investment will fail if he rolls 6 or less on d100 when he tries to make a withdrawal.*
 
@@ -438,8 +438,8 @@ Inventing is a two-stage process: Plan and Build.
 
 **Build**: Complete the invention by undertaking either a *Crafting*  or *Commission* Endeavour.
 
-- 0 Crafting: You build the invention yourself. You must possess the Skills required to create each component for example, combining Pigeons and Bombs requires Animal Training and Trade (Explosives). The Crafting Test is always Very Hard (–3 SL), modified by any bonus gained from the Plan stage. The raw materials cost twice the combined listed price of the Trappings and have an Availability equal to the rarest component.
-- 0 Commission: You hire someone else to build the invention. You may first need to undertake *Consult an Expert* to locate a suitable engineer. Resolve the *Commission* Endeavour as normal, except the work costs six times the combined listed price of the Trappings.
+- Crafting: You build the invention yourself. You must possess the Skills required to create each component for example, combining Pigeons and Bombs requires Animal Training and Trade (Explosives). The Crafting Test is always Very Hard (–3 SL), modified by any bonus gained from the Plan stage. The raw materials cost twice the combined listed price of the Trappings and have an Availability equal to the rarest component.
+- Commission: You hire someone else to build the invention. You may first need to undertake *Consult an Expert* to locate a suitable engineer. Resolve the *Commission* Endeavour as normal, except the work costs six times the combined listed price of the Trappings.
 
 The GM has the final say on the rules and capabilities of every invention.
 
@@ -471,9 +471,9 @@ The powerful often find it preferable to be owed favours rather than money. They
 
 Favours come in three levels: Minor, Major, and Significant. Regardless of a Favour's level, in almost all cases, the person owed the Favour will take into account the capabilities and sensibilities of the person they're asking. There's no point in demanding that a Priestess of Shallya assassinate a merchant, for example, even if she does owe you a Significant Favour. That being said, Favours are ripe for NPCs to exploit in order to put pressure on your moral compass.
 
-- 0 **A Minor Favour** represents a simple task that can be completed in no more than a few hours. Perhaps you need to volunteer at a Shallyan mercy-house or put in a good word for someone. With the GM's permission, you may undertake an Endeavour to pay off this favour.
-- 0 **A Major Favour** is a more time-consuming or risky undertaking. It could take up to several weeks to achieve and may involve travel. Perhaps you are needed to act as lookout on a string of burglaries, convince the Stevedores' and Teamsters' Guild to back down from a guild war, or transport a package to a different city. With the GM's permission, you may undertake two or more consecutive Endeavours to pay off this favour.
-- 0 **A Significant Favour** is relatively rare and will almost certainly involve risking life and limb. Months of travel may be involved, and major violence is likely. Perhaps you will be asked to eliminate a rival gang boss, wipe out a goblin encampment, or instigate a riot. Significant Favours cannot be paid off via Endeavours; they are roleplayed out as full adventures.
+- **A Minor Favour** represents a simple task that can be completed in no more than a few hours. Perhaps you need to volunteer at a Shallyan mercy-house or put in a good word for someone. With the GM's permission, you may undertake an Endeavour to pay off this favour.
+- **A Major Favour** is a more time-consuming or risky undertaking. It could take up to several weeks to achieve and may involve travel. Perhaps you are needed to act as lookout on a string of burglaries, convince the Stevedores' and Teamsters' Guild to back down from a guild war, or transport a package to a different city. With the GM's permission, you may undertake two or more consecutive Endeavours to pay off this favour.
+- **A Significant Favour** is relatively rare and will almost certainly involve risking life and limb. Months of travel may be involved, and major violence is likely. Perhaps you will be asked to eliminate a rival gang boss, wipe out a goblin encampment, or instigate a riot. Significant Favours cannot be paid off via Endeavours; they are roleplayed out as full adventures.
 
 In the Old World, breaking one's sworn word carries significant social ramifications. No-one trusts oath breakers, meaning your Status is reduced by 1 Tier (see page @@). Powerful and dangerous folks tend to take it very, very poorly if someone refuses a Favour owed them, so bloody consequences may follow.
 

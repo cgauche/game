@@ -38,17 +38,17 @@ In general, low rolls give successful results. So, whether you're rolling a d10 
 
 You don't need to read this book cover to cover to get started. Depending on whether you intend to create a Character or GM a game for your friends, you may wish to vary your reading order.
 
-- 0 **Character Building:** A guide to making your Character
-- 0 **Careers:** Your Character's role in the world
-- 0 **Skills and Talents:** The abilities that make your Character stand out
-- 0 **Rules:** How to play the game
-- 0 **Between Adventures:** What happens when your Character is not adventuring
-- 0 **Religion:** The gods and how they influence the world
-- 0 **Magic:** Otherworldly forces wielded by witches and wizards
-- 0 **GM's Guide:** How to run games for your friends
-- 0 **Glorious Reikland:** A guide to the region most adventures take place in
-- 0 **Consumer Guide:** All of the weapons, armour, and other tools you will need
-- 0 **Bestiary:** Skulking cultists, hulking orcs, and other monsters to fight
+- **Character Building:** A guide to making your Character
+- **Careers:** Your Character's role in the world
+- **Skills and Talents:** The abilities that make your Character stand out
+- **Rules:** How to play the game
+- **Between Adventures:** What happens when your Character is not adventuring
+- **Religion:** The gods and how they influence the world
+- **Magic:** Otherworldly forces wielded by witches and wizards
+- **GM's Guide:** How to run games for your friends
+- **Glorious Reikland:** A guide to the region most adventures take place in
+- **Consumer Guide:** All of the weapons, armour, and other tools you will need
+- **Bestiary:** Skulking cultists, hulking orcs, and other monsters to fight
 
 # **Creating a Character**
 

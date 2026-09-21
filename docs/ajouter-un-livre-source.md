@@ -499,6 +499,17 @@ sert d'arbitre — jamais comme source de la donnée affichée, qui reste recoll
 - `node scripts/raw/check-source-tables.mjs` — tables cassées du `Source/` (cinq familles, stock
   nominatif décroissant `scripts/raw/source-tables-stock.json`) ; le geste est le tableau
   « défaut de table → geste » du §7. `--ecrire-stock` régénère le stock après une correction.
+- `node scripts/raw/check-source-puces.mjs` — la PUCE imprimée que l'extraction a rendue par le CODE
+  de son glyphe d'ornement (Core Rulebook 5e : le `0` de la police `onlyskulls`, un petit crâne) :
+  une liste dont au moins DEUX items consécutifs s'ouvrent par le MÊME jeton d'un seul caractère est
+  un site (stock nominatif `scripts/raw/source-puces-stock.json`). Le geste se fait au `.md`, jeton
+  par jeton, contre la PAGE : le jeton PART si la page n'imprime qu'une puce — et prend la place du
+  marqueur `- ` là où l'extraction l'a perdu (`0 Texte` → `- Texte`) —, il RESTE si la page
+  l'imprime (une liste réellement numérotée ne mord d'ailleurs pas : ses jetons diffèrent, et un
+  jeton de ponctuation OUVRANTE — `Pi`/`Ps` : `«`, `“`, `‹`, `(`, `[`… — ouvre une citation, pas un
+  item). COUVERTURE : l'item ISOLÉ et la puce INTERNE à une ligne (colonnes effondrées) restent
+  invisibles à la garde ; ils se tranchent à la page, pas au stock.
+  `--ecrire-stock` régénère le stock après une correction.
 - `node scripts/raw/check-source-format.mjs` — écart de FORME des 20 dossiers FR au format canonique
   (sept familles, stock nominatif décroissant `scripts/raw/source-format-stock.json`) ; le geste est
   de REJOUER la chaîne canonique sur le livre (§0), jamais une correction manuelle.

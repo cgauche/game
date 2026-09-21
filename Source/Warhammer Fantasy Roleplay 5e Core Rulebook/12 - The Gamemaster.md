@@ -8,10 +8,10 @@ Bringing the world of **Warhammer Fantasy Roleplay** to life for your friends is
 
 The most important rule in a running roleplaying game is to ensure that everyone at the table, you included, has fun. This chapter will set out your role as the GM, and provide you with the tools you need to do it well, while having a good time. Let's start with what exactly the GM does.
 
-- 0 You Tell the Story
-- 0 You Decide How the World Reacts
-- 0 You Decide When the Rules Are Needed
-- 0 You Arbitrate the Rules
+- You Tell the Story
+- You Decide How the World Reacts
+- You Decide When the Rules Are Needed
+- You Arbitrate the Rules
 
 # **You Tell the Story**
 
@@ -179,16 +179,16 @@ The secret to awarding XP is to give enough for Characters to feel they are impr
 
 We recommend awarding around 100 XP per session to each player, based on the group's achievements.
 
-- 0 Surviving the session: 50 XP
-- 0 Saving an important NPC's life: 10–25 XP
-- 0 Finding important information: 10–25 XP
-- 0 Defeating a significant antagonist: 10–25 XP
-- 0 Achieving minor objectives: 10–25 XP
+- Surviving the session: 50 XP
+- Saving an important NPC's life: 10–25 XP
+- Finding important information: 10–25 XP
+- Defeating a significant antagonist: 10–25 XP
+- Achieving minor objectives: 10–25 XP
 
 You can also award bonuses for significant milestones.
 
-- 0 Achieving the adventure's main objective: 25–100 XP
-- 0 Completing a series of linked adventures: 100–200 XP
+- Achieving the adventure's main objective: 25–100 XP
+- Completing a series of linked adventures: 100–200 XP
 
 Finally, consider individual bonuses for players who played their Character in keeping with their Character concept (sometimes to their detriment!), who achieved something spectacular (intentionally or not!), or who made everyone else around the table laugh uncontrollably. Try to spread this one around and avoid simply giving it to a player who dominated the session — remember the quiet players who are playing their Character well.
 

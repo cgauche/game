@@ -1,0 +1,3267 @@
+{
+  "quoi": "Listes du `Source/` dont au moins DEUX items consécutifs s’ouvrent par le MÊME jeton d’un seul caractère (#1820) : la PUCE imprimée que l’extraction Marker a rendue par le CODE de son glyphe d’ornement, un caractère que la page n’imprime nulle part. Une ENTRÉE par SITE, clé `fichier :: ref :: occurrence` (régime #1711) ; la réf porte le jeton et l’ouverture normalisée du premier item, jamais une position. Le geste de solde est celui de `docs/ajouter-un-livre-source.md` : le jeton PART si la page n’imprime qu’une puce (et devient le marqueur `- ` là où l’extraction l’a perdu), il RESTE si la page l’imprime. Ce fichier ne décroît que quand un site disparaît du `Source/` ; il ne porte AUCUN livre en code, seulement les chapitres mesurés.",
+  "entrees": [
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/00 - Index.md",
+      "ref": "« 0 » :: des informations sur le culte de myrmidia, avec le guide le ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/02 - INTRODUCTION.md",
+      "ref": "« 0 » :: le capitaine rudolf ratzenberger entretient une querelle sec",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/03 - LES CHEVALIERS DE L'EMPIRE.md",
+      "ref": "« 0 » :: défendez l'intégrité de l'empire et défiez ceux qui prêchent",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/05 - LA TILEE ET LES PERSONNAGES TILEENS.md",
+      "ref": "« 0 » :: un flagellant a peu de chances de venir de tilée, ou de s'y ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/06 - LE CULTE DE MYRMIDIA.md",
+      "ref": "« 0 » :: tuer un aigle, assister à sa mort ou trouver un cadavre d'ai",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/09 - LE COMBAT MONTE.md",
+      "ref": "« 0 » :: choisissez un profil proche du type de mercenaire que vous d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/11 - ANNEXE I AVANTAGES DE GROUPE.md",
+      "ref": "« 0 » :: les avantages ne sont plus accumulés par chaque joueur ou pn",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - Aux Armes/11 - ANNEXE I AVANTAGES DE GROUPE.md",
+      "ref": "« 0 » :: surprise : attaquer un ennemi surpris confère +1 avantage. v",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/00 - Index.md",
+      "ref": "« 0 » :: un périple le long de la mer des griffes, depuis les marches",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/08 - La cote des Bjornlings.md",
+      "ref": "« 0 » :: manann - représenté par une statue pillée dans le vieux temp",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/09 - La classe Cotier.md",
+      "ref": "« 0 » :: tous les pirates doivent obéir aux ordres de leurs officiers",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/10 - Le culte de Manann.md",
+      "ref": "« 0 » :: s'il est jeté dans des eaux agitées, il les calme (ce qui pe",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/12 - Navires et construction navale.md",
+      "ref": "« 0 » :: bout portant : le tir cible un seul individu. ajoutez l'indi",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/12 - Navires et construction navale.md",
+      "ref": "« 0 » :: si le poids des pièces d'artillerie sur l'un des côtés du ba",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/13 - Navigation maritime.md",
+      "ref": "« 0 » :: bateaux de taille minuscule à petite : -2 dr à man et -1 m.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/13 - Navigation maritime.md",
+      "ref": "« 0 » :: si le vaisseau est propulsé par ses voiles, le test de navig",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/14 - Navigation a bord de grands vaisseaux.md",
+      "ref": "« 0 » :: si un membre d'équipage souffre d'une maladie comportant le ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/14 - Navigation a bord de grands vaisseaux.md",
+      "ref": "« 0 » :: si un rôle n'est pas occupé par un personnage, mais pourrait",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/14 - Navigation a bord de grands vaisseaux.md",
+      "ref": "« 0 » :: un test de résistance complexe (-10) s'ils entreprennent pou",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/15 - Longs voyages.md",
+      "ref": "« 0 » :: calculez la distance à parcourir pour le voyage et la vitess",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - La Mer de Griffe/15 - Longs voyages.md",
+      "ref": "« 0 » :: la vitesse moyenne du navire est calculée et modifiée par le",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/00 - Index.md",
+      "ref": "« 0 » :: un récit palpitant relatant les exploits d'un groupe d'avent",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/13 - Sirene.md",
+      "ref": "« 0 » :: inférieure à moyenne 1 enc",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/WH - V4 - Le zoo imperial/14 - Expeditions prevues.md",
+      "ref": "« 0 » :: vous compatissez avec les malheurs des mutants dans l'empire",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/03 - CHAPITRE 1 - Easter eggs.md",
+      "ref": "« 0 » :: johann dassbüt, le pj marin prétiré : son nom vient de das b",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/04 - _GoBack.md",
+      "ref": "« 0 » :: les diligences de la tour du roc (voir page 20) : cela vient",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/05 - CHAPITRE 2 - L'Empire.md",
+      "ref": "« 0 » :: la principauté d'altdorf, rattachée au reikland.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/05 - CHAPITRE 2 - L'Empire.md",
+      "ref": "« 0 » :: le grand comté d'averland",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/05 - CHAPITRE 2 - L'Empire.md",
+      "ref": "« 0 » :: le grand théogoniste yorri xv du culte de sigmar. il porte l",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/06 - Chapitre 3 - Les routes et grandes routes.md",
+      "ref": "« 0 » :: les lignes rochet d'altdorf",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/11 - CHAPITRE 7 - Toutes les routes menent a Bogenhafen.md",
+      "ref": "« 0 » :: l'un des personnages présente une ressemblance remarquable a",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/13 - CHAPITRE 9 - La Main pourpre - Guide du Meneur.md",
+      "ref": "« 0 » :: il existe de nombreuses sociétés secrètes dans l'empire qui ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/13 - CHAPITRE 9 - La Main pourpre - Guide du Meneur.md",
+      "ref": "« 0 » :: malepierre",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/15 - CHAPITRE 11 - L'Affaire du joyau cache - Un melodrame a l'intrigue complexe.md",
+      "ref": "« Y » :: 20 points pour tout personnage empêchant la bombe d'exploser",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/16 - CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM.md",
+      "ref": "« 0 » :: johann a accidentellement tué son ancien employeur et a brûl",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/16 - CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM.md",
+      "ref": "« 0 » :: kirsten a découvert que son vrai père est le graf ardez de d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/16 - CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM.md",
+      "ref": "« 0 » :: malmir ne veut pas seulement quitter son foyer pour voir le ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/16 - CHAPITRE 12 - LE CARNAVAL DU PANDEMONIUM.md",
+      "ref": "« 0 » :: wanda n'a pas reçu la permission légale de son maître de voy",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/00 - Index.md",
+      "ref": "« 0 » :: le volume 2 : mort sur le reik est le volet suivant. il cont",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/01 - Chapitre 1 - On recherche - aventuriers courageux.md",
+      "ref": "« 0 » :: 10 points pour surprendre phillipe, le joueur, en train de t",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/01 - Chapitre 1 - On recherche - aventuriers courageux.md",
+      "ref": "« 0 » :: d'étranges lumières ont été vues dans le ciel vers l'est. on",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/01 - Chapitre 1 - On recherche - aventuriers courageux.md",
+      "ref": "« 0 » :: l'empereur a une sœur cachée dans le grand hospice au nord d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/01 - Chapitre 1 - On recherche - aventuriers courageux.md",
+      "ref": "« 0 » :: le temps va se gâter et il va pleuvoir demain. probablement ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/01 - Chapitre 1 - On recherche - aventuriers courageux.md",
+      "ref": "« 0 » :: un loup blanc sacré d'ulric a été repéré dans la drakwald, p",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/02 - Chapitre 2 - Erreur sur la personne.md",
+      "ref": "« 0 » :: 10 points pour avoir vaincu rolf hurtsis",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/03 - Chapitre 3 - Le coeur de l'Empire.md",
+      "ref": "« 0 » :: 5 points pour avoir déjoué le vol de bagage",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/03 - Chapitre 3 - Le coeur de l'Empire.md",
+      "ref": "« 0 » :: lancez 1d10 chaque jour. sur un résultat de 8, un personnage",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/03 - Chapitre 3 - Le coeur de l'Empire.md",
+      "ref": "« 0 » :: les membres de la noblesse sont tous cinglés ; tous consangu",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/03 - Chapitre 3 - Le coeur de l'Empire.md",
+      "ref": "« 0 » :: tous les lanceurs de sorts gagnent +1 dr à leurs test de lan",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/04 - Chapitre 4 - Sur la route de Bogenhafen....md",
+      "ref": "« 0 » :: 5-10 points pour avoir poursuivi adolphus kuftsos.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/04 - Chapitre 4 - Sur la route de Bogenhafen....md",
+      "ref": "« 0 » :: l'homme solidement bâti s'appelait adolphus kuftsos. une enq",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/04 - Chapitre 4 - Sur la route de Bogenhafen....md",
+      "ref": "« 0 » :: si adolphus est mort, il ne peut plus nuire aux personnages.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/05 - Chapitre 5 - Le faux heritage.md",
+      "ref": "« 0 » :: 5-10 points chacun pour avoir évité à l'attaque d'adolphus k",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/06 - Chapitre 6 - La Schaffenfest.md",
+      "ref": "« 0 » :: 5 points pour avoir affronté braugen l'écraseur .",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/06 - Chapitre 6 - La Schaffenfest.md",
+      "ref": "« 0 » :: course à pied : effectuez un test étendu d'athlétisme access",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/06 - Chapitre 6 - La Schaffenfest.md",
+      "ref": "« 0 » :: grunni cherche de la main-d'œuvre pour parcourir le champ de",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/06 - Chapitre 6 - La Schaffenfest.md",
+      "ref": "« 0 » :: l'empereur a tourné le dos aux collèges de magie, c'est pour",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/06 - Chapitre 6 - La Schaffenfest.md",
+      "ref": "« 0 » :: le champion de klaus schattiger, braugen l'écraseur , s'est ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/06 - Chapitre 6 - La Schaffenfest.md",
+      "ref": "« 0 » :: on raconte qu'une comète à deux queues a été aperçue audessu",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/06 - Chapitre 6 - La Schaffenfest.md",
+      "ref": "« 0 » :: primus von bildhofen est terrifié. il ne veut pas participer",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/07 - Chapitre 7 - Dans les tenebres.md",
+      "ref": "« 0 » :: 5 points pour être tombé dans les égouts.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/07 - Chapitre 7 - Dans les tenebres.md",
+      "ref": "« 0 » :: moisissure rouge : le nuage de spores dure 3 rounds. les per",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/08 - Chapitre 8 - Chasser les ombres.md",
+      "ref": "« 0 » :: 5 points pour avoir découvert que le temple secret se trouve",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/08 - Chapitre 8 - Chasser les ombres.md",
+      "ref": "« 0 » :: bögenhauer : ma rivière va s'assécher, et les échanges cesse",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/08 - Chapitre 8 - Chasser les ombres.md",
+      "ref": "« 0 » :: l'entrée du temple secret dans les égouts se trouve juste so",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/08 - Chapitre 8 - Chasser les ombres.md",
+      "ref": "« 0 » :: les adresses des principales maisons marchandes, qui se trou",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/08 - Chapitre 8 - Chasser les ombres.md",
+      "ref": "« 0 » :: les familles de marchands : les informations sur les quatre ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/08 - Chapitre 8 - Chasser les ombres.md",
+      "ref": "« 0 » :: morr : ceux qui recherchent le profit causeront de nombreuse",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/09 - Chapitre 9 - L'heure fatidique.md",
+      "ref": "« 0 » :: 200 points + 1 point de destin pour avoir interrompu le ritu",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/09 - Chapitre 9 - L'heure fatidique.md",
+      "ref": "« 0 » :: des cavaliers paniqués foncent vers les personnages en renve",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/09 - Chapitre 9 - L'heure fatidique.md",
+      "ref": "« 0 » :: les personnages disposent de la lettre envoyée par etelka he",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: actuellement, le sanctuaire des égoutiers est le plus richem",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: bien sûr, là où de grandes foules se rassemblent pour dépens",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: deiderich ochtend, un jeune doktor récemment arrivé de marie",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: depuis peu, les voisins de teugen ont commencé à remarquer d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: des rumeurs persistent selon lesquelles les ruines elfiques ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: dorathandril chevelurensoleillée, un haut elfe qui conçoit d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: durant une opération visant à rétablir l'ordre, le lieutenan",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: désireux de renforcer la réputation de bögenhafen en tant qu",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: gurni galazil, le brasseur de landau, s'ennuie souvent. une ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: harbokka demande aux personnages de rendre visite à l'une de",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: heinrich a activement travaillé contre les intérêts de son f",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: huit sièges appartiennent à la guilde des marchands : un pou",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: la demi-mesure est une façade pour les havrebas locaux, diri",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: la guilde des marchands emploie un certain nombre de halflin",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: la relation de friedrich avec klaus a été la source de nombr",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: la tradition veut que si quelqu'un meurt en service, une vei",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: la veille de l'arrivée des collecteurs d'impôts du graf, on ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: le capitaine wallinger des dos verts a besoin de plus de pou",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: le commis en chef de ruggbroder, clotilda kundicht, la repré",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: le père waldo était autrefois un soldat, même si, à sa grand",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: le sergent franz haller est victime d'un chantage de la part",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: les archives varient quant à savoir lequel des jumeaux est n",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: les matchs de middenball sont devenus de plus en plus violen",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: les personnages sont approchés par polli wengerbäss, une fem",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: lorsqu'un fantôme apparaît dans la guilde des pleureurs, ull",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: lorsque le temple est violé la nuit, avec des signes de l'ic",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: lorsque scherp n'arrive pas au travail, haagen, inquiet, cha",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: mère carlitz soupçonne que des corps ont disparu des tombes ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: mère rubenstein s'inquiète lorsque ni ses soins, ni toute la",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: okri brondason, un maçon nain, est arrivé récemment à bögenh",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: quand detlev, l'ancien quartier-maître d'ulka, arrive en vil",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: quand les personnages ont des ennuis en enquêtant sur l'ordo",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: quand leur maître et leur maîtresse sont absents, les servit",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: quand un cadavre horriblement défiguré est retrouvé, coincé ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: quand un cerf blessé cherche à se réfugier dans le sanctuair",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: quelqu'un essaie d'attiser les tensions déjà considérables e",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: rille von kaltenwald est humiliée lors d'un bal mondain lors",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: sœur bromein n'est pas officiellement membre du culte de sha",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: tomas krone, voleur d'art notoire, croupit actuellement dans",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: un agitateur furieux, et étonnamment cultivé, franz durchwat",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: un bac de kringler disparaît et il engage les pj pour le ret",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: un jeune gardien inquiet demande une faveur. un groupe d'ivr",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: un poteau à l'extérieur des tribunaux porte les avis de prim",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: une cargaison de bois rare de pin sanglant est disponible à ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: à la suite d'une réunion particulièrement bruyante du nez sa",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/10 - APPENDICE 1 - Un guide de Bogenhafen.md",
+      "ref": "« 0 » :: à la suite d'une série d'empoisonnements suspects, herr flin",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/12 - Annexe 3 - Documents et aides de jeux.md",
+      "ref": "« 0 » :: nachhexen (nach-hex'n) : l'après-sorciers",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/12 - Annexe 3 - Documents et aides de jeux.md",
+      "ref": "« 0 » :: wellentag (vell'n-taag) : jour du travail",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/19 - CHAPITRE 17 - La vengeance du Roi des tombes.md",
+      "ref": "« 0 » :: 25 points pour chaque personnage ayant réussi à couper court",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/19 - CHAPITRE 17 - La vengeance du Roi des tombes.md",
+      "ref": "« 0 » :: sigrid n'était pas une initiée de rhya, mais de slaanesh ! b",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/02 - INTRODUCTION.md",
+      "ref": "« 0 » :: encouragez les joueurs à planifier leurs objectifs pour la s",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/02 - INTRODUCTION.md",
+      "ref": "« 0 » :: il n'y a pas d'héritage. le cabinet d'avocat n'existe pas, e",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« 0 » :: 40 points pour avoir sécurisé le bateau fluvial abandonné.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« 0 » :: deux autres diligences ont été prises en embuscade sur le ch",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« 0 » :: l'empereur karl franz a publié un nouvel édit déclarant qu'i",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« 0 » :: l'empereur karl franz n'a pas fait d'apparition publique dep",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« 0 » :: la route vers altdorf est perturbée par des bandits et les d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« 0 » :: les patrouilleurs fluviaux et les collecteurs d'impôts sont ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« 0 » :: les patrouilleurs fluviaux et les collecteurs d'impôts sont ",
+      "occurrence": 2,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« M » :: c'est un mutant et il n'ose pas se montrer en public.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« M » :: il a été souillé par le chaos et une queue de rat lui a pous",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« M » :: il s'est mis à vénérer les dieux du chaos. une afffaire de t",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/03 - CHAPITRE 1 - De Bogenhafen a Altdorf.md",
+      "ref": "« M » :: les villageois ont tous d'horribles mutations et on les a vu",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/04 - CHAPITRE 2 - D'Altdorf a Kemperbad.md",
+      "ref": "« 0 » :: 10 points pour avoir aidé à finir la tour à signaux.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/04 - CHAPITRE 2 - D'Altdorf a Kemperbad.md",
+      "ref": "« 0 » :: le bateau des aventuriers est endommagé dans un accident. le",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/04 - CHAPITRE 2 - D'Altdorf a Kemperbad.md",
+      "ref": "« 0 » :: les habitants ont l'air nerveux et murmurent qu'il est arriv",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/04 - CHAPITRE 2 - D'Altdorf a Kemperbad.md",
+      "ref": "« 0 » :: les herbes communes d'esme flaquepeton, en reikspiel. après ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/04 - CHAPITRE 2 - D'Altdorf a Kemperbad.md",
+      "ref": "« 0 » :: un grimoire contenant l'un des sorts suivant (à vous de choi",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/04 - CHAPITRE 2 - D'Altdorf a Kemperbad.md",
+      "ref": "« 0 » :: wittgendorf est un lieu morbide. tous les villageois sont de",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/05 - CHAPITRE 3 - De Kemperbad aux Cretes noires.md",
+      "ref": "« 0 » :: 75 points pour s'être occupé de herzen et heidlemann.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/05 - CHAPITRE 3 - De Kemperbad aux Cretes noires.md",
+      "ref": "« 0 » :: cette mine était autrefois contrôlée par des nains.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/05 - CHAPITRE 3 - De Kemperbad aux Cretes noires.md",
+      "ref": "« 0 » :: un homme au visage fin de fouine est venu déposer une lettre",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/06 - CHAPITRE 4 - De Grissenwald aux Collines steriles.md",
+      "ref": "« 0 » :: 30 points pour avoir atteint la cuvette du diable.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/06 - CHAPITRE 4 - De Grissenwald aux Collines steriles.md",
+      "ref": "« 0 » :: deux semaines de rations de base, trempées et immangeables.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/07 - CHAPITRE 5 - D'Unterbaum a Wittgendorf.md",
+      "ref": "« 0 » :: l'empereur a fait une apparition en public, apaisant ainsi l",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/07 - CHAPITRE 5 - D'Unterbaum a Wittgendorf.md",
+      "ref": "« 0 » :: les attaques de bateaux par des mutants semblent connaître u",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/08 - CHAPITRE 6 - Wittgendorf.md",
+      "ref": "« 0 » :: 30 points pour avoir sauvé le vieux villageois.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/08 - CHAPITRE 6 - Wittgendorf.md",
+      "ref": "« 0 » :: jusqu'à il y a environ 100 ans, la région produisait des cul",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/09 - CHAPITRE 7 - Chateau von Wittgenstein.md",
+      "ref": "« 0 » :: 30 points pour avoir convaincu les hors-la-loi de les aider.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/09 - CHAPITRE 7 - Chateau von Wittgenstein.md",
+      "ref": "« 0 » :: des carillons assourdissants : de nombreuses horloges sonnen",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/09 - CHAPITRE 7 - Chateau von Wittgenstein.md",
+      "ref": "« 0 » :: le monstre pourrait être imprégné d'électricité au point que",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 2.0 Mort sur le Reik/10 - CHAPITRE 8 - Une halte en chemin.md",
+      "ref": "« 0 » :: 10 points pour avoir signé le contrat avec les blucher.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/03 - En route vers Middenheim.md",
+      "ref": "« 0 » :: alors que l'ostland et le talabecland sont sur le point d'en",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/03 - En route vers Middenheim.md",
+      "ref": "« 0 » :: je vais vous donner une combine pour gagner une couronne ou ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/03 - En route vers Middenheim.md",
+      "ref": "« 0 » :: l'état de l'empereur karl franz est devenu critique. sa mala",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/03 - En route vers Middenheim.md",
+      "ref": "« 0 » :: le petit-déjeuner (1/-) est servi de 7 h à 9 h. menu classiq",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/03 - En route vers Middenheim.md",
+      "ref": "« 0 » :: les illuminations magiques annuelles pourraient ne pas être ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/03 - En route vers Middenheim.md",
+      "ref": "« 0 » :: toutes ces nouvelles taxes ne peuvent signifier qu'une chose",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/03 - En route vers Middenheim.md",
+      "ref": "« 0 » :: vous voulez vous faire un peu d'argent en plus ? eh bien, ou",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/05 - LE PLAN MACHIAVELIQUE.md",
+      "ref": "« 0 » :: sparsam, le chancelier : 2 votes",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/06 - Enquetes preliminaires.md",
+      "ref": "« 0 » :: les régulations commerciales sont trop pesantes pour le nord",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/07 - LE CARNAVAL.md",
+      "ref": "« 0 » :: divertissements communs (-20) : divertissement (comédie, cha",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/07 - LE CARNAVAL.md",
+      "ref": "« 0 » :: la première : pas d'arme ni de magie.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/07 - LE CARNAVAL.md",
+      "ref": "« 0 » :: pas de magie. les deux combattants doivent être inspectés pa",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/08 - Les pouvoirs en place.md",
+      "ref": "« 0 » :: ar-ulric et la favorite ont une liaison, et le grand prêtre ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/09 - LE TRAITRE DEMASQUE.md",
+      "ref": "« 0 » :: qui sont les personnages et d'où viennent-ils ?",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/09 - LE TRAITRE DEMASQUE.md",
+      "ref": "« 0 » :: si les aventuriers montrent à schutzmann la lettre qu'ils on",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/10 - Fiches de PNJ.md",
+      "ref": "« 0 » :: elle sait qui influence le graf.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/12 - HYPNOTISME.md",
+      "ref": "« 0 » :: médecin (wfjdr, p. 89), en particulier si le personnage est ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/13 - POINTS D'EXPERIENCE.md",
+      "ref": "« 0 » :: 10 px pour ne pas avoir payé d'impôts",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/13 - POINTS D'EXPERIENCE.md",
+      "ref": "« 0 » :: 10 à 30 px par rencontre mineure au carnaval",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/13 - POINTS D'EXPERIENCE.md",
+      "ref": "« 0 » :: 25 px pour avoir ouvert la caisse et la lettre assez tôt",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/13 - POINTS D'EXPERIENCE.md",
+      "ref": "« 0 » :: 35 px pour josef sparsam",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/13 - POINTS D'EXPERIENCE.md",
+      "ref": "« 0 » :: 50 px pour avoir tué/capturé wasmeier",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/14 - CALENDRIER DES ATTRACTIONS PRINCIPALES.md",
+      "ref": "« 0 » :: sparsam, le chancelier : 2 votes",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/02 - Le gouvernement d'Altdorf.md",
+      "ref": "« 0 » :: de récentes évolutions perturbent profondément le culte de v",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/03 - Les gangs d'Altdorf.md",
+      "ref": "« 0 » :: il semblerait que les poissons aient arrêté la contrebande. ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: alors que lena remercie shallya, un groupe de voyous se fray",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: après avoir aperçu un animal étrange dans les montagnes gris",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: au nord et au sud de la ville se trouvent des zones humides ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: certains solkanistes détestent devoir être discrets et cache",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: des incidents étranges se produisent au musée. un visiteur e",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: des recherches récentes ont permis de découvrir une divergen",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: grâce à une intervention chirurgicale, le doktor wilden reti",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: hans, l'un des gardiens du zoo, est devenu obsédé par le gal",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: heidi metterninch est une prophète du destin de morr dont le",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: hilde grappin s'approche des personnages sur la domplatz. ce",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: johann trister est un véritable inconditionnel de tarradasch",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: l'entretien de l'immense mausolée de marbre de ludwig ii est",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: l'un des personnages est provoqué en duel : quel meilleur en",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: la famille eckstein a épuisé sa richesse pour obtenir son st",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: la rivière fangtine, oubliée depuis longtemps, s'écoule sous",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: le capitaine steik est parvenu à réunir suffisamment de fond",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: le culte de sigmar est toujours mécontent que le grand emper",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: le demigriffon est une variété de griffon, symbole de l'empi",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: le grand théogoniste va bientôt dispenser son enseignement à",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: le groupe est mêlé à un complot visant à assassiner le grand",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: les dirigeants les plus conservateurs du culte de manann à m",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: les gardiens du zoo ont conclu que pour remonter le moral de",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: les jeunes protégés de la baronne von culper sont traités de",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: les membres du clergé soupçonnent l'un des bibliothécaires d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: les morts sont de sortie à altdorf. certaines nuits, ils qui",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: les salles privées offrent un lieu de rencontre neutre où le",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: les shallyens organisent souvent des manifestations sur la p",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: louis rochelle manœuvre auprès des comtes électeurs par l'in",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: mauer aborde un personnage sur la schmutzplatz et tente de l",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: mauric wissen, l'infortuné propriétaire des lieux, en a asse",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: morr n'a aucun droit sur les âmes enterrées sur la colline. ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: pour le passage à l'âge adulte du baron hessinck von hessinc",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: rosanna peut mettre les aventuriers en contact avec son co-e",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: si les personnages rencontrent des difficultés avec les skav",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: un capitaine clerc de la salle capitulaire a besoin de faire",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: un certain nombre d'habitants d'ogasse ont été retrouvés noy",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: un jeune prêtre a été excommunié après son implication dans ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: un majordome réprimande un jeune valet de pied qui a oublié ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: un membre anonyme de la maison siert est prêt à payer les pe",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: un membre de la troupe est soudainement tombé malade. clause",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: un noble dépossédé a besoin de la chevalière de son arrière-",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: une connaissance aborde les personnages pour leur parler de ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: une parente éloignée d'aekold le miraculeux a appris l'exist",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: une victime de vol a demandé aux personnages de récupérer sa",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: une étrange créature volante a été aperçue de nuit autour de",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/05 - La rive sud.md",
+      "ref": "« 0 » :: wolfgardt raus, le nouveau valet de chambre en chef du domai",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: bien que les égouts à ciel ouvert soient un endroit pratique",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: ce bas-fond s'est développé en plusieurs siècles par-dessus ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: d'après la rumeur, la cabine d'ormil contient un coffre qui ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: en réalité, l'île est contrôlée par le chef de guerre qui a ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: gorrum a accepté un contrat pour willi pick (voir p. 36) : i",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: jeorgie rumster est en contact avec un membre de la guilde d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: katya et heidi sont des agents de la lapin. elles prennent n",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: klove a le privilège d'être le seul prêtre de borchbach reco",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: l'une des organisations qui emploient le plus de pigeons voy",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: la jeune katya vares est passionnée de sémaphores. malheureu",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: lachs, un homme énergique mais corpulent, essaye de développ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: le conseil sert de jury pour les crimes commis à metallschla",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: le quartier fait face à une série de disparitions, et les in",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: les ingénieurs impériaux ont emprunté beaucoup de leurs proj",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: les poissons sont toujours à la recherche de gros bras pour ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: quand des morceaux de venaison étrangement larges commencent",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/06 - Le Quartier est.md",
+      "ref": "« 0 » :: sur la ligne de production toujours en mouvement, les artisa",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: andreas lestadt souffre d'une obsession étrange : il veut mo",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: anurion souhaite rassembler dans son jardin toutes les espèc",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: beaucoup de sorciers aimeraient que la pratique du duel soit",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: berentzen schnapps est un chevalier du soleil flamboyant qui",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: certains marchands sont également usuriers, et accordent des",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: chaque année, un concours mortel est organisé le jour du far",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: dans un coin du cimetière se trouvent plusieurs rangées de p",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: des documents judiciaires politiquement sensibles détaillent",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: des gémissements vraiment effrayants émanent de sous le quai",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: des personnages roublards sont engagés pour passer à tabac d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: heinroth schnelling, un tueur à gages appartenant à l'un des",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: il existe un accord professionnel entre le poste de luitpold",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: la dernière récolte de mystracine a été mauvaise, et les tra",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: la loge souhaite obtenir le soutien du conseiller de grandma",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: la rumeur circule selon laquelle la production actuelle du m",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: le couple connaît un contrebandier du quartier d'elfeville, ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: le groupe est engagé pour récupérer une cache de marchandise",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: le marktag, les halflings de haffenstadt ont la primeur des ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: les jeunes débauchés et leurs suites de flagorneurs ont pour",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: les quatre saisons ont besoin d'un nouveau scribe pour les a",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: myrtille a de lourdes dettes de jeu à payer. afin de gagner ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: pendant que vous êtes sous l'influence de l'alcool, vous bén",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: pivoine s'intéresse de près à l'un des personnages pour le c",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: plusieurs maîtres de guilde influents craignent que l'allian",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: pour les personnages qui chercheraient à se faire un nom en ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: primevère baienoire vend des breloques et des portebonheur s",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: reik et talabec ont une caisse particulièrement gênante qu'i",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: si les personnages veulent être admis dans le temple, ils de",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: un associé des personnages entend l'appel . il tente de se r",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: un client a commandé le légendaire bleu de grandmaman, dont ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: un combat de lutte illicite doit avoir lieu derrière le gymn",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: un meurtre a eu lieu dans l'enceinte du collège. les astroma",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: vogelin reçoit une livraison de morues empaquetées dans des ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/07 - La Ville Nord.md",
+      "ref": "« 0 » :: étant donné que la seule chose intéressante à propos de cett",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/08 - La Cite souterraine.md",
+      "ref": "« 0 » :: d'après la rumeur, les possessions les plus précieuses de no",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/08 - La Cite souterraine.md",
+      "ref": "« 0 » :: gaspar a des loyautés conflictuelles. il a une relation étab",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/08 - La Cite souterraine.md",
+      "ref": "« 0 » :: les nains sont très fiers de leur ingénierie, surtout quand ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/09 - Au-dela des murs.md",
+      "ref": "« 0 » :: l'esprit du professeur brustellin est en paix, mais pas celu",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/09 - Au-dela des murs.md",
+      "ref": "« 0 » :: le champ d'artillerie est orienté de telle sorte que les vis",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/09 - Au-dela des murs.md",
+      "ref": "« 0 » :: les ogres en visite à altdorf aiment particulièrement assist",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/09 - Au-dela des murs.md",
+      "ref": "« 0 » :: une série de catastrophes a affecté trois fosses à argile su",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: découvrir des complots contre karl franz",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: découvrir les manœuvres politiques des nobles du reikland et",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: déjouer les plans des ennemis de l'empire",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: enquêter et empêcher les cultes maléfiques d'infiltrer la co",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: estimer les forces et le déploiement des armées de l'empire ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: faire attention aux signes avant-coureurs d'une trahison de ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: immanuel-ferrand holswig schliestein (voir p. 20)",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: influencer les politiques impériales, soutenir les intérêts ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: le graf liepmund holzkrug, commandant de la chambre noire (v",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: le mouvement révolutionnaire",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: les extrémistes sigmarites et ulricains",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: les menaces à l'unité de l'empire, surtout de la part du cul",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: les positions anti-magie du culte de sigmar",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: les tensions dans la chambre noire",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: protéger le reikland des révolutions, coups d'état, et tenta",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: réunir des informations commerciales et politiques pour s'as",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: surveiller et contrer les progrès des humains",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: surveiller les menaces à l'unité impériale, surtout dans les",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: surveiller les progrès des humains, et les empêcher si néces",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/10 - L'Espionnage a Altdorf.md",
+      "ref": "« 0 » :: trouver l'auteur des 13 volumes du nouvel apocryphe, des liv",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/11 - Cultes interdits et groupes extremistes.md",
+      "ref": "« 0 » :: certains membres de l'œil flétri font partie de la terrible ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/11 - Cultes interdits et groupes extremistes.md",
+      "ref": "« 0 » :: conformément au pacte établi avec tzeentch, le culte fait ho",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/11 - Cultes interdits et groupes extremistes.md",
+      "ref": "« 0 » :: festus lui-même a une base dans les égouts à ciel ouvert du ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/11 - Cultes interdits et groupes extremistes.md",
+      "ref": "« 0 » :: le duc berndt wechsler veut compléter sa collection de tabat",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/11 - Cultes interdits et groupes extremistes.md",
+      "ref": "« 0 » :: quand un incendie se déclenche dans la bibliothèque de veren",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/11 - Cultes interdits et groupes extremistes.md",
+      "ref": "« 0 » :: salli spaak était une actrice et courtisane de renom qui tra",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aldorf la Couronne de l'Empire/11 - Cultes interdits et groupes extremistes.md",
+      "ref": "« 0 » :: un jet de dés a poussé le groupe à rendre ses activités publ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/02 - Si un regard pouvait tuer.md",
+      "ref": "« 0 » :: 50 75 points chacun pour une bonne interprétation.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/02 - Si un regard pouvait tuer.md",
+      "ref": "« 0 » :: le grausee est certainement hanté.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/02 - Si un regard pouvait tuer.md",
+      "ref": "« 0 » :: payer les strigany 1 pistole par tête pour qu'ils les laisse",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/02 - Si un regard pouvait tuer.md",
+      "ref": "« 0 » :: thulgrim a disparu peu de temps après que les personnages on",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/02 - Si un regard pouvait tuer.md",
+      "ref": "« 0 » :: toutes les créatures sensibles se trouvant dans un rayon de ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/03 - pour etoffer un peu.md",
+      "ref": "« 0 » :: les personnages ont pu être engagés par des intérêts nains d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/03 - pour etoffer un peu.md",
+      "ref": "« 0 » :: rutger reuter pourrait proposer aux personnages de les emmen",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/04 - Ca fait beaucoup de Traits !.md",
+      "ref": "« 0 » :: attaques gratuites. le basilic possède les traits morsure +7",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/04 - Ca fait beaucoup de Traits !.md",
+      "ref": "« 0 » :: bestial (wfjdr, page 338). le basilic fuit le feu et gagne u",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/07 - _GoBack.md",
+      "ref": "« 0 » :: 20 points pour s'être occupé des villageois enragés à l'exté",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/07 - _GoBack.md",
+      "ref": "« 0 » :: dix bouteilles de tonique digestif.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/07 - _GoBack.md",
+      "ref": "« 0 » :: le jabberslythe doit avoir été tué.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/07 - _GoBack.md",
+      "ref": "« 0 » :: un petit morceau de racine de terre (2 doses).",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/09 - Demarrer l'aventure.md",
+      "ref": "« 0 » :: armure 3 (wfjdr, page 338). bien que cela n'ait rien de très",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/09 - Demarrer l'aventure.md",
+      "ref": "« 0 » :: klara kellner et l'auberge-relais pourraient aisément être a",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/09 - Demarrer l'aventure.md",
+      "ref": "« 0 » :: les personnages auraient pu arriver à gotheim pour d'autres ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/10 - COEUR DE VERRE.md",
+      "ref": "« 0 » :: 5 px pour chaque indice découvert dans la section éloge funè",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/10 - COEUR DE VERRE.md",
+      "ref": "« 0 » :: c'était un soldat de l'armée régulière d'altdorf, qui a rejo",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/10 - COEUR DE VERRE.md",
+      "ref": "« 0 » :: il manque un objet à l'arrière de l'appareil, relié aux cadr",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/10 - COEUR DE VERRE.md",
+      "ref": "« 0 » :: il peut convaincre gunther abend, le patron de l'auberge de ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/10 - COEUR DE VERRE.md",
+      "ref": "« 0 » :: le caporal louait une chambre au deuxième étage de l'auberge",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/10 - COEUR DE VERRE.md",
+      "ref": "« 0 » :: le caporal était connu pour boire plus que de raison.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/10 - COEUR DE VERRE.md",
+      "ref": "« 0 » :: si l'acte était particulièrement scandaleux, digne de mentio",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/12 - Demarrer l'Aventure.md",
+      "ref": "« 0 » :: l'un des personnages est un vieil ami du caporal vielfrass, ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/13 - _GoBack.md",
+      "ref": "« 0 » :: le caporal tylo vielfrass est un pnj aisément remplaçable, v",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/14 - MASSACRE A SPITTLEFELD.md",
+      "ref": "« 0 » :: 50 à 75 points chacun pour une bonne interprétation de leur ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/14 - MASSACRE A SPITTLEFELD.md",
+      "ref": "« 0 » :: les drexler, qui prétendent être bien plus riches qu'ils ne ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/14 - MASSACRE A SPITTLEFELD.md",
+      "ref": "« 0 » :: les personnages sont récemment arrivés à ubersreik et ont be",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/14 - MASSACRE A SPITTLEFELD.md",
+      "ref": "« 0 » :: malheureusement, gino est beaucoup trop grand pour passer da",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/14 - MASSACRE A SPITTLEFELD.md",
+      "ref": "« 0 » :: ça te prend vite, tu vois. ça te brûle direct en une fractio",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/16 - Comment commencer l'aventure.md",
+      "ref": "« 0 » :: le miroir dans lequel regarde maria montre bien son reflet, ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/16 - Comment commencer l'aventure.md",
+      "ref": "« 0 » :: les personnages sont embauchés par dame emmanuelle nacht pou",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/17 - _GoBack.md",
+      "ref": "« 0 » :: annika passerine, au lieu d'être une ancienne boxeuse, pourr",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/18 - D'Appats et de Sorciers.md",
+      "ref": "« 0 » :: 10 points pour s'être occupé des chasseurs de primes.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/18 - D'Appats et de Sorciers.md",
+      "ref": "« 0 » :: un personnage peut effectuer un test opposé de pistage contr",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/18 - D'Appats et de Sorciers.md",
+      "ref": "« 0 » :: wilhelm jardich, un médecin nordlander qui est devenu trafiq",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/20 - Debuter l'Aventure.md",
+      "ref": "« 0 » :: les personnages sont engagés par un personnage de l'ombre qu",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/20 - Debuter l'Aventure.md",
+      "ref": "« 0 » :: lorsque baumann s'échappe par les toits, elle crie à la foul",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/21 - _GoBack.md",
+      "ref": "« 0 » :: jannik fanger et ingrid wenig pourraient facilement être éch",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/22 - Les coupables.md",
+      "ref": "« 0 » :: 50 à 75 points chacun pour avoir passé un bon moment de jeu ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/22 - Les coupables.md",
+      "ref": "« 0 » :: des apparences suspectes",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/22 - Les coupables.md",
+      "ref": "« 0 » :: une vieille connaissance",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/24 - Comment commencer l'Aventure.md",
+      "ref": "« 0 » :: les personnages sont amis ou alliés avec le cocher attaqué. ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/24 - Comment commencer l'Aventure.md",
+      "ref": "« 0 » :: leur rappeler qu'andreas s'est enfui à altdorf et leur fourn",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Aventures a Ubersreik/26 - _GoBack.md",
+      "ref": "« 0 » :: elicha hochs pourrait être échangée contre johanna stiegler ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/02 - Revisions des regles d'incantation.md",
+      "ref": "« 0 » :: entraînement (voir wfjdr, page 197)",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/02 - Revisions des regles d'incantation.md",
+      "ref": "« 0 » :: incantation critique : si le sort inflige des dégâts, il inf",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/02 - Revisions des regles d'incantation.md",
+      "ref": "« 0 » :: la surincantation peut être employée pour augmenter la porté",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/02 - Revisions des regles d'incantation.md",
+      "ref": "« 0 » :: transformer une incantation imparfaite majeure en une incant",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/03 - Travaux arcaniques.md",
+      "ref": "« 0 » :: l'interprétation des rêves ou les visions prophétiques reçue",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/03 - Travaux arcaniques.md",
+      "ref": "« 0 » :: le buveur doit d'abord faire un test de résistance à l'alcoo",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/03 - Travaux arcaniques.md",
+      "ref": "« 0 » :: mystique",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/03 - Travaux arcaniques.md",
+      "ref": "« 0 » :: temps de recharge : le temps de recharge est réduit de 1, ju",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/05 - Chamon - Domaine du Metal.md",
+      "ref": "« 0 » :: est considéré comme surchargé de deux paliers supplémentaire",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/06 - Ghyran - Domaine de la Vie.md",
+      "ref": "« 0 » :: une rivière asséchée recommence à couler.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/07 - Azyr - Domaine des Cieux.md",
+      "ref": "« 0 » :: connaître le moment le plus opportun pour une action future.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/08 - Ulgu - Domaine des Ombres.md",
+      "ref": "« 0 » :: aucun son ne s'échappe de la zone d'effet, mais ils peuvent ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/08 - Ulgu - Domaine des Ombres.md",
+      "ref": "« 0 » :: augmentez ou réduisez le charme de la cible ; ajustez sa soc",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/09 - Shyish - Domaine de la Mort.md",
+      "ref": "« 0 » :: ordonnez à toutes les cibles qui échouent à un test opposé d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/10 - Aqshy - Domaine du Feu.md",
+      "ref": "« 0 » :: si vous obtenez +4 dr lors de votre test d'incantation, vous",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/10 - Aqshy - Domaine du Feu.md",
+      "ref": "« 0 » :: une marmite de nourriture devient extrêmement épicée. la man",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/11 - Ghur - Domaine de la Bete.md",
+      "ref": "« 0 » :: ajouter +1 état empêtré supplémentaire.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/11 - Ghur - Domaine de la Bete.md",
+      "ref": "« 0 » :: aspergez un personnage ou un objet d'une odeur facilement id",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/11 - Ghur - Domaine de la Bete.md",
+      "ref": "« 0 » :: choisir 1 trait de créature optionnel ;",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/11 - Ghur - Domaine de la Bete.md",
+      "ref": "« 0 » :: sorcier d'ambre ou elfique : demigriffon, dragon, hippogriff",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/12 - Artefacts magiques.md",
+      "ref": "« 0 » :: il doit avoir accès au rituel qu'il souhaite lier, grâce à s",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/12 - Artefacts magiques.md",
+      "ref": "« 0 » :: il doit avoir accès au sort qu'il souhaite lier, grâce à sa ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/12 - Artefacts magiques.md",
+      "ref": "« 0 » :: lancer des sorts : les pierres de pouvoir peuvent être utili",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/12 - Artefacts magiques.md",
+      "ref": "« 0 » :: un grimoire contient généralement quatre sorts ou un rituel.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/13 - Creatures magiques.md",
+      "ref": "« 0 » :: les élémentaires incarnés : des créatures puissantes et viol",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/14 - Les Vents a l'oeuvre.md",
+      "ref": "« 0 » :: attraction : l'impossibilité d'évacuer la ligne de force con",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/14 - Les Vents a l'oeuvre.md",
+      "ref": "« 0 » :: des cercles de pierre dans différents états de conservation.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/14 - Les Vents a l'oeuvre.md",
+      "ref": "« 0 » :: nexus : lorsque morrslieb est pleine, les jonctions telluriq",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/14 - Les Vents a l'oeuvre.md",
+      "ref": "« 0 » :: règles d'incantation : ceux qui lancent des sorts à proximit",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/14 - Les Vents a l'oeuvre.md",
+      "ref": "« 0 » :: règles d'incantation : les sorts du domaine de la vie et de ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/14 - Les Vents a l'oeuvre.md",
+      "ref": "« 0 » :: règles de la réfraction : les tests de focalisation réalisés",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les Vents de Magie/15 - Nemesis et aventures magiques.md",
+      "ref": "« 0 » :: du pouvoir : la némésis doit être capable de battre les pers",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: après une bagarre particulièrement confuse dans une taverne,",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: aromoisi langacerbe a tué trois halflings en étant soi-disan",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: bogglewort est la seule ville de l'auld styrlande qui entret",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: carla von stehlenwieder, descendante à de nombreux degrés du",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: certains halflings férus de politique ont lancé une discussi",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: glissandra grandfestin est une jeune halfling précoce origin",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: hisme a parfaitement conscience que tout son entourage cherc",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: l'abandon de consonnes. lorsque deux consonnes ou plus sont ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: l'ancien bramederrière petitnez a dû prendre une position lo",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: l'ancienne, prudence fiercœur, recrute les personnages comme",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: la demande en ouvriers ogres augmente. pour y répondre, les ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: le groupe arrive en ville avec un besoin urgent de provision",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: les cris dans les bois hurlants proviennent en réalité de ri",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: les halflings organisent l'arnaque de la chasse au snark pou",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: les moûtfriable. tandis que la majorité des habitants du moo",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: menés par le chamane spitzikk, les gobelins du clan crapaud ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/03 - GUIDE DU GRAND COMTE DU MOOTLAND.md",
+      "ref": "« 0 » :: soutenir que chaque semaine est la semaine du festival du co",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/04 - Les nains imperiaux.md",
+      "ref": "« 0 » :: après avoir perdu sa dernière équipe contre un culte de serv",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/04 - Les nains imperiaux.md",
+      "ref": "« 0 » :: deux expéditions couvertes par une police d'assurance entre ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/04 - Les nains imperiaux.md",
+      "ref": "« 0 » :: thyk prépare une expédition vers les ruines de karak thulgro",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
+      "ref": "« 0 » :: balafre-d'argent (agrilnark) ingénieurs",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
+      "ref": "« 0 » :: des rivaux détestés des personnages arrivent à l'auberge sou",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
+      "ref": "« 0 » :: karga svensson a fait un rêve dans lequel elle se promenait ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
+      "ref": "« 0 » :: le graf von jungfreud a envoyé une missive au roi thuringar,",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
+      "ref": "« 0 » :: les personnages approchent de l'auberge de la croix d'argent",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
+      "ref": "« 0 » :: les personnages ont enfin échappé aux gobelins de la lune sa",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
+      "ref": "« 0 » :: les personnages ont signé un contrat pour partir à l'aventur",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/05 - Guide de Karak Azgaraz.md",
+      "ref": "« 0 » :: un grand groupe de pillards orcs de la gueule rouge attaque ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: au-dessus du lac solderso, sur un éperon rocheux, se trouve ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: capitale : la maison elwyn est nomade et n'a pas de capitale",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: capitale : le défilé de granite",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: capitale : tour de se-athil",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: dirigeant : le grand conseil de tor lithanel, pour le compte",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: la reine marrisith a prédit une gigantesque incursion du cha",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: le lignage des enfants de la ville (toriour) : les descendan",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: les conseillers citadins de kaïa l'ont avertie que des march",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: les middenlanders racontent que des dragons vivent dans les ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: les éonirs offrent parfois à leurs visiteurs une coupe d'eau",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: passer par les racines du monde permet aux voyageurs de se d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/06 - Guide de la Laurelorn.md",
+      "ref": "« 0 » :: plusieurs hommes-arbres endormis ont pris racine dans le mar",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 1/08 - Annexe II.md",
+      "ref": "« 0 » :: karak azgaraz : l'exploration d'une forteresse naine qui, mê",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Les archives de l'Empire volume 2/05 - L'hospice.md",
+      "ref": "« 0 » :: le fidèle serviteur d'un noble disparu engage le groupe pour",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/14 - _GoBack.md",
+      "ref": "« • » :: infliger bf + dr dégâts en utilisant votre lancer de force p",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Livre de base version corrigee/41 - Benedictions.md",
+      "ref": "« • » :: portée : +6 mètres • cibles : +1",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/01 - MIDDENHEIM.md",
+      "ref": "« 0 » :: avant le règne de magnus le pieux, l'empire était profondéme",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/01 - MIDDENHEIM.md",
+      "ref": "« 0 » :: les enfants de membres actuels.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/01 - MIDDENHEIM.md",
+      "ref": "« 0 » :: protéger et obéir au graf todbringer, à sa famille et à ses ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: 1 pistole par ligne pour 50 copies sur du papier de basse qu",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: bertha est une middenheimer honnête qui refuse de payer pour",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: cerithadell s'interroge souvent sur les propriétés sonores q",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: de temps à autre, la fosse reçoit un animal plus exotique, c",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: gerhard a récemment été recruté par le culte du crâne écarla",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: la clientèle du rat noyé est issue de la lie de la société d",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: la guilde n'a aucun caractère particulièrement officiel, et ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: la joute verbale est principalement associée aux classes les",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: la rumeur veut que bruno et ses employés travaillent comme i",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: le véritable nom de lukas est duri drumnisson, autrefois un ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: les cultistes du sceptre de jade sont généralement trop dévo",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: les drapiers financent de nombreuses unités militaires de mi",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: les jeunes femmes de middenheim ont commencé à porter un nou",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: les nobles helstein ont ajouté plus de soldats armés à leur ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: les personnages de passage peuvent trouver que hettie est un",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: leur probabilité de trouver des composants est réduite de mo",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: luitwin est obnubilé par l'idée de découvrir ce que le graf ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: pour l'instant, brunhilde a eu la chance de ne pas attirer l",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: rudolf et sigrid comptent parmi les quelques criminels profe",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: selon la légende, taal aurait promis à ulric que le fauschla",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: un jeune membre de la famille eisenhal a découvert un étrang",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: une meute de goules s'est récemment installée dans les catac",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/02 - Guide du visiteur.md",
+      "ref": "« 0 » :: yarrick est un nain avide qui vit dans la crainte d'une révo",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/05 - Le Grand-Duche.md",
+      "ref": "« 0 » :: la reine marrisith de la laurelorn a pressenti un potentiel ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/05 - Le Grand-Duche.md",
+      "ref": "« 0 » :: les elfes persistent à trouver répugnante l'industrie forest",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/05 - Le Grand-Duche.md",
+      "ref": "« 0 » :: tout le monde ne fait pas confiance à la griffe rouge. de no",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/06 - Les Petits Rois.md",
+      "ref": "« 0 » :: bien entendu, la véritable identité de l'homme est un sujet ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/06 - Les Petits Rois.md",
+      "ref": "« 0 » :: herla a entendu dire que la mystracine pouvait entraîner un ",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/06 - Les Petits Rois.md",
+      "ref": "« 0 » :: il y a peu, une adolescente du nom de hetta grunbur a commen",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/06 - Les Petits Rois.md",
+      "ref": "« 0 » :: ulrich schutzmann, le commandant de la garde, n'a aucune idé",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/08 - ANNEXE I.md",
+      "ref": "« 0 » :: a (athlétisme) = 2 par athlète et 1 par brute ou nain",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/08 - ANNEXE I.md",
+      "ref": "« 0 » :: le jeu se joue entre 2 équipes de 11 joueurs ; 2 joueurs sup",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    },
+    {
+      "fichier": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc/08 - ANNEXE I.md",
+      "ref": "« 0 » :: tout personnage joueur impliqué dans le match.",
+      "occurrence": 1,
+      "lot": "#1820 R4",
+      "date": "2026-09-21"
+    }
+  ]
+}
