@@ -150,6 +150,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `ViewControls` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U |  |
 | `DrBar` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
 | `Coins` |  |  |  |  | U |  | U | U | U | U | U |  | U |  | U |  |
+| `jouerLaSuiteDuCoup / SuiteDeCoup / SuiteDeDefense` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 
 ## Primitives jamais adoptées par un système déclaré
 
@@ -206,4 +207,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 250b523f4be619d7d80af3c49ca0349c186557bb (1820 fichiers, 2 dossiers) corps: a160372f52cac0bd2d15e64bb28a40f29e2c591a -->
+<!-- sources-empreinte: c3a78696c1edea0563af4601d64e86576e450660 (1820 fichiers, 2 dossiers) corps: 821ac4427ade52af328902db61a066bf40af4c79 -->
