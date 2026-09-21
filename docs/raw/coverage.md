@@ -17,13 +17,12 @@
 - **Cœur 5e** : ✅ 0 traités par une fiche · 📖 0 transcrits par un catalogue seul (jamais traités) · 🟡 0 effleurés · ⬜ 12 trous, sur 12 chapitres-règles (hors artefacts OCR).
 - **Livres sans cœur déclaré** : ✅ 48 traités par une fiche · 📖 45 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous, sur 95 chapitres-règles (hors artefacts OCR).
 
-Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3899 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2495 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **711 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅0·📖0·🟡0·⬜12 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
+Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3875 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2471 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **711 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅0·📖0·🟡0·⬜12 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | VERSION ORIGINALE | ➖ hors-règle | « VERSION ORIGINALE » / « TRADUCTION FRANÇAISE » — crédits d'édition, aucune règle |
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | *(artefact OCR)* | ➖ | |
@@ -244,7 +243,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | Cover | ➖ hors-règle | couverture : la seule accroche « A GRIM WORLD OF PERILOUS ADVENTURE » (3 lignes) |
 | 02 | Contents | ➖ hors-règle | sommaire (tables de renvois de pages) |
 | 03 | Credits | ➖ hors-règle | crédits d'édition |
@@ -722,7 +720,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | CREDITS | 📖 | 1 (4e/combat.md ×1) |
 | 02 | INTRODUCTION | 📖 | 2 (4e/competences.md ×2) |
 | 03 | LES CHEVALIERS DE L'EMPIRE | ✅ | 3 (4e/competences.md ×3) |
@@ -829,7 +826,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | Contes de sorcellerie | ➖ hors-règle | histoire de la magie (cadre, prose pure) ; ch.15 némésis = PNJ nommés STATBLOCKÉS → catalogue-creatures (comme PDT) ; 2-14 = règles/data |
 | 02 | Revisions des regles d'incantation | ✅ | 61 (4e/magie.md ×61) |
 | 03 | Travaux arcaniques | ✅ | 128 (4e/competences.md ×76) |
@@ -855,7 +851,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | LES GRANDES PROVINCES | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 02 | CLANS HALFLING DU REIKLAND | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 03 | GUIDE DU GRAND COMTE DU MOOTLAND | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
@@ -879,7 +874,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | Mercenaires ogres dans le Vieux Monde | 📖 | catalogue (catalogue-*.md) |
 | 02 | Les ogres | ✅ | 51 (4e/combat.md ×43) |
 | 03 | Des signes dans le ciel | 📖 | catalogue (catalogue-*.md) |
@@ -982,7 +976,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | MIDDENHEIM | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 02 | Guide du visiteur | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 03 | Au-dela des murs | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
@@ -1091,7 +1084,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | La Couronne de l'Empire | ➖ hors-règle | |
 | 02 | Le gouvernement d'Altdorf | ➖ hors-règle | |
 | 03 | Les gangs d'Altdorf | ➖ hors-règle | |
@@ -1167,7 +1159,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | TROIS EXPEDITIONS | ✅ | 3 (4e/combat.md ×3) |
 | 02 | Griffon | ✅ | 8 (4e/combat.md ×5) |
 | 03 | Dragon | 📖 | catalogue (catalogue-*.md) |
@@ -1251,7 +1242,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | La Mer des Griffes | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
 | 02 | La Bretonnie et le Wasteland | ✅ | 4 (4e/magie.md ×4) |
 | 03 | La cote du Nordland | ➖ hors-règle | gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles |
@@ -1305,7 +1295,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | INTRODUCTION | ➖ hors-règle | |
 | 02 | Commentaires des invites | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 03 | CHAPITRE 1 - Easter eggs | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
@@ -1404,7 +1393,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | PREFACE - UN PEU D'HISTOIRE | ➖ hors-règle | |
 | 02 | Commentaires des Auteurs | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
 | 03 | CHAPITRE 1 - EASTER EGGS | ➖ hors-règle | Chapitres-scénario explicites des compagnons MIXTES (le reste de ces livres = règles, couvertes). |
@@ -1551,7 +1539,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | introduction | ➖ hors-règle | |
 | 02 | Si un regard pouvait tuer | ➖ hors-règle | |
 | 03 | pour etoffer un peu | ➖ hors-règle | |
@@ -1583,7 +1570,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | Avant-propos | ➖ hors-règle | |
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | Une nuit agitee aux Trois Plumes | ➖ hors-règle | |
@@ -1774,7 +1760,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | Chapitre 1 - On recherche - aventuriers courageux | ➖ hors-règle | |
 | 02 | Chapitre 2 - Erreur sur la personne | ➖ hors-règle | |
 | 03 | Chapitre 3 - Le coeur de l'Empire | ➖ hors-règle | |
@@ -1862,7 +1847,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | PREFACE - Un peu d'histoire | ➖ hors-règle | |
 | 02 | INTRODUCTION | ➖ hors-règle | |
 | 03 | CHAPITRE 1 - De Bogenhafen a Altdorf | ➖ hors-règle | |
@@ -1888,7 +1872,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
-| 00 | Index | ➖ hors-règle | |
 | 01 | Avant-propos | ➖ hors-règle | |
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | En route vers Middenheim | ➖ hors-règle | |
@@ -2034,4 +2017,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: 813265362e0458475ae6d846eb9cc0a450a05c28 (372 fichiers, 20 dossiers) corps: da8941c2c62b228ce8301a079318c36fe7814832 -->
+<!-- sources-empreinte: c1e4a1c88da607018d07ef3c3b721e44a11a14ab (357 fichiers, 20 dossiers) corps: a1d1bb784e08875de33fb3a2ee4079695d9e75fd -->
