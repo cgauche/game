@@ -23,7 +23,9 @@ Your Character needs to work well with the other PCs and fit into the game the G
 
 II
 
-<span id="page-22-0"></span>**A)** Choose from **Human**, **Dwarf**, **Halfling**, **High Elf**, or **Wood Elf** *or*
+# <span id="page-22-0"></span>**1. SPECIES**
+
+**A)** Choose from **Human**, **Dwarf**, **Halfling**, **High Elf**, or **Wood Elf** *or*
 
 Roll on the **Species Table**, and gain an extra point of Fortune if you accept the first result.
 
@@ -72,9 +74,9 @@ Roll on the **Species Table**, and gain an extra point of Fortune if you accept 
 | 46-47 | Noble Blood         | 96-97 | Very Strong         |
 |       |                     |       |                     |
 
-# **CHARACTER SHEET EXPLAINED**
+# <span id="page-23-0"></span>**CHARACTER SHEET EXPLAINED**
 
-<span id="page-23-0"></span>This sheet is where you keep track of your Character's abilities, equipment and more. Characteristics and Skills are often used to find out how well you perform an action. You will roll the dice (the two ten-sided dice known as D100, see page 6) and if the result is equal to or lower than the relevant Skill, your action succeeds. **The higher the value of your Skill, the easier it is to succeed**.
+This sheet is where you keep track of your Character's abilities, equipment and more. Characteristics and Skills are often used to find out how well you perform an action. You will roll the dice (the two ten-sided dice known as D100, see page 6) and if the result is equal to or lower than the relevant Skill, your action succeeds. **The higher the value of your Skill, the easier it is to succeed**.
 
 Other factors such as the difficulty of the task impact this too (see page 130) but for now it's enough to know that your Skill number is the basic chance of succeeding at a Challenging task.
 
@@ -824,7 +826,7 @@ Priests have a slightly easier time, reflecting the fact that their Blessings an
 
 See **Chapter 7: Religion and Belief** for details of Blessings, and how to work Miracles.
 
-# **AND BACKGROUND**
+# **6. PERSONALITY AND BACKGROUND**
 
 ## **Who are You?**
 

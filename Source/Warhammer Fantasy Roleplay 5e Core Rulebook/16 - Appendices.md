@@ -233,7 +233,9 @@ In most cases, you wake up after a few hours of sleep, though a loud noise or ot
 
 If you spend Fortune to remove *Unconscious* but have not resolved the cause of the incapacitation, you fall *Unconscious*  again at the end of the Round.
 
-# **APPENDIX V Skills List**
+# **APPENDIX V**
+
+# **Skills List**
 
 | Skill                | Ch.       | Tp. | Description                            |
 |----------------------|-----------|-----|----------------------------------------|

@@ -81,7 +81,9 @@ This shows the Status of your current Career Level. As long as you have at least
 
 ## **ADVISER**
 
-**Courtier Class:** Dwarf, Halfling, High Elf, Human, Wood Elf *Wise and well-informed, you provide insight and guidance to your employer.*
+**Courtier Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
+
+*Wise and well-informed, you provide insight and guidance to your employer.*
 
 *'Sigmar votes with Reikland for a total of four, and Leopold has firm friends in Mootland and Averheim, making six. Given Ar-Ulric will vote for Middenheim, you'd need all remaining votes to secure the seat of emperor. It's unlikely the Imperial seat will return to Nuln while the House of Third Wilhelm flourishes. Best hope for a daughter, Your Grace. A marriageable one.'*
 
@@ -130,6 +132,10 @@ Long years at court or in service to a lesser noble can pave the way to the loft
 Advisers are wily enough to know when it is best to leave a patron, whether temporarily or permanently. They may join a group of adventurers to seek a new master, or gather information to benefit their current one.
 
 Playing as an Adviser is an opportunity to access the corridors of power, read political and social situations, and use your considerable acumen to make the right call.
+
+## **AGITATOR**
+
+**Burgher Class:** Dwarf, Halfling, Human
 
 *Charismatic and articulate, you champion your cause and try to change the world.*
 
@@ -248,6 +254,8 @@ Pharmacist
 **Trappings:** Commission Papers, Large Workshop
 
 (Apothecary)
+
+## **ARTISAN**
 
 **Burgher Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
 
@@ -433,6 +441,8 @@ Schemer
 
 **Trappings:** Library (Law), Quality Robes, Seal of Office
 
+## **BEGGAR**
+
 **Burgher Class:** Dwarf, Halfling, Human
 
 *Street-smart, you make a living from the charity of others using persuasion and charm.*
@@ -493,9 +503,11 @@ Those tough and clever enough to survive may gather bands of wretches to beg on 
 
 Playing a Beggar lets you see the Old World from beneath society's notice. You are effectively invisible to most people, allowing you to witness what happens on the streets or gather information from the local underclass. Few Characters are better at scraping a living in the direst circumstances, making you a surprisingly valuable companion.
 
-**BOATMAN**
+## **BOATMAN**
 
-**Riverfolk Class:** Dwarf, Halfling, High Elf, Human *You ply the dangerous waters of the Old World, transporting people, goods, and the latest news.*
+**Riverfolk Class:** Dwarf, Halfling, High Elf, Human
+
+*You ply the dangerous waters of the Old World, transporting people, goods, and the latest news.*
 
 *'The Stir is no gentle river, lads. Under the placid surface the current twists, battering barges like driftwood. Mind your oars, trim your sails, and keep your wits. Should a man fall overboard downstream of Wurtbad they'll make a fine morsel for the stirpike that haunt those waters.'*
 
@@ -623,6 +635,8 @@ Shot
 
 **Trappings:** Draught Horse and Cart, 4 Pairs of Manacles
 
+## **CAVALRYMAN**
+
 **Warrior Class:** High Elf, Human, Wood Elf
 
 *A dashing and fearless rider, you bring speed, versatility, and skill-at-arms to the battlefield.*
@@ -685,7 +699,9 @@ War Leader **Trappings:** Sash
 
 # **CHARLATAN**
 
-**Rogue Class:** Halfling, High Elf, Human *Unscrupulous and charming, you separate fools from their money; thankfully, there is no shortage of fools…*
+**Rogue Class:** Halfling, High Elf, Human
+
+*Unscrupulous and charming, you separate fools from their money; thankfully, there is no shortage of fools…*
 
 *'I've carried this across countless leagues from the highest towers of the elves. See how it sparkles in the moonlight? Only magic casts this inner light! Faced with penury, I must sadly part with it. For such power, my price is but a trifle!'* — Wolmar Rotte, Con Artist
 
@@ -805,7 +821,9 @@ Read/Write
 
 # **DUELLIST**
 
-**Courtier Class:** Dwarf, High Elf, Human *Your blade is an instrument of justice, bound by long tradition and employed with deadly precision.*
+**Courtier Class:** Dwarf, High Elf, Human
+
+*Your blade is an instrument of justice, bound by long tradition and employed with deadly precision.*
 
 *'There was a loudmouth in the inn, too many ales, throwing out insults, said he was Baron Whoever's second son. Cool as you like, this other toff walked up to him, said something very quietly and the next morning they're out on the common, fighting in the mist with cavalry sabres. Marvellous sight it was.'*
 
@@ -1117,6 +1135,10 @@ Warehouse
 
 for the world.
 
+## **FLAGELLANT**
+
+**Ranger Class:** Human
+
 *Just when you abandoned all hope, your suffering and the righteousness of your god saved you!*
 
 *'We scourge this flesh and spill this blood, for his Empire, in Sigmar's name!'* — Viktorina Schwefel, Flagellant
@@ -1174,6 +1196,10 @@ Traveller
 Jump Up
 
 **Trappings:** Book (Religion), Followers (including Penitents, Flagellants, and Zealots)
+
+## **GRAVE ROBBER**
+
+**Rogue Class:** Halfling, Human
 
 *You steal from the deceased to line your own pockets, always hoping the dead stay that way.*
 
@@ -1233,7 +1259,9 @@ Playing a Grave Robber lets you explore the darkest places of the Old World in s
 
 ## **GUARD**
 
-**Warrior Class:** Dwarf, Halfling, High Elf, Human, Wood Elf *Your job is simple: protect your charge and keep undesirables out.*
+**Warrior Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
+
+*Your job is simple: protect your charge and keep undesirables out.*
 
 *'Four persons and a cart, loaded with sacks and a crate. First, hand over those halberds. Ralf, Karl, Florian — unload the cart, that's an order. Names please. We'll see whether we want you in the city.'*
 
@@ -1297,7 +1325,9 @@ for Trouble
 
 **Trappings:** Breastplate, Squad of Guards
 
-## **HEDGE WITCH Peasant Class:** Human
+## **HEDGE WITCH**
+
+**Peasant Class:** Human
 
 *Wise and secretive, you guide your community using ancient magic handed down through generations.*
 
@@ -1411,6 +1441,8 @@ fingered, Sharp
 
 **Trappings:** Book (Herbs), Pony and Cart
 
+## **HUNTER**
+
 **Peasant Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
 
 *You are a tough, independent killer who makes a living trading the fur and flesh of wild creatures.*
@@ -1467,6 +1499,8 @@ Traps, Sturdy Boots and Cloak
 
 **Talents:** Etiquette (Servants), Fast Shot, Robust, Sniper **Trappings:** Hawk Mews *or* Kennel of Hunting Dogs, Riding Horse
 
+## **INVESTIGATOR**
+
 **Burgher Class:** Dwarf, Halfling, High Elf, Human
 
 *Perceptive and suspicious, you probe deep into the heart of any unsolved mystery to find answers.*
@@ -1516,6 +1550,8 @@ Playing an Investigator lets you uncover secrets others overlook. You bring prof
 **Skills:** Lore (Any One), Secret Signs (Any One) **Talents:** Acute Sense (Any One), Savant (Any One), Speedreader, Tower of Memories
 
 **Trappings:** Network of Informers, Spyglass
+
+## **KNAVE**
 
 **Rogue Class:** Halfling, High Elf, Human
 
@@ -1626,6 +1662,8 @@ Armour, Sword
 **Skills:** Lore (Any One), Secret Signs (Knightly Order) **Talents:** Inspiring, Iron Will, Read/Write, Strike to Injure **Trappings:** Large Unit of Knights or Several Small Units of Knights, Plumed Great Helm, Squire
 
 III
+
+## **LAWYER**
 
 **Academic Class:** Dwarf, Halfling, High Elf, Human
 
@@ -1753,7 +1791,11 @@ Warehouse
 
 **Trappings:** 2 Barges and 4 Wagons, Large Town Estate, 1000 GC, Quality Clothing, 2 Warehouses
 
-**Ranger Class:** Dwarf, Halfling, High Elf, Human, Wood Elf *Swift and sure-footed, nothing stops you delivering your messages on time.*
+## **MESSENGER**
+
+**Ranger Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
+
+*Swift and sure-footed, nothing stops you delivering your messages on time.*
 
 *'Borin Grodsson. I charge you to present this missive to Helgi Grumsdottir of Karak Norn. Do not shame your ancestors, stride swiftly and drink moderately.'*
 
@@ -1875,6 +1917,8 @@ Playing a Miner lets you tackle dangers that would stop others in their tracks. 
 
 **Trappings:** Crew of Miners, Writing Kit
 
+## **MYSTIC**
+
 **Peasant Class:** High Elf, Human, Wood Elf
 
 *You have a talent for divining the future, or for convincing others you can…*
@@ -1991,6 +2035,10 @@ h **Scion — Gold 1**
 
 **Talents:** Coolheaded, Iron Will, War Leader, Wealthy **Trappings:** 500 GC, Jewellery worth 500 GC, Province
 
+## **NUN**
+
+**Academic Class:** Human
+
 *You are devoted to the service of your deity, vowing to live dedicated solely to your faith.*
 
 *'They came thinking it a simple task to slay a few poor, hapless souls and take our relics. I ask Morr not to judge too harshly the bandits we bury today, as Sister Hild has already inflicted punishment enough.'*
@@ -2051,7 +2099,9 @@ Strong-minded
 
 **Trappings:** Religious Order
 
-**OUTLAW Rogue Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
+## **OUTLAW**
+
+**Rogue Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
 
 *You prey upon travellers, extracting a toll from the vulnerable and the unsuspecting.*
 
@@ -2167,7 +2217,9 @@ Always on the move, Pedlars take naturally to the adventuring life in search of 
 
 **Trappings:** Draught Horse and Wagon, Goods worth at least 3d10 Shillings, 4d10 Shillings
 
-**PHYSICIAN Academic Class:** Dwarf, Halfling, High Elf, Human
+## **PHYSICIAN**
+
+**Academic Class:** Dwarf, Halfling, High Elf, Human
 
 *With a strong stomach and steady hand, you practise the art of medicine.*
 
@@ -2224,6 +2276,8 @@ Nimble-fingered, Surgery
 Strong-minded
 
 **Trappings:** Courtly Attire, Letter of Appointment
+
+## **PILOT**
 
 **Riverfolk Class:** Dwarf, Halfling, High Elf, Human
 
@@ -2291,7 +2345,9 @@ Trouble, Pilot
 
 **Trappings:** Boathand, Small Riverboat
 
-**PIT FIGHTER Warrior Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
+## **PIT FIGHTER**
+
+**Warrior Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
 
 *You fight for money, for glory, and for the entertainment of the masses.*
 
@@ -2352,6 +2408,10 @@ Playing a Pit Fighter lets you dominate close-quarters combat through toughness,
 Reaction Strike
 
 **Trappings:** Quality Helmet
+
+## **PRIEST**
+
+**Academic Class:** Human
 
 *You preach the word of your god, tending to the spiritual needs of the masses.*
 
@@ -2425,7 +2485,9 @@ Playing a Priest makes you the spiritual heart of your party. You can inspire yo
 
 ## **PROTAGONIST**
 
-**Warrior Class:** Dwarf, Halfling, High Elf, Human *A strong-arm for hire, you bully, fight, and even kill for coin.*
+**Warrior Class:** Dwarf, Halfling, High Elf, Human
+
+*A strong-arm for hire, you bully, fight, and even kill for coin.*
 
 *'Remember Thommy Two Knives? I'm not saying he crossed me. I'm just saying you don't see him walking round town no more, do you?'*
 
@@ -2498,6 +2560,8 @@ Injure
 Identity
 
 **Trappings:** Disguise Kit
+
+## **RACKETEER**
 
 **Rogue Class:** Dwarf, Halfling, Human
 
@@ -2637,6 +2701,10 @@ minded
 
 III
 
+## **RIVERWARDEN**
+
+**Riverfolk Class:** Dwarf, Halfling, Human
+
 *Resolute and vigilant, you patrol the riverways in pursuit of lawbreakers and troublemakers.*
 
 *'The best patrol on the river is just past Two Tree Island. Almost nobody sails down there and the fishing is excellent.'*
@@ -2775,6 +2843,10 @@ Savant (Riverways), Waterman
 
 **Trappings:** Barge *or* Hut
 
+## **ROADWARDEN**
+
+**Ranger Class:** Halfling, Human
+
 *With a wary eye and ready weapon, you enforce the law on the Empire's dangerous highways.*
 
 *'What can I say, it's a pfennig a leg. Them's the rules. Nothing I can do about it. Perhaps you can find a different route to get your bees to Grünburg?'*
@@ -2832,6 +2904,8 @@ Playing a Roadwarden lets you bring law and order to the wilderness between sett
 Roughrider
 
 **Trappings:** Quality Hat and Cloak, Unit of Roadwardens
+
+## **SAILOR**
 
 **Riverfolk Class:** Dwarf, Halfling, High Elf, Human
 
@@ -3089,6 +3163,10 @@ Schemer
 
 **Trappings:** Hand Weapon, Fine Clothes, Servant
 
+## **SLAYER**
+
+**Warrior Class:** Dwarf
+
 *You are shame incarnate, seeking a worthy death to reclaim your lost honour.*
 
 *'We avoid them, if given the choice. They are outcasts and have no honour, only the hope of reclaiming such. Still, we'll feed them, and give them a place to rest. They are Grimnir's Chosen now…'*
@@ -3145,7 +3223,11 @@ Slayer **Trappings:** Flask of Spirits, Hand Weapon (Dwarf Axe), Tattoos
 
 Blow, Very Strong **Trappings:** Rune Axe
 
-**Riverfolk Class:** Dwarf, Halfling, High Elf, Human *You conceal and shift contraband, avoiding taxes and the authorities who would hang you from the yard arm.*
+## **SMUGGLER**
+
+**Riverfolk Class:** Dwarf, Halfling, High Elf, Human
+
+*You conceal and shift contraband, avoiding taxes and the authorities who would hang you from the yard arm.*
 
 *'Many interesting goods pass through my warehouses in Salzenmund. Yet I am simply a link in the chain, from the coast to buyers inland who would rather their purchases went unnoticed.'*
 
@@ -3325,6 +3407,8 @@ A Spy's work takes them wherever secrets are hidden. They may infiltrate a noble
 
 Playing a Spy lets you skulk in the shadows, infiltrate dangerous organisations, and manipulate people. Your travelling companions benefit from your ability to work incognito, gather intelligence, and, where your objectives align, call upon the resources and influence of those you serve.
 
+## **STEVEDORE**
+
 **Riverfolk Class:** Dwarf, Halfling, Human
 
 *You officially shift cargo for coin, but unofficially, everyone knows the Stevedores rule the dockside.*
@@ -3394,6 +3478,8 @@ Tobacco, Porter Cap
 Read/Write
 
 **Trappings:** Office and Staff, Writing Kit
+
+## **THIEF**
 
 **Rogue Class:** Dwarf, Halfling, Human, Wood Elf
 
@@ -3579,7 +3665,9 @@ Public Speaker, Savant (Local) **Trappings:** The Respect of the Village
 
 If you are playing a Villager, this list of jobs may help you choose a vocation: Beekeeper, Charcoal Burner, Farmer, Herder, Miller, Ploughman, Poultryman, Reaper, Shearer, Slaughterman, Spinner, Woodsman
 
-**WARDEN Courtier Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
+## **WARDEN**
+
+**Courtier Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
 
 *You oversee a landowner's territory, keeping it in proper order and secure from threats.*
 
@@ -3646,6 +3734,10 @@ Wealthy
 **Trappings:** Aide, Governor's Residence, Servant
 
 III
+
+## **WARRIOR PRIEST**
+
+**Warrior Class:** Human
 
 *You bring holy force to the thick of battle, slaying the enemies of your god with righteous fury.*
 
@@ -3764,6 +3856,10 @@ Playing a Watchman lets you uphold the law on your own terms. You are observant,
 **Trappings:** Quality Hand Weapon, Quality Hat, Quality
 
 Symbol of Rank, Riding Horse
+
+## **WITCH**
+
+**Rogue Class:** Human
 
 *You strive to master magic on your own terms, heedless of the Empire's laws concerning sorcery.*
 
@@ -3955,7 +4051,9 @@ Wizard
 
 **Trappings:** Library (Magic), Workshop (Magic)
 
-**WRECKER Riverfolk Class:** Dwarf, Halfling, Human, Wood Elf
+## **WRECKER**
+
+**Riverfolk Class:** Dwarf, Halfling, Human, Wood Elf
 
 *You lure vessels to run aground and make off with their cargo.*
 

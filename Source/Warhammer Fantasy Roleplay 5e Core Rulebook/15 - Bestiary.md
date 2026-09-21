@@ -1727,6 +1727,8 @@ Cool 40, Endurance 50, Melee (Basic) 55
 
 — Ruprecht Tore, Witch Hunter
 
+# **CULTISTS, THE LOST AND THE DAMNED**
+
 Like a rotten beam beneath white-washed walls, a terrible enemy lurks unseen within the Empire. In every province and town, men and women are seduced by the subtle lures of Chaos, tempted by the promise of power, knowledge, strength, or release.
 
 # **Cultist**

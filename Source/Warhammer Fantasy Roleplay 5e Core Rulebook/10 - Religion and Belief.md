@@ -487,6 +487,8 @@ Penances set by Verena normally involve the recovery or preservation of knowledg
 - Combat must be a last resort when all alternative routes are fruitless.
 - Never become a tool of injustice or heresy.
 
+# **DWARF ANCESTOR GODS**
+
 The dwarfs venerate their ancient ancestors, valuing tradition above all else. Though the Time of the Ancestor Gods was many thousands of years ago (roughly –5500 IC as scholars reckon it), the dwarfs still hold records of that time in their oldest holds. Many names echo from that era, creating a broad, inter-related pantheon, but three ancestor gods are of especial importance and are known by all dwarfs: Grimnir, Grungni, and Valaya, each a progenitor of the species as a whole.
 
 In addition to the oldest ancestor gods, dwarfs also revere the founders of local clans as guardian deities.
@@ -546,6 +548,8 @@ Halflings do not really have priests, and they certainly do not build temples (t
 | Hyacinth            | Childbirth, fertility, sex            | Midwives, pregnant women, revellers               | Boiled water, palliative herbs         | Has a fondness for twins and triplets.                                                                                                             |
 | Josias              | Farming, domesticated animals         | Farmers, herders, gardeners                       | Crops, food, thick soups               | The Faithful. Josias is known for working hard and resting hard.                                                                                   |
 | Quinsberry          | Knowledge, ancestry, tradition        | Scholars                                          | Books, tapestries, gold                | Has a library detailing the complete history and bloodline of every halfling.                                                                      |
+
+# **CHAOS GODS**
 
 The Ruinous Powers of Chaos are the foremost existential threat to the Old World, but much about them remains a mystery. Merely seeking such knowledge is punishable by death without permission from one of the cults, and seeking such permission attracts intense scrutiny of your person and motives, and is seldom granted.
 

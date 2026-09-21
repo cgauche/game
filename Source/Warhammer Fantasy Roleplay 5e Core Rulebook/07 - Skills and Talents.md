@@ -2,6 +2,10 @@
 
 IV
 
+# • **SKILLS AND TALENTS** •
+
+*'Sure, playing Find the Empress is largely luck with only a modicum of skill. But try playing without that modicum, and you'll lose every time.'*
+
 — Vulder Braudenmire, Gambler, Raconteur, and Liar
 
 Can your Character jump the ravine or will they plunge to their death? Will they charm the officious courtier, or will the guards be summoned to deal with them? Your Character's chance of success is based on their Skills and Talents. Skills are learned and developed proficiencies. Talents are innate abilities, or tricks and insights you have gained through experience.

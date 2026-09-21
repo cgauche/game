@@ -1,5 +1,7 @@
 *Pages PDF 2-4*
 
+# **CONTENTS**
+
 | INTRODUCTION                          | Bounty Hunter53 | Townsman100                           |  |
 |---------------------------------------|-----------------|---------------------------------------|--|
 | Using This Book7                      | Cavalryman54    | Villager101                           |  |

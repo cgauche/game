@@ -162,6 +162,8 @@ To help, a character must logically be able to meaningfully assist. Characters c
 
 *Example*: *Brokk and Salundra are trying to force open the barred door to a noble's cellar. The GM calls for a Challenging (+0 SL) Strength Test. Brokk has the higher Strength rating, at 53, so he makes the Test. He rolls a 61, but with Salundra helping he has Advantage. This allows him to reverse the roll to a 16, resulting in a +3 SL. Together they force the door open, and descend the darkened stairs with care.*
 
+# **FATE AND FORTUNE** V
+
 Whether it is guts, luck, or the favour of the gods, Fate and Fortune smile upon you. You can spend them to gain an edge or cheat unpleasant consequences.
 
 #### **Spend a Fortune Point to:**
@@ -193,7 +195,7 @@ You may spend a Fate Point to succeed where failure seems certain.
 
 #### **Replenishing Fate**
 
-**FATE AND FORTUNE** V Fate is not automatically replenished. The GM may grant a Fate Point for an act of exceptional heroism, bravery, or significance. This usually happens only at the end of an important adventure, so spend Fate carefully — it is rarely replenished.
+Fate is not automatically replenished. The GM may grant a Fate Point for an act of exceptional heroism, bravery, or significance. This usually happens only at the end of an important adventure, so spend Fate carefully — it is rarely replenished.
 
 # **USING THE RULES**
 
@@ -972,6 +974,8 @@ Use of appropriate tools, such as fish hooks or a spear for fishing or a bow for
 
 Characters sleeping outdoors without preparation or supplies suffer a *Fatigued* Condition each day, along with risking the effects of Exposure (page 170). Finding a suitable location for a camp, with shelter and a source of water, requires an Outdoor Survival Test, modified by how hospitable the locale is — Challenging (+ 0 SL) along a well travelled route in fine weather, or Very Hard (-3 SL) in a sodden salt marsh in the wake of a momentous flood. Additional SL can make your camp harder for others to find, or compensate for the lack of proper equipment, like a tent or bed roll.
 
+# **CUNNING CRAFTS** V
+
 Life may be cheap in the Empire, but the necessities of living are anything but. Most commoners are used to making what they can for themselves and purchasing only those essentials they can't get by without. Clothes, simple tools, and damp hovels of mud and stone are often made by their owners, while skilled artisans create more complicated and hard wearing goods.
 
 Smiths, artisans, and others who make their living by creating things for others can use the *Income* Endeavour (page 199) to reflect their typical business operations. Creating particular items, such as a sword, armour, or wagon, can be handled via the *Crafting* Endeavour (page 198). If there is enough time during an adventure, the GM can allow a character to undertake a *Crafting* Endeavour during play if they wish.
@@ -990,7 +994,7 @@ Weapons can be fixed by appropriate artisans for 10% of the weapon's cost per Da
 
 Armour can be repaired with an **Average (+2 SL) Extended Trade (Smith)** Test, so long as the character has access to Trade Tools and, for Plate Armour, a Workshop. Success requires 5 SL per point of Damage, and each Test takes 1 hour.
 
-**CUNNING CRAFTS** V Paying to have armour repaired costs 10% of the armour's base price per AP lost to repair it. If a section of your armour is completely broken, it will cost you 30% of the armour's base cost to fix just that area, and you will likely be waiting some time before it is completed.
+Paying to have armour repaired costs 10% of the armour's base price per AP lost to repair it. If a section of your armour is completely broken, it will cost you 30% of the armour's base cost to fix just that area, and you will likely be waiting some time before it is completed.
 
 # **Making Medicine**
 
@@ -2158,6 +2162,8 @@ A plethora of cures for all manner of ailments are available for sale, though th
 | Coughs and Sneezes, Fever, Flux | Challenging (+0 SL) | Difficult (–1 SL) | Hard (-2 SL) |
 | Blight, Buboes, Convulsions, Gangrene | Difficult (–1 SL) | Hard (-2 SL) | Very Hard (-3 SL) |
 
+# **POISONS** V
+
 Poisons can inflict some of the same symptoms as a disease, but the effects usually don't last quite as long, and treating them requires identifying the poison and administering an appropriate antidote. A **Difficult (-1 SL) Heal** Test, or an **Average (+2 SL) Trade (Poisoner)** Test correctly identifies the poison and the antidote required, which could be anything from a herbal preparation to an alchemical concoction to something far more esoteric.
 
 Poisoning is almost always handled by having the affected Character make an Endurance Test to avoid or mitigate the effects of the poison. The effects of poisons vary. Most commonly they impose *Poisoned* Conditions on the affected Character, but they may cause sleepiness, delirium, disease Symptoms, or a combination of such factors.
@@ -2177,7 +2183,7 @@ Most poisons are prepared with the intention of harming a human-sized target. A 
 
 **Note:** Creatures with the following Creature Traits are usually immune to poison: *Construct*, *Daemonic*, *Ethereal*, and *Undead*.
 
-#### **POISONS** V **PSYCHOLOGY**
+# **PSYCHOLOGY**
 
 Our emotions and instincts have a powerful impact on how we react in certain circumstances. These rules bring another level of drama to your game and help bring the Old World's inhabitants to life.
 

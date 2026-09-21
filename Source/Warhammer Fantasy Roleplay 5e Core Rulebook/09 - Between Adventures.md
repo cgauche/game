@@ -25,6 +25,8 @@ The Between Adventures part of a game should be quickly resolved at the end of a
 - Aside from money gained or saved due to Endeavours, all of the Characters' money is spent.
 - Characters are then ready to start their next adventure.
 
+# **SPENDING XP** VI
+
 Between adventures, you may spend XP to advance your Characteristics and Skills, acquire new Talents, and advance your Career Level. Your Career Level determines what Characteristics, Skills, and Talents are available to you.
 
 You can also use XP to change Career, see the *Change Career* Endeavour, page 197.
@@ -51,7 +53,7 @@ Each Skill Advance adds +5 to your Skill level. XP Costs for Skills increase in 
 
 *Example: You purchase your first Advance (+5) in Stealth and your Agility was 31, your Stealth would be 36. This costs 50 XP. Increasing this by a further +5 to 41 would cost an additional 75 XP.*
 
-VI **SPENDING XP** The full rules for how to use your Skills can be found in **Chapter 4: Skills and Talents**. Like Characteristic Advances, there is no upper limit to the number of Skill Advances that can be purchased. The table below presents costs for even the most ambitious campaigns and improbably successful characters.
+The full rules for how to use your Skills can be found in **Chapter 4: Skills and Talents**. Like Characteristic Advances, there is no upper limit to the number of Skill Advances that can be purchased. The table below presents costs for even the most ambitious campaigns and improbably successful characters.
 
 # **ADVANCEMENT XP COSTS**
 

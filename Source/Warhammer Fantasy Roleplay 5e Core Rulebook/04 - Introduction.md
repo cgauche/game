@@ -1,8 +1,8 @@
 *Pages PDF 6-21*
 
-# • **INTRODUCTION** •
+# <span id="page-5-0"></span>• **INTRODUCTION** •
 
-# <span id="page-5-0"></span>*'So, what's drawn you to my door, wastrel?*
+# *'So, what's drawn you to my door, wastrel?*
 
 *You had a quiet life before, I'd wager, mucking out a pigsty or kneeling at the feet of nobles for scraps. What fancy carried you thence? Adventure? Gold? Justice? Hah! You might as well confess to madness and be done.* 
 

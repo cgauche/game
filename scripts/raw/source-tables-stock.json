@@ -2061,7 +2061,7 @@
     {
       "famille": "br-litteral",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/02 - Contents.md",
-      "ref": "#1 :: introduction|bounty hunter53|townsman100|",
+      "ref": "contents#1 :: introduction|bounty hunter53|townsman100|",
       "occurrence": 1,
       "lot": "#1384 B2",
       "date": "2026-09-20",
@@ -2070,7 +2070,7 @@
     {
       "famille": "br-litteral",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/02 - Contents.md",
-      "ref": "#1 :: making medicine153|characteristic advances191|miracles of taal227|",
+      "ref": "contents#1 :: making medicine153|characteristic advances191|miracles of taal227|",
       "occurrence": 1,
       "lot": "#1384 B2",
       "date": "2026-09-20",
@@ -2079,7 +2079,7 @@
     {
       "famille": "br-litteral",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/02 - Contents.md",
-      "ref": "#1 :: using the rules265|armour and size306|the restless dead338|",
+      "ref": "contents#1 :: using the rules265|armour and size306|the restless dead338|",
       "occurrence": 1,
       "lot": "#1384 B2",
       "date": "2026-09-20",
