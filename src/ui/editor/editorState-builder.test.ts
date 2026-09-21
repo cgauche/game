@@ -169,7 +169,7 @@ describe('editorState — putLayer', () => {
  */
 describe('renameActionAuthoree — l’unicité d’un id d’action se garde au GESTE, pas au parse', () => {
   const decor = (actions: ActionAuthoree[]): SceneEntity =>
-    ({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 1 }, usable: { actions } }) as SceneEntity;
+    ({ id: 'coffre', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'coffre', usable: { actions } });
   const deux = (): ActionAuthoree[] => [
     { id: 'fouiller', flow: { kind: 'seq', steps: [] } },
     { id: 'crocheter', flow: { kind: 'seq', steps: [] } },

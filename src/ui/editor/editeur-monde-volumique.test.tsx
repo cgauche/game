@@ -10,6 +10,8 @@ import { tileCenter } from '../../geometry/iso';
 import { setStageRendererFactory, type StageRenderer } from '../../gameIso/stage/GameStage3D';
 import { hasSpritePicker } from '../../gameIso/stage/spritePicker';
 import { buildTokens } from '../../gameIso/builders/tokens';
+import * as propsBuilder from '../../gameIso/builders/props';
+import { props as catalogueProps } from '../../data';
 import { scenario as scenarioToits } from '../../scenes/test-scenarios/zones-pieces';
 import { RENDER_ORDER } from '../../gameIso/backends/webgl/renderRanks';
 import { CALAGE_APLAT, NOM_ARETES_CALAGE, rangsDeDecor as rangsDeDecorDuMonde } from '../../gameIso/backends/webgl/calageProps';
@@ -85,6 +87,19 @@ function sceneDeuxCouches(): Scene {
   const s = emptyScene(6, 6);
   const base = s.layers[0];
   return { ...s, layers: [base, { ...base, z: 1, tiles: [...base.tiles] }] };
+}
+
+/** Deux couches, un DÉCOR billboard sur chacune : de quoi mesurer ce que le canevas fait du DESSUS.
+ *  La ref est DÉRIVÉE du catalogue — la vague volumique (#1343) convertit les refs lot par lot, et le
+ *  jour où il n'en reste aucune ce banc doit le DIRE plutôt que rendre un `TypeError` opaque. */
+function sceneDeuxDecors(): Scene {
+  const s = sceneDeuxCouches();
+  const sansRecette = catalogueProps.find((p) => !p.volume);
+  if (!sansRecette) throw new Error('plus aucune ref sans recette au catalogue : ce banc n’a plus de voie billboard à mesurer');
+  const ref = sansRecette.id;
+  const decor = (id: string, z: number) =>
+    ({ id, kind: 'prop', pos: { x: 2, y: 2 }, ...(z ? { z } : {}), ref }) as unknown as Scene['entities'][number];
+  return { ...s, entities: [decor('decor-rez', 0), decor('decor-etage', 1)] };
 }
 
 /** Une scène qui porte une LAMPE posée (`mapLights` la voit : un prop dont l'instance donne un rayon). */
@@ -389,6 +404,23 @@ describe('Éditeur — ce que le monde volumique donne à voir (#1176, P3-3)', (
     container = null;
     const isolee = await monter({ mode: 'select' }, { scene: sceneEmbuscade(), currentLayer: 1, lowerLayerMode: 'isolee' });
     expect(isolee.sujets()).toBe(0); // couche isolée : rien du dessous, ni décoration ni corps
+  });
+
+  /**
+   * #1317 — LE DESSUS RESTE MASQUÉ À L'ÉDITEUR. `buildProps` ne porte plus AUCUNE loi d'étage : c'est
+   * le PRÉDICAT UNIQUE du canevas (`layerHidden`) qui tranche pour le décor comme pour les 14
+   * surcouches SVG. Rien ne doit donc bouger à l'écran d'authoring — ici, mesuré.
+   */
+  it('le décor d’une couche du DESSUS ne revient pas au canevas ; celui du DESSOUS reste en gabarit', async () => {
+    expect(propsBuilder.buildProps(sceneDeuxDecors()), 'le builder, lui, les émet tous les deux').toHaveLength(2);
+    const rez = await monter({ mode: 'select' }, { scene: sceneDeuxDecors(), currentLayer: 0, lowerLayerMode: 'gabarit' });
+    expect(rez.sujets()).toBe(1); // on n'édite pas ce qui flotte au-dessus de sa tête
+    await act(async () => root!.unmount());
+    root = null;
+    container!.remove();
+    container = null;
+    const etage = await monter({ mode: 'select' }, { scene: sceneDeuxDecors(), currentLayer: 1, lowerLayerMode: 'gabarit' });
+    expect(etage.sujets()).toBe(2); // le dessous reste dessiné : c'est le gabarit d'alignement
   });
 
   /**

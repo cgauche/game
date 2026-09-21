@@ -95,7 +95,7 @@ La vérité de VUE (estompe d'occlusion, révélation, assombrissement d'un éta
 | `buildFloors` | `FloorEl[]` | `src/gameIso/builders/floors.ts:318` | Éléments `floor` de la scène. |
 | `buildHighlights` | `HighlightEl[]` | `src/gameIso/builders/highlights.ts:64` | — |
 | `buildPropVolumes` | `Face[]` | `src/gameIso/builders/propVolumes.ts:52` | Les faces MONDE d'un décor volumique : recette locale × cap × ancre, posées sur `baseHeightM`. |
-| `buildProps` | `PropEl[]` | `src/gameIso/builders/props.ts:126` | Éléments `prop` de la scène. |
+| `buildProps` | `PropEl[]` | `src/gameIso/builders/props.ts:128` | Éléments `prop` de la scène — TOUTES les couches, sauf ISOLEMENT explicite d'un étage (`viewZ`, demande de l'appelant : vue du dessus, minimap, `state/viewLevel`). |
 | `buildRoofs` | `RoofEl[]` | `src/gameIso/builders/roofs.ts:1401` | Éléments `roof` de la scène. |
 | `buildTokens` | `TokenEl[]` | `src/gameIso/builders/tokens.ts:80` | Éléments `token` de la scène — figurants (toujours), puis combattants (si `battle`). |
 | `buildWalls` | `WallEl[]` | `src/gameIso/builders/walls.ts:629` | Éléments `wall` de la scène. |
@@ -199,4 +199,4 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: 521650aec9b2ad38eecee8066a9a6a895285b318 (1011 fichiers, 92 dossiers) corps: 70cab3af1242572cb664f5fe134c352d0d26cf0e -->
+<!-- sources-empreinte: 15039cad2d3e26f6f8d7cbf73b3d7cb5e7ab5645 (1011 fichiers, 92 dossiers) corps: cfbb29e4c7a810898b8c1902daa706bcb92c5655 -->

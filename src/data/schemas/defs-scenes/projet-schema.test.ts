@@ -78,7 +78,7 @@ describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resol
    */
   it('`usable` : l’enveloppe à deux faits passe, `interact` est REFUSÉ, un `id` d’action DOUBLÉ aussi', () => {
     const FLOW = { kind: 'seq', steps: [] };
-    const entite = (over: Jouet) => [sceneMinimale({ entities: [{ id: 'coffre', kind: 'prop', pos: { x: 1, y: 1 }, ...over }] })];
+    const entite = (over: Jouet) => [sceneMinimale({ entities: [{ id: 'coffre', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'coffre', ...over }] })];
 
     expect(projetSchema.safeParse(projet({ scenes: entite({ usable: { assise: true, actions: [{ id: 'fouiller', flow: FLOW, unique: true }] } }) })).success).toBe(true);
     expect(fautes(projet({ scenes: entite({ interact: { flow: FLOW } }) })))
@@ -367,7 +367,7 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
     expect(ok(reel())).toBe(true);
     expect(projetDoc.type).toBe('projet');
     expect(projetDoc.famille).toBe('config');
-    expect(SCHEMA_PROJET).toBe(11);
+    expect(SCHEMA_PROJET).toBe(12);
   });
 
   it('FK `activeAxes` → axes.json : ids RÉELS acceptés (et la liste vide/absente aussi), inconnu REFUSÉ au CHEMIN', () => {

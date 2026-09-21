@@ -673,13 +673,16 @@ export function EditorCanvas({
   // ÉLÉMENTS à billboarder : c'est l'ÉDITEUR qui les fabrique, avec SES options de couche — le monde
   // volumique n'a aucun second jeu de lois. Jetons d'entité BRUTS (leurs décorations d'auteur restent
   // au SVG) et décor par le MÊME `buildProps` que le jeu.
+  // Le builder n'émet AUCUNE loi d'étage (#1317) : c'est le PRÉDICAT UNIQUE du canevas qui tranche, ici
+  // comme pour les 14 surcouches SVG et les deux autres canaux du monde volumique.
   const propEls3d = useMemo(
-    () => buildProps(sceneMonde, undefined, { activeZ: currentLayer }).filter((el) => !zHiddenMonde(el.cell.z)),
+    () => buildProps(sceneMonde).filter((el) => !zHiddenMonde(el.cell.z)),
     [sceneMonde, currentLayer, modeMonde],
   );
-  // MÊME cadrage de couche que les décors ci-dessus (`viewZ` en mode isolé, puis le prédicat unique) :
-  // sans lui, un corps de couche basse restait sur le canevas alors que TOUTES ses décorations
-  // d'auteur avaient disparu du SVG — un jeton fantôme, inéditable.
+  // Les JETONS, eux, demandent encore au builder son cadrage de couche (`activeZ`/`viewZ` de
+  // `buildTokens`) avant le prédicat unique ; le décor ci-dessus n'a plus que le prédicat (#1317).
+  // Le prédicat reste indispensable ici : sans lui, un corps de couche basse restait sur le canevas
+  // alors que TOUTES ses décorations d'auteur avaient disparu du SVG — un jeton fantôme, inéditable.
   // `ambush` : l'auteur voit le CORPS de ses embusqueurs (`hiddenUntilCombat`), que la loi de JEU
   // coupe avant le combat ; le SVG continue de poser leur empreinte pointillée par-dessus.
   const tokenEls3d = useMemo(

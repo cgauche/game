@@ -1,6 +1,9 @@
 /**
- * Niveau (étage z) AFFICHÉ — « un étage à la fois » : IsoStage ne rend QUE l'étage actif (les autres ne
- * sont pas dessinés). Ce module porte les deux faces de cette vérité :
+ * Niveau (étage z) AFFICHÉ — l'étage de la zone ACTIVE, celui que le picking résout et que la vue du
+ * dessus isole. En iso, l'écran rend la scène ENTIÈRE et n'en retire que ce qui coiffe le groupe
+ * (`gameIso/stage/MondeDeCampagne.tsx:loiDeDégagement`) ; l'ISOLEMENT d'un seul étage est le régime du
+ * plan (`politique.etageIsole`) et de l'override ci-dessous. Ce module porte les deux faces de cette
+ * vérité :
  *  - l'override DEBUG (devtool `__wfrp.viewLevel(z)`) : `null` = automatique. Store externe minimal
  *    (hors store Zustand : isolé, zéro couplage) ; le devtool le PILOTE, le rendu le LIT ;
  *  - `etageActif` : la RÈGLE qui en déduit l'étage montré. UNE définition, trois lecteurs — le rendu

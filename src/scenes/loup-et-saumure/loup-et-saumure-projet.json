@@ -347,6 +347,7 @@
       "x": 2,
       "y": 8
      },
+     "ref": "tonneau",
      "label": "La jetée d’appareillage",
      "usable": {
       "actions": [
@@ -386,8 +387,7 @@
         "unique": true
        }
       ]
-     },
-     "ref": "tonneau"
+     }
     }
    ],
    "dialogues": [
@@ -2081,6 +2081,7 @@
       "x": 2,
       "y": 7
      },
+     "ref": "tonneau",
      "label": "Reprendre la mer vers Salzenmund",
      "usable": {
       "actions": [
@@ -2108,8 +2109,7 @@
         "unique": true
        }
       ]
-     },
-     "ref": "tonneau"
+     }
     }
    ],
    "dialogues": [

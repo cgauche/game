@@ -121,7 +121,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "barge-du-sel-projet.json", champ: "members", occurrences: 7, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "postes", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "qualities", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "barge-du-sel-projet.json", champ: "ref", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "barge-du-sel-projet.json", champ: "ref", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" }, // 5→6 : +1 OCCURRENCE — le décor du point d'appareillage NOMME son type au générateur (#877) au lieu de laisser sa `ref` absente ; le couple (dataset, champ) ne bouge pas, seul son compte
   { dataset: "barge-du-sel-projet.json", champ: "reliefDefaults", occurrences: 3, lot: "L2/L3 #1473", date: "2026-09-07" },
   { dataset: "barge-du-sel-projet.json", champ: "roofDefaults", occurrences: 3, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "barge-du-sel-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -253,7 +253,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "loup-et-saumure-projet.json", champ: "port", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "postes", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "qualities", occurrences: 30, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "loup-et-saumure-projet.json", champ: "ref", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "loup-et-saumure-projet.json", champ: "ref", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" }, // 10→12 : +2 OCCURRENCES — les deux décors des quais NOMMENT leur type au générateur (#877) au lieu de laisser leur `ref` absente ; le couple (dataset, champ) ne bouge pas, seul son compte
   { dataset: "loup-et-saumure-projet.json", champ: "reliefDefaults", occurrences: 5, lot: "L2/L3 #1473", date: "2026-09-07" },
   { dataset: "loup-et-saumure-projet.json", champ: "roofDefaults", occurrences: 5, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "loup-et-saumure-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },

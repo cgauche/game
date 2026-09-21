@@ -168,6 +168,7 @@
       "x": 2,
       "y": 6
      },
+     "ref": "tonneau",
      "label": "Appareiller vers l’îlot",
      "usable": {
       "actions": [
@@ -187,8 +188,7 @@
         "unique": true
        }
       ]
-     },
-     "ref": "tonneau"
+     }
     }
    ],
    "dialogues": [],

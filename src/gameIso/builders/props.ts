@@ -118,25 +118,23 @@ export function capDuFaite(shape: RoofShapeSpec): Dir8 {
   return shape.ridge === 'x' ? 'E' : 'S';
 }
 
-/** Éléments `prop` de la scène. `view` ABSENT ⇒ toutes les couches (POV/éditeur/QC) ; sinon `viewZ`
- *  isole un étage (debug), sinon z ≤ activeZ (un prop AU-DESSUS de la zone active n'est pas rendu —
- *  l'historique du stage, pas de fantôme pour le décor). `visible` absent ⇒ tout visible ; un prop de
- *  scène en vue est tagué `visible` (dessiné AU-DESSUS du voile), mémorisé → dessous (grisé). Les
- *  overlays de terrain restent TOUJOURS sous le voile (décor « mémorisé », convention des sols). */
+/** Éléments `prop` de la scène — TOUTES les couches, sauf ISOLEMENT explicite d'un étage (`viewZ`,
+ *  demande de l'appelant : vue du dessus, minimap, `state/viewLevel`). La VISIBILITÉ D'ÉTAGE n'est PAS
+ *  une loi de builder : elle appartient à l'écran, qui l'applique APRÈS coup à la MÊME identité que la
+ *  masse cuite — `loiDeDégagement` en jeu (`stage/MondeDeCampagne`), `layerHidden` à l'éditeur
+ *  (`ui/editor/lowerLayerGabarit`) — cf. #1317. `visible` absent ⇒ tout visible ; un prop de scène en
+ *  vue est tagué `visible` (dessiné AU-DESSUS du voile), mémorisé → dessous (grisé). Les overlays de
+ *  terrain restent TOUJOURS sous le voile (décor « mémorisé », convention des sols). */
 export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: FloorView): PropEl[] {
   const mpt = sceneMetresPerTile(scene);
-  const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
-  // Le tri par COUCHE n'est actif que si l'appelant l'a demandé (`activeZ`/`viewZ`) — passer SEULEMENT
-  // `allies` (cutaway, cf. POV) ne doit PAS culler les props d'étage.
-  const hasLayerView = view != null && (view.activeZ !== undefined || view.viewZ !== undefined);
   const out: PropEl[] = [];
   // Overlays de TERRAIN à DÉCOR (bois → arbre) — un billboard par tuile (couche de base), MÊME chemin de
   // rendu que les props de scène. `visible` suit le brouillard comme un prop : en vue → au-dessus du voile
   // (donc VISIBLE en POV) ; mémorisé → sous le voile. Éditeur/QC (`visible` absent) → tout visible.
   const { w, h } = scene.dimensions;
   for (const lvl of scene.layers) {
-    if (hasLayerView && (viewZ != null ? lvl.z !== viewZ : lvl.z > activeZ)) continue;
+    if (viewZ != null && lvl.z !== viewZ) continue;
     for (let y = 0; y < h; y++)
       for (let x = 0; x < w; x++) {
         const ref = terrainOverlayProp(tileAt(scene, x, y, lvl.z));
@@ -156,7 +154,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
     const z = ent.z ?? 0;
-    if (hasLayerView && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
+    if (viewZ != null && z !== viewZ) continue;
     // L'empreinte EFFECTIVE au cap de l'instance (#1509) : le corps tourné pour un décor à recette,
     // l'empreinte déclarée pour un billboard. `span` la porte jusqu'au halo d'interaction
     // (`interactHalos.ts`), qui ne connaît l'étendue d'un élément que par lui.
@@ -188,7 +186,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       for (const feature of section.features ?? []) {
         const edge = { ...feature.edge, z: feature.edge.z ?? section.z };
         const z = edge.z;
-        if (hasLayerView && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
+        if (viewZ != null && z !== viewZ) continue;
         const edgeId = edgeKey(edge);
         const featureId = `${body.id}:${section.id}:${feature.id}`;
         if (emittedFeatures.has(featureId) || !sectionEdges.has(edgeId) || !physicalEdges.has(edgeId)) continue;

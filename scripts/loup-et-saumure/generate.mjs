@@ -170,7 +170,7 @@ scenes.push(scene({
     NPC('avitailleuse', 9, 6, 'Cambuse du port (rations/eau)', { facing: 'N', merchant: { archetype: 'taverniere' }, appearance: { species: 'humains-reiklander', tenue: 'bourgeois', sex: 'F', build: 0.55 } }),
     NPC('armurier', 12, 6, 'Arsenal du port (munitions/pièces)', { facing: 'N', merchant: { archetype: 'armurier' }, appearance: { species: 'humains-reiklander', tenue: 'artisan', sex: 'M', build: 0.6 } }),
     NPC('avitailleur', 13, 4, 'Chandelier du quai (eau, rations de mer, pièces, boulets)', { facing: 'S', merchant: { archetype: 'avitailleur' }, appearance: { species: 'humains-reiklander', tenue: 'bourgeois', sex: 'M', build: 0.5 } }),
-    P(2, 8, undefined, {
+    P(2, 8, 'tonneau', {
       label: 'La jetée d’appareillage',
       usable: { actions: [{
         id: 'fouiller',
@@ -485,7 +485,7 @@ scenes.push(scene({
     NPC('docker', 7, 3, 'Docker du port', { facing: 'S', dialogueId: 'dlg-rumeur-olg', appearance: { species: 'humains-reiklander', tenue: 'debardeur', sex: 'M', build: 0.6, seed: 8830 } }),
     NPC('kramer-erengrad', 11, 3, 'Dame Vasilika Kramer', { facing: 'S', dialogueId: 'dlg-kramer-nuit-du-chat', appearance: KRAMER_APPEARANCE }),
     NPC('charpentier', 9, 6, 'Charpentier de bord', { facing: 'N', dialogueId: 'dlg-reparation', appearance: { species: 'humains-reiklander', tenue: 'artisan', sex: 'M', build: 0.6, seed: 3312 } }),
-    P(2, 7, undefined, {
+    P(2, 7, 'tonneau', {
       label: 'Reprendre la mer vers Salzenmund',
       usable: { actions: [{ id: 'fouiller', flow: flowOf([OBJ('Ramener le Grimm et sa cargaison à Salzenmund.'), { type: 'openWorldMap' }]), unique: true }] },
     }),

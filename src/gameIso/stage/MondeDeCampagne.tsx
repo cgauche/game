@@ -537,15 +537,19 @@ function CorpsDuMonde() {
   const nappesVues = useMemo(() => new Set(roofEls.map((el) => el.sectionId ?? el.key)), [roofEls]);
   const nappeVue = useMemo(() => (sectionId: string) => nappesVues.has(sectionId), [nappesVues]);
   // ÉCART DE REGARD nº 2 : le dégagement des décors est une loi de plateau (retirer ce qui coiffe le
-  // groupe) ; à hauteur d'œil rien n'est retiré, et aucun allié ne « découvre » sa pièce.
-  const propEls = useMemo(
-    () => (scene
-      ? (pov
-        ? buildProps(scene, visible, { activeZ, viewZ: layerZ })
-        : buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }).filter((el) => !cutawayOverhead(el.cell, cleared)))
-      : []),
-    [scene, visible, activeZ, layerZ, cutawayAllies, cleared, pov],
+  // groupe) ; à hauteur d'œil rien n'est retiré, et aucun allié ne « découvre » sa pièce — c'est
+  // exactement ce que `keepEl` dit déjà à la masse, et le décor billboard n'en est qu'une INSTANCE
+  // (#1317) : une seule expression de la loi d'écran, jamais une copie par voie de rendu. Le décor
+  // VOLUMIQUE la reçoit par le même `keepEl`, au masque du monde cuit (`applyCutawayMask`).
+  // DEUX mémos, parce que ce sont deux CADENCES : l'ÉMISSION scanne toute la scène (500+ entités à
+  // l'opéra) et ne dépend que de vérités de scène ; le FILTRE est la loi d'écran, dont la chaîne
+  // contient `dims` — un cran de rotation de caméra en fait une référence neuve. Fondus en un seul
+  // mémo, un quart de tour rebâtissait tout le décor de la carte (#817, même maladie que `visualAllies`).
+  const propsEmis = useMemo(
+    () => (scene ? buildProps(scene, visible, pov ? { viewZ: layerZ } : { viewZ: layerZ, allies: cutawayAllies }) : []),
+    [scene, visible, layerZ, cutawayAllies, pov],
   );
+  const propEls = useMemo(() => propsEmis.filter(keepEl), [propsEmis, keepEl]);
   const tokenEls = useMemo(
     () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ: layerZ, top: politique.montesDissocies }) : []),
     [scene, visible, mode, battle, activeZ, layerZ, politique],

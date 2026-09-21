@@ -153,7 +153,7 @@ scenes.push(scene({
   ],
   entities: [
     hero(2, 3),
-    P(2, 6, undefined, {
+    P(2, 6, 'tonneau', {
       label: 'Appareiller vers l’îlot',
       usable: { actions: [{ id: 'fouiller', flow: flowOf([{ type: 'openWorldMap' }]), unique: true }] },
     }),

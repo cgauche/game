@@ -7,7 +7,8 @@ import { BancRenderer, brancherArdoise } from './banc-volumique';
 import * as sceneMeshes from '../backends/webgl/sceneMeshes';
 import type { KeepEl } from '../backends/webgl/sceneMeshes';
 import { useGame } from '../../state/store';
-import { emptyScene, heightAt } from '../../state/scene';
+import { emptyScene, heightAt, sceneMetresPerTile, type Scene, type SceneEntity } from '../../state/scene';
+import { props } from '../../data';
 import type { Combatant } from '../../engine/types';
 import * as propsBuilder from '../builders/props';
 import * as roomPortalsModule from '../../state/roomPortals';
@@ -426,4 +427,191 @@ describe('MondeDeCampagne — le faîteau volumique se lève AVEC son toit (#162
     expect(loi(pan)).toBe(true);
     expect(loi(faîteau)).toBe(true);
   });
+});
+
+/**
+ * #1317 — PARITÉ D'ÉTAGE. La visibilité d'étage est la loi d'un ÉCRAN, appliquée APRÈS un builder qui
+ * n'en porte aucune : un étage dont le PLANCHER est peint montre son DÉCOR, par ses deux voies de
+ * rendu (volume cuit dans la masse, billboard monté en quad) et jusqu'au PICKING.
+ *
+ * Les trois populations se lisent sur le CHEMIN RÉEL, aucune n'est rejouée ici : le plancher par la
+ * loi que le stage remet à `applyCutawayMask`, les billboards par les éléments que le stage remet à
+ * `collectBillboards`, les triangles visables par l'INDEX DE DESSIN que cette même loi a compacté.
+ */
+describe('MondeDeCampagne — un étage peint montre son décor, les deux voies et le picking (#1317)', () => {
+  let root: Root | null = null;
+  let container: HTMLDivElement | null = null;
+
+  afterEach(() => {
+    if (root) { act(() => root!.unmount()); root = null; }
+    if (container) { container.remove(); container = null; }
+    vi.restoreAllMocks();
+  });
+
+  /** Refs DÉRIVÉES du catalogue — la vague volumique (#1343) convertit les refs lot par lot, donc
+   *  aucune n'est écrite en dur. Le jour où une VOIE disparaît du catalogue, ce banc n'a plus rien à
+   *  mesurer et doit le DIRE : un `!` y rendrait un `TypeError` opaque. */
+  const refDuCatalogue = (voie: 'volume' | 'billboard') => {
+    const p = props.find((q) => (voie === 'volume' ? !!q.volume : !q.volume));
+    if (!p) {
+      throw new Error(voie === 'volume'
+        ? 'plus aucune ref à recette au catalogue : ce banc n’a plus de voie volume à mesurer'
+        : 'plus aucune ref sans recette au catalogue : ce banc n’a plus de voie billboard à mesurer');
+    }
+    return p.id;
+  };
+  const REF_VOLUME = refDuCatalogue('volume');
+  const REF_BILLBOARD = refDuCatalogue('billboard');
+
+  /** GALERIE : un rez et un étage, le groupe au REZ, et à l'ÉTAGE un décor de chaque voie. Aucune
+   *  architecture, donc aucune nappe à lever : ce que l'écran retranche ne vient que de l'étage. */
+  function galerie(): Scene {
+    const scene = emptyScene(6, 6);
+    scene.layers.push({ z: 1, tiles: new Array(36).fill('planches') });
+    scene.entities = [
+      { id: 'lustre', kind: 'prop', pos: { x: 3, y: 3 }, z: 1, ref: REF_VOLUME, facing: 'S' },
+      { id: 'loge', kind: 'prop', pos: { x: 4, y: 3 }, z: 1, ref: REF_BILLBOARD },
+      { id: 'tabouret', kind: 'prop', pos: { x: 1, y: 1 }, ref: REF_BILLBOARD },
+    ] as SceneEntity[];
+    return scene;
+  }
+
+  /** Élément de PLANCHER de l'étage `z`, tel que la loi d'écran le reçoit du monde cuit. */
+  const solAu = (z: number) => ({ kind: 'floor', key: `f:2,2,${z}`, cell: { x: 2, y: 2, z }, states: {} } as unknown as Parameters<KeepEl>[0]);
+
+  /** Monte l'hôte sur la galerie et rend les DEUX sorties réelles : la loi d'écran et les décors
+   *  billboard effectivement remis au monteur de quads. */
+  function monter(scene: Scene, viewMode: 'iso' | 'top') {
+    const loiSpy = vi.spyOn(sceneMeshes, 'applyCutawayMask');
+    const bbSpy = vi.spyOn(sceneMeshes, 'collectBillboards');
+    useGame.setState({
+      scene, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [hero('h1', { x: 2, y: 2 })],
+      battle: null, dialogue: null, flags: {}, viewMode,
+    });
+    container = document.createElement('div');
+    root = createRoot(container);
+    act(() => root!.render(<MondeDeCampagne />));
+    return {
+      loi: loiSpy.mock.calls[loiSpy.mock.calls.length - 1][1],
+      billboards: bbSpy.mock.calls[bbSpy.mock.calls.length - 1][2].props,
+    };
+  }
+
+  const étages = (els: readonly { cell: { z: number } }[]) => [...new Set(els.map((el) => el.cell.z))].sort();
+
+  it('en iso, le plancher de l’étage est peint — donc son décor l’est aussi, volume ET billboard', () => {
+    const scene = galerie();
+    const { loi, billboards } = monter(scene, 'iso');
+    const peints = [0, 1].filter((z) => loi(solAu(z)));
+    expect(peints, 'aucune nappe à lever : les deux planchers se peignent').toEqual([0, 1]);
+    // VOIE BILLBOARD : la population émise, étage par étage, est celle des planchers peints.
+    expect(étages(billboards)).toEqual(peints);
+    expect(billboards.map((el) => el.entId).filter(Boolean)).toEqual(expect.arrayContaining(['loge', 'tabouret']));
+    // VOIE VOLUME : le même verdict, par la même loi, sur l'élément réel du builder.
+    const lustre = propsBuilder.buildProps(scene).filter(estPropVolumique).find((el) => el.entId === 'lustre')!;
+    expect(loi(lustre)).toBe(peints.includes(1));
+  });
+
+  it('en plan, l’étage du dessus n’est plus peint — et son décor disparaît des deux voies', () => {
+    const scene = galerie();
+    const { loi, billboards } = monter(scene, 'top');
+    const peints = [0, 1].filter((z) => loi(solAu(z)));
+    expect(peints, 'le plan isole le plancher du groupe').toEqual([0]);
+    expect(étages(billboards)).toEqual(peints);
+    const lustre = propsBuilder.buildProps(scene).filter(estPropVolumique).find((el) => el.entId === 'lustre')!;
+    expect(loi(lustre)).toBe(false);
+  });
+
+  /**
+   * CADENCE (#817, même maladie que `visualAllies`) : la loi d'écran connaît la CAMÉRA (`dims` est
+   * dans la chaîne de `keepEl`), le décor émis ne la connaît pas. Les deux vérités ne peuvent donc pas
+   * vivre dans le même mémo : un quart de tour rebâtirait tout le décor de la carte pour un verdict
+   * inchangé. Mesuré sur les DEUX coutures réelles — l'émission (`buildProps`) et ce que le monteur de
+   * quads reçoit (`collectBillboards`).
+   */
+  it('un cran de ROTATION ne rebâtit AUCUN décor — seule la loi d’écran se rejoue', () => {
+    const scene = galerie();
+    const spyBuild = vi.spyOn(propsBuilder, 'buildProps');
+    const spyLoi = vi.spyOn(sceneMeshes, 'applyCutawayMask');
+    useGame.setState({
+      scene, mode: 'exploration', partyPos: { x: 2, y: 2 }, party: [hero('h1', { x: 2, y: 2 })],
+      battle: null, dialogue: null, flags: {}, viewMode: 'iso', camRot: 0,
+    });
+    container = document.createElement('div');
+    root = createRoot(container);
+    act(() => root!.render(<MondeDeCampagne />));
+    const derniereLoi = () => spyLoi.mock.calls[spyLoi.mock.calls.length - 1][1];
+    const emissionsAuMontage = spyBuild.mock.calls.length;
+    const loiAvant = derniereLoi();
+
+    // Le cran de caméra se JOUE (le swap de `shownRot` tombe au creux de l'animation, 130 ms) : c'est
+    // lui qui renouvelle `dims`, donc la loi d'écran.
+    vi.useFakeTimers();
+    try {
+      act(() => { useGame.setState({ camRot: 1 }); });
+      act(() => { vi.advanceTimersByTime(400); });
+    } finally {
+      vi.useRealTimers();
+    }
+
+    // La mesure MORD : le cran a bien renouvelé la LOI remise au monde cuit (sans quoi ce test ne
+    // dirait rien de la cadence).
+    expect(derniereLoi(), 'le cran renouvelle la loi d’écran').not.toBe(loiAvant);
+    // …et l'ÉMISSION, elle, n'a pas rejoué : aucun scan de scène pour une caméra.
+    expect(spyBuild.mock.calls.length).toBe(emissionsAuMontage);
+    // Le verdict, lui, n'a pas bougé d'un cran à l'autre : les deux planchers restent peints.
+    expect([0, 1].filter((z) => derniereLoi()(solAu(z)))).toEqual([0, 1]);
+  });
+
+  /** La MÊME galerie, COIFFÉE : une masse dont le couvercle est à l'étage 1 et dont le volume descend
+   *  au rez (`levels: 2`), donc le groupe est DESSOUS — le couvercle au-dessus des têtes tombe. */
+  function galerieCoiffée(): Scene {
+    const scene = galerie();
+    scene.architecture = [{
+      id: 'corps-opera',
+      style: 'auberge',
+      storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }],
+      facades: [],
+      masses: [{ id: 'salle', z: 1, footprint: [{ x: 0, y: 0, w: 6, h: 6 }], levels: 2, profile: 'gable', ridge: 'x', pitchDeg: 30, material: 'tuile' }],
+    }];
+    return scene;
+  }
+
+  it('COUVERCLE au-dessus des têtes : l’étage cesse d’être peint, et son décor part avec son plancher', () => {
+    const scene = galerieCoiffée();
+    const { loi, billboards } = monter(scene, 'iso');
+    const peints = [0, 1].filter((z) => loi(solAu(z)));
+    expect(peints, 'le groupe est SOUS le couvercle : l’étage 1 se retire').toEqual([0]);
+    // C'est ici que la loi d'ÉCRAN porte seule : aucun isolement (`viewZ`) n'est demandé au builder.
+    expect(étages(billboards)).toEqual(peints);
+    const lustre = propsBuilder.buildProps(scene).filter(estPropVolumique).find((el) => el.entId === 'lustre')!;
+    expect(loi(lustre)).toBe(false);
+  });
+
+  /** Sommets que l'INDEX DE DESSIN compacté désigne encore, groupe par groupe : exactement ce que le
+   *  rayon de picking parcourt (`Mesh.raycast` suit l'index dans les plages de groupe), donc exactement
+   *  ce qu'une plage de décor (`propVertexRanges`) peut encore nommer. */
+  function sommetsDessinés(geometry: sceneMeshes.WorldGeometry): Set<number> {
+    const index = geometry.getIndex()!;
+    const vus = new Set<number>();
+    for (const g of geometry.groups) for (let i = g.start; i < g.start + g.count; i++) vus.add(index.getX(i));
+    return vus;
+  }
+  /** Le décor `entId` garde-t-il un sommet visable après le masque ? */
+  function visable(geometry: sceneMeshes.WorldGeometry, entId: string): boolean {
+    const dessinés = sommetsDessinés(geometry);
+    return geometry.userData.propVertexRanges.some((r) => r.entId === entId
+      && [...Array(r.vertexCount).keys()].some((k) => dessinés.has(r.vertexStart + k)));
+  }
+
+  it.each([['iso', true], ['top', false]] as const)(
+    'PICKING (%s) : un décor volumique n’est visable que si la loi d’écran le peint',
+    (viewMode, attendu) => {
+      const scene = galerie();
+      const { loi } = monter(scene, viewMode);
+      const baked = sceneMeshes.bakeWorldGeometry(scene, sceneMetresPerTile(scene));
+      const { geometry } = sceneMeshes.applyCutawayMask(baked, loi);
+      expect(visable(geometry, 'lustre')).toBe(attendu);
+    },
+  );
 });

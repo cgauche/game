@@ -150,28 +150,33 @@ describe('buildProps — éléments prop du pivot', () => {
     expect(p2.states.visible).toBe(false);
   });
 
-  it('filtre les étages avec `view` (z > activeZ coupé, viewZ isole) et émet tout sans `view`', () => {
+  it('émet le décor de TOUTES les couches ; seul `viewZ` isole un étage, et `activeZ` ne coupe RIEN', () => {
     const s = scene();
     s.layers.push({ z: 1, tiles: new Array(36).fill('vide') });
     (s.entities[1] as SceneEntity).z = 1; // p2 à l'étage
-    expect(buildBillboardProps(s).filter((e) => e.source === 'entity')).toHaveLength(2); // POV/éditeur : tout
-    const game = buildBillboardProps(s, undefined, { activeZ: 0, viewZ: null });
-    expect(game.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p1']); // au-dessus → coupé
-    const iso = buildBillboardProps(s, undefined, { activeZ: 0, viewZ: 1 });
-    expect(iso.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p2']); // isolement debug
+    const cles = (view?: Parameters<typeof buildProps>[2]) =>
+      buildBillboardProps(s, undefined, view).filter((e) => e.source === 'entity').map((e) => e.key);
+    // La visibilité d'étage est la loi d'un ÉCRAN, appliquée APRÈS le builder (#1317) : le rez comme
+    // l'étage sortent d'ici, et `activeZ` — que les sols et les jetons lisent encore — n'a AUCUN
+    // lecteur dans ce builder.
+    expect(cles()).toEqual(['prop:p1', 'prop:p2']);
+    expect(cles({ activeZ: 0, viewZ: null })).toEqual(['prop:p1', 'prop:p2']);
+    // ISOLEMENT : demande EXPLICITE de l'appelant (vue du dessus, minimap, `state/viewLevel`).
+    expect(cles({ viewZ: 1 })).toEqual(['prop:p2']);
+    expect(cles({ viewZ: 0 })).toEqual(['prop:p1']);
   });
 
-  it('overlay de terrain à l’étage : “bois” sur z1 émet un `ov:x,y,1` à SA hauteur, cullé quand l’étage actif est 0', () => {
+  it('overlay de terrain à l’étage : “bois” sur z1 émet un `ov:x,y,1` à SA hauteur, quel que soit l’étage actif', () => {
     const s = scene();
     s.layers.push({ z: 1, tiles: new Array(36).fill('vide') });
     s.layers[1].tiles[3 * 6 + 4] = 'bois'; // (4,3) à l'étage 1
-    const allZ = buildBillboardProps(s).filter((e) => e.source === 'terrain');
-    expect(allZ.map((e) => e.key)).toEqual(['ov:4,3,0', 'ov:4,3,1']); // sans `view` : toutes les couches
-    const activeZ0 = buildBillboardProps(s, undefined, { activeZ: 0, viewZ: null }).filter((e) => e.source === 'terrain');
-    expect(activeZ0.map((e) => e.key)).toEqual(['ov:4,3,0']); // étage 1 coupé (au-dessus de la zone active)
-    const activeZ1 = buildBillboardProps(s, undefined, { activeZ: 1, viewZ: null }).filter((e) => e.source === 'terrain');
-    const ov1 = activeZ1.find((e) => e.key === 'ov:4,3,1')!;
-    expect(ov1.cell).toEqual({ x: 4, y: 3, z: 1 });
+    const ovs = (view?: Parameters<typeof buildProps>[2]) =>
+      buildBillboardProps(s, undefined, view).filter((e) => e.source === 'terrain');
+    expect(ovs().map((e) => e.key)).toEqual(['ov:4,3,0', 'ov:4,3,1']); // sans `view` : toutes les couches
+    // L'étage actif ne retranche AUCUN overlay : l'écran juge, pas le builder (#1317).
+    expect(ovs({ activeZ: 0, viewZ: null }).map((e) => e.key)).toEqual(['ov:4,3,0', 'ov:4,3,1']);
+    expect(ovs({ viewZ: 1 }).map((e) => e.key)).toEqual(['ov:4,3,1']); // isolement demandé
+    expect(ovs({ activeZ: 1, viewZ: null }).find((e) => e.key === 'ov:4,3,1')!.cell).toEqual({ x: 4, y: 3, z: 1 });
   });
 });
 
@@ -418,7 +423,9 @@ describe('buildProps — features de façade authorées', () => {
     // son décalage — un décalage relatif à une couverture ne se lit pas sans couverture.
     expect(socleM(chimney)).toBe(0);
     expect(chimney.states.visible).toBe(true);
-    expect(clesDeFeature(scene, undefined, { activeZ: -1, viewZ: null })).toEqual([]);
+    // La feature vit au z 0 : un ISOLEMENT sur un autre étage la retire, l'étage ACTIF jamais (#1317).
+    expect(clesDeFeature(scene, undefined, { activeZ: -1, viewZ: null })).toEqual(clesDeFeature(scene));
+    expect(clesDeFeature(scene, undefined, { viewZ: 1 })).toEqual([]);
   });
 
   it('qualifie les ids homonymes par corps et section', () => {

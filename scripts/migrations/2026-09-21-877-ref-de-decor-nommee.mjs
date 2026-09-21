@@ -16,10 +16,18 @@
  * Une entité qui porte DÉJÀ `ref` traverse INTACTE, y compris si son id est MORT : une ref hors
  * registre n'est pas du ressort d'une migration, le schéma la NOMME et l'auteur la corrige.
  *
+ * PÉRIMÈTRE RÉEL — les artefacts MANUSCRITS. Un `*-projet.json` PRODUIT par un générateur
+ * (`scripts/<campagne>/generate.mjs`) n'a pas sa donnée ici : sa SOURCE la porte à 100 %
+ * (`src/scenes/generateurs-byte-stables.test.ts`, #1522), et c'est là que le type se nomme — sinon la
+ * prochaine régénération reperdrait ce que ce passage aurait écrit. Les trois décors des quais
+ * (`barge-du-sel-quai › p0`, `ls-quai-salzenmund › p0`, `ls-quai-erengrad › p0`) ont donc été nommés
+ * À LEUR GÉNÉRATEUR. Ce script reste la voie des documents que personne ne regénère (au dépôt :
+ * `diligence`) et le PENDANT du migrateur de chargement pour les projets de bibliothèque utilisateur.
+ *
  * ENTRÉES : les `src/scenes/<campagne>/<campagne>-projet.json`.
- * CARDINAL MESURÉ sur l'arbre au moment de l'écriture (2026-09-21) : 4 projets, 28 Scènes, 314 décors,
- * dont 3 sans `ref` (`barge-du-sel-quai › p0`, `ls-quai-salzenmund › p0`, `ls-quai-erengrad › p0`) et
- * 0 ref hors registre. Le cardinal est RAPPORTÉ, jamais confronté (#1812) : une Scène neuve en ajoute.
+ * CARDINAL MESURÉ sur l'arbre après régénération (2026-09-21) : 4 projets, 28 Scènes, 314 décors,
+ * 0 sans `ref`, 0 ref hors registre. Le cardinal est RAPPORTÉ, jamais confronté (#1812) : une Scène
+ * neuve en ajoute.
  * FORMATAGE PRÉSERVÉ : les documents de scène ont leur PROPRE sérialiseur —
  * `JSON.stringify(doc, null, 1) + '\n'`. Forme vérifiée AVANT toute écriture : non canonique =
  * sortie 1, jamais un reflow silencieux.
