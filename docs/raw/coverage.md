@@ -17,7 +17,7 @@
 - **Cœur 5e** : ✅ 0 traités par une fiche · 📖 0 transcrits par un catalogue seul (jamais traités) · 🟡 0 effleurés · ⬜ 12 trous, sur 12 chapitres-règles (hors artefacts OCR).
 - **Livres sans cœur déclaré** : ✅ 48 traités par une fiche · 📖 45 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous, sur 95 chapitres-règles (hors artefacts OCR).
 
-Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3868 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2495 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **680 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅0·📖0·🟡0·⬜12 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
+Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3899 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2495 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **711 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅0·📖0·🟡0·⬜12 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -267,25 +267,25 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
 - **CRB 05** (Character Building) :
-  - ⬜ l.20-215 « FITTING IN » — candidat trou de règle, 0 réf
-  - ⬜ l.216-285 « Fate » — candidat trou de règle, 0 réf
-  - ⬜ l.286-289 « Fluent Languages » — candidat trou de règle, 0 réf
-  - ⬜ l.290-293 « Starting Skills » — candidat trou de règle, 0 réf
-  - ⬜ l.294-349 « Starting Talents » — candidat trou de règle, 0 réf
-  - ⬜ l.350-441 « Halfling Physical Characteristics » — candidat trou de règle, 0 réf
-  - ⬜ l.442-509 « Fluent Languages » — candidat trou de règle, 0 réf
-  - ⬜ l.510-531 « Wood Elf Physical Characteristics » — candidat trou de règle, 0 réf
-  - ⬜ l.532-549 « Starting Talents » — candidat trou de règle, 0 réf
-  - ⬜ l.550-571 « SYLVAN COUSINS » — candidat trou de règle, 0 réf
-  - ⬜ l.572-750 « CAREER LEVEL » — candidat trou de règle, 0 réf
-  - ⬜ l.751-828 « STARTING WEALTH » — candidat trou de règle, 0 réf
-  - ⬜ l.829-832 « Who are You? » — candidat trou de règle, 0 réf
-  - ⬜ l.833-844 « Choose an Ambition » — candidat trou de règle, 0 réf
-  - ⬜ l.845-850 « Achieving Your Ambitions » — candidat trou de règle, 0 réf
-  - ⬜ l.851-857 « What Brings You Together? » — candidat trou de règle, 0 réf
-  - ⬜ l.858-889 « QUESTIONS » — candidat trou de règle, 0 réf
-  - ⬜ l.890-895 « Party Ambition » — candidat trou de règle, 0 réf
-  - ⬜ l.896-909 « PLAYER REFERENCE » — candidat trou de règle, 0 réf
+  - ⬜ l.20-217 « FITTING IN » — candidat trou de règle, 0 réf
+  - ⬜ l.218-287 « Fate » — candidat trou de règle, 0 réf
+  - ⬜ l.288-291 « Fluent Languages » — candidat trou de règle, 0 réf
+  - ⬜ l.292-295 « Starting Skills » — candidat trou de règle, 0 réf
+  - ⬜ l.296-351 « Starting Talents » — candidat trou de règle, 0 réf
+  - ⬜ l.352-443 « Halfling Physical Characteristics » — candidat trou de règle, 0 réf
+  - ⬜ l.444-511 « Fluent Languages » — candidat trou de règle, 0 réf
+  - ⬜ l.512-533 « Wood Elf Physical Characteristics » — candidat trou de règle, 0 réf
+  - ⬜ l.534-551 « Starting Talents » — candidat trou de règle, 0 réf
+  - ⬜ l.552-573 « SYLVAN COUSINS » — candidat trou de règle, 0 réf
+  - ⬜ l.574-752 « CAREER LEVEL » — candidat trou de règle, 0 réf
+  - ⬜ l.753-830 « STARTING WEALTH » — candidat trou de règle, 0 réf
+  - ⬜ l.831-834 « Who are You? » — candidat trou de règle, 0 réf
+  - ⬜ l.835-846 « Choose an Ambition » — candidat trou de règle, 0 réf
+  - ⬜ l.847-852 « Achieving Your Ambitions » — candidat trou de règle, 0 réf
+  - ⬜ l.853-859 « What Brings You Together? » — candidat trou de règle, 0 réf
+  - ⬜ l.860-891 « QUESTIONS » — candidat trou de règle, 0 réf
+  - ⬜ l.892-897 « Party Ambition » — candidat trou de règle, 0 réf
+  - ⬜ l.898-911 « PLAYER REFERENCE » — candidat trou de règle, 0 réf
 - **CRB 06** (Class and Careers) :
   - ⬜ l.13-16 « CLASSES » — candidat trou de règle, 0 réf
   - ⬜ l.17-20 « CAREERS » — candidat trou de règle, 0 réf
@@ -299,294 +299,325 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.70-73 « 4. Talents » — candidat trou de règle, 0 réf
   - ⬜ l.74-77 « 5. Trappings » — candidat trou de règle, 0 réf
   - ⬜ l.78-81 « 6. Status » — candidat trou de règle, 0 réf
-  - ⬜ l.82-97 « ADVISER » — candidat trou de règle, 0 réf
-  - ⬜ l.98-159 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.160-187 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.188-213 « APOTHECARY » — candidat trou de règle, 0 réf
-  - ⬜ l.214-263 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.264-273 « A MULTITUDE OF TRADES » — candidat trou de règle, 0 réf
-  - ⬜ l.274-309 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.310-331 « ARTIST » — candidat trou de règle, 0 réf
-  - ⬜ l.332-369 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.370-397 « BAILIFF » — candidat trou de règle, 0 réf
-  - ⬜ l.398-455 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.456-465 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.466-481 « Beggar — Brass 1 » — candidat trou de règle, 0 réf
-  - ⬜ l.482-517 « Beggar King — Silver 2 » — candidat trou de règle, 0 réf
-  - ⬜ l.518-523 « BOATMAN ADVANCE SCHEME » — candidat trou de règle, 0 réf
-  - ⬜ l.524-567 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.568-597 « BOUNTY HUNTER » — candidat trou de règle, 0 réf
-  - ⬜ l.598-649 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.650-701 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.702-739 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.740-765 « COACHMAN » — candidat trou de règle, 0 réf
-  - ⬜ l.766-829 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.830-869 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.870-895 « ENGINEER » — candidat trou de règle, 0 réf
-  - ⬜ l.896-933 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.934-955 « ENTERTAINER » — candidat trou de règle, 0 réf
-  - ⬜ l.956-991 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.992-1019 « ENVOY » — candidat trou de règle, 0 réf
-  - ⬜ l.1020-1057 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1058-1085 « FENCE » — candidat trou de règle, 0 réf
-  - ⬜ l.1086-1139 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1140-1167 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1168-1201 « Prophet of Doom — Brass 0 » — candidat trou de règle, 0 réf
-  - ⬜ l.1202-1233 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1234-1257 « GUARD » — candidat trou de règle, 0 réf
-  - ⬜ l.1258-1299 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1300-1317 « HEDGE WITCH Peasant Class: Human » — candidat trou de règle, 0 réf
-  - ⬜ l.1318-1327 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1328-1353 « Hedge Witch — Brass 4 » — candidat trou de règle, 0 réf
-  - ⬜ l.1354-1375 « HERBALIST » — candidat trou de règle, 0 réf
-  - ⬜ l.1376-1435 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1436-1495 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1496-1543 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1544-1575 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1576-1597 « KNIGHT » — candidat trou de règle, 0 réf
-  - ⬜ l.1598-1649 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1650-1661 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1662-1697 « Lawyer — Silver 3 » — candidat trou de règle, 0 réf
-  - ⬜ l.1698-1723 « MERCHANT » — candidat trou de règle, 0 réf
-  - ⬜ l.1724-1775 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1776-1817 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1818-1843 « MINER » — candidat trou de règle, 0 réf
-  - ⬜ l.1844-1903 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1904-1937 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1938-1963 « NOBLE » — candidat trou de règle, 0 réf
-  - ⬜ l.1964-2015 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2016-2079 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2080-2113 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2114-2141 « PEDLAR » — candidat trou de règle, 0 réf
-  - ⬜ l.2142-2189 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2190-2251 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2252-2253 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2254-2277 « Riverguide — Brass 4 » — candidat trou de règle, 0 réf
-  - ⬜ l.2278-2319 « Navigator — Silver 3 » — candidat trou de règle, 0 réf
-  - ⬜ l.2320-2373 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2374-2425 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2426-2451 « PROTAGONIST » — candidat trou de règle, 0 réf
-  - ⬜ l.2452-2523 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2524-2565 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2566-2591 « RAT CATCHER » — candidat trou de règle, 0 réf
-  - ⬜ l.2592-2661 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2662-2703 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2704-2731 « RIVERWOMAN » — candidat trou de règle, 0 réf
-  - ⬜ l.2732-2799 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2800-2825 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2826-2861 « Road Captain — Gold 1 » — candidat trou de règle, 0 réf
-  - ⬜ l.2862-2903 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2904-2931 « SCHOLAR » — candidat trou de règle, 0 réf
-  - ⬜ l.2932-2951 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2952-2971 « Fellow — Silver 5 » — candidat trou de règle, 0 réf
-  - ⬜ l.2972-2999 « SCOUT » — candidat trou de règle, 0 réf
-  - ⬜ l.3000-3057 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3058-3117 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3118-3127 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3128-3171 « Giant Slayer — Brass 2 » — candidat trou de règle, 0 réf
-  - ⬜ l.3172-3191 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3192-3197 « Master Smuggler — Silver 5 » — candidat trou de règle, 0 réf
-  - ⬜ l.3198-3205 « Smuggler King — Gold 3 » — candidat trou de règle, 0 réf
-  - ⬜ l.3206-3231 « SOLDIER » — candidat trou de règle, 0 réf
-  - ⬜ l.3232-3265 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3266-3287 « SPY » — candidat trou de règle, 0 réf
-  - ⬜ l.3288-3303 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3304-3353 « Agent — Gold 1 » — candidat trou de règle, 0 réf
-  - ⬜ l.3354-3425 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3426-3461 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3462-3487 « TOWNSMAN » — candidat trou de règle, 0 réf
-  - ⬜ l.3488-3519 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3520-3543 « VILLAGER » — candidat trou de règle, 0 réf
-  - ⬜ l.3544-3607 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3608-3669 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3670-3697 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3698-3705 « Priest Captain — Gold 1 » — candidat trou de règle, 0 réf
-  - ⬜ l.3706-3733 « WATCHMAN » — candidat trou de règle, 0 réf
-  - ⬜ l.3734-3757 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3758-3789 « Watch Captain — Gold 1 » — candidat trou de règle, 0 réf
-  - ⬜ l.3790-3819 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3820-3845 « WITCH HUNTER » — candidat trou de règle, 0 réf
-  - ⬜ l.3846-3887 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3888-3913 « WIZARD » — candidat trou de règle, 0 réf
-  - ⬜ l.3914-3979 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3980-4009 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.4010-4019 « Wrecker Captain — Silver 5 » — candidat trou de règle, 0 réf
+  - ⬜ l.82-99 « ADVISER » — candidat trou de règle, 0 réf
+  - ⬜ l.100-135 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.136-165 « AGITATOR » — candidat trou de règle, 0 réf
+  - ⬜ l.166-193 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.194-219 « APOTHECARY » — candidat trou de règle, 0 réf
+  - ⬜ l.220-257 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.258-271 « ARTISAN » — candidat trou de règle, 0 réf
+  - ⬜ l.272-281 « A MULTITUDE OF TRADES » — candidat trou de règle, 0 réf
+  - ⬜ l.282-317 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.318-339 « ARTIST » — candidat trou de règle, 0 réf
+  - ⬜ l.340-377 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.378-405 « BAILIFF » — candidat trou de règle, 0 réf
+  - ⬜ l.406-443 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.444-465 « BEGGAR » — candidat trou de règle, 0 réf
+  - ⬜ l.466-475 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.476-491 « Beggar — Brass 1 » — candidat trou de règle, 0 réf
+  - ⬜ l.492-505 « Beggar King — Silver 2 » — candidat trou de règle, 0 réf
+  - ⬜ l.506-529 « BOATMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.530-535 « BOATMAN ADVANCE SCHEME » — candidat trou de règle, 0 réf
+  - ⬜ l.536-579 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.580-609 « BOUNTY HUNTER » — candidat trou de règle, 0 réf
+  - ⬜ l.610-637 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.638-663 « CAVALRYMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.664-717 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.718-755 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.756-781 « COACHMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.782-847 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.848-887 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.888-913 « ENGINEER » — candidat trou de règle, 0 réf
+  - ⬜ l.914-951 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.952-973 « ENTERTAINER » — candidat trou de règle, 0 réf
+  - ⬜ l.974-1009 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1010-1037 « ENVOY » — candidat trou de règle, 0 réf
+  - ⬜ l.1038-1075 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1076-1103 « FENCE » — candidat trou de règle, 0 réf
+  - ⬜ l.1104-1137 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1138-1161 « FLAGELLANT » — candidat trou de règle, 0 réf
+  - ⬜ l.1162-1189 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1190-1199 « Prophet of Doom — Brass 0 » — candidat trou de règle, 0 réf
+  - ⬜ l.1200-1227 « GRAVE ROBBER » — candidat trou de règle, 0 réf
+  - ⬜ l.1228-1259 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1260-1285 « GUARD » — candidat trou de règle, 0 réf
+  - ⬜ l.1286-1327 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1328-1347 « HEDGE WITCH » — candidat trou de règle, 0 réf
+  - ⬜ l.1348-1357 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1358-1383 « Hedge Witch — Brass 4 » — candidat trou de règle, 0 réf
+  - ⬜ l.1384-1405 « HERBALIST » — candidat trou de règle, 0 réf
+  - ⬜ l.1406-1443 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1444-1467 « HUNTER » — candidat trou de règle, 0 réf
+  - ⬜ l.1468-1501 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1502-1529 « INVESTIGATOR » — candidat trou de règle, 0 réf
+  - ⬜ l.1530-1553 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1554-1579 « KNAVE » — candidat trou de règle, 0 réf
+  - ⬜ l.1580-1611 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1612-1633 « KNIGHT » — candidat trou de règle, 0 réf
+  - ⬜ l.1634-1665 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1666-1687 « LAWYER » — candidat trou de règle, 0 réf
+  - ⬜ l.1688-1699 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1700-1735 « Lawyer — Silver 3 » — candidat trou de règle, 0 réf
+  - ⬜ l.1736-1761 « MERCHANT » — candidat trou de règle, 0 réf
+  - ⬜ l.1762-1793 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1794-1817 « MESSENGER » — candidat trou de règle, 0 réf
+  - ⬜ l.1818-1859 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1860-1885 « MINER » — candidat trou de règle, 0 réf
+  - ⬜ l.1886-1919 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1920-1947 « MYSTIC » — candidat trou de règle, 0 réf
+  - ⬜ l.1948-1981 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1982-2007 « NOBLE » — candidat trou de règle, 0 réf
+  - ⬜ l.2008-2037 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2038-2063 « NUN » — candidat trou de règle, 0 réf
+  - ⬜ l.2064-2101 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2102-2129 « OUTLAW » — candidat trou de règle, 0 réf
+  - ⬜ l.2130-2163 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2164-2191 « PEDLAR » — candidat trou de règle, 0 réf
+  - ⬜ l.2192-2219 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2220-2241 « PHYSICIAN » — candidat trou de règle, 0 réf
+  - ⬜ l.2242-2279 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2280-2305 « PILOT » — candidat trou de règle, 0 réf
+  - ⬜ l.2306-2307 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2308-2331 « Riverguide — Brass 4 » — candidat trou de règle, 0 réf
+  - ⬜ l.2332-2347 « Navigator — Silver 3 » — candidat trou de règle, 0 réf
+  - ⬜ l.2348-2375 « PIT FIGHTER » — candidat trou de règle, 0 réf
+  - ⬜ l.2376-2411 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2412-2433 « PRIEST » — candidat trou de règle, 0 réf
+  - ⬜ l.2434-2485 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2486-2513 « PROTAGONIST » — candidat trou de règle, 0 réf
+  - ⬜ l.2514-2563 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2564-2587 « RACKETEER » — candidat trou de règle, 0 réf
+  - ⬜ l.2588-2629 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2630-2655 « RAT CATCHER » — candidat trou de règle, 0 réf
+  - ⬜ l.2656-2703 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2704-2729 « RIVERWARDEN » — candidat trou de règle, 0 réf
+  - ⬜ l.2730-2771 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2772-2799 « RIVERWOMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.2800-2845 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2846-2871 « ROADWARDEN » — candidat trou de règle, 0 réf
+  - ⬜ l.2872-2897 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2898-2907 « Road Captain — Gold 1 » — candidat trou de règle, 0 réf
+  - ⬜ l.2908-2935 « SAILOR » — candidat trou de règle, 0 réf
+  - ⬜ l.2936-2977 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2978-3005 « SCHOLAR » — candidat trou de règle, 0 réf
+  - ⬜ l.3006-3025 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3026-3045 « Fellow — Silver 5 » — candidat trou de règle, 0 réf
+  - ⬜ l.3046-3073 « SCOUT » — candidat trou de règle, 0 réf
+  - ⬜ l.3074-3131 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3132-3165 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3166-3195 « SLAYER » — candidat trou de règle, 0 réf
+  - ⬜ l.3196-3205 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3206-3225 « Giant Slayer — Brass 2 » — candidat trou de règle, 0 réf
+  - ⬜ l.3226-3253 « SMUGGLER » — candidat trou de règle, 0 réf
+  - ⬜ l.3254-3273 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3274-3279 « Master Smuggler — Silver 5 » — candidat trou de règle, 0 réf
+  - ⬜ l.3280-3287 « Smuggler King — Gold 3 » — candidat trou de règle, 0 réf
+  - ⬜ l.3288-3313 « SOLDIER » — candidat trou de règle, 0 réf
+  - ⬜ l.3314-3347 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3348-3369 « SPY » — candidat trou de règle, 0 réf
+  - ⬜ l.3370-3385 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3386-3409 « Agent — Gold 1 » — candidat trou de règle, 0 réf
+  - ⬜ l.3410-3437 « STEVEDORE » — candidat trou de règle, 0 réf
+  - ⬜ l.3438-3481 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3482-3511 « THIEF » — candidat trou de règle, 0 réf
+  - ⬜ l.3512-3547 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3548-3573 « TOWNSMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.3574-3605 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3606-3629 « VILLAGER » — candidat trou de règle, 0 réf
+  - ⬜ l.3630-3667 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3668-3695 « WARDEN » — candidat trou de règle, 0 réf
+  - ⬜ l.3696-3737 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3738-3761 « WARRIOR PRIEST » — candidat trou de règle, 0 réf
+  - ⬜ l.3762-3789 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3790-3797 « Priest Captain — Gold 1 » — candidat trou de règle, 0 réf
+  - ⬜ l.3798-3825 « WATCHMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.3826-3849 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3850-3859 « Watch Captain — Gold 1 » — candidat trou de règle, 0 réf
+  - ⬜ l.3860-3885 « WITCH » — candidat trou de règle, 0 réf
+  - ⬜ l.3886-3915 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3916-3941 « WITCH HUNTER » — candidat trou de règle, 0 réf
+  - ⬜ l.3942-3983 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3984-4009 « WIZARD » — candidat trou de règle, 0 réf
+  - ⬜ l.4010-4053 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.4054-4077 « WRECKER » — candidat trou de règle, 0 réf
+  - ⬜ l.4078-4107 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.4108-4117 « Wrecker Captain — Silver 5 » — candidat trou de règle, 0 réf
 - **CRB 07** (Skills and Talents) :
-  - ⬜ l.17-24 « SKILLS » — candidat trou de règle, 0 réf
-  - ⬜ l.25-34 « Basic and Advanced Skills » — candidat trou de règle, 0 réf
-  - ⬜ l.35-70 « Grouped Skills and Specialisation » — candidat trou de règle, 0 réf
-  - ⬜ l.71-74 « Animal Care (Int) *advanced* » — candidat trou de règle, 0 réf
-  - ⬜ l.75-80 « Animal Training (Int) *advanced, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.81-86 « Art (Dex) *basic, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.87-90 « Athletics (Ag) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.91-94 « Bribery (Fel) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.95-100 « Channelling (WP) *advanced, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.101-104 « Charm (Fel) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.105-110 « Charm Animal (WP) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.111-114 « Consume Alcohol (T) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.115-118 « Cool (WP) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.119-122 « Dodge (Ag) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.123-126 « Drive (Ag) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.127-130 « Endurance (T) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.131-134 « Entertain (Fel) *basic, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.135-138 « Evaluate (Int) *advanced* » — candidat trou de règle, 0 réf
-  - ⬜ l.139-142 « Gamble (Int) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.143-146 « Gossip (Fel) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.147-150 « Haggle (Fel) basic » — candidat trou de règle, 0 réf
-  - ⬜ l.151-154 « Heal (Int) *advanced* » — candidat trou de règle, 0 réf
-  - ⬜ l.155-158 « Intimidate (S) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.159-162 « Intuition (I) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.163-168 « Language (Int) *advanced, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.169-172 « Leadership (Fel) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.173-178 « Lore (Int) *advanced, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.179-184 « Melee (WS) *basic, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.185-188 « Navigation (I) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.189-192 « Outdoor Survival (Int) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.193-196 « Perception (I) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.197-202 « Perform (Ag) *advanced, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.203-206 « Pick Lock (Dex) *advanced* » — candidat trou de règle, 0 réf
-  - ⬜ l.207-210 « Play (Dex) *advanced, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.211-224 « THE OLD WORLD'S A STAGE… » — candidat trou de règle, 0 réf
-  - ⬜ l.225-230 « Ranged (BS) *advanced, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.231-234 « Research (Int) *advanced* » — candidat trou de règle, 0 réf
-  - ⬜ l.235-238 « Ride (Ag) *basic, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.239-242 « Row (S) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.243-246 « Sail (Ag) *advanced* » — candidat trou de règle, 0 réf
-  - ⬜ l.247-250 « LOCAL LORES » — candidat trou de règle, 0 réf
-  - ⬜ l.251-256 « Secret Signs (Int) *advanced, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.257-260 « Set Trap (Dex) *advanced* » — candidat trou de règle, 0 réf
-  - ⬜ l.261-264 « Sleight of Hand (Dex) *advanced* » — candidat trou de règle, 0 réf
-  - ⬜ l.265-270 « Stealth (Ag) *basic, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.271-274 « Swim (S) *advanced* » — candidat trou de règle, 0 réf
-  - ⬜ l.275-278 « Track (I) *advanced* » — candidat trou de règle, 0 réf
-  - ⬜ l.279-284 « Trade (Dex) *advanced, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.285-288 « TALENTS » — candidat trou de règle, 0 réf
-  - ⬜ l.289-292 « Accurate Shot » — candidat trou de règle, 0 réf
-  - ⬜ l.293-296 « Acute Sense (Sense) » — candidat trou de règle, 0 réf
-  - ⬜ l.297-300 « Aethyric Attunement » — candidat trou de règle, 0 réf
-  - ⬜ l.301-304 « Alley Cat » — candidat trou de règle, 0 réf
-  - ⬜ l.305-308 « Ambidextrous » — candidat trou de règle, 0 réf
-  - ⬜ l.309-312 « Animal Affinity » — candidat trou de règle, 0 réf
-  - ⬜ l.313-326 « Arcane Magic (Lore) » — candidat trou de règle, 0 réf
-  - ⬜ l.327-330 « Argumentative » — candidat trou de règle, 0 réf
-  - ⬜ l.331-334 « Artistic (Art) » — candidat trou de règle, 0 réf
-  - ⬜ l.335-340 « Attractive » — candidat trou de règle, 0 réf
-  - ⬜ l.341-344 « Beat Blade » — candidat trou de règle, 0 réf
-  - ⬜ l.345-348 « Beneath Notice » — candidat trou de règle, 0 réf
-  - ⬜ l.349-352 « Berserk Charge » — candidat trou de règle, 0 réf
-  - ⬜ l.353-356 « Blather » — candidat trou de règle, 0 réf
-  - ⬜ l.357-362 « Bless (Deity) » — candidat trou de règle, 0 réf
-  - ⬜ l.363-366 « Bookish » — candidat trou de règle, 0 réf
-  - ⬜ l.367-370 « Break and Enter » — candidat trou de règle, 0 réf
-  - ⬜ l.371-374 « Briber » — candidat trou de règle, 0 réf
-  - ⬜ l.375-378 « Cardsharp » — candidat trou de règle, 0 réf
-  - ⬜ l.379-386 « Careful Strike » — candidat trou de règle, 0 réf
-  - ⬜ l.387-390 « Catfall » — candidat trou de règle, 0 réf
-  - ⬜ l.391-394 « Cat-tongued » — candidat trou de règle, 0 réf
-  - ⬜ l.395-410 « Chaos Magic (Lore) » — candidat trou de règle, 0 réf
-  - ⬜ l.411-414 « Combat Aware » — candidat trou de règle, 0 réf
-  - ⬜ l.415-420 « Combat Master » — candidat trou de règle, 0 réf
-  - ⬜ l.421-424 « Commanding Presence » — candidat trou de règle, 0 réf
-  - ⬜ l.425-428 « Concoct » — candidat trou de règle, 0 réf
-  - ⬜ l.429-432 « Contortionist » — candidat trou de règle, 0 réf
-  - ⬜ l.433-436 « Coolheaded » — candidat trou de règle, 0 réf
-  - ⬜ l.437-442 « Crack the Whip » — candidat trou de règle, 0 réf
-  - ⬜ l.443-448 « Criminal » — candidat trou de règle, 0 réf
-  - ⬜ l.449-452 « Deadeye Shot » — candidat trou de règle, 0 réf
-  - ⬜ l.453-456 « Dealmaker » — candidat trou de règle, 0 réf
-  - ⬜ l.457-462 « Detect Artefact » — candidat trou de règle, 0 réf
-  - ⬜ l.463-466 « Dicer » — candidat trou de règle, 0 réf
-  - ⬜ l.467-470 « Dirty Fighting » — candidat trou de règle, 0 réf
-  - ⬜ l.471-474 « Disarm » — candidat trou de règle, 0 réf
-  - ⬜ l.475-478 « Distract » — candidat trou de règle, 0 réf
-  - ⬜ l.479-482 « Doomed » — candidat trou de règle, 0 réf
-  - ⬜ l.483-505 « DOOMINGS » — candidat trou de règle, 0 réf
-  - ⬜ l.506-509 « Dual Wielder » — candidat trou de règle, 0 réf
-  - ⬜ l.510-515 « Embezzle » — candidat trou de règle, 0 réf
-  - ⬜ l.516-519 « Enclosed Fighter » — candidat trou de règle, 0 réf
-  - ⬜ l.520-523 « Etiquette (Social Group) » — candidat trou de règle, 0 réf
-  - ⬜ l.524-531 « Fast Hands » — candidat trou de règle, 0 réf
-  - ⬜ l.532-535 « Fearless (Enemy) » — candidat trou de règle, 0 réf
-  - ⬜ l.536-539 « Feint » — candidat trou de règle, 0 réf
-  - ⬜ l.540-543 « Field Dressing » — candidat trou de règle, 0 réf
-  - ⬜ l.544-547 « Fisherman » — candidat trou de règle, 0 réf
-  - ⬜ l.548-551 « Flagellant » — candidat trou de règle, 0 réf
-  - ⬜ l.552-555 « Flee! » — candidat trou de règle, 0 réf
-  - ⬜ l.556-559 « Fleet-footed » — candidat trou de règle, 0 réf
-  - ⬜ l.560-563 « Frenzy » — candidat trou de règle, 0 réf
-  - ⬜ l.564-567 « Frightening » — candidat trou de règle, 0 réf
-  - ⬜ l.568-571 « Furious Assault » — candidat trou de règle, 0 réf
-  - ⬜ l.572-575 « Gregarious » — candidat trou de règle, 0 réf
-  - ⬜ l.576-579 « Gunner » — candidat trou de règle, 0 réf
-  - ⬜ l.580-583 « Hardy » — candidat trou de règle, 0 réf
-  - ⬜ l.584-589 « Hatred (Group) » — candidat trou de règle, 0 réf
-  - ⬜ l.590-593 « Holy Hatred » — candidat trou de règle, 0 réf
-  - ⬜ l.594-597 « Holy Visions » — candidat trou de règle, 0 réf
-  - ⬜ l.598-621 « Hunter's Eye » — candidat trou de règle, 0 réf
-  - ⬜ l.622-1023 « Invoke (Deity) » — candidat trou de règle, 0 réf
+  - ⬜ l.21-28 « SKILLS » — candidat trou de règle, 0 réf
+  - ⬜ l.29-38 « Basic and Advanced Skills » — candidat trou de règle, 0 réf
+  - ⬜ l.39-74 « Grouped Skills and Specialisation » — candidat trou de règle, 0 réf
+  - ⬜ l.75-78 « Animal Care (Int) *advanced* » — candidat trou de règle, 0 réf
+  - ⬜ l.79-84 « Animal Training (Int) *advanced, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.85-90 « Art (Dex) *basic, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.91-94 « Athletics (Ag) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.95-98 « Bribery (Fel) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.99-104 « Channelling (WP) *advanced, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.105-108 « Charm (Fel) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.109-114 « Charm Animal (WP) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.115-118 « Consume Alcohol (T) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.119-122 « Cool (WP) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.123-126 « Dodge (Ag) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.127-130 « Drive (Ag) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.131-134 « Endurance (T) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.135-138 « Entertain (Fel) *basic, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.139-142 « Evaluate (Int) *advanced* » — candidat trou de règle, 0 réf
+  - ⬜ l.143-146 « Gamble (Int) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.147-150 « Gossip (Fel) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.151-154 « Haggle (Fel) basic » — candidat trou de règle, 0 réf
+  - ⬜ l.155-158 « Heal (Int) *advanced* » — candidat trou de règle, 0 réf
+  - ⬜ l.159-162 « Intimidate (S) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.163-166 « Intuition (I) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.167-172 « Language (Int) *advanced, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.173-176 « Leadership (Fel) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.177-182 « Lore (Int) *advanced, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.183-188 « Melee (WS) *basic, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.189-192 « Navigation (I) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.193-196 « Outdoor Survival (Int) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.197-200 « Perception (I) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.201-206 « Perform (Ag) *advanced, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.207-210 « Pick Lock (Dex) *advanced* » — candidat trou de règle, 0 réf
+  - ⬜ l.211-214 « Play (Dex) *advanced, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.215-228 « THE OLD WORLD'S A STAGE… » — candidat trou de règle, 0 réf
+  - ⬜ l.229-234 « Ranged (BS) *advanced, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.235-238 « Research (Int) *advanced* » — candidat trou de règle, 0 réf
+  - ⬜ l.239-242 « Ride (Ag) *basic, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.243-246 « Row (S) *basic* » — candidat trou de règle, 0 réf
+  - ⬜ l.247-250 « Sail (Ag) *advanced* » — candidat trou de règle, 0 réf
+  - ⬜ l.251-254 « LOCAL LORES » — candidat trou de règle, 0 réf
+  - ⬜ l.255-260 « Secret Signs (Int) *advanced, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.261-264 « Set Trap (Dex) *advanced* » — candidat trou de règle, 0 réf
+  - ⬜ l.265-268 « Sleight of Hand (Dex) *advanced* » — candidat trou de règle, 0 réf
+  - ⬜ l.269-274 « Stealth (Ag) *basic, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.275-278 « Swim (S) *advanced* » — candidat trou de règle, 0 réf
+  - ⬜ l.279-282 « Track (I) *advanced* » — candidat trou de règle, 0 réf
+  - ⬜ l.283-288 « Trade (Dex) *advanced, grouped* » — candidat trou de règle, 0 réf
+  - ⬜ l.289-292 « TALENTS » — candidat trou de règle, 0 réf
+  - ⬜ l.293-296 « Accurate Shot » — candidat trou de règle, 0 réf
+  - ⬜ l.297-300 « Acute Sense (Sense) » — candidat trou de règle, 0 réf
+  - ⬜ l.301-304 « Aethyric Attunement » — candidat trou de règle, 0 réf
+  - ⬜ l.305-308 « Alley Cat » — candidat trou de règle, 0 réf
+  - ⬜ l.309-312 « Ambidextrous » — candidat trou de règle, 0 réf
+  - ⬜ l.313-316 « Animal Affinity » — candidat trou de règle, 0 réf
+  - ⬜ l.317-330 « Arcane Magic (Lore) » — candidat trou de règle, 0 réf
+  - ⬜ l.331-334 « Argumentative » — candidat trou de règle, 0 réf
+  - ⬜ l.335-338 « Artistic (Art) » — candidat trou de règle, 0 réf
+  - ⬜ l.339-344 « Attractive » — candidat trou de règle, 0 réf
+  - ⬜ l.345-348 « Beat Blade » — candidat trou de règle, 0 réf
+  - ⬜ l.349-352 « Beneath Notice » — candidat trou de règle, 0 réf
+  - ⬜ l.353-356 « Berserk Charge » — candidat trou de règle, 0 réf
+  - ⬜ l.357-360 « Blather » — candidat trou de règle, 0 réf
+  - ⬜ l.361-366 « Bless (Deity) » — candidat trou de règle, 0 réf
+  - ⬜ l.367-370 « Bookish » — candidat trou de règle, 0 réf
+  - ⬜ l.371-374 « Break and Enter » — candidat trou de règle, 0 réf
+  - ⬜ l.375-378 « Briber » — candidat trou de règle, 0 réf
+  - ⬜ l.379-382 « Cardsharp » — candidat trou de règle, 0 réf
+  - ⬜ l.383-390 « Careful Strike » — candidat trou de règle, 0 réf
+  - ⬜ l.391-394 « Catfall » — candidat trou de règle, 0 réf
+  - ⬜ l.395-398 « Cat-tongued » — candidat trou de règle, 0 réf
+  - ⬜ l.399-414 « Chaos Magic (Lore) » — candidat trou de règle, 0 réf
+  - ⬜ l.415-418 « Combat Aware » — candidat trou de règle, 0 réf
+  - ⬜ l.419-424 « Combat Master » — candidat trou de règle, 0 réf
+  - ⬜ l.425-428 « Commanding Presence » — candidat trou de règle, 0 réf
+  - ⬜ l.429-432 « Concoct » — candidat trou de règle, 0 réf
+  - ⬜ l.433-436 « Contortionist » — candidat trou de règle, 0 réf
+  - ⬜ l.437-440 « Coolheaded » — candidat trou de règle, 0 réf
+  - ⬜ l.441-446 « Crack the Whip » — candidat trou de règle, 0 réf
+  - ⬜ l.447-452 « Criminal » — candidat trou de règle, 0 réf
+  - ⬜ l.453-456 « Deadeye Shot » — candidat trou de règle, 0 réf
+  - ⬜ l.457-460 « Dealmaker » — candidat trou de règle, 0 réf
+  - ⬜ l.461-466 « Detect Artefact » — candidat trou de règle, 0 réf
+  - ⬜ l.467-470 « Dicer » — candidat trou de règle, 0 réf
+  - ⬜ l.471-474 « Dirty Fighting » — candidat trou de règle, 0 réf
+  - ⬜ l.475-478 « Disarm » — candidat trou de règle, 0 réf
+  - ⬜ l.479-482 « Distract » — candidat trou de règle, 0 réf
+  - ⬜ l.483-486 « Doomed » — candidat trou de règle, 0 réf
+  - ⬜ l.487-509 « DOOMINGS » — candidat trou de règle, 0 réf
+  - ⬜ l.510-513 « Dual Wielder » — candidat trou de règle, 0 réf
+  - ⬜ l.514-519 « Embezzle » — candidat trou de règle, 0 réf
+  - ⬜ l.520-523 « Enclosed Fighter » — candidat trou de règle, 0 réf
+  - ⬜ l.524-527 « Etiquette (Social Group) » — candidat trou de règle, 0 réf
+  - ⬜ l.528-535 « Fast Hands » — candidat trou de règle, 0 réf
+  - ⬜ l.536-539 « Fearless (Enemy) » — candidat trou de règle, 0 réf
+  - ⬜ l.540-543 « Feint » — candidat trou de règle, 0 réf
+  - ⬜ l.544-547 « Field Dressing » — candidat trou de règle, 0 réf
+  - ⬜ l.548-551 « Fisherman » — candidat trou de règle, 0 réf
+  - ⬜ l.552-555 « Flagellant » — candidat trou de règle, 0 réf
+  - ⬜ l.556-559 « Flee! » — candidat trou de règle, 0 réf
+  - ⬜ l.560-563 « Fleet-footed » — candidat trou de règle, 0 réf
+  - ⬜ l.564-567 « Frenzy » — candidat trou de règle, 0 réf
+  - ⬜ l.568-571 « Frightening » — candidat trou de règle, 0 réf
+  - ⬜ l.572-575 « Furious Assault » — candidat trou de règle, 0 réf
+  - ⬜ l.576-579 « Gregarious » — candidat trou de règle, 0 réf
+  - ⬜ l.580-583 « Gunner » — candidat trou de règle, 0 réf
+  - ⬜ l.584-587 « Hardy » — candidat trou de règle, 0 réf
+  - ⬜ l.588-593 « Hatred (Group) » — candidat trou de règle, 0 réf
+  - ⬜ l.594-597 « Holy Hatred » — candidat trou de règle, 0 réf
+  - ⬜ l.598-601 « Holy Visions » — candidat trou de règle, 0 réf
+  - ⬜ l.602-625 « Hunter's Eye » — candidat trou de règle, 0 réf
+  - ⬜ l.626-1027 « Invoke (Deity) » — candidat trou de règle, 0 réf
 - **CRB 08** (Rules) :
   - ⬜ l.44-55 « DARKNESS AND TESTS » — candidat trou de règle, 0 réf
-  - ⬜ l.56-260 « CRITICALS AND FUMBLES » — candidat trou de règle, 0 réf
-  - ⬜ l.261-318 « EXAMPLE DIFFICULTIES OF COMMON UNDERHANDED TASKS » — candidat trou de règle, 0 réf
-  - ⬜ l.319-521 « EXAMPLE OUTCOMES » — candidat trou de règle, 0 réf
-  - ⬜ l.522-553 « SOCIAL TEST DIFFICULTY FACTORS » — candidat trou de règle, 0 réf
-  - ⬜ l.554-727 « Making Friends (and Enemies) » — candidat trou de règle, 0 réf
-  - ⬜ l.728-779 « Mistaken Identity » — candidat trou de règle, 0 réf
-  - ⬜ l.780-824 « EXAMPLE DIFFICULTIES OF COMMON INVESTIGATIVE TASKS » — candidat trou de règle, 0 réf
-  - ⬜ l.825-938 « BATTLE TONGUE » — candidat trou de règle, 0 réf
-  - ⬜ l.939-1102 « Tracking » — candidat trou de règle, 0 réf
-  - ⬜ l.1103-1332 « HOW FAR, THOUGH? » — candidat trou de règle, 0 réf
-  - ⬜ l.1333-1387 « Disengaging » — candidat trou de règle, 0 réf
-  - ⬜ l.1388-1783 « 4: Apply Damage » — candidat trou de règle, 0 réf
-  - ⬜ l.1784-1862 « ARM CRITICAL WOUNDS » — candidat trou de règle, 0 réf
-  - ⬜ l.1863-1960 « Broken Bones » — candidat trou de règle, 0 réf
-  - ⬜ l.1961-2036 « Tongue » — candidat trou de règle, 0 réf
-  - ⬜ l.2037-2114 « Itching Pox » — candidat trou de règle, 0 réf
-  - ⬜ l.2115-2203 « Infection » — candidat trou de règle, 0 réf
-  - ⬜ l.2204-2211 « Frenzy » — candidat trou de règle, 0 réf
-  - ⬜ l.2212-2413 « Hatred (Target) » — candidat trou de règle, 0 réf
-  - ⬜ l.2414-2497 « Manifestation Time » — candidat trou de règle, 0 réf
+  - ⬜ l.56-262 « CRITICALS AND FUMBLES » — candidat trou de règle, 0 réf
+  - ⬜ l.263-320 « EXAMPLE DIFFICULTIES OF COMMON UNDERHANDED TASKS » — candidat trou de règle, 0 réf
+  - ⬜ l.321-523 « EXAMPLE OUTCOMES » — candidat trou de règle, 0 réf
+  - ⬜ l.524-555 « SOCIAL TEST DIFFICULTY FACTORS » — candidat trou de règle, 0 réf
+  - ⬜ l.556-729 « Making Friends (and Enemies) » — candidat trou de règle, 0 réf
+  - ⬜ l.730-781 « Mistaken Identity » — candidat trou de règle, 0 réf
+  - ⬜ l.782-826 « EXAMPLE DIFFICULTIES OF COMMON INVESTIGATIVE TASKS » — candidat trou de règle, 0 réf
+  - ⬜ l.827-940 « BATTLE TONGUE » — candidat trou de règle, 0 réf
+  - ⬜ l.941-1106 « Tracking » — candidat trou de règle, 0 réf
+  - ⬜ l.1107-1336 « HOW FAR, THOUGH? » — candidat trou de règle, 0 réf
+  - ⬜ l.1337-1391 « Disengaging » — candidat trou de règle, 0 réf
+  - ⬜ l.1392-1787 « 4: Apply Damage » — candidat trou de règle, 0 réf
+  - ⬜ l.1788-1866 « ARM CRITICAL WOUNDS » — candidat trou de règle, 0 réf
+  - ⬜ l.1867-1964 « Broken Bones » — candidat trou de règle, 0 réf
+  - ⬜ l.1965-2040 « Tongue » — candidat trou de règle, 0 réf
+  - ⬜ l.2041-2118 « Itching Pox » — candidat trou de règle, 0 réf
+  - ⬜ l.2119-2209 « Infection » — candidat trou de règle, 0 réf
+  - ⬜ l.2210-2217 « Frenzy » — candidat trou de règle, 0 réf
+  - ⬜ l.2218-2419 « Hatred (Target) » — candidat trou de règle, 0 réf
+  - ⬜ l.2420-2503 « Manifestation Time » — candidat trou de règle, 0 réf
 - **CRB 09** (Between Adventures) :
-  - ⬜ l.303-343 « Elves and Yenlui » — candidat trou de règle, 0 réf
-  - ⬜ l.344-483 « Change Career » — candidat trou de règle, 0 réf
-  - ⬜ l.484-497 « Training » — candidat trou de règle, 0 réf
+  - ⬜ l.305-345 « Elves and Yenlui » — candidat trou de règle, 0 réf
+  - ⬜ l.346-485 « Change Career » — candidat trou de règle, 0 réf
+  - ⬜ l.486-499 « Training » — candidat trou de règle, 0 réf
 - **CRB 10** (Religion and Belief) :
   - ⬜ l.41-147 « The Chaos Gods » — candidat trou de règle, 0 réf
   - ⬜ l.148-195 « Worshippers » — candidat trou de règle, 0 réf
   - ⬜ l.196-231 « Penances » — candidat trou de règle, 0 réf
   - ⬜ l.232-359 « Worshippers » — candidat trou de règle, 0 réf
   - ⬜ l.360-425 « Holy Sites » — candidat trou de règle, 0 réf
-  - ⬜ l.426-523 « Worshippers » — candidat trou de règle, 0 réf
-  - ⬜ l.524-629 « CHIEF GODS OF DWARFS, ELVES, AND HALFLINGS » — candidat trou de règle, 0 réf
-  - ⬜ l.630-645 « DIVINE SERVANTS » — candidat trou de règle, 0 réf
-  - ⬜ l.646-685 « PRAYER FORMAT » — candidat trou de règle, 0 réf
-  - ⬜ l.686-701 « Blessing of Battle » — candidat trou de règle, 0 réf
-  - ⬜ l.702-719 « Blessing of Charisma » — candidat trou de règle, 0 réf
-  - ⬜ l.720-735 « Blessing of Courage » — candidat trou de règle, 0 réf
-  - ⬜ l.736-785 « Blessing of Fortune » — candidat trou de règle, 0 réf
-  - ⬜ l.786-809 « Blessing of Protection » — candidat trou de règle, 0 réf
-  - ⬜ l.810-827 « Blessing of Savagery » — candidat trou de règle, 0 réf
-  - ⬜ l.828-865 « Blessing of Wisdom » — candidat trou de règle, 0 réf
-  - ⬜ l.866-935 « Becalm » — candidat trou de règle, 0 réf
-  - ⬜ l.936-943 « Last Rites » — candidat trou de règle, 0 réf
-  - ⬜ l.944-959 « Portal's Threshold » — candidat trou de règle, 0 réf
-  - ⬜ l.960-971 « Blazing Sun » — candidat trou de règle, 0 réf
-  - ⬜ l.972-1003 « Fury's Call » — candidat trou de règle, 0 réf
-  - ⬜ l.1004-1011 « An Invitation » — candidat trou de règle, 0 réf
-  - ⬜ l.1012-1017 « Cat's Eyes » — candidat trou de règle, 0 réf
-  - ⬜ l.1018-1025 « Cheat the Odds » — candidat trou de règle, 0 réf
-  - ⬜ l.1026-1071 « Ranald's Grace » — candidat trou de règle, 0 réf
-  - ⬜ l.1072-1100 « Rhya's Shelter » — candidat trou de règle, 0 réf
-  - ⬜ l.1101-1118 « Rhya's Union » — candidat trou de règle, 0 réf
-  - ⬜ l.1119-1138 « Balm to a Wounded Mind » — candidat trou de règle, 0 réf
-  - ⬜ l.1139-1190 « Shallya's Tears » — candidat trou de règle, 0 réf
-  - ⬜ l.1191-1228 « Twin-tailed Comet » — candidat trou de règle, 0 réf
-  - ⬜ l.1229-1234 « Lord of the Hunt » — candidat trou de règle, 0 réf
-  - ⬜ l.1235-1252 « Tanglefoot » — candidat trou de règle, 0 réf
-  - ⬜ l.1253-1272 « Hoarfrost's Chill » — candidat trou de règle, 0 réf
-  - ⬜ l.1273-1302 « The Snow King's Judgement » — candidat trou de règle, 0 réf
-  - ⬜ l.1303-1324 « Blind Justice » — candidat trou de règle, 0 réf
-  - ⬜ l.1325-1340 « Truth Will Out » — candidat trou de règle, 0 réf
+  - ⬜ l.426-525 « Worshippers » — candidat trou de règle, 0 réf
+  - ⬜ l.526-633 « CHIEF GODS OF DWARFS, ELVES, AND HALFLINGS » — candidat trou de règle, 0 réf
+  - ⬜ l.634-649 « DIVINE SERVANTS » — candidat trou de règle, 0 réf
+  - ⬜ l.650-689 « PRAYER FORMAT » — candidat trou de règle, 0 réf
+  - ⬜ l.690-705 « Blessing of Battle » — candidat trou de règle, 0 réf
+  - ⬜ l.706-723 « Blessing of Charisma » — candidat trou de règle, 0 réf
+  - ⬜ l.724-739 « Blessing of Courage » — candidat trou de règle, 0 réf
+  - ⬜ l.740-789 « Blessing of Fortune » — candidat trou de règle, 0 réf
+  - ⬜ l.790-813 « Blessing of Protection » — candidat trou de règle, 0 réf
+  - ⬜ l.814-831 « Blessing of Savagery » — candidat trou de règle, 0 réf
+  - ⬜ l.832-869 « Blessing of Wisdom » — candidat trou de règle, 0 réf
+  - ⬜ l.870-939 « Becalm » — candidat trou de règle, 0 réf
+  - ⬜ l.940-947 « Last Rites » — candidat trou de règle, 0 réf
+  - ⬜ l.948-963 « Portal's Threshold » — candidat trou de règle, 0 réf
+  - ⬜ l.964-975 « Blazing Sun » — candidat trou de règle, 0 réf
+  - ⬜ l.976-1007 « Fury's Call » — candidat trou de règle, 0 réf
+  - ⬜ l.1008-1015 « An Invitation » — candidat trou de règle, 0 réf
+  - ⬜ l.1016-1021 « Cat's Eyes » — candidat trou de règle, 0 réf
+  - ⬜ l.1022-1029 « Cheat the Odds » — candidat trou de règle, 0 réf
+  - ⬜ l.1030-1075 « Ranald's Grace » — candidat trou de règle, 0 réf
+  - ⬜ l.1076-1104 « Rhya's Shelter » — candidat trou de règle, 0 réf
+  - ⬜ l.1105-1122 « Rhya's Union » — candidat trou de règle, 0 réf
+  - ⬜ l.1123-1142 « Balm to a Wounded Mind » — candidat trou de règle, 0 réf
+  - ⬜ l.1143-1194 « Shallya's Tears » — candidat trou de règle, 0 réf
+  - ⬜ l.1195-1232 « Twin-tailed Comet » — candidat trou de règle, 0 réf
+  - ⬜ l.1233-1238 « Lord of the Hunt » — candidat trou de règle, 0 réf
+  - ⬜ l.1239-1256 « Tanglefoot » — candidat trou de règle, 0 réf
+  - ⬜ l.1257-1276 « Hoarfrost's Chill » — candidat trou de règle, 0 réf
+  - ⬜ l.1277-1306 « The Snow King's Judgement » — candidat trou de règle, 0 réf
+  - ⬜ l.1307-1328 « Blind Justice » — candidat trou de règle, 0 réf
+  - ⬜ l.1329-1344 « Truth Will Out » — candidat trou de règle, 0 réf
 - **CRB 11** (Magic) :
   - ⬜ l.29-44 « What Is the Aethyr? » — candidat trou de règle, 0 réf
   - ⬜ l.45-76 « The Lore of Light » — candidat trou de règle, 0 réf
@@ -630,62 +661,62 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.994-1291 « TROLL TYPES » — candidat trou de règle, 0 réf
   - ⬜ l.1292-1475 « UNQUIET DEAD » — candidat trou de règle, 0 réf
   - ⬜ l.1476-1649 « TOMB BANSHEE » — candidat trou de règle, 0 réf
-  - ⬜ l.1650-1762 « UNGOR » — candidat trou de règle, 0 réf
-  - ⬜ l.1763-1788 « Optional Traits » — candidat trou de règle, 0 réf
-  - ⬜ l.1789-1838 « Optional Traits » — candidat trou de règle, 0 réf
-  - ⬜ l.1839-1952 « BLOODLETTER OF KHORNE » — candidat trou de règle, 0 réf
-  - ⬜ l.1953-1992 « CLANRAT » — candidat trou de règle, 0 réf
-  - ⬜ l.1993-2166 « STORMVERMIN » — candidat trou de règle, 0 réf
-  - ⬜ l.2167-2256 « SPELLCASTER » — candidat trou de règle, 0 réf
-  - ⬜ l.2257-2392 « UNGRAKK - GOR BEASTLORD (COMMANDER) » — candidat trou de règle, 0 réf
-  - ⬜ l.2393-2396 « Afraid (Target) » — candidat trou de règle, 0 réf
-  - ⬜ l.2397-2400 « Amphibious » — candidat trou de règle, 0 réf
-  - ⬜ l.2401-2404 « Animosity (Target) » — candidat trou de règle, 0 réf
-  - ⬜ l.2405-2408 « Belligerent » — candidat trou de règle, 0 réf
-  - ⬜ l.2409-2418 « Bestial » — candidat trou de règle, 0 réf
-  - ⬜ l.2419-2424 « Blessed (Deity) » — candidat trou de règle, 0 réf
-  - ⬜ l.2425-2437 « Breath » — candidat trou de règle, 0 réf
-  - ⬜ l.2438-2441 « Champion » — candidat trou de règle, 0 réf
-  - ⬜ l.2442-2449 « Chill Grasp » — candidat trou de règle, 0 réf
-  - ⬜ l.2450-2453 « Constrictor » — candidat trou de règle, 0 réf
-  - ⬜ l.2454-2457 « Construct » — candidat trou de règle, 0 réf
-  - ⬜ l.2458-2461 « Corrosive Blood » — candidat trou de règle, 0 réf
-  - ⬜ l.2462-2469 « Corruption (Strength) » — candidat trou de règle, 0 réf
-  - ⬜ l.2470-2475 « Daemonic (Rating) » — candidat trou de règle, 0 réf
-  - ⬜ l.2476-2479 « Disease (Type) » — candidat trou de règle, 0 réf
-  - ⬜ l.2480-2483 « Distracting » — candidat trou de règle, 0 réf
-  - ⬜ l.2484-2491 « Ethereal » — candidat trou de règle, 0 réf
-  - ⬜ l.2492-2497 « Fly (Rating) » — candidat trou de règle, 0 réf
-  - ⬜ l.2498-2501 « Frenzy » — candidat trou de règle, 0 réf
-  - ⬜ l.2502-2505 « Ghostly Howl » — candidat trou de règle, 0 réf
-  - ⬜ l.2506-2509 « Grim » — candidat trou de règle, 0 réf
-  - ⬜ l.2510-2513 « Hatred (Target) » — candidat trou de règle, 0 réf
-  - ⬜ l.2514-2517 « Horns » — candidat trou de règle, 0 réf
-  - ⬜ l.2518-2521 « Hungry » — candidat trou de règle, 0 réf
-  - ⬜ l.2522-2525 « Immune to Psychology » — candidat trou de règle, 0 réf
-  - ⬜ l.2526-2531 « Immunity (Type) » — candidat trou de règle, 0 réf
-  - ⬜ l.2532-2535 « Infestation » — candidat trou de règle, 0 réf
-  - ⬜ l.2536-2551 « Many Heads (Number) » — candidat trou de règle, 0 réf
-  - ⬜ l.2552-2555 « Magical » — candidat trou de règle, 0 réf
-  - ⬜ l.2556-2559 « Magic Resistance » — candidat trou de règle, 0 réf
-  - ⬜ l.2560-2569 « Mental Corruption » — candidat trou de règle, 0 réf
-  - ⬜ l.2570-2573 « Mutation » — candidat trou de règle, 0 réf
-  - ⬜ l.2574-2577 « Night Vision » — candidat trou de règle, 0 réf
-  - ⬜ l.2578-2581 « Painless » — candidat trou de règle, 0 réf
-  - ⬜ l.2582-2585 « Petrifying Gaze » — candidat trou de règle, 0 réf
-  - ⬜ l.2586-2589 « Regeneration » — candidat trou de règle, 0 réf
-  - ⬜ l.2590-2661 « Size (Various) » — candidat trou de règle, 0 réf
-  - ⬜ l.2662-2665 « Spellcaster (Various) » — candidat trou de règle, 0 réf
-  - ⬜ l.2666-2669 « Sprinter » — candidat trou de règle, 0 réf
-  - ⬜ l.2670-2673 « Stealthy » — candidat trou de règle, 0 réf
-  - ⬜ l.2674-2685 « Striding Gait (Terrain) » — candidat trou de règle, 0 réf
-  - ⬜ l.2686-2703 « Skittish » — candidat trou de règle, 0 réf
-  - ⬜ l.2704-2707 « # Tentacles » — candidat trou de règle, 0 réf
-  - ⬜ l.2708-2755 « Territorial » — candidat trou de règle, 0 réf
-  - ⬜ l.2756-2763 « Vomit » — candidat trou de règle, 0 réf
-  - ⬜ l.2764-2771 « Wallcrawler » — candidat trou de règle, 0 réf
+  - ⬜ l.1650-1764 « UNGOR » — candidat trou de règle, 0 réf
+  - ⬜ l.1765-1790 « Optional Traits » — candidat trou de règle, 0 réf
+  - ⬜ l.1791-1840 « Optional Traits » — candidat trou de règle, 0 réf
+  - ⬜ l.1841-1954 « BLOODLETTER OF KHORNE » — candidat trou de règle, 0 réf
+  - ⬜ l.1955-1994 « CLANRAT » — candidat trou de règle, 0 réf
+  - ⬜ l.1995-2168 « STORMVERMIN » — candidat trou de règle, 0 réf
+  - ⬜ l.2169-2258 « SPELLCASTER » — candidat trou de règle, 0 réf
+  - ⬜ l.2259-2394 « UNGRAKK - GOR BEASTLORD (COMMANDER) » — candidat trou de règle, 0 réf
+  - ⬜ l.2395-2398 « Afraid (Target) » — candidat trou de règle, 0 réf
+  - ⬜ l.2399-2402 « Amphibious » — candidat trou de règle, 0 réf
+  - ⬜ l.2403-2406 « Animosity (Target) » — candidat trou de règle, 0 réf
+  - ⬜ l.2407-2410 « Belligerent » — candidat trou de règle, 0 réf
+  - ⬜ l.2411-2420 « Bestial » — candidat trou de règle, 0 réf
+  - ⬜ l.2421-2426 « Blessed (Deity) » — candidat trou de règle, 0 réf
+  - ⬜ l.2427-2439 « Breath » — candidat trou de règle, 0 réf
+  - ⬜ l.2440-2443 « Champion » — candidat trou de règle, 0 réf
+  - ⬜ l.2444-2451 « Chill Grasp » — candidat trou de règle, 0 réf
+  - ⬜ l.2452-2455 « Constrictor » — candidat trou de règle, 0 réf
+  - ⬜ l.2456-2459 « Construct » — candidat trou de règle, 0 réf
+  - ⬜ l.2460-2463 « Corrosive Blood » — candidat trou de règle, 0 réf
+  - ⬜ l.2464-2471 « Corruption (Strength) » — candidat trou de règle, 0 réf
+  - ⬜ l.2472-2477 « Daemonic (Rating) » — candidat trou de règle, 0 réf
+  - ⬜ l.2478-2481 « Disease (Type) » — candidat trou de règle, 0 réf
+  - ⬜ l.2482-2485 « Distracting » — candidat trou de règle, 0 réf
+  - ⬜ l.2486-2493 « Ethereal » — candidat trou de règle, 0 réf
+  - ⬜ l.2494-2499 « Fly (Rating) » — candidat trou de règle, 0 réf
+  - ⬜ l.2500-2503 « Frenzy » — candidat trou de règle, 0 réf
+  - ⬜ l.2504-2507 « Ghostly Howl » — candidat trou de règle, 0 réf
+  - ⬜ l.2508-2511 « Grim » — candidat trou de règle, 0 réf
+  - ⬜ l.2512-2515 « Hatred (Target) » — candidat trou de règle, 0 réf
+  - ⬜ l.2516-2519 « Horns » — candidat trou de règle, 0 réf
+  - ⬜ l.2520-2523 « Hungry » — candidat trou de règle, 0 réf
+  - ⬜ l.2524-2527 « Immune to Psychology » — candidat trou de règle, 0 réf
+  - ⬜ l.2528-2533 « Immunity (Type) » — candidat trou de règle, 0 réf
+  - ⬜ l.2534-2537 « Infestation » — candidat trou de règle, 0 réf
+  - ⬜ l.2538-2553 « Many Heads (Number) » — candidat trou de règle, 0 réf
+  - ⬜ l.2554-2557 « Magical » — candidat trou de règle, 0 réf
+  - ⬜ l.2558-2561 « Magic Resistance » — candidat trou de règle, 0 réf
+  - ⬜ l.2562-2571 « Mental Corruption » — candidat trou de règle, 0 réf
+  - ⬜ l.2572-2575 « Mutation » — candidat trou de règle, 0 réf
+  - ⬜ l.2576-2579 « Night Vision » — candidat trou de règle, 0 réf
+  - ⬜ l.2580-2583 « Painless » — candidat trou de règle, 0 réf
+  - ⬜ l.2584-2587 « Petrifying Gaze » — candidat trou de règle, 0 réf
+  - ⬜ l.2588-2591 « Regeneration » — candidat trou de règle, 0 réf
+  - ⬜ l.2592-2663 « Size (Various) » — candidat trou de règle, 0 réf
+  - ⬜ l.2664-2667 « Spellcaster (Various) » — candidat trou de règle, 0 réf
+  - ⬜ l.2668-2671 « Sprinter » — candidat trou de règle, 0 réf
+  - ⬜ l.2672-2675 « Stealthy » — candidat trou de règle, 0 réf
+  - ⬜ l.2676-2687 « Striding Gait (Terrain) » — candidat trou de règle, 0 réf
+  - ⬜ l.2688-2705 « Skittish » — candidat trou de règle, 0 réf
+  - ⬜ l.2706-2709 « # Tentacles » — candidat trou de règle, 0 réf
+  - ⬜ l.2710-2757 « Territorial » — candidat trou de règle, 0 réf
+  - ⬜ l.2758-2765 « Vomit » — candidat trou de règle, 0 réf
+  - ⬜ l.2766-2773 « Wallcrawler » — candidat trou de règle, 0 réf
 - **CRB 16** (Appendices) :
-  - ⬜ l.210-287 « Prone (page 186) » — candidat trou de règle, 0 réf
+  - ⬜ l.210-289 « Prone (page 186) » — candidat trou de règle, 0 réf
 
 ## AA — ✅ 9 · 📖 4 · 🟡 0 · ⬜ 0
 
@@ -2003,4 +2034,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: e32bc8c89f908d687e2026916f8758e2683e6e48 (372 fichiers, 20 dossiers) corps: 29c75d5fb02b4e56ad6cb7cb49fa12e756b9f7a6 -->
+<!-- sources-empreinte: 813265362e0458475ae6d846eb9cc0a450a05c28 (372 fichiers, 20 dossiers) corps: da8941c2c62b228ce8301a079318c36fe7814832 -->
