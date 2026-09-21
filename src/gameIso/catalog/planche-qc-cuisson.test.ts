@@ -45,13 +45,12 @@ const CENTRE_PLANCHE = { x: 0, z: 0 };
 const estMemeSens = (a: Vec3, b: Vec3 | null) => !!b && produit(a, b) > 0;
 
 describe('planche QC — le DEHORS peint est celui de la cuisson', () => {
-  it('les 22 recettes × 4 crans : la planche PEINT exactement les triangles que la cuisson écrit FRONTAUX', () => {
+  it('chaque recette × 4 crans : la planche PEINT exactement les triangles que la cuisson écrit FRONTAUX', () => {
     // Les deux côtés se calculent à des GRANULARITÉS différentes, et c'est là toute la mesure : la
     // planche cull une FACE entière (`preparerVue`), la cuisson oriente chaque TRIANGLE
     // (`sceneMeshes.ts:441`, après `fanTriangles`). Un éventail dont un triangle diverge de sa face —
     // recette non plane, non convexe, sommets colinéaires — peint au QC une surface que le GPU écarte,
     // ou l'inverse : l'auteur juge alors une image que le jeu ne rend pas.
-    expect(RECETTES.length).toBe(22);
     const oeil = versTrois(versOeilDe('iso'));
     const désaccords: string[] = [];
     let faces = 0;
@@ -84,7 +83,7 @@ describe('planche QC — le DEHORS peint est celui de la cuisson', () => {
   it('l’œil est AU-DESSUS : les faces peintes portent plus haut que les faces cachées, aux 4 crans', () => {
     // VÉRITÉ FIXE, indépendante de la loi : une coquille close vue d'en haut montre son dessus et ses
     // flancs proches, elle cache son dessous et ses flancs lointains. Un dehors RETOURNÉ échange
-    // exactement les deux lots — l'inégalité s'inverse sur les 88 cas (22 recettes × 4 crans).
+    // exactement les deux lots — l'inégalité s'inverse sur chaque cas (chaque recette × 4 crans).
     const moyenne = (v: number[]) => v.reduce((s, x) => s + x, 0) / v.length;
     const inversés: string[] = [];
     for (const id of RECETTES) {

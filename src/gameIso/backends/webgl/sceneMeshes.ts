@@ -352,25 +352,42 @@ function propVolumeSignature(scene: Scene): string {
   return parts.join(';');
 }
 
+/**
+ * UNE DEP PAR OBJET EMPLOYÉ — la règle de TAILLE du read-set, écrite une seule fois pour les deux
+ * moissons de catalogue ci-dessous (#1343). Les entrées sont comparées par IDENTITÉ, terme à terme, à
+ * chaque geste de l'hôte : un objet cité N fois n'y détecte rien de plus que la première fois, et
+ * gonfle la comparaison à proportion de ce que la scène POSE. Le `Set` garde l'ordre de première
+ * rencontre — deux scènes au même catalogue employé rendent la même liste. PURE.
+ */
+const depsUniques = (moisson: (ajouter: (dep: unknown) => void) => void): readonly unknown[] => {
+  const out = new Set<unknown>();
+  moisson((dep) => { out.add(dep); });
+  return [...out];
+};
+
 /** Ce que la cuisson lit du CATALOGUE pour les décors volumiques de la scène : leur recette et les
  *  matériaux qu'elle nomme, à PLAT (une dep par objet, comparée par identité comme les autres) — une
- *  retouche de recette au Codex change l'objet, donc la dep, sans que la scène ait bougé. */
+ *  retouche de recette au Codex change l'objet, donc la dep, sans que la scène ait bougé.
+ *  Une dep par recette EMPLOYÉE (`depsUniques`), quel que soit le nombre d'instances posées. */
 function propRecipeDeps(scene: Scene): readonly unknown[] {
-  const out: unknown[] = [];
-  for (const ent of scene.entities) {
-    if (ent.kind !== 'prop') continue;
-    const volume = findPropById(ent.ref)?.volume;
-    if (!volume) continue;
-    out.push(volume);
-    for (const primitive of volume.primitives) out.push(findPropMaterialById(primitive.material));
-  }
-  return out;
+  return depsUniques((ajouter) => {
+    for (const ent of scene.entities) {
+      if (ent.kind !== 'prop') continue;
+      const volume = findPropById(ent.ref)?.volume;
+      if (!volume) continue;
+      ajouter(volume);
+      for (const primitive of volume.primitives) ajouter(findPropMaterialById(primitive.material));
+    }
+  });
 }
 
 /**
  * Ce que la cuisson lit du catalogue des MATIÈRES pour les deux autres domaines du monde — MÊME patron
- * que `propRecipeDeps` : une dep par OBJET, comparée par identité, si bien qu'une retouche de matière
- * au Codex change la dep sans que la scène ait bougé.
+ * que `propRecipeDeps`, et par la MÊME règle (`depsUniques`) : une dep par OBJET EMPLOYÉ, comparée par
+ * identité, si bien qu'une retouche de matière au Codex change la dep sans que la scène ait bougé.
+ * Le dédoublonnage mord ici comme là : un quartier de cent corps couverts de la même tuile n'a qu'UNE
+ * couverture à surveiller, et la couverture effective d'un corps est le plus souvent celle de ses
+ * propres masses.
  *  - TOITURES : celles que la scène NOMME (`BuildingMass.material`, et la couverture EFFECTIVE dont les
  *    masses DÉRIVÉES héritent — `toitureEffective`, `state/sceneEdit.ts` : corps, puis type de bâtiment,
  *    puis scène).
@@ -383,13 +400,13 @@ function propRecipeDeps(scene: Scene): readonly unknown[] {
  *    qu'aucune scène ne pose recuit une fois pour rien.
  */
 function matiereDeps(scene: Scene): readonly unknown[] {
-  const out: unknown[] = [];
-  for (const body of scene.architecture ?? []) {
-    out.push(roofMaterial(toitureEffective(scene, body).material));
-    for (const mass of body.masses) out.push(roofMaterial(mass.material));
-  }
-  out.push(...matieresDe('relief'));
-  return out;
+  return depsUniques((ajouter) => {
+    for (const body of scene.architecture ?? []) {
+      ajouter(roofMaterial(toitureEffective(scene, body).material));
+      for (const mass of body.masses) ajouter(roofMaterial(mass.material));
+    }
+    for (const matiere of matieresDe('relief')) ajouter(matiere);
+  });
 }
 
 /**

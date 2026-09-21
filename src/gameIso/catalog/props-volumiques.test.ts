@@ -229,8 +229,9 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
    * LE CONTRAT DU SOCLE, en ATTENDUS NOMINAUX : l'empreinte de chaque recette, à chacun de ses quatre
    * caps. Elle ne se compare à AUCUNE donnée — `foot` a disparu des recettes (migration
    * `2026-09-03-1509-foot-volumique-mort.mjs`, refine `defs/props.ts`), et se comparer à ce que le
-   * code dérive lui-même ne rougirait jamais. La liste est CLOSE et son cardinal verrouillé : une
-   * recette de plus s'y déclare avec ses cases mesurées, ou elle sort rouge sans être vue.
+   * code dérive lui-même ne rougirait jamais. La liste est CLOSE, et c'est la COUVERTURE qui la ferme
+   * (ses clés sont EXACTEMENT le catalogue) : une recette de plus s'y déclare avec ses cases mesurées,
+   * ou elle sort rouge sans être vue.
    */
   const EMPREINTES_ATTENDUES: Readonly<Record<string, { ns: [number, number]; eo: [number, number] }>> = {
     // Les deux recettes MULTI-CASE du catalogue : leur plateau (3,80 m pour la table longue, 3,00 m
@@ -240,6 +241,15 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
     // un mur fait 1×2), jamais par un `foot` déclaré — qui ne tournerait pas avec le cap.
     'table-2x1': { ns: [2, 1], eo: [1, 2] },
     'table-murale-2-tabourets': { ns: [2, 1], eo: [1, 2] },
+    // Lot B (#1343) : trois recettes qui REPRODUISENT en corps dérivé le `foot` que leur def
+    // d'entrée déclarait — un bureau et un établi longs de 3,40 m, un manteau de scène de 5,60 m.
+    // Le `foot` authoré est mort avec la conversion (#1509) ; ce sont ces cotes-là qui le tiennent.
+    'bureau-2x1': { ns: [2, 1], eo: [1, 2] },
+    'etabli-2x1': { ns: [2, 1], eo: [1, 2] },
+    'rideau-scene': { ns: [3, 1], eo: [1, 3] },
+    // La rangée de fauteuils du parterre : trois assises sous une même ménuiserie de 5,40 m, séparées
+    // par quatre accoudoirs — son 3×1 vient de ce corps, là où elle le DÉCLARAIT en billboard.
+    'rangee-sieges': { ns: [3, 1], eo: [1, 3] },
     // Toutes les autres tiennent sur UNE case, à tous les caps. La table ronde n'y tient que parce
     // que ses quatre tabourets sont exclus du corps (sans eux elle mesurerait 2×2 — cf. le contrat de
     // cache de `data/props-integrity.test.ts`).
@@ -248,12 +258,17 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
       'armoire', 'etagere', 'etal-marche', 'cheminee-interieure', 'comptoir-droit', 'comptoir-angle',
       'table-ronde-4-tabourets', 'cheminee', 'enseigne', 'clocheton',
       'applique-murale',
+      // Lot B (#1343) — le mobilier de l'opéra/théâtre : chacun tient sur sa case à tous ses caps.
+      'siege', 'fauteuil-loge', 'canape', 'coiffeuse', 'pupitre-chef', 'miroir', 'paravent',
+      'portant-costumes', 'rack-armes', 'scie-chevalet', 'decor-flat',
+      // … et les deux BASES courtes, converties avec leurs variantes longues : une demi-migration
+      // aurait laissé le même meuble en volume ici et en billboard là, selon sa longueur.
+      'bureau', 'etabli',
     ]).map((id) => [id, { ns: [1, 1], eo: [1, 1] }])),
   };
 
   it('la liste des empreintes attendues couvre EXACTEMENT le catalogue des recettes', () => {
     expect(Object.keys(EMPREINTES_ATTENDUES).sort()).toEqual([...IDS].sort());
-    expect(IDS.length, 'cardinal des recettes volumiques').toBe(22);
     // Au moins une recette MULTI-CASE, sans quoi la rotation d'empreinte ne serait mesurée sur rien.
     expect(Object.values(EMPREINTES_ATTENDUES).filter((a) => a.ns[0] > 1 || a.ns[1] > 1).length).toBeGreaterThan(0);
   });

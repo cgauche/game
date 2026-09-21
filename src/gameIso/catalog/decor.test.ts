@@ -76,8 +76,10 @@ describe('Opéra — props de théâtre', () => {
     }
   });
   it('le mobilier de salle porte une empreinte 3×1, le garde-corps se pose à la CASE ; le lustre est en surplomb (sans empreinte)', () => {
-    expect(findPropById('rangee-sieges')?.foot).toEqual({ w: 3, h: 1 });
-    expect(findPropById('rideau-scene')?.foot).toEqual({ w: 3, h: 1 });
+    // Le mobilier de salle est une RECETTE (#1343) : son 3×1 se DÉRIVE des corps (rangée de 5,40 m,
+    // manteau de scène de 5,60 m) — c'est l'empreinte EFFECTIVE qui le porte, comme pour `table-2x1`.
+    expect(empreinteDe('rangee-sieges')).toEqual({ w: 3, h: 1 });
+    expect(empreinteDe('rideau-scene')).toEqual({ w: 3, h: 1 });
     // La rive d'un puits suit l'ovale en marches d'une à deux cases : une travée par case de rive
     // l'épouse, là qu'une volée de trois enjamberait les refends (`opera/floorplan.ts` `puitsRim`).
     expect(findPropById('balustrade-loge')?.foot).toEqual({ w: 1, h: 1 });
@@ -89,9 +91,9 @@ describe('Opéra — props de théâtre', () => {
       expect(PROPS[id].label, id).not.toBe(PROPS[base].label);
       expect(propSvg(id), id).toBe(propSvg(base)); // même vignette que sa base
       expect(propSvg(id).length, id).toBeGreaterThan(40);
-      // L'empreinte EFFECTIVE, pas le `foot` déclaré : `table-2x1` est une RECETTE et n'en porte plus
-      // depuis #1509 (ses deux cases viennent de son corps), là où `bureau-2x1`/`etabli-2x1` sont des
-      // billboards qui le déclarent. Les deux familles répondent à la même couture.
+      // L'empreinte EFFECTIVE, jamais un `foot` déclaré : les trois variantes longues sont des
+      // RECETTES, et un décor à recette n'a plus de `foot` (#1509) — leurs deux cases viennent de
+      // leur corps (plateaux de 3,40 à 3,80 m), comme la case unique de leur base.
       expect(empreinteDe(id), id).toEqual({ w: 2, h: 1 });
       expect(empreinteDe(base), base).toEqual({ w: 1, h: 1 });
     }

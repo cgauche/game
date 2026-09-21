@@ -24,7 +24,6 @@ const LEGACY_PROP_FOOT_TABLE: [string, number, number][] = [
   // `opera/floorplan.ts` `puitsRim`) : son empreinte de type a suivi le modèle, pas la migration.
   ['balustrade-loge', 1, 1],
   ['barque', 2, 1],
-  ['bureau-2x1', 2, 1],
   ['canon-de-pont', 1, 1],
   ['charrette', 2, 1],
   ['cheval-mort', 2, 1],
@@ -34,19 +33,21 @@ const LEGACY_PROP_FOOT_TABLE: [string, number, number][] = [
   ['epave-carrosse', 2, 2],
   ['escalier-bois', 1, 1],
   ['escalier-loge', 1, 1],
-  ['etabli-2x1', 2, 1],
   ['foyer-de-forge', 1, 1],
   ['idole-chaos', 2, 2],
   ['lit', 2, 1],
   ['passerelle-d-embarquement', 2, 1],
-  ['rangee-sieges', 3, 1],
-  ['rideau-scene', 3, 1],
   ['rouleau-de-cordage', 1, 1],
   ['stalle-ecurie', 1, 1],
   // `table-2x1` a QUITTÉ cette table : c'est une RECETTE, et depuis #1509 un décor à recette n'a plus
   // de `foot` — ses deux cases viennent de son corps (migration
   // `2026-09-03-1509-foot-volumique-mort.mjs`). La table ci-dessus ne liste plus que des BILLBOARDS,
   // les seuls à qui le champ appartient.
+  // Par la MÊME porte, le lot B de #1343 a emporté `bureau-2x1`, `etabli-2x1`, `rideau-scene` et
+  // `rangee-sieges` : devenus recettes, leurs 2×1 / 2×1 / 3×1 / 3×1 sont désormais DÉRIVÉS de leurs
+  // corps (3,40 m, 3,40 m, 5,60 m, 5,40 m), et c'est
+  // `gameIso/catalog/props-volumiques.test.ts` `EMPREINTES_ATTENDUES` qui les tient.
+  // Cette liste ne peut que DÉCROÎTRE : chaque billboard converti en sort.
   ['tente', 2, 2],
   ['tribune', 3, 1],
 ];

@@ -167,7 +167,7 @@ export const SPECS_PAR_DATASET: Readonly<Record<string, Readonly<Record<string, 
  * ne tourne pas (#1509), et une diagonale poserait son corps en travers de cases restées
  * traversables. Refusé AU PARSE par `sceneEntitySchema` (`defs-scenes/scene.ts`).
  */
-export const PROPS_VOLUMIQUES: readonly string[] = ['applique-murale', 'armoire', 'banc', 'caisse', 'chaise', 'cheminee', 'cheminee-interieure', 'clocheton', 'coffre', 'comptoir-angle', 'comptoir-droit', 'enseigne', 'etagere', 'etal-marche', 'table', 'table-2x1', 'table-murale-2-tabourets', 'table-ronde-4-tabourets', 'tabouret', 'tonneau', 'tonneaux-pile', 'urne'];
+export const PROPS_VOLUMIQUES: readonly string[] = ['applique-murale', 'armoire', 'banc', 'bureau', 'bureau-2x1', 'caisse', 'canape', 'chaise', 'cheminee', 'cheminee-interieure', 'clocheton', 'coffre', 'coiffeuse', 'comptoir-angle', 'comptoir-droit', 'decor-flat', 'enseigne', 'etabli', 'etabli-2x1', 'etagere', 'etal-marche', 'fauteuil-loge', 'miroir', 'paravent', 'portant-costumes', 'pupitre-chef', 'rack-armes', 'rangee-sieges', 'rideau-scene', 'scie-chevalet', 'siege', 'table', 'table-2x1', 'table-murale-2-tabourets', 'table-ronde-4-tabourets', 'tabouret', 'tonneau', 'tonneaux-pile', 'urne'];
 
 /**
  * SOUS-LISTES d'ids d'un dataset DISCRIMINÉ, par valeur de son champ discriminant (le def le
