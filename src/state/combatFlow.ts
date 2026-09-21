@@ -274,7 +274,7 @@ import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY
 import { registerCascadeApplier, registerCascadeTableFold, runCascadeImmediate, registerTableStep, rollTableStep, poserCurseurCascade, lireEnSeuil, etapesDeLaFenetre } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
 import { combatEndBands, combatEndRowMeta } from './combatEndBands';
-import type { CascadeStepMeta, EnchainementDuCoup, RebondDeChaine, SeuilDeSauvegarde, SauvegardeSuite, SuiteDeCoup, ToucheDeProjectile } from './pendings';
+import type { CascadeStepMeta, ChaineDeBalayage, EnchainementDuCoup, RebondDeChaine, SeuilDeSauvegarde, SauvegardeSuite, SuiteDeCoup, ToucheDeProjectile } from './pendings';
 import {
   freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, monoStep, pousseSi,
   hostStep, idDansLaSequence, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, pushDie, tableStep, makeBandFactory,
@@ -3162,7 +3162,7 @@ export function maybeOpenDefense(
   attacker: Combatant,
   target: Combatant,
   weapon: Weapon = attacker.weapons[0],
-  free?: { kind: string; prevActed: boolean },
+  suite?: SuiteDeCoup,
   fromCharge?: boolean,
 ): boolean {
   if (defenseEnCours(get())) return refuserLaDefense(attacker, target);
@@ -3184,10 +3184,10 @@ export function maybeOpenDefense(
       pendingDefense: {
         attackerId: attacker.id, defenderId: target.id, weapon, location: null, atk, env, atkCompo,
         mode: best?.mode ?? modes[0], parryWeaponUid: best?.parryWeapon?.uid, modes, distanceTiles: dist, def: null, result: null,
-        ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
+        suite: { mode: 'machine', coup: suite ?? {} },
       },
     });
-    return openDefenseCascade(get, set, target); // fenêtre refusée (PROD dégradé) → le tir se résout sans opposition
+    return openDefenseCascade(get, set, target);
   }
   if (weapon?.type !== 'melee') return false;
   if (combatDistance(attacker, target) > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
@@ -3219,9 +3219,9 @@ export function maybeOpenDefense(
       mode: bestDefenseMode(target),
       def: null,
       result: null,
-      // Attaque GRATUITE de créature (Morsure/Caudale/Piétinement) : portée au resolve pour
-      // restaurer l'Action (gratuite), appliquer ses effets RAW et enchaîner la file.
-      ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
+      // CE QUE LA FERMETURE JOUERA : la suite que le producteur aurait passée à `applyAttackResult` sur
+      // son chemin instantané (coup nu, maillon de balayage, gratuite — LDB 85 l.41-43).
+      suite: { mode: 'machine', coup: suite ?? {} },
     },
   });
   return openDefenseCascade(get, set, target);
@@ -3275,7 +3275,7 @@ export function openSurfacedDefense(get: Get, set: SetFn, attacker: Combatant, t
     attackerId: attacker.id, defenderId: target.id, weapon, location: pa.location, atk, def: null, result: null,
     env, withhold: pa.withhold, atkCompo: frozenDifficulty(pa.result!.attackerDetail!),
     ...(chargeMount ? { dmgProxy: { sb: bonus(effectiveChar(chargeMount, 'force')), size: chargeMount.size } } : {}),
-    pa: { ...pa, defended: true },
+    suite: { mode: 'pilotee' as const, pa: { ...pa, defended: true } },
   };
   if (weapon.type === 'ranged') {
     const modes = rangedDefenseModes(attacker, target, weapon, dist, true, mpt);
@@ -3451,41 +3451,26 @@ export function cleaveTargets(battle: BattleState, attacker: Combatant, hitIds: 
   });
 }
 
-/** État d'une chaîne de balayage EN COURS (portée par la fenêtre de défense qui la suspend) : cibles déjà
- *  frappées, enchaînements consommés, borne BCC, mode (Taille vs Frappe Mortelle). */
-export interface CleaveChain { hitIds: string[]; n: number; bcc: number; fm: boolean }
-
 /** Poursuit la chaîne de balayage. Chaque enchaînement passe par la MÊME couture d'ouverture que l'attaque
- *  principale (`maybeOpenDefense`, patron `applyFreeAttack`) : si le défenseur est SURFACÉ, la chaîne est
- *  PARQUÉE sur la fenêtre (`pendingDefense.cleaveChain`) et reprise par `defenseConfirm` — jamais roulée en
- *  silence. Sinon l'enchaînement se résout instantanément. */
-function runCleaveChain(get: Get, set: SetFn, attacker: Combatant, chain: CleaveChain): void {
+ *  principale (`maybeOpenDefense`, patron `applyFreeAttack`) : le maillon SUIVANT est la suite que le coup
+ *  emporte, que la fenêtre du défenseur SURFACÉ s'interpose (`defenseConfirm` la joue) ou non — la chaîne
+ *  n'est jamais roulée en silence. */
+function runCleaveChain(get: Get, set: SetFn, attacker: Combatant, chain: ChaineDeBalayage): void {
   let hitIds = chain.hitIds;
   for (let n = chain.n; n < chain.bcc; n++) {
     const battle = get().battle;
     if (!battle || battle.over) break;
-    // Une défense VIVANTE (ouverte par le coup précédent ou par une autre file) : la chaîne PARQUE sur
-    // elle son état INTACT et attend — `defenseConfirm` la reprendra (LDB 85 l.41-43).
-    if (defenseEnCours(get())) {
-      const pd = get().pendingDefense!;
-      set({ pendingDefense: { ...pd, cleaveChain: { hitIds, n, bcc: chain.bcc, fm: chain.fm } } });
-      return;
-    }
     const next = cleaveTargets(battle, attacker, hitIds)[0];
     if (!next) break;
     hitIds = [...hitIds, next.id];
-    if (maybeOpenDefense(get, set, attacker, next)) {
-      const pd = get().pendingDefense;
-      if (pd) set({ pendingDefense: { ...pd, cleaveChain: { hitIds, n: n + 1, bcc: chain.bcc, fm: chain.fm } } });
-      return; // chaîne suspendue : la reprise part de `defenseConfirm`
-    }
+    // Le maillon SUIVANT entre AVEC le coup, par le HAUT : la MÊME valeur va à la fenêtre du défenseur
+    // surfacé (qui la joue à sa fermeture) et à l'application instantanée ; la case libérée ne se lit
+    // qu'APRÈS l'application (`resumeCleaveChain`).
+    const suite: SuiteDeCoup = { enchainement: { mode: 'chaine', hitIds, n: n + 1, bcc: chain.bcc, fm: chain.fm } };
+    if (maybeOpenDefense(get, set, attacker, next, undefined, suite)) return; // chaîne suspendue : la reprise part de `defenseConfirm`
     const r = resolveAttack(get, attacker, next);
     if (!r) continue; // hors de portée (ne devrait pas : déjà filtré adjacent) — borne consommée tout de même
-    // Le maillon SUIVANT entre AVEC le coup (même forme que la chaîne portée par `pendingDefense`
-    // ci-dessus) : toute fenêtre ouverte ici l'emporte, la reprise repart de là, et la case libérée ne se
-    // lit qu'APRÈS l'application (`resumeCleaveChain`).
-    if (applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res, false, undefined,
-      { enchainement: { mode: 'chaine', hitIds, n: n + 1, bcc: chain.bcc, fm: chain.fm } })) return;
+    if (applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res, false, undefined, suite)) return;
     const killed = isOutOfAction(next);
     if (killed && next.pos) {
       placeCombatant(attacker, get().scene, next.pos); // se déplace sur la case libérée
@@ -3497,9 +3482,9 @@ function runCleaveChain(get: Get, set: SetFn, attacker: Combatant, chain: Cleave
   bus.emit(EVT.SCENE_DIRTY);
 }
 
-/** REPREND une chaîne de balayage parquée par une fenêtre de défense (`pendingDefense.cleaveChain`), une
- *  fois l'enchaînement appliqué : recalage sur la case d'une cible tuée (LDB 14 l.9) puis suite de la chaîne. */
-export function resumeCleaveChain(get: Get, set: SetFn, attacker: Combatant, defender: Combatant, chain: CleaveChain): void {
+/** REPREND une chaîne de balayage que le coup portait dans sa suite (`enchainement: 'chaine'`), une fois
+ *  l'enchaînement appliqué : recalage sur la case d'une cible tuée (LDB 14 l.9) puis suite de la chaîne. */
+export function resumeCleaveChain(get: Get, set: SetFn, attacker: Combatant, defender: Combatant, chain: ChaineDeBalayage): void {
   const killed = isOutOfAction(defender);
   if (killed && defender.pos) {
     placeCombatant(attacker, get().scene, defender.pos);
@@ -3681,8 +3666,8 @@ export function aiAvailableFreeAttack(get: Get, set: SetFn, actor: Combatant): b
  * `pendingFreeAttacks` ; ce qui les rappelle à la fermeture dépend du chemin (un coup interrompu par
  * un Critique à dévier n'a aujourd'hui personne pour les redemander — #1858).
  *
- * `disponibles` : les gratuites d'Arme ne suivent QUE l'Action (jamais une gratuite — `pd.free`, ni une
- * manœuvre gratuite), le site le déclare.
+ * `disponibles` : les gratuites d'Arme ne suivent QUE l'Action (jamais une gratuite — celle que nomme la
+ * `suite` de la fenêtre —, ni une manœuvre gratuite), le site le déclare.
  */
 export function drainerLesGratuites(get: Get, set: SetFn, actor: Combatant, opts: { disponibles: boolean }): boolean {
   if (defenseEnCours(get())) return true; // une fenêtre est déjà vivante : la file attend sa fermeture
@@ -3717,14 +3702,14 @@ function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extra
   else if (op.advantageOrMovement) campSpend(get, actor, 1);
   actor.freeAttacksThisTurn = { ...uses, [fa.key]: (uses[fa.key] ?? 0) + 1, ...(op.perChargerOncePerRound ? { [ck]: 1 } : {}) };
   const prevActed = get().battle?.acted ?? false; // gratuite : Action préservée
+  // L'Action entre AVEC le coup : la MÊME suite va à la fenêtre du défenseur SURFACÉ et à l'application
+  // instantanée, et la reprise rend l'Action APRÈS son `markActed`.
+  const suite: SuiteDeCoup = { freeAttack: { kind: fa.key, prevActed } };
   // Défenseur SURFACÉ : la frappe passe par la MÊME couture d'ouverture que les autres gratuites
   // (patron `applyFreeAttack`) — suspendue ici, appliquée à `defenseConfirm` (Action restaurée).
   // REND sa suspension (#1852) : l'appelant s'arrête, la frappe suivante attend la fermeture.
-  if (maybeOpenDefense(get, set, actor, target, actor.weapons[0], { kind: fa.key, prevActed })) return true;
+  if (maybeOpenDefense(get, set, actor, target, actor.weapons[0], suite)) return true;
   const r = resolveAttack(get, actor, target);
-  // L'Action entre AVEC le coup (même donnée `{kind, prevActed}` que la fenêtre de défense ci-dessus) :
-  // toute fenêtre la porte, et la reprise rend l'Action APRÈS son `markActed`.
-  const suite: SuiteDeCoup = { freeAttack: { kind: fa.key, prevActed } };
   if (!r) return false;
   if (applyAttackResult(get, set, actor, r.victim ?? target, r.weapon, r.res, false, undefined, suite)) return true; // conséquence influençable ouverte (Critique, sauvegarde) : même suspension
   // MÊME écriture de queue que la reprise ; enchaînement absent = `auto` (LDB 85 l.362).
@@ -3829,12 +3814,12 @@ function applyFreeAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
   const prevActed = get().battle?.acted ?? false;
   campSpend(get, attacker, cost); // réserve du camp en mode groupe (AA 11 l.30-38) / le combattant (LDB)
   const weapon = freeAttackWeapon(kind, bonus);
-  if (maybeOpenDefense(get, set, attacker, target, weapon, { kind, prevActed })) return true; // suspendu : resolve via défense
-  const res = resolveMelee(attacker, target, weapon, battleRng(), { defense: cannotDefend(target) ? 'none' : bestDefenseMode(target) });
   // La manœuvre entre AVEC sa suite (#1508) : ses effets authored attendent la touche RÉELLE et se jouent
   // à la reprise sur la touche telle qu'elle a survécu (`toucheSauvee`) — le coup a bien eu lieu (LDB 13
   // l.123), seul son EFFET est ignoré (LDB 85 l.98) ; l'Action, gratuite, est rendue par la reprise.
   const suite: SuiteDeCoup = { freeAttack: { kind, prevActed } };
+  if (maybeOpenDefense(get, set, attacker, target, weapon, suite)) return true; // suspendu : resolve via défense
+  const res = resolveMelee(attacker, target, weapon, battleRng(), { defense: cannotDefend(target) ? 'none' : bestDefenseMode(target) });
   if (applyAttackResult(get, set, attacker, target, weapon, res, false, undefined, suite)) return true;
   // La queue NON suspendue est LA MÊME écriture que celle de la reprise (effets de la manœuvre, Action
   // rendue) — et l'enchaînement absent y vaut `auto` (LDB 85 l.362).
@@ -4186,7 +4171,7 @@ function maneuverCascadePending(get: Get): boolean {
  *  (Souffle/Regard/…). Miroir du « tail » de `defenseConfirm` : les héros ont défendu (influençable), on
  *  vérifie la fin de combat, puis on enchaîne les attaques gratuites RESTANTES (file persistée) — qui peuvent
  *  ROUVRIR une cascade (souffle → vomi → …) — sinon on avance. `free` = manœuvre gratuite (ne re-déclenche
- *  PAS les libres d'Arme post-Action, comme `defenseConfirm` pour `pd.free`). */
+ *  PAS les libres d'Arme post-Action, comme `defenseConfirm` pour la gratuite que nomme la `suite` de sa fenêtre). */
 export function resumeManeuverDefense(get: Get, set: SetFn, resume: { attackerId: string; free: boolean }): void {
   checkBattleOver(get, set);
   const battle = get().battle;

@@ -41,7 +41,7 @@ describe('Substitution sociale en défense LIVE (LDB 09 l.287)', () => {
       pendingDefense: {
         attackerId: E.id, defenderId: H.id, weapon: E.weapons[0], location: null,
         atk: { roll: 55, target: 40, success: false, sl: -1, isDouble: false },
-        mode: 'parade', def: null, result: null,
+        mode: 'parade', def: null, result: null, suite: { mode: 'machine', coup: {} },
       },
     });
   }

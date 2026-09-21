@@ -78,6 +78,7 @@ const FIXTURES: Record<string, Fix> = {
       location: null, atk: { roll: 30, target: 45, success: true, sl: 1, isDouble: false }, mode: 'esquive',
       def: win ? WIN : LOSE,
       result: { hit: !win, attackerRoll: 30, netSL: win ? -1 : 5, critical: false, advantageTo: win ? 'defender' : 'attacker', defenderDefeated: false, log: '', attackerDetail: { label: 'Corps à corps', base: 45, modifier: 0, target: 45, roll: 30, success: true, sl: 1 }, defenderDetail: { label: 'Esquive', base: 40, modifier: 0, target: 40, roll: win ? 8 : 95, success: win, sl: win ? 3 : -5 } },
+      suite: { mode: 'machine', coup: {} },
     },
   }) },
   trample: { make: (win) => ({

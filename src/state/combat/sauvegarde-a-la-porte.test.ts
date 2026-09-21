@@ -505,7 +505,7 @@ describe('LE CHEMIN RÉEL : la queue du coup entre PAR LE HAUT dans `attackConfi
     const h2 = mk('hero', 'h2', { pos: { x: 4, y: 5 }, characteristics: nul(), aiControlled: true } as never);
     setBattle([ogre, h1, h2]);
     seedBattleRng(4);
-    useGame.setState({ pendingDefense: { attackerId: ogre.id, defenderId: h1.id, weapon: griffe, mode: 'parade', result: touche(), cleaveChain: { hitIds: [h1.id], n: 0, bcc: 2, fm: false } } as never });
+    useGame.setState({ pendingDefense: { attackerId: ogre.id, defenderId: h1.id, weapon: griffe, mode: 'parade', result: touche(), suite: { mode: 'machine', coup: { enchainement: { mode: 'chaine', hitIds: [h1.id], n: 0, bcc: 2, fm: false } } } } as never });
     useGame.getState().defenseConfirm();
     sauvegardeEnCours(h1);
     expect(h2.wounds.current, 'le maillon suivant attend le dé du maillon courant').toBe(30);
@@ -572,7 +572,7 @@ describe('LE CHEMIN RÉEL : la queue du coup entre PAR LE HAUT dans `attackConfi
     // Parade RATÉE sur un DOUBLE (66) : « tout Test de combat qui est un échec et dont le résultat du jet
     // est un double est une Maladresse » (LDB 14 l.19) — due que ce coup soit un maillon de chaîne ou non.
     const rate = { ...touche(), defenderDetail: { roll: 66, target: 20, success: false, sl: -4 } } as AttackResult;
-    useGame.setState({ pendingDefense: { attackerId: ogre.id, defenderId: h1.id, weapon: griffe, mode: 'parade', result: rate, cleaveChain: { hitIds: [h1.id], n: 0, bcc: 2, fm: false } } as never });
+    useGame.setState({ pendingDefense: { attackerId: ogre.id, defenderId: h1.id, weapon: griffe, mode: 'parade', result: rate, suite: { mode: 'machine', coup: { enchainement: { mode: 'chaine', hitIds: [h1.id], n: 0, bcc: 2, fm: false } } } } as never });
     useGame.getState().defenseConfirm();
     sauvegardeEnCours(h1);
     poser(5); // < 6 : le coup porte sur h1 → Maladresse DUE, puis la chaîne parquée reprend

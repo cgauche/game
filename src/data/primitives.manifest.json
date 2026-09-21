@@ -959,5 +959,14 @@
     "concept": "montant en monnaie impériale (LDB 57), coloré par dénomination et épelé en `title` — miroir JSX de `formatMoney`",
     "perimetre": "tout prix AFFICHÉ : négoce, soins, repos, conseil, bourse d'en-tête",
     "verrou": "—"
+  },
+  {
+    "id": "suiteDuCoup",
+    "type": "primitives.manifest",
+    "label": "jouerLaSuiteDuCoup / SuiteDeCoup / SuiteDeDefense",
+    "fichier": "src/state/combatFlow.ts",
+    "concept": "ce qu'un site fera APRÈS son coup, déclaré en DONNÉE à l'entrée (enchaînement, attaque gratuite, drapeaux du coup) et joué par une écriture unique à la reprise — y compris quand une fenêtre de défense s'interpose",
+    "perimetre": "toute frappe qui peut être suspendue : balayage, gratuites de créature et de talent, attaque pilotée, sauvegarde, Déviation",
+    "verrou": "src/state/defense-suite.test.ts"
   }
 ]

@@ -103,6 +103,7 @@ describe('Hurlement fantomatique — Test de Résistance influençable (héros m
         attackerId: E.id, defenderId: H1.id, weapon: E.weapons[0], location: null,
         atk: { roll: 55, target: 40, success: false, sl: -1, isDouble: false },
         mode: 'esquive', def: { roll: 30, target: 40, success: true, sl: 1, isDouble: false }, result,
+        suite: { mode: 'machine', coup: {} },
       } as never,
       pendingCascade: { title: 'Défense', purpose: 'combat', cursor: 0, log: [], participants: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: H1.id }] } as never,
     });

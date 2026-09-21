@@ -27,7 +27,7 @@ manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-g
 mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
 au hook, ou une primitive née ailleurs n'y passent jamais.
 
-96 primitives.
+97 primitives.
 
 | Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |
 |---|---|---|---|---|---|
@@ -118,6 +118,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | dégâts/soin de coque, source unique de state.vessel.wounds | `damageHull/healHull/damageVesselHull/healVesselHull` | `src/state/shipDamage.ts` | — | voyage fluvial/maritime + combat naval | vessel-wounds-write-guard.test.ts |
 | puce qui NOMME le siège attendu quand le geste n’appartient pas au siège local (coop) | `SpectatorChip` | `src/ui/SpectatorChip.tsx` | `src/ui/styles/spectator-chip.css` | arbitre de modales, travée d’attente de la console, zone de choix d’un dialogue | le siège attendu vient de `spectatorSeatOfModal` (src/ui/ownership.ts), source unique |
 | colonne d'États d'un combattant : pastilles informatives ou actionnables, alvéoles RÉSERVÉES (le compte ne dépend jamais des États portés), indice chiffré | `StateChips` | `src/ui/StateChips.tsx` | `src/ui/styles/state-chips.css` | tuile de portrait, bande de groupe, rangée de liste — partout où un État se lit | src/ui/determination-reachability.test.tsx — la pastille actionnable garde sa cible de 44px au doigt |
+| ce qu'un site fera APRÈS son coup, déclaré en DONNÉE à l'entrée (enchaînement, attaque gratuite, drapeaux du coup) et joué par une écriture unique à la reprise — y compris quand une fenêtre de défense s'interpose | `jouerLaSuiteDuCoup / SuiteDeCoup / SuiteDeDefense` | `src/state/combatFlow.ts` | — | toute frappe qui peut être suspendue : balayage, gratuites de créature et de talent, attaque pilotée, sauvegarde, Déviation | src/state/defense-suite.test.ts |
 | onglets (flat/pill/sub/dock) : role tablist, aria-selected, roving tabindex | `Tabs` | `src/ui/Tabs.tsx` | — | fiche, écran plein-champ, dock repliable, sous-onglets ; styles src/ui/styles/tabs.css | réflexe avant toute liste d’onglets recodée |
 | texte découpé en segments TONÉS PAR CAMP : les noms cités en gras, allié ou ennemi | `TeamSegments` | `src/ui/TeamSegments.tsx` | `src/ui/styles/team-segments.css` | journal de combat, ligne de récap, fil d’événements | les deux vocabulaires de segments (NarratedSegment, RecapSegment) passent par ce rendu |
 | table de négoce : colonnes de stats, prix, action par rangée, groupes de rubrique | `TradeTable` | `src/ui/TradeTable.tsx` | — | marchand, port, marché terrestre | réflexe avant tout tableau d’achat/vente recodé |
@@ -127,4 +128,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 509045331615385fcb395d7e2d9209d0f546f32d (6 fichiers, 0 dossiers) corps: 9fa369f37d88ece0f532c244e1a7d4d960aa150f -->
+<!-- sources-empreinte: 1ca35617647b40fffccf0baabf8ecd357ac497ce (6 fichiers, 0 dossiers) corps: 00bdf11e28fed853da729da591cdd6c832dc3bd7 -->

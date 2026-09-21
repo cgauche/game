@@ -121,14 +121,14 @@ Flux sans entrée propre dans `MODAL_DEFS` : `attack`, `defense`, `cast`, `disen
 | Primitive | Site | Rôle (JSDoc) |
 |---|---|---|
 | `makeRollFlow` | `src/state/rollFlowFactory.ts:529` | Fabrique UNIQUE des flux de jet (mono ET multi). |
-| `testOutcome` | `src/state/rollFlowSpecs.ts:296` | Issue d'un Test dont le résultat est déjà un `{ success, sl }` (jet simple ou opposé résolu) : la réussite RÉELLE + son Degré. |
-| `cleanRollOutcome` | `src/state/rollFlowSpecs.ts:306` | Issue d'un Test dont le résultat est un `{ roll, target, sl }` SANS champ `success` (réussite propre = `roll ≤ cible`) : incantation, enfoncement de porte, Test d'équipage — un résultat absent = échec. |
-| `flatRollLens` | `src/state/rollFlowSpecs.ts:343` | Lentille PARTAGÉE des Tests PLATS (le jet vit au niveau du pending : `roll`/`target`/`sl`/`success`) — `actorTR` reconstruit le TestResult, `applyRoll` re-projette roll/sl/success (identiques d'un flux à l'autre) ; seul `dieTarget` (cible du dé forcé ; `null` = déjà réussi → rien à forcer) varie. |
-| `resultRollLens` | `src/state/rollFlowSpecs.ts:353` | Lentille PARTAGÉE des Tests dont le jet vit sous `p.result` (`{ roll, target, sl, success }`) — même `actorTR`/`applyRoll` que `flatRollLens` mais imbriqués sous `result` ; seul `dieTarget` varie (Chanson/Dissipation). |
-| `opposedBinaryFlow` | `src/state/rollFlowSpecs.ts:367` | Fabrique PARTAGÉE des Tests opposés BINAIRES (issue success/tie/fail) où SEUL le jet de l'ACTEUR se (re)joue tandis que le foe reste FIGÉ — le jet de l'acteur est l'« attaquant » du Test opposé (`resolveOpposed`/`disengageOutcome`). |
-| `rollFlowActions` | `src/state/rollFlowSpecs.ts:205` | Délégués MONO d'un flux : les verbes listés, byte-identiques aux anciens `() => FLOWS.x.m(get, set)`. |
-| `rollFlowActionsMulti` | `src/state/rollFlowSpecs.ts:218` | Délégués MULTI d'un flux : `pid` en tête, byte-identiques aux anciens `(pid) => FLOWS.x.m(get, set, pid)`. |
-| `buildRollFlowActions` | `src/state/rollFlowSpecs.ts:2159` | Assemble les ~113 délégués de jet du store (`<prefix><Verbe>`) depuis `FLOW_VERBS` + `FLOW_HANDLERS` — remplace les 40 spreads `rollFlowActions(Multi)` éparpillés dans le store. |
+| `testOutcome` | `src/state/rollFlowSpecs.ts:302` | Issue d'un Test dont le résultat est déjà un `{ success, sl }` (jet simple ou opposé résolu) : la réussite RÉELLE + son Degré. |
+| `cleanRollOutcome` | `src/state/rollFlowSpecs.ts:312` | Issue d'un Test dont le résultat est un `{ roll, target, sl }` SANS champ `success` (réussite propre = `roll ≤ cible`) : incantation, enfoncement de porte, Test d'équipage — un résultat absent = échec. |
+| `flatRollLens` | `src/state/rollFlowSpecs.ts:349` | Lentille PARTAGÉE des Tests PLATS (le jet vit au niveau du pending : `roll`/`target`/`sl`/`success`) — `actorTR` reconstruit le TestResult, `applyRoll` re-projette roll/sl/success (identiques d'un flux à l'autre) ; seul `dieTarget` (cible du dé forcé ; `null` = déjà réussi → rien à forcer) varie. |
+| `resultRollLens` | `src/state/rollFlowSpecs.ts:359` | Lentille PARTAGÉE des Tests dont le jet vit sous `p.result` (`{ roll, target, sl, success }`) — même `actorTR`/`applyRoll` que `flatRollLens` mais imbriqués sous `result` ; seul `dieTarget` varie (Chanson/Dissipation). |
+| `opposedBinaryFlow` | `src/state/rollFlowSpecs.ts:373` | Fabrique PARTAGÉE des Tests opposés BINAIRES (issue success/tie/fail) où SEUL le jet de l'ACTEUR se (re)joue tandis que le foe reste FIGÉ — le jet de l'acteur est l'« attaquant » du Test opposé (`resolveOpposed`/`disengageOutcome`). |
+| `rollFlowActions` | `src/state/rollFlowSpecs.ts:211` | Délégués MONO d'un flux : les verbes listés, byte-identiques aux anciens `() => FLOWS.x.m(get, set)`. |
+| `rollFlowActionsMulti` | `src/state/rollFlowSpecs.ts:224` | Délégués MULTI d'un flux : `pid` en tête, byte-identiques aux anciens `(pid) => FLOWS.x.m(get, set, pid)`. |
+| `buildRollFlowActions` | `src/state/rollFlowSpecs.ts:2165` | Assemble les ~113 délégués de jet du store (`<prefix><Verbe>`) depuis `FLOW_VERBS` + `FLOW_HANDLERS` — remplace les 40 spreads `rollFlowActions(Multi)` éparpillés dans le store. |
 
 Le résolveur d'un flux est **UN SEUL** `resolve` pour tous les cas : jet normal (RNG), réussite
 forcée par défaut, dé CHOISI par le joueur, et DR imposé par la Résistance. Un flux qui n'expose pas
@@ -176,4 +176,4 @@ liste est LUE dans la garde, jamais recopiée ici :
 
 `npm run typecheck` après tout ajout : le type dérivé de `FLOW_VERBS` casse immédiatement si le
 registre et les handlers divergent.
-<!-- sources-empreinte: 7cfe17e3c20d290a896740037cebcc6f84b48820 (14 fichiers, 0 dossiers) corps: 699cce9404209149272e8cf3594c1da6b2f8df13 -->
+<!-- sources-empreinte: be27634bf165090bfc761b68f856228998f6b003 (14 fichiers, 0 dossiers) corps: 1837fbdf1fc9249bae5f7273c0af66f2c4aebeb5 -->

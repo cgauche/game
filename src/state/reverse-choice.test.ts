@@ -161,6 +161,7 @@ describe('flux `defense` (LDB 23 l.209 — Parade = Corps à corps)', () => {
           attackerDetail: { label: 'Corps à corps', base: 40, modifier: 0, target: 40, roll: 30, success: true, sl: 1 },
           defenderDetail: { label: 'Parade', base: 45, modifier: 0, target: 45, roll: 82, success: false, sl: -4 },
         },
+        suite: { mode: 'machine', coup: {} },
       } as never,
     });
   }

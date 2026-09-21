@@ -79,6 +79,7 @@ const FIXTURES: Partial<Record<FlowKey, Fixture>> = {
         attackerId: 'E', defenderId: 'H', weapon: { name: 'Gourdin', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] },
         location: null, atk: { roll: 30, target: 40, success: true, sl: 1, isDouble: false }, mode: 'esquive',
         def: rateTR, result: { ...atkResult, defenderDetail: { ...atkDetail, label: 'Esquive' } },
+        suite: { mode: 'machine', coup: {} },
       },
     },
     read: () => ({ roll: P<{ def: { roll: number } }>('pendingDefense').def.roll, success: P<{ def: { success: boolean } }>('pendingDefense').def.success }),

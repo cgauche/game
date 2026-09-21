@@ -497,6 +497,7 @@ describe('Boucle de jeu (store)', () => {
         mode: 'parade',
         def: { roll: 33, target: 40, success: false, sl: 0, isDouble: true },
         result,
+        suite: { mode: 'machine', coup: {} },
       },
       // La défense est une étape de cascade combat (Lot 1) → on la pose comme en jeu (maybeOpenDefense).
       pendingCascade: { title: 'Défense', icon: '🛡️', purpose: 'combat', cursor: 0, log: [], participants: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: h.id }] } as any,
@@ -535,6 +536,7 @@ describe('Boucle de jeu (store)', () => {
         attackerId: e.id, defenderId: h.id, weapon: e.weapons[0], location: 'corps',
         atk: { roll: 12, target: 40, success: true, sl: 4, isDouble: false }, mode: 'parade',
         def: { roll: 60, target: 40, success: false, sl: 0, isDouble: false }, result,
+        suite: { mode: 'machine', coup: {} },
       },
       pendingCascade: { title: 'Défense', icon: '🛡️', purpose: 'combat', cursor: 0, log: [], participants: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: h.id }] } as any,
     });
@@ -770,6 +772,7 @@ describe('Boucle de jeu (store)', () => {
         mode: 'parade',
         def: null,
         result: null,
+        suite: { mode: 'machine', coup: {} },
       },
     });
     useGame.getState().defenseRoll(); // « Défendre » : roule la défense + résout

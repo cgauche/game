@@ -120,12 +120,18 @@ function finishDefenseResult(attacker: Combatant, defender: Combatant, p: Pendin
  * s'annulent : personne ne gagne d'office, les deux Points restent brûlés, le Test se résout aux
  * dés (arbitrage utilisateur 2026-07-31 [entériné 2026-08-03], verbatim au ticket #1000).
  * Le dé posé et la localisation restent (RAW).
- * `p.pa.forced` = forçage de l'attaquant (voyage sur l'attaque figée) ; `p.forced` = forçage du
+ * `attaquantForce` = forçage de l'attaquant (voyage sur l'attaque figée) ; `p.forced` = forçage du
  * défenseur — `defenderForcing` couvre le forçage EN COURS, dont le drapeau n'est posé qu'APRÈS le
  * patch (`opForceSuccess`).
  */
 export function opposedForcingCancelled(p: PendingDefense, defenderForcing = false): boolean {
-  return !!p.pa?.forced && (defenderForcing || !!p.forced);
+  return attaquantForce(p) && (defenderForcing || !!p.forced);
+}
+/** L'ATTAQUANT a-t-il dépensé « Je ne faillirai pas ! » (LDB 17 l.68) sur le jet figé de cette fenêtre ?
+ *  Le forçage vit sur l'attaque elle-même, que seule la suite PILOTÉE porte — une frappe de la machine
+ *  n'a pas d'attaque en attente, donc pas de garantie à honorer ici. */
+function attaquantForce(p: PendingDefense): boolean {
+  return p.suite.mode === 'pilotee' && !!p.suite.pa.forced;
 }
 /** Ligne factuelle rendue au joueur qui dépense le SECOND Point (#1000) — l'annulation n'est jamais
  *  silencieuse. Consommateur : la fenêtre de défense (`useDefenseJetProps`). */
@@ -151,11 +157,11 @@ function bargainPlayerTR(p: PendingBargain, tr: TestResult): TestResult {
 
 /** Jet d'attaque figé, HONORANT « Je ne faillirai pas ! » (LDB 17 l.68 : « S'il s'agit d'un Test opposé,
  *  vous l'emportez avec au moins DR +1 »). La garantie est une propriété de l'OPPOSITION, pas du jet :
- *  sur le chemin INTERPOSÉ elle voyage MARQUÉE sur l'attaque figée (`p.pa.forced`) et se règle ICI, au
+ *  sur le chemin INTERPOSÉ elle voyage MARQUÉE sur l'attaque figée (suite `pilotee`) et se règle ICI, au
  *  moment où la défense est connue — même formule que le chemin inline (`FLOWS.attack.resolve` : DR du
  *  défenseur + 1). Attaque non forcée, ou garanties annulées (#1000) → jet rendu TEL QUEL. */
 function forcedOpposedAtk(p: PendingDefense, def: TestResult): TestResult {
-  if (!p.pa?.forced || opposedForcingCancelled(p)) return p.atk;
+  if (!attaquantForce(p) || opposedForcingCancelled(p)) return p.atk;
   return { ...p.atk, sl: Math.max(p.atk.sl, def.sl + 1, 1) };
 }
 

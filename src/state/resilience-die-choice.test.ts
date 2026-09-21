@@ -153,6 +153,7 @@ describe('defenseSetForcedRoll — même choix sur une DÉFENSE forcée', () => 
           attackerDetail: { label: 'Corps à corps', base: 40, modifier: 0, target: 40, roll: 30, success: true, sl: 1 },
           defenderDetail: { label: 'Esquive', base: 50, modifier: 0, target: 50, roll: 95, success: false, sl: -4 },
         },
+        suite: { mode: 'machine', coup: {} },
       } as never,
     });
     useGame.getState().defenseForceSuccess();

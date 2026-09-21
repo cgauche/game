@@ -133,7 +133,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 **Voir aussi** : Traumatisme (`traumatisme.md`), Inconscient
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 16` (l.33-39) → `PRONE_POSE`, `collectHeroRoundEndUpkeep`, `findAwaitingExtension`, `competenceParId`, `isMovementSkill`, `meleeAttackerBonusLines`, `AttackOptions`, `GameOp`, `SkillData`, `GameState`, +2 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combat/roundHooks.ts`, +3 fichiers
-- `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `sourceSuspended`, `CorruptionModal`, `ForcedRollPicker`, `suspendSource`, `forceCrewRole`, +94 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, +50 fichiers
+- `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `sourceSuspended`, `CorruptionModal`, `ForcedRollPicker`, `suspendSource`, `forceCrewRole`, +96 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, +50 fichiers
 - `LDB 18` (l.15) → `followsCharacterRules`, `isHealable`, `doc`, `outOfCombatUpkeep`, `HealWoundsOptions`, `needsRecoveryRoll`, `applyHealWounds`, `ACTION_GATES`, `critSeverityReduction`, `isConditionLocked`, +22 — `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, +13 fichiers
 
 ---
@@ -428,7 +428,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 16` (l.15-17, l.27-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `STABLE_COND_KINDS`, `etatNonCumulable`, `effectiveChar`, `doc`, `jsonOpSchema`, `StateRecoveryModal`, `EnemyAction`, +103 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, +37 fichiers
-- `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `sourceSuspended`, `CorruptionModal`, `ForcedRollPicker`, `suspendSource`, `forceCrewRole`, +94 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, +50 fichiers
+- `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `sourceSuspended`, `CorruptionModal`, `ForcedRollPicker`, `suspendSource`, `forceCrewRole`, +96 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, +50 fichiers
 - `LDB 18` (l.15) → `followsCharacterRules`, `isHealable`, `doc`, `outOfCombatUpkeep`, `HealWoundsOptions`, `needsRecoveryRoll`, `applyHealWounds`, `ACTION_GATES`, `critSeverityReduction`, `isConditionLocked`, +22 — `src/data/index.ts`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, +13 fichiers
 
 ---

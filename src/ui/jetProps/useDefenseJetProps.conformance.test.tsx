@@ -10,7 +10,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it } from 'vitest';
 import { useGame, type BattleState } from '../../state/store';
-import { openAttackCascade } from '../../state/combatFlow';
+import { openAttackCascade, aiCreatureFreeAttacks } from '../../state/combatFlow';
 import { seedBattleRng } from '../../state/battleRng';
 import { testScene } from '../../scenes/test-fixture';
 import type { Combatant, Weapon } from '../../engine/types';
@@ -66,7 +66,36 @@ function openDefense(defenderWeapon?: Weapon): HTMLDivElement {
   return host;
 }
 
+/** Ouvre la fenêtre de Défense d'un héros contre une attaque GRATUITE de créature (Morsure, LDB 85
+ *  l.237) — chemin de la MACHINE : la frappe entre par `aiCreatureFreeAttacks`, et c'est elle qui dit
+ *  à la fenêtre ce qu'elle annonce. Le héros encaisse sans tomber (la fin de combat clorait tout). */
+function openBiteDefense(): HTMLDivElement {
+  const enemy = mk('e', 'Rat géant', 'enemy', { x: 1, y: 0 });
+  const hero = mk('h', 'Gunnar', 'hero', { x: 0, y: 0 });
+  hero.wounds = { current: 200, max: 200 } as Combatant['wounds'];
+  enemy.traits = [{ id: 'morsure', value: 14 }];
+  enemy.advantage = 1;
+  const battle: BattleState = {
+    combatants: [enemy, hero], order: [enemy.id, hero.id], baseOrder: [enemy.id, hero.id],
+    turn: 0, round: 1, action: null, selectedSpellId: null, reachable: new Map(),
+    movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
+  } as unknown as BattleState;
+  useGame.setState({
+    battle, mode: 'battle', scene: testScene, pendingDefense: null, pendingAttack: null, pendingCascade: null,
+    net: { ...useGame.getState().net, mode: 'local', mySeat: 0, gmSeat: 0, ownership: {} },
+  });
+  seedBattleRng(3);
+  aiCreatureFreeAttacks(useGame.getState, useGame.setState, enemy);
+  host = document.createElement('div');
+  document.body.appendChild(host);
+  root = createRoot(host);
+  act(() => root!.render(<Probe />));
+  return host;
+}
+
 const subtitle = () => host!.querySelector('.rm-subtitle')?.textContent;
+/** Libellé de la rangée TÉMOIN (l'attaque figée), rangée [0] du panneau. */
+const attackRowText = () => host!.querySelectorAll('.rr-row')[0]?.textContent ?? '';
 
 describe('Défense — Z1 « Acteur — Action (Compétence) »', () => {
   it('Parade : le sous-titre nomme le DÉFENSEUR et sa Compétence de parade', () => {
@@ -96,4 +125,27 @@ describe('Défense — Z1 « Acteur — Action (Compétence) »', () => {
     expect(subtitle()).toBe('Gunnar — Défense (Force)');
     expect(view.textContent).not.toContain('Défense (Corps à corps)');
   });
+});
+
+/**
+ * CE QUE LA FENÊTRE ANNONCE vient de la frappe qui l'a OUVERTE (#1858) — et le siège INVITÉ, qui ne
+ * reçoit le pending que par le snapshot coop (JSON pur, `netSnapshot`), rend la MÊME fenêtre.
+ */
+describe('Défense — l’attaque annoncée, et son voyage jusqu’à l’invité', () => {
+  it('Morsure gratuite : la rangée témoin annonce la MORSURE, pas une attaque générique', () => {
+    openBiteDefense();
+    expect(useGame.getState().pendingDefense!.defenderId).toBe('h');
+    expect(attackRowText()).toContain('Morsure');
+  });
+
+  for (const [nom, ouvrir] of [['pilotée', openDefense], ['gratuite de la machine', openBiteDefense]] as const) {
+    it(`chemin INVITÉ (${nom}) : la fenêtre rendue depuis le pending passé par JSON est la même`, () => {
+      ouvrir();
+      const attendu = attackRowText();
+      const voyage = JSON.parse(JSON.stringify(useGame.getState().pendingDefense));
+      act(() => { useGame.setState({ pendingDefense: voyage }); });
+      expect(subtitle()).toBe('Gunnar — Défense (Corps à corps)');
+      expect(attackRowText()).toBe(attendu);
+    });
+  }
 });

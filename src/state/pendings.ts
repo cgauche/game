@@ -886,8 +886,8 @@ export interface ToucheDeProjectile {
  *    Maladresse de l'attaquant). `wasChain` = ce coup était-il déjà un maillon d'un balayage en cours.
  *    Jugée sur la touche RÉELLE : l'enchaînement EXIGE une cible TUÉE, donc il se décide APRÈS le dé
  *    de sauvegarde, qui décide de la mort ;
- *  - `chaine` : maillon de balayage encore à jouer (même forme que `pendingDefense.cleaveChain`), posé
- *    par `runCleaveChain` et par la fenêtre de défense qui l'a parqué ;
+ *  - `chaine` : maillon de balayage encore à jouer (`ChaineDeBalayage`), posé par `runCleaveChain` — y
+ *    compris quand une fenêtre de défense s'interpose, qui le porte dans SA suite ;
  *  - `auto` : balayage de la MACHINE (LDB 85 l.362 : « Toutes les frappes réussies activent la règle
  *    optionnelle Frappe Mortelle »), gardé par `aiDriven` dans `autoCleave` ;
  *  - `aucun` : le site d'origine a tranché qu'AUCUN balayage ne suit ce coup — Maladresse de
@@ -895,9 +895,13 @@ export interface ToucheDeProjectile {
  */
 export type EnchainementDuCoup =
   | { mode: 'hero'; wasChain: boolean }
-  | { mode: 'chaine'; hitIds: string[]; n: number; bcc: number; fm: boolean }
+  | ({ mode: 'chaine' } & ChaineDeBalayage)
   | { mode: 'auto' }
   | { mode: 'aucun' };
+
+/** État d'une chaîne de BALAYAGE en cours (Frappe Mortelle/Taille, LDB 14 l.9 / 85 l.299) : cibles
+ *  déjà frappées, enchaînements consommés, borne BCC, mode (Taille vs Frappe Mortelle). */
+export interface ChaineDeBalayage { hitIds: string[]; n: number; bcc: number; fm: boolean }
 
 /**
  * CE QUE L'APPELANT FERA APRÈS LE COUP (#1508) — une DONNÉE, pas un geste d'après-coup. Elle entre PAR
@@ -924,6 +928,21 @@ export interface SuiteDeCoup {
    *  appende — elle n'existe donc qu'APRÈS le coup, jamais à l'ouverture. */
   dualMain?: { offWeaponUid: string; mainRoll: number };
 }
+
+/**
+ * CE QUI SUIT LA FERMETURE D'UNE FENÊTRE DE DÉFENSE (#1858) — union par SITE DE REPRISE, patron
+ * `SuiteDeCoup`/#1508 : posée par celui qui OUVRE la fenêtre, dans le littéral même du pending, lue par
+ * le SEUL `defenseConfirm`. Deux reprises, donc deux variantes :
+ *  - `pilotee` : l'attaque FIGÉE d'un siège humain (MJ ou héros) est rendue à `attackConfirm` avec le
+ *    résultat OPPOSÉ — le chemin d'application de l'attaque (balayage, gratuites onHit, Maladresse, tir
+ *    immobile…) reste UNIQUE ; le forçage de l'attaquant (LDB 17 l.68) voyage sur cette attaque ;
+ *  - `machine` : le coup est appliqué ICI, et sa `SuiteDeCoup` est celle que le producteur aurait passée
+ *    à `applyAttackResult` sur son chemin instantané — coup nu `{}`, maillon de balayage, ou gratuite.
+ * JSON-sérialisable : elle voyage dans le snapshot coop avec le reste du pending.
+ */
+export type SuiteDeDefense =
+  | { mode: 'pilotee'; pa: PendingAttack }
+  | { mode: 'machine'; coup: SuiteDeCoup };
 
 /** LA SUITE d'un coup dont la sauvegarde reste à jouer — union par SITE DE REPRISE, patron
  *  `PendingDeviation.mode` (`'melee'` ré-entre dans l'applier d'attaque, l'autre est auto-contenu).
@@ -1045,22 +1064,13 @@ export interface PendingDefense {
   forced?: boolean;
   /** Dé FIXÉ par le joueur (option « Dés fixés », `PendingBase.fixed`). */
   fixed?: boolean;
-  /** Attaque GRATUITE de créature (Morsure/Caudale/Piétinement) : ne consomme pas l'Action, applique
-   *  ses effets RAW et enchaîne la file au resolve (cf. aiCreatureFreeAttacks). */
-  free?: boolean;
-  freeKind?: string;
-  prevActed?: boolean;
   /** Réaction de Porte-Bouclier (variante AA 13 l.84) déclarée par le défenseur pour CETTE défense au
    *  Bouclier : 'damage' = causer des Dégâts « comme s'il s'agissait de son Action » ; 'push' = repousser
    *  l'attaquant de 2 m et se désengager. Appliquée à l'Appliquer (`applyShieldReaction`), coût débité alors. */
   shieldReaction?: 'damage' | 'push';
-  /** Attaque PILOTÉE (siège MJ ou héros) dont la défense a été SURFACÉE : l'attaque figée en attente.
-   *  `defenseConfirm` la rend à `attackConfirm` avec le résultat OPPOSÉ — le chemin d'application de
-   *  l'attaque (balayage, gratuites onHit, Maladresse, tir immobile…) reste UNIQUE. */
-  pa?: PendingAttack;
-  /** Chaîne de BALAYAGE (Frappe Mortelle/Taille, LDB 14 l.9 / 85 l.299) suspendue par CETTE fenêtre :
-   *  cibles déjà frappées + enchaînements consommés. `defenseConfirm` la reprend (`resumeCleaveChain`). */
-  cleaveChain?: { hitIds: string[]; n: number; bcc: number; fm: boolean };
+  /** CE QUE LA FERMETURE JOUERA (#1858) : déclaré par le producteur qui ouvre la fenêtre, jamais patché
+   *  après coup ni deviné à la fermeture. */
+  suite: SuiteDeDefense;
 }
 /** Désengagement en attente (LDB 15 l.43-68) : un MENU de choix (phase 'choice') —
  *  Sacrifier l'Avantage / Esquiver / Fuir / Renoncer — puis le Test d'Esquive (phase 'esquive'). */

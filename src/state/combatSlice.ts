@@ -2746,25 +2746,20 @@ export function createCombatSlice(get: Get, set: Set) {
       // chemin d'application UNIQUE de l'attaque — `attackConfirm` reprend avec le résultat défendu. Le
       // curseur est TOUJOURS sur l'étape 'defense' de la MÊME cascade d'attaque : aucun tour n'avance ici
       // (c'est `advanceCombatJet`, au bout d'`attackConfirm`, qui enchaîne le curseur).
-      if (pd.pa && attacker && defender) {
-        set({ pendingAttack: { ...pd.pa, result: pd.result, location: pd.result.location ?? pd.pa.location } });
+      // CE QUE CETTE FENÊTRE FERA APRÈS LE COUP (#1858) : la DÉCLARATION de celui qui l'a ouverte, lue
+      // ICI et nulle part ailleurs. Une sauvegarde « 1d10 ≥ Indice » (LDB 85 l.98) ou une Déviation
+      // ouverte par l'application l'emporte dans SA charge (#1508) : c'est la reprise qui la joue.
+      const suite = pd.suite;
+      if (suite.mode === 'pilotee' && attacker && defender) {
+        set({ pendingAttack: { ...suite.pa, result: pd.result, location: pd.result.location ?? suite.pa.location } });
         get().attackConfirm();
         // Réaction de Porte-Bouclier (variante AA 13 l.84) : APRÈS l'attaque, comme sur le chemin réactif.
         if (pd.shieldReaction && pd.mode === 'parade') applyShieldReaction(get, set, defender, attacker, pd.shieldReaction, parryWeaponOf(defender, pd));
         pushDefenderFumble(get, set, defender, pd); // MÊME helper, MÊME ordre (après application) que le chemin réactif
         return;
       }
-      if (attacker && defender) {
-        // CE QUE CETTE FENÊTRE FERA APRÈS LE COUP (#1508) — donnée d'ENTRÉE : une sauvegarde « 1d10 ≥
-        // Indice » (LDB 85 l.98) ou une Déviation ouverte ICI l'emporte dans sa charge et c'est la
-        // reprise qui la joue, une fois le dé tombé — le coup qu'elle juge est déjà tranché.
-        const suite: SuiteDeCoup = {
-          // Un maillon parqué reprend SA chaîne ; tout autre coup passé par cette fenêtre est un coup de
-          // la machine et enchaîne comme tel — y compris une manœuvre gratuite (`pd.free`), LDB 85 l.362.
-          enchainement: pd.cleaveChain ? { mode: 'chaine', ...pd.cleaveChain } : { mode: 'auto' },
-          ...(pd.free ? { freeAttack: { kind: pd.freeKind ?? '', prevActed: pd.prevActed ?? battle.acted } } : {}),
-        };
-        const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result, undefined, undefined, suite);
+      if (suite.mode === 'machine' && attacker && defender) {
+        const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result, undefined, undefined, suite.coup);
         // Réaction de Porte-Bouclier (variante AA 13 l.84) déclarée pour cette défense : débite la réserve et
         // applique l'effet APRÈS l'attaque (poussée+désengagement ou Dégâts). Cadence 1×/Round vérifiée dans le helper.
         if (pd.shieldReaction && pd.mode === 'parade') applyShieldReaction(get, set, defender, attacker, pd.shieldReaction, (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0]));
@@ -2774,14 +2769,15 @@ export function createCombatSlice(get: Get, set: Set) {
           quitterLaDefense();
           return; // la suite (autoCleave/Piétinement/fumble/reprise) part de l'applier 'deviation' (resolveDeviation)
         }
-        jouerLaSuiteDuCoup(get, set, attacker, defender, pd.result, suite); // ÉCRITURE UNIQUE de la queue d'un coup (effets de manœuvre + Action rendue, chaîne parquée, balayage automatique)
+        jouerLaSuiteDuCoup(get, set, attacker, defender, pd.result, suite.coup); // ÉCRITURE UNIQUE de la queue d'un coup (effets de manœuvre + Action rendue, maillon de balayage, balayage automatique)
       }
       if (defender && pushDefenderFumble(get, set, defender, pd)) { quitterLaDefense(); return; }
       // Attaques GRATUITES de l'attaquant après CE coup : d'Arme « disponibles » (Frénésie LDB 21 l.33)
-      // — jamais après une gratuite (`!pd.free`) — puis celles de créature. UNE file, qui S'ARRÊTE à la
-      // première fenêtre ouverte : la fenêtre qui suit est celle de la gratuite SUIVANTE, sur SA propre
-      // étape (LDB 85 l.41-43 — chaque gratuite est un Test d'attaque complet).
-      if (attacker && drainerLesGratuites(get, set, attacker, { disponibles: !pd.free })) { quitterLaDefense(); return; }
+      // — jamais après une gratuite, que la suite de la fenêtre nomme — puis celles de créature. UNE file,
+      // qui S'ARRÊTE à la première fenêtre ouverte : la fenêtre qui suit est celle de la gratuite
+      // SUIVANTE, sur SA propre étape (LDB 85 l.41-43 — chaque gratuite est un Test d'attaque complet).
+      const gratuite = suite.mode === 'machine' && !!suite.coup.freeAttack;
+      if (attacker && drainerLesGratuites(get, set, attacker, { disponibles: !gratuite })) { quitterLaDefense(); return; }
       // La défense est l'étape de SA cascade combat → enchaîner le curseur (les conséquences empilées —
       // Critique/Maladresse — s'affichent inline ; la clôture reprend l'IA). Rien derrière elle : reprise.
       if (!quitterLaDefense()) resumeEnemyTurn(get, set);

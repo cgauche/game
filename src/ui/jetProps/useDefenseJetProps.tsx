@@ -102,11 +102,15 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     return 'Le jet est lancé : la réaction se déclare avant.';
   };
 
+  // NATURE de l'attaque figée, telle que la frappe l'a DÉCLARÉE en ouvrant la fenêtre (#1858) : une
+  // gratuite de créature s'annonce par la sienne (Morsure, Attaque caudale… LDB 85), le reste est une
+  // Attaque. L'affichage ne devine rien — il lit la suite portée par la fenêtre.
+  const kindGratuit = pd.suite.mode === 'machine' ? pd.suite.coup.freeAttack?.kind : undefined;
   // Attaque et défense sont les DEUX lignes d'un même Test opposé : la Difficulté est déclarée UNE
   // fois à la fabrique (LDB 12 l.166 ; jet de Combat, LDB 13 l.118).
   const [attackLine, defenseLine] = opposedLines([
     {
-      label: pd.freeKind ? FREE_ATTACK_LABEL[pd.freeKind] ?? 'Attaque gratuite' : 'Attaque',
+      label: kindGratuit ? FREE_ATTACK_LABEL[kindGratuit] ?? 'Attaque gratuite' : 'Attaque',
       base: pd.atk.target,
       r: { roll: pd.atk.roll, target: pd.atk.target, sl: pd.atk.sl, success: pd.atk.success },
     },
