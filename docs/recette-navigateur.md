@@ -75,13 +75,24 @@ seul le scratchpad d'un agent l'avait en local) ; le socle reste donc en CDP nu 
 natifs Node ≥ 22), le choix le plus robuste des scripts moissonnés au regard de cette contrainte.
 Le kit ne DÉMARRE **jamais** le serveur de dev — il s'y **attache** (erreur claire si injoignable).
 
-> **L'étalon se juge à 1600.** La largeur par DÉFAUT du kit est **1600×900** — la largeur à laquelle
-> les maquettes du créateur sont DESSINÉES (`.mock{width:1600px}`),
-> donc la seule à laquelle une capture se compare à son étalon. Le défaut historique de 1280 a fait
-> juger « étriqués » pendant deux jours des écrans qui rendaient juste à leur largeur de référence
-> (lot « matières & proportions », #393). Une recette **responsive** passe sa largeur explicitement
-> (`setViewport` avec la largeur voulue, `setMobileViewport` pour le mobile canon 360×740) — le
-> défaut ne remplace pas la passe 900/700/560/360 de la charte, il fixe la largeur de RÉFÉRENCE.
+> **L'étalon se juge aux TROIS VUES, source unique `scripts/recette/vues-recette.json`** (#1847) :
+> `bureau` **1707×780** (la fenêtre réelle de l'utilisateur, et le viewport par DÉFAUT du kit),
+> `portable` **1366×650**, `mobile` **360×740**. Le fichier ne porte QUE des vues ; le kit les expose
+> par `VUES_RECETTE`, `vueRecette`, `VUE_REFERENCE` et l'helper `pourChaqueVue`.
+>
+> **Tout script qui OUVRE un écran pour le JUGER lit cette source.** Un script reste libre de son
+> propre cadrage à une condition : que ce cadrage soit un GABARIT DE MESURE dont un chiffre
+> consigné dépend, et qu'il le DISE à son site. Deux le font, nommément : `perf-scenario.mjs`
+> (1600×950 — ses coordonnées de clic par défaut et ses cadences rAF s'y rapportent) et
+> `scripts/qc/capture-jeu.mjs` (1600×900 — le cadrage des étalons commités de
+> `public/qc/baseline-affine/`). Partout ailleurs, un couple en dur est une divergence.
+>
+> Le défaut historique de 1280 a fait juger « étriqués »
+> pendant deux jours des écrans qui rendaient juste à leur largeur de référence (lot « matières &
+> proportions », #393) ; les 900px de HAUT qui lui ont succédé ne tiennent sur AUCUN écran de
+> l'utilisateur (mesure 2026-09-20 : fenêtre utile ≈ 745-780px). Ces vues ne remplacent pas la passe
+> de largeur 900/700/560/360 de la charte : ce sont les fenêtres où l'on REGARDE, pas des
+> breakpoints. Voir `docs/charte-ui.md` § « La HAUTEUR réelle ».
 
 ### CLI — `scripts/recette/shot-screen.mjs`
 
@@ -103,7 +114,7 @@ node scripts/recette/hud-clickables.mjs --widths 700,560,360
 ```
 
 Vérifie par `elementFromPoint` et par les boîtes rendues qu'aucune surface du HUD n'en recouvre une
-autre ni ne sort du champ, en exploration puis en combat, à 1600/1100/900/700/560/360 (options
+autre ni ne sort du champ, en exploration puis en combat, à 1707/1100/900/700/560/360 (options
 `--widths`, `--url`) : chaque portrait du groupe et chaque case du pont reçoit SON clic, la piste du
 groupe (`.pd-track`) tient sur UNE ligne, le fil d'événements ne mord pas sur la frise d'initiative,
 la piste `.is-tiles` défile au lieu de déborder, la frise en bande va jusqu'au bord droit (réserve
@@ -164,6 +175,37 @@ hors d'un scrollport dont la boîte sort du viewport à gauche ou à droite).
 `--stress <px>` fait DÉRIVER le contenu de l'arche et INVERSE le verdict : la sonde doit rougir,
 sinon elle est déclarée aveugle (exit 1). Exit ≠ 0 avec la liste des défauts.
 
+### CLI — `scripts/recette/hauteur-reelle.mjs`
+
+```
+node scripts/recette/hauteur-reelle.mjs
+node scripts/recette/hauteur-reelle.mjs --vues portable --mesures
+```
+
+La garde de l'invariant de HAUTEUR (#1847, `docs/charte-ui.md` § « La HAUTEUR réelle »). Pour CHACUNE
+des trois vues de `vues-recette.json`, elle OUVRE : les écrans `menu`, `party`, `creator`,
+`compendium`, `editor`, `test`, `coop` ; la campagne en exploration ; le menu système (vraie frappe
+d'Échap) et ses sous-écrans Options, Options/Clavier et Coopération (vrais clics) ; la fenêtre de jet
+d'ouverture de combat, puis le combat. Un écran hors de cette liste n'est pas gardé — l'y ajouter est
+le geste. Elle refuse :
+
+- **un scrollport de PAGE** — `document.scrollingElement` qui déborde, ou une boîte défilante qui
+  COUVRE tout le viewport (le scrollport de page sous un autre nom) ;
+- **une commande INATTEIGNABLE** dans une carte de menu — un bouton dont le bas tombe au-delà de la
+  boîte du corps défilant ET de la course qui reste à défiler ;
+- **un corps de modale ÉCRASÉ** — une fenêtre dont le corps défile alors qu'elle ne tient pas ce que
+  son CSS déclare réclamer (`--roll-fenetre`, planchers `--roll-band-min`/`--roll-dock-min` lus au
+  `getComputedStyle` du voile) : ce sont ses bandes qui la tiennent, pas l'écran ;
+- **l'acteur au trait hors du champ** de sa piste d'initiative.
+
+Les quatre VERDICTS sont des détecteurs PURS (`scripts/recette/detecteurs-hauteur.mjs` :
+`scrollportDePage`, `commandesInatteignables`, `corpsDeModaleEcrase`, `courantHorsChamp`), testés à
+fixtures rouge/verte par `detecteurs-hauteur.test.mjs` (gate `test:recette`) — la MESURE vit dans la
+sonde, le JUGEMENT dans le détecteur. La sonde IMPRIME son relevé à chaque écran, défaut ou non
+(page, cadres défilants, corps/boîte/bandes de la fenêtre de jet) : `--mesures` suspend le verdict et
+ne garde que ce relevé. Exit ≠ 0 avec la liste des défauts. Résidu mesuré sur l'arbre : Codex à
+360×740, page 3007/740 — #1860 ; la sonde reste donc à 1 défaut, sans exemption.
+
 ### Socle — `scripts/recette/lib.mjs`
 
 | Fonction | Rôle |
@@ -179,7 +221,7 @@ sinon elle est déclarée aveugle (exit 1). Exit ≠ 0 avec la liste des défaut
 | `clickButtonByText` | trouve un `<button>`/`[role="button"]` par son TEXTE (`session, texte, {exact?}`), `scrollIntoView`, PUIS lit son rect et clique via un VRAI clic CDP (`Input.dispatchMouseEvent` pressed+released) — SCROLL-AWARE : lire le rect AVANT le scroll fait rater le clic SILENCIEUSEMENT (aucune erreur, aucun effet). `{exact:true}` compare le texte ENTIER (obligatoire dès qu'un libellé en préfixe un autre) ; `{dans}` = sélecteur RACINE où chercher, quand le même libellé vit dans deux zones de l'écran ; si PLUSIEURS boutons matchent, le premier est cliqué et l'ambiguïté est AVERTIE sur `stderr` avec les textes concurrents |
 | `cliquerSelecteur` | CLIC RÉEL d'un contrôle désigné par un SÉLECTEUR (`session, selecteur`) — le pendant de `clickButtonByText` quand le contrôle n'a PAS de texte (bouton à glyphe : tiroir du journal `.ld-btn`, ouvreur d'écran). SCROLL-AWARE, et il REFUSE en le nommant : cible absente, boîte 0×0 (non rendue), contrôle désactivé — jamais un clic silencieux qui n'a rien fait |
 | `clicReel` | la triade CDP `mouseMoved`/`mousePressed`/`mouseReleased` — geste de clic UNIQUE du module : tout helper qui clique passe par là, aucun ne la réécrit |
-| `resoudreModales` + `CASCADE_LABELS` | RÉSOUT toute fenêtre ouverte (`.modal-overlay`) jusqu'à ce qu'il n'y en ait plus — DÉFINITION UNIQUE partagée par les sondes. Deux gestes, dans cet ordre : (1) un bouton d'AVANCEMENT (`CASCADE_LABELS` : Lancer, Appliquer, Continuer… — aucun nom de RÈGLE n'y figure) ; (2) à défaut, la **première option OUVERTE** d'un sélecteur d'options (`OptionChooser` : `.seg`, `.rm-loc-grid`, `.rm-loc-inline`). Une fenêtre de CHOIX (défense, désengagement, résistance) n'offre aucun bouton d'avancement tant que le joueur n'a pas tranché : la recette tranche par la FORME du contrôle, jamais par le nom d'une règle — toute fenêtre de choix passe, y compris celle qu'une règle future ouvrira, et l'option cliquée est IMPRIMÉE (une recette dit ce qu'elle a choisi à la place du joueur). Lève en nommant les boutons offerts si aucun des deux gestes ne s'applique, et lève « l'option « X » ne fait pas avancer la fenêtre » si la fenêtre est identique après deux clics |
+| `resoudreModales` + `CASCADE_LABELS` | RÉSOUT toute fenêtre ouverte (`.modal-overlay`) jusqu'à ce qu'il n'y en ait plus — DÉFINITION UNIQUE partagée par les sondes. Deux gestes, dans cet ordre : (1) un bouton d'AVANCEMENT (`CASCADE_LABELS` : Lancer, Appliquer, Continuer… — aucun nom de RÈGLE n'y figure) ; (2) à défaut, la **première option OUVERTE** d'un sélecteur d'options (`OptionChooser` : `.seg`, `.rm-loc-grid`, `.rm-loc-inline`). Une fenêtre de CHOIX (défense, désengagement, résistance) n'offre aucun bouton d'avancement tant que le joueur n'a pas tranché : la recette tranche par la FORME du contrôle, jamais par le nom d'une règle — toute fenêtre de choix passe, y compris celle qu'une règle future ouvrira, et l'option cliquée est IMPRIMÉE (une recette dit ce qu'elle a choisi à la place du joueur). Lève en nommant les boutons offerts si aucun des deux gestes ne s'applique, et lève « l'option « X » ne fait pas avancer la fenêtre » si la fenêtre est identique après deux clics. ⚠ `max` (40) est un BUDGET TOTAL de clics pour fermer la cascade ENTIÈRE, **pas un pas unitaire** : l'helper lève si une fenêtre reste ouverte au bout du budget, donc `{ max: 1 }` ne sert PAS à « avancer d'un cran » — il lève aussitôt. Pour avancer d'UN pas, cliquer soi-même — `clickButtonByText` avec le libellé voulu et `{ dans: '.modal-overlay' }`, ou `cliquerSelecteur` sur l'option visée (friction mesurée en recette #1852, 2026-09-21) |
 | `realKey` | frappe RÉELLE (`session, touche`, `Input.dispatchKeyEvent` : `rawKeyDown`/`char`/`keyUp`) — traverse les MÊMES handlers que le clavier physique (`keybindings.ts`), contrairement à un `KeyboardEvent` JS synthétique souvent ignoré. UNE forme d'argument pour toute la famille `realKey*` : la TOUCHE `{ key, code?, windowsVirtualKeyCode?, modifiers? }` — pour Échap, `session` puis `{ key: 'Escape' }` ; seul `key` est requis, `code` et le code virtuel se déduisent de lui (`scripts/recette/lib.mjs`). Alias français : `frapperTouche` (même geste, même forme). ⚠ Observé en recette #1752 le 2026-09-17 : `Enter` envoyé sur un `<button>` FOCALISÉ n'a pas activé le bouton (`keydown` reçu, `defaultPrevented:false`, aucun `click`) ; `Space` l'a activé. Une frappe d'activation se mesure donc, elle ne se suppose pas |
 | `realKeyDown` / `realKeyUp` + `ALT` / `MOD_ALT` | geste MAINTENU (`session, ALT` — la même TOUCHE que `realKey`, `ALT` imposant `code`/code virtuel) : l'appui et le relâchement sont deux appels, et ce qui se joue ENTRE les deux porte `{ modifiers: MOD_ALT }` (`survoler`, `clickButtonByText`) — sinon l'événement déclare la touche relâchée. C'est le pilotage d'**Alt maintenu** (`decor.reveler`) : halo + plaque de nom sur chaque utilisable visible, le survolé agrandi ; relâché, le champ redevient muet. ⚠ `__wfrp.screen('editor')` charge la scène-FIXTURE, pas la scène active — pour ouvrir un document précis, `editorOpen(id)` ; et un `querySelector` de pastille reste vrai SOUS la modale d'intro (mesurer la scène, pas le seul DOM) |
 | `typeInField` | SAISIE réelle dans un champ (`session, selecteur, texte, {clear?}`) : focus par VRAI clic CDP, puis `Input.insertText` — l'insertion passe par le pipeline d'édition, donc le `onChange` React s'exécute (mesuré : `ab12cd` frappé dans `.coop-code-input` se lit `AB12CD`, la casse venant du handler React de `CoopCodeInput`). Rend la valeur relue APRÈS la frappe. C'est la sortie du piège « Champ CONTRÔLÉ React » ci-dessous |
@@ -191,7 +233,8 @@ sinon elle est déclarée aveugle (exit 1). Exit ≠ 0 avec la liste des défaut
 | `evaluate` / `waitFor` | eval JS dans la page (attend les promesses) / poll jusqu'à condition vraie |
 | `evaluerFn` | ÉVALUE UNE FONCTION dans la page (`session, fn, ...args`) : le corps est sérialisé tel qu'ÉCRIT et les arguments par `JSON.stringify`. C'est la sortie du DOUBLE ÉCHAPPEMENT (voir ci-dessous). La fonction ne capture RIEN de la portée du script |
 | `attendreSelecteur` | attend qu'un sélecteur soit PRÉSENT, et REFUSE en le nommant sinon — au lieu d'un `sleep` gonflé « au cas où » qui cache la cause |
-| `checkServer` / `launchSession` | briques bas niveau d'`openApp` (séparément utilisables) — `launchSession` porte le défaut **1600×900** (§ « L'étalon se juge à 1600 » ci-dessus) |
+| `checkServer` / `launchSession` | briques bas niveau d'`openApp` (séparément utilisables) — `launchSession` prend pour défaut la vue de RÉFÉRENCE, **1707×780** (§ « L'étalon se juge aux TROIS VUES » ci-dessus) |
+| `VUES_RECETTE` / `vueRecette` / `VUE_REFERENCE` / `pourChaqueVue` | les trois vues jugées, lues à `vues-recette.json` ; `pourChaqueVue` prend la session et une fonction : il pose le viewport, laisse le DOM se reposer, puis appelle la fonction avec `{ nom, largeur, hauteur }`. Un nom de vue inconnu LÈVE, au lieu de rendre un viewport `NaN×NaN` |
 
 **Capturer un écran** :
 ```js
@@ -212,7 +255,7 @@ l'autre arbre :
 import { openApp, gotoScreen, selectOption, clickButtonByText, shot } from './scripts/recette/lib.mjs';
 // URL explicite du port dérivé imprimé par `npm run dev` dans CE worktree ; `opts` = ceux de
 // `launchSession` (`{ width, height, mobile, chromePath, port }`).
-const session = await openApp('http://localhost:5182/', { width: 1600, height: 900 });
+const session = await openApp('http://localhost:5182/', { width: 1366, height: 650 });
 await gotoScreen(session, 'compendium');
 await selectOption(session, 'select[aria-label="Chapitre du passage"]', '21');
 await clickButtonByText(session, '+ Fragment', { exact: true });
@@ -1311,8 +1354,8 @@ si elle est `false`), et re-mesurer APRÈS ouverture.
 
 Mesuré 2026-08-29 (recette sous-lot C #1472), ~15 appels perdus. Le panneau navigateur peut rendre
 une capture SOUS-ÉCHANTILLONNÉE (mesuré : 800×453) alors que le viewport où atterrissent les clics
-est en 1600×900 : les coordonnées relevées à l'œil sur l'image ne sont pas des coordonnées de clic
-(facteur 2 ici). Avant tout clic aux coordonnées, lire l'échelle réelle (`window.innerWidth`/
+est tout autre (ce jour-là : 1600×900) : les coordonnées relevées à l'œil sur l'image ne sont pas
+des coordonnées de clic (facteur 2 ici). Avant tout clic aux coordonnées, lire l'échelle réelle (`window.innerWidth`/
 `innerHeight` contre les dimensions de l'image) et convertir — ou mieux, ne pas cliquer aux
 coordonnées : viser le nœud (sélecteur/`ref` de snapshot) et laisser l'outil calculer le point.
 

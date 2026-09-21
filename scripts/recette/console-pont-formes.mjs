@@ -23,16 +23,17 @@
 //     `detecteurs-pont.mjs`, testés à fixtures par `test:recette`.
 //
 // Sortie : exit 1 au premier défaut (liste complète imprimée), exit 0 si tout passe.
-import { openApp, evaluate, setViewport, sleep, clickButtonByText, cliquerSelecteur, resoudreModales } from './lib.mjs';
+import { openApp, evaluate, setViewport, sleep, clickButtonByText, cliquerSelecteur, resoudreModales, VUES_RECETTE } from './lib.mjs';
 import { surfaceOcculteeParUnPont, elementsHorsFenetre } from './detecteurs-pont.mjs';
 
-/** VUES de recette : les trois vues jugées (bureau, portable, mobile) plus les largeurs canon de la
- *  charte (900 / 700 / 560) et la tranche où la rangée à quatre régions est le plus serrée (1100).
- *  La HAUTEUR compte autant que la largeur : le côté d'alvéole se calcule en `vh`. */
-const VUES = [[1707, 780], [1366, 650], [1100, 780], [900, 780], [700, 780], [560, 740], [360, 740]];
-/** VUES de la passe EXPLORATION : les trois vues JUGÉES (bureau, portable, mobile). Le pont léger
- *  n'a qu'une forme — ce qui varie d'une vue à l'autre est la place qu'il laisse aux surfaces. */
-const VUES_EXPLORATION = [[1707, 780], [1366, 650], [360, 740]];
+/** VUES de la passe EXPLORATION : les trois vues JUGÉES (bureau, portable, mobile), lues à leur
+ *  source UNIQUE `vues-recette.json` — jamais recopiées. Le pont léger n'a qu'une forme : ce qui
+ *  varie d'une vue à l'autre est la place qu'il laisse aux surfaces. */
+const VUES_EXPLORATION = VUES_RECETTE.map((v) => [v.largeur, v.hauteur]);
+/** VUES de recette : les trois vues jugées, plus les largeurs canon de la charte (900 / 700 / 560)
+ *  et la tranche où la rangée à quatre régions est le plus serrée (1100). La HAUTEUR compte autant
+ *  que la largeur : le côté d'alvéole se calcule en `vh`. */
+const VUES = [...VUES_EXPLORATION, [1100, 780], [900, 780], [700, 780], [560, 740]].sort((a, b) => b[0] - a[0]);
 const DEFAULT_WIDTHS = VUES.map(([w]) => w);
 const hauteurDe = (w) => (VUES.find(([lw]) => lw === w) ?? [w, 780])[1];
 

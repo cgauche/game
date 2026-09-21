@@ -14,23 +14,42 @@
 .app-campaign .modal-overlay:has(.roll-modal) {
   background: rgba(0, 0, 0, 0.28);
 }
+/* CE QUE RÉCLAME UNE FENÊTRE DE JET (#1847) — trois grandeurs que le VOILE publie, quelle que soit
+   la tranche, et qui sont le CONTRAT lisible de la fenêtre (la sonde `scripts/recette/hauteur-reelle.mjs`
+   les lit au `getComputedStyle` du voile ; sans elles, elle n'a rien à confronter et le dit).
+   `--roll-fenetre` = la boîte qu'une fenêtre de jet déploie dès que l'écran la lui laisse : 736px,
+   soit ce qu'un écran de 1080 de haut lui accorde (1080 − 248 de bande − 96 de pied). Mesuré sur la
+   cascade d'Initiative d'ouverture de combat : AVANT jet, 561px de corps, elle tient d'un bloc ;
+   APRÈS jet, 754px, elle défile — à 780 de haut comme à 1080.
+   `--roll-band-min` / `--roll-dock-min` = ce qui reste des deux bandes quand l'écran est trop bas
+   pour la boîte entière : la fenêtre descend alors sous ce qu'elle réclame, elle ne le paie jamais
+   par un corps écrasé. */
+.app-campaign .modal-overlay:has(.roll-modal) {
+  --roll-fenetre: 736px;
+  --roll-band-min: 12px;
+  --roll-dock-min: 8px;
+  --roll-dock-max: 96px;
+}
 /* INVARIANT DE GÉOMÉTRIE (#1142, `docs/charte-ui.md` § « Invariant de GÉOMÉTRIE d'une fenêtre de
    jet ») : c'est le bord HAUT qui est fixé, pas le bas. La bande de champ de bataille visible
    au-dessus de la fenêtre (`--roll-band`) reste alors CONSTANTE d'un état à l'autre de la même
    session de jet ; une zone qui apparaît (issue, bilan, post-jet) pousse vers le BAS au lieu de
    hisser toute la fenêtre. Mesuré sous ancrage bas : 105,6px de tremblement de `.cs-rows` sur la
-   cascade d'ouverture de combat (1600×900 comme 900×780) — 0 après.
-   Le plafond de hauteur se recalcule sur les DEUX bandes : la fenêtre ne crève jamais le bas de
-   l'écran, les grands flux défilent dans `.rs-scroll` (pied d'actions fixe, règles ci-dessous).
-   La bande BASSE (`--roll-dock`) réserve la place de la console de combat (`.combat-console`) et
-   du tiroir de journal (`.log-drawer`, bottom 92px) : sans elle, une fenêtre haute descend jusqu'à
-   8px du bas et les recouvre. Les deux bandes se soustraient du `max-height` (`box-sizing:
-   border-box` global, base.css) — le bord haut reste invariant, le débordement part au défilement.
+   cascade d'ouverture de combat — 0 après. Les deux bandes se soustraient du `max-height`
+   (`box-sizing: border-box` global, base.css) et ne sont fonctions que de `100vh` : rien de ce que
+   la fenêtre contient ne peut faire bouger son bord haut.
+   ORDRE DE CESSION : les deux bandes servent la boîte réclamée avant de se servir. La bande HAUTE
+   cède la première — ce qu'on y perd est du champ de bataille, pas du lisible —, le pied ensuite,
+   chacun jusqu'à son plancher. Le pied bute à 96px dès 844 de haut ; la bande haute continue de
+   monter (`min(23vh, 260px)`) et bute à 260px vers 1130 — mesuré : 1100 → 253/96, 1200 → 260/96.
+   La bande BASSE (`--roll-dock`) réserve la place du pont de combat : sous 844 de haut
+   (`--roll-band-min` + `--roll-fenetre` + `--roll-dock-max`) elle passe sous cette réserve, et la
+   fenêtre recouvre le pont — assumé, la modale est sous voile.
    Tranche ≤560 EXCLUE : elle prend tout l'écran (bloc dédié plus bas), il n'y a plus de bande. */
 @media (min-width: 561px) {
   .app-campaign .modal-overlay:has(.roll-modal) {
-    --roll-band: min(23vh, 260px);
-    --roll-dock: 96px;
+    --roll-band: clamp(var(--roll-band-min), calc(100vh - var(--roll-dock-max) - var(--roll-fenetre)), min(23vh, 260px));
+    --roll-dock: clamp(var(--roll-dock-min), calc(100vh - var(--roll-band-min) - var(--roll-fenetre)), var(--roll-dock-max));
     align-items: start;
     padding-top: var(--roll-band);
     padding-bottom: var(--roll-dock);

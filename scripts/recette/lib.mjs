@@ -2,8 +2,9 @@
 // (des-v5-verify.mjs, gallery-v2-tour.mjs, repro-399.mjs, dice-reduced-motion.mjs) : CDP nu sur
 // Chrome, zéro dépendance nouvelle. Voir docs/recette-navigateur.md § « Preuve headless (agents) ».
 import { spawn, spawnSync } from 'node:child_process';
-import { writeFileSync, mkdirSync, existsSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { writeFileSync, mkdirSync, existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import { ENTETE_RACINE, RACINE, normaliserRacine, racineDepuisEntete, urlDev } from '../port-dev.mjs';
 
@@ -221,15 +222,52 @@ async function removeProfileDir(profile, attempts = 5, delayMs = 200) {
 }
 
 /**
+ * Les TROIS VUES DE RÉFÉRENCE de toute recette (#1847), lues à leur source UNIQUE
+ * `scripts/recette/vues-recette.json` — jamais recopiées : trois adresses divergeaient (1440×900,
+ * 1600×900, `HEIGHT = 800`) et aucune ne rendait l'écran de l'utilisateur. Mesure du 2026-09-20 :
+ * 2560×1440 à 150 % = 1707×960px CSS, `availHeight` 912, fenêtre Chrome utile ≈ 745-780px.
+ * Un écran se juge à la HAUTEUR autant qu'à la largeur (`docs/charte-ui.md` § « La HAUTEUR réelle »).
+ * Le fichier ne porte QUE des vues ; tout le reste (breakpoints 1440/900/700/560) est de la charte.
+ */
+export const VUES_RECETTE = JSON.parse(
+  readFileSync(fileURLToPath(new URL('./vues-recette.json', import.meta.url)), 'utf8'),
+);
+
+/** Une vue par son nom (`bureau`, `portable`, `mobile`) — lève sur un nom inconnu plutôt que de
+ *  rendre `undefined`, qu'un appelant transformerait en viewport `NaN×NaN` sans rien dire. */
+export function vueRecette(nom) {
+  const v = VUES_RECETTE.find((x) => x.nom === nom);
+  if (!v) throw new Error(`vueRecette : vue inconnue « ${nom} » — vues connues : ${VUES_RECETTE.map((x) => x.nom).join(', ')}`);
+  return v;
+}
+
+/** La vue de RÉFÉRENCE : celle du bureau de l'utilisateur. C'est elle qui donne à `launchSession`
+ *  son viewport par défaut, et à toute capture sa taille d'étalon. */
+export const VUE_REFERENCE = vueRecette('bureau');
+
+/**
+ * Déroule `fn({ nom, largeur, hauteur })` sur CHACUNE des trois vues, viewport posé et laissé au
+ * calme avant l'appel (un DOM à moitié reposé rend toute mesure aveugle). Helper de sonde : une
+ * recette qui ne juge qu'une vue ne juge pas la hauteur.
+ */
+export async function pourChaqueVue(session, fn, { reposMs = 500 } = {}) {
+  for (const vue of VUES_RECETTE) {
+    await setViewport(session, vue.largeur, vue.hauteur);
+    await sleep(reposMs);
+    await fn(vue);
+  }
+}
+
+/**
  * Lance Chrome headless et attache une session CDP dédiée (targetId + sessionId propres).
  *
- * Largeur par DÉFAUT = 1600 : c'est la largeur à laquelle les maquettes sont DESSINÉES
- * (`.mock{width:1600px}`) — donc la seule où une
- * capture se compare à l'étalon. Le défaut historique de 1280 a fait juger « étriqués » pendant deux
- * jours des écrans qui rendaient juste à leur largeur de référence (lot « matières & proportions »
- * #393). Une recette MOBILE passe sa largeur explicitement (`setMobileViewport`, 360×740).
+ * Viewport par DÉFAUT = la vue de RÉFÉRENCE (`VUE_REFERENCE`, bureau 1707×780) : la fenêtre que
+ * l'utilisateur a RÉELLEMENT devant lui. Le défaut historique de 1280 a fait juger « étriqués »
+ * pendant deux jours des écrans qui rendaient juste à leur largeur de référence (lot « matières &
+ * proportions », #393), et les 900px de haut des recettes suivantes ne tiennent sur AUCUN de ses
+ * écrans. Une recette responsive passe sa vue explicitement (`pourChaqueVue`, `setMobileViewport`).
  */
-export async function launchSession({ chromePath, width = 1600, height = 900, port, mobile = false, timeoutMs = 10000 } = {}) {
+export async function launchSession({ chromePath, width = VUE_REFERENCE.largeur, height = VUE_REFERENCE.hauteur, port, mobile = false, timeoutMs = 10000 } = {}) {
   const cdpPort = port ?? 9222 + Math.floor(Math.random() * 2000);
   const profile = join(os.tmpdir(), `recette-cdp-profile-${Date.now()}-${Math.floor(Math.random() * 1e6)}`);
   mkdirSync(profile, { recursive: true });
@@ -657,9 +695,11 @@ export async function setViewport(session, width, height) {
   });
 }
 
-/** Raccourci `setViewport` au format mobile canon (360×740, cf. charte-ui.md — testable dès 360px). */
+/** Raccourci `setViewport` à la vue MOBILE de `vues-recette.json` — la source unique, jamais un
+ *  couple recopié ici (charte-ui.md : testable dès 360px). */
 export async function setMobileViewport(session) {
-  await setViewport(session, 360, 740);
+  const { largeur, hauteur } = vueRecette('mobile');
+  await setViewport(session, largeur, hauteur);
 }
 
 /**

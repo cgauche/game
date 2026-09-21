@@ -2,22 +2,30 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { readFileSync } from 'node:fs';
 import { AddMenu, placeMenu } from './AddMenu';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 });
 
-/** Le viewport de recette (`scripts/recette/lib.mjs`) : 1600×900. */
-const VP = { width: 1600, height: 900 };
+/** La vue de RÉFÉRENCE des recettes, lue à sa source unique (#1847) : la POSE du menu se juge dans
+ *  la fenêtre où l'écran est jugé, jamais dans un viewport inventé au test. Chemin depuis la racine
+ *  du dépôt : sous `@vitest-environment jsdom`, `import.meta.url` n'est pas une URL `file:`. */
+const VUE = JSON.parse(readFileSync('scripts/recette/vues-recette.json', 'utf8'))
+  .find((v: { nom: string }) => v.nom === 'bureau') as { largeur: number; hauteur: number };
+const VP = { width: VUE.largeur, height: VUE.hauteur };
 /** Le menu tient-il ENTIER dans le viewport, marges comprises ? */
 const tientAEcran = (box: { top: number; maxHeight: number }) => box.top >= 0 && box.top + box.maxHeight <= VP.height;
 
 describe('AddMenu — le menu d’ajout se pose TOUJOURS entier à l’écran', () => {
   it('un bouton au BAS du dock Logique ouvre le menu VERS LE HAUT, entièrement visible', () => {
-    // Mesure de recette sur La Diligence : le bouton « + Bloc » est à y≈872 dans un viewport de 900.
-    const box = placeMenu({ top: 852, bottom: 872, left: 322 }, VP);
-    expect(box.top + box.maxHeight).toBeLessThanOrEqual(852); // au-dessus du bouton
+    // Mesure de recette sur La Diligence : le bouton « + Bloc » est au RAS du bas du panneau — ici
+    // son HAUT à 48px du bord bas de la vue, donc son bas à 28px, quelle que soit la hauteur de
+    // celle-ci : trop près pour qu'un menu de 300px s'ouvre vers le bas.
+    const hautDuBouton = VP.height - 48;
+    const box = placeMenu({ top: hautDuBouton, bottom: hautDuBouton + 20, left: 322 }, VP);
+    expect(box.top + box.maxHeight).toBeLessThanOrEqual(hautDuBouton); // au-dessus du bouton
     expect(box.maxHeight).toBeGreaterThan(300); // toute la place du dessus est prise
     expect(tientAEcran(box)).toBe(true);
   });

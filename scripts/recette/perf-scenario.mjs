@@ -104,6 +104,9 @@ async function runProfile(session, args) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  // GABARIT DE MESURE, pas une vue de recette : les coordonnées de clic par défaut (700,620,
+  // consignées en tête) désignent une case de sol à CE cadrage, et une cadence rAF ne se compare
+  // qu'à des chiffres relevés au même. Il ne suit donc pas `vues-recette.json`.
   const session = await openApp(args.url, { width: 1600, height: 950 });
   try {
     const guard = consoleGuard(session);

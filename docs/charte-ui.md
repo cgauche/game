@@ -158,7 +158,8 @@ primitive React pose souvent ces classes pour toi (ex. `RollShell` pose `.modal`
 | `.activity-pane` (+ `.activity-pane-head`, `.activity-pane-body`, `.activity-pane-desc`, `.activity-pane-blocked`, `.activity-pane-foot`, `.activity-pane-terms`, `.activity-pane-detail`, `.activity-pane-actions`) | Panneau d'Activité/Service : en-tête (icône + titre), corps DÉFILABLE, pied FIXE (pré-jet + coût `<Coins>` + action jamais cachés par le scroll) | Composé par la primitive `ActivityPane` (`src/ui/ActivityPane.tsx`, CLAUDE.md) — tout volet d'Activité (interlude) ou détail de service (hub de ville) la COMPOSE au lieu d'un markup en-tête/corps/pied recodé à la main. |
 | `.sans-webgl` (+ variante `.sans-webgl.compact`) | Message « le monde ne peut pas être affiché » : ce que le joueur voit quand la machine refuse le contexte WebGL 2, le monde volumique étant le seul peintre du jeu (#1176 C5a) | Posé par la primitive `SansWebgl` (`src/gameIso/stage/SansWebgl.tsx`) sur `.panel` — tout hôte de monde (stage de jeu, plan de station) le monte À LA PLACE de son canevas ; `compact` = posé DANS un panneau borné. Jamais un écran nu et muet, jamais un second peintre de secours. |
 | `.plaque-nom` | Boîte du NOM d'un utilisable révélé (Alt maintenu) ou survolé, posée au-dessus de lui dans le SVG du plateau (#1687) : centrage, jamais une cible (`pointer-events: none` de bout en bout) — l'ombrage de lisibilité est le halo PARTAGÉ `.halo-champ`, posé à côté | Posée par la primitive `PlaquesDeNom` (`src/gameIso/stage/PlaquesDeNom.tsx`) autour de `CodexTitre` — le TEXTE reste celui du chrome de nom du Codex, une seule matière de nom à l'écran ; jamais un second peintre de nom, jamais une boîte qui mangerait une bande du champ au-dessus de chaque décor. |
-| `.menu-card` (+ `.menu-card-large` carte-CATALOGUE, prop `large` — plafond 760px, 1600px au-delà de 1440px ; `.game-menu-overlay` menu système plein écran, `.game-menu-card`/`.game-menu-sub-wide`/`.menu-sub-head`/`.menu-sub-body`, `.audio-controls`/`.audio-icon` la ligne de réglage audio du sous-écran Options (`AudioControls`), `.menu-card-head`/`.menu-card-title`/`.menu-card-sub`/`.menu-card-meta`, `.menu-btn`, `.menu-toggle`, `.menu-buttons`) | Carte de menu : en-tête + sections de grands boutons pleine largeur (icône + libellé) séparées par un filet titré ; `.game-menu-overlay` = voile plein écran du menu système (pause) en jeu, ses sous-écrans Coopération/Options composant la même carte | Composée par la primitive `MenuCard`/`MenuSection`/`MenuButton`/`MenuToggle` (`src/ui/MenuCard.tsx`, CLAUDE.md) — le menu principal (`MainMenu`), le menu système plein écran en jeu (`GameMenu`) ET le salon coop (`CoopLobby`) la COMPOSENT ; jamais un `.menu-card` recodé ni un `<button className="btn">` de menu à la main. `MenuSubScreen` pose LUI-MÊME son corps défilant `.menu-sub-body` (un sous-écran haut défile au lieu de pousser son contenu hors de la carte) ; ce qui doit rester en tête passe par sa prop `head`, et `backLabel` corrige un « Retour » qui mentirait (le salon coop en SORT). |
+| `.app` (+ son modificateur d'écran courant, `app-` suffixé du nom d'écran) | Conteneur de l'ÉCRAN COURANT, sous la racine React : il borne la hauteur de l'interface à la fenêtre (`height: 100dvh`) et nomme l'écran monté | Posé par `App.tsx`, et par lui seul. Ce qui doit « tenir dans l'écran » se borne à son HÔTE en pourcentage (`.menu-card { max-height: 100% }`) plutôt qu'à la fenêtre : une unité de viewport ignorerait les gouttières traversées. Le modificateur d'écran est l'adresse par laquelle un réglage de cadre dépend de l'écran monté (voile allégé des fenêtres de jet en campagne) ; jamais un `:has()` sur le contenu. |
+| `.menu-card` (+ `.menu-card-large` carte-CATALOGUE, prop `large` — plafond 760px, 1600px au-delà de 1440px ; `.game-menu-overlay` menu système plein écran, `.game-menu-card`/`.game-menu-sub` (+ son modificateur `.game-menu-sub-wide`)/`.menu-sub-head`/`.menu-card-body`, `.audio-controls`/`.audio-icon` la ligne de réglage audio du sous-écran Options (`AudioControls`), `.menu-card-head`/`.menu-card-title`/`.menu-card-sub`/`.menu-card-meta`, `.menu-btn`, `.menu-toggle`, `.menu-buttons`) | Carte de menu : en-tête + sections de grands boutons pleine largeur (icône + libellé) séparées par un filet titré ; `.game-menu-overlay` = voile plein écran du menu système (pause) en jeu, ses sous-écrans Coopération/Options composant la même carte | Composée par la primitive `MenuCard`/`MenuSection`/`MenuButton`/`MenuToggle` (`src/ui/MenuCard.tsx`, CLAUDE.md) — le menu principal (`MainMenu`), le menu système plein écran en jeu (`GameMenu`) ET le salon coop (`CoopLobby`) la COMPOSENT ; jamais un `.menu-card` recodé ni un `<button className="btn">` de menu à la main. La carte est une COLONNE bornée à la place de son hôte (`max-height: 100%`) dont le SEUL scrollport est `.menu-card-body` (#1847) : `header`, `head` et `footer` restent ancrés, les sections défilent — jamais un menu qui défile en PAGE. Ce qui doit rester en tête (barre d'onglets d'Options) passe par la prop `head` ; `backLabel` corrige un « Retour » qui mentirait (le salon coop en SORT). |
 | `.coop-code` · `.coop-code-input` · `.coop-banner` · `label.coop-assign-row` (`coop-panels.css`) | Salon coop : la PLAQUE du code de room (gravure `--font-display`, sélectionnée d'un clic), son CHAMP de saisie (même échelle, majuscules forcées), la POSE du bandeau de liaison (flottant, non bloquant — sa matière est `.chip.tone-danger`) et la LIGNE d'attribution « sujet → siège » | Composées par les primitives de `src/ui/CoopPanels.tsx` (`CoopInvite`, `CoopCodeInput`, `CoopBanner`, `CoopAssignRow`, `SeatList`) — le salon « Jouer en ligne » et le sous-écran Coopération du menu ☰ montent les MÊMES briques. `label.coop-assign-row` renverse l'empilement de `.panel label` par l'ordre seul (poids égal 0-1-1), comme `.radio` ; jamais un `flex-direction: row` recopié ni un `!important` au site. |
 
 ### Atelier du scribe (#412)
@@ -417,8 +418,8 @@ d'ouverture, lui, garde SA ligne (`.combat-splash-sub`, dans le module de l'orga
 seul écran la porte. La garde est ABSOLUE et sans liste (`src/ui/ui-ratchets.test.ts`) : hors couche
 partagée, aucune règle ne porte une taille de texte dont la borne haute atteint 30px — le critère ne
 regarde PAS la police (un grand corps est un grand titre, qu'il hérite sa police ou la déclare), lit
-le raccourci `font`, résout `clamp`/`min`/`max`/`calc` et les tokens partagés, compte `1vw = 14,4px`
-au viewport de recette, et LÈVE toute taille qu'il ne peut pas décider. Les titres d'ÉCRAN de 24-26px
+le raccourci `font`, résout `clamp`/`min`/`max`/`calc` et les tokens partagés, compte `1vw = 17,07px`
+(la vue BUREAU de recette, ci-dessous), et LÈVE toute taille qu'il ne peut pas décider. Les titres d'ÉCRAN de 24-26px
 (`.step-head-title`, `.party-acts-title`, `.codex-h1`) sont une autre matière, sous le seuil.
 
 Quatre classes de la famille de JET sont PARTAGÉES et vivent donc en couche d'identité (`components.css`) :
@@ -526,6 +527,62 @@ rythme », « Mal de mer par mauvais temps »), jamais une valeur dynamique entr
 recomposé, jamais une classe de rôle empruntée (`.rm-vs` appartient à `VsHeader`, cliquet
 `src/ui/roll-display-contract.test.tsx`). Une information qui manque se sert par sa zone ; si aucune
 zone ne l'accueille, c'est le contrat qu'on amende ici, avant le code.
+
+## La HAUTEUR réelle — trois vues, et rien qui défile en page (#1847)
+
+Verbatim utilisateur (2026-09-20) : « **Nan mais 900 de hauteur, sur mon écran, ca déborde** » et
+« En tout cas je ne sais pas c'est quoi ce 900/700/560… ». Mesure de son écran le même jour :
+2560×1440 à 150 % = **1707×960px CSS**, `availHeight` 912, fenêtre Chrome utile ≈ 745-780px. Toutes
+les recettes se jouaient à 1440×900 ou 1600×900 : personne ne voyait ce qu'il voit.
+
+**Un écran se juge à la HAUTEUR autant qu'à la largeur.** À chacune des trois vues de référence,
+l'action principale d'un écran est atteignable **sans défiler la PAGE**, et un corps de modale n'est
+jamais écrasé par ses bandes.
+
+Les trois vues vivent dans UNE source, `scripts/recette/vues-recette.json`, que lisent le kit de
+recette (`scripts/recette/lib.mjs` : viewport par défaut, `setMobileViewport`, helper
+`pourChaqueVue`), le viewport de référence des cliquets CSS (`VIEWPORT_RECETTE`,
+`scripts/guards/lib/cssCouchesAudit.ts`) et les sondes de navigateur :
+
+| Vue | Taille | Ce qu'elle représente |
+|---|---|---|
+| `bureau` | **1707×780** | la fenêtre réelle de l'utilisateur (2560×1440 à 150 %, barre d'onglets et favoris déduites) — c'est l'étalon : `1vw = 17,07px`, `1vh = 7,8px` |
+| `portable` | **1366×650** | le portable ordinaire : la hauteur où tout défaut de hauteur se voit en premier |
+| `mobile` | **360×740** | le mobile canon de la règle stricte 4 |
+
+Ce ne sont **pas** des breakpoints : `1440` (politique grand écran, ci-dessous) et `900 / 700 / 560`
+(règle stricte 4) restent les seuils responsive, en LARGEUR. Ces trois-là sont les fenêtres où l'on
+REGARDE.
+
+Ce qui en découle, et qui se mesure :
+
+- **Aucun scrollport de PAGE, ni rien qui en tienne lieu.** Ce qui défile est un CADRE borné dans
+  l'écran ; ce qui est autour (titre, actions, pied) reste ancré. Une boîte défilante qui couvre
+  TOUT le viewport est un scrollport de page sous un autre nom — la distinction ne se lit pas au nom
+  de l'élément, elle se lit à sa BOÎTE.
+- **Une carte plein-champ est une colonne bornée à son HÔTE, pas à la fenêtre.** `MenuCard` en est
+  le patron : `max-height: 100%` hérite de la gouttière réelle de l'hôte (`.menu { padding: 16px }`,
+  `.game-menu-overlay { padding: 24px 16px }`) — une unité de viewport écrite sur la carte
+  ignorerait ces gouttières. Colonne flex, un SEUL corps défilant (`.menu-card-body`) ; et la piste
+  qui la porte doit pouvoir être plus courte que son contenu (`grid-template-rows: minmax(0, 1fr)`
+  sur `.menu`), sinon le plafond ne borne rien.
+- **Une fenêtre de jet réclame son corps AVANT ses bandes** (`--roll-fenetre: 736px`,
+  `roll-shell.css`) : les bandes sont des `clamp` fonctions de `100vh` SEUL (invariant #1142) et
+  cèdent dans l'ordre — la bande haute d'abord jusqu'à `--roll-band-min`, le pied ensuite jusqu'à
+  `--roll-dock-min`. Mesuré : 650 → 12 / 8, boîte 630 ; 780 → 12 / 32, boîte 736 ; 900 → 68 / 96 ;
+  1100 → 253 / 96 ; 1200 → 260 / 96 (le pied bute à 96 dès 844, la bande haute à 260 vers 1130). Ce
+  qu'un écran bas perd, il le perd en BANDES, jamais en corps : la cascade d'Initiative d'ouverture
+  mesure 561px de corps avant jet (elle tient d'un bloc) et 754px après (elle défile, à 780 comme à
+  1080).
+- **La course appartient au cadre qui a la PLACE.** Deux blocs empilés sous 900px ne se partagent
+  plus la hauteur, ils se suivent : laisser le défilement au bloc du BAS ne lui donne que le reste
+  d'une colonne déjà pleine, et il se réduit à une fente hors du champ (`src/ui/styles/party.css`).
+  C'est la colonne qui défile, le bloc rend la sienne.
+
+**Garde** : `node scripts/recette/hauteur-reelle.mjs` — ce qu'elle ouvre, ce qu'elle juge et comment
+s'y ajouter : `docs/recette-navigateur.md` § « Hauteur réelle ». Résidu mesuré : Codex à 360×740,
+page 3007/740 — #1860. Aucune de ces valeurs ne se garde en test unitaire — voir « Où se garde un
+contrat CSS » ci-dessus.
 
 ## Politique grand écran (≥1440px)
 

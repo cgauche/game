@@ -4,7 +4,7 @@
 // capture au réglage par défaut puis aux deux extrêmes du curseur d'opacité du gabarit.
 //
 // Usage : node scripts/recette/shot-editor-lower-layer-gabarit.mjs [--url <url>] [--out dir]
-import { openApp, gotoScreen, evaluate, waitFor, sleep, consoleGuard, shot } from './lib.mjs';
+import { openApp, gotoScreen, evaluate, waitFor, sleep, consoleGuard, shot, VUE_REFERENCE } from './lib.mjs';
 
 function parseArgs(argv) {
   const out = { url: undefined, out: process.cwd() };
@@ -59,7 +59,9 @@ async function setGabaritSlider(session, pct) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const session = await openApp(args.url ?? undefined, { width: 1600, height: 950 });
+  // Ce script OUVRE un écran pour le juger à l'œil : il le cadre à la vue de référence des recettes
+  // (`vues-recette.json`), pas à un couple qui lui serait propre.
+  const session = await openApp(args.url ?? undefined, { width: VUE_REFERENCE.largeur, height: VUE_REFERENCE.hauteur });
   try {
     const guard = consoleGuard(session);
 

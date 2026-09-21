@@ -610,12 +610,15 @@ h3 {
 .menu {
   height: 100%;
   display: grid;
+  /* La rangée doit pouvoir être PLUS COURTE que son contenu (#1847) : une rangée `auto` prend la
+     hauteur de la carte, et le `max-height: 100%` de la carte, qui se rapporte à cette rangée, ne
+     borne alors plus rien. `minmax(0, 1fr)` la fixe au champ, et le plafond de la carte mord. */
+  grid-template-rows: minmax(0, 1fr);
   place-items: center;
   padding: 16px;
   background:
     radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--gold) 7%, transparent), transparent 55%),
     radial-gradient(ellipse at 50% 115%, color-mix(in srgb, var(--blood) 18%, transparent), transparent 60%);
-  overflow-y: auto;
 }
 .menu-card {
   background: linear-gradient(180deg, var(--panel2), var(--panel));
@@ -629,6 +632,22 @@ h3 {
   box-shadow:
     0 24px 70px rgba(0, 0, 0, 0.55),
     inset 0 0 0 1px rgba(201, 162, 39, 0.16);
+  /* HAUTEUR (#1847) — la carte ne dépasse JAMAIS la place que son hôte lui laisse. `100%` EST la
+     gouttière réelle de cet hôte (`.menu { padding: 16px }`, `.game-menu-overlay { padding: 24px
+     16px }`) : aucune valeur n'est recopiée ici, donc rien à resynchroniser le jour où une gouttière
+     change — une unité de viewport écrite ici ignorerait ces gouttières.
+     Colonne : en-tête, bande de tête et pied restent ancrés, seul `.menu-card-body` défile. */
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+/* CORPS DÉFILANT UNIQUE de la carte (posé par `MenuCard`) : le seul scrollport d'un menu (#1847).
+   La course appartient aux sections ; titre, bande de tête et pied restent à l'écran. */
+.menu-card-body {
+  flex: 1 1 auto;
+  min-height: 0; /* sans quoi un enfant flex refuse de rétrécir sous son contenu */
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 /* Ligne discrète sous le grand titre d'une carte — la phrase qui prolonge `.display-title`
    (components.css), en police de corps. La marge est ÉCRITE sur les quatre côtés : le dépôt ne pose

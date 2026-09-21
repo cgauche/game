@@ -982,7 +982,6 @@ button.chip:hover {
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
-  overflow-y: auto;
   background:
     radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--gold) 6%, transparent), transparent 55%),
     rgba(0, 0, 0, 0.72);
@@ -1012,15 +1011,11 @@ button.chip:hover {
     max-width: min(1600px, 96vw);
   }
 }
-/* Sous-écrans (Coopération, Options) : en-tête Retour + titre, corps aligné à gauche, carte élargie.
-   La carte est BORNÉE au champ (#839) : sans plafond, le sous-écran Options poussait son en-tête ET sa
-   barre d'onglets hors de l'écran (1727px de carte pour 800px de viewport — seul `.game-menu-overlay`
-   défilait, donc les onglets partaient avec). Ici : plafond + colonne flex, le corps seul défile. */
+/* Sous-écrans (Coopération, Options) : une LARGEUR de carte, et rien de plus. Le plafond de hauteur
+   et la colonne flex appartiennent à `.menu-card` (base.css, #1847), qui les porte pour TOUTE carte
+   de menu — un sous-écran n'a pas de règle de cadre à lui. */
 .game-menu-sub-wide {
   max-width: 720px;
-  max-height: calc(100vh - 48px);
-  display: flex;
-  flex-direction: column;
 }
 .menu-sub-head {
   display: grid;
@@ -1035,15 +1030,13 @@ button.chip:hover {
 .menu-sub-head .menu-card-title {
   grid-column: 2;
 }
-.menu-sub-body {
+/* Le corps d'un SOUS-ÉCRAN empile des blocs à gauche, espacés — son DRAPÉ seul : le défilement,
+   lui, est celui de la carte (`.menu-card-body`, base.css), commun à tous les menus. */
+.game-menu-sub .menu-card-body {
   margin-top: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 /* RÉGLAGES AUDIO (`AudioControls`, corps du sous-écran Options — menu principal comme menu système) :
    une ligne = gouttière d'icône + curseur qui s'étire. */

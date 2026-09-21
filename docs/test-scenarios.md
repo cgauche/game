@@ -25,6 +25,22 @@ dérivable d'aucune donnée — maintenue à la main DANS CE GÉNÉRATEUR, jamai
 1. Lance `npm run dev`, ouvre le menu → **Scénarios de test**.
 2. **Passe par le scénario adapté.** S'il n'en existe pas pour ce que tu vérifies, **crée-en un**.
 
+**Angle mort du catalogue, mesuré (recette #1852, 2026-09-21)** : AUCUN scénario n'isole « une
+créature à attaque gratuite face à un héros ». Tant qu'il n'existe pas, la composition MINIMALE qui
+le monte, au kit de recette (helpers de `src/state/devtools.ts`, vérifiés au code) :
+
+```js
+await evaluate(session, `window.__wfrp.scenario('entrainement')`);        // terrain nu, groupe complet
+await evaluate(session, `window.__wfrp.fight('enc-entrainement')`);       // l'affrontement du scénario
+await evaluate(session, `window.__wfrp.spawn('ours', { x: 8, y: 5 }, { side: 'enemy' })`);
+await evaluate(session, `window.__wfrp.quality('hero-1', undefined, 3)`); // 3 Avantages au héros
+```
+
+`spawn(creatureId, pos, { side })` prend un id de `src/data/creatures.json` (`'ours'`, pas son
+libellé) ; `quality(id, label, advantage)` crédite les Avantages — son 2ᵉ argument RESTE une qualité
+d'arme (défaut « Déstabilisante »), passer `undefined` la laisse au défaut, ça n'annule rien. C'est
+du MONTAGE d'état : le geste TESTÉ, lui, se joue au clic et au clavier.
+
 ## Ajouter un scénario = un fichier
 
 Dépose un fichier `src/scenes/test-scenarios/<NN>-<slug>.ts` exportant `scenario` :
@@ -114,4 +130,4 @@ mécanique (un terrain bien agencé, des mannequins bien placés).
 
 Un scénario peut embarquer **plusieurs scènes** (`extraScenes`) et une **carte du monde** (`worldMap`) :
 il est alors chargé comme un projet (`loadProject`).
-<!-- sources-empreinte: 18333154e44a9a787093e90caf9313ae3c533fee (45 fichiers, 1 dossiers) corps: 39da1c954108d32d15b53ceb4dc9377509666014 -->
+<!-- sources-empreinte: 2d89503f54deb6a6ce2d7369ecbf842edcb537cd (45 fichiers, 1 dossiers) corps: 7356d0845df09c8f08dfd3d99786aa23a236fc86 -->

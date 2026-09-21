@@ -18,7 +18,7 @@ type OptTab = 'keys' | 'audio' | 'prefs' | 'rules';
  * un seul `HouseRulesPanel`.
  *
  * La barre d'onglets passe par le `head` de `MenuSubScreen` : elle tient EN TÊTE, hors du défileur
- * `.menu-sub-body`, quel que soit l'onglet — Clavier compris (#839).
+ * `.menu-card-body`, quel que soit l'onglet — Clavier compris (#839).
  */
 export function OptionsSubScreen({ title = t('gameMenu.options'), onBack }: { title?: ReactNode; onBack: () => void }) {
   const [tab, setTab] = useState<OptTab>('keys');

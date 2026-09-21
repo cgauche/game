@@ -112,9 +112,19 @@ export function sitesEspacementHorsEchelle(fichiers: readonly Fichier[]): Site[]
 /** Corps à partir duquel un texte est un GRAND TITRE D'AFFICHAGE, en px. */
 export const SEUIL_GRAND_TITRE_PX = 30;
 
-/** Viewport de RÉFÉRENCE des recettes (docs/recette-navigateur.md) : il donne aux unités de vue une
- *  borne lisible — 1vw = 14,4px, 1vh = 9px. Sans lui, un `font-size: 12vw` nu ne serait pas mesuré. */
-export const VIEWPORT_RECETTE = { largeur: 1440, hauteur: 900 };
+/** Viewport de RÉFÉRENCE des recettes : la vue BUREAU de `scripts/recette/vues-recette.json`, source
+ *  UNIQUE des vues jugées (#1847) — lue ici, jamais recopiée. Elle donne aux unités de vue une borne
+ *  lisible (1vw = 17,07px, 1vh = 7,8px) ; sans elle, un `font-size: 12vw` nu ne serait pas mesuré.
+ *  Ne pas confondre avec le BREAKPOINT grand écran de la charte (1440px) : celui-là est un seuil de
+ *  règle CSS, celle-ci est la fenêtre où l'audit convertit une unité de vue en pixels. */
+export const VIEWPORT_RECETTE = ((): { largeur: number; hauteur: number } => {
+  const vues: { nom: string; largeur: number; hauteur: number }[] = JSON.parse(
+    readFileSync(`${RACINE}scripts/recette/vues-recette.json`, 'utf8'),
+  );
+  const bureau = vues.find((v) => v.nom === 'bureau');
+  if (!bureau) throw new Error('vues-recette.json ne porte plus de vue « bureau » : le viewport de référence des recettes n’a plus de source');
+  return { largeur: bureau.largeur, hauteur: bureau.hauteur };
+})();
 
 const PX_PAR_UNITE: Record<string, number> = {
   px: 1,

@@ -11,11 +11,18 @@ import { t } from '../i18n';
  * écran EN JEU (`GameMenu`, pause + ses sous-écrans Coopération/Options) — MÊME langage visuel.
  * Ne jamais recoder un `.menu-card` ni un `<button className="btn">` de menu à la main : composer
  * `MenuCard` > `MenuSection` > `MenuButton` (et `MenuToggle` pour un interrupteur de menu).
+ *
+ * HAUTEUR (#1847) : la carte est une COLONNE bornée à la place que son hôte lui laisse
+ * (`max-height: 100%`), et elle n'a qu'UN scrollport, `.menu-card-body` — `header`, `head` et
+ * `footer` restent ancrés, seules les sections défilent. Un menu qui défile en PAGE emporte son
+ * titre et ses actions hors du champ d'un coup ; la course appartient au corps, pas à la surface.
  */
-export function MenuCard({ header, footer, large, className, children }: {
-  /** En-tête de la carte (titre, sous-titre/méta) — rendu avant les sections. */
+export function MenuCard({ header, head, footer, large, className, children }: {
+  /** En-tête de la carte (titre, sous-titre/méta) — rendu avant les sections, hors du défileur. */
   header?: ReactNode;
-  /** Pied de carte (note discrète) — rendu après les sections. */
+  /** Bande FIXE entre l'en-tête et le corps défilant (barre d'onglets d'un sous-écran). */
+  head?: ReactNode;
+  /** Pied de carte (note discrète) — rendu après les sections, hors du défileur. */
   footer?: ReactNode;
   /** Carte-CATALOGUE : plafond relevé (760px, 1600px au-delà de 1440px) pour une carte qui porte une
    *  GRILLE plutôt qu'une colonne de boutons. Distinct du `wide` de `MenuSubScreen` (720px). */
@@ -26,7 +33,8 @@ export function MenuCard({ header, footer, large, className, children }: {
   return (
     <div className={`menu-card${large ? ' menu-card-large' : ''}${className ? ` ${className}` : ''}`}>
       {header}
-      {children}
+      {head}
+      <div className="menu-card-body">{children}</div>
       {footer}
     </div>
   );
@@ -67,12 +75,10 @@ export function MenuCardHead({ title, lead, sub, meta, className }: {
  * « Retour » + titre. Vit ICI (à côté de `MenuCard`, dont c'est une composition) et non dans un
  * foyer, parce que les TROIS s'en servent : le menu SYSTÈME en jeu (`GameMenu`), le menu PRINCIPAL
  * hors partie (`MainMenu` → `OptionsScreen`) et le salon coop (`CoopLobby`) — même langage, un seul
- * markup. `wide` élargit la carte et lui pose son contrat de hauteur (`.game-menu-sub-wide` :
- * plafond au champ, #839).
- *
- * Le CORPS DÉFILANT (`.menu-sub-body`) est posé ICI, par la primitive : sans lui un sous-écran haut
- * (salon hôte, onglet Clavier) pousse son contenu hors de la carte au lieu de défiler. `head` reçoit
- * ce qui doit rester EN TÊTE, hors du défileur (la barre d'onglets d'Options).
+ * markup. `wide` est une LARGEUR et rien d'autre (720px) : la HAUTEUR est le contrat de `MenuCard`,
+ * qui vaut pour tous ses composeurs — un sous-écran ne possède pas de règle de cadre à lui (#1847).
+ * `head` reçoit ce qui doit rester EN TÊTE, hors du défileur (la barre d'onglets d'Options) ; il est
+ * passé tel quel à la carte.
  */
 export function MenuSubScreen({ title, onBack, backLabel, wide, head, children }: {
   title: ReactNode;
@@ -94,9 +100,9 @@ export function MenuSubScreen({ title, onBack, backLabel, wide, head, children }
         </button>}
         title={title}
       />}
+      head={head}
     >
-      {head}
-      <div className="menu-sub-body">{children}</div>
+      {children}
     </MenuCard>
   );
 }

@@ -131,6 +131,25 @@ describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées
     expect(maxH, 'le plafond de hauteur ne retire pas la bande BASSE : la fenêtre redescend sur le dock').toContain(bas!);
   });
 
+  /**
+   * BANDES FONCTIONS DE L'ÉCRAN SEUL (#1142, #1847) : `--roll-band` se déclare UNE FOIS, et
+   * sur un sélecteur qui ne connaît aucun ÉTAT. Le jour où une bande se redéclare sous un état
+   * (`[data-phase]`, `.open`, un état de flux), le bord haut de la fenêtre se met à bouger PENDANT
+   * une session de jet — c'est exactement le tremblement que l'invariant interdit. Ce contrat-là
+   * se lit au TEXTE du CSS ; la HAUTEUR RENDUE, elle, se mesure au navigateur
+   * (`scripts/recette/hauteur-reelle.mjs`, détecteur `corpsDeModaleEcrase`).
+   */
+  it('`--roll-band` est déclarée UNE fois, sur un sélecteur sans état', () => {
+    const porteuses = REGLES.filter((r) => /--roll-band\s*:/.test(r.corps));
+    expect(porteuses.length, 'la bande haute est déclarée à plusieurs adresses : elle peut diverger d’un état à l’autre').toBe(1);
+    // Un sélecteur d'ÉTAT : attribut de donnée, pseudo-classe d'interaction, classe d'état montée
+    // par le runtime. `:has(.roll-modal)` NOMME la fenêtre visée, il ne décrit aucun état.
+    const ETAT = /\[data-|:hover|:focus|:active|:checked|\.open(?![\w-])|\.is-[\w-]+|\.active(?![\w-])/;
+    for (const sel of porteuses[0].selecteurs) {
+      expect(ETAT.test(sel), `la bande haute est déclarée sous un sélecteur d’ÉTAT (« ${sel} ») : le bord haut bougerait en cours de jet`).toBe(false);
+    }
+  });
+
   // Sonde du juge vision, PROMUE : une classe posée en JSX sans règle qui SÉPARE laisse « Trahison !07-10 »
   // collé sur la tuile. L'existence d'un bloc ne suffit donc pas — la fourchette doit déclarer son
   // espacement ET son ton (elle est secondaire au nom de la ligne).

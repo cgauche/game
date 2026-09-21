@@ -33,13 +33,14 @@
 //
 // Sortie : exit 1 au premier défaut (liste complète imprimée), exit 0 si tout passe.
 import { pathToFileURL } from 'node:url';
-import { openApp, evaluate, setViewport, sleep, clickButtonByText, cliquerSelecteur, resoudreModales } from './lib.mjs';
+import { openApp, evaluate, setViewport, sleep, clickButtonByText, cliquerSelecteur, resoudreModales, VUE_REFERENCE } from './lib.mjs';
 
 // Les trois largeurs étroites (700/560/360) portent les recouvrements ; les deux larges portent la
 // zone morte du bandeau d'objectif, dont la boîte n'excède sa tête qu'au-delà de 900px — sonder
 // 700/560/360 seuls rendait cette vérification AVEUGLE (marge morte mesurée à 0px).
-const DEFAULT_WIDTHS = [1600, 1100, 900, 700, 560, 360];
-const HEIGHT = 780;
+// La plus large est la vue de RÉFÉRENCE (`vues-recette.json`), jamais un couple recopié (#1847).
+const DEFAULT_WIDTHS = [VUE_REFERENCE.largeur, 1100, 900, 700, 560, 360];
+const HEIGHT = VUE_REFERENCE.hauteur;
 
 function parseArgs(argv) {
   const out = { url: undefined, widths: DEFAULT_WIDTHS };
@@ -361,7 +362,7 @@ async function main() {
     }
 
     // ── Combat ─────────────────────────────────────────────────────────────────────────────────
-    await setViewport(session, 1600, 900);
+    await setViewport(session, VUE_REFERENCE.largeur, VUE_REFERENCE.hauteur);
     await sleep(300);
     await evaluate(session, `window.__wfrp.fight('enc-mutants')`);
     await sleep(1500);

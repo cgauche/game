@@ -69,6 +69,9 @@ Prérequis : \`npm run dev\` tourne dans un autre terminal (le kit s'attache, il
 function parseArgs(argv) {
   const opts = {
     scenes: SCENES.map((s) => s.id), vues: VUES.map((v) => v.key), zoom: 1, seed: 42,
+    // GABARIT DE MESURE : les planches produites se comparent aux étalons COMMITÉS de
+    // `public/qc/baseline-affine/`, cadrés à 1600×900. Changer ce couple invaliderait la
+    // comparaison ; il ne suit donc pas `scripts/recette/vues-recette.json`.
     out: OUT_DIR, url: DEFAULT_URL, largeur: 1600, hauteur: 900, hud: false, aide: false,
   };
   for (let i = 0; i < argv.length; i++) {

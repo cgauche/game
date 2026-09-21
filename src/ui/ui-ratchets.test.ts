@@ -310,12 +310,15 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   // monde volumique le REPREND au lieu de définir sa propre classe, `stage/VolumetricWorld.tsx`).
   // #1806 2c : 15 → 14 — `.codex-ref` (enveloppe du déclencheur de popover, `CodexRef`) entre au
   // catalogue de `charte-ui.md` : c'est un contrat de couche, pas une fuite de domaine.
-  'styles/base.css': 14, // #417 : `.hero-present-sec` reste croisée (PartyScreen+HeroPresentation) ; `.lore-chip`/
+  // #1847 : 14 → 13 — `.app` (`base.css`, un seul poseur, `App.tsx:73`) entre au catalogue de
+  // `charte-ui.md` : le conteneur d'écran borné à la fenêtre dont toute carte plein-champ tire son
+  // `100%` — un contrat de couche, pas une fuite de domaine.
+  'styles/base.css': 13, // #417 : `.hero-present-sec` reste croisée (PartyScreen+HeroPresentation) ; `.lore-chip`/
   // `.hero-present-chips` repassent mono-consommateur — le détail candidat compose désormais `SkillChip`/
   // `TalentChip`/`EntityRef` + `.skill-tags` (recalage utilisateur 2026-07-14, primitives de fiche vivante)
   // #839 : INCHANGÉ à 11 — le partage de l'écran Options déplace deux fuites sans en retirer :
-  // `.game-menu-overlay` devient transversal (GameMenu + OptionsScreen, −1) mais `.menu-sub-body`
-  // redevient mono-consommateur (le corps à onglets n'a qu'un porteur, `OptionsScreen`, +1).
+  // `.game-menu-overlay` devient transversal (GameMenu + OptionsScreen, −1) mais le corps à onglets
+  // du sous-écran redevient mono-consommateur (un seul porteur, `OptionsScreen`, +1).
   // #1318 V10 (2026-08-16) : 11 → 10 — DÉCROISSANCE mesurée après la migration des recopies de markup
   // vers leurs primitives (garde `primitive-owners-guard`). Stock restant, mesuré : `alert`, `col-name`,
   // `col-stat`, `col-emph`, `col-enc`, `col-price`, `col-buy`, `detail-row`, `group-row`, `rm-roll`.
@@ -699,7 +702,8 @@ const ECARTS_RESPONSIVE_STOCK: Record<string, number> = {
   'creator.css|@media (max-width: 700px)': 5,
   'layout.css|@media (max-width: 700px)': 2,
   'party.css|@media (max-width: 700px)': 3,
-  'party.css|@media (max-width: 900px)': 2,
+  // #1847 : la tranche ≤900px du registre est SOLDÉE — une seule section, après les règles de base
+  // qu'elle recouvre (`party.css`, `.party-main`/`.party-rail`/`.party-company`).
   'sheet.css|@media (max-width: 700px)': 2,
   'world-meta.css|@media (max-width: 560px)': 6,
   'world-meta.css|@media (max-width: 700px)': 2,
@@ -1158,7 +1162,7 @@ const REFUS_MUET_EXEMPT_SITES = new Map<string, string>([
   ['GatedAction.tsx:155', 'la primitive elle-même : `title={ariaLabel}` y est le NOM accessible, pas une raison'],
   ['OptionChooser.tsx:108', '`OptionBouton` : la composition partagée des trois layouts, dont la branche gatée compose déjà `GatedAction`'],
   ['RollShell.tsx:299', 'modèle de props de la coquille de jet — passage à `GatedAction` = train T9'],
-  ['MenuCard.tsx:143', 'modèle de props du menu — train T9'],
+  ['MenuCard.tsx:149', 'modèle de props du menu — train T9'],
   ['MediaSelect.tsx:59', 'modèle de props du sélecteur média — train T9'],
   ['QtyStepper.tsx:64', 'modèle de props du stepper (décrément) — train T9'],
   ['QtyStepper.tsx:72', 'modèle de props du stepper (incrément) — train T9'],
