@@ -206,6 +206,15 @@ describe('__wfrp — autres commandes de recette', () => {
     await vi.advanceTimersByTimeAsync(400);
     expect(await verdict).toContain("l'éditeur ne s'est pas monté");
   });
+
+  it('editorPatchEntity (#877) avec un pont VIDE : rejet NOMMÉ, portant CE helper-là', async () => {
+    expect(editeur.patcherEntite).toBeUndefined(); // aucun Editor monté dans ce banc
+    const p = buildApi().editorPatchEntity('p0', { ref: undefined }, 120);
+    const verdict = p.then(() => 'résolu', (e: Error) => e.message);
+    await vi.advanceTimersByTimeAsync(400);
+    expect(await verdict).toContain("l'éditeur ne s'est pas monté");
+    expect(await verdict, 'le refus nomme le helper appelé, jamais son voisin').toContain('editorPatchEntity');
+  });
 });
 
 describe('__wfrp.place — piège composite (coque à postes / membre de crew)', () => {

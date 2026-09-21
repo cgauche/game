@@ -521,6 +521,36 @@ export function resolveActiveAxes(doc: { activeAxes?: string[] }): string[] {
  *  le littéral `schema` du schéma et cette borne de migration ne peuvent pas diverger. */
 export const CURRENT_PROJECT_SCHEMA = SCHEMA_PROJET;
 
+/**
+ * LE constructeur du document de projet — l'unique enveloppe que l'application ÉCRIT, quelle que
+ * soit la sortie : « Enregistrer » et « Exporter JSON » de l'éditeur, import d'un fichier à la
+ * bibliothèque, export d'une entrée. Il vit ICI, avec `ProjectDoc`, `CURRENT_PROJECT_SCHEMA` et la
+ * porte `parseProject` : ce qu'on écrit et ce qu'on relit ont un seul propriétaire.
+ *
+ * ORDRE D'ÉCRITURE : `id`, `type`, `label` en tête, puis le reste de l'identité, puis `schema` —
+ * l'enveloppe que le dépôt PORTE (les `*-projet.json` committés). Les clés optionnelles ne
+ * s'écrivent que FOURNIES : un `worldMap: undefined` posé se lirait « carte effacée » au diff du
+ * document, là où son absence dit « aucune carte ».
+ */
+export function documentDeProjet(
+  identite: ProjectIdentite,
+  scenes: Scene[],
+  { worldMap, activeAxes, narratif }: { worldMap?: WorldMap | null; activeAxes?: string[]; narratif: NarratifBlock },
+): ProjectDoc {
+  const { id, type, label, ...resteDeLIdentite } = identite;
+  return {
+    id,
+    type,
+    label,
+    ...resteDeLIdentite,
+    schema: CURRENT_PROJECT_SCHEMA,
+    scenes,
+    ...(worldMap ? { worldMap } : {}),
+    ...(activeAxes ? { activeAxes } : {}),
+    narratif,
+  };
+}
+
 /** Renomme UNE clé d'un objet EN PLACE (position préservée), sans la créer si elle est absente. */
 function renommeCle(o: Record<string, unknown>, de: string, vers: string): Record<string, unknown> {
   if (!(de in o)) return o;

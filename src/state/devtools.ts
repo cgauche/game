@@ -85,7 +85,7 @@ import { chebyshev } from '../engine/grid';
 import { actionsDe } from './usable';
 import { attendreEntreeEnScene, EntreeEnSceneNonAtteinte } from './entreeEnScene';
 import { scheduleFlowTimer } from './combatTimers';
-import { editeur } from './editeurBridge';
+import { editeur, type CommandesEditeur } from './editeurBridge';
 
 /** Trace du DERNIER Test résolu (`resolveTest`, `EVT.TEST_RESOLVED`) — observation pure pour la
  *  recette navigateur (`__wfrp.lastRoll()`), JAMAIS dans l'état de jeu persisté (module DEV seul,
@@ -454,6 +454,23 @@ function refusDeReady(e: EntreeEnSceneNonAtteinte): string {
     return `✗ __wfrp.ready : scène attendue « ${e.attendu ?? 'aucune'} » vs montée « ${e.montee} » après ${e.timeoutMs} ms`;
   }
   return `✗ __wfrp.ready : voile encore levé sur « ${e.montee} » après ${e.timeoutMs} ms`;
+}
+
+/**
+ * Bascule sur l'écran de l'éditeur et ATTEND qu'il ait publié la commande nommée au pont
+ * (`state/editeurBridge`) — voie UNIQUE des helpers de recette de l'éditeur : le montage de React
+ * n'est pas synchrone du changement d'écran, et un helper qui appellerait le pont tout de suite
+ * tomberait sur une commande absente. À la borne, refus NOMMÉ portant le helper et l'écran atteint.
+ */
+async function attendreCommandeEditeur(helper: string, commande: keyof CommandesEditeur, montageMs: number): Promise<void> {
+  useGame.getState().setScreen('editor');
+  const t0 = Date.now();
+  while (!editeur[commande]) {
+    if (Date.now() - t0 > montageMs) {
+      throw new Error(`✗ __wfrp.${helper} : l'éditeur ne s'est pas monté après ${montageMs} ms — écran « ${useGame.getState().screen} »`);
+    }
+    await new Promise<void>((r) => { scheduleFlowTimer(() => r(), 50); });
+  }
 }
 
 /**
@@ -926,15 +943,30 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
           scenarios: testScenarios.map((s) => `${s.id} — ${s.title}`),
         };
       }
-      g().setScreen('editor');
-      const t0 = Date.now();
-      while (!editeur.ouvrir) {
-        if (Date.now() - t0 > montageMs) {
-          throw new Error(`✗ __wfrp.editorOpen : l'éditeur ne s'est pas monté après ${montageMs} ms — écran « ${g().screen} »`);
-        }
-        await new Promise<void>((r) => { scheduleFlowTimer(() => r(), 50); });
-      }
-      return editeur.ouvrir(id);
+      await attendreCommandeEditeur('editorOpen', 'ouvrir', montageMs);
+      return editeur.ouvrir!(id);
+    },
+
+    /** PRÉPARE l'état d'une entité de la scène OUVERTE à l'éditeur (#877) : patch PARTIEL, une clé à
+     *  `undefined` vaut ABSENTE — c'est ainsi qu'on fabrique l'état fautif (« décor sans type ») qu'une
+     *  porte doit refuser. SETUP seulement : le patch passe par le pont d'INTENTION
+     *  (`state/editeurBridge`, commande `patcherEntite`) — la MÊME voie qu'`editorOpen`, jamais un
+     *  accès direct à l'état React d'un panneau. Trois refus NOMMÉS : éditeur non monté (rejet,
+     *  borne `montageMs`), entité inconnue (`✗ …` portant les ids de la scène), clé d'IDENTITÉ
+     *  (`id`, `kind`) qu'aucun patch ne touche. */
+    editorPatchEntity: async (entityId: string, patch: Record<string, unknown>, montageMs = 3000) => {
+      await attendreCommandeEditeur('editorPatchEntity', 'patcherEntite', montageMs);
+      return editeur.patcherEntite!(entityId, patch);
+    },
+
+    /** INVENTAIRE des entités du BROUILLON ouvert à l'éditeur (#877) : `{ id, kind, ref?, pos }` par
+     *  entité — de quoi retrouver l'id que l'éditeur vient d'attribuer à ce qu'on a posé à la carte,
+     *  puis le passer à `editorPatchEntity`. ATTENTION : `__wfrp.entities()` lit la scène du STORE DE JEU, pas
+     *  le brouillon de l'éditeur : les deux divergent dès la première édition. Même voie et même
+     *  attente qu'`editorOpen` ; rejet NOMMÉ si l'éditeur ne se monte pas. */
+    editorEntities: async (montageMs = 3000) => {
+      await attendreCommandeEditeur('editorEntities', 'listerEntites', montageMs);
+      return editeur.listerEntites!();
     },
 
     /** Charge une CAMPAGNE BUILT-IN sans dérouler le character creator ×4 à la main :

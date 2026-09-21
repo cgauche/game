@@ -50,21 +50,40 @@ function ouViteLaFaute(chemin: string, doc: unknown): string {
 }
 
 /**
- * Traduit en refus d'ÉCRAN le refus que la porte oppose à l'ENREGISTREMENT — sœur de
- * `refusDOuverture`, même porte (`parseProject`), autre moment. Ce que l'auteur doit savoir tient en
- * deux faits : ce projet ne pourrait plus être ROUVERT, et OÙ est la première faute. Les suivantes
- * sont COMPTÉES, pas déroulées : un rapport de schéma entier n'est pas une consigne de correction.
- * PURE et testée — la modale ne fait que l'afficher (`saveError`, #811).
+ * Les gestes qui font passer un document par la porte `parseProject`, chacun avec le VERBE de son
+ * refus et la CONSÉQUENCE qu'il ÉNONCE. UNE table : verbe et conséquence ne sont pas
+ * deux chaînes libres qu'un appelant pourrait désaccorder — « Import refusé : ce projet ne pourrait
+ * plus être rouvert » serait faux, rien n'ayant jamais été ouvert ni écrit.
  */
-export function refusDEnregistrement(erreur: unknown, doc: unknown): string {
+const GESTES_DE_PORTE = {
+  enregistrement: { verbe: 'Enregistrement refusé', consequence: 'ce projet ne pourrait plus être rouvert' },
+  export: { verbe: 'Export refusé', consequence: 'ce fichier ne pourrait plus être rouvert' },
+  import: { verbe: 'Import refusé', consequence: 'ce fichier ne peut pas être ouvert' },
+  test: { verbe: 'Mise à l’essai refusée', consequence: 'ce projet ne pourrait pas être joué' },
+} as const;
+
+/** Geste dont la porte du document peut opposer un refus — union FERMÉE. */
+export type GesteDePorte = keyof typeof GESTES_DE_PORTE;
+
+/**
+ * Traduit en refus d'ÉCRAN le refus que la porte oppose à un geste — sœur de `refusDOuverture`,
+ * même porte (`parseProject`), autre moment. Ce que l'auteur doit savoir tient en deux faits : la
+ * CONSÉQUENCE du refus, et OÙ est la première faute. Les suivantes sont COMPTÉES : un rapport de
+ * schéma entier n'est pas une consigne de correction. PURE et testée — la modale ne fait que
+ * l'afficher (`saveError`, #811).
+ */
+export function refusDeLaPorteDuProjet(erreur: unknown, doc: unknown, geste: GesteDePorte): string {
+  const { verbe, consequence } = GESTES_DE_PORTE[geste];
   const brut = erreur instanceof Error ? erreur.message : String(erreur);
   const fautes = brut.split('\n').map((l) => LIGNE_DE_FAUTE.exec(l)).filter((m): m is RegExpExecArray => m !== null);
   const premiere = fautes[0];
-  const entete = 'Enregistrement refusé : ce projet ne pourrait plus être rouvert.';
-  if (!premiere) return `${entete} ${brut}`;
+  const entete = `${verbe} : ${consequence}.`;
+  if (!premiere) return `${entete} Rapport de la porte : ${brut}`;
   const autres = fautes.length - 1;
   const suite = autres > 0 ? ` (et ${autres} autre${autres > 1 ? 's' : ''} à corriger)` : '';
-  return `${entete} ${ouViteLaFaute(premiere[1], doc)} — ${premiere[2]}${suite}`;
+  // Une phrase reprend en MAJUSCULE après le point : `ouViteLaFaute` rend un fragment (« scène … »),
+  // il est donc INTRODUIT au lieu d'être recollé nu derrière la ponctuation.
+  return `${entete} Faute : ${ouViteLaFaute(premiere[1], doc)} — ${premiere[2]}${suite}`;
 }
 
 /** « Ouvrir » : reprendre un projet enregistré (localStorage), repartir d'une campagne du jeu

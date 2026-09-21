@@ -37,6 +37,23 @@ export interface CommandesEditeur {
    * reste state-clean — rien de l'état de l'éditeur ne le traverse.
    */
   ouvrir: (id: string) => string;
+  /**
+   * Pose un patch PARTIEL sur une entité de la scène ouverte — SETUP de recette (#877) : une clé à
+   * `undefined` vaut ABSENTE, ce qui permet de fabriquer un état que le schéma refuse
+   * (« décor sans type ») pour éprouver une porte. Rend `✓ …` ou `✗ « id » introuvable — …` avec les
+   * ids de la scène. Même régime qu'`ouvrir` : les arguments sont une INTENTION (« patche CETTE
+   * entité ainsi »), aucun état de l'éditeur ne REMONTE par le pont.
+   */
+  patcherEntite: (entityId: string, patch: Record<string, unknown>) => string;
+  /**
+   * INVENTAIRE des entités du brouillon ouvert — OBSERVATION de recette (#877) : retrouver l'id que
+   * l'éditeur vient d'attribuer à ce qu'on a posé à la carte. Rend une COPIE PLATE de quatre champs
+   * d'identification (`id`, `kind`, `ref`, `pos`), jamais l'entité ni l'état React : ce qui traverse
+   * le pont ici reste ce que `patcherEntite` rend déjà dans son refus — des ids, pas de l'état
+   * mutable. Le contrat state-clean vise la DONNÉE D'ÉTAT (aucun `Scene`, aucun `ReactNode`, rien
+   * qu'on puisse muter à distance), pas le diagnostic.
+   */
+  listerEntites: () => { id: string; kind: string; ref?: string; pos: { x: number; y: number; z?: number } }[];
   fermerMenuFichier: () => void;
 }
 

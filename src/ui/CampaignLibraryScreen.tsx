@@ -5,7 +5,7 @@ import { Icon } from './Icon';
 import { ListRow } from './ListRow';
 import { useGame } from '../state/store';
 import { downloadText, fileSlug } from '../state/fileIo';
-import { parseProject, CURRENT_PROJECT_SCHEMA, type ProjectDoc } from '../state/worldMap';
+import { parseProject, documentDeProjet, type ProjectDoc } from '../state/worldMap';
 import { projectsLoad, projectSave, projectRemove, nomDeProjet, type SavedProject } from '../state/projectLibrary';
 import { allBuiltinCampaigns, type BuiltinCampaign } from '../scenes/campaign';
 import { Row, Stack } from './Layout';
@@ -48,14 +48,7 @@ export function buildImportedProject(text: string): SavedProject {
     startSceneId: scenes[0].id,
     savedAt: Date.now(),
     published: true, // apparaît aussi dans le picker « Nouvelle partie »
-    project: {
-      schema: CURRENT_PROJECT_SCHEMA,
-      ...identite,
-      scenes,
-      ...(worldMap ? { worldMap } : {}),
-      ...(activeAxes ? { activeAxes } : {}),
-      narratif,
-    },
+    project: documentDeProjet(identite, scenes, { worldMap, activeAxes, narratif }),
   };
 }
 
@@ -97,25 +90,12 @@ function toProjectDoc(e: Entry): ProjectDoc {
     // paquet par `campaign.ts` — un export qui la laisserait tomber rendrait un document anonyme,
     // que sa propre porte refuserait.
     const { scenes, startSceneId: _start, worldMap, narratif, ...identite } = e.bc;
-    return {
-      schema: CURRENT_PROJECT_SCHEMA,
-      ...identite,
-      scenes,
-      ...(worldMap ? { worldMap } : {}),
-      narratif,
-    };
+    return documentDeProjet(identite, scenes, { worldMap, narratif });
   }
   // `activeAxes` NOMMÉ et RECONDUIT (même raison qu'à `buildImportedProject`) : un export de
   // bibliothèque qui le perdrait rendrait un document PORTABLE amputé de ses axes (#409).
   const { scenes, worldMap, activeAxes, narratif, ...identite } = parseProject(e.sp.project);
-  return {
-    schema: CURRENT_PROJECT_SCHEMA,
-    ...identite,
-    scenes,
-    ...(worldMap ? { worldMap } : {}),
-    ...(activeAxes ? { activeAxes } : {}),
-    narratif,
-  };
+  return documentDeProjet(identite, scenes, { worldMap, activeAxes, narratif });
 }
 
 function entryLabel(e: Entry): string {

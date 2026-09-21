@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useGame } from '../../state/store';
 import { Scene, emptyScene, tileAt } from '../../state/scene';
-import { resizeGrid } from '../../state/sceneEdit';
+import { resizeGrid, editEntity } from '../../state/sceneEdit';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { planFocusTiles, type PlanDefectAt, type PlanDefectFamily } from '../../state/planDefects';
 import { testScene } from '../../scenes/test-fixture';
@@ -16,13 +16,13 @@ import { Inspector } from './Inspector';
 import { LogicDock, LogicTab } from './LogicDock';
 import { WorldMapEditor } from './WorldMapEditor';
 import { NarratifEditor } from './NarratifEditor';
-import { OpenProjectModal, SaveProjectModal, refusDOuverture, refusDEnregistrement, type RefusOuverture } from './ProjectModals';
+import { OpenProjectModal, SaveProjectModal, refusDOuverture, refusDeLaPorteDuProjet, type GesteDePorte, type RefusOuverture } from './ProjectModals';
 import { projectSave, projectsLoad, SavedProject } from '../../state/projectLibrary';
 import { downloadText } from '../../state/fileIo';
 import { sceneToAscii, type SceneAsciiExport } from '../../state/sceneToAscii';
 import { testScenarios, type TestScenario } from '../../scenes/test-scenarios';
 import { allBuiltinCampaigns, type BuiltinCampaign } from '../../scenes/campaign';
-import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, MAISON_PROJET_AUTHORE, type ProjectIdentite } from '../../state/worldMap';
+import { WorldMap, parseProject, documentDeProjet, MAISON_PROJET_AUTHORE, type ProjectDoc, type ProjectIdentite } from '../../state/worldMap';
 import { type NarratifBlock, emptyNarratif } from '../../state/campaignNarratif';
 import { nextEntityId } from '../../state/entityId';
 import { publierEditeur } from '../../state/editeurBridge';
@@ -45,6 +45,38 @@ import { useLowerLayerOpacity, setLowerLayerOpacity, useLowerLayerMode, setLower
 import { useEditorLayers } from './editorLayers';
 import { LayerField, sceneLayerZs } from './LayerField';
 import { OptionChooser } from '../OptionChooser';
+import { z } from 'zod';
+import { dialogueSchema, triggerSchema, encounterDefSchema } from '../../data/schemas/defs-scenes/scene';
+import { formatZodError } from '../../data/schemas/validate';
+
+/** Titres des gestes du menu Fichier dont le refus n'a aucune modale à lui (`refusDuGeste`) : le
+ *  même mot que le contrôle cliqué — l'auteur retrouve SON geste en tête de la fenêtre. */
+const TITRE_EXPORT = 'Exporter JSON';
+const TITRE_IMPORT = 'Importer JSON';
+const TITRE_TEST = 'Tester la scène';
+
+/** POSITION d'une `SyntaxError` de `JSON.parse` : le moteur JS la donne en ANGLAIS, avec un décalage
+ *  d'octets (`at position 42 (line 3 column 7)`) selon la version. Seule la position se traduit — le
+ *  message du moteur ne part jamais à l'auteur (règle 4). Vide si la position ne s'extrait pas.
+ *  Source unique des DEUX sites qui parsent du JSON d'auteur (import de fichier, modale Avancé). */
+export function ouCaCasse(erreur: unknown): string {
+  const brut = erreur instanceof Error ? erreur.message : String(erreur);
+  const lc = /line (\d+) column (\d+)/.exec(brut);
+  if (lc) return ` — ligne ${lc[1]}, colonne ${lc[2]}`;
+  const pos = /position (\d+)/.exec(brut);
+  return pos ? ` — caractère n° ${Number(pos[1]) + 1}` : '';
+}
+
+/** Les TROIS blocs de logique que la modale « Avancé » édite en masse. Les ÉLÉMENTS sont ceux du
+ *  schéma de Scène (`dialogueSchema`/`triggerSchema`/`encounterDefSchema`, `scene.ts:785-787`), pas
+ *  une redite : ce que l'auteur colle est tenu à la même exigence que ce que le document porte. Le
+ *  conteneur est réécrit parce que `sceneSchema.pick()` est refusé par zod sur un objet PORTANT DES
+ *  RAFFINEMENTS, et un sous-ensemble de trois clés n'en hérite aucun. */
+const SCHEMA_BLOCS_AVANCES = z.strictObject({
+  dialogues: z.array(dialogueSchema).optional(),
+  triggers: z.array(triggerSchema).optional(),
+  encounters: z.array(encounterDefSchema).optional(),
+});
 
 export function architectureSelectionForWarning(warning: Warning): Warning['architectureRef'] | null {
   return warning.scope === 'architecture' ? warning.architectureRef ?? null : null;
@@ -138,6 +170,14 @@ export function Editor({
   const [projectName, setProjectName] = useState('La Diligence');
   const [published, setPublished] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  /** Refus d'un geste du menu Fichier — export, import, mise à l'essai : ces gestes n'ont AUCUNE
+   *  modale à eux où poser leur refus, là où `saveError`/`loadError` tiennent dans la leur. UN seul
+   *  état pour les trois, portant le TITRE du geste refusé : même matière (`.chip.tone-danger` en
+   *  `role="alert"`, dans une modale), et jamais une boîte du navigateur (#877). */
+  const [refusDuGeste, setRefusDuGeste] = useState<{ titre: string; message: string } | null>(null);
+  /** Refus du JSON collé dans la modale « Avancé » — rendu DANS cette modale, comme `saveError` dans
+   *  la sienne : un refus se lit là où le geste a été fait. */
+  const [advError, setAdvError] = useState<string | null>(null);
   /** Refus de la porte `parseProject` à l'ouverture d'un projet : rendu DANS la modale « Ouvrir »
    *  (même contrat que `saveError`, #811), jamais jeté à l'auteur par une boîte du navigateur. */
   const [loadError, setLoadError] = useState<RefusOuverture | null>(null);
@@ -480,6 +520,34 @@ export function Editor({
             + ` | campagnes : ${allBuiltinCampaigns.map((x) => x.id).join(', ')}`
             + ` | scénarios : ${testScenarios.map((x) => x.id).join(', ')}`;
         },
+        // Recette #877 : INVENTAIRE du brouillon — les quatre champs qui identifient une entité,
+        // COPIÉS à plat (`pos` comprise), jamais la référence de l'entité elle-même.
+        listerEntites: () => scene.entities.map((e) => ({
+          id: e.id, kind: e.kind, ...(e.ref !== undefined ? { ref: e.ref } : {}), pos: { ...e.pos },
+        })),
+        // Recette #877 : patch PARTIEL d'une entité par le seam d'assise de l'éditeur — même voie
+        // qu'une édition d'auteur, donc normalisée et annulable.
+        patcherEntite: (entityId: string, patch: Record<string, unknown>) => {
+          const ent = scene.entities.find((x) => x.id === entityId);
+          if (!ent) {
+            return `✗ « ${entityId} » introuvable — entités de la scène « ${scene.id} » : `
+              + `${scene.entities.map((x) => x.id).join(', ') || '(aucune)'}`;
+          }
+          // L'IDENTITÉ d'une entité n'est pas un champ que l'on patche : changer `id` délie la
+          // sélection, les triggers et les dialogues qui la nomment, changer `kind` casse l'union du
+          // schéma. Refus NOMMÉ plutôt qu'un `✓ posé : id` annonçant une scène corrompue.
+          const identite = Object.keys(patch).filter((c) => c === 'id' || c === 'kind');
+          if (identite.length) {
+            return `✗ « ${identite.join(', ')} » : clé d'IDENTITÉ, jamais patchable — supprimez l'entité et reposez-la pour changer son id ou sa nature`;
+          }
+          const cles = Object.entries(patch);
+          // `undefined` vaut ABSENT : c'est la convention du modèle de scène, celle que l'inspecteur
+          // applique déjà (`updateSel({ statblock: undefined })`, `Inspector.tsx`) — le champ ne part
+          // pas au document (`JSON.stringify`) et le schéma le lit comme manquant.
+          setScene(editEntity(scene, entityId, patch as Partial<typeof ent>));
+          const nommer = (garde: boolean) => cles.filter(([, v]) => (v !== undefined) === garde).map(([c]) => c).join(', ') || '(rien)';
+          return `✓ entité « ${entityId} » patchée — posé : ${nommer(true)} | retiré : ${nommer(false)}`;
+        },
       }),
     [scene, sel, clip, undo, redo, setScene],
   );
@@ -572,49 +640,101 @@ export function Editor({
    * franchit plus `parseProject` : l'enveloppe exige `id`/`label` et une provenance.
    */
   function identiteCourante(nom: string, id: string): ProjectIdentite {
-    const doc = identite ?? { type: 'projet' as const, id, label: nom, versionContenu: 1, maison: MAISON_PROJET_AUTHORE };
-    // ORDRE D'ÉCRITURE : `id`, `type`, `label` en tête, comme les 4 projets committés — ce que
-    // l'app écrit et ce que le dépôt porte ont la MÊME enveloppe, à l'ordre près des clés.
-    const { id: docId, type, label, ...reste } = doc;
-    return { id: docId, type, label, ...reste };
+    return identite ?? { type: 'projet' as const, id, label: nom, versionContenu: 1, maison: MAISON_PROJET_AUTHORE };
+  }
+  /** L'ÉTAT VIVANT de l'éditeur lié au constructeur unique du document (`state/worldMap`) — les
+   *  trois sorties du projet (enregistrer, exporter, mettre à l'essai) partent d'ici. */
+  function documentCourant(nom: string, id: string): ProjectDoc {
+    return documentDeProjet(identiteCourante(nom, id), [scene, ...otherScenes], { worldMap, activeAxes, narratif });
+  }
+  /**
+   * La porte UNIQUE du document (`parseProject`), passée AVANT toute écriture : rend le refus À LIRE,
+   * ou `null`. Le document part en COPIE — la porte résout les références de port EN PLACE
+   * (`resolvePortRef`), et l'état de l'éditeur n'a pas à muter pour avoir été vérifié.
+   */
+  function refusDeLaPorte(doc: ProjectDoc, geste: GesteDePorte): string | null {
+    try {
+      parseProject(structuredClone(doc));
+      return null;
+    } catch (refus) {
+      return refusDeLaPorteDuProjet(refus, doc, geste);
+    }
   }
   function exportJson() {
     // Exporte le PROJET (scènes + carte du monde) ; la première scène est l'entrée, et son id
     // nomme le fichier — c'est donc lui qui identifie un projet encore jamais enregistré.
-    const project = { ...identiteCourante(projectName, projectId ?? scene.id), schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif };
-    downloadText(`${scene.id}-projet.json`, JSON.stringify(project, null, 2));
-  }
-  function importJson(file: File) {
-    file.text().then((txt) => {
-      try {
-        const data = JSON.parse(txt);
-        const { scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(data); // paquet ({ type: 'projet', schema: 8, id, label, versionContenu, scenes, worldMap?, activeAxes?, narratif })
-        if (!scenes.length) return;
-        setOtherScenes(scenes.slice(1).map(clone));
-        setWorldMap(wm ?? null);
-        setActiveAxes(aa);
-        setNarratif(na);
-        // L'identité du document importé est reconduite JUSQU'À l'entrée de bibliothèque, comme au
-        // chargement d'un projet enregistré (`loadSaved`) : `identite` porte le document, `projectId`
-        // et `projectName` portent l'entrée que « Enregistrer » écrira. Sans cette reconduite, la
-        // modale se pré-remplissait du nom de l'éditeur et l'enregistrement fabriquait une entrée
-        // dont le document gardait l'id et le nom importés — entrée et document divergents, le nom
-        // du document masqué à l'écran.
-        setIdentite(ident);
-        setProjectId(ident.id);
-        setProjectName(ident.label);
-        setSel(null);
-        resetScene(clone(scenes[0]));
-      } catch {
-        alert('JSON invalide');
-      }
-    });
-  }
-  function test() {
-    if (party.length === 0) {
-      alert("Ajoutez d'abord au moins un aventurier au groupe (menu Nouvelle partie) pour tester.");
+    const project = documentCourant(projectName, projectId ?? scene.id);
+    // Ce qui part au disque passe la porte unique du document, comme ce qui s'enregistre et ce qui
+    // s'importe (#877) : refusé, rien n'est téléchargé et l'auteur le lit.
+    const refus = refusDeLaPorte(project, 'export');
+    if (refus) {
+      setRefusDuGeste({ titre: TITRE_EXPORT, message: refus });
       return;
     }
+    setRefusDuGeste(null);
+    downloadText(`${scene.id}-projet.json`, JSON.stringify(project, null, 2));
+  }
+  /**
+   * Un fichier peut être refusé pour DEUX causes, et l'auteur ne corrige pas la même chose : le
+   * fichier n'est pas du JSON (éditeur de texte), ou c'est un JSON que la porte du document refuse
+   * (#877 — le refus NOMME alors la scène et l'entité). Rien n'est chargé dans les deux cas.
+   */
+  function importJson(file: File) {
+    file.text().then((txt) => {
+      let data: unknown;
+      try {
+        data = JSON.parse(txt);
+      } catch (erreur) {
+        setRefusDuGeste({ titre: TITRE_IMPORT, message: `Import refusé : ce fichier n’est pas du JSON${ouCaCasse(erreur)}.` });
+        return;
+      }
+      let paquet: ReturnType<typeof parseProject>;
+      try {
+        paquet = parseProject(data); // paquet ({ type: 'projet', schema: 8, id, label, versionContenu, scenes, worldMap?, activeAxes?, narratif })
+      } catch (refus) {
+        setRefusDuGeste({ titre: TITRE_IMPORT, message: refusDeLaPorteDuProjet(refus, data, 'import') });
+        return;
+      }
+      const { scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = paquet;
+      if (!scenes.length) {
+        setRefusDuGeste({ titre: TITRE_IMPORT, message: 'Import refusé : document sans aucune scène.' });
+        return;
+      }
+      setRefusDuGeste(null);
+      setOtherScenes(scenes.slice(1).map(clone));
+      setWorldMap(wm ?? null);
+      setActiveAxes(aa);
+      setNarratif(na);
+      // L'identité du document importé est reconduite JUSQU'À l'entrée de bibliothèque, comme au
+      // chargement d'un projet enregistré (`loadSaved`) : `identite` porte le document, `projectId`
+      // et `projectName` portent l'entrée que « Enregistrer » écrira. Sans cette reconduite, la
+      // modale se pré-remplissait du nom de l'éditeur et l'enregistrement fabriquait une entrée
+      // dont le document gardait l'id et le nom importés — entrée et document divergents, le nom
+      // du document masqué à l'écran.
+      setIdentite(ident);
+      setProjectId(ident.id);
+      setProjectName(ident.label);
+      setSel(null);
+      resetScene(clone(scenes[0]));
+    });
+  }
+  /** « ▶ Tester » charge le projet EN JEU : il passe donc la même porte que les autres sorties du
+   *  document (#877) — mettre à l'essai un projet que le schéma refuse jetterait l'auteur dans un
+   *  monde à moitié cuit, loin de l'écran où il peut corriger. */
+  function test() {
+    if (party.length === 0) {
+      setRefusDuGeste({
+        titre: TITRE_TEST,
+        message: 'Mise à l’essai refusée : aucun aventurier au groupe. Ajoutez-en au moins un par « Nouvelle partie » avant de tester la scène.',
+      });
+      return;
+    }
+    const refus = refusDeLaPorte(documentCourant(projectName, projectId ?? scene.id), 'test');
+    if (refus) {
+      setRefusDuGeste({ titre: TITRE_TEST, message: refus });
+      return;
+    }
+    setRefusDuGeste(null);
     loadProject([scene, ...otherScenes], scene.id, worldMap, narratif);
     setScreen('campaign');
   }
@@ -709,16 +829,13 @@ export function Editor({
    *  ET ce qu'on ÉCRIT passe la MÊME porte que ce qu'on OUVRE (`parseProject`, la porte unique du
    *  document) : sans elle, l'éditeur couchait en silence un projet que « Ouvrir » refuse ensuite en
    *  bloc — un piège à perte de travail, pour TOUTE contrainte du schéma. Refusé = rien n'est écrit,
-   *  la modale reste ouverte, et le filet d'autosave n'est PAS purgé (il est alors le seul recours).
-   *  Le document part en COPIE : la porte résout les références de port EN PLACE (`resolvePortRef`),
-   *  et l'état de l'éditeur n'a pas à muter pour avoir été vérifié. */
+   *  la modale reste ouverte, et le filet d'autosave n'est PAS purgé (il est alors le seul recours). */
   async function saveProject(name: string, pub: boolean, startSceneId: string) {
     const id = projectId ?? `proj-${Date.now().toString(36)}`;
-    const project: SavedProject['project'] = { ...identiteCourante(name, id), schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif };
-    try {
-      parseProject(structuredClone(project));
-    } catch (refus) {
-      setSaveError(refusDEnregistrement(refus, project));
+    const project = documentCourant(name, id);
+    const refus = refusDeLaPorte(project, 'enregistrement');
+    if (refus) {
+      setSaveError(refus);
       return;
     }
     const res = await projectSave({
@@ -774,14 +891,33 @@ export function Editor({
   function downloadAscii() {
     if (asciiExport) downloadText(`${scene.id}.ascii.ts`, asciiExport.text, 'text/plain');
   }
+  /**
+   * Le JSON collé passe le SCHÉMA des blocs qu'il édite (#877) avant de toucher la scène : sans
+   * lui, l'éditeur couchait n'importe quelle valeur sous `dialogues`/`triggers`/`encounters`.
+   * Une clé ABSENTE laisse le bloc de la scène INTACT — un repli `?? []` effacerait le travail que
+   * le texte collé ne mentionne simplement pas.
+   */
   function saveAdvanced() {
+    let brut: unknown;
     try {
-      const obj = JSON.parse(advText);
-      setScene({ ...scene, dialogues: obj.dialogues ?? [], triggers: obj.triggers ?? [], encounters: obj.encounters ?? [] });
-      setAdvOpen(false);
-    } catch {
-      alert('JSON invalide');
+      brut = JSON.parse(advText);
+    } catch (erreur) {
+      setAdvError(`Ce texte n’est pas du JSON${ouCaCasse(erreur)}.`);
+      return;
     }
+    const lu = SCHEMA_BLOCS_AVANCES.safeParse(brut);
+    if (!lu.success) {
+      setAdvError(formatZodError('Blocs de logique', lu.error));
+      return;
+    }
+    setAdvError(null);
+    setScene({
+      ...scene,
+      ...(lu.data.dialogues !== undefined ? { dialogues: lu.data.dialogues } : {}),
+      ...(lu.data.triggers !== undefined ? { triggers: lu.data.triggers } : {}),
+      ...(lu.data.encounters !== undefined ? { encounters: lu.data.encounters } : {}),
+    });
+    setAdvOpen(false);
   }
   function resize(w: number, h: number) {
     setScene(resizeGrid(scene, w, h));
@@ -1067,6 +1203,16 @@ export function Editor({
       {openOpen && (
         <OpenProjectModal onScenario={loadScenario} onProject={loadSaved} onBuiltin={loadBuiltin} error={loadError} onClose={() => { setOpenOpen(false); setLoadError(null); }} />
       )}
+      {refusDuGeste && (
+        <Modal variant="plain" title={refusDuGeste.titre} onClose={() => setRefusDuGeste(null)}>
+          <p className="chip tone-danger" role="alert">{refusDuGeste.message}</p>
+          <div className="modal-actions">
+            <button className="btn btn-primary" onClick={() => setRefusDuGeste(null)}>
+              Fermer
+            </button>
+          </div>
+        </Modal>
+      )}
       {saveOpen && (
         <SaveProjectModal
           initialName={projectName}
@@ -1088,6 +1234,7 @@ export function Editor({
           backdropClose
         >
           <p className="hint">Filet de sécurité pour l'édition en masse ; le format est celui du schéma de Scène.</p>
+          {advError && <p className="chip tone-danger" role="alert">{advError}</p>}
           <textarea className="json-editor" value={advText} onChange={(e) => setAdvText(e.target.value)} />
           <div className="modal-actions">
             <button className="btn" onClick={() => setAdvOpen(false)}>

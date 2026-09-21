@@ -383,6 +383,8 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `fog(on=false)` | brouillard ON/OFF (diagnostic RENDU sans vision) | bascule GLOBALE — remettre `fog(true)` avant de valider un flux de vision réel |
 | `ready(timeoutMs=15000)` | **à `await` après `scenario()`, `goto()` ou `campaign()`**, AVANT toute capture : résout quand la scène du store est montée ET son voile d'entrée tombé (`✓ monde prêt — scène « id », voile tombé après N ms`) | REJETTE en NOMMANT le cas (aucun monde monté / scène attendue ≠ scène montée / voile encore levé). La borne par défaut est très au-dessus du plafond d'entrée en scène (`AMBIANCE.entreeEnScene.plafondMs` = 2000) : un dépassement signale un monde qui n'a JAMAIS monté, pas une lenteur. Ne s'applique qu'au monde volumique (aucun voile → aucun signal). ⚠ FAUX POSITIF sur un MÊME id de scène rejoué (`scenario('x')` deux fois) : l'armement du voile est keyé sur `scene.id` (`src/gameIso/stage/GameStage3D.tsx`), le voile ne se relève pas et `ready()` résout pendant la re-cuisson — changer de scénario, ou recharger la page |
 | `editorOpen(id?)` | ouvre un document dans l'ÉDITEUR sans la modale « Ouvrir » — donc sans le dialogue de fichier de l'OS, que le pilote ne sait pas fermer. Sans id : les trois familles ouvrables `{projets, campagnes, scenarios}`. Avec id : bascule sur l'écran `editor`, attend le montage, puis ouvre | SETUP seulement. Une campagne built-in s'ouvre en **COPIE** (comme par la modale : `projectId` reste `null`). Rejet nommé si l'éditeur ne se monte pas (3000 ms) ; `✗ « id » introuvable` liste les ids des trois familles |
+| `editorEntities()` | INVENTAIRE du BROUILLON ouvert à l'éditeur : `{ id, kind, ref?, pos }` par entité — pour retrouver l'id que l'éditeur vient d'attribuer à ce qu'on a posé à la carte, avant de le passer à `editorPatchEntity` | lecture seule. ⚠ `entities()` lit la scène du STORE DE JEU, PAS le brouillon de l'éditeur : les deux divergent dès la première édition. Même pont et même attente qu'`editorOpen` ; rejet NOMMÉ si l'éditeur ne se monte pas |
+| `editorPatchEntity(entityId, patch)` | PRÉPARE l'état d'une entité de la scène OUVERTE à l'éditeur : patch PARTIEL, une clé à `undefined` vaut ABSENTE (`editorPatchEntity('p0', { ref: undefined })` fabrique le « décor sans type » qu'une porte doit refuser). Même voie qu'`editorOpen` : le pont d'INTENTION `state/editeurBridge` (commande `patcherEntite`), jamais une remontée du fiber React de `.editor-inspector` | SETUP seulement — préparer l'état, jamais déclencher le flux mesuré (c'est « Fichier → Exporter JSON » ou « Importer JSON… » qu'on clique ensuite à la main). TROIS refus NOMMÉS : rejet si l'éditeur ne se monte pas (3000 ms, le message porte le helper appelé), `✗ « id » introuvable` listant les ids de la scène, et `✗` sur une clé d'IDENTITÉ (`id`, `kind`) qu'aucun patch ne touche. Le patch passe par le seam d'assise unique (`state/sceneEdit.ts:editEntity`) : il est ANNULABLE (Ctrl+Z) et normalisé comme une édition d'auteur. ⚠ « ABSENTE » vaut au DOCUMENT : en mémoire la clé reste présente à `undefined` (`{ ...ent, ...patch }`, `state/sceneEdit.ts:585`) — `'ref' in ent` rend encore `true`, c'est la sérialisation (`JSON.stringify`) qui la fait disparaître, et le schéma qui la lit comme manquante |
 | `roofCut(on=false)` | lève-toit ON/OFF — `roofCut(false)` débraye le dégagement de la pièce occupée : toits, façades et décors de toit RESTENT peints même quand le groupe entre dans l'empreinte, **hors le disque local de perçage autour de chaque héros** | bascule GLOBALE — remettre `roofCut(true)` avant de valider un flux de vue réel (symétrique de `fog`). Ne débraye QUE le dégagement de PIÈCE : le perçage par occlusion (#1176 M3, `src/gameIso/stage/percage.ts`) reste actif, donc un trou subsiste dans la nappe au-dessus d'un héros qu'elle cache |
 | `labels(on?)` | overlay debug de coordonnées sur la carte | bascule ; zéro coût si OFF |
 | `visibleCount()` | `{visible, explored, total}` sur l'état VIVANT — cases VUES (`computeStateVisible`, la dérivation du rendu, composée telle quelle), cases EXPLORÉES de la scène courante, cases construites (dimensions × étages) | lecture seule ; chiffre une révélation (cloison qui laisse voir, lampe allumée) sans lire la carte au pixel. ⚠ `fog(false)` force `visible` = `total` (REVEAL_ALL) — remettre `fog(true)` avant de mesurer |
@@ -873,15 +875,20 @@ console. ») — les verbes `ooc*` sont des lanceurs HORS combat et ne produisai
   est annulé quand l'unité active change). Un rectangle relevé avant une action async vise donc du
   vide. RÈGLE : relire `getBoundingClientRect()` JUSTE avant chaque clic sur la carte, jamais
   réutiliser une coordonnée calculée plus tôt.
-- **Rotation caméra : un appui bref ne se VOIT pas** (même recette) : un tap vaut `PAS_TAP_DEG` = 2°
-  (`src/state/stageYaw.ts`), imperceptible sur une capture. Pour juger un rendu à un angle donné, il
-  faut le régime de MAINTIEN (`SEUIL_MAINTIEN_MS` d'appui, puis `VITESSE_LACET_DEG_S`). Le
-  `keyboard.down`/`up` simulé s'est révélé fragile pour ce geste tenu (échec silencieux : aucune
-  rotation, aucune erreur) — préférer plusieurs appuis répétés, et vérifier l'angle obtenu entre
-  chaque geste plutôt que de le supposer.
+- **Rotation caméra : un appui bref ne se VOIT pas — y compris sur la caméra de JEU** (recettes
+  2026-09-21, train B) : une frappe dont l'appui reste sous `SEUIL_MAINTIEN_MS` (250 ms,
+  `src/state/stageYaw.ts:47`) ne vaut que `PAS_TAP_DEG` = 2°, imperceptible sur une capture. Une
+  rotation NETTE demande le régime de MAINTIEN (`VITESSE_LACET_DEG_S` = 100°/s) : deux appels
+  `realKeyDown` / `realKeyUp` du kit CDP, séparés d'une attente réelle — c'est la même règle qu'en
+  POV et à l'éditeur, et elle vaut pour Q/E du monde de jeu. Le `keyboard.down`/`up` de Playwright
+  s'est révélé fragile pour ce geste tenu (échec silencieux : aucune rotation, aucune erreur) ;
+  vérifier l'angle obtenu entre chaque geste plutôt que de le supposer.
 - **Le bouton de bascule de vue nomme sa DESTINATION, pas l'état courant** (même recette) :
-  « Vue du dessus » affiché ⇒ on est en ISO (`src/ui/ViewControls.tsx`). Lire l'état RÉEL dans
-  `aria-pressed` (`true` = vue du dessus active), jamais dans le libellé.
+  « Vue du dessus » affiché ⇒ on est en ISO (`src/ui/ViewControls.tsx`). L'état RÉEL est dans
+  l'`aria-pressed` de SON bouton — jamais dans un `[aria-pressed]` NU : la barre de vues en porte
+  PLUSIEURS (projection, POV, inspection — `ViewControls.tsx:68`, `:79`, `:92`), et le premier trouvé
+  n'est pas forcément celui de la projection. Le désigner par l'`aria-label` de son bouton
+  (`[aria-label="Vue du dessus"][aria-pressed]`), comme pour tout contrôle de cette barre.
 - **Une ref de snapshot ne se passe JAMAIS sous la forme `ref=xxx`** — deux formes selon l'outil qu'on
   tient, à vérifier au premier appel plutôt qu'à l'aveugle :
   - outil MCP qui prend un **paramètre `ref` dédié** (mesuré en recette 2026-08-16, #1335) : la valeur
@@ -1403,14 +1410,6 @@ l'outillage Playwright MCP du reste de ce document :
 sous-échantillonnée. Les deux sont vraies, chacune pour SON outil : avant de convertir, savoir lequel
 on pilote. Appliquer la conversion de l'un à l'autre double l'erreur au lieu de la corriger.
 
-## Piège de l'`alert()` natif qui GÈLE le pilotage CDP (« ▶ Tester » de l'éditeur)
-
-Mesuré 2026-09-07 (recette #1691). « ▶ Tester » ouvre un `alert()` natif quand le groupe est vide
-(`src/ui/editor/Editor.tsx:599-603`, garde `party.length === 0`) : la boîte modale du navigateur bloque
-alors tout `Runtime.evaluate` suivant, qui reste EN ATTENTE sans erreur ni message — la recette a l'air
-figée sur un geste qui a « réussi ». Peupler le groupe AVANT d'ouvrir l'éditeur (charger un scénario par
-l'écran `test`, `gotoScreen`) : la boîte ne s'ouvre plus, et le pilotage reste rendu à la page.
-
 ## Piège du suffixe collé au texte d'un bouton (compteur, puce d'état)
 
 Mesuré 2026-09-07 (recette #1691). Comme les chips du Codex plus haut, des boutons d'écran portent un
@@ -1421,6 +1420,38 @@ en sous-chaîne (`exact: false`, le défaut) ou par préfixe, et lever l'ambigu�
 par `exact`.
 
 ## Chemins canoniques de l'éditeur
+
+Pièges vécus À L'ÉDITEUR (deux recettes, 2026-09-21) — tous re-mesurés au code :
+
+- **Préparer l'état d'une entité passe par `__wfrp.editorPatchEntity`**, jamais par une remontée du
+  fiber React de `.editor-inspector` pour atteindre `setScene`. Voir sa rangée à la table `__wfrp`
+  ci-dessus.
+- **L'`evaluate()` du kit CDP n'accepte pas un `await` EN TÊTE d'expression** : la voie est
+  `Runtime.evaluate` (`scripts/recette/lib.mjs:385`), sans `replMode` — `await __wfrp.ready()` y est
+  une erreur de syntaxe. Envelopper dans une IIFE async : `(async () => { … })()` (`awaitPromise`
+  est déjà posé, la promesse rendue est donc attendue).
+- **`.editor-inspector select` ne désigne PAS le sélecteur du décor** : le PREMIER `<select>` du
+  panneau est **Orientation** (`ent.facing`, `src/ui/editor/Inspector.tsx:1329`, pli « Identité »
+  rendu en tête). RÈGLE : viser par le LIBELLÉ du champ (`label.ed-field`), jamais par rang.
+- **L'écran éditeur est LAZY-chargé** (`src/ui/App.tsx:18`, `lazy(() => import('./editor/Editor'))`,
+  sous `Suspense`) : après la bascule d'écran, le DOM n'existe pas encore. Attendre `.editor-toolbar`
+  (`src/ui/editor/EditorToolbar.tsx:163`) avant tout geste — `editorOpen(id)` attend déjà le montage
+  par le pont, mais un clic direct dans la barre ne l'attend pas.
+- **« Importer JSON… » est un `input[type=file]` CACHÉ derrière un `<label>`**
+  (`src/ui/editor/EditorToolbar.tsx:111-126`) : le cliquer ouvrirait le dialogue de fichier de l'OS,
+  qu'aucun pilote ne ferme. Le peupler par `DOM.setFileInputFiles` (CDP) sur l'`input`, qui déclenche
+  son `change` sans aucun dialogue.
+- **Les boutons de zoom répondent à `onPointerDown`, pas à `click`**, et n'ont pas de texte : les
+  cibler par leur `title`/`aria-label` EXACT — « Zoom arrière » (`src/ui/ViewControls.tsx:100`),
+  « Zoom avant » (`:106`), « Réinitialiser le zoom » (`:110`). Un `.click()` de pilote qui n'émet
+  pas `pointerdown` ne fait RIEN, sans erreur.
+- **Écran « Scénarios de test » : chaque carte porte un bouton au libellé générique « Lancer »** —
+  viser par texte amène le premier venu. L'ancrage est
+  `[data-testid="scenario-launch-<id>"]` (`src/ui/TestScenariosScreen.tsx:71`, verrouillé par
+  `TestScenariosScreen.test.tsx:25`).
+- **Hors combat, `__wfrp.state()` n'expose PAS la scène** : il ne rend que `sceneId`/`sceneName`
+  (`src/state/devtools.ts:532`). Les entités se lisent par `__wfrp.entities()`
+  (`src/state/devtools.ts:566`), qui rend id, libellé, nature, position et ce que l'entité OFFRE.
 
 Une op mécanique ne s'atteint pas depuis la Scène : elle vit dans un bloc d'effets de trigger.
 Chemin mesuré en recette (2026-09-18, #1789) jusqu'à l'éditeur d'une op :
