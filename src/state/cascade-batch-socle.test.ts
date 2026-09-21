@@ -224,7 +224,7 @@ describe('SEAM `onOwnTestFailed` PAR RANGÉE — toute bande, pas seulement la P
       title: 'X', purpose: 'test',
       steps: [
         band('bande-seam', [row(h1.id), row(h2.id)], { meta: { noOwnTestFailed: true } }),
-        band('bande-seam', [row(h1.id, { meta: { noOwnTestFailed: true } }), row(h2.id)]),
+        band('bande-seam', [row(h1.id, { meta: { noOwnTestFailed: true } }), row(h2.id)], { id: 'bande-2' }),
       ],
     });
     commitRows([LOSE(50), LOSE(50)]); // bande ENTIÈREMENT étampée → personne n'est Sonné

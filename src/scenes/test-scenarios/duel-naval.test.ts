@@ -119,7 +119,7 @@ describe('Duel naval (échelle Mer) — modèle DEUX-ÉCHELLES jouable (MDG 13-1
     const grimm = ship('grimm-duel'), cogue = ship('cogue-duel');
     grimm.pos = { x: 8, y: 7 };
     cogue.pos = { x: 8, y: 3 }; // 4 cases au nord (40 m < 75 m) → dans l'arc + à portée
-    useGame.setState({ facing: { ...useGame.getState().facing, 'cogue-duel': 'E' }, battle: { ...b } }); // cap E → le Grimm plein SUD tombe en TRIBORD
+    useGame.setState({ facing: { ...useGame.getState().facing, 'cogue-duel': 'E' }, battle: { ...b, turn: b.order.indexOf('cogue-duel') } }); // au tour de la cogue ; cap E → le Grimm plein SUD tombe en TRIBORD
     const before = grimm.wounds.current;
     // `runEnemyAI` sur la coque ennemie (aiDriven par défaut) → décision naval headless (ici : BORDÉE).
     runEnemyAI(useGame.getState, useGame.setState, 'cogue-duel');

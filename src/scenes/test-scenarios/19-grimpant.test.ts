@@ -41,7 +41,7 @@ describe('Grimpant — l’araignée escalade (grimpant)', () => {
       const sp = b.combatants.find((c) => c.id === spider.id)!;
       if (!sp.pos || sp.pos.y <= 2) break; // déjà sur le plateau
       const turnIdx = b.order.indexOf(spider.id);
-      useGame.setState({ battle: { ...b, turn: turnIdx, acted: false, action: null, movementUsed: 0 } });
+      useGame.setState({ battle: { ...b, round: b.round + round, turn: turnIdx, acted: false, action: null, movementUsed: 0 } }); // un tour par Round
       runEnemyAI(useGame.getState, useGame.setState, spider.id);
       vi.runOnlyPendingTimers();
     }
@@ -56,7 +56,7 @@ describe('Grimpant — l’araignée escalade (grimpant)', () => {
       const sp = b.combatants.find((c) => c.id === spider.id)!;
       if (!sp.pos || sp.pos.y <= 2) break;
       const turnIdx = b.order.indexOf(spider.id);
-      useGame.setState({ battle: { ...b, turn: turnIdx, acted: false, action: null, movementUsed: 0 } });
+      useGame.setState({ battle: { ...b, round: b.round + round, turn: turnIdx, acted: false, action: null, movementUsed: 0 } }); // un tour par Round
       runEnemyAI(useGame.getState, useGame.setState, spider.id);
       vi.runOnlyPendingTimers();
     }

@@ -169,12 +169,12 @@ describe('useHoverTargeting — modale bloquante (arbitre modal)', () => {
   it('ciblage de sort PAR LA CARTE (pickingTargets) : le réticule reste actif sous la cascade', () => {
     const active = setup();
     const foe = foeNextTo(active);
+    // Surincantation « +Cible » : le lanceur désigne une cible SUPPLÉMENTAIRE sur la carte (mode overcast).
+    useGame.setState({ pendingCast: { casterId: active.id, targetId: active.id, spellId: 'benediction-de-bataille', missile: true, focused: false, result: null, pickingTargets: true } as never });
     act(() => startCascade(useGame.getState, useGame.setState, {
       title: 'Incantation', purpose: 'combat',
       steps: [{ id: 'cast-jet', kind: 'castJet', jet: 'cast', actorId: active.id }],
     }));
-    // Surincantation « +Cible » : le lanceur désigne une cible SUPPLÉMENTAIRE sur la carte (mode overcast).
-    useGame.setState({ pendingCast: { casterId: active.id, targetId: active.id, spellId: 'benediction-de-bataille', missile: true, focused: false, result: null, pickingTargets: true } as never });
 
     expect(probe({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim?.tip).toBeTruthy();
   });
