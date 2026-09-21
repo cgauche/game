@@ -500,7 +500,7 @@ describe('meuble HAUT — le rayon décide, la case dessinée n’est qu’un re
   const camera = cameraVolumique(dims, mpt);
 
   /** Sommet MONDE d'un décor POSÉ dans la scène, cap et altitude de son pied compris. */
-  const sommet = (ent: SceneEntity): number => sommetDuDecor(findPropById(ent.ref ?? '')!, {
+  const sommet = (ent: SceneEntity): number => sommetDuDecor(findPropById(ent.ref)!, {
     ancre: ent.pos,
     facing: capVolumique(ent.facing, ent.id),
     baseHeightM: heightAt(scene, ent.pos.x, ent.pos.y, ent.z ?? 0),

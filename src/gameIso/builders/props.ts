@@ -22,7 +22,7 @@ import { terrainOverlayProp } from '../../state/terrain';
 import { buildingFeatures } from '../../state/buildings';
 import { facadeFeatureViz } from '../catalog/facades';
 import { WALL_H_M } from '../iso';
-import { capVolumique, empreinteDuProp, REF_DECOR_DEFAUT } from '../../data/props.types';
+import { capVolumique, empreinteDuProp } from '../../data/props.types';
 import type { Dir4, Dir8 } from '../../state/dir8';
 import { edgeKey, fieldHeightAt, nappeKey, resolveNappes, WALL_NB, type RoofField, type RoofShapeSpec } from './roofs';
 import type { FloorView } from './floors';
@@ -44,7 +44,9 @@ interface AncrageDecor {
   cell: { x: number; y: number; z: number };
   ancre: { x: number; y: number };
   source: BillboardPropEl['source'];
-  ref: string;
+  /** Type de décor demandé. ABSENT = l'entité n'en NOMME aucun : le décor sort en billboard d'ERREUR
+   *  (`missingPropSvg`, #877), jamais dans l'art d'un autre type — exactement le sort d'une ref morte. */
+  ref: string | undefined;
   /** Altitude métrique de la SURFACE de la case porteuse (relief et couche compris). */
   solM: number;
   /** Surélévation métrique déclarée au-dessus de cette surface (défaut 0). */
@@ -83,10 +85,11 @@ function elDeDecor(a: AncrageDecor, mpt: number): PropEl {
     ...(a.entId ? { entId: a.entId } : {}),
   };
   const prop = !a.sansVolume && refEstVolumique(a.ref) ? findPropById(a.ref) : undefined;
-  if (prop?.volume) {
+  if (a.ref !== undefined && prop?.volume) {
     const facing = capVolumique(a.facing, `décor volumique « ${a.ref} » (${a.entId ?? a.key})`);
     return {
       ...commun,
+      ref: a.ref,
       facing,
       ...(a.nappe ? { nappe: a.nappe } : {}),
       ...(a.roomZoneIds?.length ? { roomZoneIds: a.roomZoneIds } : {}),
@@ -157,7 +160,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
     // L'empreinte EFFECTIVE au cap de l'instance (#1509) : le corps tourné pour un décor à recette,
     // l'empreinte déclarée pour un billboard. `span` la porte jusqu'au halo d'interaction
     // (`interactHalos.ts`), qui ne connaît l'étendue d'un élément que par lui.
-    const empreinte = empreinteDuProp(findPropById(ent.ref ?? REF_DECOR_DEFAUT), ent.facing, mpt);
+    const empreinte = empreinteDuProp(findPropById(ent.ref), ent.facing, mpt);
     // Le décor s'ancre au CENTRE de son empreinte (`decorFootGeometry` : une case posée y reste sur son
     // centre) — le dessin comme la recette.
     const dessin = decorFootGeometry(empreinte);
@@ -170,7 +173,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       span: { w: empreinte.w, h: empreinte.h },
       source: 'entity',
       entId: ent.id,
-      ref: ent.ref ?? REF_DECOR_DEFAUT,
+      ref: ent.ref,
       ...(ent.facing ? { facing: ent.facing } : {}),
       states: { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) },
     }, mpt));

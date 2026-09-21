@@ -94,16 +94,6 @@ export function rotatePropLocal(x: number, y: number, facing: Dir8): [number, nu
 }
 
 /**
- * Ref de décor par DÉFAUT du monde : ce qu'une entité `kind:'prop'` dessine quand elle ne nomme pas son
- * type. Vit ici, à l'étage NEUTRE, parce que ses lecteurs sont des deux côtés de la frontière des
- * schémas : le CATALOGUE (`data/index.ts`, `refEstVolumique`) et le SCHÉMA de scène
- * (`schemas/defs-scenes/scene.ts`) — or `data/index.ts` importe les schémas, l'inverse est impossible.
- * Lue aussi par le rendu (`gameIso/builders/props.ts`, `backends/webgl/sceneMeshes.ts`), le validateur
- * (`state/validateScene.ts`) et l'éditeur : une seule valeur, jamais huit littéraux.
- */
-export const REF_DECOR_DEFAUT = 'tonneau';
-
-/**
  * LE CAP DE CE DÉCOR EST-IL ADMIS ? Règle de décor, écrite UNE fois : un décor dont le type porte une
  * recette volumique ne prend qu'un cap CARDINAL (#1680 ligne 3) ; un billboard prend les huit, et une
  * entité sans cap n'en discute pas. Vit ici parce que ses deux lecteurs sont de part et d'autre de la

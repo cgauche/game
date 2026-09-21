@@ -371,21 +371,21 @@ describe('editorState — hauteur métrique (paintHeight)', () => {
 
 describe('editorState — pose', () => {
   it('placeEntity : pose DIRECTE d’un décor précis avec ses défauts de catalogue', () => {
-    const { scene, id } = placeEntity(emptyScene(10, 10), 'prop', 'tonneau', { x: 1, y: 1 });
+    const { scene, id } = placeEntity(emptyScene(10, 10), { mode: 'entity', kind: 'prop', ref: 'tonneau' }, { x: 1, y: 1 });
     const ent = scene.entities.find((e) => e.id === id)!;
     expect(ent.ref).toBe('tonneau');
     expect(ent.kind).toBe('prop');
   });
   it('placeEntity : pose un personnage d’espèce précise (appearance.species + libellé)', () => {
-    const { scene, id } = placeEntity(emptyScene(10, 10), 'personnage', 'loup', { x: 1, y: 1 });
+    const { scene, id } = placeEntity(emptyScene(10, 10), { mode: 'entity', kind: 'personnage', ref: 'loup' }, { x: 1, y: 1 });
     const ent = scene.entities.find((e) => e.id === id)!;
     expect(ent.appearance?.species).toBe('loup'); // id d'espèce rig (pas `ref`, réservé au profil de stats)
     expect(ent.label).toBe('Loup');
   });
   it('placeEntity : pose sur l’étage courant (z), absent au sol', () => {
-    const ground = placeEntity(emptyScene(10, 10), 'prop', 'tonneau', { x: 1, y: 1 }, 0);
+    const ground = placeEntity(emptyScene(10, 10), { mode: 'entity', kind: 'prop', ref: 'tonneau' }, { x: 1, y: 1 }, 0);
     expect(ground.scene.entities.find((e) => e.id === ground.id)!.z).toBeUndefined();
-    const upper = placeEntity(emptyScene(10, 10), 'prop', 'tonneau', { x: 1, y: 1 }, 2);
+    const upper = placeEntity(emptyScene(10, 10), { mode: 'entity', kind: 'prop', ref: 'tonneau' }, { x: 1, y: 1 }, 2);
     expect(upper.scene.entities.find((e) => e.id === upper.id)!.z).toBe(2);
   });
   it('addTrigger / addRestZone créent au bon endroit', () => {
@@ -498,7 +498,7 @@ describe('editorState — emplacement de siège (postes authorés à l’éditeu
   });
 
   it('les mutations de poste sont des no-op sur une entité SANS poste', () => {
-    const s = placeEntity(emptyScene(10, 10), 'personnage', undefined, { x: 1, y: 1 }).scene;
+    const s = placeEntity(emptyScene(10, 10), { mode: 'entity', kind: 'personnage' }, { x: 1, y: 1 }).scene;
     const id = s.entities[0].id;
     expect(setPosteCrew(s, id, ['x']).entities[0].postes).toBeUndefined();
     expect(setPosteSide(s, id, 'proue').entities[0].postes).toBeUndefined();

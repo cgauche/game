@@ -129,6 +129,76 @@ describe('Inspector — l’empreinte d’un décor n’est plus une propriété
   });
 
   /**
+   * CE QUE LE SÉLECTEUR DIT EST CE QUE LA DONNÉE PORTE (#877) — « Rien en dure, pas de fallback ».
+   * Un `<select>` sans valeur correspondant à une option AFFICHE la première du catalogue : l'auteur
+   * lirait « Abreuvoir » là où l'instance ne nomme aucun type, ou nomme un type disparu. L'inspecteur
+   * annonce donc l'ÉTAT, du même constat que `state/validateScene.ts`, et sur une option non élisible.
+   */
+  const selecteurDeDecor = (container: HTMLElement): HTMLSelectElement =>
+    Array.from(container.querySelectorAll('select'))
+      .find((el) => el.closest('label')?.textContent?.includes('Décor')) as HTMLSelectElement;
+
+  it('un décor SANS type l’annonce dans le sélecteur, sur une option non élisible', async () => {
+    const h = mount({ id: 'nu', kind: 'prop', pos: { x: 0, y: 0 } });
+    await h.mount();
+
+    const select = selecteurDeDecor(h.container);
+    const affichee = select.options[select.selectedIndex];
+    expect(affichee.textContent).toBe('Décor sans type — choisis-en un');
+    expect(affichee.disabled).toBe(true);
+    // Et rien n'a été écrit sur l'entité : afficher un état n'est pas élire un type.
+    expect(h.entOf()).not.toHaveProperty('ref');
+  });
+
+  it('un décor à type DISPARU du catalogue nomme l’id fautif, au lieu d’emprunter un autre décor', async () => {
+    const h = mount({ id: 'mort', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau-imaginaire' });
+    await h.mount();
+
+    const affichee = selecteurDeDecor(h.container).options[selecteurDeDecor(h.container).selectedIndex];
+    expect(affichee.textContent).toBe('Décor inexistant « tonneau-imaginaire »');
+    expect(affichee.disabled).toBe(true);
+    expect(h.entOf().ref).toBe('tonneau-imaginaire');
+  });
+
+  /**
+   * RECETTE NAVIGATEUR du 2026-09-21 : un `<option>` natif est TRONQUÉ à la largeur du champ
+   * (« Décor inexistant « tonneau-imagi… »), or l'id fautif EST l'information à corriger. L'état se
+   * relit donc ENTIER hors du sélecteur — le contrat porte sur ce qui est LISIBLE, pas sur l'option.
+   */
+  it('l’id fautif se relit ENTIER hors du sélecteur (alerte) et au survol (title)', async () => {
+    const id = 'tonneau-imaginaire-au-nom-tres-long-que-le-champ-coupe';
+    const h = mount({ id: 'mort', kind: 'prop', pos: { x: 0, y: 0 }, ref: id });
+    await h.mount();
+
+    const alerte = h.container.querySelector('[role="alert"]') as HTMLElement;
+    expect(alerte.textContent).toBe(`Décor inexistant « ${id} »`);
+    expect(selecteurDeDecor(h.container).title).toBe(`Décor inexistant « ${id} »`);
+  });
+
+  it('un décor au type RÉSOLU ne porte ni alerte ni title — l’état ne se dit que quand il existe', async () => {
+    const h = mount({ id: 'sain', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau' });
+    await h.mount();
+
+    expect(h.container.querySelector('[role="alert"]')).toBeNull();
+    expect(selecteurDeDecor(h.container).title).toBe('');
+  });
+
+  it('depuis cet état, élire un type l’ÉCRIT sur l’instance et l’état disparaît', async () => {
+    const h = mount({ id: 'nu', kind: 'prop', pos: { x: 0, y: 0 } });
+    await h.mount();
+
+    const select = selecteurDeDecor(h.container);
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')!.set!.call(select, 'tonneau');
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(h.entOf().ref).toBe('tonneau');
+    const apres = selecteurDeDecor(h.container);
+    expect(apres.options[apres.selectedIndex].textContent).toBe('Tonneau');
+    expect(Array.from(apres.options).some((o) => o.disabled)).toBe(false);
+  });
+
+  /**
    * L'INSTANCE tient un cap, donc l'inspecteur annonce l'empreinte AU CAP RÉEL (#1509 L7′) : la même
    * `table-2x1` occupe deux cases en x au sud, deux en y à l'est, et ses cases suivent le changement
    * d'orientation fait dans le même volet. La PALETTE, elle, n'a pas d'instance : elle annonce au cap

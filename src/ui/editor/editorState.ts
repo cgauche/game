@@ -1,5 +1,5 @@
 /** Fondation pure de l’éditeur : outils, calques, sélection et mutations de scène. */
-import { Scene, SceneEntity, SceneEffectZone, Terrain, EntityKind, WallSide, ZoneArea } from '../../state/scene';
+import { Scene, SceneEntity, SceneEffectZone, Terrain, WallSide, ZoneArea } from '../../state/scene';
 import { sceneZoneTiles, zoneAreaTiles } from '../../state/zones';
 import type { Pt as ScenePt } from '../../state/path';
 import { walkFlow, type Flow } from '../../state/flow';
@@ -61,11 +61,17 @@ export type { CellSide } from '../../state/scene';
 export { planStairFlight, applyStairFlight, minFlightCells } from '../../state/stairFlight';
 export type { StairCell, StairStep, StairFlightPlan } from '../../state/stairFlight';
 
-/** Outil actif (rail de la Palette). `ref` permet la pose DIRECTE d'un décor/d'une espèce précise. */
+/** Outil actif (rail de la Palette). `ref` permet la pose DIRECTE d'un décor/d'une espèce précise.
+ *  L'outil d'ENTITÉ est SCINDÉ par `kind` (#877) : un décor NOMME son type — `ref` y est REQUISE, comme
+ *  au schéma de scène — là où l'espèce d'un personnage reste facultative (apparence libre) et où le
+ *  départ des héros n'a rien à référencer. Sans cette scission, l'outil pouvait fabriquer un document
+ *  que l'app refuse ensuite de sauvegarder, et `placeEntity` le couvrait d'un cas MUET. */
 export type Tool =
   | { mode: 'select' }
   | { mode: 'tile'; terrain: Terrain }
-  | { mode: 'entity'; kind: EntityKind; ref?: string }
+  | { mode: 'entity'; kind: 'prop'; ref: string }
+  | { mode: 'entity'; kind: 'personnage'; ref?: string }
+  | { mode: 'entity'; kind: 'heroStart' }
   | { mode: 'zone'; zone: ZoneVariant }
   // EMPRISE d'une zone d'effet au PINCEAU (`SceneEffectZone.tiles`) : `zoneId` = id STABLE de la zone
   // peinte, `paint` le sens du geste — l'appui et le glissé ajoutent (ou retirent) des cases, comme le
@@ -532,13 +538,21 @@ export function pickArchitectureEdge(scene: Scene, fx: number, fy: number, z: nu
   return null;
 }
 
-/** Pose une entité à p (id frais) — `ref` = décor/espèce précise (pose directe depuis le catalogue).
+/** L'outil d'ENTITÉ seul — ce que `placeEntity` demande, dérivé de `Tool` pour qu'aucun site ne
+ *  redise sa forme (la palette le construit, le canevas le transmet, la pose le consomme). */
+export type EntityTool = Extract<Tool, { mode: 'entity' }>;
+
+/** Pose une entité à p (id frais) depuis l'OUTIL tel que la palette le porte — il tient déjà le décor
+ *  ou l'espèce élue, et son type dit lequel des deux est REQUIS : aucun cas muet ne subsiste ici.
  *  Les props appliquent leurs défauts de catalogue (empreinte, interactif si fouillable). */
-export function placeEntity(scene: Scene, kind: EntityKind, ref: string | undefined, p: Pt, z = 0): { scene: Scene; id: string } {
-  const id = nextEntityId(kind, scene.entities.map((e) => e.id));
-  let ent: SceneEntity = { id, kind, pos: { ...p }, label: libelleDeValeur(entityKindSchema, kind) };
-  if (ref && kind === 'prop') ent = { ...ent, ...propRefPatch(ref, undefined), label: PROPS[ref]?.label };
-  // Personnage d'ambiance : `ref` porte l'id d'ESPÈCE rig (sélecteur Palette) → apparence + libellé.
-  else if (ref && kind === 'personnage') ent = { ...ent, appearance: { species: ref }, label: speciesLabel(ref) };
+export function placeEntity(scene: Scene, outil: EntityTool, p: Pt, z = 0): { scene: Scene; id: string } {
+  const id = nextEntityId(outil.kind, scene.entities.map((e) => e.id));
+  const base: SceneEntity = { id, kind: outil.kind, pos: { ...p }, label: libelleDeValeur(entityKindSchema, outil.kind) };
+  const ent: SceneEntity = outil.kind === 'prop'
+    ? { ...base, ...propRefPatch(outil.ref, undefined), label: PROPS[outil.ref]?.label }
+    // Personnage d'ambiance : `ref` porte l'id d'ESPÈCE rig (sélecteur Palette) → apparence + libellé.
+    : outil.kind === 'personnage' && outil.ref
+      ? { ...base, appearance: { species: outil.ref }, label: speciesLabel(outil.ref) }
+      : base;
   return { scene: addEntity(scene, ent, z), id }; // l'étage se pose à la porte d'ajout
 }

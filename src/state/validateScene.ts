@@ -6,7 +6,7 @@ import { METRES_PER_LEVEL } from './relief';
 import { realFloorAt } from './sceneEdit';
 import { CHAR_KEYS } from '../engine/types';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, carriedFlows, EMPTY_FLOW } from './flow';
-import { refEstVolumique, stakeSpeaks, REF_DECOR_DEFAUT, matieresCouvrantes } from '../data';
+import { refEstVolumique, stakeSpeaks, findPropById, matieresCouvrantes } from '../data';
 import { capDecorAdmis } from '../data/props.types';
 import { PENTE_TOIT_DEG } from '../data/schemas/defs-scenes/scene';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
@@ -163,7 +163,15 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       // tourne pas (#1509), une diagonale poserait son corps en travers de cases restées traversables.
       // L'émetteur unique (`gameIso/builders/props.ts`) le refuse en dur — c'est ici que l'auteur l'apprend.
       if (e.kind === 'prop' && !capDecorAdmis(refEstVolumique(e.ref), e.facing))
-        add('error', 'entity', e.id, `${e.label ?? e.id} : décor volumique « ${e.ref ?? REF_DECOR_DEFAUT} » au cap ${e.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`);
+        add('error', 'entity', e.id, `${e.label ?? e.id} : décor volumique « ${e.ref} » au cap ${e.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`);
+      // RÉF de décor : REQUISE et résolue au catalogue (#877), sœur de la réf de personnage ci-dessous.
+      // Le schéma la refuse au parse ; c'est ICI que l'auteur l'apprend d'une scène VIVANTE de l'éditeur,
+      // qui ne repasse pas par le parse. Sans type résolu, le rendu pose la silhouette d'erreur
+      // (`missingPropSvg`) : un décor se DIT, il ne se remplace jamais.
+      if (e.kind === 'prop' && !findPropById(e.ref))
+        add('error', 'entity', e.id, e.ref === undefined
+          ? `${e.label ?? e.id} : décor sans type — un décor NOMME son type au catalogue`
+          : `${e.label ?? e.id} → décor inexistant « ${e.ref} »`);
       // RÉF de personnage : la résolution est CELLE du spawn (`refEntiteResolue`, `state/spawn`) —
       // un statbloc ou un preset de PNJ prime sur la réf et la rend sans objet, comme au runtime. Une réf
       // fournie mais irrésoluble pose un mannequin `RÉF ?` à l'écran (#223) : l'auteur l'apprend ici.

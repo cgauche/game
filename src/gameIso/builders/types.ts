@@ -164,8 +164,9 @@ export interface BillboardPropEl extends ElBase {
   source: 'entity' | 'terrain' | 'ornament' | 'architecture';
   /** Id stable qualifié `bodyId:facadeSectionId:featureId`. */
   architectureFeatureId?: string;
-  /** Id de dessin : ref de prop NORMALISÉE (défaut `REF_DECOR_DEFAUT`, la même partout — décor d'entité OU de terrain). */
-  ref: string;
+  /** Id de dessin : le type de décor tel que la donnée le NOMME — jamais normalisé. ABSENT (entité sans
+   *  type) ou hors registre : le même billboard d'ERREUR (`missingPropSvg`, #877). */
+  ref: string | undefined;
   /** Orientation MONDE d'auteur (props directionnels) — chaque backend la projette avec SA caméra. */
   facing?: Dir8;
   /** Géométrie d'empreinte du décor (décalage fractionnaire vers le centre + échelle au côté max). */

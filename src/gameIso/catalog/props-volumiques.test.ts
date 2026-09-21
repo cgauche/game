@@ -3,7 +3,7 @@ import { propSvg } from './decor';
 import { scenarioEntities } from '../../scenes/opera/furnished';
 import { buildOperaFloorplan } from '../../scenes/opera/floorplan';
 import { findPropById, props } from '../../data';
-import { aretesNonAppariees, CAP_IDENTITE_PROP, empreinteDeriveeDuProp, placeAssiseDe, placesLocalesDuProp, REF_DECOR_DEFAUT, rotatePropLocal, type PropData, type PropPrimitive } from '../../data/props.types';
+import { aretesNonAppariees, CAP_IDENTITE_PROP, empreinteDeriveeDuProp, placeAssiseDe, placesLocalesDuProp, rotatePropLocal, type PropData, type PropPrimitive } from '../../data/props.types';
 import { decorFootGeometry } from '../../state/footprint';
 import { buildProps } from '../builders/props';
 import { buildPropVolumes } from '../builders/propVolumes';
@@ -339,10 +339,10 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
    */
   it('chaque instance authorée d’un décor volumique couvre, à l’échelle RÉELLE de sa scène, les cases du catalogue', () => {
     const volumiques = new Set(IDS);
-    const instances = entitesAuthorees().filter((e) => e.kind === 'prop' && volumiques.has(e.ref ?? REF_DECOR_DEFAUT));
+    const instances = entitesAuthorees().filter((e) => e.kind === 'prop' && e.ref !== undefined && volumiques.has(e.ref));
     expect(gisementsDe(instances), SANS_GISEMENT).toEqual(GISEMENTS);
     const ecarts = instances.filter((e) => {
-      const prop = findPropById(e.ref ?? REF_DECOR_DEFAUT)!;
+      const prop = findPropById(e.ref)!;
       const cap = (e.facing ?? CAP_IDENTITE_PROP) as Dir4;
       const chezElle = empreinteDeriveeDuProp(prop, cap, e.mpt);
       const auCatalogue = empreinteDeriveeDuProp(prop, cap, METRES_PAR_CASE);
@@ -360,10 +360,24 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
    */
   it('aucune instance authorée d’un décor VOLUMIQUE ne porte un cap DIAGONAL', () => {
     const volumiques = new Set(IDS);
-    const instances = entitesAuthorees().filter((e) => e.kind === 'prop' && volumiques.has(e.ref ?? REF_DECOR_DEFAUT));
+    const instances = entitesAuthorees().filter((e) => e.kind === 'prop' && e.ref !== undefined && volumiques.has(e.ref));
     expect(gisementsDe(instances), SANS_GISEMENT).toEqual(GISEMENTS);
     expect(instances.filter((e) => e.facing && !DIR4_ORDER.includes(e.facing as Dir4))
-      .map((e) => `${e.source}/${e.id} (${e.ref ?? REF_DECOR_DEFAUT}, cap ${e.facing})`)).toEqual([]);
+      .map((e) => `${e.source}/${e.id} (${e.ref}, cap ${e.facing})`)).toEqual([]);
+  });
+
+  /**
+   * POPULATION, troisième volet (#877) — TOUTE instance authorée NOMME son type, et ce type RÉSOUT au
+   * catalogue. Un décor se DIT ou se REFUSE : aucun n'est remplacé par un id en dur, et aucun ne
+   * s'appuie sur un défaut du rendu. Le schéma tient les documents CHARGÉS (`defs-scenes/scene.ts`) ;
+   * ce contrat couvre le gisement que le parse ne voit pas — la scène écrite en TS — et le même geste
+   * juge les deux gisements d'un coup.
+   */
+  it('chaque décor authoré NOMME un type que le catalogue RÉSOUT — aucun défaut, aucun repli', () => {
+    const decors = entitesAuthorees().filter((e) => e.kind === 'prop');
+    expect(gisementsDe(decors), SANS_GISEMENT).toEqual(GISEMENTS);
+    expect(decors.filter((e) => !findPropById(e.ref))
+      .map((e) => `${e.source}/${e.id} (${e.ref ?? 'aucun type nommé'})`)).toEqual([]);
   });
 });
 

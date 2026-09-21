@@ -5,6 +5,7 @@ import { buildWalls } from './walls';
 import { buildPropVolumes } from './propVolumes';
 import { findPropById, props } from '../../data';
 import { capVolumique } from '../../data/props.types';
+import { missingPropSvg, propSvg } from '../catalog/decor';
 import { estPropVolumique, type BillboardPropEl, type PropEl, type VolumePropEl } from './types';
 import type { Dir8 } from '../../state/dir8';
 import { buildRoofs, fieldHeightAt, nappeKey, resolveNappes, ROOF_SLOPE_M } from './roofs';
@@ -32,7 +33,7 @@ const MPT = sceneMetresPerTile(emptyScene(1, 1));
 const poseA = (el: PropEl, ancre: { x: number; y: number }, facing: Dir8) =>
   volume(el).faces.every((face, i) =>
     face.poly.every((p, k) => {
-      const attendu = buildPropVolumes(findPropById(el.ref)!, { ancre, facing: capVolumique(facing, el.ref), baseHeightM: socleM(el) }, MPT)[i].poly[k];
+      const attendu = buildPropVolumes(findPropById(el.ref)!, { ancre, facing: capVolumique(facing, volume(el).ref), baseHeightM: socleM(el) }, MPT)[i].poly[k];
       return Math.abs(p.x - attendu.x) < 1e-9 && Math.abs(p.y - attendu.y) < 1e-9 && Math.abs(p.h - attendu.h) < 1e-9;
     }));
 
@@ -119,10 +120,12 @@ describe('buildProps — éléments prop du pivot', () => {
     expect(hidden.states.visible).toBe(false); // mémorisé → sous le voile / culé en POV
   });
 
-  it('normalise la ref ABSENTE en ‘tonneau’ — le défaut du builder, quelle que soit sa voie de rendu', () => {
+  it('une ref ABSENTE n’est JAMAIS remplacée : l’élément la porte telle quelle, et le dessin est le repli d’ERREUR (#877)', () => {
     const s = scene();
     s.entities = [{ id: 'sans-ref', kind: 'prop', pos: { x: 0, y: 0 } }] as SceneEntity[];
-    expect(buildProps(s).filter((e) => e.source === 'entity').map((e) => e.ref)).toEqual(['tonneau']);
+    const [el] = buildProps(s).filter((e) => e.source === 'entity');
+    expect(el.ref).toBeUndefined(); // aucun id en dur ne s'est substitué à l'absence
+    expect(propSvg(el.ref)).toBe(missingPropSvg(undefined)); // ce que la case MONTRE : la silhouette d'erreur
   });
 
   it('porte ref/facing/empreinte, et l’ID D’ENTITÉ — l’OFFRE, elle, n’est pas recopiée sur l’élément', () => {

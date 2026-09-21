@@ -53,7 +53,7 @@ const MPT = sceneMetresPerTile(salle());
 /** Ancrage MONDE d'un meuble posé : le CENTRE de son empreinte (`decorAncre`, la règle unique que
  *  `gameIso/builders/props.ts` applique), son cap, le sol qu'il touche. */
 const ancrageDe = (ent: SceneEntity) => ({
-  ancre: decorAncre(ent.pos, empreinteDuProp(findPropById(ent.ref ?? ''), ent.facing, MPT)),
+  ancre: decorAncre(ent.pos, empreinteDuProp(findPropById(ent.ref), ent.facing, MPT)),
   facing: capVolumique(ent.facing, ent.id),
   baseHeightM: 0,
   entId: ent.id,
@@ -62,7 +62,7 @@ const ancrageDe = (ent: SceneEntity) => ({
 /** AABB monde du meuble, dérivée de ses FACES réelles (`buildPropVolumes`) — jamais d'une relecture
  *  parallèle de la recette : ce que le test mesure est ce que le monde cuit. */
 function propBounds(ent: SceneEntity): Boite {
-  const faces = buildPropVolumes(findPropById(ent.ref ?? '')!, ancrageDe(ent), MPT);
+  const faces = buildPropVolumes(findPropById(ent.ref)!, ancrageDe(ent), MPT);
   const pts = faces.flatMap((f) => f.poly);
   return {
     x0: Math.min(...pts.map((p) => p.x)), x1: Math.max(...pts.map((p) => p.x)),
@@ -77,7 +77,7 @@ function propBounds(ent: SceneEntity): Boite {
  * de sa case, vers l'abord de cette place (`gameIso/catalog/props-volumiques.test.ts`).
  */
 function corpsBounds(ent: SceneEntity): Boite {
-  const prop = findPropById(ent.ref ?? '')!;
+  const prop = findPropById(ent.ref)!;
   // Les cotes de la recette sont MÉTRIQUES : la division par l'échelle de la scène les met en CASES.
   const demi = (p: PropPrimitive) => ({
     dx: (p.kind === 'cylinder' ? p.radiusM : p.size.xM / 2) / MPT,
@@ -104,7 +104,7 @@ function corpsBounds(ent: SceneEntity): Boite {
  * que le monde la cuit — c'est ce que le cap de l'entité décide.
  */
 function ferDuComptoir(ent: SceneEntity): { x: number; y: number } {
-  const faces = buildPropVolumes(findPropById(ent.ref ?? '')!, ancrageDe(ent), MPT).filter((f) => f.material.id === 'fer-noirci');
+  const faces = buildPropVolumes(findPropById(ent.ref)!, ancrageDe(ent), MPT).filter((f) => f.material.id === 'fer-noirci');
   const pts = faces.flatMap((f) => f.poly);
   return {
     x: pts.reduce((s, p) => s + p.x, 0) / pts.length - ent.pos.x,
@@ -128,7 +128,7 @@ const caseBox = (x: number, y: number): Boite =>
 
 /** Boîte au sol de l'EMPREINTE d'un meuble posé (`empreinteDuProp`, #1509), depuis `pos` — le coin NO. */
 const empreinteBox = (ent: SceneEntity): Boite => {
-  const { w, h } = empreinteDuProp(findPropById(ent.ref ?? ''), ent.facing, MPT);
+  const { w, h } = empreinteDuProp(findPropById(ent.ref), ent.facing, MPT);
   return { x0: ent.pos.x - 0.5, x1: ent.pos.x + w - 0.5, y0: ent.pos.y - 0.5, y1: ent.pos.y + h - 0.5, h0: -Infinity, h1: Infinity };
 };
 

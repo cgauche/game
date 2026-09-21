@@ -134,7 +134,7 @@ function placesPartielles(scene: Scene): PlacePartielle[] {
   const mpt = sceneMetresPerTile(scene);
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
-    const prop = findPropById(ent.ref ?? '');
+    const prop = findPropById(ent.ref);
     const facing = ent.facing ?? 'S';
     const crans = cransDepuisCapIdentite(facing);
     const z = ent.z ?? 0;

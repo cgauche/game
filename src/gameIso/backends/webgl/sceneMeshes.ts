@@ -24,7 +24,6 @@ import { buildRoofs, ROOF_SLOPE_M } from '../../builders/roofs';
 import { buildProps } from '../../builders/props';
 import { buildTokens } from '../../builders/tokens';
 import { teamRingDecor } from '../../builders/dynamicMarks';
-import { REF_DECOR_DEFAUT } from '../../../data/props.types';
 import { estPropVolumique, type CellSide, type Face, type PropEl, type RoofEl, type SceneEl, type TokenEl, type WallEl } from '../../builders/types';
 import { findPropById, findPropMaterialById, matieresDe } from '../../../data';
 import { roofMaterial } from '../../catalog/roofs';
@@ -336,14 +335,19 @@ export function worldBakeDeps(scene: Scene, mpt: number): readonly unknown[] {
     propVolumeSignature(scene), ...propRecipeDeps(scene), ...matiereDeps(scene), ...terrainDeps()];
 }
 
+/** Ce qu'une identité de cache écrit à la place d'un type NON NOMMÉ (#877) — jeton de SIGNATURE,
+ *  jamais un id : rien ne se résout sous ce nom, et il ne peut collider avec aucune entrée de
+ *  `props.json` (les crochets n'appartiennent pas aux ids). */
+const REF_NON_NOMMEE = '[sans type]';
+
 /** Ce que la cuisson retient des ENTITÉS : la signature des seuls décors à recette — id, ref, case,
  *  couche, cap. `scene.entities` ENTIER n'entrerait pas ici : un despawn de combat ou un déplacement
  *  forcé en reforge la référence à chaque tour, et recuirait un monde que rien n'a déplacé. */
 function propVolumeSignature(scene: Scene): string {
   const parts: string[] = [];
   for (const ent of scene.entities) {
-    if (ent.kind !== 'prop' || !findPropById(ent.ref ?? REF_DECOR_DEFAUT)?.volume) continue;
-    parts.push(`${ent.id}|${ent.ref ?? REF_DECOR_DEFAUT}|${ent.pos.x},${ent.pos.y}|${ent.z ?? 0}|${ent.facing ?? 'S'}`);
+    if (ent.kind !== 'prop' || !findPropById(ent.ref)?.volume) continue;
+    parts.push(`${ent.id}|${ent.ref}|${ent.pos.x},${ent.pos.y}|${ent.z ?? 0}|${ent.facing ?? 'S'}`);
   }
   return parts.join(';');
 }
@@ -355,7 +359,7 @@ function propRecipeDeps(scene: Scene): readonly unknown[] {
   const out: unknown[] = [];
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;
-    const volume = findPropById(ent.ref ?? REF_DECOR_DEFAUT)?.volume;
+    const volume = findPropById(ent.ref)?.volume;
     if (!volume) continue;
     out.push(volume);
     for (const primitive of volume.primitives) out.push(findPropMaterialById(primitive.material));
@@ -875,7 +879,9 @@ export function collectBillboards(scene: Scene, mpt: number, els: SceneBillboard
       // Le CAP et l'ÉCHELLE y entrent : l'un choisit le dessin servi (`propSvg`), l'autre la TAILLE du
       // quad — deux props de même clé et de même modèle mais d'empreinte différente ne peuvent pas
       // partager une entrée de cache, ni un quad (#1396).
-      identity: `prop:${el.key}|${el.ref}|${el.facing ?? ''}|${el.foot.scale}`,
+      // L'ABSENCE de type est NOMMÉE dans l'identité de cache (#877) : deux décors, l'un sans type et
+      // l'autre au type littéralement nommé « undefined », ne partagent pas une texture.
+      identity: `prop:${el.key}|${el.ref ?? REF_NON_NOMMEE}|${el.facing ?? ''}|${el.foot.scale}`,
       kind: 'prop',
       anchor: new THREE.Vector3(gx * mpt, h, gy * mpt),
       facing: el.facing ?? 'S',

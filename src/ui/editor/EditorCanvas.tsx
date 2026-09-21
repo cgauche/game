@@ -460,7 +460,7 @@ export function EditorCanvas({
       case 'entity': {
         const existing = entityAt(scene, p, currentLayer);
         if (existing) return onSelect({ type: 'entity', id: existing.id });
-        const out = placeEntity(scene, tool.kind, tool.ref, p, currentLayer);
+        const out = placeEntity(scene, tool, p, currentLayer);
         setScene(out.scene);
         onSelect({ type: 'entity', id: out.id });
         return;

@@ -101,7 +101,7 @@ export function smokeZone(from: Pt, center: Pt, radius: number): Pt[] {
 export function tileBlocksSight(scene: Scene, x: number, y: number): boolean {
   if (terrainOpaque(tileAt(scene, x, y))) return true;
   const dc = decorEnCase(scene, x, y);
-  return !!dc && !!findPropById(dc.ref ?? '')?.opaque;
+  return !!dc && !!findPropById(dc.ref)?.opaque;
 }
 
 /**

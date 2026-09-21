@@ -2792,16 +2792,16 @@ export const DEFAULT_LIGHT_TONE_ID = 'flamme';
 /** Contrats NEUTRES du décor (type de prop, recette volumique, matériaux, places assises) — définis
  *  hors du chargeur pour rester importables par `src/state` et `src/gameIso` (cf. `props.types.ts`). */
 export type { PropData, PropMaterialData, PropMaterialId, PropPoint3, PropSize3, PropPrimitive, PropVolumeRecipe, PropSeatSlot } from './props.types';
-export { validatePropCatalog, propFootOf, REF_DECOR_DEFAUT } from './props.types';
-import { REF_DECOR_DEFAUT } from './props.types';
+export { validatePropCatalog, propFootOf } from './props.types';
 export const props = propsJson as PropData[];
-const propParId = indexParId('props', props);
-export const findPropById: (id: string) => PropData | undefined = propParId;
+/** Type de décor par id — `undefined` en entrée rend `undefined` : une entité qui ne NOMME aucun type
+ *  n'en résout aucun, exactement comme une ref hors registre (#877). */
+export const findPropById = indexParId('props', props);
 /** Un type de décor rend-il en VOLUME (recette authorée) plutôt qu'en billboard ? RÈGLE UNIQUE, propriété
  *  du CATALOGUE : l'émetteur de décor (`gameIso/builders/props.ts`) comme le validateur de scène
- *  (`state/validateScene.ts`) la lisent ici — aucun site ne la redevine. `ref` absente = le défaut du
- *  monde (`REF_DECOR_DEFAUT`), la même normalisation que le rendu. */
-export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref ?? REF_DECOR_DEFAUT)?.volume;
+ *  (`state/validateScene.ts`) la lisent ici — aucun site ne la redevine. `ref` absente = aucun type
+ *  résolu, donc aucun volume : la même absence qu'une ref hors registre (#877). */
+export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref)?.volume;
 /** Matière de rendu d'une recette volumique de décor, par id — lecture VIVE du document (`matieresDe`),
  *  jamais un index cuit au chargement. Unicité des ids sur tout le périmètre des matières :
  *  `data/materials-identite.test.ts` (#1686). */

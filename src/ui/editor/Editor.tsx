@@ -16,7 +16,7 @@ import { Inspector } from './Inspector';
 import { LogicDock, LogicTab } from './LogicDock';
 import { WorldMapEditor } from './WorldMapEditor';
 import { NarratifEditor } from './NarratifEditor';
-import { OpenProjectModal, SaveProjectModal, refusDOuverture, type RefusOuverture } from './ProjectModals';
+import { OpenProjectModal, SaveProjectModal, refusDOuverture, refusDEnregistrement, type RefusOuverture } from './ProjectModals';
 import { projectSave, projectsLoad, SavedProject } from '../../state/projectLibrary';
 import { downloadText } from '../../state/fileIo';
 import { sceneToAscii, type SceneAsciiExport } from '../../state/sceneToAscii';
@@ -704,16 +704,30 @@ export function Editor({
     return null;
   }
   /** #811 : le résultat de `projectSave` est CONSULTÉ — un échec (quota, écriture refusée…) est
-   *  rendu visible à l'auteur (`saveError`, modale conservée ouverte) au lieu d'être jeté. */
+   *  rendu visible à l'auteur (`saveError`, modale conservée ouverte) au lieu d'être jeté.
+   *
+   *  ET ce qu'on ÉCRIT passe la MÊME porte que ce qu'on OUVRE (`parseProject`, la porte unique du
+   *  document) : sans elle, l'éditeur couchait en silence un projet que « Ouvrir » refuse ensuite en
+   *  bloc — un piège à perte de travail, pour TOUTE contrainte du schéma. Refusé = rien n'est écrit,
+   *  la modale reste ouverte, et le filet d'autosave n'est PAS purgé (il est alors le seul recours).
+   *  Le document part en COPIE : la porte résout les références de port EN PLACE (`resolvePortRef`),
+   *  et l'état de l'éditeur n'a pas à muter pour avoir été vérifié. */
   async function saveProject(name: string, pub: boolean, startSceneId: string) {
     const id = projectId ?? `proj-${Date.now().toString(36)}`;
+    const project: SavedProject['project'] = { ...identiteCourante(name, id), schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif };
+    try {
+      parseProject(structuredClone(project));
+    } catch (refus) {
+      setSaveError(refusDEnregistrement(refus, project));
+      return;
+    }
     const res = await projectSave({
       id,
       label: name,
       startSceneId,
       savedAt: Date.now(),
       published: pub,
-      project: { ...identiteCourante(name, id), schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif },
+      project,
     });
     if (!res.ok) {
       setSaveError(res.message);

@@ -1,7 +1,7 @@
 /**
  * Bibliothèque de sprites SVG (style validé) pour le rendu iso du jeu.
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
- * entitySprite()/propSprite() résolvent l'art d'un décor depuis le registre. `defsGlobaux()` regroupe tous les dégradés.
+ * entitySprite() résout l'art d'un décor depuis le registre (`propSvg`). `defsGlobaux()` regroupe tous les dégradés.
  */
 import type { Rot } from '../geometry/iso';
 import { propSvg } from './catalog/decor';
@@ -30,25 +30,20 @@ export interface EntityViz {
 
 /**
  * Sprite d'une entité de scène pour le backend SPRITE (tokenBodyKind). Après le passage de tout le
- * bestiaire ET des PNJ au rig, ce backend ne sert plus que le DÉCOR (props → propSprite) ; tout autre
+ * bestiaire ET des PNJ au rig, ce backend ne sert plus que le DÉCOR (props → `propSvg`) ; tout autre
  * kind est routé vers le rig EN AMONT et n'arrive jamais ici → chaîne vide. Partagé par l'hôte du monde de campagne (jeu)
  * et l'éditeur (WYSIWYG) — source unique.
+ * `ref` ABSENTE ou hors registre : `propSvg` pose le repli VISIBLE d'erreur (#877), jamais l'art d'un
+ * AUTRE décor et jamais une case muette.
  */
 export function entitySprite(ent: EntityViz, camRot: Rot = 0): string {
   switch (ent.kind) {
     case 'prop':
-      return propSprite(ent.ref, ent.facing, camRot);
+      return propSvg(ent.ref, ent.facing, camRot);
     default:
       return '';
   }
 }
-/** Sprite d'un décor. `ref` ABSENT = aucun art demandé (point d'interaction authoré nu) → rien à
- *  dessiner, même frontière que `structureAppearance(undefined)`. `ref` PRÉSENT hors registre = donnée
- *  fautive → repli VISIBLE d'erreur dans `propSvg` (#877), jamais l'art d'un AUTRE décor. */
-export function propSprite(ref?: string, facing?: Dir8, camRot: Rot = 0): string {
-  return ref ? propSvg(ref, facing, camRot) : '';
-}
-
 // --- Définitions partagées (dégradés) -------------------------------------
 /** Émetteur PUR des dégradés de TERRAIN (`TerrainDef.stops`) — UN dégradé par terrain, son id DÉRIVÉ
  *  de l'id du terrain (`terrainGradientId`), donc aucun partage possible ; arrêts émis dans l'ordre

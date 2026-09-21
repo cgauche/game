@@ -130,10 +130,16 @@ describe('une RÉF de créature que le spawn ne résout pas est une erreur, pas 
     expect(validateScene([avecRefMorte]).filter((w) => w.level === 'error')).toEqual([]);
   });
 
-  it('un DÉCOR de même réf inconnue n’est pas jugé ici : le catalogue de décor n’est pas le bestiaire', () => {
-    const s = scene();
-    s.entities.push({ id: 'p-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'tonneau-imaginaire' });
-    expect(validateScene([s]).filter((w) => w.level === 'error')).toEqual([]);
+  it('un DÉCOR à réf MORTE est une erreur, et un décor SANS type aussi — il se DIT ou se REFUSE (#877)', () => {
+    const morte = scene();
+    morte.entities.push({ id: 'p-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'tonneau-imaginaire' });
+    expect(validateScene([morte]).filter((w) => w.level === 'error').map((w) => w.message))
+      .toEqual(['p-1 → décor inexistant « tonneau-imaginaire »']);
+
+    const sansType = scene();
+    sansType.entities.push({ id: 'p-2', kind: 'prop', pos: { x: 2, y: 2 } });
+    expect(validateScene([sansType]).filter((w) => w.level === 'error').map((w) => w.message))
+      .toEqual(['p-2 : décor sans type — un décor NOMME son type au catalogue']);
   });
 });
 

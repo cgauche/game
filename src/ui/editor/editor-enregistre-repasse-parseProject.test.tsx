@@ -23,9 +23,9 @@ afterEach(async () => {
   localStorage.clear();
 });
 
-/** Joue « Fichier → Enregistrer… → Enregistrer » sur un éditeur fraîchement monté et rend le
- *  document de projet TEL QU'ÉCRIT par l'application. */
-async function enregistreEtCapture(): Promise<SavedProject> {
+/** Joue « Fichier → Enregistrer… → Enregistrer » sur un éditeur fraîchement monté et rend ce que le
+ *  geste PRODUIT : les entrées réellement écrites, et le refus AFFICHÉ s'il y en a un. */
+async function enregistre(initialScene: Scene): Promise<{ ecrits: SavedProject[]; refus: string | null }> {
   const ecrits: SavedProject[] = [];
   const idb: IdbBackend = {
     async getAll() { return [] as SavedProject[]; },
@@ -35,7 +35,6 @@ async function enregistreEtCapture(): Promise<SavedProject> {
   };
   __setIdbBackendForTest(idb);
 
-  const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-round-trip', label: 'Round-trip' };
   const { container, rendre } = monterRacine(null);
   await act(async () => {
     rendre(<Editor initialScene={initialScene} />);
@@ -49,6 +48,12 @@ async function enregistreEtCapture(): Promise<SavedProject> {
   await act(async () => { saveBtn.click(); });
   await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
 
+  return { ecrits, refus: container.querySelector('[role="alert"]')?.textContent ?? null };
+}
+
+/** Le document de projet TEL QU'ÉCRIT par l'application sur le chemin nominal. */
+async function enregistreEtCapture(): Promise<SavedProject> {
+  const { ecrits } = await enregistre({ ...emptyScene(4, 4), id: 'scene-round-trip', label: 'Round-trip' });
   expect(ecrits).toHaveLength(1);
   return ecrits[0];
 }
@@ -72,6 +77,50 @@ describe('Éditeur — un projet ENREGISTRÉ repasse sa propre porte `parseProje
     expect(saved.project.label, 'le NOM vient du champ de la modale').toBeTruthy();
     expect(saved.project.maison, 'provenance : une campagne d’éditeur ne cite aucun folio').toBeTruthy();
     expect(Object.keys(saved.project).sort()).toEqual(['id', 'label', 'maison', 'narratif', 'scenes', 'schema', 'type', 'versionContenu']);
+  });
+});
+
+/**
+ * Et la porte est ANTÉRIEURE à l'écriture, pas postérieure à elle : un document que « Ouvrir »
+ * refuserait ne se couche PAS. Sans ce verrou, l'auteur enregistrait sans alerte un fichier qu'il ne
+ * pourrait plus rouvrir — perte de travail silencieuse. Mesuré sur la contrainte que #877 rend
+ * REQUISE (un décor NOMME son type), qui vaut pour toute autre contrainte du schéma.
+ */
+describe('Éditeur — un projet que la porte REFUSE ne s’écrit pas', () => {
+  /** Une scène dont UN décor ne nomme aucun type — ce que l'éditeur pouvait produire avant #877. */
+  const sceneAuDecorSansType = (): Scene => ({
+    ...emptyScene(4, 4),
+    id: 'scene-fautive',
+    label: 'Salle fautive',
+    entities: [{ id: 'p0', kind: 'prop', pos: { x: 1, y: 1 }, label: 'La jetée' }],
+  });
+
+  it('rien n’est écrit, et le refus NOMME la scène et l’entité à corriger', async () => {
+    const { ecrits, refus } = await enregistre(sceneAuDecorSansType());
+    expect(ecrits, 'aucune écriture : `projectSave` n’est pas appelé').toEqual([]);
+    expect(refus).toContain('ce projet ne pourrait plus être rouvert');
+    expect(refus, 'la scène est nommée').toContain('Salle fautive');
+    expect(refus, 'l’entité fautive est nommée').toContain('La jetée');
+    expect(refus, 'et la règle enfreinte est dite').toContain('« ref » absente');
+  });
+
+  it('le document de la scène fautive est bien celui que la porte REFUSE (sans quoi on ne mesurerait rien)', () => {
+    expect(() => parseProject({
+      type: 'projet', schema: CURRENT_PROJECT_SCHEMA, id: 'p', label: 'P', versionContenu: 1,
+      maison: 'fixture de test', narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
+      scenes: [sceneAuDecorSansType()],
+    })).toThrow(/« ref » absente/);
+  });
+
+  it('un projet SAIN s’enregistre comme avant — la porte ne barre que ce qui est fautif', async () => {
+    const saine: Scene = {
+      ...emptyScene(4, 4), id: 'scene-saine', label: 'Salle saine',
+      entities: [{ id: 'p0', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'tonneau' }],
+    };
+    const { ecrits, refus } = await enregistre(saine);
+    expect(refus).toBeNull();
+    expect(ecrits).toHaveLength(1);
+    expect((ecrits[0].project as { scenes: Scene[] }).scenes[0].entities[0].ref).toBe('tonneau');
   });
 });
 

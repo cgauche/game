@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PROPS, propSvg, missingPropSvg } from './decor';
 import { MISSING_TONE } from './missing';
-import { propSprite } from '../sprites';
 import { findPropById } from '../../data';
 import { CAP_IDENTITE_PROP, empreinteDuProp } from '../../data/props.types';
 import { sceneMetresPerTile } from '../../state/scene';
@@ -42,9 +41,10 @@ describe('catalogue décors', () => {
     expect(svg).toBe(missingPropSvg('zzz')); // ancré aux pieds de la boîte 120×150
     expect(svg).not.toBe(propSvg('tonneau')); // un ref inconnu n'emprunte l'identité d'AUCUN décor réel
   });
-  it('un prop SANS ref (point d’interaction nu) ne dessine rien, et un ref hors registre alarme', () => {
-    expect(propSprite(undefined)).toBe('');
-    expect(propSprite('zzz')).toBe(missingPropSvg('zzz'));
+  it('un prop SANS ref suit le MÊME chemin qu’un ref hors registre : le repli VISIBLE d’erreur (#877)', () => {
+    expect(propSvg(undefined)).toBe(missingPropSvg(undefined));
+    expect(propSvg(undefined)).toContain(MISSING_TONE);
+    expect(missingPropSvg(undefined)).toBe(missingPropSvg('zzz')); // même silhouette, même alarme
   });
   it('rend un SVG non vide pour les décors d ambush', () => {
     for (const id of ['cadavre', 'mare-sang', 'cheval-mort', 'epave-carrosse'])

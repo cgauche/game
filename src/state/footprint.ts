@@ -80,7 +80,7 @@ export function decorAncre(pos: { x: number; y: number }, foot?: { w: number; h:
  * désormais dérivées.
  */
 export function propFootTiles(ref: string | undefined, pos: Pt, facing: Dir8 | undefined, mpt: number): Pt[] {
-  const { w, h } = empreinteDuProp(findPropById(ref ?? ''), facing, mpt);
+  const { w, h } = empreinteDuProp(findPropById(ref), facing, mpt);
   const out: Pt[] = [];
   for (let dy = 0; dy < h; dy++) for (let dx = 0; dx < w; dx++) out.push({ x: pos.x + dx, y: pos.y + dy });
   return out;

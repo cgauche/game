@@ -9,11 +9,12 @@ import type { NarratifBlock } from './campaignNarratif';
  *  schema 7 dont les scènes n'ont pas de matières de relief, un projet enregistré avant #1715 est un
  *  schema 8 dont les scènes n'ont pas de toiture par défaut, un projet enregistré pendant #1687 est
  *  un schema 9 dont les décors à places ne sont pas activés, ou un schema 10 dont les décors
- *  fouillables portent encore un champ `interact`. La montée au format courant se fait au CHARGEMENT
- *  via `parseProject` (chaîne 2→3→4→5→6→7→8→9→10→11), jamais dans ce module — et c'est là, pas ici,
+ *  fouillables portent encore un champ `interact`, un projet enregistré avant #877 est un schema 11
+ *  dont un décor peut ne NOMMER aucun type. La montée au format courant se fait au CHARGEMENT via
+ *  `parseProject` (chaîne 2→3→4→5→6→7→8→9→10→11→12), jamais dans ce module — et c'est là, pas ici,
  *  que l'absence d'identité se fait REFUSER. */
 export type StoredProject = Omit<ProjectDoc, 'schema' | 'narratif' | 'type' | 'id' | 'label' | 'versionContenu'> & {
-  schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+  schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
   narratif?: NarratifBlock;
   type?: 'projet';
   id?: string;

@@ -30,6 +30,43 @@ export function refusDOuverture(erreur: unknown): RefusOuverture {
     : { message: brut };
 }
 
+/** Une faute du rapport de la porte : `  - <chemin>: <message>` (`formatZodError`,
+ *  `src/data/schemas/validate.ts`) — le chemin est technique, le message est déjà en français. */
+const LIGNE_DE_FAUTE = /^\s*-\s*([^:]+):\s*(.+)$/;
+/** Chemin d'une ENTITÉ de scène dans le document de projet. */
+const CHEMIN_DENTITE = /^scenes\.(\d+)\.entities\.(\d+)\b/;
+
+/** Où vit la faute, en mots d'AUTEUR : la scène et l'entité telles qu'il les NOMME à l'écran. Un
+ *  chemin de schéma (`scenes.0.entities.3.ref`) ne désigne rien qu'il puisse aller corriger ; à défaut
+ *  de résoudre le chemin sur le document, il est rendu TEL QUEL plutôt que passé sous silence. */
+function ouViteLaFaute(chemin: string, doc: unknown): string {
+  const m = CHEMIN_DENTITE.exec(chemin);
+  if (!m) return chemin;
+  const scenes = (doc as { scenes?: { id?: string; label?: string; entities?: { id?: string; label?: string }[] }[] } | null)?.scenes;
+  const sc = scenes?.[Number(m[1])];
+  const ent = sc?.entities?.[Number(m[2])];
+  if (!sc || !ent) return chemin;
+  return `scène « ${sc.label ?? sc.id} », entité « ${ent.label ?? ent.id} »`;
+}
+
+/**
+ * Traduit en refus d'ÉCRAN le refus que la porte oppose à l'ENREGISTREMENT — sœur de
+ * `refusDOuverture`, même porte (`parseProject`), autre moment. Ce que l'auteur doit savoir tient en
+ * deux faits : ce projet ne pourrait plus être ROUVERT, et OÙ est la première faute. Les suivantes
+ * sont COMPTÉES, pas déroulées : un rapport de schéma entier n'est pas une consigne de correction.
+ * PURE et testée — la modale ne fait que l'afficher (`saveError`, #811).
+ */
+export function refusDEnregistrement(erreur: unknown, doc: unknown): string {
+  const brut = erreur instanceof Error ? erreur.message : String(erreur);
+  const fautes = brut.split('\n').map((l) => LIGNE_DE_FAUTE.exec(l)).filter((m): m is RegExpExecArray => m !== null);
+  const premiere = fautes[0];
+  const entete = 'Enregistrement refusé : ce projet ne pourrait plus être rouvert.';
+  if (!premiere) return `${entete} ${brut}`;
+  const autres = fautes.length - 1;
+  const suite = autres > 0 ? ` (et ${autres} autre${autres > 1 ? 's' : ''} à corriger)` : '';
+  return `${entete} ${ouViteLaFaute(premiere[1], doc)} — ${premiere[2]}${suite}`;
+}
+
 /** « Ouvrir » : reprendre un projet enregistré (localStorage), repartir d'une campagne du jeu
  *  (Arène + campagnes built-in — #367 : les fichiers `src/scenes/**‑projet.json` sont commités,
  *  jamais écrasés depuis l'éditeur, donc ouverture = COPIE de travail) ou d'un scénario de test. */

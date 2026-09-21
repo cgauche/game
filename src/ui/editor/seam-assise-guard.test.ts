@@ -3,8 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
-import { emptyScene, type Scene } from '../../state/scene';
+import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
 import { validateScene } from '../../state/validateScene';
+import { siegeEmplacementEntity } from '../../state/siegeEmplacement';
 import { changePropRef, deleteSel, moveSel, eraseAt, placeEntity } from './editorState';
 import {
   editEntity,
@@ -219,6 +220,15 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
    * (meuble attablé + recoin cerné de murs), rend un document que `validateScene` accepte.
    */
   describe('aucune primitive ne rend un document que `validateScene` refuse', () => {
+    /** L'entité d'un emplacement de siège, ou un ÉCHEC NOMMÉ : `siegeEmplacementEntity` rend `null`
+     *  quand l'engin n'a pas d'art d'affût (`siegeRig`), et une fixture muette sur ce `null` mourrait
+     *  plus loin, sur une propriété absente, sans dire ce qui manque. */
+    function affutDeFixture(id: string, trappingId: string, pos: { x: number; y: number }): SceneEntity {
+      const ent = siegeEmplacementEntity(id, trappingId, pos);
+      if (!ent) throw new Error(`fixture : « ${trappingId} » n’est pas un engin posable (pas d’art d’affût au catalogue) — la scène hostile ne peut pas porter d’affût.`);
+      return ent;
+    }
+
     /** Table ronde attablée en (2,2) ; colonne x≥6 murée, avec un recoin d'UNE case en (7,7). */
     function hostile(): Scene {
       const s = emptyScene(10, 10);
@@ -229,7 +239,10 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
       s.entities = [
         { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
         { id: 'pnj-1', kind: 'personnage', pos: { x: 2, y: 1 } },
-        { id: 'affut-1', kind: 'prop', pos: { x: 4, y: 4 }, postes: [{ trappingId: 'canon-petit' }] },
+        // L'affût sort du BUILDER de production (`siegeEmplacementEntity`), jamais d'un littéral :
+        // une fixture qui invente sa forme n'atteste rien de ce que l'éditeur pose. Le builder rend
+        // `null` si l'engin n'a pas d'art d'affût — la fixture le DIT, au lieu de mourir plus loin.
+        affutDeFixture('affut-1', 'canon-petit', { x: 4, y: 4 }),
       ];
       s.seatAssignments = { 'table-1': { 'place-1': { kind: 'entity', entityId: 'pnj-1' } } };
       return s;
@@ -245,7 +258,7 @@ describe('INVARIANT #2 — un seul seam d’assise pour toute mutation d’entit
       'deleteSel — retire le corps': (s) => deleteSel(s, { type: 'entity', id: 'pnj-1' }),
       'removeEntity — retire le meuble': (s) => removeEntity(s, 'table-1'),
       'eraseAt — gomme le meuble': (s) => eraseAt(s, { x: 2, y: 2 }),
-      'placeEntity — pose un décor neuf sur l’abord de la place': (s) => placeEntity(s, 'prop', 'tonneau', { x: 2, y: 1 }).scene,
+      'placeEntity — pose un décor neuf sur l’abord de la place': (s) => placeEntity(s, { mode: 'entity', kind: 'prop', ref: 'tonneau' }, { x: 2, y: 1 }).scene,
       'changePropRef — le nouveau type n’offre plus de place': (s) => changePropRef(s, 'table-1', 'tonneau'),
       // Cap CARDINAL : le seul qu'un décor VOLUMIQUE accepte (#1680 ligne 3). Le cas diagonal est
       // sous contrat juste après cette table — il n'a rien à faire ici, où la règle est « 0 erreur ».

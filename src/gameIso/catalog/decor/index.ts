@@ -15,12 +15,16 @@ import { PROP_DEFS } from './_registry.generated';
 
 export const PROPS: Record<string, PropViz> = Object.fromEntries(PROP_DEFS.map((p) => [p.id, p]));
 
+/** Ce que la diagnostique NOMME quand l'entité ne NOMME aucun type — libellé d'AVERTISSEMENT, jamais
+ *  un id de repli : rien ne se résout sous ce nom. */
+const SANS_TYPE = '(aucun type nommé)';
+
 /** SVG d'un décor. `dir` (orientation MONDE d'auteur, Dir8) + `camRot` (cran caméra) → `ctx`. Un prop
  *  DIRECTIONNEL (`views`) : la MACHINERIE projette ici `project(dir, camRot) → {view, mirror}`, choisit
  *  la vue et applique le miroir (profil gauche/droit) — il PIVOTE avec la caméra. Un prop symétrique
  *  (`render`) ignore l'orientation. La sélection de vue vit ICI, JAMAIS dans une def (`defs/**`). */
-export function propSvg(ref: string, dir?: Dir8, camRot: Rot = 0): string {
-  const prop = PROPS[ref];
+export function propSvg(ref: string | undefined, dir?: Dir8, camRot: Rot = 0): string {
+  const prop = ref === undefined ? undefined : PROPS[ref];
   if (!prop) return missingPropSvg(ref);
   const ctx: RenderCtx = { dims: { w: 0, h: 0, rot: camRot }, dir };
   if (prop.views) {
@@ -35,10 +39,11 @@ export function propSvg(ref: string, dir?: Dir8, camRot: Rot = 0): string {
   return prop.render({}, ctx);
 }
 
-/** REPLI VISIBLE d'un `ref` de décor absent du registre (#877) : la silhouette d'erreur PARTAGÉE
- *  (`MISSING_ART`, #223) posée aux pieds de la boîte 120×150 — jamais l'art d'un AUTRE décor. */
-export function missingPropSvg(ref: string): string {
-  warnMissing('décor', ref);
+/** REPLI VISIBLE d'un `ref` de décor que le registre ne rend pas (#877) : la silhouette d'erreur
+ *  PARTAGÉE (`MISSING_ART`, #223) posée aux pieds de la boîte 120×150 — jamais l'art d'un AUTRE décor.
+ *  MÊME sort pour la ref HORS REGISTRE et pour la ref ABSENTE : une ref de décor se DIT ou se REFUSE. */
+export function missingPropSvg(ref: string | undefined): string {
+  warnMissing('décor', ref ?? SANS_TYPE);
   return `<g transform="translate(60,150)">${MISSING_ART.profile!()}</g>`;
 }
 

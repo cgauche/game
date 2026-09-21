@@ -120,7 +120,7 @@ const LEGACY_AUTHORED_FOOT_SITES: [string, string][] = [
  *  désormais 1×1 pour les trois tables d'Opéra, et ce contrat prouverait l'inverse de son titre. */
 function authoredPropFoot(scene: string, id: string): [string, number, number] {
   const ent = entitiesOf(scene).find((e) => e.id === id)!;
-  const { w, h } = empreinteDuProp(findPropById(ent.ref ?? ''), ent.facing, mptDe(scene));
+  const { w, h } = empreinteDuProp(findPropById(ent.ref), ent.facing, mptDe(scene));
   return [ent.ref!, w, h];
 }
 

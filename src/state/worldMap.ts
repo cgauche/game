@@ -673,7 +673,14 @@ function poseSurChaqueEntite(
  *  n'active rétroactivement aucune instance — l'activation reste un opt-in d'AUTEUR, à la case de
  *  l'inspecteur. */
 const porteDesPlaces = (ent: Record<string, unknown>): boolean =>
-  ent.kind === 'prop' && (findPropById(typeof ent.ref === 'string' ? ent.ref : '')?.seatSlots?.length ?? 0) > 0;
+  ent.kind === 'prop' && (findPropById(typeof ent.ref === 'string' ? ent.ref : undefined)?.seatSlots?.length ?? 0) > 0;
+
+/** Un décor qui ne NOMME aucun type — la population que le bump 11 → 12 nomme explicitement. */
+const decorSansType = (ent: Record<string, unknown>): boolean => ent.kind === 'prop' && ent.ref === undefined;
+
+/** Le type que le rendu DONNAIT à un décor sans `ref` avant #877. Ce littéral ne vit QUE dans la
+ *  migration 11 → 12 : une migration FIGE un passé, elle ne pose pas un défaut. */
+const REF_DU_RENDU_AVANT_877 = 'tonneau';
 
 /**
  * La fouille d'un décor devient une ACTION AUTHORÉE, et l'enveloppe `usable` vide se NOMME (#1687).
@@ -885,6 +892,27 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
     ...(doc.scenes !== undefined ? { scenes: migreActionsAuthorees(doc.scenes) } : {}),
     version: 11,
     schema: 11,
+  }),
+  /**
+   * `11` NOMME le type de tout décor qui n'en nommait aucun (#877) : `ref` devient REQUISE sur une
+   * entité `kind:'prop'` et résolue au registre `props.json` (`defs-scenes/scene.ts`). Avant ce lot,
+   * le MONDE remplaçait la ref absente par un littéral en dur ; la migration ÉCRIT ce que le monde
+   * DESSINAIT, donc le décor de scène d'un projet de bibliothèque utilisateur ressort inchangé. Le
+   * backend SPRITE, qui ne dessinait RIEN d'une ref absente, s'ALIGNE dessus — c'est la divergence
+   * qui meurt, pas le dessin. Sans ce passage, le projet serait REFUSÉ au parse sur son premier
+   * décor sans type.
+   * Une entité qui porte déjà `ref` traverse INTACTE, et un décor à ref MORTE n'est pas de ce ressort :
+   * il se fait NOMMER par le schéma, jamais remplacer.
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-21-877-ref-de-decor-nommee.mjs`
+   * (parité mesurée par `projet-migration-11-vers-12.test.ts`).
+   */
+  11: (doc) => ({
+    ...doc,
+    ...(doc.scenes !== undefined
+      ? { scenes: poseSurChaqueEntite(doc.scenes, 'ref', () => REF_DU_RENDU_AVANT_877, decorSansType) }
+      : {}),
+    version: 12,
+    schema: 12,
   }),
 };
 

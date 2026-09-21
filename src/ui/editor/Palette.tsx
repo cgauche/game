@@ -17,7 +17,6 @@ import { OptionChooser } from '../OptionChooser';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import { terrainIds, terrainLabel } from '../../state/terrain';
 import { propDeclaredFoot } from '../../state/footprint';
-import { REF_DECOR_DEFAUT } from '../../data/props.types';
 import { terrainDef } from '../../gameIso/catalog/terrain';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
@@ -74,6 +73,19 @@ const ZONE_HINT: Record<ZoneVariant, string> = {
   trigger: 'Les effets s’éditent ensuite dans le panneau Logique.',
   rest: 'Lieux et qualité du repos s’éditent ensuite dans l’inspecteur.',
   effect: 'Effets et déclencheur s’éditent ensuite dans l’inspecteur.',
+};
+
+/**
+ * Ce qu'un pinceau de catalogue porte AVANT tout choix d'auteur : le PREMIER élément OFFERT, dans
+ * l'ordre où la famille le déroule plus bas. Un défaut d'éditeur se DÉRIVE de la donnée — patron
+ * `terrainDElectionParDefaut` (`GameOpEditor.tsx`) : aucun id en dur, et le pinceau ne pose jamais un
+ * id que le registre ne rend pas (#877). Un catalogue VIDE n'a PAS de défaut : l'outil le DIT, au
+ * lieu de suppléer d'un littéral. Écrit UNE fois — décor et engin de siège posent la même question.
+ */
+const premierOffert = (catalogue: readonly { id: string }[], quoi: string): string => {
+  const premier = catalogue[0];
+  if (!premier) throw new Error(`${quoi} : le catalogue est VIDE — l’outil n’a plus de pinceau dérivable.`);
+  return premier.id;
 };
 
 /** Famille du rail correspondant à l'outil actif. */
@@ -151,8 +163,8 @@ export function Palette({
   const [search, setSearch] = useState(''); // filtre partagé des catalogues (réinitialisé au changement d'outil)
   // Derniers choix par famille → re-cliquer l'icône retrouve l'outil précis.
   const [lastTerrain, setLastTerrain] = useState<Terrain>(DEFAULT_TERRAIN);
-  const [lastProp, setLastProp] = useState(REF_DECOR_DEFAUT);
-  const [lastEngine, setLastEngine] = useState(siegeEngines()[0]?.id ?? 'baliste');
+  const [lastProp, setLastProp] = useState(() => premierOffert(Object.values(PROPS), 'Décor'));
+  const [lastEngine, setLastEngine] = useState(() => premierOffert(siegeEngines(), 'Engin de siège'));
   // Matériau MÉMORISÉ par sous-mode (Cloison/Porte) — l'outil porte son matériau comme un pinceau porte
   // sa couleur : la palette ne montre que ce qui est POSABLE sur une arête pour ce sous-mode (#830).
   const wallEdgeStructures = structures.filter(isWallEdgeStructure);
@@ -440,7 +452,7 @@ export function Palette({
           </>
         )}
 
-        {family === 'personnage' && tool.mode === 'entity' && (
+        {tool.mode === 'entity' && tool.kind === 'personnage' && (
           <>
             <div className="mini-title">Personnage à poser</div>
             {searchBox('espèce…')}
@@ -459,7 +471,7 @@ export function Palette({
           </>
         )}
 
-        {family === 'prop' && tool.mode === 'entity' && (
+        {tool.mode === 'entity' && tool.kind === 'prop' && (
           <>
             <div className="mini-title">Décor à poser</div>
             {searchBox('décor…')}

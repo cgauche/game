@@ -28,7 +28,7 @@ import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { allMusicDefs } from '../../audio/music';
-import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, matieresCouvrantes, matieresDe, structureAppearances, refEstVolumique, siegeEngines } from '../../data';
+import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, findPropById, matieresCouvrantes, matieresDe, structureAppearances, refEstVolumique, siegeEngines } from '../../data';
 import { poseToitureDeCorps, rederiveRoofMasses, renameActionAuthoree, toitureEffective } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
 import { hintDeValeur, libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
@@ -63,7 +63,6 @@ import { ListRow } from '../ListRow';
 import { OptionChooser } from '../OptionChooser';
 import { LayerField, LayerChip, sceneLayerZs } from './LayerField';
 import { estCardinal, type Dir8 } from '../../state/dir8';
-import { REF_DECOR_DEFAUT } from '../../data/props.types';
 import { propFootTiles } from '../../state/footprint';
 import { Row, Stack } from '../Layout';
 
@@ -75,6 +74,12 @@ const CAPS_OFFERTS: readonly (readonly [Dir8, string])[] = [
   ['S', 'Sud'], ['SO', 'Sud-Ouest'], ['O', 'Ouest'], ['NO', 'Nord-Ouest'],
 ];
 const CAPS_OFFERTS_CARDINAUX = CAPS_OFFERTS.filter(([cap]) => estCardinal(cap));
+
+/** Valeur que porte le sélecteur de décor quand l'instance ne NOMME aucun type : SENTINELLE de
+ *  FORMULAIRE — un `<select>` doit avoir une valeur, et sans valeur explicite le DOM élit la première
+ *  option. Ce n'est PAS un id de repli : aucune entrée de `props.json` ne la porte, son option n'est
+ *  pas élisible, et rien ne l'écrit jamais sur une entité (#877). */
+const REF_DECOR_NON_NOMMEE = '';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -1210,6 +1215,49 @@ function EntryRename({ label, caption = 'Nom (référencé par les transitions)'
 }
 
 /**
+ * TYPE d'un décor — et l'ÉTAT de la donnée quand le catalogue ne le résout pas (#877 : « Rien en
+ * dure, pas de fallback »). Ce que le sélecteur MONTRE est ce que la donnée DIT : sans cet état, le
+ * DOM afficherait la PREMIÈRE entrée du catalogue comme si c'était le type de l'instance.
+ *
+ * L'état est dit DEUX fois, et ce n'est pas une redite : un `<option>` natif est TRONQUÉ à la largeur
+ * du champ — or l'id fautif EST l'information utile —, donc il se relit ENTIER hors du champ
+ * (primitive `.chip.tone-danger`, `ui/styles/components.css`) et au survol (`title`). L'option, elle,
+ * n'est pas ÉLISIBLE : on n'élit pas une absence. Les mots sont ceux de `state/validateScene.ts` —
+ * l'inspecteur et le validateur disent la MÊME chose. Élire un vrai type l'ÉCRIT (`changePropRef`).
+ */
+function SelecteurDeDecor({ scene, ent, setScene }: { scene: Scene; ent: SceneEntity; setScene: (s: Scene) => void }) {
+  const etat = findPropById(ent.ref)
+    ? null
+    : ent.ref === undefined
+      ? 'Décor sans type — choisis-en un'
+      : `Décor inexistant « ${ent.ref} »`;
+  return (
+    <>
+      <label className="ed-field">
+        Décor
+        <select
+          value={ent.ref ?? REF_DECOR_NON_NOMMEE}
+          title={etat ?? undefined}
+          onChange={(e) => setScene(changePropRef(scene, ent.id, e.target.value))}
+        >
+          {etat && (
+            <option value={ent.ref ?? REF_DECOR_NON_NOMMEE} disabled>
+              {etat}
+            </option>
+          )}
+          {Object.values(PROPS).map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      {etat && <p className="chip tone-danger" role="alert">{etat}</p>}
+    </>
+  );
+}
+
+/**
  * EMPREINTE de l'instance SÉLECTIONNÉE — les cases que CE décor occupe, à SON cap et à l'échelle de
  * CETTE scène (`propFootTiles`, la couture unique que lisent la marchabilité, la ligne de vue et le
  * halo). Rien n'est recalculé ici : l'inspecteur MONTRE ce que le monde applique.
@@ -1484,16 +1532,7 @@ function EntityPanel({
       )}
       {ent.kind === 'prop' && (
         <Fold title="Décor & interaction" open>
-          <label className="ed-field">
-            Décor
-            <select value={ent.ref ?? REF_DECOR_DEFAUT} onChange={(e) => setScene(changePropRef(scene, ent.id, e.target.value))}>
-              {Object.values(PROPS).map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <SelecteurDeDecor scene={scene} ent={ent} setScene={setScene} />
           <EmpreinteDeLInstance scene={scene} ent={ent} />
           <SeatAssignmentsField scene={scene} propId={ent.id} onChange={setScene} />
           <label className="ed-check">

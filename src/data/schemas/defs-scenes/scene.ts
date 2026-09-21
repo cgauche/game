@@ -27,7 +27,7 @@ import { customStatblockSchema, ptSchema, skillRefSchema, wallSideSchema } from 
 import { sceneFlowSchema } from './effets';
 import { PROPS_VOLUMIQUES } from '../_ids.generated';
 import { idDe } from '../grammaire/ref';
-import { capDecorAdmis, REF_DECOR_DEFAUT } from '../../props.types';
+import { capDecorAdmis } from '../../props.types';
 import { PARTS_RELIEF, type PartRelief } from '../../materials.types';
 import type { AuthoredShipPoste } from '../../../engine/types';
 import type { OptionalEntry } from '../../../engine/statEntry';
@@ -62,6 +62,12 @@ export const entityKindSchema = enumNomme({ heroStart: 'Départ héros', personn
 
 const VOLUMIQUES = new Set(PROPS_VOLUMIQUES);
 
+/** Porte de registre d'une ref de DÉCOR (#877) : le même `idDe('prop')` que `terrains › overlayProp`,
+ *  appliqué depuis le `superRefine` de l'entité — `SceneEntity.ref` est un champ PARTAGÉ avec le
+ *  personnage, que seul le `kind` départage. La liste admise se relit à chaque validation
+ *  (`grammaire/ref.ts`), un décor créé au Compendium est donc référençable aussitôt. */
+const refDeDecor = idDe('prop');
+
 /** Une ACTION AUTHORÉE sur une instance de décor (#1687) — le vocabulaire OUVERT des gestes qu'un
  *  auteur pose. `id` : identité STABLE et non vide, unique sur l'entité (l'unicité est gardée par le
  *  `refine` de `usable`, qui seul voit la liste) ; `label` : surcharge d'AFFICHAGE, absent le libellé
@@ -88,7 +94,9 @@ export const sceneEntitySchema = z.strictObject({
   z: z.number().optional(),
   facing: dir8Schema.optional(),
   label: z.string().optional(),
-  /** Réf au bestiaire (personnage) ou au catalogue de décor (prop). */
+  /** Réf au bestiaire (personnage) ou au catalogue de décor (prop). REQUISE et résolue au registre
+   *  pour un décor (`superRefine` en pied) : un décor se DIT ou se REFUSE, jamais ne se remplace
+   *  (#877). */
   ref: z.string().optional(),
   statblock: customStatblockSchema.optional(),
   /** Id d'un preset de `narratif.presetsPnj` — FK intra-document (vérifiée par `projetSchema`). */
@@ -162,11 +170,25 @@ export const sceneEntitySchema = z.strictObject({
   // traversables. La couche schémas ne lit pas le catalogue au runtime (`src/data/index.ts` importe
   // les schemas) : elle lit le registre GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
   if (ent.kind !== 'prop') return;
-  if (capDecorAdmis(VOLUMIQUES.has(ent.ref ?? REF_DECOR_DEFAUT), ent.facing)) return;
+  // REF DE DÉCOR — verrou AU PARSE (#877) : le type est REQUIS et résolu au registre `props.json`. Une
+  // ref absente comme une ref morte se DISENT ici, en nommant l'entité ; aucune n'est remplacée.
+  if (ent.ref === undefined) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['ref'],
+      message: `décor « ${ent.id} » : « ref » absente — un décor NOMME son type au catalogue (props.json)`,
+    });
+  } else {
+    const verdict = refDeDecor.safeParse(ent.ref);
+    if (!verdict.success)
+      for (const souci of verdict.error.issues)
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['ref'], message: `décor « ${ent.id} » : ${souci.message}` });
+  }
+  if (capDecorAdmis(ent.ref !== undefined && VOLUMIQUES.has(ent.ref), ent.facing)) return;
   ctx.addIssue({
     code: z.ZodIssueCode.custom,
     path: ['facing'],
-    message: `décor volumique « ${ent.ref ?? REF_DECOR_DEFAUT} » au cap ${ent.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`,
+    message: `décor volumique « ${ent.ref} » au cap ${ent.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`,
   });
 });
 

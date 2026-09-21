@@ -33,7 +33,7 @@ const n6 = (v: number) => v.toFixed(6);
  */
 function ancreGeometrique(sc: Scene, entId: string): { x: number; y: number; sol: number } {
   const ent = sc.entities.find((e) => e.id === entId)!;
-  const prop = findPropById(ent.ref ?? '') as PropData;
+  const prop = findPropById(ent.ref) as PropData;
   const mpt = sceneMetresPerTile(sc);
   const el = buildProps(sc).find((e) => e.entId === entId)!;
   expect(estPropVolumique(el), `${ent.ref} doit sortir en VOLUME (sinon rien n’est mesuré)`).toBe(true);
@@ -50,7 +50,7 @@ function ancreGeometrique(sc: Scene, entId: string): { x: number; y: number; sol
  *  cap de l'instance (`rotatePropLocal`, la même rotation que la géométrie applique). */
 function ancreDeLaPlace(sc: Scene, entId: string, slotId: string): { x: number; y: number } {
   const ent = sc.entities.find((e) => e.id === entId)!;
-  const prop = findPropById(ent.ref ?? '') as PropData;
+  const prop = findPropById(ent.ref) as PropData;
   const place = seatSlotsOf(sc, entId).find((s) => s.slotId === slotId)!;
   const slot = prop.seatSlots!.find((s) => s.id === slotId)!;
   const [rx, ry] = rotatePropLocal(slot.anchor.xM / sceneMetresPerTile(sc), slot.anchor.yM / sceneMetresPerTile(sc), capVolumique(ent.facing, entId));
