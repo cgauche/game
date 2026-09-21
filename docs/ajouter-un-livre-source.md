@@ -646,6 +646,16 @@ sert d'arbitre — jamais comme source de la donnée affichée, qui reste recoll
   (sept familles, stock nominatif décroissant `scripts/raw/source-format-stock.json`) ; le geste est
   de REJOUER la chaîne canonique sur le livre (§0), jamais une correction manuelle.
   `--ecrire-stock` régénère le stock après ce passage.
+- `node scripts/raw/check-ancres.mjs` (`npm run raw:check-ancres`) — les RENVOIS D'ANCRE des pages de
+  l'Atlas : tout `](#un-titre)`, `](autre.md#un-titre)`, `](../coeur/autre.md#un-titre)` désigne une
+  ancre EXISTANTE de la page visée. Refus DUR, aucun stock : l'ancre d'un titre se CALCULE
+  (`scripts/raw/lib/ancres.mjs`, la définition unique qu'adresse aussi le Sommaire écrit par
+  `scripts/raw/assemble-domain.mjs`), donc un renvoi mort est un renvoi FAUX. Le geste :
+  `node scripts/raw/reparer-ancres.mjs --dry` rend ce que le pliage de la cible citée (accents, puis
+  suites de `-`) résout, `--apply` le réécrit ; ce qu'il ne plie pas se vise à la main, au titre que
+  le texte du lien nomme. Si aucun titre ne le porte (un `#implemente` vise un CHAMP, pas une
+  section) : dans un SOMMAIRE, l'entrée annonce une section qui n'existe pas — elle part en entier ;
+  dans la PROSE, le balisage de lien part et le texte reste.
 - `node scripts/source/reparer-adresses.mjs` (+ `--apply`, `--dataset <nom>`, `--depuis <ref-git>`) —
   adresses `descRef` recalées après une correction d'extraction ; sortie 1 tant qu'une adresse reste
   cassée. La garde qui les JUGE est `src/data/prose-resolution.test.ts`.

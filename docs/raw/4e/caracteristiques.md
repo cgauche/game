@@ -14,17 +14,17 @@
 
 ## Sommaire
 
-- [Les 10 Caractéristiques](#les-10-caracteristiques)
+- [Les 10 Caractéristiques](#les-10-caractéristiques)
 - [Tableau des Attributs (bases de génération par race)](#tableau-des-attributs)
-- [Bonus de Caractéristique](#bonus-de-caracteristique)
-- [Statistiques dérivées — Blessures](#statistiques-derivees--blessures)
+- [Bonus de Caractéristique](#bonus-de-caractéristique)
+- [Statistiques dérivées — Blessures](#statistiques-dérivées--blessures)
   - [Formule de base](#formule-de-base)
   - [Cas particulier : talent Petit (Halflings)](#cas-particulier--talent-petit-halflings)
-  - [Variantes par Taille (créatures)](#variantes-par-taille-creatures)
+  - [Variantes par Taille (créatures)](#variantes-par-taille-créatures)
   - [Blessures dynamiques (buffs F/E/FM)](#blessures-dynamiques-buffs-fefm)
-- [Statistiques dérivées — Mouvement](#statistiques-derivees--mouvement)
+- [Statistiques dérivées — Mouvement](#statistiques-dérivées--mouvement)
 - [Voir aussi](#voir-aussi)
-- [Implémente](#implemente)
+- [Implémente](#implémente)
 
 ---
 

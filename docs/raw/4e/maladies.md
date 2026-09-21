@@ -13,18 +13,17 @@
 ## Sommaire
 
 - [Cycle de vie d'une maladie](#cycle-de-vie-dune-maladie)
-- [Utiliser les maladies (règle de table)](#utiliser-les-maladies-regle-de-table)
+- [Utiliser les maladies (règle de table)](#utiliser-les-maladies-règle-de-table)
 - [Litanie de la Pestilence — 9 maladies LDB](#litanie-de-la-pestilence--9-maladies-ldb)
-- [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20)
-- [Créer une maladie (Remuer le Chaudron de Nurgle)](#creer-une-maladie-remuer-le-chaudron-de-nurgle)
-- [Traits de créature liés aux maladies](#traits-de-creature-lies-aux-maladies)
-- [Suppléments — EDO : Fièvre Cérébrale Pourpre + 2 symptômes + Contagieux](#supplements--edo--fievre-cerebrale-pourpre--2-symptomes--contagieux)
-- [Suppléments — EDOC : maladies de l'exposition en voyage (Rhume commun, Pneumonie)](#supplements--edoc--maladies-de-lexposition-en-voyage-rhume-commun-pneumonie)
+- [Symptômes — 12 kinds LDB 20](#symptômes--12-kinds-ldb-20)
+- [Créer une maladie (Remuer le Chaudron de Nurgle)](#créer-une-maladie-remuer-le-chaudron-de-nurgle)
+- [Traits de créature liés aux maladies](#traits-de-créature-liés-aux-maladies)
+- [Suppléments — EDO : Fièvre Cérébrale Pourpre + 2 symptômes + Contagieux](#suppléments--edo--fièvre-cérébrale-pourpre--2-symptômes--contagieux)
+- [Suppléments — EDOC : maladies de l'exposition en voyage (Rhume commun, Pneumonie)](#suppléments--edoc--maladies-de-lexposition-en-voyage-rhume-commun-pneumonie)
 - [Maladies et parasites aquatiques — MSRC 14](#maladies-et-parasites-aquatiques--msrc-14)
-- [Remèdes à base de plantes — MSRC 2 (volet maladies)](#remedes-a-base-de-plantes--msrc-2-volet-maladies)
-- [Guérison et soins (renvoi)](#guerison-et-soins-renvoi)
-- [Règle optionnelle « disease-mode »](#regle-optionnelle-disease-mode)
-- [Implémente](#implemente)
+- [Remèdes à base de plantes — MSRC 2 (volet maladies)](#remèdes-à-base-de-plantes--msrc-2-volet-maladies)
+- [Guérison et soins (renvoi)](#guérison-et-soins-renvoi)
+- [Règle optionnelle « disease-mode »](#règle-optionnelle--disease-mode-)
 - [Voir aussi](#voir-aussi)
 
 - **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
@@ -63,7 +62,7 @@ Chaque maladie est définie par les champs suivants :
 
 > « Certains groupes apprécient les maladies, parce qu'elles apportent une touche sombre et sans concession à leurs aventures… À l'inverse, certains joueurs considèrent les maladies comme des nuisances à oublier rapidement. C'est à vous et à votre groupe de décider comment vous allez utiliser les maladies dans vos parties, mais gardez à l'esprit qu'elles peuvent être très dangereuses, et qu'il n'est jamais agréable d'avoir un PJ cloué au lit, pendant que les autres membres du groupe partent à l'aventure. **Utilisez-les avec parcimonie.** »
 
-**Règle optionnelle implémentée** : le code expose un paramètre `disease-mode` (voir § [Règle optionnelle « disease-mode »](#regle-optionnelle-disease-mode)).
+**Règle optionnelle implémentée** : le code expose un paramètre `disease-mode` (voir § [Règle optionnelle « disease-mode »](#règle-optionnelle--disease-mode-)).
 
 ---
 
@@ -753,7 +752,7 @@ La promiscuité à bord et la mauvaise qualité de la nourriture et de la boisso
 
 > « Si un membre d'équipage souffrant de la *peste noire*, du *flux sanglant*, de la *courante galopante* ou de la vé*role urticante* boit dans un tonneau d'eau, il doit effectuer un Test de **Résistance Intermédiaire (+0)**. En cas d'échec, le tonneau devient une source de contagion pour quiconque boit dedans ensuite. La *petite bière* n'est pas soumise à cette règle. » — `MDG 14 l.209`
 
-**Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Toux et Éternuements) ; [Litanie de la Pestilence — 9 maladies LDB](#litanie-de-la-pestilence--9-maladies-ldb) (peste noire / flux sanglant / courante galopante / vérole urticante) ; [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (petite bière) ; `docs/raw/4e/etats.md`.
+**Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptômes--12-kinds-ldb-20) (Toux et Éternuements) ; [Litanie de la Pestilence — 9 maladies LDB](#litanie-de-la-pestilence--9-maladies-ldb) (peste noire / flux sanglant / courante galopante / vérole urticante) ; [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (petite bière) ; `docs/raw/4e/etats.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 14` (l.204-209) → `doc`, `MoraleBand`, `DiseaseDef`, `SeaVoyageState`, `mene-de-main-de-maitre`, `excellent-equipage`, `equipage-satisfait`, `canailles`, `mal-de-mer`, `scorbut`, +9 — `src/data/crew-morale.json`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, `src/engine/disease.ts`, +3 fichiers
@@ -784,7 +783,7 @@ Maladie spécifique de la navigation. La plupart des gens en souffrent à leur p
 
 > « **Symptômes :** malaise, nausée. » — `MDG 14 l.222`
 
-**Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Malaise → Exténué, Nausée → Sonné) ; [Cycle de vie d'une maladie](#cycle-de-vie-dune-maladie) ; `docs/raw/4e/etats.md`.
+**Voir aussi** : [Symptômes — 12 kinds LDB 20](#symptômes--12-kinds-ldb-20) (Malaise → Exténué, Nausée → Sonné) ; [Cycle de vie d'une maladie](#cycle-de-vie-dune-maladie) ; `docs/raw/4e/etats.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 14` (l.211-222) → `doc`, `MoraleBand`, `DiseaseDef`, `SeaVoyageState`, `mene-de-main-de-maitre`, `excellent-equipage`, `equipage-satisfait`, `canailles`, `mal-de-mer`, `scorbut`, +12 — `src/data/crew-morale.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, +5 fichiers
@@ -809,7 +808,7 @@ Maladie de **privation prolongée** qui frappe ceux qui restent longtemps en mer
 
 > « **Symptômes :** blessé, intoxication alimentaire, malaise, nausée. 1 % de chances de perdre une dent chaque jour. » — `MDG 14 l.234`
 
-**Voir aussi** : [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (soupe de chou fermenté ; biscuits de mer ≠ nourriture correcte) ; [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Blessé, Intoxication Alimentaire, Malaise, Nausée) ; `docs/raw/4e/etats.md`.
+**Voir aussi** : [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (soupe de chou fermenté ; biscuits de mer ≠ nourriture correcte) ; [Symptômes — 12 kinds LDB 20](#symptômes--12-kinds-ldb-20) (Blessé, Intoxication Alimentaire, Malaise, Nausée) ; `docs/raw/4e/etats.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 14` (l.224-234) → `mousse`, `shipboardSouls`, `scenario`, `SeaVoyageState`, `dailyWaterLitres`, `chirurgien`, `mene-de-main-de-maitre`, `excellent-equipage`, `consumeCrewProvisions`, `equipage-satisfait`, +13 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, +7 fichiers
@@ -844,7 +843,7 @@ Planifier l'approvisionnement est vital pour un long voyage : l'équipage fourni
 
 > « Pénurie de nourriture. La nourriture a moisi ou a été infestée par de la vermine pendant le voyage. La moitié des provisions à bord<br>sont gâtées. » — `MDG 15 l.169-170`
 
-**Voir aussi** : [Scorbut (maladie de privation MDG)](#scorbut-maladie-de-privation-mdg) (soupe de chou fermenté ; biscuits ≠ nourriture correcte) ; [Maladies à bord — contagion et tonneaux contaminés (MDG)](#maladies-a-bord--contagion-et-tonneaux-contamines-mdg) (tonneau d'eau / petite bière) ; `docs/raw/4e/deplacement.md` (le voyage lui-même). Hors domaine : modificateurs de Moral liés à la nourriture (biscuits seuls / ration insuffisante) — `MDG 14 l.166`, `MDG 14 l.171`.
+**Voir aussi** : [Scorbut (maladie de privation MDG)](#scorbut-maladie-de-privation-mdg) (soupe de chou fermenté ; biscuits ≠ nourriture correcte) ; [Maladies à bord — contagion et tonneaux contaminés (MDG)](#maladies-à-bord--contagion-et-tonneaux-contaminés-mdg) (tonneau d'eau / petite bière) ; `docs/raw/4e/deplacement.md` (le voyage lui-même). Hors domaine : modificateurs de Moral liés à la nourriture (biscuits seuls / ration insuffisante) — `MDG 14 l.166`, `MDG 14 l.171`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 14` (l.166, l.171, l.236-271) → `ship-criticals`, `paie-genereuse`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `nourriture-au-dessus-des-rations`, `sealskinDR`, `bon-presage`, `paie-reguliere`, +55 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, +15 fichiers

@@ -11,6 +11,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { ancresDePage } from './lib/ancres.mjs'
 
 export const RAWDIR = 'docs/raw'
 
@@ -85,7 +86,32 @@ function refuserLeSaute(domain, racine, source) {
   )
 }
 
-const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/\s+/g, '-')
+/** Le titre que le markdown d'un topic OUVRE — c'est lui que la page ancre, et le Sommaire vise
+ *  cette ancre-là. LÈVE en nommant le topic : un topic sans titre n'est ancrable par rien (#1824). */
+function titreDuTopic(topic, domain) {
+  const premier = ancresDePage(topic.markdown ?? '')[0]
+  if (!premier)
+    throw new Error(
+      `assemble-domain: le topic « ${topic.topicId ?? topic.title} » du domaine « ${domain} » n'ouvre sur AUCUN titre `
+      + "— la page n'y poserait aucune ancre, et son Sommaire renverrait dans le vide.",
+    )
+  return premier.titre
+}
+
+/** Le Sommaire d'une fiche : une ligne par topic, visant l'ancre RÉELLE que la page assemblée pose
+ *  sur le titre de ce topic (homonymes suffixés compris) — la grammaire d'ancre vit dans
+ *  `lib/ancres.mjs`, l'assembleur ne la redit pas (#1824). */
+function lignesDuSommaire(topics, ancresDeLaPage, domain) {
+  let curseur = 0
+  return topics.map((t) => {
+    const titre = titreDuTopic(t, domain)
+    const rang = ancresDeLaPage.findIndex((a, i) => i >= curseur && a.titre === titre)
+    if (rang < 0)
+      throw new Error(`assemble-domain: le titre « ${titre} » du domaine « ${domain} » n'a pas d'ancre dans la page assemblée`)
+    curseur = rang + 1
+    return `- [${t.title}](#${ancresDeLaPage[rang].ancre})`
+  })
+}
 
 // Placeholder du champ Implemente : build-implemente le remplira a partir du code (jamais ecrit a la
 // main). Toute forme authoree du champ dans le markdown d'un topic est NORMALISEE vers ce placeholder
@@ -107,7 +133,6 @@ export function assemble(data, { racine = {}, source = '<entrée>', titleArg, ra
   const title = data.title || titleArg || (domain.charAt(0).toUpperCase() + domain.slice(1))
   const topics = data.topics || []
   refuserLInfidele(topics, domain)
-  const toc = topics.map((t) => `- [${t.title}](#${slug(t.title)})`).join('\n')
   const body = topics.map((t) => withPlaceholderField(t.markdown.trim())).join('\n\n---\n\n')
 
   const autre = (data.autre || []).length
@@ -119,7 +144,7 @@ export function assemble(data, { racine = {}, source = '<entrée>', titleArg, ra
   if (data.inventoryCount != null) meta.push(`${data.inventoryCount} éléments inventoriés`)
   if (data.auditLoops != null) meta.push(`${data.auditLoops} boucle(s) d'audit` + (data.lastAuditDry ? ' (sec)' : ' (plafond atteint)'))
 
-  const out = `${enTeteDeFiche(title)}
+  const page = (toc) => `${enTeteDeFiche(title)}
 
 > Référentiel **autosuffisant** des règles du cœur **${coeur}** (RAW), consolidé sur les livres autorisés, à usage
 > d'agent (répondre + auditer le code sans rouvrir les livres). Chaque règle cite \`LIVRE NN l.X-Y\`
@@ -146,6 +171,9 @@ ${autre}
 
 *Couverture du survey* : ${counts}.
 `
+  // Le Sommaire se lit dans la PAGE : ses ancres se calculent sur la page elle-même, Sommaire vide
+  // (une ligne de liste n'est pas un titre — la table d'ancres est la même des deux côtés).
+  const out = page(lignesDuSommaire(topics, ancresDePage(page('')), domain).join('\n'))
   const path = cheminDeFiche(coeur, domain, rawDir)
   mkdirSync(dossierDuCoeur(coeur, rawDir), { recursive: true })
   writeFileSync(path, out, 'utf8')

@@ -22,7 +22,8 @@ Ce fichier couvre le **processus complet de création de Personnage** (étapes 1
 - [Supplément Middenheim — 3 origines humaines](#supplément-middenheim--3-origines-humaines)
 - [Supplément ADE I — Nouvelles Carrières de départ](#supplément-ade-i--nouvelles-carrières-de-départ)
 - [Option 100 Points (création par points)](#option-100-points)
-- [Sources RAW et Voir aussi](#sources-raw-et-voir-aussi)
+- [Sources RAW](#sources-raw)
+- [Voir aussi](#voir-aussi)
 - [Implémenté](#implémenté)
 
 ---

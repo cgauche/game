@@ -11,7 +11,7 @@
 
 ## Sommaire
 
-- [Cadre général « Entre deux aventures »](#cadre-général-entre-deux-aventures)
+- [Cadre général « Entre deux aventures »](#cadre-général--entre-deux-aventures-)
 - [Tableau des Événements (d100)](#tableau-des-événements-d100)
 - [Argent à gaspiller](#argent-à-gaspiller)
 - [Devoirs et Responsabilités](#devoirs-et-responsabilités)
@@ -37,8 +37,8 @@
   - [Réputation (Citadins, Courtisans, Lettrés)](#réputation-citadins-courtisans-lettrés)
   - [Semer la Dissension (Citadins, Ruraux)](#semer-la-dissension-citadins-ruraux)
 - [Activités de Guerrier — AA Annexe II](#activités-de-guerrier--aa-annexe-ii)
-- [Activités de Bataille — ADE II 8](#activités-de-bataille--ade-ii-ch8)
-- [Activités de Voyage — EDOC 5](#activités-de-voyage--edoc-ch5)
+- [Activités de Bataille — ADE II 8](#activités-de-bataille--ade-ii-8)
+- [Activités de Voyage — EDOC 5](#activités-de-voyage--edoc-5)
 - [Nouvelle Activité : Convalescence — ADE II Annexe I](#nouvelle-activité--convalescence--ade-ii-annexe-i)
 - [Règles optionnelles connexes](#règles-optionnelles-connexes)
 - [Voir aussi](#voir-aussi)
@@ -685,7 +685,7 @@ Activité de spéculation rapide lors d'une escale appropriée. Le Personnage **
 
 *Exemple verbatim* : « vous disposez de 200 points d'Encombrement disponibles sur votre bateau, donc vous investissez 200 couronnes d'or, puis vous effectuez vos 3 tentatives et vous réussissez. Vous gagnez 220 couronnes d'or. » (`MDG 15 l.286`)
 
-**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [`economie.md`](economie.md) (Marchandage, couronnes d'or, Encombrement).
+**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-15), [`economie.md`](economie.md) (Marchandage, couronnes d'or, Encombrement).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.274-286) → `SeaActivitiesModal`, `BankDeposit`, `doc`, `SEA_WEEK_DAYS`, `sea-embrigadement-ragot`, `sea-embrigadement-discretion`, `sea-cargo`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, +26 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/voyage-stakes.json`, +9 fichiers
@@ -704,7 +704,7 @@ Dessiner une carte revendable et utile à l'orientation. **Test de Métier (Cart
 
 > « si quelqu'un met la main dessus, il est découvert sur un 50 ou moins plutôt que le 10 ou moins habituel sur le lancer d'1d100. » — `MDG 15 l.292`
 
-**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Opérations Bancaires](#opérations-bancaires) (Planque, découverte sur 10 ou moins), [Activités de Voyage — EDOC 5](#activités-de-voyage--edoc-ch5) (Établir des Cartes — équivalent terrestre).
+**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-15), [Opérations Bancaires](#opérations-bancaires) (Planque, découverte sur 10 ou moins), [Activités de Voyage — EDOC 5](#activités-de-voyage--edoc-5) (Établir des Cartes — équivalent terrestre).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.288-292) → `SeaActivitiesModal`, `BankDeposit`, `doc`, `sea-cargo`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `activites-en-mer`, `PendingExtendedTest`, `bankWithdrawInner`, +4 — `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, +7 fichiers
@@ -723,7 +723,7 @@ Former l'équipage (PNJ) dans une **Compétence utile à la gestion du bateau**.
 
 *Exemple verbatim* : « un Personnage possédant 9 Augmentations dans Projectiles (Poudre noire) pourrait servir d'instructeur à un équipage de 30 personnes. Il obtient 5 DR sur son Test de Commandement et réussit son Test de Projectiles (Poudre noire), ce qui fait grimper la Compétence Projectiles (Poudre noire) de l'équipage de 5 Augmentations et lui fait payer 60 pistoles d'argent. » (`MDG 15 l.298`)
 
-**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Entraînement](#entraînement) (Activité d'Augmentation LDB 23).
+**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-15), [Entraînement](#entraînement) (Activité d'Augmentation LDB 23).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `doc`, `commerce`, `minimum-vital`, `sea-cargo`, `port-buy-bargain`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, +7 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, +9 fichiers
@@ -748,7 +748,7 @@ Réparer l'usure du vaisseau (planches pourries, voiles, coque incrustée). **De
 
 > « Si votre navire a subi des Blessures Critiques, vous pouvez les réparer en effectuant un Test de **Métier (Charpentier** *ou* **Constructeur de navires) Difficile (–20)**. » — `MDG 15 l.306`
 
-**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Artisanat](#artisanat) (Métier, Test étendu).
+**Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-15), [Artisanat](#artisanat) (Métier, Test étendu).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `commerce`, `minimum-vital`, `sea-cargo`, `port-buy-bargain`, `bankWithdrawOutcome`, `activites-en-mer`, `bankWithdrawInner`, `GameState`, +2 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, +5 fichiers
@@ -767,7 +767,7 @@ Annexe I de **Aldorf, la Couronne de l'Empire (ACE)** : cinq nouvelles Activité
 
 Les cinq Activités : *Pénitence*, *Entraînement avec une arme inhabituelle*, *Tester des objets magiques*, *Mécénat*, *Recherche universitaire* (détail dans les sous-sections ci-dessous).
 
-**Voir aussi** : [Cadre général « Entre deux aventures »](#cadre-général-entre-deux-aventures), [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Opérations Bancaires — Mécénat en est une variante), [Pénitence (LDB 41)](religion.md#pénitence) (renvoi — pénitence MJ-arbitrée en réponse à la Colère des dieux, distincte de l'Activité *Pénitence* ci-dessous), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Corruption & mutation](corruption.md) (Tester des objets magiques — Exposition mineure).
+**Voir aussi** : [Cadre général « Entre deux aventures »](#cadre-général--entre-deux-aventures-), [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Opérations Bancaires — Mécénat en est une variante), [Pénitence (LDB 41)](religion.md#pénitence) (renvoi — pénitence MJ-arbitrée en réponse à la Colère des dieux, distincte de l'Activité *Pénitence* ci-dessous), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Corruption & mutation](corruption.md) (Tester des objets magiques — Exposition mineure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `ACE 12` (l.3-7) → `InterludeHeroState`, `matchOutcomes`, `combatSkillPick`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `runActivityResolver`, `ItemInstance`, +4 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers

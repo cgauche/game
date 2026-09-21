@@ -13,18 +13,18 @@
 ## Sommaire
 
 - [Introduction au Bestiaire (LDB 76)](#introduction-au-bestiaire)
-- [Localisation des créatures non humaines](#localisation-des-creatures-non-humaines)
+- [Localisation des créatures non humaines](#localisation-des-créatures-non-humaines)
 - [Localisations alternatives (Serpents, Araignées)](#localisations-alternatives)
-- [Traits Standard de créature](#traits-standard-de-creature)
-- [Structure d'un profil de créature](#structure-dun-profil-de-creature)
+- [Traits Standard de créature](#traits-standard-de-créature)
+- [Structure d'un profil de créature](#structure-dun-profil-de-créature)
 - [Traits Facultatifs et personnalisation](#traits-facultatifs-et-personnalisation)
-- [Taille : catégories, Blessures et modificateurs](#taille-categories-blessures-et-modificateurs)
+- [Taille : catégories, Blessures et modificateurs](#taille--catégories-blessures-et-modificateurs)
 - [Utiliser les Tailles (agrandir/réduire)](#utiliser-les-tailles)
 - [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat)
-- [Caractéristiques aléatoires (LDB 77)](#caracteristiques-aleatoires)
-- [Index des Traits de créature (renvois)](#index-des-traits-de-creature)
+- [Caractéristiques aléatoires (LDB 77)](#caractéristiques-aléatoires)
+- [Index des Traits de créature (renvois)](#index-des-traits-de-créature)
 - [Catalogue du bestiaire](#catalogue-du-bestiaire)
-- [Bilan de fidélité](#bilan-de-fidelite)
+- [Bilan de fidélité](#bilan-de-fidélité)
 
 - **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
 - Trait de créature : Créature marine (MDG) — `MDG 16 l.15-19`
@@ -65,7 +65,7 @@ En principe, déterminer une **Localisation** pour une créature non humaine est
 
 > « Si un animal possède une Localisation sans Tableau de Critiques, comme un tentacule, une queue ou une aile, faites un jet sur le Tableau des Bras et décrivez le résultat de façon appropriée. » — `LDB 76 l.21-23`
 
-**Voir aussi** : [Tableau de Localisation humanoïde](combat.md#tableau-de-localisation-humanoide) — `combat.md` ; Critiques et Frappe Mortelle — `combat.md`.
+**Voir aussi** : [Tableau de Localisation humanoïde](combat.md#tableau-de-localisation-humanoïde) — `combat.md` ; Critiques et Frappe Mortelle — `combat.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.19-45) → `traitsStandard`, `doc`, `sceneEntitySchema`, `critTableKeyFor`, `SceneEntity`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
@@ -103,7 +103,7 @@ Les Traits suivants sont ajoutés à la liste **Facultative de toutes les créat
 
 Ces Traits dits « standard » peuvent donc être ajoutés à **n'importe quelle créature du bestiaire** sans justification spéciale, en dehors des Traits Facultatifs spécifiques à l'espèce.
 
-**Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Traits Facultatifs.
+**Voir aussi** : [Index des Traits de créature](#index-des-traits-de-créature) ; Traits Facultatifs.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35, l.37) → `traitsStandard`, `doc`, `sceneEntitySchema`, `critTableKeyFor`, `SceneEntity`, `SpawnExtras`, `critiqueTable`, `creatureToCombatant`, `resolveCritique`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/schemas/defs-scenes/scene.ts`, `src/data/schemas/defs/criticals.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, +2 fichiers
@@ -128,7 +128,7 @@ Les **12 Attributs** = les 10 Caractéristiques standard (CC, CT, F, E, I, Ag, D
 
 > Le profil imprimé d'une créature inclut ses **Compétences** et **Talents** quand la créature a un comportement plus élaboré qu'une bête sauvage. Ces données sont traitées comme des données d'auteur (valeurs de Test imprimées → avances dérivées).
 
-**Traits de créature** (LDB 85) : voir [Index des Traits de créature](#index-des-traits-de-creature) et `combat.md` § traits — toutes les définitions sont dans `LDB 85` ; seules les règles *systémiques* (Taille, Blessures, Localisations) sont dupliquées ici.
+**Traits de créature** (LDB 85) : voir [Index des Traits de créature](#index-des-traits-de-créature) et `combat.md` § traits — toutes les définitions sont dans `LDB 85` ; seules les règles *systémiques* (Taille, Blessures, Localisations) sont dupliquées ici.
 
 **Sources RAW** :
 - `LDB 76 l.44-46` — schéma complet des champs d'un profil.
@@ -201,7 +201,7 @@ Le trait **Endurant** ajoute +BE aux Blessures calculées (appliqué avant tout 
 - `LDB 85 l.343-344` — sept catégories (table Taille/Exemples).
 - `LDB 85 l.391-406` — Blessures par catégorie (table verbatim ci-dessus).
 
-**Voir aussi** : [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat) ; [Taille dans combat.md](combat.md#taille-categories-et-modificateurs-de-combat) (récapitulatif en-combat, renvoi ici pour le détail des Blessures).
+**Voir aussi** : [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat) ; [Taille dans combat.md](combat.md#taille--catégories-et-modificateurs-de-combat) (récapitulatif en-combat, renvoi ici pour le détail des Blessures).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 85` (l.343-406) → `doc`, `SIZE_LABEL`, `cannotStopOn`, `markAttacked`, `agressifEnvers`, `structureTaille`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, +56 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/structures.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +15 fichiers
@@ -291,7 +291,7 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 - `LDB 85 l.386-387` — Piétinement (BF+0, Corps à corps Bagarre, 1 Avantage).
 - `LDB 14 l.142-165` — mod tir −30..+60 par écart de Taille.
 
-**Voir aussi** : [Localisation des créatures non humaines](#localisation-des-creatures-non-humaines) ; [Taille — tir sur créature grande](combat.md#taille-categories-et-modificateurs-de-combat).
+**Voir aussi** : [Localisation des créatures non humaines](#localisation-des-créatures-non-humaines) ; [Taille — tir sur créature grande](combat.md#taille--catégories-et-modificateurs-de-combat).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.142-165) → `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `combat-deux-armes`, `grappleTierMod`, `grapple`, `main-secondaire`, `grappleEnvMod`, `MANUAL_COMBAT_INTENTS`, +44 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/engine/combat.ts`, +23 fichiers
@@ -325,7 +325,7 @@ Les Traits de créature sont **définis dans `LDB 85`** et sont indexés ici pou
 - **Traits de psychologie et comportement** (Bestial, Peur, Terreur, Haine, Animosité, Préjugé, Immunité Psychologique, Belliqueux, Frénésie, Rage, Territorial, Dressé, Effrayé, Affamé, Perturbant, Stupide, Nuée) → [`psychologie.md`](psychologie.md) + [`combat.md`](combat.md) § *Traits de comportement*.
 - **Traits de mouvement et d'attributs** (Bond, Foulée, Vol, Grimpant, Amphibie, Arboricole, Limicole, Furtif, Infravision, Vision Nocturne, Pisteur) → [`deplacement.md`](deplacement.md) + [`combat.md`](combat.md) § *Traits de mouvement*.
 - **Traits de magie** (Magique, Lanceur de Sorts, Béni, Miracles, Mutation, Corruption, Corruption Mentale) → [`magie.md`](magie.md) + [`corruption.md`](corruption.md).
-- **Taille** → présent fichier § [Taille](#taille-categories-blessures-et-modificateurs).
+- **Taille** → présent fichier § [Taille](#taille--catégories-blessures-et-modificateurs).
 - **Modificateurs de profil** (Élite, Grand, Coriace, Brutal, Rapide, Intelligent, Rusé, Meneur, Endurant) → tous définis `LDB 85 l.122-203` ; effets en `passive: GameOp[]` dans `traits.json`.
 
 ### Traits standard (ajoutés à toute créature)
@@ -406,7 +406,7 @@ Effets mécaniques (le profil suppose un environnement aquatique) :
 
 Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de mer, Gargantuan, Wyrm des mers, Hydre d'os, Sangsue des abysses, Léviathan-phare, Léviathan noir, Triton (`MDG 16 l.63/82/103/129/187/224/241/259/272/305`). Les créatures **amphibies** (Baudroye, Crabe boxeur, Kharibde, Syrène bleue) ne portent **pas** ce Trait et ne subissent pas la pénalité terrestre.
 
-**Voir aussi** : [Index des Traits de créature](#index-des-traits-de-creature) ; Trait *Aquatique* (MSRC) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
+**Voir aussi** : [Index des Traits de créature](#index-des-traits-de-créature) ; Trait *Aquatique* (MSRC) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 16` (l.15-19, l.63-305) → `scene`, `scenario`, `fireTurnEdgeTriggers`, `suffocationTick`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `sea-scorbut`, `sea-mal-de-mer`, `sea-tonneau-expose`, `sea-tonneau-contamine`, +23 — `src/data/creatures.json`, `src/data/domains.json`, `src/data/index.ts`, `src/data/skills.json`, `src/data/voyage-stakes.json`, `src/engine/ops.ts`, +8 fichiers

@@ -17,16 +17,16 @@
 - [Tableau des Mouvements (valeurs de base)](#tableau-des-mouvements)
 - [Course hors combat (sprint)](#course-hors-combat)
 - [Escalade, Saut, Chute — voir combat.md](#escalade-saut-chute)
-- [Voyage à pied : vitesse, durée, marche forcée](#voyage-a-pied)
+- [Voyage à pied : vitesse, durée, marche forcée](#voyage-à-pied)
 - [Transports payants : Diligence, Barge, Fiacre, Ferry](#transports-payants)
 - [Montures : allures, endurance, incidents, sellerie](#montures)
-- [Véhicules tirés : conduite, incidents, tableau](#vehicules)
+- [Véhicules tirés : conduite, incidents, tableau](#véhicules)
 - [Encombrement et fatigue de voyage](#encombrement-et-fatigue-de-voyage)
-- [Péripéties de voyage (LdB)](#peripeties-ldb)
-- [Système par Étapes (EDOC — optionnel)](#systeme-etapes-edoc)
+- [Péripéties de voyage (LdB)](#péripéties-ldb)
+- [Système par Étapes (EDOC — optionnel)](#système-par-étapes-edoc--optionnel)
 - [Poursuites](#poursuites)
 - [Voir aussi](#voir-aussi)
-- [Implémente](#implemente)
+- [Implémente](#implémente)
 
 - **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
 - Navigation maritime — Tests de Navigation (MDG)
@@ -637,7 +637,7 @@ Le **Personnage à la barre** est celui le mieux placé pour influencer le mouve
 
 Autres formes de propulsion : Propulsion à vapeur → **Métier (Ingénieur)** ; Bête captive → **Dressage** ; Roue à aubes → **Commandement** (coureurs consentants) ou **Intimidation** (non consentants) ; Magie → **Langue (Magick)**. `MDG 13 l.30-36`
 
-**Voir aussi :** [Progression d'un navire (MDG)](#progression-dun-navire-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg), [`tests.md`](tests.md) (Soutien, Difficulté).
+**Voir aussi :** [Progression d'un navire (MDG)](#progression-dun-navire-mdg), [Tests d'équipage (MDG)](#tests-déquipage-mdg), [`tests.md`](tests.md) (Soutien, Difficulté).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.17-20, l.30-36) → `plus2`, `plus1`, `normal`, `vesselPropulsion`, `minus1`, `half`, `savoirOceansBonus`, `nav-progression`, `navigation-progression` — `src/data/naval-progression.json`, `src/data/regles.json`, `src/data/schemas/defs/sea-navigation.ts`, `src/data/voyage-stakes.json`, `src/engine/seaNavigation.ts`, `src/engine/shipBuild.ts`
@@ -803,7 +803,7 @@ Un **Test d'Orientation** par jour de voyage (règle de base). Tableau *Repères
 
 **Phares** : visibles, ils donnent un bonus aux Tests d'Orientation = premier chiffre de Savoir (Océans). Voir la lumière = **Test de Perception** : Facile (+40) à ≤5 milles, Intermédiaire (+0) à 5-10, Difficile (–20) à 10-15. Phare près d'un danger : +20 pour repérer ce danger. **Clochers** (ex. Bilbali) : seulement +2 DR à l'Orientation, distances divisées par deux, mais utiles par brouillard. `MDG 13 l.333-351`
 
-**Voir aussi :** [Provisions et équipement de navigation (MDG)](#provisions-et-équipement-de-navigation-mdg) (Boussole +1 DR), [Tests d'équipage (MDG)](#tests-dequipage-mdg).
+**Voir aussi :** [Provisions et équipement de navigation (MDG)](#provisions-et-équipement-de-navigation-mdg) (Boussole +1 DR), [Tests d'équipage (MDG)](#tests-déquipage-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.307-351) → `portProfileSchema`, `MapPlace`, `rollCrewRole`, `crew`, `carte`, `OrientationOutcome`, `OrientationResult`, `orientationOutcome`, `rollCourseChange`, `lighthouseSpotDifficulty`, +26 — `src/data/flow-stakes.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, +10 fichiers
@@ -822,7 +822,7 @@ Adaptation des règles de Poursuite terrestres à plus grande échelle. Sauf int
 
 **3 — Déterminer l'issue** : recalculer la Distance, retour à l'étape 2. Distance 0 = Cible attrapée → attaquer ou poursuivre un autre membre. `MDG 13 l.401-403`
 
-**Voir aussi :** [`deplacement.md`](deplacement.md#poursuites) (Poursuite terrestre LdB 15), [Tests d'équipage (MDG)](#tests-dequipage-mdg).
+**Voir aussi :** [`deplacement.md`](deplacement.md#poursuites) (Poursuite terrestre LdB 15), [Tests d'équipage (MDG)](#tests-déquipage-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.354-420) → `portProfileSchema`, `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `sea-navigation`, `lighthouseOrientationDR`, `pursuitLowMPenalty`, `WorldMapPlacePanel`, `pursuitDistanceGain`, +12 — `src/data/flow-stakes.json`, `src/data/schemas/defs-scenes/worldmap.ts`, `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, +10 fichiers
@@ -896,7 +896,7 @@ Réparation permanente : **Test de Métier (Constructeur de navires)** (ou **Mé
 
 **Réparations temporaires** : sans cale sèche, **Métier (Constructeur de navires/Charpentier)** de **Complexe (–10)** à **Très Difficile (–30)** ; succès = 1 heure, restaure **1d10 Blessures**. Mais le navire fait ensuite un **Test d'Endurance** par jour complet de voyage et à chaque Test de Manœuvre ; chaque échec inflige **1d10–4 Dégâts** (la réparation cède). `MDG 13 l.647-651`
 
-**Voir aussi :** [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
+**Voir aussi :** [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Tests d'équipage (MDG)](#tests-déquipage-mdg) (Entretien).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.639-651) → `meleeVsHullBE`, `VolleyShot`, `PortView`, `RepairTick`, `sea-navigation`, `voie-d-eau`, `isOutOfAction`, `applyHit`, `GameState` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, +3 fichiers
@@ -932,7 +932,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 
 **Effets du Moral** : 101+ → Tests de Commandement du capitaine +2 DR, tous les Tests d'équipage +1 DR ; 76-100 → Commandement +1 DR ; 51-75 → équipage satisfait (1d100 par membre en relâche, ≤04 ne revient pas) ; 50 ou moins → Commandement –1 DR, Tests d'équipage –1 DR, ≤16 ne revient pas en relâche. `MDG 14 l.186-202`
 
-**Voir aussi :** [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Rude épreuve), [Humeur de Manann et événements en mer (MDG)](#humeur-de-manann-et-événements-en-mer-mdg).
+**Voir aussi :** [Tests d'équipage (MDG)](#tests-déquipage-mdg) (Rude épreuve), [Humeur de Manann et événements en mer (MDG)](#humeur-de-manann-et-événements-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 14` (l.133-202) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `doc`, `un-officier-pour-10`, `MoraleBand`, `capitaine-vaillant`, `manoeuvre`, +78 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/maladies.json`, `src/data/regles.json`, +16 fichiers
@@ -983,7 +983,7 @@ Pour un voyage de plusieurs semaines : on calcule la vitesse moyenne (modifiée 
 
 **Longs voyages très rapides** : durée via distance/vitesse ; noter la dizaine de l'Humeur de Manann ; faire un **Test d'équipage de Rude épreuve** ; lancer 1d10 sur le tableau *Voyage rapide* en **–1 par semaine en mer**, **+** dizaine d'Humeur, **+** DR de Rude épreuve. Résultats : ≤0 désastreux (50 % PNJ manquants, 75 % cargaison perdue, –75 % Blessures, 3 Critiques) … 10+ parfait. `MDG 15 l.21-37`
 
-**Voir aussi :** [Humeur de Manann et événements en mer (MDG)](#humeur-de-manann-et-événements-en-mer-mdg), [Commerce maritime (MDG)](#commerce-maritime-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg).
+**Voir aussi :** [Humeur de Manann et événements en mer (MDG)](#humeur-de-manann-et-événements-en-mer-mdg), [Commerce maritime (MDG)](#commerce-maritime-mdg), [Tests d'équipage (MDG)](#tests-déquipage-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.3-78) → `vaincre-stromfels`, `grand-sacrifice`, `coiffe-de-naissance`, `sacrifice-moyen`, `pretre-sans-peche`, `prieres-jouees`, `mannslieb-pleine`, `WorldMapView`, `chat-heureux`, `petit-sacrifice`, +40 — `src/data/activities.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/effets.ts`, `src/data/schemas/defs/sea-events.ts`, `src/data/sea-events.json`, +9 fichiers
@@ -1034,7 +1034,7 @@ Pour chaque **semaine (8 jours)** en mer, chaque Personnage peut faire une Activ
 
 Activité de réparation/usure, de préférence au port. En mer : **–20** supplémentaire ; vastes installations de chantier : **+20**. **Test de Métier (Charpentier *ou* Constructeur de navires) Intermédiaire (+0)** : succès = dépenser des pièces détachées de navire (Enc = Taille du navire) et retirer l'événement *Usure*. Réparer des Blessures : **2 Enc de pièces détachées pour 5 Blessures** restaurées. Réparer une **Blessure Critique** : **Métier Difficile (–20)** + pièces détachées et bois (Enc = Taille du navire). `MDG 15 l.304-306`
 
-**Voir aussi :** [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
+**Voir aussi :** [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Tests d'équipage (MDG)](#tests-déquipage-mdg) (Entretien).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `commerce`, `minimum-vital`, `sea-cargo`, `port-buy-bargain`, `bankWithdrawOutcome`, `activites-en-mer`, `bankWithdrawInner`, `GameState`, +2 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, +5 fichiers

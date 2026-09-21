@@ -10,17 +10,17 @@
 
 ## Sommaire
 
-- [Monnaie — conversions et nomenclature](#monnaie-conversions-et-nomenclature)
-- [Disponibilité — tiers et table de stock](#disponibilite-tiers-et-table-de-stock)
-- [Achat — procédure et Disponibilité](#achat-procedure-et-disponibilite)
-- [Marchandage — Test opposé, réductions, Négociateur](#marchandage-test-oppose-reductions-negociateur)
-- [Évaluation — identification qualité et estimation prix](#evaluation-identification-qualite-et-estimation-prix)
-- [Vente — base ½, Marchandage, Baisse des prix, Troc](#vente-base-moitie-marchandage-baisse-des-prix-troc)
-- [Fabrication (LDB) — Atouts et Défauts d'objet](#fabrication-ldb-atouts-et-defauts-dobjet)
+- [Monnaie — conversions et nomenclature](#monnaie--conversions-et-nomenclature)
+- [Disponibilité — tiers et table de stock](#disponibilité--tiers-et-table-de-stock)
+- [Achat — procédure et Disponibilité](#achat--procédure-et-disponibilité)
+- [Marchandage — Test opposé, réductions, Négociateur](#marchandage--test-opposé-réductions-négociateur)
+- [Évaluation — identification qualité et estimation prix](#évaluation--identification-qualité-et-estimation-prix)
+- [Vente — base ½, Marchandage, Baisse des prix, Troc](#vente--base-½-marchandage-baisse-des-prix-troc)
+- [Fabrication (LDB) — Atouts et Défauts d'objet](#fabrication-ldb--atouts-et-défauts-dobjet)
 - [Option Guildes d'artisans](#option-guildes-dartisans)
 - [Commerce de cargaison (MSRC Compagnon ch.11)](#commerce-de-cargaison-msrc-compagnon-ch11)
 - [Voir aussi](#voir-aussi)
-- [Implémente (refs code)](#implemente-refs-code)
+- [Implémente (refs code)](#implémente-refs-code)
 
 ---
 

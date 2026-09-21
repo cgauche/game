@@ -15,18 +15,18 @@
 
 ## Sommaire
 
-- [Encombrement — calcul et seuils](#encombrement-calcul-et-seuils)
-- [Encombrement — pénalités (Surchargé)](#encombrement-penalites)
-- [Encombrement — règles spéciales](#encombrement-regles-speciales)
-- [Qualités d'objet — Atouts et Défauts → voir economie.md](#qualites-renvoi)
+- [Encombrement — calcul et seuils](#encombrement--calcul-et-seuils)
+- [Encombrement — pénalités (Surchargé)](#encombrement--pénalités-surchargé)
+- [Encombrement — règles spéciales](#encombrement--règles-spéciales)
+- [Qualités d'objet — Atouts et Défauts → voir economie.md](#qualités-dobjet--atouts-et-défauts-renvoi)
 - [Drogues et poisons](#drogues-et-poisons)
 - [Herbes et potions](#herbes-et-potions)
-- [Prothèses](#protheses)
-- [Outils et nécessaires à effet mécanique](#outils-et-necessaires)
-- [Possessions diverses à effet](#possessions-diverses-a-effet)
-- [Catalogue banal — à transcrire séparément](#catalogue-banal)
+- [Prothèses](#prothèses)
+- [Outils et nécessaires à effet mécanique](#outils-et-nécessaires-à-effet-mécanique)
+- [Possessions diverses à effet](#possessions-diverses-à-effet)
+- [Catalogue banal — à transcrire séparément](#catalogue-banal--à-transcrire-séparément)
 - [Voir aussi](#voir-aussi)
-- [Implémente (refs code)](#implemente-refs-code)
+- [Implémente (refs code)](#implémente-refs-code)
 
 - **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
 - Navires — profil et Caractéristiques (MDG) : Caractéristiques de bateau (Coût, Équipage, Voiles/Avirons M (É), Man, Taille, E/BE, B/BB, Contenance), table de surcharge, Traits vs Améliorations

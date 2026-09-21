@@ -360,6 +360,12 @@ export const ECRIT_LU = {
       'scripts/raw/*-stock.json':
         'même porte, même module : le recalage des stocks nominatifs (`recalerStock`) rend un TEXTE, ' +
         'que le seul `main()` écrit derrière `estMain` (scripts/raw/recouper-source.mjs:318)',
+      // Le MOTIF, pas une page : l’outil répare TOUTE page de l’Atlas dont un renvoi d’ancre est mort.
+      'docs/raw/**/*.md':
+        '`reparer-ancres.test.mjs` IMPORTE l’outil de réparation des renvois d’ancre (#1824) ; son unique ' +
+        '`writeFileSync` vit derrière la porte `--apply` de `reparer` (scripts/raw/reparer-ancres.mjs), et ' +
+        'le banc ne la passe que sur un Atlas JETABLE d’os.tmpdir() (`avecAtlasFixture`) dont il donne le ' +
+        '`rawDir` — les pages du dépôt ne sont jamais écrites',
     },
     lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
     raison:
@@ -388,6 +394,16 @@ export const ECRIT_LU = {
     raison:
       'aucune écriture dans les scripts atteints ; LIT Source/ et son stock ' +
       'scripts/raw/empty-line-code-refs-stock.json',
+  },
+  'raw:check-ancres': {
+    ecrit: [],
+    lit: ['docs/raw/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/'],
+    raison:
+      'aucune écriture, et AUCUN stock : l’ancre d’un titre se CALCULE (scripts/raw/lib/ancres.mjs), '
+      + 'donc un renvoi mort est un renvoi faux, jamais un héritage à geler. LIT les pages de l’Atlas, '
+      + 'le registre de livres (énumération des cœurs, `pagesDeLAtlas`) et l’extracteur de liens partagé '
+      + '(scripts/guards/lib/liensMarkdown.mjs) ; l’outil qui répare (scripts/raw/reparer-ancres.mjs) '
+      + 'écrit sous sa porte `--apply`, que la commande de .github/workflows/ci.yml n’appelle pas',
   },
   'raw:check-folio-continuity': {
     ecrit: [],
@@ -528,7 +544,7 @@ export const LANES = [
   {
     nom: 'docs',
     gates: [
-      'docs:check', 'docs:empreinte', 'test:raw', 'raw:check-refs', 'raw:check-code-refs',
+      'docs:check', 'docs:empreinte', 'test:raw', 'raw:check-refs', 'raw:check-code-refs', 'raw:check-ancres',
       'raw:check-folio-continuity', 'raw:check-source-tables', 'raw:check-source-format',
       'raw:check-source-puces', 'test:docs',
       'agents:check', 'build',

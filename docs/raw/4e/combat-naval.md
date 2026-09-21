@@ -13,17 +13,17 @@
 
 ## Sommaire
 
-- [Tests d'équipage : mécanisme général](#tests-dequipage-mecanisme-general)
-- [Tests d'équipage : les types et leur rôle essentiel](#tests-dequipage-les-types-et-leur-role-essentiel)
-- [L'équipage comme RESSOURCE — le Round naval](#lequipage-comme-ressource--le-round-naval)
-- [Manœuvre / Navigation du navire](#manuvre--navigation-du-navire)
+- [Tests d'équipage : mécanisme général](#tests-déquipage--mécanisme-général)
+- [Tests d'équipage : les types et leur rôle essentiel](#tests-déquipage--les-types-et-leur-rôle-essentiel)
+- [L'équipage comme RESSOURCE — le Round naval](#léquipage-comme-ressource--le-round-naval)
+- [Manœuvre / Navigation du navire](#manœuvre--navigation-du-navire)
 - [Stats de coque (E, B, Contenance, Man)](#stats-de-coque-e-b-contenance-man)
-- [Artillerie : pièces et munitions](#artillerie--pieces-et-munitions)
-- [Artillerie : Arme d'équipe et sous-effectif](#artillerie--arme-dequipe-et-sous-effectif)
-- [Tir de batterie (la bordée)](#tir-de-batterie-la-bordee)
-- [Infliger des Dégâts aux navires](#infliger-des-degats-aux-navires)
-- [Critiques de navire (Éclats, Voie d'eau, En flammes)](#critiques-de-navire-eclats-voie-deau-en-flammes)
-- [Collision / éperonnage](#collision--eperonnage)
+- [Artillerie : pièces et munitions](#artillerie--pièces-et-munitions)
+- [Artillerie : Arme d'équipe et sous-effectif](#artillerie--arme-déquipe-et-sous-effectif)
+- [Tir de batterie (la bordée)](#tir-de-batterie-la-bordée)
+- [Infliger des Dégâts aux navires](#infliger-des-dégâts-aux-navires)
+- [Critiques de navire (Éclats, Voie d'eau, En flammes)](#critiques-de-navire-éclats-voie-deau-en-flammes)
+- [Collision / éperonnage](#collision--éperonnage)
 - [Moral du navire](#moral-du-navire)
 
 ---
@@ -55,8 +55,8 @@ de 10 % d'équipage manquant**).
 - `MDG 14 l.53` — « un même membre d'équipage peut cumuler deux rôles… mais la **Difficulté de ces jets augmente
   de 2 crans** pour représenter leur attention divisée. »
 
-**Voir aussi.** [Tests d'équipage : les types](#tests-dequipage-les-types-et-leur-role-essentiel) · [L'équipage
-comme ressource](#lequipage-comme-ressource--le-round-naval) · [`tests.md`](tests.md) (DR, Succès Minime).
+**Voir aussi.** [Tests d'équipage : les types](#tests-déquipage--les-types-et-leur-rôle-essentiel) · [L'équipage
+comme ressource](#léquipage-comme-ressource--le-round-naval) · [`tests.md`](tests.md) (DR, Succès Minime).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 14` (l.9, l.13, l.19, l.39, l.53) → `skill`, `progression`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `ShipManeuverModal`, `resolveVolley`, `maneuverCrewTotal`, `shipCrewAssignments`, +41 — `src/data/crew-test-types.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, +18 fichiers
@@ -197,7 +197,7 @@ proches ; Extrême → −Indice Dégâts.
 
 **État du code.** ✅ (R1) `resolveVolley` prépare l'arme de chaque pièce comme le tir individuel : `weaponWithAmmo`
 (munition du chef → Dégâts + **Perforante**/bypass via `woundsFromHit`) puis `crewedFireWeapon` (sous-effectif).
-✅ **Explosion / Tir de zone** (multi-cibles, cf. [Munitions à aire](#munitions-a-aire-explosion--tir-de-zone--multi-cibles)).
+✅ **Explosion / Tir de zone** (multi-cibles, cf. [Munitions à aire](#munitions-à-aire-explosion--tir-de-zone--multi-cibles)).
 ⬜ RESTE : qualités à chiffre des unités (Percutante/Dévastatrice/Empaleuse) en bordée ; **Dangereuse → Incident** ;
 picker de munition par poste + approvisionnement des navires.
 
@@ -222,7 +222,7 @@ Arme d'équipe → **tous les servants** sont touchés (`l.464`).
 **Sources RAW.** `MDG 12 l.440-464`. **Citation** `l.458` : « les pénalités… sont **cumulatives**… Arme d'équipe
 4 maniée par une seule personne voit son temps de recharge doublé et reçoit *Imprécise* et *Dangereuse*. »
 
-**Voir aussi.** [Tir de batterie](#tir-de-batterie-la-bordee) · [`combat.md`](combat.md) (Imprécise = −1 DR ;
+**Voir aussi.** [Tir de batterie](#tir-de-batterie-la-bordée) · [`combat.md`](combat.md) (Imprécise = −1 DR ;
 Dangereuse = Incident).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
@@ -246,7 +246,7 @@ sinon son propre Test de Projectiles). **(3)** UN **Test d'équipage** : *Artill
 Chansonnier / Mousse / Timonier ; plusieurs PJ Artilleurs lancent (un par équipe de pièce), DR **cumulés** + Moral.
 **(4) Succès d'abord** — le Test d'équipage TIENT LIEU du jet de touche de toutes les pièces, son **seuil de succès**
 est celui de tout Test d'équipage : **total ≥ 1 DR** (`l.13`, le MJ pouvant accepter 0 — voir
-[Tests d'équipage : mécanisme général](#tests-dequipage--mecanisme-general)). Test **raté** → la bordée MANQUE : ni
+[Tests d'équipage : mécanisme général](#tests-déquipage--mécanisme-général)). Test **raté** → la bordée MANQUE : ni
 Dégâts ni Critique (`MDG 13 l.656` ne connaît le Critique que sur un **jet d'attaque réussi**). **(5) Application sur
 un Test RÉUSSI** : « le total de DR s'applique à **toutes les armes à feu tournées vers l'ennemi, pour le
 meilleur et pour le pire** » → le DR partagé **remplace le jet de touche de chaque pièce** ; par pièce :
@@ -261,8 +261,8 @@ pire.** » **Citation** `MDG 14 l.13` : « **Si le total est de 1 DR ou plus, le
 peut aussi considérer un résultat de 0 comme un succès en fonction des circonstances. » **Citation** `MDG 13 l.656` :
 « Quand **un jet d'attaque réussi** contre un bateau donne un double, il subit un Critique. »
 
-**Voir aussi.** [Arme d'équipe](#artillerie--arme-dequipe-et-sous-effectif) · [Pièces et munitions](#artillerie--pieces-et-munitions)
-· [Dégâts aux navires](#infliger-des-degats-aux-navires) · [L'équipage comme ressource](#lequipage-comme-ressource--le-round-naval).
+**Voir aussi.** [Arme d'équipe](#artillerie--arme-déquipe-et-sous-effectif) · [Pièces et munitions](#artillerie--pièces-et-munitions)
+· [Dégâts aux navires](#infliger-des-dégâts-aux-navires) · [L'équipage comme ressource](#léquipage-comme-ressource--le-round-naval).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.656) → `VolleyShot`, `RepairTick`, `sea-navigation`, `voie-d-eau`, `isOutOfAction` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`
@@ -304,8 +304,8 @@ pour Explosion. PAS de cas spécial « navires au contact » : un autre navire n
 générique (cible = personnage, distance via `sceneMetresPerTile`) l'attrape. Les Dégâts (+Indice/−Indice par bande),
 `woundsFromHit` et la propagation des États (`onHit`) sont COMMUNS aux deux branches.
 
-**Voir aussi.** [Critiques de navire (Éclats)](#critiques-de-navire-eclats-voie-deau-en-flammes) ·
-[Tir de batterie](#tir-de-batterie-la-bordee) · [Pièces et munitions](#artillerie--pieces-et-munitions).
+**Voir aussi.** [Critiques de navire (Éclats)](#critiques-de-navire-éclats-voie-deau-en-flammes) ·
+[Tir de batterie](#tir-de-batterie-la-bordée) · [Pièces et munitions](#artillerie--pièces-et-munitions).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 12` (l.466-472) → `crewedPenalty`, `ReloadModalView`, `crewedFireWeapon`, `firedWeapon`, `Weapon`, `tir-de-zone`, `attackModifiers`, `GameState`, `createCombatSlice`, `applyOups` — `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, +3 fichiers

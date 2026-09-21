@@ -346,6 +346,10 @@ const ATTENDU = {
     // `assemble` reçoit ce jetable par son `rawDir` (même couture que `cheminDeFiche`), l'arbre
     // n'est jamais écrit, et le banc mesure la fiche DANS le jetable.
     'scripts/raw/atlas-domain.workflow.test.mjs',
+    // +1 le 2026-09-22 (#1824) : l'outil qui répare les renvois d'ancre morts, ACQUIS par l'import de
+    // son banc — son `writeFileSync` vit derrière la porte `--apply` de `reparer`, que le banc ne
+    // passe que sur un Atlas JETABLE d'os.tmpdir() (`avecAtlasFixture`) ; l'arbre n'est jamais écrit.
+    'scripts/raw/reparer-ancres.mjs',
   ],
   'raw:check-refs': [],
   // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE
@@ -354,6 +358,10 @@ const ATTENDU = {
   // Mesure du 2026-09-11 (`scripts/docs/lib/enregistreur-lectures.mjs` en `--import` sur le CLI) :
   // 4 137 lectures, ZÉRO écriture.
   'raw:check-code-refs': ['scripts/raw/build-implemente.mjs'],
+  // La garde des renvois d'ancre de l'Atlas (#1824) n'atteint AUCUN module écrivain : elle lit les
+  // pages, calcule leurs ancres et rend son verdict — l'outil qui répare vit à côté
+  // (scripts/raw/reparer-ancres.mjs), et c'est LUI qui importe la garde, jamais l'inverse.
+  'raw:check-ancres': [],
   // +1 le 2026-09-19 (#1825 lot B) : même module, même porte — la gate ne passe pas
   // `--ecrire-stock`, elle COMPARE le stock à sa mesure et ne touche à rien.
   'raw:check-folio-continuity': ['scripts/raw/check-folio-continuity.mjs'],

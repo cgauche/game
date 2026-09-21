@@ -101,6 +101,8 @@ jobs:
       - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:check-code-refs
       - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run raw:check-ancres
+      - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:check-folio-continuity
       - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run raw:check-source-tables

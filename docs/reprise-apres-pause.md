@@ -201,7 +201,7 @@ gates sur CHAQUE branche `chantier/**`, et c'est son verdict — jamais un artef
 autorise une tête à entrer dans `main`. Elle CLASSE d'abord le push
 (`scripts/gates/classerPush.mjs`) : un push dont tous les fichiers changés tombent sous
 `.claude/`, `.agents/`, `.codex/`, `AGENTS.md`, `CLAUDE.md` ne joue que les 8 gates qui LISENT un de
-ces chemins (`agents:check`, `test:agents`, `test:hooks`, `test:ops`, `test:docs`, `deps:unused`, `docs:check`, `docs:empreinte`) ; les 17 autres sont sautées.
+ces chemins (`agents:check`, `test:agents`, `test:hooks`, `test:ops`, `test:docs`, `deps:unused`, `docs:check`, `docs:empreinte`) ; les 18 autres sont sautées.
 
 `npm run ops:publier` joue le train : rebase, docs dérivés, push de la BRANCHE, attente du run CI de
 cette branche, fast-forward de `main`, pilotage. Il refuse à la première étape rouge en la nommant,
@@ -221,7 +221,7 @@ nomme 4 refus, et celui qui exige un run vert ne vaut que pour la ref `main`.
 Ajouter une gate, c'est ajouter UN step à `ci.yml` — rien d'autre ne la récite.
 
 **Rejeu LOCAL `npm run gates`** (`node scripts/gates/toutes.mjs`), un confort de diagnostic, jamais une porte :
-25 gates classées, d'abord
+26 gates classées, d'abord
 une phase SÉRIE `AVANT_LES_LANES` (`raw:coverage`, `raw:reconcile`, `raw:reanchor`) — les gates qui ÉCRIVENT dans
 l'arbre, jouées seules pour qu'aucun lecteur ne tombe sur un fichier à moitié écrit — puis
 3 lanes parallèles de LECTEURS :
@@ -230,10 +230,10 @@ l'arbre, jouées seules pour qu'aucun lecteur ne tombe sur un fichier à moitié
 |---|---|
 | `suite` | `test` |
 | `types` | `typecheck`, `lint`, `deps:unused`, `server:typecheck`, `test:agents`, `test:ops`, `test:runner`, `test:recette`, `test:hooks` |
-| `docs` | `docs:check`, `docs:empreinte`, `test:raw`, `raw:check-refs`, `raw:check-code-refs`, `raw:check-folio-continuity`, `raw:check-source-tables`, `raw:check-source-format`, `raw:check-source-puces`, `test:docs`, `agents:check`, `build` |
+| `docs` | `docs:check`, `docs:empreinte`, `test:raw`, `raw:check-refs`, `raw:check-code-refs`, `raw:check-ancres`, `raw:check-folio-continuity`, `raw:check-source-tables`, `raw:check-source-format`, `raw:check-source-puces`, `test:docs`, `agents:check`, `build` |
 
 Les deux tables vivent dans `scripts/gates/toutes.mjs` : `LANES` pour la répartition ci-dessus,
-`ECRIT_LU` pour ce que CHAQUE gate écrit et lit (25 gates mesurées, dont
+`ECRIT_LU` pour ce que CHAQUE gate écrit et lit (26 gates mesurées, dont
 11 écrivain(s) — écriture de chaque run ou écriture POSSIBLE à porte nommée) ; c'est elle
 qui rend le classement vérifiable plutôt que déclaratif. La suite est BORNÉE par `WFRP_TEST_COEURS`
 pendant que les autres lanes tournent. Options : `--gates`, `--liste`, `--serie`. Une gate de `ci.yml`
@@ -243,4 +243,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: 29985facaafb4f0652ceaa266c83a48cf4de74bd (25 fichiers, 8 dossiers) corps: 5366736a8a3407eb90269ac6553da842bcb9acae -->
+<!-- sources-empreinte: e351c392c0681cc3648aac8ce85469b667b9f108 (25 fichiers, 8 dossiers) corps: 3db39668742122a58f1b607bcbabb4eb224be038 -->

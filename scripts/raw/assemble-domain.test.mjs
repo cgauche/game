@@ -5,11 +5,12 @@
 // Les cœurs RÉELS viennent du registre par leur RÉGIME — aucun cœur nommé dans ce banc.
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { listerArbre } from '../guards/lib/lister.mjs'
 import { coeursDuRegistre } from './_lib.mjs'
+import { tableDAncres } from './lib/ancres.mjs'
 import { assemble, cheminDeFiche, coeurDuRendu, domainesSautes, dossierDuCoeur, RAWDIR, topicsInfideles } from './assemble-domain.mjs'
 
 /** `assemble` ECRIT : tout ce qui le JOUE le pointe sur un Atlas JETABLE, jamais sur `docs/raw/`.
@@ -125,6 +126,41 @@ test('assemble : un domaine que le rendu déclare SAUTÉ refuse la publication, 
     // Un domaine que `sautes` ne nomme PAS s'assemble normalement : le refus est ciblé.
     const r = assemble({ domain: 'un-autre-domaine', title: 'Un Autre', topics: [topic(true)] }, { racine, rawDir })
     assert.equal(existsSync(r.path), true)
+  })
+})
+
+// SOMMAIRE — il vise l'ancre que la PAGE pose, calculée par la définition unique (`lib/ancres.mjs`,
+// #1824). Deux topics HOMONYMES sont le cas qui départage : une grammaire de slug locale rendrait
+// deux fois la même cible, et la seconde entrée du Sommaire renverrait sur la première section.
+test('assemble : le Sommaire vise les ancres RÉELLES de la page, homonymes suffixés compris', () => {
+  avecAtlasJetable((rawDir) => {
+    const coeur = coeursDuRegistre()[0]
+    const topicDe = (id, titre) => ({ topicId: id, title: titre, markdown: `## ${titre}\n\nUn corps.`, refs: [], faithful: true })
+    const r = assemble(
+      {
+        coeur,
+        domain: 'un-domaine-jamais-declare',
+        title: 'Un Domaine',
+        topics: [topicDe('un', 'Cadre général « Entre deux aventures »'), topicDe('deux', 'Surprise'), topicDe('trois', 'surprise')],
+      },
+      { rawDir },
+    )
+    const page = readFileSync(r.path, 'utf8')
+    const cibles = [...page.matchAll(/^- \[[^\]]*\]\(#([^)]*)\)$/gm)].map((m) => m[1])
+    assert.deepEqual(cibles, ['cadre-général--entre-deux-aventures-', 'surprise', 'surprise-1'])
+    const table = tableDAncres(page)
+    for (const cible of cibles) assert.ok(table.has(cible), `l’ancre « ${cible} » doit exister dans la page`)
+  })
+})
+
+test('assemble : un topic qui n’ouvre sur AUCUN titre REFUSE la publication, et il est NOMMÉ', () => {
+  avecAtlasJetable((rawDir) => {
+    const coeur = coeursDuRegistre()[0]
+    const sansTitre = { topicId: 'sans-titre', title: 'Sans Titre', markdown: 'Un corps sans titre.', refs: [], faithful: true }
+    assert.throws(
+      () => assemble({ coeur, domain: 'un-domaine-jamais-declare', title: 'Un Domaine', topics: [sansTitre] }, { rawDir }),
+      /« sans-titre ».*n'ouvre sur AUCUN titre/s,
+    )
   })
 })
 
