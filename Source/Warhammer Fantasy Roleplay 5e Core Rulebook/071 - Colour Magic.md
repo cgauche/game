@@ -76,9 +76,7 @@ You call on the wild power of *Ghur* to infuse you, surrendering to its savage d
 
 # **Lore of Death**
 
-**Lore Attribute:** The Purple Wind of *Shyish*  carries with it dry, dusty draughts and the insistent rustling of sand passing through time's hourglass. Targets afflicted by spells
-
-from the Lore of Death are drained of life, enervated, and listless. You may assign 1 *Fatigued* Condition to any living target affected by a Spell from this Lore. A target may only ever have a single *Fatigued* Condition gained in this manner at any time.
+**Lore Attribute:** The Purple Wind of *Shyish*  carries with it dry, dusty draughts and the insistent rustling of sand passing through time's hourglass. Targets afflicted by spells from the Lore of Death are drained of life, enervated, and listless. You may assign 1 *Fatigued* Condition to any living target affected by a Spell from this Lore. A target may only ever have a single *Fatigued* Condition gained in this manner at any time.
 
 **Ingredients:** The bones of sentient creatures feature heavily in Amethyst Magic, as do the trappings of death, including wood or nails from coffins, embalming fluids, hourglasses, silver coins, and grave dirt, all carefully presented or engraved. Purple gemstones, materials, and flowers (particularly roses) are also common.
 
@@ -144,9 +142,7 @@ Your touch brings the release of death to a single creature standing at Morr's t
 
 # **Lore of Fire**
 
-**Lore Attribute:** The Lore of Fire, and the Bright Wind of *Aqshy*, are anything but subtle. Bright spells are bellowed with fervour and manifest themselves in bombastic fashion,
-
-with bright flame and searing heat. You may inflict 1 *Ablaze*  Condition on anyone targeted by Spells from the Lore of Fire unless they also possess the *Arcane Magic (Fire)* Talent.
+**Lore Attribute:** The Lore of Fire, and the Bright Wind of *Aqshy*, are anything but subtle. Bright spells are bellowed with fervour and manifest themselves in bombastic fashion, with bright flame and searing heat. You may inflict 1 *Ablaze*  Condition on anyone targeted by Spells from the Lore of Fire unless they also possess the *Arcane Magic (Fire)* Talent.
 
 **Ingredients:** Pyromancers use a wide selection of flammable materials as ingredients, which are often immolated as the spell is cast, including coal, oils, fats, and ruddy woods. Trappings immune to fire are also common, such as iron keys, carved sections of fire grate, and small oven stones.
 
@@ -222,9 +218,7 @@ The precise time needed to eliminate the Corrupting Influence is determined by t
 
 # **Lore of Heavens**
 
-**Lore Attribute:** Spells cast from the Lore of Heavens are accompanied by the crackling of lightning and the smell of ozone. Spells that cause Damage ignore Armour Points from
-
-metal armour. Further, casting any Celestial Spell gives you a glimpse of the immediate future: gain 1 Fortune Point, which you can use until the start of your next Turn.
+**Lore Attribute:** Spells cast from the Lore of Heavens are accompanied by the crackling of lightning and the smell of ozone. Spells that cause Damage ignore Armour Points from metal armour. Further, casting any Celestial Spell gives you a glimpse of the immediate future: gain 1 Fortune Point, which you can use until the start of your next Turn.
 
 **Ingredients:** Astronomical instruments, charts, lenses, and symbols dominate Celestial Magic, as do ingredients associated with augury, such as animal innards, mirrors, glass balls, and bird tongues. Some wind-based spells use wings and feathers, whereas those involving electricity prefer slivers of carved metal.
 
@@ -298,9 +292,7 @@ The Mystic Career can gain access to the *Arcane Magic (Heavens)* Talent. Mystic
 
 # **Lore of Life**
 
-**Lore Attribute:** Spells cast with *Ghyran*, the Jade Wind, are suffused with life, tending to manifest with a vibrant green light. They are often accompanied by natural phenomena
-
-given supernatural qualities. Vines, undergrowth, trees, and rivers all bend to the druid's will.
+**Lore Attribute:** Spells cast with *Ghyran*, the Jade Wind, are suffused with life, tending to manifest with a vibrant green light. They are often accompanied by natural phenomena given supernatural qualities. Vines, undergrowth, trees, and rivers all bend to the druid's will.
 
 Living creatures — those without the *Construct*, *Daemonic*, *Ethereal*, or *Undead* Creature Traits — targeted by Spells from the Lore of Life have all *Bleeding* and *Fatigued* Conditions removed after any other effects have been applied as life magic floods through them. Undead targets suffer additional WPB Wounds, ignoring Toughness Bonus and Armour Points.
 
@@ -373,9 +365,7 @@ Your target gains the *Regeneration* Creature Trait (see page 360).
 
 # **Lore of Light**
 
-**Lore Attribute:** Spells sung from the Lore of Light tend to emit dazzling rays of blinding white light or shroud the caster in shimmering waves of radiance You may
-
-choose to inflict one *Blinded* Condition on those targeted by Lore of Light Spells unless they possess the *Arcane Magic (Light)* Talent. Targets with the *Daemonic* or *Undead* Creature Traits also suffer additional IntB Wounds, ignoring Toughness Bonus and Armour Points.
+**Lore Attribute:** Spells sung from the Lore of Light tend to emit dazzling rays of blinding white light or shroud the caster in shimmering waves of radiance You may choose to inflict one *Blinded* Condition on those targeted by Lore of Light Spells unless they possess the *Arcane Magic (Light)* Talent. Targets with the *Daemonic* or *Undead* Creature Traits also suffer additional IntB Wounds, ignoring Toughness Bonus and Armour Points.
 
 **Ingredients:** Hierophants of the Lore of Light use many artefacts associated with holiness, supplemented by crystals, glass, pyramidions, and small statues carved with sacred symbols, twisting snakes, and moral tales. White candles, silver carvings, and bleached paper are also common.
 
@@ -443,9 +433,7 @@ A lattice of *Hysh* overlays your mind, allowing you to think rapidly. Gain +20 
 
 # **Lore of Metal**
 
-**Lore Attribute:** The Wind of *Chamon* is dense, and attaches itself to metallic substances. Spells from this lore are accompanied with golden light and heat and are especially
-
-effective against foes wearing metal armour. Spells inflicting Damage ignore Armour Points from metal armour and inflict bonus Damage equal to the number of Armour Points of metal armour being worn on any Hit Location struck. So, if your Spell hit an Arm Location protected by 2 Armour Points of metal armour, it would cause an additional +2 Damage and ignore the Armour Points.
+**Lore Attribute:** The Wind of *Chamon* is dense, and attaches itself to metallic substances. Spells from this lore are accompanied with golden light and heat and are especially effective against foes wearing metal armour. Spells inflicting Damage ignore Armour Points from metal armour and inflict bonus Damage equal to the number of Armour Points of metal armour being worn on any Hit Location struck. So, if your Spell hit an Arm Location protected by 2 Armour Points of metal armour, it would cause an additional +2 Damage and ignore the Armour Points.
 
 **Ingredients:** Heavy metals of all types, esoterically inlaid or carved, comprise the majority of ingredients, though many spells also use trappings associated with a forge, including sections of a bellows marked with mathematical formula, inscribed chunks of an anvil, or fragments of a furnace.
 
@@ -518,9 +506,7 @@ You wrench *Chamon* from the metals worn by your foes, and the earth itself, bri
 
 # **Lore of Shadows**
 
-**Lore Attribute:** Spells cast from the Lore of Shadows are surreptitious and sly: the Magick may be muttered stealthily. Any protective Spells you cast wreathe you in
-
-shadows and billowing smoke, providing +2 SL to Stealth Tests for the duration of the Spell.
+**Lore Attribute:** Spells cast from the Lore of Shadows are surreptitious and sly: the Magick may be muttered stealthily. Any protective Spells you cast wreathe you in shadows and billowing smoke, providing +2 SL to Stealth Tests for the duration of the Spell.
 
 Furthermore, all Spells cast from the Lore of Shadows inflicting Damage ignore all non-magical Armour Points.
 

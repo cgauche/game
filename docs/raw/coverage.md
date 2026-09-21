@@ -667,8 +667,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.316-339 « Hunter's Eye » — candidat trou de règle, 0 réf
   - ⬜ l.340-743 « Invoke (Deity) » — candidat trou de règle, 0 réf
 - **CRB 024** (Making a Test) :
-  - ⬜ l.23-34 « DARKNESS AND TESTS » — candidat trou de règle, 0 réf
-  - ⬜ l.35-143 « CRITICALS AND FUMBLES » — candidat trou de règle, 0 réf
+  - ⬜ l.25-36 « DARKNESS AND TESTS » — candidat trou de règle, 0 réf
+  - ⬜ l.37-145 « CRITICALS AND FUMBLES » — candidat trou de règle, 0 réf
 - **CRB 027** (Theft and Skullduggery) :
   - ⬜ l.49-106 « EXAMPLE DIFFICULTIES OF COMMON UNDERHANDED TASKS » — candidat trou de règle, 0 réf
   - ⬜ l.107-258 « EXAMPLE OUTCOMES » — candidat trou de règle, 0 réf
@@ -767,7 +767,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.155-226 « Dispelling Persistent Spells » — candidat trou de règle, 0 réf
   - ⬜ l.227-596 « Animal Friend » — candidat trou de règle, 0 réf
 - **CRB 071** (Colour Magic) :
-  - ⬜ l.392-588 « Blinding Light » — candidat trou de règle, 0 réf
+  - ⬜ l.382-574 « Blinding Light » — candidat trou de règle, 0 réf
 - **CRB 076** (Running the Game) :
   - ⬜ l.105-153 « Extended Tests » — candidat trou de règle, 0 réf
   - ⬜ l.154-240 « Roads & Rivers » — candidat trou de règle, 0 réf
@@ -2162,4 +2162,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: c2dc5891a2711165c5b71f092ee1d9b61fee618d (461 fichiers, 20 dossiers) corps: d99df33492586451990f721a29661836a4b89496 -->
+<!-- sources-empreinte: b8a19c96c9681f69a54901a49aff895001a1666a (461 fichiers, 20 dossiers) corps: 8cc89259a03d0eba336e53260f107805eb060ea5 -->

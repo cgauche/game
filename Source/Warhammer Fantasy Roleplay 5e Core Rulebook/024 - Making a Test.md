@@ -2,6 +2,8 @@
 
 # MAKING A TEST
 
+# **DESCRIBE ACTION**
+
 - Player describes what their Character is trying to do.
 - GM determines if a Test is required. If it is, GM explains any factors affecting the action that would be obvious to the Character.
 - If the player still wishes to proceed, the GM decides what Skill or Characteristic to Test.
