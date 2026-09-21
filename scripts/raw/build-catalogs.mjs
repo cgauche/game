@@ -16,6 +16,7 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, blockStartRe, chapterFile as chapterFileLib, esc, livresDeCatalogue, pagesDeLAtlas, readText } from './_lib.mjs'
+import { titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 
 export const RAWDIR = 'docs/raw'
@@ -96,7 +97,7 @@ export const idsDeCatalogue = () => CATALOGUES.map((c) => c.id)
 function chapterFile(abbr, nn, range) {
   const c = chapterFileLib(abbr, nn, range)
   if (!c) return null
-  const title = c.file.replace(/^\d+ - /, '').replace(/\.md$/, '')
+  const title = titreDuFichier(c.file)
   const text = c.text ?? readText(c.path).trim()
   return { title, text }
 }

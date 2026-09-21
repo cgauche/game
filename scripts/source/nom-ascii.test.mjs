@@ -5,6 +5,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { nomAscii } from './nom-ascii.mjs'
+import { estNomDExtraction, graphieDeChapitre, largeurDeChapitre } from '../../src/data/source/decoupe.ts'
 
 const RACINE = fileURLToPath(new URL('../../', import.meta.url))
 const estAscii = (s) => [...s].every((c) => c.codePointAt(0) >= 0x20 && c.codePointAt(0) <= 0x7e)
@@ -47,11 +48,12 @@ test('les 3 cas NFD réels du disque (« Boîte », i + U+0302)', () => {
 })
 
 test('un titre qui se VIDE reste dans la forme canonique `NN - <titre>.md`', () => {
-  // `12.md` sortirait de `/^\d+ - .*\.md$/` — la forme que sept scanners lisent, et que `buildFolioToc`
-  // exige pour porter le chapitre à l'index.
+  // `12.md` sortirait du motif d'extraction (`estNomDExtraction`, la forme UNE que tous les
+  // scanners lisent), et que `buildFolioToc` exige pour porter le chapitre à l'index.
   assert.equal(nomAscii('12 - ￼.md'), '12 - Sans titre.md')
   assert.equal(nomAscii('12 - .md'), '12 - Sans titre.md')
-  assert.match(nomAscii('12 - ￼.md'), /^\d+ - .*\.md$/)
+  assert.ok(estNomDExtraction(nomAscii('12 - ￼.md')))
+  assert.ok(!estNomDExtraction('12.md'))
 })
 
 test('un nom qui se réduit au VIDE LÈVE (un fichier a un nom)', () => {
@@ -96,7 +98,7 @@ test('les titres de `split-vdm.mjs` (— et œ) rendent des noms ASCII', () => {
   assert.equal(titres.length, 15)
   assert.ok(titres.some((t) => /[^\x20-\x7e]/.test(t)), 'le banc mesurerait un corpus déjà ASCII')
   for (const [i, t] of titres.entries()) {
-    assert.ok(estAscii(nomAscii(`${String(i + 1).padStart(2, '0')} - ${t}.md`)), t)
+    assert.ok(estAscii(nomAscii(`${graphieDeChapitre(i + 1, largeurDeChapitre(titres.length))} - ${t}.md`)), t)
   }
 })
 

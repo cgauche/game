@@ -14,8 +14,10 @@ import { listerDossier } from '../../../scripts/guards/lib/lister.mjs';
 import {
   type ChapitreParse, type Fragment, type FragmentBlocs, type FragmentCellule, type Resolu,
   type Section, type TableParse,
-  blocsCouverts, blocsPlats, cellRefFor, empreinteDe, estErreur, findCells, normText, parseChapitre,
-  parseTable, resoudreAdresse, resoudreFragment, sumOf, tablesOf,
+  blocsCouverts, blocsPlats, cellRefFor, empreinteDe, estErreur, estGraphieDeChapitre,
+  estNomDExtraction, estNumeroDeChapitre, fichierDuChapitre, findCells, graphieDeChapitre,
+  graphieDuFichier, largeurDeChapitre, normText, numeroDuFichier, parseChapitre, parseTable,
+  prefixesDeChapitres, resoudreAdresse, resoudreFragment, sumOf, tablesOf, titreDuFichier,
 } from './decoupe.ts';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
@@ -207,6 +209,63 @@ describe('blocsPlats — mémo par identité', () => {
   });
 });
 
+describe('numéro de chapitre — un ENTIER, une graphie à la largeur de son LIVRE', () => {
+  it('la largeur est celle du plus grand numéro du livre, DEUX au minimum', () => {
+    expect(largeurDeChapitre(1)).toBe(2);
+    expect(largeurDeChapitre(85)).toBe(2);
+    expect(largeurDeChapitre(99)).toBe(2);
+    expect(largeurDeChapitre(100)).toBe(3);
+    expect(largeurDeChapitre(120)).toBe(3);
+    expect(largeurDeChapitre(1000)).toBe(4);
+  });
+
+  it('la graphie zéro-padde à la largeur reçue, et n’ampute jamais un numéro plus large', () => {
+    expect(graphieDeChapitre(7, largeurDeChapitre(85))).toBe('07');
+    expect(graphieDeChapitre(21, largeurDeChapitre(85))).toBe('21');
+    expect(graphieDeChapitre(7, largeurDeChapitre(120))).toBe('007');
+    expect(graphieDeChapitre(99, largeurDeChapitre(120))).toBe('099');
+    expect(graphieDeChapitre(105, largeurDeChapitre(120))).toBe('105');
+    expect(graphieDeChapitre(105, 2)).toBe('105');
+  });
+
+  it('refuse ce qui n’est pas un numéro de chapitre : zéro, négatif, non entier', () => {
+    for (const n of [0, -1, 1.5, Number.NaN]) {
+      expect(estNumeroDeChapitre(n), `estNumeroDeChapitre(${n})`).toBe(false);
+      expect(() => largeurDeChapitre(n), `largeurDeChapitre(${n})`).toThrow(/entier ≥ 1/);
+      expect(() => graphieDeChapitre(n, 2), `graphieDeChapitre(${n})`).toThrow(/entier ≥ 1/);
+    }
+    expect(estNumeroDeChapitre(1)).toBe(true);
+    expect(estNumeroDeChapitre('1')).toBe(false);
+  });
+
+  it('l’INDEX n’est pas un chapitre : `00 - Index.md` ne porte aucun numéro, et `00` ne résout rien', () => {
+    expect(numeroDuFichier('00 - Index.md')).toBeNull();
+    expect(graphieDuFichier('00 - Index.md')).toBeNull();
+    // Un `00 - Autre.md` non plus : c'est le NUMÉRO qui tranche, jamais le nom de l'index.
+    expect(numeroDuFichier('00 - Prologue.md')).toBeNull();
+    expect(numeroDuFichier('07 - Peur.md')).toBe(7);
+    expect(graphieDuFichier('007 - Peur.md')).toBe('007');
+    expect(titreDuFichier('00 - Index.md')).toBe('Index');
+    // Le motif d'EXTRACTION, lui, couvre l'index : c'est la question des gardes de FORME.
+    expect(estNomDExtraction('00 - Index.md')).toBe(true);
+    expect(estNomDExtraction('Index.md')).toBe(false);
+
+    const listing = ['00 - Index.md', '07 - Peur.md', '105 - Suite.md'];
+    expect(prefixesDeChapitres(listing)).toEqual(['07', '105']);
+    for (const nul of [0, '00', '', null, undefined, 'x']) {
+      expect(fichierDuChapitre(listing, nul), `fichierDuChapitre(…, ${JSON.stringify(nul)})`).toBeNull();
+    }
+    expect(fichierDuChapitre(listing, '007')).toBe('07 - Peur.md');
+  });
+
+  it('la GRAPHIE d’un `ch` d’adresse : deux chiffres au moins, et un numéro de CHAPITRE', () => {
+    for (const bon of ['07', '21', '105', '0105']) expect(estGraphieDeChapitre(bon), bon).toBe(true);
+    for (const mauvais of ['00', '000', '7', '', 'ch7', '2a', '-1']) {
+      expect(estGraphieDeChapitre(mauvais), mauvais).toBe(false);
+    }
+  });
+});
+
 describe('sumOf — empreinte 64 bits', () => {
   it('rend 16 hex dont les deux moitiés DIFFÈRENT (deux sels distincts)', () => {
     const sec = sectionOf('21', 'peur-indice');
@@ -224,9 +283,9 @@ describe('sumOf — empreinte 64 bits', () => {
     for (const livre of LIVRES.filter((b) => b.dir)) {
       const dir = join(RACINE, livre.dir!);
       for (const f of listerDossier(dir)) {
-        const m = /^(\d{2}) - .+\.md$/.exec(f);
-        if (!m) continue;
-        for (const b of blocsPlats(chapitreDe(livre.id, m[1]))) {
+        const graphie = graphieDuFichier(f);
+        if (graphie == null) continue;
+        for (const b of blocsPlats(chapitreDe(livre.id, graphie))) {
           if (!b.norm) continue;
           blocsVus++;
           const vu = parSum.get(sumOf(b.md));

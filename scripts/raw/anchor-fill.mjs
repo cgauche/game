@@ -44,11 +44,12 @@ import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { BOOKS, normalize, readText } from './_lib.mjs'
+import { numeroDuFichier } from '../../src/data/source/decoupe.ts'
 import { offsetToLine, headAnchor } from './reanchor.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 export const PDF_EXTRACT_SCRIPT = join(HERE, 'lib', 'pdf-extract.py')
-const CHAPTER_RE = /^(\d+) - .*\.md$/
+
 const HEADER_RE = /^\*Pages PDF (\d+)(?:-(\d+))?\*/
 const ANCHOR_RE = /id="page-(\d+)-0" data-folio="(-?\d+)"/g
 const FOLIO_ONLY_RE = /data-folio="(-?\d+)"/g
@@ -104,7 +105,7 @@ export function compactAnchor(joined, head, min = COMPACT_MIN) {
 // ---------- offset (id pypdf 0-based) - (folio imprimé), constant par livre ----------
 export function resolveBookOffset(dir) {
   if (!existsSync(dir)) return { ok: false, reason: 'dossier introuvable' }
-  const files = listerDossier(dir, { absent: 'vide' }).filter((f) => CHAPTER_RE.test(f))
+  const files = listerDossier(dir, { absent: 'vide' }).filter((f) => numeroDuFichier(f) != null)
   const offsets = new Set()
   let count = 0
   for (const file of files) {
@@ -331,8 +332,8 @@ export function runBook(abbr, { chapter = null, apply = false, dir: dirOverride,
   if (!existsSync(pdfPath)) return { abbr, ok: false, reason: `PDF introuvable : ${pdfPath}` }
 
   if (!existsSync(dir)) return { abbr, ok: false, reason: 'dossier introuvable' }
-  let files = listerDossier(dir, { absent: 'vide' }).filter((f) => CHAPTER_RE.test(f))
-  if (chapter != null) files = files.filter((f) => Number(f.match(CHAPTER_RE)[1]) === Number(chapter))
+  let files = listerDossier(dir, { absent: 'vide' }).filter((f) => numeroDuFichier(f) != null)
+  if (chapter != null) files = files.filter((f) => numeroDuFichier(f) === Number(chapter))
 
   // Passe 1 (à sec) : détermine les folios manquants de chaque chapitre → K à extraire.
   const texts = new Map()

@@ -27,6 +27,7 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT, pagesDeLAtlas, readText } from './_lib.mjs'
+import { graphieDuFichier } from '../../src/data/source/decoupe.ts'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
@@ -171,11 +172,11 @@ function extractQuote(preceding) {
 const BOOK_DIR = new Map(BOOKS)
 function crossChapter(abbr, head, excludeCh) {
   const dir = BOOK_DIR.get(abbr); if (!dir) return null
-  const files = listerDossier(dir, { absent: 'vide' }).filter((f) => /^\d+ - .*\.md$/.test(f))
+  const files = listerDossier(dir, { absent: 'vide' })
   const hits = []
   for (const f of files) {
-    const nn = f.match(/^(\d+) - /)[1]
-    if (Number(nn) === Number(excludeCh)) continue
+    const nn = graphieDuFichier(f)
+    if (nn == null || Number(nn) === Number(excludeCh)) continue
     const li = lineIndex(abbr, nn); if (!li) continue
     const { occ } = headAnchor(li.joined, head)
     if (occ.length === 1) hits.push({ ch: Number(nn), line: offsetToLine(occ[0], li.lineStartOffset) })

@@ -8,6 +8,7 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { mdsDeMarker, mdsDeRestitutions, pagesDeMarker, deballerSup, verifierExtraction, commandeRestitution } from './lib/marker-pages.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
+import { graphieDeChapitre, largeurDeChapitre } from '../../src/data/source/decoupe.ts'
 
 const DRY = process.argv.slice(2).includes('--dry')
 
@@ -81,6 +82,8 @@ for (let c = 1; c < CHAPTERS.length; c++) {
 if (CHAPTERS[CHAPTERS.length - 1][1] > lastPage) { console.error(`DERNIER CHAPITRE HORS EXTRACTION (${lastPage} pages)`); process.exit(1) }
 
 if (!DRY) mkdirSync(OUT, { recursive: true })
+// LARGEUR du dossier, arrêtée AVANT le premier fichier : tous les préfixes d'un livre la partagent.
+const LARGEUR = largeurDeChapitre(CHAPTERS.length)
 const idxRows = []
 for (let c = 0; c < CHAPTERS.length; c++) {
   const [title, startPage] = CHAPTERS[c]
@@ -91,7 +94,7 @@ for (let c = 0; c < CHAPTERS.length; c++) {
   const body = deballerSup(brut)
   const sups = (brut.match(/<sup>/g) || []).length
   const span = endPage > startPage ? `${startPage}-${endPage}` : `${startPage}`
-  const nn = String(c + 1).padStart(2, '0')
+  const nn = graphieDeChapitre(c + 1, LARGEUR)
   const nom = nomAscii(`${nn} - ${title}.md`)
   if (!DRY) writeFileSync(join(OUT, nom), `*Pages PDF ${span}*\n\n${body}\n`)
   idxRows.push(`- [${nn} - ${title}](<${nom}>) — p.${span}`)

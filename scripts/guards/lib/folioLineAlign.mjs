@@ -15,10 +15,14 @@
 // Module ESM pur (`node` nu), consommé par `src/data/folio-line-align.test.ts` (cliquet).
 import { readFileSync } from 'node:fs'
 import { listerDossier } from './lister.mjs'
+// Le NUMÉRO DE CHAPITRE (prédicat, motif, résolution) vient de sa maison PURE, jamais de la couche
+// `scripts/raw` — `guards/lib` n'en dépend pas.
+import { fichierDuChapitre } from '../../../src/data/source/decoupe.ts'
 import { join } from 'node:path'
 
-/** Citation à la ligne : `LDB 12 l.28`, `ADE II 09 l.3`, `AA 07 l.1-185`, `MDG 14 l.13-19`… */
-const LINE_CITE_RE = /^([A-Za-zÀ-ÿ]+(?:\s+I{1,3})?)\s+(\d{1,2})\s+l\.(\d+)/
+/** Citation à la ligne : `LDB 12 l.28`, `ADE II 09 l.3`, `AA 07 l.1-185`, `MDG 14 l.13-19`… Le
+ *  numéro de chapitre y est de LARGEUR QUELCONQUE, comme dans `refRe` (`scripts/raw/_lib.mjs`). */
+const LINE_CITE_RE = /^([A-Za-zÀ-ÿ]+(?:\s+I{1,3})?)\s+(\d+)\s+l\.(\d+)/
 
 /** Découpe une citation à la ligne en `{abbr, chapter, line}` — `null` si la forme n'en est pas une.
  *  PUR (aucun disque). @param {unknown} cite @returns {{abbr:string,chapter:number,line:number}|null} */
@@ -194,8 +198,7 @@ export function makeChapterReader(books) {
     const dir = dirs.get(abbr)
     let res = null
     if (dir) {
-      const pad = String(Number(ch)).padStart(2, '0')
-      const f = listerDossier(dir, { absent: 'vide' }).find((x) => x.startsWith(pad + ' - ') && x.endsWith('.md'))
+      const f = fichierDuChapitre(listerDossier(dir, { absent: 'vide' }), ch)
       if (f) res = readFileSync(join(dir, f), 'utf8').split('\n')
     }
     cache.set(key, res)

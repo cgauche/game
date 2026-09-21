@@ -23,6 +23,10 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, readText } from './_lib.mjs'
+// Cet instrument juge la FORME de tout ce qui est servi, l'index COMPRIS : son stock le nomme sous
+// son numéro d'extraction (`AA 0 folio -2`). D'où `estNomDExtraction` / `numeroDExtraction`, et non
+// le prédicat de CHAPITRE.
+import { estNomDExtraction, numeroDExtraction } from '../../src/data/source/decoupe.ts'
 import { writeFileSync } from 'node:fs'
 import { cleDeSite, ecartDuVolet, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { lireStockJson, parCleDeSite, readStock, texteDeStock } from './stockNominatif.mjs'
@@ -31,7 +35,6 @@ const ICI = dirname(fileURLToPath(import.meta.url))
 export const STOCK_PATH = join(ICI, 'folio-gaps-stock.json')
 export const EMPTY_PERDUES_PATH = join(ICI, 'empty-folios-perdues-stock.json')
 export const EMPTY_BENIGNES_PATH = join(ICI, 'empty-folios-benignes-stock.json')
-const CHAPTER_FILE_RE = /^(\d+) - .*\.md$/
 const HEADER_RE = /^\*Pages PDF (\d+)(?:-(\d+))?\*/
 const ANCHOR_RE = /id="page-(\d+)-0" data-folio="(-?\d+)"/g
 
@@ -70,7 +73,7 @@ export function chapterFolioSpan(text) {
 // l'appelle pour son propre compte, le corpus est donc lu DEUX fois par exécution du CLI (312
 // fichiers, coût mesuré négligeable devant la CI). Dossier introuvable → Map vide (hors sujet).
 export function chapterTexts(dir) {
-  const files = listerDossier(dir, { absent: 'vide' }).filter((f) => CHAPTER_FILE_RE.test(f))
+  const files = listerDossier(dir, { absent: 'vide' }).filter(estNomDExtraction)
   return new Map(files.map((f) => [f, readText(join(dir, f))]))
 }
 
@@ -91,7 +94,7 @@ export function scanBookDir(abbr, dir) {
   for (const text of texts.values()) for (const m of text.matchAll(/data-folio="(\d+)"/g)) bookFolios.add(Number(m[1]))
   const out = []
   for (const file of files) {
-    const nn = Number(file.match(CHAPTER_FILE_RE)[1])
+    const nn = numeroDExtraction(file)
     const text = texts.get(file)
     const ref = `${abbr} ${nn}`
     const path = `${String(dir).split('\\').join('/').replace(/\/$/, '')}/${file}`
@@ -172,7 +175,7 @@ export function scanEmptyFoliosInBook(abbr, dir) {
   const racine = String(dir).split('\\').join('/').replace(/\/$/, '')
   const out = []
   for (const [file, text] of chapterTexts(dir)) {
-    const nn = Number(file.match(CHAPTER_FILE_RE)[1])
+    const nn = numeroDExtraction(file)
     for (const e of emptyFolioAnchorsInText(text)) {
       out.push({ abbr, nn, file, fichier: `${racine}/${file}`, ref: `${abbr} ${nn}`, ...e })
     }
@@ -281,7 +284,7 @@ function reportGaps() {
     const what = g.kind === 'fin'
       ? `folios ${g.from + 1}–${g.to} attendus après la dernière ancre (folio ${g.from}), ancrés nulle part dans le livre`
       : `folio ${g.from} → ${g.to} (Δ${g.delta})`
-    console.log(`${g.abbr} ${String(g.nn).padStart(2, '0')} (${g.file}) — ${what}`)
+    console.log(`${g.abbr} ${g.nn} (${g.file}) — ${what}`)
   }
   return true
 }

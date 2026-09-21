@@ -34,7 +34,7 @@ test('#1825 : tout `ch` résout un fichier-chapitre sous le `dir` de son livre',
   for (const e of TOUTES) {
     const livre = LIVRES_COUVERTS.get(e.book)
     if (!livre) continue
-    if (!chapterFile(livre.abbr, e.ch)) morts.push(`${livre.abbr} ${e.ch} (${e.ou}) — aucun « ${String(e.ch).padStart(2, '0')} - *.md » sous ${livre.dir}`)
+    if (!chapterFile(livre.abbr, e.ch)) morts.push(`${livre.abbr} ${e.ch} (${e.ou}) — aucun fichier-chapitre n°${e.ch} sous ${livre.dir}`)
   }
   assert.deepEqual(morts, [], `des chapitres déclarés ne résolvent AUCUN fichier :\n${morts.join('\n')}`)
 })

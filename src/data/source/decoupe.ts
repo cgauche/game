@@ -78,6 +78,109 @@ export type Fragment = FragmentBlocs | FragmentCellule;
 /** Adresse complète d'une prose : jusqu'à trois fragments d'un même chapitre d'un même livre. */
 export interface DescRef { book: string; ch: string; parts: Fragment[] }
 
+/* ─── LE NUMÉRO DE CHAPITRE — sa maison UNIQUE (#1739) ───────────────────────────────────────
+ * Le numéro est un ENTIER ; sa GRAPHIE (préfixe de fichier, `descRef.ch`, segment de route, libellé)
+ * est zéro-paddée à la largeur du plus grand numéro DU LIVRE, deux au minimum. Tout ce qui suit est
+ * PUR (aucune entrée/sortie) : le disque est l'affaire de `scripts/raw/_lib.mjs#chapterFile` et du
+ * lecteur fs, qui prennent ICI leur prédicat, leur motif et leur résolution.
+ * ────────────────────────────────────────────────────────────────────────────────────────────── */
+
+/** Nom d'un fichier d'EXTRACTION : un numéro, ` - `, un titre, `.md`. L'index `00 - Index.md` en est
+ *  un — c'est un fichier d'extraction, pas un chapitre. SEUL motif du dépôt. */
+const NOM_EXTRACTION = /^(\d+) - (.+)\.md$/;
+
+/** Largeur MINIMALE de la graphie d'un numéro de chapitre, quel que soit le livre. */
+const LARGEUR_MIN_CHAPITRE = 2;
+
+/** Un numéro de CHAPITRE est un ENTIER ≥ 1 : le `00` de l'index n'en est pas un, ni `''`, ni `NaN`.
+ *  SEUL prédicat du dépôt — tout site qui décide « est-ce un chapitre ? » passe par lui. */
+export const estNumeroDeChapitre = (n: unknown): n is number =>
+  typeof n === 'number' && Number.isInteger(n) && n >= 1;
+
+/** Le même prédicat, en EXIGENCE : ce qui n'est pas un numéro de chapitre lève, nommément. */
+function exigeNumeroDeChapitre(n: number, quoi: string): number {
+  if (!estNumeroDeChapitre(n)) {
+    throw new Error(`${quoi} : un numéro de chapitre est un entier ≥ 1, reçu ${JSON.stringify(n)}`);
+  }
+  return n;
+}
+
+/** Ce nom suit-il le motif d'extraction ? Index COMPRIS — la question des gardes de FORME, qui
+ *  jugent tout `.md` servi. La question « est-ce un chapitre ? » est `numeroDuFichier`. */
+export const estNomDExtraction = (nom: string): boolean => NOM_EXTRACTION.test(nom);
+
+/** Numéro d'EXTRACTION porté par un nom de fichier, ou `null` — celui de l'index est `0`, et c'est
+ *  sous ce numéro que les gardes de FORME le nomment (`AA 0 folio -2`). */
+export function numeroDExtraction(nom: string): number | null {
+  const m = NOM_EXTRACTION.exec(nom);
+  return m ? Number(m[1]) : null;
+}
+
+/** Numéro de CHAPITRE porté par un nom de fichier, ou `null` — l'index `00 - Index.md` et tout
+ *  préfixe nul en sont exclus par le prédicat. */
+export function numeroDuFichier(nom: string): number | null {
+  const n = numeroDExtraction(nom);
+  return estNumeroDeChapitre(n) ? n : null;
+}
+
+/** GRAPHIE du numéro portée par un nom de fichier-chapitre, TELLE QUE LE FICHIER L'ÉCRIT, ou `null`. */
+export function graphieDuFichier(nom: string): string | null {
+  return numeroDuFichier(nom) == null ? null : NOM_EXTRACTION.exec(nom)![1];
+}
+
+/** TITRE porté par un nom de fichier d'extraction, ou `null` — index compris (il a un titre). */
+export function titreDuFichier(nom: string): string | null {
+  return NOM_EXTRACTION.exec(nom)?.[2] ?? null;
+}
+
+/**
+ * Le fichier du chapitre `numero` dans un LISTING, ou `null`. La comparaison porte sur des ENTIERS :
+ * 7, `'07'` et `'007'` désignent le même chapitre, et ce qui n'est pas un numéro de chapitre (`''`,
+ * `0`, `'00'`, `null`) ne résout RIEN — l'index ne se résout pas comme un chapitre.
+ * Le PREMIER du listing est rendu ; sur un listing en ordre total, c'est le premier-TRIÉ, donc deux
+ * fichiers de même numéro rendent le même sur toute machine.
+ */
+export function fichierDuChapitre(fichiers: readonly string[], numero: unknown): string | null {
+  const n = Number(numero);
+  if (!estNumeroDeChapitre(n)) return null;
+  return fichiers.find((f) => numeroDuFichier(f) === n) ?? null;
+}
+
+/** Graphies des chapitres d'un LISTING, telles que les fichiers les écrivent, triées par ENTIER —
+ *  un tri de chaînes rangerait `100` avant `99` dès qu'un livre passe la centaine. */
+export const prefixesDeChapitres = (fichiers: readonly string[]): string[] =>
+  fichiers
+    .map(graphieDuFichier)
+    .filter((g): g is string => g != null)
+    .sort((a, b) => Number(a) - Number(b));
+
+/**
+ * LARGEUR de la graphie des numéros de chapitre d'un LIVRE : celle de son plus grand numéro, deux au
+ * minimum. Tous les préfixes d'un même dossier la partagent — sinon `07` et `100` se rangeraient
+ * dans le désordre au tri lexicographique de n'importe quel listeur. SEULE définition du dépôt :
+ * aucun autre site ne compte les chiffres d'un numéro de chapitre.
+ */
+export function largeurDeChapitre(plusGrandNumero: number): number {
+  const n = exigeNumeroDeChapitre(plusGrandNumero, 'largeurDeChapitre');
+  return Math.max(LARGEUR_MIN_CHAPITRE, String(n).length);
+}
+
+/**
+ * GRAPHIE d'un numéro de chapitre à la largeur de son livre : le préfixe de `NNN - Titre.md`, le `ch`
+ * d'une `DescRef`, le segment de la route `/source/<livre>/<NNN>.md`. SEULE définition du dépôt —
+ * la largeur lui est DONNÉE (`largeurDeChapitre`), elle n'est écrite nulle part.
+ */
+export function graphieDeChapitre(numero: number, largeur: number): string {
+  const n = exigeNumeroDeChapitre(numero, 'graphieDeChapitre');
+  return String(n).padStart(Math.max(LARGEUR_MIN_CHAPITRE, largeur), '0');
+}
+
+/** GRAPHIE recevable pour le `ch` d'une adresse : des chiffres, DEUX au minimum, et un numéro de
+ *  CHAPITRE (`'00'` désigne l'index, pas un chapitre). La largeur JUSTE pour le livre se juge à la
+ *  résolution, là où le livre est connu (`src/data/prose-resolution.test.ts`, volet F). */
+export const estGraphieDeChapitre = (s: string): boolean =>
+  /^\d{2,}$/.test(s) && estNumeroDeChapitre(Number(s));
+
 export type CodeErreur =
   | 'section-inconnue'
   | 'bornes-hors-limites'

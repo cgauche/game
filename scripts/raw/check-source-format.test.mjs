@@ -138,6 +138,23 @@ test('table-sans-separateur : un bloc de table sans ligne `|---|` est compté, s
   assert.deepEqual(sites.filter((s) => s.famille === 'table-sans-separateur').map((s) => s.ref), ['1/1 tables'])
 })
 
+test('largeur-de-numero : une largeur PAR DOSSIER, celle du plus grand numéro', () => {
+  const chap = (nom) => ({ ...chapitreCanonique(), nom })
+  const largeurs = (noms) => sitesDuDossier(DIR, noms.map(chap)).filter((s) => s.famille === 'largeur-de-numero')
+  // Deux chiffres tant que le livre tient sous 100 — aucun livre du corpus ne bouge.
+  assert.deepEqual(largeurs(['07 - A.md', '21 - B.md']), [])
+  // Passé la centaine, la largeur du dossier devient TROIS, pour tous ses fichiers.
+  assert.deepEqual(largeurs(['099 - A.md', '100 - B.md']), [])
+  assert.deepEqual(largeurs(['99 - A.md', '100 - B.md']).map((s) => s.ref), ['1 préfixe(s) hors largeur 3'])
+  assert.deepEqual(largeurs(['07 - A.md', '100 - B.md']).map((s) => s.ref), ['1 préfixe(s) hors largeur 3'])
+  // Le `fichier` nomme le PREMIER fichier hors largeur du dossier.
+  assert.deepEqual(largeurs(['07 - A.md', '08 - B.md', '100 - C.md']).map((s) => s.file), ['Source/Livre/07 - A.md'])
+  // `00 - Index.md` n'est pas un chapitre : il ne porte ni largeur ni écart.
+  assert.deepEqual(largeurs(['07 - A.md', '21 - B.md']).concat(
+    sitesDuDossier(DIR, [chap('07 - A.md'), indexVivant(['07 - A.md'])]).filter((s) => s.famille === 'largeur-de-numero'),
+  ), [])
+})
+
 // --- Le chemin DISQUE, sur de VRAIS dossiers jetables (aucune écriture dans l'arbre) ---
 
 /** Fabrique un dossier de livre sous `os.tmpdir()`. @returns {string} son chemin */
@@ -280,6 +297,8 @@ test('familles() n’est pas AVEUGLE : un dossier tout-défaut les rend TOUTES',
   const fichiers = [
     { nom: '01 - _GoBack.md', texte: '# Titre\n\n| A | B |\n| 1 | 2 |\n\nx<sup>1</sup>\n' },
     { nom: '02 - X.md', texte: '*Folio 4+*\n\n<span id="page-6-0" data-folio="4"></span>\ny\n' },
+    // Le chapitre 100 porte la largeur du dossier à TROIS : les deux autres sont alors hors largeur.
+    { nom: '100 - Y.md', texte: '*Folio 5+*\n\n<span id="page-7-0" data-folio="5"></span>\nz\n' },
     indexVivant(['99 - Absent.md']),
   ]
   assert.deepEqual([...new Set(familles(fichiers))].sort(), [...FAMILLES].sort())

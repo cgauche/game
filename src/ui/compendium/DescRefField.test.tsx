@@ -20,7 +20,7 @@ import { act, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { inferFields } from './editFields';
 import { DescRefField, PHRASE_REFUS, type ChargeursSource } from './DescRefField';
-import { empreinteDe, parseChapitre, resoudreAdresse, estErreur, type DescRef, type Fragment, type FragmentBlocs } from '../../data/source/decoupe';
+import { empreinteDe, parseChapitre, prefixesDeChapitres, resoudreAdresse, estErreur, type DescRef, type Fragment, type FragmentBlocs } from '../../data/source/decoupe';
 
 /** Ce que le chargeur injecté sert, et ce qu'on lui a demandé — réglable par cas. */
 const etat = { manifeste: true, appels: [] as string[] };
@@ -258,6 +258,43 @@ describe('MANIFESTE — le chapitre se PIOCHE et se NOMME, ou se saisit au numé
     await monter({ book: 'livre-de-base', ch: '21', parts: [] }, () => {});
     expect(appels).toContain('livre-de-base|21');
     expect(bouton('+ Fragment'), 'le chapitre chargé doit offrir d’ajouter un fragment').toBeTruthy();
+  });
+
+  it('SANS manifeste, la GRAPHIE vient de la fonction : `7` → « 07 », `105` → « 105 », vide → rien', async () => {
+    // Cette branche ne connaît PAS le livre (elle n'est montée que faute de liste) : elle pose la
+    // largeur MINIMALE du numéro, et aucun plafond littéral ne borne la saisie.
+    sonde(false);
+    const poses: (DescRef | undefined)[] = [];
+    // Porteur VIVANT : la graphie posée revient dans `value`, donc le champ rend bien ce qu'il a
+    // posé — sans lui, React réécrit l'input à l'ancienne valeur et le geste suivant est muet.
+    await monterVivant({ book: 'livre-de-base', ch: '', parts: [] }, (v) => poses.push(v));
+    const numero = champ('chapitre');
+    expect(numero, 'le champ nombre de repli n’est pas rendu').toBeTruthy();
+    expect(numero!.getAttribute('max'), 'aucun plafond littéral : un livre peut passer la centaine').toBeNull();
+    expect(numero!.getAttribute('min'), 'le chapitre 0 est l’index, pas un chapitre').toBe('1');
+
+    await poserValeur(numero!, '7');
+    expect(poses[poses.length - 1]).toEqual({ book: 'livre-de-base', ch: '07', parts: [] });
+
+    await poserValeur(numero!, '105');
+    expect(poses[poses.length - 1]).toEqual({ book: 'livre-de-base', ch: '105', parts: [] });
+
+    // Le champ VIDÉ efface l'adresse au lieu de forger une graphie.
+    await poserValeur(numero!, '');
+    expect(poses[poses.length - 1]).toEqual({ book: 'livre-de-base', ch: '', parts: [] });
+
+    // `0` est calé à la borne basse : la graphie ne reçoit jamais un numéro qui n'en est pas un.
+    await poserValeur(numero!, '0');
+    expect(poses[poses.length - 1]).toEqual({ book: 'livre-de-base', ch: '01', parts: [] });
+  });
+
+  it('l’index `00` n’est JAMAIS offert dans la liste : ce n’est pas un chapitre', async () => {
+    // Le manifeste est bâti par `chapitresDe` → `prefixesDeChapitres` : un dossier qui porte
+    // `00 - Index.md` n'en sort AUCUN chapitre `00`, donc la liste n'en offre aucun.
+    expect(prefixesDeChapitres(['00 - Index.md', '07 - Peur.md', '21 - Psychologie.md'])).toEqual(['07', '21']);
+    await monter(adresse(frag('terreur', 0, 0)), () => {});
+    const liste = container?.querySelector('select[aria-label="Chapitre du passage"]') as HTMLSelectElement | null;
+    expect([...liste!.options].map((o) => o.value)).not.toContain('00');
   });
 });
 

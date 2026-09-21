@@ -7,10 +7,13 @@
  * 2026-08-23-specs-frenchy-vers-catalogue.mjs` (l.237), et la garde `src/data/refs-migrated.test.ts`.
  * Une marche dupliquée entre le geste et sa garde, c'est une garde qui mesure autre chose que le geste.
  *
- * Module ESM pur (`node` nu, aucun import TS) — typé par `skillSpecWalk.d.mts`.
+ * Module ESM chargé par Node nu — typé par `skillSpecWalk.d.mts`. Son seul import hors `node:` est la
+ * maison du NUMÉRO DE CHAPITRE (`src/data/source/decoupe.ts`), module PUR à syntaxe effaçable que le
+ * dépôt charge déjà tel quel sous Node nu comme sous vitest.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { estNomDExtraction, numeroDuFichier } from '../../../src/data/source/decoupe.ts';
 
 /** Casse/accents neutralisés — comparaison de LIBELLÉS uniquement. */
 export function norm(s) {
@@ -71,7 +74,7 @@ export function sourceDirOf(book) {
 
 /** Un chapitre d'extraction est un `NN - ….md` à la racine du dossier du livre. */
 function aDesChapitres(dir) {
-  try { return readdirSync(dir).some((f) => /^\d{2} - .+\.md$/.test(f)); } catch { return false; }
+  try { return readdirSync(dir).some((f) => numeroDuFichier(f) != null); } catch { return false; }
 }
 
 /**
@@ -97,10 +100,13 @@ export function extractedBooks(books, root) {
 const FR_MOTS_OUTILS = /\b(les|des|une|dans|vous|est|sont|avec|pour|qui)\b/gi;
 const FR_SEUIL = 5;
 
-/** Densité de mots-outils FR pour 1000 caractères, sur les 3 premiers chapitres d'un dossier. */
+/** Densité de mots-outils FR pour 1000 caractères, sur les 3 premiers fichiers d'extraction d'un
+ *  dossier — index COMPRIS : la langue se lit sur ce que le dossier porte, et la FENÊTRE de trois
+ *  fichiers est l'oracle (l'écarter décalerait l'échantillon d'un rang, cf. le dossier VO
+ *  `Enemy Within Campaign Volume 5`, dont le 4ᵉ fichier est un `03 - Introduction.fr.md`). */
 function densiteFR(dir) {
   const ech = readdirSync(dir)
-    .filter((f) => /^\d{2} - .+\.md$/.test(f))
+    .filter(estNomDExtraction)
     .sort()
     .slice(0, 3)
     .map((f) => readFileSync(join(dir, f), 'utf8').slice(0, 20000))

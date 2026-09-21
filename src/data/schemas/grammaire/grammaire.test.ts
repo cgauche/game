@@ -1303,7 +1303,14 @@ describe('prose adressée — forme et verrous (#1389 Lot A, épique #1388)', ()
     expect(descRefSchema.safeParse(quatre).success).toBe(false);
     expect(descRefSchema.safeParse({ ...ADRESSE, parts: [] }).success).toBe(false);
     expect(descRefSchema.safeParse({ ...ADRESSE, parts: [{ ...FRAGMENT, sum: '0123456789ab' }] }).success).toBe(false);
+    // Le `ch` est la GRAPHIE du numéro de chapitre : des chiffres, DEUX au minimum, sans plafond de
+    // largeur — un livre découpé à la section passe la centaine (#1739). La largeur JUSTE pour le
+    // livre se juge contre le disque (`src/data/prose-resolution.test.ts`, volet F).
     expect(descRefSchema.safeParse({ ...ADRESSE, ch: '7' }).success).toBe(false);
+    expect(descRefSchema.safeParse({ ...ADRESSE, ch: '105' }).success).toBe(true);
+    expect(descRefSchema.safeParse({ ...ADRESSE, ch: 'ch7' }).success).toBe(false);
+    // `00` nomme l'index d'extraction, qui n'est pas un chapitre : aucune adresse ne l'atteint.
+    expect(descRefSchema.safeParse({ ...ADRESSE, ch: '00' }).success).toBe(false);
     const inversees = descRefSchema.safeParse({ ...ADRESSE, parts: [{ ...FRAGMENT, b0: 5, b1: 2 }] });
     expect(inversees.success).toBe(false);
     expect(inversees.error!.issues.map((i) => i.path.join('.'))).toContain('parts.0.b1');

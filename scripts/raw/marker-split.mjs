@@ -14,6 +14,7 @@ import { existsSync, writeFileSync, mkdirSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { basename, join } from 'node:path'
 import { readText } from './_lib.mjs'
+import { graphieDuFichier, numeroDuFichier, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { mdsDeMarker, mdsDeRestitutions, pagesDeMarker, deballerSup, verifierExtraction, commandeRestitution } from './lib/marker-pages.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
 
@@ -34,10 +35,10 @@ const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 
 // 1. chapitres depuis les anciens .md : nom de fichier + page de début (marqueur « Page PDF X »)
 const chapters = listerDossier(bookDir)
-  .filter((f) => /^\d+ - .+\.md$/.test(f) && f !== '00 - Index.md')
+  .filter((f) => numeroDuFichier(f) != null)
   .map((f) => {
-    const nn = f.match(/^(\d+) - /)[1]
-    const title = f.replace(/^\d+ - /, '').replace(/\.md$/, '')
+    const nn = graphieDuFichier(f)
+    const title = titreDuFichier(f)
     const m = readText(join(bookDir, f)).match(/[Pp]ages?\s+PDF\s+(\d+)/)
     return { nn, title, file: f, start: m ? Number(m[1]) : null, ntitle: norm(title) }
   })
@@ -124,7 +125,7 @@ for (let i = 0; i < byOff.length; i++) {
   const span = c.endPage > c.start ? `${c.start}-${c.endPage}` : `${c.start}`
   if (body.replace(/[#*\s]/g, '').length < 80) { // vide réel (artefact ou chapitre même-page absorbé par le voisin)
     empties.push(c.nn)
-    body = `# ${c.outFile.replace(/^\d+ - /, '').replace(/\.md$/, '')}\n\n*(Page ${c.start} partagée avec un chapitre voisin — le contenu de cette section figure dans le chapitre adjacent de l'extraction Marker.)*`
+    body = `# ${titreDuFichier(c.outFile)}\n\n*(Page ${c.start} partagée avec un chapitre voisin — le contenu de cette section figure dans le chapitre adjacent de l'extraction Marker.)*`
   }
   writeFileSync(join(outDir, nomAscii(c.outFile)), `*Pages PDF ${span}*\n\n${body}\n`)
 }

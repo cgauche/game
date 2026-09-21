@@ -4,8 +4,8 @@ import { describe, it, expect } from 'vitest';
 // ici et le périmètre des trois divergerait en silence.
 import { RACINES_PAR_DEFAUT, adressesDuDepot, fichiersJsonDe } from '../../scripts/source/adresses.mjs';
 // @ts-expect-error - résolveur ESM JS (pas de types) — même convention que `vite.config.ts`
-import { resoudreProse } from '../../scripts/source/resoudre.mjs';
-import { empreinteDe, parseChapitre, type ChapitreParse, type Fragment, type FragmentBlocs } from './source/decoupe';
+import { cheminChapitre, resoudreProse } from '../../scripts/source/resoudre.mjs';
+import { empreinteDe, graphieDuFichier, parseChapitre, type ChapitreParse, type Fragment, type FragmentBlocs } from './source/decoupe';
 // Le prédicat de la règle 5, là où il est DÉFINI (partagé avec `no-html-in-prose.test.ts`).
 import { HTML_TAG } from './source/normalize';
 
@@ -20,7 +20,10 @@ const GARDE = {
     'B — l’empreinte `sum` de chaque fragment colle-t-elle au texte que l’adresse résout AUJOURD’HUI ? ' +
     'D — un MONTAGE (2 ou 3 fragments) a-t-il des fragments d’au moins 40 caractères normalisés, chacun ' +
     'unique dans son chapitre, DISJOINTS entre eux, et pas plus de trois ? ' +
-    'E — le texte RÉSOLU est-il exempt de balise HTML (règle 5 : prose en Markdown, jamais en HTML) ?',
+    'E — le texte RÉSOLU est-il exempt de balise HTML (règle 5 : prose en Markdown, jamais en HTML) ? ' +
+    'F — la GRAPHIE du `ch` est-elle EXACTEMENT le préfixe du fichier que l’adresse résout ? C’est ' +
+    'ici, et ici seulement, que le LIVRE est connu : le schéma ne peut exiger que des chiffres, la ' +
+    'largeur JUSTE est celle du dossier résolu (`largeurDeChapitre`, #1739).',
   primitive:
     '`resoudreProse` (`scripts/source/resoudre.mjs`) — le résolveur FAIL-CLOSED, qui compose le parseur ' +
     'PUR `src/data/source/decoupe.ts` et le lecteur fs `scripts/source/lecteur-fs.mjs`. Aucun second ' +
@@ -83,6 +86,20 @@ function texteResolu(noeud: unknown, lecteur?: Lecteur): string | null {
     return null;
   }
 }
+
+/** Préfixe NUMÉRIQUE du fichier de chapitre qu'une adresse résout au disque, ou `null` quand elle
+ *  n'en résout aucun (le volet A nomme déjà ce cas). La résolution, elle, compare des ENTIERS :
+ *  c'est précisément pourquoi la GRAPHIE doit être jugée à part. */
+function prefixeResolu(ref: { book: string; ch: string } | undefined): string | null {
+  if (!ref) return null;
+  const chemin = cheminChapitre(ref.book, ref.ch) as string | null;
+  return chemin ? graphieDuFichier(chemin.split(/[\\/]/).pop() ?? '') : null;
+}
+
+/** Le `ch` d'une adresse est-il EXACTEMENT la graphie du fichier qu'elle résout ? C'est le FILTRE du
+ *  volet F. Une adresse qui ne résout AUCUN fichier-chapitre (`'00'`, qui désigne l'index, ou un
+ *  numéro absent) n'a pas de graphie juste : elle est fautive ici aussi, et le volet A dit sa cause. */
+const graphieFautive = (ref: { book: string; ch: string }): boolean => prefixeResolu(ref) !== ref.ch;
 
 /** Les trois volets, par le CODE que le résolveur rend — un code de plus sans volet est une omission
  *  visible (il tombe dans `A`, le volet de la résolution elle-même). */
@@ -156,6 +173,34 @@ describe('résolution de la prose ADRESSÉE — toute `descRef` rend son texte, 
       'Texte(s) résolu(s) portant une balise HTML — la règle 5 vaut pour la prose ADRESSÉE comme pour ' +
         `les datasets : réparer le \`Source/\` (geste \`docs/ajouter-un-livre-source.md\` §7), jamais l'adresse :\n${rouges.join('\n')}`,
     ).toEqual([]);
+  });
+
+  it('F — la GRAPHIE du `ch` est EXACTEMENT le préfixe du fichier résolu', () => {
+    // La population est réelle : sans adresse, ce volet ne jugerait rien (le volet PÉRIMÈTRE imprime
+    // le compte, celui-ci refuse de passer au vert sur le vide).
+    expect(ADRESSES.length, 'aucune adresse en donnée : le volet F ne juge rien').toBeGreaterThan(0);
+    const rouges = ADRESSES.filter((a) => a.noeud.descRef && graphieFautive(a.noeud.descRef))
+      .map((a) => `${a.fichier}:${a.id} → ch=« ${a.noeud.descRef!.ch} », fichier « ${prefixeResolu(a.noeud.descRef)} - … »`)
+      .sort();
+    expect(
+      rouges,
+      'Graphie(s) de `ch` qui ne sont pas le préfixe du fichier résolu : la résolution compare des ' +
+        'ENTIERS, donc l’adresse rendrait bien son texte — mais la route, le manifeste et le tri du ' +
+        `dossier parleraient d’un autre chapitre. La largeur est celle du LIVRE (\`largeurDeChapitre\`) :\n${rouges.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('F MORD : par son FILTRE RÉEL — `021`, `7` et `00` fautifs, la graphie du dossier seule passe', () => {
+    const ref = ADRESSES[0].noeud.descRef!;
+    // La résolution compare des ENTIERS : `021` rend le MÊME fichier que `21`, et c'est bien la
+    // GRAPHIE, elle seule, que ce volet refuse.
+    expect(prefixeResolu({ ...ref, ch: `0${ref.ch}` })).toBe(ref.ch);
+    expect(graphieFautive({ ...ref, ch: `0${ref.ch}` })).toBe(true);
+    // Une graphie à UN chiffre ne peut être le préfixe d'aucun fichier (la largeur minimale est 2).
+    expect(graphieFautive({ ...ref, ch: '7' })).toBe(true);
+    // `00` désigne l'index, qui n'est pas un chapitre : il ne résout rien, donc rien de juste.
+    expect(graphieFautive({ ...ref, ch: '00' })).toBe(true);
+    expect(graphieFautive(ref)).toBe(false);
   });
 });
 

@@ -74,7 +74,7 @@ export function estExclu(rel) {
 export const SITE_EXEMPTIONS = [
   {
     fichier: 'scripts/raw/reanchor-split.mjs',
-    ligne: 20,
+    ligne: 21,
     forme: 'tableau-objets',
     raison: "table HISTORIQUE : les deux livres dont le fichier mono-bloc a été éclaté au commit nommé par `SPLIT_SOURCE_SHA`, avec leur chemin TEL QU'IL ÉTAIT À CE COMMIT (adresse `git show <sha>^:<path>`, pas un chemin du disque). QUELS livres ont été éclatés à ce commit est un fait d'histoire que le registre ne porte pas : rien à dériver.",
     date: '2026-09-20',

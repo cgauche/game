@@ -14,7 +14,7 @@
 // propre index chapitre → modules JSON dépendants, rempli par le `transform`.
 //
 // UN service de plus, adossé à L'ADRESSE COMME URL, et il ne vit QU'EN DEV : `configureServer` sert
-// `/source/<livre>/<NN>.md` et `/source/manifest.json` depuis le disque, pour l'ÉDITEUR (aperçu d'une
+// `/source/<livre>/<NNN>.md` et `/source/manifest.json` depuis le disque, pour l'ÉDITEUR (aperçu d'une
 // adresse dans `DescRefField`). Le chemin joueur n'en a aucun besoin — sa prose est déjà matérialisée
 // dans le module JSON par le `transform` ci-dessus.
 //
@@ -36,8 +36,9 @@ const CIBLE = /[\\/]src[\\/]data[\\/][^\\/]+\.json$/
 /** Séparateurs POSIX — l'index de dépendance apparie des chemins Windows et des chemins Vite. */
 const normalise = (chemin) => String(chemin).split('\\').join('/')
 
-/** Route publique d'un chapitre : `/source/<livre>/<NN>.md`. */
-const ROUTE = /^\/source\/([a-z0-9-]+)\/(\d{2})\.md$/
+/** Route publique d'un chapitre : `/source/<livre>/<NNN>.md` — la graphie du chapitre, de la
+ *  largeur de son livre (`graphieDeChapitre`, `src/data/source/decoupe.ts`). */
+const ROUTE = /^\/source\/([a-z0-9-]+)\/(\d+)\.md$/
 /** Route publique du manifeste : `/source/manifest.json`. */
 const ROUTE_MANIFESTE = '/source/manifest.json'
 

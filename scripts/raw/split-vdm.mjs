@@ -5,6 +5,7 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { readText } from './_lib.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
+import { graphieDeChapitre, largeurDeChapitre } from '../../src/data/source/decoupe.ts'
 
 const SRC = 'Source/_marker/full/les Vents de Magie/les Vents de Magie/les Vents de Magie.md'
 // Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
@@ -53,6 +54,8 @@ for (const [title, key] of CHAPTERS) {
 const pageAt = (idx) => { let pg = 1; for (let i = 0; i <= idx && i < lines.length; i++) { const m = lines[i].match(PAGE_RE); if (m) pg = Number(m[1]) + 1 } return pg }
 
 mkdirSync(OUT, { recursive: true })
+// LARGEUR du dossier, arrêtée AVANT le premier fichier : tous les préfixes d'un livre la partagent.
+const LARGEUR = largeurDeChapitre(CHAPTERS.length)
 const idxRows = []
 for (let c = 0; c < CHAPTERS.length; c++) {
   const [title] = CHAPTERS[c]
@@ -62,7 +65,7 @@ for (let c = 0; c < CHAPTERS.length; c++) {
   for (let i = from; i < to; i++) { const m = lines[i].match(PAGE_RE); if (m) endPage = Number(m[1]) + 1 }
   const body = lines.slice(from, to).filter((l) => !PAGE_RE.test(l)).join('\n').trim()
   const span = endPage > startPage ? `${startPage}-${endPage}` : `${startPage}`
-  const nn = String(c + 1).padStart(2, '0')
+  const nn = graphieDeChapitre(c + 1, LARGEUR)
   const nom = nomAscii(`${nn} - ${title}.md`)
   writeFileSync(join(OUT, nom), `*Pages PDF ${span}*\n\n${body}\n`)
   idxRows.push(`- [${nom.replace(/\.md$/, '')}](<${nom}>) — p.${span}`)

@@ -31,12 +31,12 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
+import { estNomDExtraction } from '../../src/data/source/decoupe.ts'
 import { ecartDuVolet, sitesEnEntrees, cleDeSite, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { parCleDeSite, readStock } from './stockNominatif.mjs'
 import { parseChapitre, tablesOf, normText, estCleDePlage } from '../../src/data/source/decoupe.ts'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-tables-stock.json')
-const CHAPTER_FILE_RE = /^(\d+) - .*\.md$/
 
 /** Les familles de défaut, dans l'ordre du rapport. Chacune est un GESTE de réparation distinct
  *  (cf. le tableau « défaut de table → geste » de `docs/ajouter-un-livre-source.md` §7). */
@@ -165,7 +165,8 @@ const cheminDe = (dir, file) => `${String(dir).split('\\').join('/').replace(/\/
 /** Balaie un dossier de livre → sites de défaut de tous ses chapitres. */
 export function scanBookDir(dir) {
   const out = []
-  for (const file of listerDossier(dir, { absent: 'vide' }).filter((f) => CHAPTER_FILE_RE.test(f))) {
+  // Toute la FORME servie est jugée, l'index compris : il porte des tables comme un chapitre.
+  for (const file of listerDossier(dir, { absent: 'vide' }).filter(estNomDExtraction)) {
     out.push(...sitesDuChapitre(readText(join(dir, file)), cheminDe(dir, file)))
   }
   return out

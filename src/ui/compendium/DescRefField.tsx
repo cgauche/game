@@ -21,6 +21,8 @@ import {
   blocsCouverts,
   empreinteDe,
   estErreur,
+  graphieDeChapitre,
+  largeurDeChapitre,
   resoudreAdresse,
   resoudreFragment,
   type ChapitreParse,
@@ -365,17 +367,24 @@ export function DescRefField({ label, value, onChange, chargeurs }: {
             {chapitresVus.map((c) => <option key={c.ch} value={c.ch}>{libelleChapitre(c)}</option>)}
           </select>
         ) : (
+          /* Sans manifeste, le LIVRE est inconnu : la saisie ne peut pas connaître sa largeur de
+             graphie, elle pose donc la largeur MINIMALE du numéro (`07`, `105`) et c'est la
+             résolution contre le disque qui juge la largeur juste (volet F,
+             `src/data/prose-resolution.test.ts`). */
           <NumberField
             variant="champ"
             label="chapitre"
             placeholder="NN"
             width={84}
-            min={0}
-            max={99}
+            min={1}
             vide
             disabled={!book}
             value={ch ? Number(ch) : null}
-            onChange={(n) => onChange({ book, ch: n == null ? '' : String(n).padStart(2, '0'), parts: [] })}
+            onChange={(n) => onChange({
+              book,
+              ch: n == null ? '' : graphieDeChapitre(n, largeurDeChapitre(n)),
+              parts: [],
+            })}
           />
         )}
       </div>

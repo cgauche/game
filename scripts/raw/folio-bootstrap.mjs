@@ -20,10 +20,9 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, resolve, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, readText } from './_lib.mjs'
+import { numeroDuFichier, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { extractPages, runBook } from './anchor-fill.mjs'
 
-const CHAPTER_RE = /^(\d+) - .*\.md$/
-const INDEX_FILE = '00 - Index.md'
 const MAX_PROBE = 600            // borne de sondage : au-delà, pypdf renvoie null (page hors PDF)
 const FOLIO_LINE_RE = /^(\d{1,4})$/
 const EDGE_LINES = 4             // profondeur de recherche du folio en tête et en pied de page
@@ -35,7 +34,7 @@ const HEADER_RE = /^\*Pages PDF (\d+)(?:-(\d+))?\*/
 export function corpusRange(dir) {
   let lo = Infinity
   let hi = -Infinity
-  for (const file of listerDossier(dir).filter((f) => CHAPTER_RE.test(f))) {
+  for (const file of listerDossier(dir).filter((f) => numeroDuFichier(f) != null)) {
     const m = HEADER_RE.exec(readText(join(dir, file)).split('\n')[0] || '')
     if (!m) continue
     lo = Math.min(lo, Number(m[1]) - 1)
@@ -98,11 +97,11 @@ export function folioRuns(reads) {
 // Nom distinct de `reanchor.mjs#buildIndex` (index ligne/offset d'un texte) : même famille de
 // fichiers, sens sans rapport.
 export function buildFolioToc(dir, title) {
-  const files = listerDossier(dir).filter((f) => CHAPTER_RE.test(f) && f !== INDEX_FILE)
+  const files = listerDossier(dir).filter((f) => numeroDuFichier(f) != null)
   const rows = []
   for (const file of files) {
     const m = /data-folio="(\d+)"/.exec(readText(join(dir, file)))
-    const label = file.replace(/^\d+ - /, '').replace(/\.md$/, '')
+    const label = titreDuFichier(file)
     rows.push(`- [${label}](<${file}>)${m ? ` — folio ${m[1]}` : ''}`)
   }
   return `# ${title} — Index\n\n${rows.join('\n')}\n`

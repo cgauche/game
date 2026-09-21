@@ -43,15 +43,15 @@ export const BOOK_NO_CHAPTER_RE = () => new RegExp(`\\b(${allAbbrAlternation()})
 // (c) Nom de FICHIER de chapitre en backticks entre le livre et les lignes : `` `NN - Titre.md` l.X ``
 // (ex. `ADE II \`08 - Le theatre de la guerre.md\` l.89-131`) — invisible de `refRe` (numéro de
 // chapitre attendu NU, pas un nom de fichier). Forme canonique : `<ABRÉV> NN l.X`.
-export const BACKTICK_FILE_RE = () => /`\d{1,2} - [^`]*\.md` l\.\d/g
+export const BACKTICK_FILE_RE = () => /`\d+ - [^`]*\.md` l\.\d/g
 
-// `\b\d{1,2}-[A-Za-zÀ-ÿ]+ l\.\d+` : un numéro de chapitre (1-2 chiffres) collé par un tiret à un
-// nom (lettres accentuées comprises — `\w` seul EXCLUT les accents hors mode Unicode, d'où la classe
-// explicite), suivi d'une réf `l.<ligne>` — ex. `15-Déplacement l.79`, `18-Traumatisme l.417`,
-// `15-Dépl l.87`. Les dates (`2026-07-15`) et ids (`ticket-42`) ne matchent pas : `\d{1,2}-` exige
-// 1-2 chiffres puis un TIRET puis une LETTRE (jamais un second groupe de chiffres, jamais un id nu
-// sans " l.<n>" collé juste après le nom).
-export const GRAPHY_RE = () => /\b\d{1,2}-[A-Za-zÀ-ÿ]+ l\.\d+/g
+// `\b\d+-[A-Za-zÀ-ÿ]+ l\.\d+` : un numéro de chapitre (de LARGEUR QUELCONQUE, comme partout où un
+// chapitre est lu) collé par un tiret à un nom (lettres accentuées comprises — `\w` seul EXCLUT les
+// accents hors mode Unicode, d'où la classe explicite), suivi d'une réf `l.<ligne>` — ex.
+// `15-Déplacement l.79`, `18-Traumatisme l.417`, `15-Dépl l.87`. Les dates (`2026-07-15`) et ids
+// (`ticket-42`) ne matchent pas : le motif exige des chiffres puis un TIRET puis une LETTRE (jamais
+// un second groupe de chiffres, jamais un id nu sans " l.<n>" collé juste après le nom).
+export const GRAPHY_RE = () => /\b\d+-[A-Za-zÀ-ÿ]+ l\.\d+/g
 
 // (d) Prose d'état d'implémentation dans une fiche, HORS bloc de champ généré `**Implémente**`
 // (frontière via `fieldBlockMask`, source unique). Verrouille à zéro toute réapparition de « X n'est

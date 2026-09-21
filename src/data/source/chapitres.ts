@@ -6,9 +6,10 @@
  * `scripts/source/prose-source-plugin.mjs`, donc une fiche lit `entry.desc` sans rien charger.
  *
  * Les chapitres sont servis EN DEV SEULEMENT, par le middleware de ce même plugin
- * (`/source/<livre>/<NN>.md`) : l'adresse est l'URL. Le build n'émet AUCUN asset `source/**` (garde
- * `src/data/source/prose-source.test.ts`), donc hors dev ces deux chargeurs refusent — c'est l'état
- * attendu, et `DescRefField` le dit en toutes lettres.
+ * (`/source/<livre>/<NNN>.md`, la graphie du chapitre à la largeur de son livre) : l'adresse est
+ * l'URL. Le build n'émet AUCUN asset `source/**` (garde `src/data/source/prose-source.test.ts`),
+ * donc hors dev ces deux chargeurs refusent — c'est l'état attendu, et `DescRefField` le dit en
+ * toutes lettres.
  */
 import { parseChapitre, type ChapitreParse } from './decoupe.ts';
 

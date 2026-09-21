@@ -21,6 +21,7 @@ import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, coeurDe, esc, chapterFile, estHorsRegle, folioSpan, motifHorsRegle, niveauDeSectionDe, pagesDeLAtlas, readText, teneurDe } from './_lib.mjs'
+import { graphieDuFichier, numeroDuFichier, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
 export const RAWDIR = 'docs/raw'
 // Acceptation DÉCLARÉE à la couture (`pagesDeLAtlas`) : tout sauf les rapports générés — l'épreuve
@@ -316,14 +317,14 @@ function main(rawDir = RAWDIR) {
   const info0 = (ab, nn) => chapterFile(ab, nn)?.path ?? `${ab} ${nn}`
   for (const [ab, dir] of BOOKS) {
     if (!existsSync(dir)) { out.push(`## ${ab} — ⚠ dossier introuvable (${dir})`, ''); continue }
-    const files = listerDossier(dir).filter((f) => /^\d+ - /.test(f) && f.endsWith('.md'))
+    const files = listerDossier(dir).filter((f) => numeroDuFichier(f) != null)
     let bOk = 0, bCat = 0, bMid = 0, bHole = 0
     const lines2 = ['| Ch. | Titre | État | refs (propriétaire) |', '|---|---|---|---|']
     const detailBlocks = []
     const isPur = estCampagnePure(ab)
     for (const f of files) {
-      const nn = f.match(/^(\d+) - /)[1]
-      const title = f.replace(/^\d+ - /, '').replace(/\.md$/, '')
+      const nn = graphieDuFichier(f)
+      const title = titreDuFichier(f)
       // Le CONTENU tranche (cf. `markerSplitStub`/`chapterTitleOf`) : un nom de fichier `_GoBack` est
       // une ancre Marker, pas un verdict. Seul un stub de découpe sort du registre.
       const chText = (() => { const i = chapterFile(ab, nn); return i ? readText(i.path) : '' })()

@@ -10,6 +10,7 @@
 import { writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { BOOKS, esc, normalize, pagesDeLAtlas, readText } from './_lib.mjs'
+import { graphieDuFichier, numeroDuFichier } from '../../src/data/source/decoupe.ts'
 import { RAWDIR, CLASSES } from './check-refs.mjs'
 
 // Commit qui a éclaté ces 2 livres (bloc unique numéroté « 01 ») en fichiers-chapitres.
@@ -47,10 +48,10 @@ export function origLinesOf(source) {
 
 export function buildBookIndex(abbr) {
   const dir = new Map(BOOKS).get(abbr)
-  const files = listerDossier(dir).filter((f) => /^\d+ - .*\.md$/.test(f))
+  const files = listerDossier(dir).filter((f) => numeroDuFichier(f) != null)
   const index = {}
   for (const f of files) {
-    const nn = f.match(/^(\d+) - /)[1]
+    const nn = graphieDuFichier(f)
     index[nn] = readText(join(dir, f)).split('\n').map(key)
   }
   return index

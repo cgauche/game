@@ -37,6 +37,7 @@ import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
 import { ecartDuVolet, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
+import { graphieDeChapitre, graphieDuFichier, largeurDeChapitre, numeroDuFichier, titreDuFichier } from '../../src/data/source/decoupe.ts'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-format-stock.json')
 
@@ -64,9 +65,9 @@ export const FAMILLES = [
   'html-residuel',
   'index-mort',
   'table-sans-separateur',
+  'largeur-de-numero',
 ]
 
-const CHAPITRE_RE = /^(\d+) - (.*)\.md$/
 export const INDEX = '00 - Index.md'
 
 /** Ligne 1 CANONIQUE d'un chapitre : la tranche de pages PDF posée par le découpeur. La borne HAUTE
@@ -167,7 +168,7 @@ export function liensDIndex(texte) {
  * `fichiers` la liste `{ nom, texte }` de ses `.md`. Chaque site nomme le PREMIER chapitre fautif
  * de sa famille (le `fichier` du stock) et porte le DÉTAIL COMPTÉ du dossier en `ref`.
  *
- * COUVERTURE DITE : les familles (1) à (4) ne jugent que les fichiers au motif `NN - X.md`
+ * COUVERTURE DITE : les familles (1) à (4) et (8) ne jugent que les fichiers au motif `NN - X.md`
  * (`CHAPITRE_RE`), `00 - Index.md` exclu — un `.md` hors motif leur est INVISIBLE (mesuré le
  * 2026-09-14 : 0 fichier hors motif sur les 20 dossiers FR). Les familles (5) `html-residuel` et
  * (7) `table-sans-separateur` balaient TOUS les `.md` du dossier, index compris ; (6) `index-mort`
@@ -178,7 +179,7 @@ export function liensDIndex(texte) {
 export function sitesDuDossier(dir, fichiers) {
   const out = []
   const noms = new Set(fichiers.map((f) => f.nom))
-  const chapitres = fichiers.filter((f) => CHAPITRE_RE.test(f.nom) && f.nom !== INDEX)
+  const chapitres = fichiers.filter((f) => numeroDuFichier(f.nom) != null)
   const chemin = (nom) => `${dir}/${nom}`
 
   // (1) ligne 1 hors format — une entrée par FORME rencontrée.
@@ -219,7 +220,7 @@ export function sitesDuDossier(dir, fichiers) {
   }
 
   // (4) noms de SIGNET Word à la place du titre imprimé.
-  const signets = chapitres.map((f) => f.nom).filter((n) => estNomDeSignet(CHAPITRE_RE.exec(n)[2]))
+  const signets = chapitres.map((f) => f.nom).filter((n) => estNomDeSignet(titreDuFichier(n)))
   if (signets.length) {
     out.push({ famille: 'nom-de-signet', file: chemin(signets[0]), ref: `${signets.length} fichier(s) : ${signets.join(', ')}` })
   }
@@ -256,6 +257,24 @@ export function sitesDuDossier(dir, fichiers) {
   }
   if (cassees) {
     out.push({ famille: 'table-sans-separateur', file: chemin(premiereCassee), ref: `${cassees}/${tables} tables` })
+  }
+
+  // (8) LARGEUR de numéro hétérogène : dans un dossier, TOUT préfixe a la largeur du plus grand
+  // numéro du dossier (`largeurDeChapitre`, `src/data/source/decoupe.ts`). Mêlées (`07` et `100`
+  // côte à côte), le tri lexicographique de n'importe quel listeur ment sur l'ordre des chapitres.
+  const numeros = chapitres.map((f) => numeroDuFichier(f.nom))
+  if (numeros.length) {
+    const largeur = largeurDeChapitre(Math.max(...numeros))
+    const horsLargeur = chapitres.filter(
+      (f) => graphieDuFichier(f.nom) !== graphieDeChapitre(numeroDuFichier(f.nom), largeur),
+    )
+    if (horsLargeur.length) {
+      out.push({
+        famille: 'largeur-de-numero',
+        file: chemin(horsLargeur[0].nom),
+        ref: `${horsLargeur.length} préfixe(s) hors largeur ${largeur}`,
+      })
+    }
   }
 
   return out
@@ -377,8 +396,9 @@ const QUOI = ({ comptes, dossiers, entrees }) =>
   `\`scripts/guards/lib/stocksNominatifs.mjs\` (\`CHEMIN_SOURCE\` exige \`.md\`) et laisserait les ${entrees} ` +
   'entrées hors de vue des deux portes de croissance (mesuré le 2026-09-14 : la garde ' +
   '`stocks-nominatifs` refusait « 0 entrée(s) vue(s) sur 57 déclarée(s) »). ' +
-  'COUVERTURE DITE — les familles `ligne1-hors-format`, `sans-folio`, `ancre-seule` et ' +
-  '`nom-de-signet` ne jugent que les fichiers au motif `NN - X.md`, `00 - Index.md` exclu ; un `.md` ' +
+  'COUVERTURE DITE — les familles `ligne1-hors-format`, `sans-folio`, `ancre-seule`, ' +
+  '`nom-de-signet` et `largeur-de-numero` ne jugent que les fichiers au motif `NN - X.md`, ' +
+  '`00 - Index.md` exclu ; un `.md` ' +
   'hors motif leur est INVISIBLE (mesuré le 2026-09-14 : 0 fichier hors motif sur les 20 dossiers). ' +
   '`html-residuel` et `table-sans-separateur` balaient, eux, TOUS les `.md` du dossier. ' +
   'COUVERTURE DITE — `html-residuel` ne compte PAS les ancres de page : une ancre sans ' +

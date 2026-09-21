@@ -7,6 +7,7 @@
 import { z } from 'zod';
 import { AVAILABILITIES, COUVERT_DIFFICULTES, STAKE_FORMS } from '../../../engine/types';
 import { refOuSpec, idDe } from './ref';
+import { estGraphieDeChapitre } from '../../source/decoupe';
 
 /**
  * ENUM NOMMÉ (#1694) — la FABRIQUE d'un univers fermé dont chaque valeur porte son libellé FR SUR LE
@@ -253,8 +254,14 @@ export function adresseUnPassage(ref: unknown): boolean {
 export const descRefSchema = z
   .strictObject({
     book: z.string().min(1),
-    /** Numéro de chapitre tel que le nomme le fichier d'extraction (`07`, `21`) — deux chiffres. */
-    ch: z.string().regex(/^\d{2}$/),
+    /** Numéro de chapitre dans la GRAPHIE de son fichier d'extraction (`07`, `21`, `105`), jugée par
+     *  le prédicat de sa maison (`estGraphieDeChapitre`, `src/data/source/decoupe.ts`) : des
+     *  chiffres, deux au minimum, et un numéro de chapitre — `00` désigne l'index. La largeur JUSTE
+     *  pour le livre se juge contre le disque, là où le livre est connu
+     *  (`src/data/prose-resolution.test.ts`, volet F). */
+    ch: z.string().refine(estGraphieDeChapitre, {
+      message: 'adresse de prose : `ch` est la graphie d’un numéro de CHAPITRE — des chiffres, deux au minimum, et pas `00` (l’index n’est pas un chapitre).',
+    }),
     parts: z.array(z.discriminatedUnion('kind', [fragmentBlocsSchema, fragmentCelluleSchema])).min(MIN_FRAGMENTS).max(3),
   })
   .superRefine((v, ctx) => {

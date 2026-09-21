@@ -20,6 +20,9 @@ import domainesData from './domaines.json' with { type: 'json' }
 // fichier s'en sert lui-même (`findAnchor`, `sectionsOf`), et RÉ-EXPORTÉE plus bas pour ses 15
 // consommateurs.
 import { normalize, ELLIPSIS_SENTINEL } from '../../src/data/source/normalize.ts'
+// Le NUMÉRO DE CHAPITRE (prédicat, motif de nom, résolution) vit dans sa maison unique
+// `src/data/source/decoupe.ts` — module PUR, chargé tel quel par Node nu comme par vitest.
+import { fichierDuChapitre, numeroDuFichier } from '../../src/data/source/decoupe.ts'
 
 // Lecture CRLF-robuste (#604) -- SOURCE UNIQUE de lecture texte pour tout fichier Source/**/docs/raw/** :
 // une reecriture Windows du 2026-07-07 a mutile 202 fichiers en CRLF/mixte (contenu identique, index git
@@ -257,7 +260,8 @@ export function span(line, suffix) {
   return [nums[0], Math.max(...nums)]
 }
 
-// Résout (ABRÉV, NN[, range]) → { path, file, dir } du `.md` chapitre, ou null. Lookup par préfixe `NN - `.
+// Résout (ABRÉV, NN[, range]) → { path, file, dir } du `.md` chapitre, ou null. Lookup par ENTIER
+// (`fichierDuChapitre`, `src/data/source/decoupe.ts`) : ce fichier-ci n'ajoute que le DISQUE.
 // `range` optionnel = { from, to? } route une SOUS-SECTION du chapitre (jamais un second mécanisme) : `from`/
 // `to` sont chacun une ancre — texte de heading Markdown (n'importe quel niveau `#`, markup ignoré) OU
 // `folio:NN` pour un `<span … data-folio="NN">` — bornant un extrait VERBATIM ajouté en `.text` (trim).
@@ -272,10 +276,7 @@ export function chapterFile(abbr, nn, range) {
     const dir = BOOK_DIR.get(abbr)
     res = null
     if (dir) {
-      const pad = String(Number(nn)).padStart(2, '0')
-      // Premier-TROUVÉ sur un listing en ordre total = premier-TRIÉ : deux chapitres de même numéro
-      // rendraient le même fichier sur toute machine.
-      const f = listerDossier(dir, { absent: 'vide' }).find((x) => x.startsWith(pad + ' - ') && x.endsWith('.md'))
+      const f = fichierDuChapitre(listerDossier(dir, { absent: 'vide' }), nn)
       if (f) res = { path: join(dir, f), file: f, dir }
     }
     _chapterCache.set(key, res)
@@ -333,8 +334,9 @@ export function folioIndexOf(abbr) {
   const dir = BOOK_DIR.get(abbr)
   const chapters = []
   if (dir) {
-    for (const file of listerDossier(dir, { absent: 'vide' }).filter((x) => /^\d+ - .*\.md$/.test(x))) {
-      const ch = Number(/^(\d+) - /.exec(file)[1])
+    for (const file of listerDossier(dir, { absent: 'vide' })) {
+      const ch = numeroDuFichier(file)
+      if (ch == null) continue
       const lines = readText(join(dir, file)).split('\n')
       chapters.push({ ch, lines })
     }

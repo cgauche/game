@@ -2,9 +2,9 @@
 // Le parsing lui-même vient de `src/data/source/decoupe.ts` (source unique, pure) — ce module ne fait
 // que résoudre `bookId → dossier → fichier de chapitre`, lire le texte (CRLF-robuste, `readText`) et
 // mémoriser le chapitre parsé.
-import { readdirSync } from 'node:fs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 import { BOOKS, chapterFile, readText } from '../raw/_lib.mjs'
-import { parseChapitre } from '../../src/data/source/decoupe.ts'
+import { parseChapitre, prefixesDeChapitres } from '../../src/data/source/decoupe.ts'
 import booksData from '../../src/data/books.json' with { type: 'json' }
 
 /** `books.json.id` → sigle Atlas, restreint aux livres porteurs d'un `dir` (extraction FR présente). */
@@ -15,15 +15,12 @@ export const ABBR_BY_BOOK_ID = Object.fromEntries(
 const DIR_BY_ABBR = new Map(BOOKS)
 const _cache = new Map()
 
-/** Numéros de chapitre (`NN`) d'un livre, triés. @param {string} bookId @returns {string[]} */
+/** Numéros de chapitre d'un livre, dans leur GRAPHIE de fichier, triés par ENTIER — l'index n'en est
+ *  pas un (`prefixesDeChapitres`). @param {string} bookId @returns {string[]} */
 export function chapitresDe(bookId) {
   const dir = DIR_BY_ABBR.get(ABBR_BY_BOOK_ID[bookId])
   if (!dir) return []
-  return readdirSync(dir)
-    .map((f) => /^(\d{2}) - .+\.md$/.exec(f))
-    .filter(Boolean)
-    .map((m) => m[1])
-    .sort()
+  return prefixesDeChapitres(listerDossier(dir, { absent: 'vide' }))
 }
 
 /** Nom du fichier d'un chapitre, ou `null`. @param {string} bookId @param {string|number} ch */

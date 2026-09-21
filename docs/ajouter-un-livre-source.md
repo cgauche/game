@@ -53,8 +53,8 @@ citées avec — MAX_PATH (260) dépassé par `<out>/<nom du PDF>/<nom du PDF>.m
 conversion, ~7 Go de pointe, 15-20 s par page CPU, un seul Marker à la fois — sont un **témoignage
 relevé le 2026-09-14** par la session d'extraction, non mesuré ici.
 
-**La forme CIBLE**, telle que la garde la mesure — **aucune extraction ne l'atteint aujourd'hui**
-(20 dossiers sur 20 hors format, LDB compris) :
+**La forme CIBLE**, telle que la garde la mesure — **aucune extraction ne l'atteint aujourd'hui**,
+LDB compris ; la garde imprime le compte de dossiers hors format à chaque exécution :
 
 | Trait | Forme canonique | Famille d'écart |
 |---|---|---|
@@ -65,6 +65,7 @@ relevé le 2026-09-14** par la session d'extraction, non mesuré ici.
 | HTML | aucun, hors ancres et `<br>` | `html-residuel` |
 | `00 - Index.md` | liens relatifs tous vivants | `index-mort` |
 | Tables | chaque bloc a sa ligne de séparateur `\|---\|` | `table-sans-separateur` |
+| Numéro de chapitre | un **entier** ≥ 1, zéro-paddé à la largeur du **plus grand numéro du livre**, deux au minimum (`livre-de-base` : `21` ; un livre de 120 chapitres : `007`, `105`) — `largeurDeChapitre` / `graphieDeChapitre` (`src/data/source/decoupe.ts`) rendent cette graphie, et elle est la même pour tous les fichiers d'un dossier | `largeur-de-numero` |
 
 **La garde et son stock.** `node scripts/raw/check-source-format.mjs` balaie les **dossiers FR
 suivis** — les livres à `dir` de `src/data/books.json` plus les dossiers antérieurs au pipeline,
