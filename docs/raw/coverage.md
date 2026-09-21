@@ -544,8 +544,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.2037-2114 « Itching Pox » — candidat trou de règle, 0 réf
   - ⬜ l.2115-2203 « Infection » — candidat trou de règle, 0 réf
   - ⬜ l.2204-2211 « Frenzy » — candidat trou de règle, 0 réf
-  - ⬜ l.2212-2406 « Hatred (Target) » — candidat trou de règle, 0 réf
-  - ⬜ l.2407-2490 « Manifestation Time » — candidat trou de règle, 0 réf
+  - ⬜ l.2212-2413 « Hatred (Target) » — candidat trou de règle, 0 réf
+  - ⬜ l.2414-2497 « Manifestation Time » — candidat trou de règle, 0 réf
 - **CRB 09** (Between Adventures) :
   - ⬜ l.303-343 « Elves and Yenlui » — candidat trou de règle, 0 réf
   - ⬜ l.344-483 « Change Career » — candidat trou de règle, 0 réf
@@ -617,9 +617,9 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.523-568 « 2308–2310 IC » — candidat trou de règle, 0 réf
   - ⬜ l.569-818 « 2508 IC » — candidat trou de règle, 0 réf
 - **CRB 14** (Consumer Guide) :
-  - ⬜ l.75-209 « Availability » — candidat trou de règle, 0 réf
-  - ⬜ l.210-222 « OVERBURDENED EXAMPLES » — candidat trou de règle, 0 réf
-  - ⬜ l.223-1138 « Encumbrance and Travel Fatigue » — candidat trou de règle, 0 réf
+  - ⬜ l.77-211 « Availability » — candidat trou de règle, 0 réf
+  - ⬜ l.212-224 « OVERBURDENED EXAMPLES » — candidat trou de règle, 0 réf
+  - ⬜ l.225-1140 « Encumbrance and Travel Fatigue » — candidat trou de règle, 0 réf
 - **CRB 15** (Bestiary) :
   - ⬜ l.41-200 « BESTIARY FORMAT » — candidat trou de règle, 0 réf
   - ⬜ l.201-224 « Skills » — candidat trou de règle, 0 réf
@@ -2003,4 +2003,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: eeaa21b4d2ff8efef42d3a24b494b5691f39a515 (371 fichiers, 19 dossiers) corps: 50c45aa4a4017c65f4cf8149719dc007089abae2 -->
+<!-- sources-empreinte: 7d28b10d610355bd8ff59421c623e3876b3c98c8 (371 fichiers, 19 dossiers) corps: 29c75d5fb02b4e56ad6cb7cb49fa12e756b9f7a6 -->
