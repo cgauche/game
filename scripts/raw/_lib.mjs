@@ -46,6 +46,10 @@ export const booksDe = (registre) => registre.filter((b) => b.dir).map((b) => [b
 // part ailleurs, pour que tout consommateur puisse recevoir un registre FIXTURE par injection.
 export const REGISTRE_LIVRES = booksData
 export const BOOKS = booksDe(booksData)
+/** L'entrée du registre d'un livre EXTRAIT (porteur d'un `dir`), par son id STABLE — ou `null`.
+ *  SEULE résolution id → livre de l'outillage : un outil reçoit un id, il ne compare rien lui-même. */
+export const livreExtraitDe = (id, registre = REGISTRE_LIVRES) =>
+  registre.find((b) => b.id === id && b.dir) ?? null
 
 const BOOK_DIR = new Map(BOOKS)
 
@@ -183,11 +187,11 @@ export const livresDecoupes = (dir = DECOUPES_DIR) =>
   listerDossier(dir, { absent: 'vide' }).filter((n) => n.endsWith('.json')).map((n) => n.slice(0, -5))
 
 /**
- * La liste de découpe d'UN livre, `[{ titre, ouverture?, page }]`, dans l'ORDRE DU FICHIER — celui
+ * La liste de découpe d'UN livre, `[{ titre, ouverture?, page, pageFin, chapitre? }]`, dans l'ORDRE DU FICHIER — celui
  * des fichiers à écrire. LÈVE en NOMMANT la cause : une liste absente ou vide ferait écrire un livre
  * à zéro fichier, ou découper à l'aveugle.
  * @param {string} bookId id STABLE du livre @param {string} [dir]
- * @returns {{ titre: string, ouverture?: string, page: number }[]}
+ * @returns {{ titre: string, ouverture?: string, page: number, pageFin: number, chapitre?: string }[]}
  */
 export function decoupeDe(bookId, dir = DECOUPES_DIR) {
   const dits = livresDecoupes(dir).join(', ') || '(aucun)'

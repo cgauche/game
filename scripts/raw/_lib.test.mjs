@@ -24,7 +24,7 @@ import { CLASSES as CLASSES_ENTITE } from './check-entity-in-chapter.mjs'
 import { CLASSES as CLASSES_CATALOGS } from './build-catalogs.mjs'
 import { CLASSES as CLASSES_INDEX } from './build-atlas-index.mjs'
 import { CLASSES as CLASSES_CROISSANCE } from '../migrations/lib/croissance.mjs'
-import { refRe, refFolioRe, allAbbrAlternation, span, refNums, isRangeSuffix, bookOf, chapterFile, BOOKS, booksDe, cataloguesDe, classeDePage, CLASSES_DE_PAGE, coeursDe, coeurDe, coeursDuRegistre, estHorsRegle, horsRegleDe, livresDeCatalogue, livresDeCoeur, motifHorsRegle, niveauDeSectionDe, niveauxDeSectionDe, pagesDeLAtlas, RAWDOC_AUTHOR_META, RAWDOC_META_GENERATED, siglesDeCoeur, teneurDe, teneursDe } from './_lib.mjs'
+import { refRe, refFolioRe, allAbbrAlternation, span, refNums, isRangeSuffix, bookOf, chapterFile, BOOKS, booksDe, cataloguesDe, classeDePage, CLASSES_DE_PAGE, coeursDe, coeurDe, coeursDuRegistre, estHorsRegle, horsRegleDe, livreExtraitDe, livresDeCatalogue, livresDeCoeur, motifHorsRegle, niveauDeSectionDe, niveauxDeSectionDe, pagesDeLAtlas, RAWDOC_AUTHOR_META, RAWDOC_META_GENERATED, siglesDeCoeur, teneurDe, teneursDe } from './_lib.mjs'
 import booksData from '../../src/data/books.json' with { type: 'json' }
 
 // Des sigles RÉELS, pris au registre par leur RÉGIME (livre de cœur) — jamais recopiés : le test dit
@@ -623,4 +623,12 @@ test('pagesDeLAtlas : un Atlas ABSENT lève par défaut, et rend vide quand l’
   const fantome = join(tmpdir(), `pages-atlas-absent-${process.pid}`)
   assert.throws(() => pagesDeLAtlas(fantome, { classes: ['fiche'], registre: REGISTRE_ATLAS }))
   assert.deepEqual(pagesDeLAtlas(fantome, { classes: ['fiche'], registre: REGISTRE_ATLAS, absent: 'vide' }), [])
+})
+
+test('livreExtraitDe : un livre se résout par son id STABLE, et seulement s’il est EXTRAIT', () => {
+  const registre = [...REGISTRE_PROPRIETES, { id: 'sans-dossier', abbr: 'S' }]
+  assert.equal(livreExtraitDe('m', registre)?.dir, 'Source/M')
+  assert.equal(livreExtraitDe('M', registre), null, 'le sigle n’est pas l’id')
+  assert.equal(livreExtraitDe('sans-dossier', registre), null, 'un livre sans `dir` n’est pas extrait')
+  assert.equal(livreExtraitDe('inconnu', registre), null)
 })

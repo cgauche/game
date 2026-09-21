@@ -22,7 +22,7 @@
 import { writeFileSync, rmSync, existsSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { listerDossier } from '../guards/lib/lister.mjs'
-import { decoupeDe, readText, REGISTRE_LIVRES } from './_lib.mjs'
+import { decoupeDe, livreExtraitDe, readText } from './_lib.mjs'
 import { couperAuxTitres } from './lib/marker-pages.mjs'
 import { INDEX } from './check-source-format.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
@@ -238,7 +238,7 @@ function main() {
   const fichierCarte = iCarte >= 0 ? args[iCarte + 1] : null
   const id = args.find((a) => !a.startsWith('--') && a !== fichierCarte)
 
-  const livre = REGISTRE_LIVRES.find((b) => b.id === id && b.dir)
+  const livre = livreExtraitDe(id)
   if (!livre) {
     console.error(`recouper-source : « ${id} » n'est pas l'id d'un livre EXTRAIT de src/data/books.json`)
     process.exit(1)

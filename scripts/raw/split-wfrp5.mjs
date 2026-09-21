@@ -22,7 +22,7 @@ import {
 } from './lib/marker-pages.mjs'
 import { deballerSup } from './lib/titres.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
-import { decoupeDe, REGISTRE_LIVRES } from './_lib.mjs'
+import { decoupeDe, livreExtraitDe } from './_lib.mjs'
 import { indexDe, spanDe } from './recouper-source.mjs'
 import { graphieDeChapitre, largeurDeChapitre, ligne1DePlage } from '../../src/data/source/decoupe.ts'
 
@@ -41,7 +41,7 @@ const MARKER_DIR = 'Source/_marker/full/wfrp5/slices'
 // a rendues vides) et des commandes de restitution imprimées.
 const PDF = 'Source/_marker/wfrp5.pdf'
 
-const livre = REGISTRE_LIVRES.find((b) => b.id === LIVRE && b.dir)
+const livre = livreExtraitDe(LIVRE)
 if (!livre) { console.error(`LIVRE INCONNU AU REGISTRE : ${LIVRE}`); process.exit(1) }
 // Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
 const OUT = nomAscii(String(livre.dir).split('\\').join('/'))
