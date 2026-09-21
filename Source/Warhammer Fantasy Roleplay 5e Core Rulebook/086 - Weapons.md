@@ -44,7 +44,7 @@ The lengths of the weapons are progressively bigger as follows.
 
 # **Weapon Reach and Defence**
 
-If your weapon is longer than your opponent's, you benefit from +1 SL to defensive Melee Tests as you find it easier to keep
+If your weapon is longer than your opponent's, you benefit from +1 SL to defensive Melee Tests as you find it easier to keep them at bay.
 
 # **HAND WEAPONS**
 
@@ -245,6 +245,8 @@ If an attack with this weapon hits, the target takes the Condition; any relevant
 
 *Parry* weapons are light, defensive implements designed for dual wielding. *Parry* weapons used to defend against attacks ignore the normal –2 SL off hand penalty (see page 166). When dual wielding, if your first attack hits, the second attack is Unopposed if made with a *Parry* weapon, as your agile weapon slips past your opponent's compromised defences.
 
+#### **Penetrating**
+
 The weapon is highly effective at penetrating armour. It ignores 2 AP.
 
 #### **Pistol**
@@ -277,7 +279,9 @@ The weapon is exquisitely well-made or constructed from an especially strong mat
 
 *Wrap* weapons typically have long chains with weights at the end, making it very difficult to parry them effectively. Melee Tests Opposing an attack from a *Wrap* weapon suffer a penalty of –1 SL, as parried strikes wrap over the top of shields, or around blades.
 
-#### **Penetrating** XI **Weapon Flaws**
+XI
+
+# **Weapon Flaws**
 
 Some weapons are just difficult to use, or simply dangerous, as described with Weapon Flaws.
 

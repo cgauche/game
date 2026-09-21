@@ -4,7 +4,9 @@
 
 Reikland is arguably the most powerful of the Empire's provinces; it is the seat of the emperor and a major centre of military and trading might. However, governance anywhere in the Empire is confusing and even more so in the grand province, where the various Imperial, noble, mercantile, and religious authorities vie for control.
 
-## **Ruling the Empire The Emperor**
+# **Ruling the Empire**
+
+# **The Emperor**
 
 In 2512 IC, the Reikland is the heart of the Empire, so to understand its politics, one must start with the emperor, His Imperial Majesty Karl Franz Holswig-Schliestein. In theory he commands absolute control over the Empire, through issuing edicts, setting taxes, and raising armies. In practice, his power is checked (or frustrated, depending on your view) by other political bodies, numerous exceptions, and special privileges.
 
@@ -84,7 +86,9 @@ Aside from these noble lords, two other figures loom large in the politics of th
 
 **Bürgermeister Halmo Eigern of Auerswald** — a fractious character, Eigern oversees the freistadt of Auerswald. While he meets with Graf Ferdinand regularly and treats him with good grace, he is deeply resentful of the nobility, and privately agitates to eliminate all influence of the Wallensteins on the town.
 
-#### **Other Powers in the Reikland The Cult of Sigmar**
+# **Other Powers in the Reikland**
+
+#### **The Cult of Sigmar**
 
 Sigmar was born and raised in the heart of the Reikland and his cult dominates the province, which is home to both the grand theogonist and the Cathedral of Sigmar in Altdorf. As head of the cult and one of the Empire's most powerful political figures, the grand theogonist's authority often overshadows that of other faiths, leading to tensions between the cults.
 

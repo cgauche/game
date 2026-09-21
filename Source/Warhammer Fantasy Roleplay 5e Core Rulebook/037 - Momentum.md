@@ -20,6 +20,8 @@ You lose Momentum when you fail a Melee Test — including losing an Opposed Tes
 
 No matter the circumstances, a character or NPC may only spend Momentum to make one additional attack each Turn, even if they gain Momentum again after doing so.
 
+# **Leadership in Combat**
+
 A **Leadership** Test allows you to issue orders to NPCs clearly and with authority. If you're attempting to order your natural subordinates — a noble commanding serfs, or a sergeant commanding their troops — commands are usually unopposed. If there is no natural hierarchy in place, or the order is particularly challenging — such as ordering your soldiers to charge a hydra head on — the Test is Opposed by your targets' Cool. If you are contesting another's authority, make an Opposed Leadership Test — the orders of the winner will be followed, though such disagreements are usually terrible for morale.
 
 You may use Leadership to encourage an ally, as long as you don't have the *Broken* Condition. As a Free Action, make a Leadership Test to remove a *Broken* Condition from one ally of your choice, plus one additional *Broken* Condition from that ally or another for each SL after the first.
@@ -32,7 +34,7 @@ You can threaten a foe in the hopes of leaving them demoralised. As an Action ma
 
 Intimidating a group of foes raises the Difficulty of the Test to Hard (-2 SL). When fighting a well-led enemy, the Test is Opposed by the Leadership Skill of whoever is in charge.
 
-V **Leadership in Combat** When fighting a disorganised rabble, the Test is Opposed by the lowest Cool among the foe, as fear easily spreads among such groups.
+V When fighting a disorganised rabble, the Test is Opposed by the lowest Cool among the foe, as fear easily spreads among such groups.
 
 # **Non-Combat Damage**
 

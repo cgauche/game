@@ -30,6 +30,8 @@ Sigmar founded the Empire over two thousand years ago, and his legend recounts h
 
 Today, many centuries later, the Cult of Sigmar, patron of the Empire, has spread to such an extent that its leader, the grand theogonist, is arguably more powerful than the emperor himself.
 
+# **Other Pantheons**
+
 The different countries and species of the Old World all have deities of their own. Some, according to theologians, are aspects of other deities worshipped under different names. Others are particularly revered by a particular species — examples include Grungni, the dwarf ancestor god of mining and craftsmanship; Isha, a goddess of fertility and nature who is seen as the mother of all elves; and Esmerelda, the halfling goddess of hearth, home, and family.
 
 ### **The Chaos Gods**

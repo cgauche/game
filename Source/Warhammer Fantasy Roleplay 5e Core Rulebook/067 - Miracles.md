@@ -357,7 +357,9 @@ You invoke litanies to Sigmar, calling on him to smite his foes. A twin-tailed c
 
 Your prayers instil your chosen allies with a burning hatred for the enemies of Sigmar. Allied characters gain *Hatred* (see page 184) towards orcs, goblins, undead, and any associated with Chaos. After slaying such a foe, *Hatred* grants +2 SL to combat Tests instead of +1 SL.
 
-#### **Miracles of Taal Animal Instincts**
+# **Miracles of Taal**
+
+#### **Animal Instincts**
 
 **Range:** Touch **Target:** 1 **Duration:** Fellowship Bonus hours
 

@@ -32,6 +32,8 @@ You can also be subject to multiple, different Conditions at once. When this occ
 
 A Condition can be removed with a Fortune Point, so while they are debilitating, they can be managed if you are careful (see page 133).
 
+# **Master Condition List**
+
 # **Ablaze**
 
 You are on fire! This Condition is normally applied only to flammable creatures, such as those wearing combustible clothing, though some magical and divine effects can set even the non-flammable ablaze.
@@ -56,7 +58,7 @@ For each Wound you recover by any means, remove a *Bleeding*  Condition. A **Cha
 
 #### **Blinded**
 
-**Master Condition List** V Because of a powerful flash of light, blood in your eyes, or a terrible wound, you cannot see, and cannot undertake any task that requires sight, such as reading or making Ranged Attacks. You suffer Disadvantage to Melee Attacks and other Tests that rely heavily on sight but do not strictly require it, such as Climb or Ride. Melee Attacks against you benefit from Advantage, unless your foe is also *Blinded.* 
+V Because of a powerful flash of light, blood in your eyes, or a terrible wound, you cannot see, and cannot undertake any task that requires sight, such as reading or making Ranged Attacks. You suffer Disadvantage to Melee Attacks and other Tests that rely heavily on sight but do not strictly require it, such as Climb or Ride. Melee Attacks against you benefit from Advantage, unless your foe is also *Blinded.* 
 
 > Normally, one *Blinded* Condition is removed at the end of your Turn. However, if you have received a *Blinded* Condition as a result of imbibing a poison or an injury, it may persist for a longer period.
 

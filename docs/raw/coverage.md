@@ -17,7 +17,7 @@
 - **Cœur 5e** : ✅ 0 traités par une fiche · 📖 0 transcrits par un catalogue seul (jamais traités) · 🟡 0 effleurés · ⬜ 116 trous, sur 116 chapitres-règles (hors artefacts OCR).
 - **Livres sans cœur déclaré** : ✅ 48 traités par une fiche · 📖 45 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous, sur 95 chapitres-règles (hors artefacts OCR).
 
-Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3875 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2471 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **711 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅0·📖0·🟡0·⬜116 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
+Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3874 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2471 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **710 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅0·📖0·🟡0·⬜116 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -703,7 +703,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.68-207 « Change Career » — candidat trou de règle, 0 réf
   - ⬜ l.208-221 « Training » — candidat trou de règle, 0 réf
 - **CRB 050** (Gods of the Empire) :
-  - ⬜ l.35-38 « The Chaos Gods » — candidat trou de règle, 0 réf
+  - ⬜ l.37-40 « The Chaos Gods » — candidat trou de règle, 0 réf
 - **CRB 053** (The Cult of Morr, God of Death) :
   - ⬜ l.25-42 « Worshippers » — candidat trou de règle, 0 réf
 - **CRB 054** (The Cult of Myrmidia, Goddess of Strategy) :
@@ -741,13 +741,13 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.252-269 « Rhya's Union » — candidat trou de règle, 0 réf
   - ⬜ l.270-289 « Balm to a Wounded Mind » — candidat trou de règle, 0 réf
   - ⬜ l.290-341 « Shallya's Tears » — candidat trou de règle, 0 réf
-  - ⬜ l.342-379 « Twin-tailed Comet » — candidat trou de règle, 0 réf
-  - ⬜ l.380-385 « Lord of the Hunt » — candidat trou de règle, 0 réf
-  - ⬜ l.386-403 « Tanglefoot » — candidat trou de règle, 0 réf
-  - ⬜ l.404-423 « Hoarfrost's Chill » — candidat trou de règle, 0 réf
-  - ⬜ l.424-453 « The Snow King's Judgement » — candidat trou de règle, 0 réf
-  - ⬜ l.454-475 « Blind Justice » — candidat trou de règle, 0 réf
-  - ⬜ l.476-491 « Truth Will Out » — candidat trou de règle, 0 réf
+  - ⬜ l.342-381 « Twin-tailed Comet » — candidat trou de règle, 0 réf
+  - ⬜ l.382-387 « Lord of the Hunt » — candidat trou de règle, 0 réf
+  - ⬜ l.388-405 « Tanglefoot » — candidat trou de règle, 0 réf
+  - ⬜ l.406-425 « Hoarfrost's Chill » — candidat trou de règle, 0 réf
+  - ⬜ l.426-455 « The Snow King's Judgement » — candidat trou de règle, 0 réf
+  - ⬜ l.456-477 « Blind Justice » — candidat trou de règle, 0 réf
+  - ⬜ l.478-493 « Truth Will Out » — candidat trou de règle, 0 réf
 - **CRB 069** (The Aethyr) :
   - ⬜ l.19-34 « What Is the Aethyr? » — candidat trou de règle, 0 réf
   - ⬜ l.35-66 « The Lore of Light » — candidat trou de règle, 0 réf
@@ -775,11 +775,10 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.15-58 « The Grey Mountains » — candidat trou de règle, 0 réf
   - ⬜ l.59-200 « The Vorbergland » — candidat trou de règle, 0 réf
 - **CRB 079** (The Powers That Be) :
-  - ⬜ l.7-226 « Ruling the Empire The Emperor » — candidat trou de règle, 0 réf
-  - ⬜ l.227-292 « 1053–1115 IC » — candidat trou de règle, 0 réf
-  - ⬜ l.293-308 « 2135 IC » — candidat trou de règle, 0 réf
-  - ⬜ l.309-354 « 2308–2310 IC » — candidat trou de règle, 0 réf
-  - ⬜ l.355-358 « 2508 IC » — candidat trou de règle, 0 réf
+  - ⬜ l.231-296 « 1053–1115 IC » — candidat trou de règle, 0 réf
+  - ⬜ l.297-312 « 2135 IC » — candidat trou de règle, 0 réf
+  - ⬜ l.313-358 « 2308–2310 IC » — candidat trou de règle, 0 réf
+  - ⬜ l.359-362 « 2508 IC » — candidat trou de règle, 0 réf
 - **CRB 083** (Going to Market) :
   - ⬜ l.7-56 « Availability » — candidat trou de règle, 0 réf
 - **CRB 085** (Encumbrance) :
@@ -2163,4 +2162,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: 85baecfc356270b4c24f642e8fbc3cdbe9f64122 (461 fichiers, 20 dossiers) corps: a84aa66bd7c772f3bb46d27ccceb999245131770 -->
+<!-- sources-empreinte: c2dc5891a2711165c5b71f092ee1d9b61fee618d (461 fichiers, 20 dossiers) corps: d99df33492586451990f721a29661836a4b89496 -->

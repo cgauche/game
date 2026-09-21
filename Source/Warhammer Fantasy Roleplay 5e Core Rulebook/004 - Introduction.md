@@ -106,7 +106,9 @@ Even those who have little may take pride in the greatness of the society that s
 
 And then there are the inns. Glorious institutions! They represent society and its best and can be found in every city, town, fly-blown village, and even along the roads of the Empire. Here the day's work may be put aside in favour of a warm hearth, a good drink, and agreeable company. Where else might a rat catcher share a bench with a roadwarden, a Tilean merchant debate the works of Hieronymous of Nuln with an Imperial student, or a fisherwoman best an engineer at a game of Whist? For a few hours, at least, we are all subjects of the Empire together and may enjoy one another's company, provided everyone remembers who is paying for the next round.
 
-<span id="page-13-0"></span>Our enlightened Empire extends a hand of friendship to all of good intent, and within its cities can be found halflings, dwarfs, and even elves, all living under the protection of Imperial law and contributing, in their various ways, to the prosperity of our great nation.
+# <span id="page-13-0"></span>Our Friends and Allies
+
+Our enlightened Empire extends a hand of friendship to all of good intent, and within its cities can be found halflings, dwarfs, and even elves, all living under the protection of Imperial law and contributing, in their various ways, to the prosperity of our great nation.
 
 Halflings are a common sight as their wandering ancestors recognised the safety of our great city, settled and grew voluminous families. So numerous did they become that, in 1010 **IC**, Emperor Ludwig the Fat granted them their own province, the Mootland. Whether this was intended as a reward for their contributions to Imperial cuisine or, as some less charitable accounts suggest, as a jest, I cannot say. Whatever the original intention, the arrangement has endured rather well. Halflings bake pies, brew ale, run inns and engage in all manner of useful trades, while some serve as archers in the Imperial armies.
 

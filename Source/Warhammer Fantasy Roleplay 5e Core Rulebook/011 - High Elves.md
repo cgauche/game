@@ -66,7 +66,7 @@ II **Starting Skills** Add one Advance (+5) to any five of the following Skills:
 
 #### **Fate**
 
-High elf Characters rarely draw the eye of destiny, starting
+High elf Characters rarely draw the eye of destiny, starting with 1 Fate.
 
 #### **Fortune**
 

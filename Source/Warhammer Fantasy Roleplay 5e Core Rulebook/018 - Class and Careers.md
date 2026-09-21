@@ -749,7 +749,7 @@ Even the loftiest citizens can fall prey to a skilled Charlatan. They come in ma
 
 To avoid suspicion, Charlatans rarely stay in one place for long. Few Swindlers admit to their true calling, preferring to masquerade as almost anyone else. As a result, they can operate wherever there are wealthy dupes willing to part with their coin for little more than a promise.
 
-Playing a Charlatan lets you bluff, deceive, and talk your way through almost any situation. Your fellow adventurers may never entirely trust you, but your silver tongue can get them out of — and
+Playing a Charlatan lets you bluff, deceive, and talk your way through almost any situation. Your fellow adventurers may never entirely trust you, but your silver tongue can get them out of — and into — all manner of trouble.
 
 ## **COACHMAN**
 
@@ -3749,7 +3749,7 @@ Some cults of the Empire have clerics trained for war. The Warrior Priests of Si
 
 Warrior Priests tend to the spiritual welfare of armies, keeping morale high and faith unbroken. They begin as Neophytes before rising through the ranks to become Warrior Priests, Priest Sergeants, or even Priest Captains, leading the faithful in both battle and worship. Within the cults of Sigmar, Myrmidia, and Ulric, they can rise through the hierarchy and become important religious figures. Others shun the politics of their cult, roaming the Old World, and may join adventuring parties in pursuit of their god's will. Hunting heretics, spreading faith through martial deeds, or seeking out ancient relics and holy sites are all worthy goals for a Warrior Priest.
 
-Playing a Warrior Priest lets you stand at the forefront of battle, inspiring your companions as you smite enemies. You can invoke divine miracles, rally others when hope falters, and command
+Playing a Warrior Priest lets you stand at the forefront of battle, inspiring your companions as you smite enemies. You can invoke divine miracles, rally others when hope falters, and command respect from the faithful wherever your travels take you.
 
 #### **WARRIOR PRIEST ADVANCE SCHEME**
 

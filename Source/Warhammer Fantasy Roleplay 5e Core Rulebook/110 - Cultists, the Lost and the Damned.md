@@ -37,7 +37,7 @@ Melee (Basic) 35, Ranged (Bow) 35, Secret Signs (Cult) 40
 
 ### **Optional Traits**
 
-**Mutant**
+# **Mutant**
 
 Few fates are more tragic than succumbing to the mutating touch of Chaos. It strikes without warning or reason, and even infants may be born bearing its taint. Faced with such horror, many parents abandon their mutated children to die in the wilds or be taken in by other mutants and beastmen. However innocent they may be, mutants are a source of terror to the common folk. Most are driven into the service of the Dark Gods through abandonment and bitterness, while others choose death before damnation claims them.
 
