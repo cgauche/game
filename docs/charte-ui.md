@@ -329,7 +329,7 @@ module de sa primitive, déclaré au manifeste des primitives (champ `css`) et m
 | `coins.css` | `Coins` | `.coins[data-ton]`, `.coin-gold`, `.coin-silver`, `.coin-copper`, `.coin-sep` |
 | `inspect-panel.css` | `InspectPanel` | `.inspect-panel`, `.insp-head`, `.insp-id`, `.insp-lbl`, `.insp-badges`, `.insp-badge`, `.insp-pv-num` |
 | `equipment-panel.css` | `EquipmentPanel` | `.equip-panel`, `.equip-slots`, `.eq-*`, `.equip-sets`, `.set-*`, `.weap-quals` |
-| `combat-console.css` | `CombatConsole` (organisme) | `.combat-console` (le PONT), `.cc-phase` (+ `[data-phase]`), `.cc-dock`, `.cc-bay*`, `.cc-arsenal*`, `.cc-sets`/`.cc-set*`, `.cc-grid*`, `.cc-cell` (l'alvéole, posée à côté de `.chip`), `.cc-ico`, `.cc-lbl`, `.cc-key`, `.cc-cost`, `.cc-quick`, `.cc-arch*` (le fronton), `.cc-gutter*`, `.cc-socle`, `.cc-conduit*`, `.cc-corner`, `.cc-end` — identité et mise en page INTERNE ; la matière de la bande est la peau `.skin-pont`, celle du bandeau de phase la peau `.skin-bois` |
+| `combat-console.css` | `CombatConsole` (organisme) | `.combat-console` (l'EMPREINTE du pont — bande + saillie du fronton —, + `[data-forme]`), `.cc-phase` (+ `[data-phase]`, ses TROIS adresses), `.cc-dock` (la BANDE, qui porte la matière), `.cc-bay*`, `.cc-arsenal*`, `.cc-sets`/`.cc-set*`, `.cc-grid*`, `.cc-cell` (l'alvéole, posée à côté de `.chip`), `.cc-ico`, `.cc-lbl`, `.cc-key`, `.cc-cost`, `.cc-quick`, `.cc-arch*` (le fronton), `.cc-gutter*`, `.cc-socle`, `.cc-conduit*`, `.cc-corner`, `.cc-end` — identité et mise en page INTERNE ; la matière de la bande est la peau `.skin-pont`, celle du bandeau de phase la peau `.skin-bois` |
 | `fx-chip.css` | `FxChip` / `EffectChips` | `.fx-chips` (la rangée), `.fx-chip` (+ tons `.malus`, `.buff`, `.state`, `.more`, compte `<b>`, durée `<em>`), `.fx-chip-label` |
 | `spectator-chip.css` | `SpectatorChip` | `.spectator-chip` — l'ANCRAGE est un état de la primitive (`data-pose='ecran'`), pas une règle recopiée chez chacun de ses trois hôtes |
 | `ready-row.css` | `ReadyRow` | `.ready-row`, `.ready-chip` (+ `.ok`), `.ready-noportrait` |
@@ -359,8 +359,39 @@ La **peau « plaque de bois »** `.skin-bois` (`components.css`) est la troisiè
 PLAQUE posée sur le champ — plat de bois éclairé par le haut (`--atelier-wood-top` →
 `--atelier-wood-bottom`), filet `--wm-frame-dark`, liséré interne d'or et ombre portée sur le
 terrain. Deux boîtes la posent sur deux écrans : le rail d'outils `.hud-rail` du HUD de combat
-(`CampaignView`) et le bandeau de phase `.cc-phase` du pont (`CombatConsole`, à ses deux adresses).
+(`CampaignView`) et le bandeau de phase `.cc-phase` du pont (`CombatConsole`, à ses TROIS adresses).
 Chaque porteur n'en garde que son delta — l'ancrage du rail, l'encoche d'angle du bandeau.
+
+### Une réserve de pont se tient par le FLUX, jamais par une valeur (#1848)
+
+Le bas du champ de l'écran de jeu est une **rangée de grille**, pas une pile d'ancrages : `.stage`
+est en `grid-template-rows: 1fr auto`, le PONT (console de combat ou pont d'exploration) EST la
+rangée basse, et toutes les surfaces qui s'ancrent au bas du champ vivent dans `.stage-flot`, la
+rangée du monde (`hud.css`). Conséquence : `bottom: 0` y signifie « juste au-dessus du pont », et
+**aucune feuille ne lit plus la hauteur d'un pont pour s'en écarter**.
+
+Devant tout `bottom:` d'une surface basse, la question est : « cette valeur connaît-elle la hauteur
+d'un pont ? » — si oui, elle meurt. Une variable mesurée au rendu (hook + `ResizeObserver`) ne règle
+rien : c'est une garde de synchronisation, fausse d'une frame à chaque bascule de forme, muette sous
+jsdom, et elle couple une primitive au runtime d'un écran. Ce qui reste légitime : la SAILLIE d'un
+pont (le fronton qui dépasse sa bande) se tient dans la BOÎTE du pont (`--cc-saillie` en rembourrage
+haut : sa boîte vaut son EMPREINTE), et une surface SUPERPOSÉE au parapet (le bandeau de phase)
+publie sa propre grandeur, que le fil d'événements réserve. Critère : ajouter une surface ancrée en
+bas doit coûter ZÉRO ligne de réserve, et changer la hauteur du pont ne doit toucher aucune autre
+feuille.
+
+Une surface qui a besoin de la HAUTEUR DISPONIBLE (et non d'un simple ancrage) la lit sur sa rangée,
+pas sur le viewport : `.stage-flot` se déclare conteneur de requête (`container-type: size`), et la
+frise d'initiative borne sa colonne en `cqh` — `min(84cqh, calc(100cqh - …))`. Un `100vh` moins la
+hauteur d'un pont est le même couplage écrit autrement. Corollaire de doctrine : `container`/
+`container-type`/`container-name` sont du PLACEMENT (même famille que `contain`) — ils déclarent une
+portée de mise en page, jamais une matière ; c'est l'écran qui compose ses rangées
+(`scripts/guards/lib/cssCouches.mjs`).
+
+Preuve mécanique : `scripts/recette/console-pont-formes.mjs` sonde les DEUX ponts — passe EXPLORATION
+(dialogue ouvert, panneau du journal déployé, trois vues jugées) puis passe COMBAT (trois formes,
+sept vues). Une surface PORTÉE par un pont (le tiroir-journal, assis sur le pont d'exploration) est
+relevée `descendant` et n'est pas une occlusion : le relevé le dit, le détecteur ne devine pas.
 
 Le **halo de lisibilité** `.halo-champ` (`components.css`) n'est pas une peau mais le même genre de
 contrat : la double ombre d'encre d'un TEXTE posé sur un fond qu'il ne maîtrise pas (le monde nu, le

@@ -123,7 +123,9 @@
 .gallery-scene-track {
   position: relative;
   width: 1440px;
-  height: calc(var(--cc-deck-h) + var(--cc-fronton) + var(--cc-phase-h));
+  /* La vignette montre les DEUX formes du pont l'une sous l'autre : deux empreintes (bande +
+     saillie du fronton) et le bandeau de phase superposé à chacune. */
+  height: calc(2 * (var(--cc-deck-h) + var(--cc-saillie) + var(--cc-phase-h)));
 }
 /* COLONNE de vignette : le flux BLOC qu'un hôte réel (boîte d'écran, corps de modale) offre à une
    brique qui rend un FRAGMENT à empiler (`RewardRecap`). La piste est une rangée : sans elle, les

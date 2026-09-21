@@ -222,36 +222,7 @@ export function CampaignView() {
             surcouche — pour qu'un crash de rendu du stage n'emporte jamais le HUD de cet écran. */}
         <MondeDeCampagne />
         {/* ── Overlays HUD plein-champ (façon BG3, mobile-first) ── */}
-        {mode === 'battle' && battle && (
-          <>
-            <InitiativeStrip
-              order={battle.order}
-              turn={battle.turn}
-              round={battle.round}
-              combatants={battle.combatants}
-              over={battle.over != null}
-              canFirstIds={canFirstIds}
-              freeFirstIds={freeFirstIds}
-              targeting={isTargeting || !!preemptAiming}
-              onActivate={onStripPortrait}
-              onHover={setHoverCombatant}
-              hoveredId={hovered}
-              onPromote={roundStartPromote}
-              canPreemptIds={canPreemptIds}
-              preemptArmedId={preemptAiming}
-              onPreempt={armPreempt}
-              hand={netMode === 'local' ? undefined : {
-                raised: handRaised,
-                reason: handVerdict.ok ? undefined : handVerdict.reason,
-                label: <><Icon id={handDef.icon as IconIdInput} size="sm" /> {handRaised ? 'Pause demandée' : 'Pause'}{autresMains > 0 ? ` +${autresMains}` : ''}</>,
-                ariaLabel: `${handRaised ? `${handDef.label} : retirer ma demande` : handDef.label}${autresMains > 0 ? ` — déjà demandée par ${autresMains} autre${autresMains > 1 ? 's' : ''} joueur${autresMains > 1 ? 's' : ''}` : ''}`,
-                onToggle: () => runAction(handDef.id, useGame.getState, { toggleOff: handRaised }),
-              }}
-            />
-            <CombatStartSplash />
-          </>
-        )}
-        {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
+        {mode === 'battle' && battle && <CombatStartSplash />}
         {/* Ciblage par carte (Frappe Mortelle / Des deux armes / Surincantation / pose de zone /
             bordée / téléportation) : la console porte le bandeau d'interlude et SA sortie, tirés du
             registre des actions (`surface: 'interlude'`, cf. CombatConsole). */}
@@ -309,31 +280,71 @@ export function CampaignView() {
         {saveOpen && !dialogue && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {(sessionOpen || sessionEndOpen) && !dialogue && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
         <PartyDock heroes={dockHeroes} targeting={isTargeting} onOpen={onDockPortrait} />
-        {/* RAIL D'OUTILS (épure G) EN COMBAT : UN panneau vertical encadré au bord droit — le journal
-            de bataille et l'ouvreur de dossier de navire y sont vissés, plus rien d'épars sur le champ
-            ni dans la barre haute. Hors combat, ces commandes vivent sur le pont d'exploration : le
-            rail ne se rend plus (la planche ne le veut qu'en tactique). La caméra n'y a plus de plaque :
-            elle se pilote au GESTE (glisser, molette, pincer) et au CLAVIER (registre
-            `state/keybindings`, remappable à l'écran Options). Aux tranches étroites le rail se dissout
-            (`display: contents`) et chaque surface reprend son ancrage mobile propre. */}
-        {mode === 'battle' && (
-          <Stack className="hud-rail skin-bois" gap="md" pad="md">
-            {vessel && (
-              <button
-                type="button"
-                className="worldmap-btn skin-tole"
-                data-ton="laiton"
-                onClick={() => setDossierOpen(true)}
-                title="Dossier du navire — état, cargaison, équipage"
-              >
-                <Icon id="travel/sail-ship" size="lg" />
-              </button>
-            )}
-            <LogDrawer battle={battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
-          </Stack>
-        )}
-        {mode === 'exploration' && povActive && <PovControls />}
-        {dialogue && <DialogueBox />}
+        {/* LA RANGÉE DU MONDE (#1848, `.stage-flot` — hud.css) : tout ce qui s'ancre AU BAS DU CHAMP
+            vit ICI, dans la rangée du plateau qui s'arrête au bord haut du pont. Aucune de ces
+            surfaces ne connaît plus de hauteur de pont : `bottom: 0` y signifie « juste au-dessus
+            du pont », dans les deux modes et à toute forme de console. */}
+        <div className="stage-flot">
+          {/* La FRISE est une surface de cette rangée comme les autres : elle s'arrête au bord haut du
+              pont parce que sa rangée s'y arrête, et la hauteur qui lui reste est celle de la rangée
+              (`cqh`, initiative-strip.css) — plus aucune hauteur de pont à relire. */}
+          {mode === 'battle' && battle && (
+            <InitiativeStrip
+              order={battle.order}
+              turn={battle.turn}
+              round={battle.round}
+              combatants={battle.combatants}
+              over={battle.over != null}
+              canFirstIds={canFirstIds}
+              freeFirstIds={freeFirstIds}
+              targeting={isTargeting || !!preemptAiming}
+              onActivate={onStripPortrait}
+              onHover={setHoverCombatant}
+              hoveredId={hovered}
+              onPromote={roundStartPromote}
+              canPreemptIds={canPreemptIds}
+              preemptArmedId={preemptAiming}
+              onPreempt={armPreempt}
+              hand={netMode === 'local' ? undefined : {
+                raised: handRaised,
+                reason: handVerdict.ok ? undefined : handVerdict.reason,
+                label: <><Icon id={handDef.icon as IconIdInput} size="sm" /> {handRaised ? 'Pause demandée' : 'Pause'}{autresMains > 0 ? ` +${autresMains}` : ''}</>,
+                ariaLabel: `${handRaised ? `${handDef.label} : retirer ma demande` : handDef.label}${autresMains > 0 ? ` — déjà demandée par ${autresMains} autre${autresMains > 1 ? 's' : ''} joueur${autresMains > 1 ? 's' : ''}` : ''}`,
+                onToggle: () => runAction(handDef.id, useGame.getState, { toggleOff: handRaised }),
+              }}
+            />
+          )}
+          {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
+          {/* RAIL D'OUTILS (épure G) EN COMBAT : UN panneau vertical encadré au bord droit — le journal
+              de bataille et l'ouvreur de dossier de navire y sont vissés, plus rien d'épars sur le champ
+              ni dans la barre haute. Hors combat, ces commandes vivent sur le pont d'exploration : le
+              rail ne se rend plus (la planche ne le veut qu'en tactique). La caméra n'y a plus de plaque :
+              elle se pilote au GESTE (glisser, molette, pincer) et au CLAVIER (registre
+              `state/keybindings`, remappable à l'écran Options). Aux tranches étroites le rail se dissout
+              (`display: contents`) et chaque surface reprend son ancrage mobile propre. */}
+          {mode === 'battle' && (
+            <Stack className="hud-rail skin-bois" gap="md" pad="md">
+              {vessel && (
+                <button
+                  type="button"
+                  className="worldmap-btn skin-tole"
+                  data-ton="laiton"
+                  onClick={() => setDossierOpen(true)}
+                  title="Dossier du navire — état, cargaison, équipage"
+                >
+                  <Icon id="travel/sail-ship" size="lg" />
+                </button>
+              )}
+              <LogDrawer battle={battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
+            </Stack>
+          )}
+          {mode === 'exploration' && povActive && <PovControls />}
+          {dialogue && <DialogueBox />}
+          {/* Arbitre R2 : UNE seule modale de combat à la fois, par priorité (cf. ActiveModal). Il
+              vit dans cette rangée parce que sa PUCE d'attente (coop) est une surface basse du champ
+              — ses modales, elles, sont des voiles fixes que la grille ne touche pas. */}
+          <ActiveModal />
+        </div>
         {merchant && <MerchantPanel />}
         {/* Jeux de taverne (NADJ 16) : la modale se rend seule quand `tavernGames` est ouvert
             (Effet `openTavernGames` d'un dialogue d'aubergiste). Nulle sinon — mont inconditionnel. */}
@@ -407,8 +418,6 @@ export function CampaignView() {
           de fin de chapitre attend qu'elle soit acquittée. */}
       {pendingOuverture && <CampaignOpeningScreen />}
       {!pendingOuverture && pendingChapterRecap && <ChapterRecapScreen />}
-      {/* Arbitre R2 : UNE seule modale de combat à la fois, par priorité (cf. ActiveModal). */}
-      <ActiveModal />
       {/* Modales HORS combat (contexte exclusif) : restent montées indépendamment.
           LootModal AVANT AppraiseModal : Évaluer/Détecter une ligne s'empile AU-DESSUS de la fenêtre. */}
       <LootModal />

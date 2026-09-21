@@ -276,11 +276,16 @@ const ACTION_RECHARGER = 'reload';
 /** Le bandeau de phase, à ses DEUX adresses (arbitrage utilisateur 2026-08-24) : sur le parapet du
  *  pont (pauses de round, interlude de ciblage) ou, à l'OUVERTURE d'un combat, CENTRÉ EN HAUT DE LA
  *  CARTE comme la référence Rogue Trader le pose. Une seule boîte, une seule matière — l'adresse est
- *  un habillage (`centre`), jamais un second composant. La MATIÈRE est la peau partagée
+ *  un ATTRIBUT (`data-phase`), jamais un second composant ni une classe de plus. La MATIÈRE est la peau partagée
  *  `.skin-bois` (components.css), celle de la plaque du rail d'outils. */
-export function PhaseBanner({ label, actions, ready, centre }: PhaseBanner & { centre?: boolean }) {
+export function PhaseBanner({ label, actions, ready, adresse = 'pont' }: PhaseBanner & {
+  /** OÙ le bandeau se pose — une ADRESSE, jamais une classe de plus (cliquet xii) : sur le parapet
+   *  du pont (`pont`), en haut de la carte à l'ouverture du combat (`ouverture`), ou centré au-dessus
+   *  de l'arche quand le pont n'a plus de bande à sa gauche (`spectatrice`). */
+  adresse?: 'pont' | 'ouverture' | 'spectatrice';
+}) {
   return (
-    <div className="cc-phase skin-bois" data-phase={centre ? 'ouverture' : 'pont'}>
+    <div className="cc-phase skin-bois" data-phase={adresse}>
       <span className="cc-phase-label">{label}</span>
       {ready && <ReadyRow ready={ready} />}
       {actions.map((a) => (
@@ -399,10 +404,13 @@ export function ConsoleArch({ active, ring, move, action, etats, retraitDEtat }:
           enfant à part : à 360 la ligne d'arche ne peut pas le porter (texte mesuré 236px pour
           292px d'arche), la composition compacte le retire — le CHIFFRE (`9 / 9`) et la teinte de la
           piste restent à l'écran, et le `role="meter"` de la primitive porte la valeur à l'a11y. */}
+      {/* Blessures d'un ADVERSAIRE : la teinte d'équipe du jeu (`ENEMY_TINT`), jamais l'échelle de
+          santé des héros — la barre dit le CAMP avant de dire l'état (même loi que l'anneau de la
+          tuile). L'arche étant la même dans les deux formes, la règle vit ICI, une seule fois. */}
       <LifeBar
         value={active.wounds.current}
         max={active.wounds.max}
-        color={hpColor(active.wounds.max > 0 ? Math.max(0, Math.min(1, active.wounds.current / active.wounds.max)) : 0)}
+        color={active.kind === 'enemy' ? ENEMY_TINT : hpColor(active.wounds.max > 0 ? Math.max(0, Math.min(1, active.wounds.current / active.wounds.max)) : 0)}
         overlay
         format={(v, m) => (
           <>
@@ -591,8 +599,8 @@ export function CombatConsole() {
   if (!active) {
     return phase ? (
       <>
-        {ouverture && <PhaseBanner {...phase} centre />}
-        <div className="combat-console skin-pont" onContextMenu={avalerMenuNatif}>{!ouverture && <PhaseBanner {...phase} />}</div>
+        {ouverture && <PhaseBanner {...phase} adresse="ouverture" />}
+        <div className="combat-console" data-forme="spectatrice" onContextMenu={avalerMenuNatif}>{!ouverture && <PhaseBanner {...phase} adresse="spectatrice" />}</div>
       </>
     ) : null;
   }
@@ -1177,13 +1185,16 @@ export function CombatConsole() {
     <>
     {/* BANDEAU D'OUVERTURE : enfant du CHAMP (`.stage`), jamais du pont — à l'ouverture il se pose
         CENTRÉ EN HAUT de la carte (référence RT « round 0 »), au-dessus du terrain. */}
-    {ouverture && phase && <PhaseBanner {...phase} centre />}
-    {/* LE PONT : la bande porteuse, à HAUTEUR FIXE. Le bandeau de phase est son seul enfant HORS
-        FLUX (superposé au parapet, `.cc-phase`) — une phase qui va et vient ne déplace aucune case. */}
-    <div className="combat-console skin-pont" onContextMenu={avalerMenuNatif}>
-      {phase && !ouverture && <PhaseBanner {...phase} />}
+    {ouverture && phase && <PhaseBanner {...phase} adresse="ouverture" />}
+    {/* LE PONT : la bande porteuse, à HAUTEUR FIXE. La racine est l'EMPREINTE du pont — la bande
+        PLUS la saillie du fronton — et ne peint rien : la MATIÈRE de bande (peau `.skin-pont`) est
+        portée par la bande elle-même, `.cc-dock`. Le bandeau de phase est le seul enfant HORS FLUX
+        de la racine (superposé au parapet, `.cc-phase`) — une phase qui va et vient ne déplace
+        aucune case. */}
+    <div className="combat-console" data-forme={spectatrice ? 'spectatrice' : 'complete'} onContextMenu={avalerMenuNatif}>
+      {phase && !ouverture && <PhaseBanner {...phase} adresse={spectatrice ? 'spectatrice' : 'pont'} />}
       {!phase && !controlled && (
-        <div className="cc-phase skin-bois">
+        <div className="cc-phase skin-bois" data-phase={spectatrice ? 'spectatrice' : 'pont'}>
           {siegeDistant !== null ? (
             <SpectatorChip label={net.seatNames[siegeDistant] ?? 'L’hôte'} action={`joue ${active.label}…`} />
           ) : (
@@ -1194,36 +1205,29 @@ export function CombatConsole() {
         </div>
       )}
 
-      {/* LES RÉGIONS DU PONT. Deux FORMES, une seule bande (arbitrage utilisateur 2026-08-24,
-          référence RT : « rond = on regarde, carré = on peut cliquer ; rien ne se grise, rien ne se
-          désactive — la console cesse d'être une console ») :
-          · COMPLÈTE — travée gauche · arche · travée droite · coin, quand ce siège tient le tour ;
-          · SPECTATRICE — le seul médaillon de l'actif, quand il ne le tient pas (ou à la pause de
-            Round). Ni travée, ni set, ni accès rapide, ni grille, ni gouttière, ni fin de tour. */}
-      <div className="cc-dock" data-forme={spectatrice ? 'spectatrice' : 'complete'}>
+      {/* LES DEUX FORMES du pont (arbitrage utilisateur 2026-08-24, référence RT : « rond = on
+          regarde, carré = on peut cliquer ; rien ne se grise, rien ne se désactive — la console
+          cesse d'être une console » ; précisé le 2026-09-20, verbatim : « moi je voulais que cela
+          n'affiche que cette partie sans les barres gauche et droite pour les ennemies et avant le
+          début du combat ») :
+          · COMPLÈTE — la BANDE de bord à bord et ses quatre régions (travée gauche · arche · travée
+            droite · coin), quand ce siège tient le tour ;
+          · SPECTATRICE — l'ARCHE SEULE : le portrait dans son arche, ses jauges, son rack d'États,
+            ses Blessures et son nom. Ni travée, ni set, ni accès rapide, ni grille, ni fin de tour —
+            et plus aucune BARRE de part et d'autre : la bande garde sa BOÎTE (c'est ce qui rend
+            l'arche immobile d'une forme à l'autre, au pixel) mais sa MATIÈRE s'éteint, nappe,
+            liseré et ombre comprises (combat-console.css).
+          L'arche est le MÊME composant dans les deux formes (aucune matière parallèle) : elle perd
+          seulement ce qui appartient au tour joué — le geste d'annulation et le retrait d'État. */}
+      <div className="cc-dock skin-pont">
       {spectatrice ? (
-        /* MÉDAILLON DE L'ACTIF : portrait dans son cadre ROND, son nom, ses Blessures (en teinte
-           HOSTILE quand c'est un adversaire — la couleur d'équipe du jeu, `ENEMY_TINT`) et son rack
-           d'États. Aucune primitive de plus : c'est `PortraitTile`, `LifeBar` et `StateChips`. */
-        <div data-medaillon="" data-hostile={active.kind === 'enemy' ? '' : undefined}>
-          <PortraitTile c={active} ring={ring} variant="identity" size="lg" team={active.kind === 'enemy' ? 'enemy' : 'ally'} />
-          <div data-corps="">
-            <span data-nom="">{active.label}</span>
-            <LifeBar
-              value={active.wounds.current}
-              max={active.wounds.max}
-              color={active.kind === 'enemy' ? ENEMY_TINT : hpColor(active.wounds.max > 0 ? Math.max(0, Math.min(1, active.wounds.current / active.wounds.max)) : 0)}
-              overlay
-              format={(v, m) => (
-                <>
-                  {v} / {m}
-                  <i> BLESSURES</i>
-                </>
-              )}
-            />
-            <StateChips c={active} max={ARCH_STATE_CELLS} reserve extra={actorStateChips(active, battle)} />
-          </div>
-        </div>
+        <ConsoleArch
+          active={active}
+          ring={ring}
+          move={{ value: moveLeft, max: moveMax }}
+          action={{ value: actAvail, max: actMax }}
+          etats={actorStateChips(active, battle)}
+        />
       ) : (
       <>
         {/* Travée GAUCHE (planche 2026-08-17) : COLONNE DE SETS · 2×3 cases (haute déduite du set,

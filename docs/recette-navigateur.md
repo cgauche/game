@@ -130,14 +130,34 @@ node scripts/recette/console-pont-formes.mjs --widths 900,700 --mesures
 node scripts/recette/console-pont-formes.mjs --stress 105
 ```
 
-Mesure le PONT DE CONSOLE dans ses TROIS formes — pont complet (tour du joueur), forme spectatrice
-(tour non contrôlé), ouverture de combat — à 1600/1100/900/800/700/560/360. Refuse : une région qui
-ampute son contenu (`scrollHeight > clientHeight` sur `.cc-dock` et chacune de ses régions), une
-bande dont la hauteur RENDUE s'écarte de sa hauteur DÉCLARÉE (`--cc-deck-h`), un contrôle du pont
-qui sort du champ, un pont qui recouvre le fil ou la frise, une bande dont la hauteur CHANGE d'une
-forme à l'autre (au-delà de 700, là où le pont est une ligne), un bandeau d'ouverture qui recouvre
-la bande de groupe, la frise, le rail, le fil ou le pont — ou qui quitte le HAUT de la carte tant
-que la zone haute le permet —, un médaillon décentré.
+Sonde les DEUX ponts, dans cet ordre. **Passe EXPLORATION** d'abord, aux trois vues jugées
+(1707×780 / 1366×650 / 360×740), une conversation EN COURS et le panneau du tiroir-journal DÉPLOYÉ :
+c'est là que vit le défaut fondateur du ticket #1848 (le bandeau de dialogue passant sous le pont
+léger) et une sonde qui n'irait qu'au combat mentirait par couverture. Elle refuse : un pont
+d'exploration absent, un dialogue ou un panneau non montés (elle s'annonce AVEUGLE plutôt que de se
+taire), une surface de la rangée du monde qui descend sous le bord haut du pont, plus les deux
+détecteurs purs ci-dessous. Une surface PORTÉE par le pont (la commande du tiroir, assise dessus)
+est relevée `descendant` : ce n'est pas une occlusion.
+
+**Passe COMBAT** ensuite : le PONT DE CONSOLE dans ses TROIS formes — pont complet (tour du joueur), forme spectatrice
+(tour non contrôlé), ouverture de combat — aux vues 1707×780 / 1366×650 / 1100 / 900 / 700 / 560 /
+360×740. Refuse : une région qui ampute son contenu (`scrollHeight > clientHeight` sur `.cc-dock` et
+chacune de ses régions), une bande dont la hauteur RENDUE est plus COURTE que sa hauteur DÉCLARÉE
+(`--cc-deck-h`, une réserve qui mentirait) ou qui en dérive de plus de 6px, un contrôle du pont qui
+sort du champ, un pont qui recouvre le fil ou la frise, une bande dont la hauteur CHANGE d'une forme
+à l'autre (au-delà de 700, là où le pont est une ligne), un bandeau de phase qui recouvre l'arche,
+le fil ou la frise — à chacune de ses TROIS adresses (`data-phase` : parapet du pont, ouverture au
+haut de la carte, centré au-dessus de l'arche en forme spectatrice) —, un bandeau d'ouverture qui
+recouvre la bande de groupe, la frise, le rail, le fil ou le pont, ou qui quitte le HAUT de la carte
+tant que la zone haute le permet, une arche décentrée, une bande qui garde une région ou sa MATIÈRE
+en forme spectatrice (« les barres gauche et droite »), et un flanc de l'arche où l'on ne touche pas
+le PLATEAU.
+Deux DÉTECTEURS PURS portent le reste du verdict — `scripts/recette/detecteurs-pont.mjs`, testés à
+fixtures rouge/verte par `detecteurs-pont.test.mjs` (gate `test:recette`) :
+`surfaceOcculteeParUnPont` (une surface basse du champ — dialogue, tiroir, fil, commandes de
+première personne, puce d'attente — dont le PONT répond au centroïde de l'intersection : le critère
+est l'OCCLUSION, jamais une fraction de recouvrement) et `elementsHorsFenetre` (tout élément non-SVG
+hors d'un scrollport dont la boîte sort du viewport à gauche ou à droite).
 `--mesures` imprime les mesures sans verdict : c'est ainsi que se dimensionnent `--cc-deck-h` et
 `--cc-arch-chrome` (`src/ui/styles/combat-console.css`), que jsdom ne peut pas calculer — le bloc
 `arche {h, pad, gap, enfants[], portrait}` donne le chrome par `h − portrait`.

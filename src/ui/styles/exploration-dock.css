@@ -7,17 +7,17 @@
    Les grandeurs viennent du `:root` (base.css pour les teintes et `--pont-*`, combat-console.css
    pour `--cc-bay-gap` et `--cc-deck-h`) — jamais un littéral recopié ici. */
 
-/* GÉOMÉTRIE DU PONT — au `:root` comme `--cc-deck-h` (combat-console.css) et pour la même raison :
-   la HAUTEUR du pont est une grandeur que le reste du HUD doit LIRE pour s'ancrer AU-DESSUS de lui
-   (tiroir-journal, hud.css) ; portée par le seul sélecteur du pont, la réserve était illisible.
+/* GÉOMÉTRIE DU PONT — au `:root` : le côté de la cible tactile sert aux DEUX bords de la rangée du
+   monde (l'ouvreur du rail dissous s'empile sur le tiroir-journal, hud.css ≤700), et la hauteur de
+   bande borne le panneau du tiroir qui naît sur le pont.
    Hauteur COMPACTE : hors combat, se déplacer EST cliquer au sol — chaque pixel de pont est du sol
    avalé sur toute la largeur. Le pont ne porte donc que sa rangée (cible tactile `--xd-row`), sa
-   respiration et son liseré, tant qu'aucun contenu ne lui est authoré. */
+   respiration et son liseré. */
 :root {
   /* Côté de la cible tactile de la rangée : patron des commandes vissées (peau `.skin-tole`,
-     components.css) — au doigt il passe à 44px (tranche `pointer: coarse` ci-dessous), et la réserve suit. */
+     components.css) — au doigt il passe à 44px (tranche `pointer: coarse` ci-dessous), et la bande suit. */
   --xd-row: 42px;
-  /* RÉSERVE DU BAS hors combat : rangée + respiration (2 × 2px) + le liseré de la peau. */
+  /* HAUTEUR DE BANDE hors combat : rangée + respiration (2 × 2px) + le liseré de la peau. */
   --xd-deck-h: calc(var(--xd-row) + 4px + var(--pont-liseret));
 }
 @media (pointer: coarse) {
@@ -25,11 +25,10 @@
     --xd-row: 44px;
   }
 }
+/* Le pont EST la rangée basse du plateau (grille de `.stage`, hud.css) : aucun ancrage ici — c'est
+   la grille qui le pose de bord à bord, à la hauteur qu'il fait. */
 .exploration-dock {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
   z-index: 5;
   min-height: var(--xd-deck-h);
   display: flex;
@@ -59,21 +58,24 @@
   gap: 6px;
 }
 /* LE TIROIR-JOURNAL SUR LE PONT (§1c-ter : une plaque unique, jamais des éléments épars) — le PONT
-   porte l'ancrage, comme le rail en combat. Hors toute tranche : sans cette remise à zéro, les
-   calages mobiles du tiroir (≤700 : 140px du bas ; ≤560 : 274px, log-drawer.css) le renvoyaient
-   flotter au milieu du terrain alors que son bouton est assis dans la rangée d'ouvreurs. */
+   porte l'ancrage, comme le rail en combat. Hors toute tranche : sans cette remise à zéro, le
+   calage de coin du tiroir (log-drawer.css, ancré au bas de la rangée du monde) le renverrait
+   flotter au-dessus du pont alors que son bouton est assis dans la rangée d'ouvreurs. */
 .exploration-dock .log-drawer {
   position: relative;
   inset: auto;
   align-items: flex-end;
 }
 /* Le panneau naît de son bouton et s'ouvre VERS LE HAUT, borné par la bande de terrain disponible :
-   il lit la RÉSERVE DU BAS du pont (`--xd-deck-h`, ci-dessus) et la réserve du haut de la frise
-   (70px, initiative-strip.css), jamais un nombre recopié — même patron que `--is-avail` sur
-   `--cc-deck-h`. */
+   il lit la hauteur de SA PROPRE bande (`--xd-deck-h`, ci-dessus — il naît dessus) et la réserve du
+   haut de la frise (70px, initiative-strip.css), jamais un nombre recopié. */
 .exploration-dock .ld-panel {
   position: absolute;
+  /* Ancre inline COMPLÈTE (les deux côtés) : le panneau pend au bord DROIT de son bouton, qui est
+     lui-même à l'extrémité droite du pont. Une moitié d'ancre laisserait le `left` des tranches
+     étroites (log-drawer.css) sur-contraindre la boîte et la pousser hors écran. */
   right: 0;
+  left: auto;
   bottom: calc(100% + 6px);
   max-height: calc(100vh - 70px - var(--xd-deck-h) - 12px);
 }

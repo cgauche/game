@@ -1979,7 +1979,6 @@ export const STYLE_INLINE_RATCHET = [
   { fichier: 'src/ui/PartyScreen.tsx', ref: 'input :: display', occurrence: 1 },
   { fichier: 'src/ui/PossessionsScreen.tsx', ref: 'span :: expr', occurrence: 1 },
   { fichier: 'src/ui/PovControls.tsx', ref: 'button :: expr', occurrence: 1 },
-  { fichier: 'src/ui/PovControls.tsx', ref: 'div.pov-controls :: bottom,display,gap,gridTemplateColumns,left,position,zIndex', occurrence: 1 },
   { fichier: 'src/ui/SaveLoadModal.tsx', ref: 'input :: display', occurrence: 1 },
   { fichier: 'src/ui/VoyageScreen.tsx', ref: 'div.voyage-progress-fill :: width', occurrence: 1 },
   { fichier: 'src/ui/WorldMapView.tsx', ref: 'g :: color', occurrence: 1 },

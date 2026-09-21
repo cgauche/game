@@ -39,12 +39,10 @@ export function PovControls() {
       {label}
     </button>
   );
+  // Le PLACEMENT du pavé vit chez l'écran qui le monte (`.stage-flot > .pov-controls`, hud.css) :
+  // il s'ancre au bas de la RANGÉE DU MONDE, au-dessus du pont, sans en connaître la hauteur.
   return (
-    <div
-      className="pov-controls"
-      style={{ position: 'absolute', bottom: 104, left: 16, display: 'grid', gridTemplateColumns: 'repeat(3, auto)', gap: 8, zIndex: 5 }}
-      onPointerDown={(e) => e.stopPropagation()}
-    >
+    <div className="pov-controls" onPointerDown={(e) => e.stopPropagation()}>
       {btn('pov-turn-l', '⟲', 'Pivoter le regard à gauche (A)')}
       {btn('pov-forward', '▲', 'Avancer (Z)')}
       {btn('pov-turn-r', '⟳', 'Pivoter le regard à droite (E)')}

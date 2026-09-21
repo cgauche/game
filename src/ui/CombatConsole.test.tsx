@@ -319,7 +319,7 @@ describe('CombatConsole — arche', () => {
   // (`.claude/memory/user-arbitrage-tour-adverse-console-spectatrice-jamais-pont-entier.md`,
   // 2026-08-24, qui porte le verbatim et sa référence RT). Le comportement mesuré ici SUPPLANTE
   // celui que ce contrat verrouillait (spec zone 7 : « mêmes cases, inertes »).
-  it('tour d’un ENNEMI : plus une case ni une arche — un MÉDAILLON, PV en teinte hostile', () => {
+  it('tour d’un ENNEMI : plus une case ni une bande — l’ARCHE SEULE, PV en teinte hostile', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
     const e = foe('e1', 9, 9);
@@ -327,23 +327,33 @@ describe('CombatConsole — arche', () => {
     e.wounds = { current: 7, max: 12 };
 
     monter(h, { foes: [e] });
-    expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('complete');
+    expect(host.querySelector('.combat-console')!.getAttribute('data-forme')).toBe('complete');
     expect(host.querySelectorAll('.cc-cell').length, 'témoin : le pont complet a ses cases').toBeGreaterThan(0);
 
     monter(h, { foes: [e], turn: 1 });
-    expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('spectatrice');
-    for (const mort of ['.cc-cell', '.cc-arch', '.cc-bay', '.cc-sets', '.cc-quick', '.cc-grid', '.cc-gutter', '.cc-conduit', '.cc-corner']) {
+    expect(host.querySelector('.combat-console')!.getAttribute('data-forme')).toBe('spectatrice');
+    // Les RÉGIONS de la bande meurent — c'est-à-dire les « barres gauche et droite » que l'arbitrage
+    // du 2026-09-20 refuse (verbatim : « sans les barres gauche et droite pour les ennemies »).
+    for (const mort of ['.cc-cell', '.cc-bay', '.cc-sets', '.cc-quick', '.cc-grid', '.cc-conduit', '.cc-corner']) {
       expect(host.querySelectorAll(mort).length, `${mort} survit au tour de l’adversaire`).toBe(0);
     }
-    // Le médaillon dit qui joue : son nom, ses Blessures RÉELLES (aucun masquage) en teinte hostile
-    // — la couleur d'équipe du jeu (`teintesJeu`), jamais un rouge recopié — et son rack d'États.
-    const med = host.querySelector('[data-medaillon]')!;
-    expect(med.getAttribute('data-hostile')).toBe('');
-    expect(med.querySelector('[data-nom]')!.textContent).toBe('Rat e1');
-    expect(med.querySelector('.life-bar__value')!.textContent).toBe('7 / 12 BLESSURES');
-    expect(parseColor((med.querySelector('.life-bar__fill') as HTMLElement).style.getPropertyValue('--life-color'))).toEqual(parseColor(ENEMY_TINT));
-    expect(med.querySelectorAll('.pt-state').length).toBe(1);
-    expect(med.querySelector('.pt-n')!.textContent).toBe('2');
+    // Ce qui RESTE est l'arche, la même que celle du héros, SEULE dans la bande : elle dit qui joue
+    // — son nom, ses jauges du tour, son rack d'États, et ses Blessures RÉELLES (aucun masquage) en
+    // teinte hostile, la couleur d'équipe du jeu (`teintesJeu`), jamais un rouge recopié.
+    const arche = host.querySelector('.cc-arch')!;
+    expect(host.querySelectorAll('.cc-arch').length).toBe(1);
+    expect([...host.querySelector('.cc-dock')!.children], 'la bande porte autre chose que l’arche').toEqual([arche]);
+    expect(arche.querySelector('.cc-arch-name')!.textContent).toBe('Rat e1');
+    expect(arche.querySelector('.life-bar__value')!.textContent).toBe('7 / 12 BLESSURES');
+    expect(parseColor((arche.querySelector('.life-bar__fill') as HTMLElement).style.getPropertyValue('--life-color'))).toEqual(parseColor(ENEMY_TINT));
+    expect(arche.querySelectorAll('.pt-state').length).toBe(1);
+    expect(arche.querySelector('.pt-n')!.textContent).toBe('2');
+    // Les deux goutttières du tour restent lisibles (décision d'ingénierie 2026-09-20 : aucune
+    // information adverse n'est masquée ici, `InspectPanel` montre déjà les PB d'un adversaire)…
+    expect(arche.querySelectorAll('.cc-gutter').length).toBe(2);
+    // … mais AUCUN geste : ni annulation de déplacement, ni retrait d'État — on regarde. (Les
+    // déclencheurs de FICHE de règle restent : lire une règle n'est pas agir.)
+    expect(arche.querySelectorAll('[data-action], [data-cell]').length, 'un geste survit à la forme spectatrice').toBe(0);
   });
 });
 
@@ -371,6 +381,9 @@ const CHIPS_BASE = baseSection(CHIPS_CSS);
 const DOCK_BASE = baseSection(readCss('party-dock.css'));
 const STRIP_BASE = baseSection(readCss('initiative-strip.css'));
 const BANNER_BASE = baseSection(readCss('combat-banner.css'));
+/** Module d'ÉCRAN du HUD : c'est lui qui POSE le pont — la grille du plateau et ses deux rangées
+ *  (#1848). Le pont n'a plus d'ancrage propre : son placement se lit ici. */
+const HUD_BASE = baseSection(readCss('hud.css'));
 
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
 
@@ -684,12 +697,12 @@ describe('CombatConsole — micro-rendu (sondes pixel du juge vision, 2026-08-17
     const arch = host.querySelector('.cc-arch')!;
     expect(arch.querySelectorAll('.team-ally, .team-enemy').length).toBe(1);
     expect(arch.querySelector('.ptile')!.classList.contains('team-ally')).toBe(true);
-    // … et au tour de l'adversaire (forme SPECTATRICE, arbitrage 2026-08-24), le médaillon porte le
+    // … et au tour de l'adversaire (forme SPECTATRICE, arbitrage 2026-08-24), l'arche seule porte le
     // camp au même endroit : une seule fois, sur la tuile.
     monter(h, { foes: [foe('e1', 9, 9)], turn: 1 });
-    const med = host.querySelector('[data-medaillon]')!;
-    expect(med.querySelectorAll('.team-ally, .team-enemy').length).toBe(1);
-    expect(med.querySelector('.ptile')!.classList.contains('team-enemy')).toBe(true);
+    const seule = host.querySelector('.cc-arch')!;
+    expect(seule.querySelectorAll('.team-ally, .team-enemy').length).toBe(1);
+    expect(seule.querySelector('.ptile')!.classList.contains('team-enemy')).toBe(true);
   });
 
   // C-4 (R-M2) : « Mouve… », « Déter… » + « 3 » orphelin à 360 — la boîte à deux lignes ne pose son
@@ -741,11 +754,29 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     }
     // … et la bande va d'un bord à l'autre, opaque : entre deux régions il y a du PONT, jamais du
     // terrain (c'est ce que la sonde pixel de recette mesure à l'écran).
+    // LE PONT EST EN FLUX (#1848) : sa racine ne porte AUCUNE ancre — elle est la rangée basse de la
+    // grille du plateau, et son rembourrage haut lui fait valoir son EMPREINTE (saillie du fronton
+    // comprise). C'est cette structure qui retire à toute surface basse la hauteur du pont à lire.
     const bande = ruleOf(CC_BASE, '.combat-console');
-    for (const cote of ['left', 'right', 'bottom']) expect(parseFloat(decl(bande, cote)!), cote).toBe(0);
-    // La MATIÈRE de la bande est la peau `.skin-pont`, que le pont POSE : la nappe et le liseré se
-    // lisent donc là, une seule fois pour les trois boîtes de pont.
-    expect(pont.classList.contains('skin-pont'), 'le pont POSE la peau de bande').toBe(true);
+    for (const cote of ['left', 'right', 'bottom']) expect(decl(bande, cote), cote).toBeNull();
+    expect(decl(bande, 'padding-top')).toBe('var(--cc-saillie)');
+    expect(decl(ruleOf(HUD_BASE, '.stage'), 'display')).toBe('grid');
+    // La RANGÉE dit tout : le plateau a une rangée de monde puis une rangée DE PONT, dimensionnée sur
+    // le pont (`auto`) ; le pont occupe la DERNIÈRE, et les surfaces en flot (`.stage-flot`) vivent
+    // dans une rangée STRICTEMENT au-dessus. C'est cette relation — pas un nombre — qui retire à toute
+    // surface basse la hauteur du pont à lire : si les deux partageaient une rangée, le recouvrement
+    // reviendrait le lendemain.
+    const pistes = decl(ruleOf(HUD_BASE, '.stage'), 'grid-template-rows')!.trim().split(/\s+/);
+    const rangeeDe = (sel: string) => Number(decl(ruleOf(HUD_BASE, sel), 'grid-area')!.split('/')[0].trim());
+    expect(rangeeDe('.stage > .combat-console, .stage > .exploration-dock'), 'le pont n’est pas dans la DERNIÈRE rangée')
+      .toBe(pistes.length);
+    expect(pistes[pistes.length - 1], 'la rangée du pont ne se dimensionne pas sur lui').toBe('auto');
+    expect(rangeeDe('.stage > .stage-flot'), 'les surfaces en flot partagent la rangée du pont')
+      .toBeLessThan(rangeeDe('.stage > .combat-console, .stage > .exploration-dock'));
+    // La MATIÈRE de la bande est la peau `.skin-pont`, que la BANDE POSE (la racine, elle, ne peint
+    // rien) : la nappe et le liseré se lisent donc là, une seule fois pour les trois boîtes de pont.
+    expect(host.querySelector('.cc-dock')!.classList.contains('skin-pont'), 'la bande POSE la peau').toBe(true);
+    expect(pont.classList.contains('skin-pont'), 'l’empreinte du pont ne peint rien').toBe(false);
     const peau = ruleOf(COMPONENTS_BASE, '.skin-pont');
     expect(decl(peau, 'background-image')).toMatch(/linear-gradient/);
     expect(parseColor(decl(peau, 'background-color')!)[3]).toBe(1);
@@ -871,8 +902,13 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     const feed = ruleOf(BANNER_BASE, '.combat-feed');
     expect(decl(feed, 'top')).toBe('auto');
     expect(decl(feed, 'transform')).toBe('none');
-    // Ancré au BAS, et sa réserve est la hauteur du pont elle-même (jamais un nombre recopié).
-    expect(decl(feed, 'bottom')).toMatch(/var\(--cc-deck-h\)/);
+    // Ancré au BAS de la RANGÉE DU MONDE (#1848) : le pont est la rangée d'en dessous, le fil n'a
+    // donc plus aucune hauteur de pont à connaître — seul le bandeau de phase, SUPERPOSÉ au parapet,
+    // déborde dans sa rangée, et c'est la grandeur que le bandeau publie qu'il réserve.
+    expect(decl(feed, 'bottom')).not.toMatch(/var\(--cc-deck-h\)/);
+    expect(decl(feed, 'bottom')).toMatch(/var\(--cc-phase-h\)/);
+    expect(readFileSync(join(process.cwd(), 'src', 'ui', 'CampaignView.tsx'), 'utf8'))
+      .toMatch(/<div className="stage-flot">[\s\S]*<CombatBanner \/>/);
     // … à GAUCHE : une valeur en px depuis le bord, jamais un centrage.
     expect(decl(feed, 'left')).toMatch(/^\d+(\.\d+)?px$/);
     expect(decl(feed, 'align-items')).toBe('flex-start');
@@ -893,20 +929,26 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
   // ── P-6 : LA FRISE ne déborde pas sur le pont (planche 2026-08-17 : plaque `[0,132,133,472]`,
   //    terminée nettement au-dessus du pont à y=863). Mesuré avant cette passe : 103,6 × 97,3px de
   //    recouvrement à 1280, points de frise par-dessus le pont au hit-test.
-  it('P-6 — la frise borne sa hauteur à l’espace AU-DESSUS du pont, à la source', () => {
+  //    Depuis #1848 la borne n'est plus une RÉSERVE mais un REPÈRE : la frise est une surface de la
+  //    rangée du monde, qui s'arrête au bord haut du pont. Elle ne lit donc plus aucune hauteur de
+  //    pont — ni au bord bas, ni dans la hauteur de sa piste.
+  it('P-6 — la frise borne sa hauteur à la RANGÉE du monde, sans lire aucune hauteur de pont', () => {
     // La hauteur du pont est une grandeur PUBLIÉE au `:root`, dérivée de la hauteur de travée — donc du
-    // seul côté d'alvéole.
+    // seul côté d'alvéole. Personne, dans la frise, ne la lit.
     const racine = ruleOf(CC_BASE, ':root');
     expect(decl(racine, '--cc-deck-h')).toMatch(/var\(--cc-bay-h\)/);
     expect(decl(racine, '--cc-bay-h')).toMatch(/var\(--cc-cell-h\)/);
-    // La colonne vit dans la BANDE DE TERRAIN : ancrée sous le coin du menu, elle S'ARRÊTE sur la
-    // réserve du pont — c'est son bord BAS qui est borné, pas seulement sa hauteur.
+    expect(STRIP_BASE, 'la frise lit encore une hauteur de pont').not.toMatch(/--cc-deck-h|--xd-deck-h/);
+    // La colonne est une surface de la RANGÉE : c'est l'écran qui l'y pose (`.stage-flot`), et son
+    // bord bas ne réserve plus que le bandeau de phase, seule boîte qui déborde dans cette rangée.
     const strip = ruleOf(STRIP_BASE, '.initiative-strip');
-    expect(decl(strip, 'bottom')).toMatch(/var\(--cc-deck-h\)/);
+    expect(decl(strip, 'bottom')).toMatch(/var\(--cc-phase-h\)/);
     expect(parseFloat(decl(strip, 'top')!)).toBeGreaterThanOrEqual(44); // norme: la frise part SOUS le coin du menu ☰, dont la cible au doigt fait 44px (charte UI règle 4)
     // La PISTE aussi : au-delà elle défile (aucune entrée ne disparaît, rien ne dépasse sur le pont).
+    // Sa hauteur disponible se mesure sur le CONTENEUR (`cqh` = la rangée), que hud.css déclare.
     const tiles = ruleOf(STRIP_BASE, '.is-tiles');
-    expect(decl(tiles, '--is-avail')).toMatch(/var\(--cc-deck-h\)/);
+    expect(decl(tiles, '--is-avail')).toMatch(/cqh/);
+    expect(decl(ruleOf(HUD_BASE, '.stage > .stage-flot'), 'container-type'), 'la rangée n’est pas un conteneur de requête').toBe('size');
     expect(decl(tiles, 'max-height')).toMatch(/--is-avail/);
     expect(decl(tiles, 'overflow-y')).toBe('auto');
   });
@@ -931,14 +973,20 @@ describe('CombatConsole — assemblage : UN PONT, pas des blocs', () => {
     expect(decl(phase, 'min-height')).toBe('var(--cc-phase-h)');
     expect(decl(phase, 'box-sizing')).toBe('border-box');
 
-    // Repère : distances au BAS du viewport. Le pont occupe [0, D] (liseré compris), sa boîte de
-    // rembourrage [0, D − liseré] — c'est elle que `100%` mesure pour un enfant absolu.
+    // Repère : distances au BAS du viewport. La BANDE occupe [0, D] (liseré compris) ; l'EMPREINTE
+    // du pont y ajoute la saillie du fronton — c'est elle que `100%` mesure pour un enfant absolu de
+    // la racine (#1848). Les chiffres sont arbitraires : seule la relation est jugée.
     const D = 240;
-    const env = { '--cc-deck-h': D, '--cc-phase-h': P, '100%': D - liseret };
+    const S = 60;
+    const air = parseFloat(decl(racine(), '--cc-phase-air')!);
+    const env = { '--cc-deck-h': D, '--cc-phase-h': P, '--cc-saillie': S, '--cc-phase-air': air, '100%': D + S };
     const basBandeau = pxCalc(decl(phase, 'bottom')!, env);
     expect(basBandeau, 'le bandeau redescend sur le liseré du pont').toBeGreaterThanOrEqual(D);
     const hautBandeau = basBandeau + P;
-    const basFrise = pxCalc(decl(ruleOf(STRIP_BASE, '.initiative-strip'), 'bottom')!, env);
+    // La frise se mesure depuis SA RANGÉE, dont le bord bas est le bord haut du pont — soit
+    // l'EMPREINTE (bande + saillie) au-dessus du bas du viewport : conversion de repère, la frise ne
+    // lit rien du pont et le bandeau reste dégagé par construction.
+    const basFrise = (D + S) + pxCalc(decl(ruleOf(STRIP_BASE, '.initiative-strip'), 'bottom')!, env);
     expect(basFrise, 'la frise descend dans la bande du bandeau de phase').toBeGreaterThanOrEqual(hautBandeau);
     // La piste borne sa hauteur sur la MÊME réserve (sinon elle déborderait là où la boîte s'arrête).
     expect(decl(ruleOf(STRIP_BASE, '.is-tiles'), '--is-avail')).toMatch(/var\(--cc-phase-h\)/);
@@ -971,8 +1019,13 @@ describe('CombatConsole — trois formes, une seule bande', () => {
     h.conditions = [];
     const e = foe('e1', 9, 9);
     const releve = () => {
-      const dock = host.querySelector('.cc-dock')!;
-      return { forme: dock.getAttribute('data-forme'), cases: host.querySelectorAll('.cc-cell').length, medaillons: host.querySelectorAll('[data-medaillon]').length };
+      const pont = host.querySelector('.combat-console')!;
+      return {
+        forme: pont.getAttribute('data-forme'),
+        cases: host.querySelectorAll('.cc-cell').length,
+        regions: host.querySelectorAll('.cc-dock > *').length,
+        arches: host.querySelectorAll('.cc-arch').length,
+      };
     };
     monter(h, { foes: [e] });
     const complete = releve();
@@ -984,15 +1037,18 @@ describe('CombatConsole — trois formes, une seule bande', () => {
     return { complete, spectatrice, ouverture };
   }
 
-  it('la FORME dit l’état : cases + arche quand ce siège joue, médaillon seul sinon', () => {
+  it('la FORME dit l’état : la bande et ses cases quand ce siège joue, l’arche SEULE sinon', () => {
     const { complete, spectatrice, ouverture } = formes();
     expect(complete.forme).toBe('complete');
     expect(complete.cases).toBeGreaterThan(0);
-    expect(complete.medaillons).toBe(0);
+    expect(complete.regions, 'les quatre régions du pont complet').toBe(4);
+    expect(complete.arches).toBe(1);
+    // Forme spectatrice ET ouverture : UNE seule région dans la bande, l'arche — et rien qu'elle.
     for (const f of [spectatrice, ouverture]) {
       expect(f.forme).toBe('spectatrice');
       expect(f.cases).toBe(0);
-      expect(f.medaillons).toBe(1);
+      expect(f.regions).toBe(1);
+      expect(f.arches).toBe(1);
     }
   });
 
@@ -1007,15 +1063,21 @@ describe('CombatConsole — trois formes, une seule bande', () => {
     expect(decl(ruleOf(CC_BASE, '.cc-dock'), 'height'), 'une hauteur imposée ampute').toBeNull();
     expect(decl(ruleOf(CC_BASE, '.combat-console'), 'height'), 'une hauteur imposée ampute').toBeNull();
     // AUCUNE règle keyée sur une FORME ne touche à une grandeur de hauteur : c'est ce qui garantit
-    // que les trois formes se superposent au pixel. Une mutation qui poserait `height: auto` sur une
+    // que les deux formes se superposent au pixel. Une mutation qui poserait `height: auto` sur une
     // forme rougirait ici.
-    for (const bloc of [...CC_CSS.matchAll(/\.cc-dock\[data-forme[^{]*\{([^}]*)\}/g)]) {
+    for (const bloc of [...CC_CSS.matchAll(/\[data-forme[^{]*\{([^}]*)\}/g)]) {
       for (const p of ['height', 'min-height', 'max-height', 'padding-top', 'padding-bottom']) {
-        expect(decl(bloc[1], p), `une forme règle « ${p} » : la bande bat d’une forme à l’autre`).toBeNull();
+        expect(decl(bloc[1], p), `une forme règle « ${p} » : le pont bat d’une forme à l’autre`).toBeNull();
       }
     }
-    // … et le médaillon ne pose lui non plus aucune hauteur : il s'assied dans la bande.
-    for (const p of ['height', 'min-height']) expect(decl(ruleOf(CC_BASE, '.cc-dock [data-medaillon]'), p)).toBeNull();
+    // La forme spectatrice ÉTEINT la matière de la bande sans toucher à sa BOÎTE : c'est ce qui rend
+    // l'arche immobile au pixel (une bordure retirée faisait sauter le pont de 3px, mesuré à 1707).
+    // Le LISERÉ n'y perd que sa teinte, jamais son épaisseur.
+    const eteinte = ruleOf(CC_BASE, ".combat-console[data-forme='spectatrice'] > .cc-dock");
+    expect(decl(eteinte, 'border-top-color'), 'le liseré éteint garde sa place').toBe('transparent');
+    expect(decl(eteinte, 'border-top-width'), 'une épaisseur de liseré réglée par une forme').toBeNull();
+    expect(decl(eteinte, 'box-shadow')).toBe('none');
+    expect(decl(eteinte, 'background-image')).toBe('none');
   });
 
   it('le bandeau d’OUVERTURE s’ancre sur des grandeurs DÉCLARÉES, jamais sur un nombre sans origine', () => {
@@ -1031,15 +1093,16 @@ describe('CombatConsole — trois formes, une seule bande', () => {
     expect(parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-ouverture-top')!)).toBeGreaterThan(0);
     // Cette position tient jusqu'à 701px inclus (mesuré libre de tout recouvrement à 901, 900, 800
     // et 701). Sous 700 SEULEMENT — là où la frise quitte sa colonne pour une bande haute et où le
-    // fil monte en haut du champ — il descend AU-DESSUS du pont, en RELISANT la réserve de celui-ci
-    // (jamais un littéral qui dériverait au premier réglage de densité).
+    // fil monte en haut du champ — il descend au bas du champ. Enfant du CHAMP et non du pont, il
+    // vit dans la RANGÉE DU MONDE (#1848) : il n'a plus aucune hauteur de pont à relire.
     expect(mediaBlock(CC_CSS, '@media (max-width: 900px)'), 'la tranche 700-900 n’est pas contrainte : le bandeau y garde le haut')
       .not.toContain("data-phase='ouverture'");
     const ouv700 = ruleOf(mediaBlock(CC_CSS, '@media (max-width: 700px)'), ".cc-phase[data-phase='ouverture']");
     expect(decl(ouv700, 'top')).toBe('auto');
-    expect(decl(ouv700, 'bottom')).toContain('var(--cc-deck-h)');
-    // … et le fil de combat s'ancre sur la MÊME réserve : les deux se rangent dans le même repère.
-    expect(decl(ruleOf(BANNER_BASE, '.combat-feed'), 'bottom')).toContain('var(--cc-deck-h)');
+    expect(decl(ouv700, 'bottom')).not.toContain('var(--cc-deck-h)');
+    expect(decl(ruleOf(CC_BASE, '.stage > .cc-phase'), 'grid-area'), 'le bandeau du champ n’est pas dans la rangée du monde').toBeTruthy();
+    // … et le fil de combat non plus : les deux se rangent dans le même repère.
+    expect(decl(ruleOf(BANNER_BASE, '.combat-feed'), 'bottom')).not.toContain('var(--cc-deck-h)');
   });
 
   it('la forme SPECTATRICE ne publie AUCUN slot au pont clavier (pas de touche sans case)', () => {
@@ -1052,9 +1115,9 @@ describe('CombatConsole — trois formes, une seule bande', () => {
     monter(h, { foes: [e] });
     expect(hotbar.capacites.length, 'témoin : le pont complet publie ses cases').toBeGreaterThan(0);
     monter(h, { foes: [e], turn: 1 });
-    expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('spectatrice');
+    expect(host.querySelector('.combat-console')!.getAttribute('data-forme')).toBe('spectatrice');
     expect(hotbar.capacites, 'des touches restent branchées sur un pont sans case').toEqual([]);
-    // … et à l'ouverture non plus (le pont y est un médaillon).
+    // … et à l'ouverture non plus (le pont y est l'arche seule).
     monter(h, { foes: [e] });
     act(() => { useGame.setState({ pendingRoundStart: { round: 1, readyBySeat: {} } as never }); });
     expect(hotbar.capacites).toEqual([]);
@@ -1868,20 +1931,25 @@ describe('CombatConsole — micro-rendu, 2ᵉ passe du juge vision (2026-08-17)'
     // token `--pont-liseret` (base.css), et c'est CE token que la réserve ci-dessus additionne.
     expect(decl(ruleOf(COMPONENTS_BASE, '.skin-pont'), 'border-top')).toMatch(/^var\(--pont-liseret\) /);
     expect(liseret, 'le liseré du pont doit être une épaisseur non nulle').toBeGreaterThan(0);
-    // Tant que le pont est une LIGNE (≥561), aucune tranche ne rejoue la hauteur de la travée : seul le
-    // côté d'alvéole varie, et `--cc-bay-h` en découle.
-    for (const q of ['@media (max-width: 900px)', '@media (max-width: 700px)']) {
+    // C'est la COMPOSITION de la bande qui décide, pas une largeur écrite à la main : tant que les
+    // régions sont sur une LIGNE, la travée porte la hauteur du pont et aucune tranche ne la rejoue ;
+    // dès que la bande EMPILE ses régions, la travée reprend la sienne, EXPLICITEMENT — elle ne se
+    // recalcule pas. La règle se relit donc tranche par tranche, en lisant le régime au `.cc-dock`.
+    let empilee = false;
+    for (const q of ['@media (max-width: 900px)', '@media (max-width: 700px)', '@media (max-width: 560px)']) {
       const tranche = mediaBlock(CC_CSS, q);
-      for (const bloc of [...tranche.matchAll(/\.cc-bay-left\s*\{([^{}]*)\}/g)].map((m) => m[1])) {
-        expect(decl(bloc, 'height'), `${q} rejoue la hauteur de la travée`).toBeNull();
-        expect(decl(bloc, 'min-height'), `${q} rejoue la hauteur de la travée`).toBeNull();
+      // Les tranches se lisent du plus large au plus étroit et se CUMULENT : une tranche qui n'en
+      // reparle pas hérite du régime de la précédente.
+      empilee ||= /column/.test(decl(ruleOf(tranche, '.cc-dock'), 'flex-direction') ?? '');
+      const blocs = [...tranche.matchAll(/\.cc-bay-left\s*\{([^{}]*)\}/g)].map((m) => m[1]);
+      for (const bloc of blocs) {
+        expect(decl(bloc, 'height'), `${q} : régime ${empilee ? 'empilé' : 'en ligne'}`)
+          .toBe(empilee ? 'auto' : null);
+        expect(decl(bloc, 'min-height'), `${q} rejoue un PLANCHER de travée`).toBeNull();
       }
+      if (empilee) expect(blocs.length, `${q} empile ses régions sans relâcher la travée`).toBeGreaterThan(0);
     }
-    // ≤560 les régions s'EMPILENT (le pont n'est plus une ligne) : la réserve se relâche EXPLICITEMENT,
-    // elle ne se recalcule pas.
     const at560 = mediaBlock(CC_CSS, '@media (max-width: 560px)');
-    expect(decl(ruleOf(at560, '.cc-bay-left'), 'height')).toBe('auto');
-    expect(decl(ruleOf(at560, '.cc-bay-left'), 'min-height')).toBeNull();
     // … et le fronton y rentre dans le rang, au `:root` : la réserve de bande le lit.
     expect(parseFloat(decl(ruleOf(at560, ':root'), '--cc-fronton')!)).toBe(0);
     // … et la travée ne porte AUCUNE bande réservée : la munition vit dans l'EN-TÊTE, à côté du set
@@ -2425,15 +2493,15 @@ describe('CombatConsole — COOP : la console suit la POSSESSION, jamais le mode
   it('C-2 — le tour du héros d’un AUTRE siège : forme SPECTATRICE, et la puce nomme le siège', () => {
     monterCoop(1); // tour de « h2 », possédé par le siège 1
     expect(enAttente(), 'le tour d’autrui doit porter sa bande d’attente').toBe(true);
-    expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('spectatrice');
+    expect(host.querySelector('.combat-console')!.getAttribute('data-forme')).toBe('spectatrice');
     // Plus une seule case à cliquer — parce qu'il n'y a plus une seule case. Rien n'est grisé.
     expect(host.querySelectorAll('.cc-cell').length, 'les cases survivent au tour d’autrui').toBe(0);
     expect(host.querySelector('[data-cell="end-turn"]'), 'la plaque de fin de tour survit').toBeNull();
-    // Le médaillon montre l'ALLIÉ que l'autre siège joue (jamais en teinte hostile), et la puce coop
+    // L'arche seule montre l'ALLIÉ que l'autre siège joue (jamais en teinte hostile), et la puce coop
     // reste : c'est elle qui dit QUI joue.
-    const med = host.querySelector('[data-medaillon]')!;
-    expect(med.getAttribute('data-hostile')).toBeNull();
-    expect(med.querySelector('[data-nom]')!.textContent).toBe('Rolf');
+    const arche = host.querySelector('.cc-arch')!;
+    expect(arche.querySelector('.ptile')!.classList.contains('team-enemy')).toBe(false);
+    expect(arche.querySelector('.cc-arch-name')!.textContent).toBe('Rolf');
     expect(host.querySelector('.spectator-chip'), 'la puce coop doit rester').not.toBeNull();
   });
 });
@@ -3531,11 +3599,11 @@ describe('CombatConsole — le pont d’OUVERTURE est celui du JOUEUR, et n’of
     const knud = foe('e1', 9, 9);
     knud.label = 'Knud';
     ouverture(h, knud);
-    // Le bandeau de phase est bien là, mais l'identité du médaillon est CELLE DU JOUEUR : son
+    // Le bandeau de phase est bien là, mais l'identité de l'arche est CELLE DU JOUEUR : son
     // portrait, son nom — jamais l'adversaire qui ouvre l'initiative.
     expect(host.querySelector('.cc-phase'), 'la pause de Round garde son bandeau').toBeTruthy();
-    expect(host.querySelector('[data-nom]')?.textContent).toBe('Gunnar');
-    expect(host.querySelector('[data-medaillon] .ptile')?.classList.contains('team-enemy'),
+    expect(host.querySelector('.cc-arch-name')?.textContent).toBe('Gunnar');
+    expect(host.querySelector('.cc-arch .ptile')?.classList.contains('team-enemy'),
       'le cadre du joueur portait un ennemi').toBe(false);
   });
 
@@ -3544,7 +3612,7 @@ describe('CombatConsole — le pont d’OUVERTURE est celui du JOUEUR, et n’of
   // `.claude/memory/user-arbitrage-round0-forme-rt-et-splash-conserve.md`, 2026-08-24, qui porte le
   // verbatim et la capture RT de référence). Ce contrat remplace celui qui vérifiait qu'un ennemi
   // sans set ne rendait pas de sélecteur de sets : il n'a plus de travée du tout.
-  it('OUVERTURE : bandeau CENTRÉ hors du pont, médaillon d’un héros, pas une seule case', () => {
+  it('OUVERTURE : bandeau CENTRÉ hors du pont, arche d’un héros SEULE, pas une seule case', () => {
     const h = hero('h1', 'Gunnar');
     h.conditions = [];
     const knud = foe('e1', 9, 9);
@@ -3563,11 +3631,13 @@ describe('CombatConsole — le pont d’OUVERTURE est celui du JOUEUR, et n’of
     expect(decl(regle, 'bottom')).toBe('auto');
     expect(centrage(regle), 'le bandeau d’ouverture n’est pas centré en largeur').toBe('axe X');
     expect(parseFloat(decl(ruleOf(CC_BASE, ':root'), '--cc-ouverture-top')!)).toBeGreaterThan(0);
-    // La console basse : un médaillon, et RIEN d'autre (ni case, ni set, ni fin de tour).
-    expect(host.querySelector('.cc-dock')!.getAttribute('data-forme')).toBe('spectatrice');
+    // La console basse : l'ARCHE SEULE, et RIEN d'autre — ni bande, ni case, ni set, ni fin de tour
+    // (arbitrage 2026-09-20, verbatim : « … et avant le début du combat »).
+    expect(host.querySelector('.combat-console')!.getAttribute('data-forme')).toBe('spectatrice');
     expect(host.querySelectorAll('.cc-cell').length, 'une case à l’ouverture').toBe(0);
     expect(host.querySelectorAll('.cc-sets').length).toBe(0);
-    expect(host.querySelector('[data-nom]')!.textContent).toBe('Gunnar');
+    expect([...host.querySelector('.cc-dock')!.children].length, 'une région de plus que l’arche à l’ouverture').toBe(1);
+    expect(host.querySelector('.cc-arch-name')!.textContent).toBe('Gunnar');
     // Aucun second bandeau sur le parapet : le message ne se dédouble pas.
     expect(host.querySelectorAll('.cc-phase').length).toBe(1);
   });
@@ -3578,7 +3648,9 @@ describe('CombatConsole — le pont d’OUVERTURE est celui du JOUEUR, et n’of
     ouverture(h, foe('e1', 9, 9));
     act(() => { useGame.setState({ pendingRoundStart: { round: 3, readyBySeat: {} } as never }); });
     const bandeau = host.querySelector('.cc-phase')!;
-    expect(bandeau.getAttribute('data-phase'), 'le round 3 n’est pas une ouverture').toBe('pont');
+    // Une pause de Round n'est PAS une ouverture : le bandeau reste sur le pont — à l'adresse que
+    // la forme du pont lui donne (le pont est alors spectatrice, le bandeau se centre sur l'arche).
+    expect(bandeau.getAttribute('data-phase'), 'le round 3 n’est pas une ouverture').toBe('spectatrice');
     expect(host.querySelector('.combat-console')!.contains(bandeau)).toBe(true);
     expect(bandeau.textContent).toContain('Début du Round 3');
   });

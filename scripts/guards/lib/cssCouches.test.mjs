@@ -54,7 +54,8 @@ test('declarations : sépare sur les `;` de premier niveau seulement', () => {
 test('estPlacement : la liste FERMÉE place, tout le reste PEINT', () => {
   for (const p of ['display', 'flex', 'flex-direction', 'grid-template-columns', 'gap', 'padding-left',
     'margin-inline-start', 'min-width', 'max-height', 'overflow-y', 'position', 'z-index', 'text-align',
-    'white-space', 'list-style', 'touch-action', 'user-select', 'transform', '--ma-var']) {
+    'white-space', 'list-style', 'touch-action', 'user-select', 'transform', '--ma-var',
+    'contain', 'container', 'container-type', 'container-name']) {
     assert.equal(estPlacement(p), true, `${p} PLACE`)
   }
   for (const p of ['color', 'background', 'border', 'border-color', 'border-radius', 'box-shadow',

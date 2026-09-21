@@ -147,13 +147,19 @@ describe('Zone 11 — UNE bande, jamais des boîtes flottantes (contrat d’asse
     expect(el.querySelectorAll('.worldmap-btn')).toHaveLength(el.querySelectorAll('.exploration-dock .worldmap-btn').length);
   });
 
-  it('la bande va de bord à bord, ancrée en bas (géométrie déclarée, pas une esthétique)', () => {
+  it('la bande est la RANGÉE BASSE du plateau, en flux — elle ne porte aucune ancre', () => {
     // `import.meta.url` n'est pas un URL `file:` sous l'environnement jsdom de Vitest (mesuré) — le
     // module se lit depuis la racine du dépôt, la racine d'exécution du runner.
     const css = readFileSync(join(process.cwd(), 'src', 'ui', 'styles', 'exploration-dock.css'), 'utf8');
     const regle = /\.exploration-dock\s*\{([^}]*)\}/.exec(css);
     expect(regle, '`.exploration-dock` doit porter sa géométrie de bande').not.toBeNull();
-    for (const prop of ['left: 0', 'right: 0', 'bottom: 0']) expect(regle![1]).toContain(prop);
+    // #1848 : le pont ne s'ANCRE plus au bas du champ, il EST la rangée basse de la grille du
+    // plateau — c'est ce qui interdit à toute surface basse de lire sa hauteur pour s'en écarter.
+    for (const prop of ['left:', 'right:', 'bottom:', 'position: absolute']) expect(regle![1], prop).not.toContain(prop);
+    const hud = readFileSync(join(process.cwd(), 'src', 'ui', 'styles', 'hud.css'), 'utf8');
+    expect(/\.stage\s*\{[^}]*display:\s*grid/.test(hud), 'le plateau n’est pas une grille').toBe(true);
+    expect(/\.stage\s*>\s*\.combat-console,\s*\.stage\s*>\s*\.exploration-dock\s*\{[^}]*grid-area/.test(hud),
+      'les deux ponts ne partagent pas la rangée basse').toBe(true);
     // Même matière/liseré que le pont de combat : la peau PARTAGÉE, qui prend ses teintes aux
     // tokens `--cc-*` du `:root`, jamais un hex — et que le pont POSE au lieu de la recopier.
     const peau = readFileSync(join(process.cwd(), 'src', 'ui', 'styles', 'components.css'), 'utf8');
@@ -341,8 +347,10 @@ describe('Zone 11 — MÊME MATIÈRE que le pont de combat : UNE peau, jamais de
   it('les deux ponts ET le fronton POSENT la peau', () => {
     // Lu aux LITTÉRAUX de `className` : toute pose d'une boîte de pont porte la peau — c'est ce
     // contrat-là qui tient l'identité de matière (patron de `.skin-tole`, ui-ratchets).
+    // Côté combat, la boîte qui porte la MATIÈRE est la BANDE (`.cc-dock`) : la racine du pont est
+    // son EMPREINTE (bande + saillie du fronton) et ne peint rien (#1848).
     for (const [fichier, classe] of [
-      ['CombatConsole.tsx', 'combat-console'],
+      ['CombatConsole.tsx', 'cc-dock'],
       ['CombatConsole.tsx', 'cc-arch'],
       ['ExplorationDock.tsx', 'exploration-dock'],
     ] as const) {

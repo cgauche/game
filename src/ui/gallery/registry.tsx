@@ -1312,12 +1312,15 @@ function PartyDockDemo() {
  *  d'un champ défilant (`.gallery-scene-track`) le montre à la largeur de recette du bureau. */
 function CombatConsoleMock() {
   const actif = herosExemple();
+  /* Acteur ADVERSE de la forme spectatrice : le même pregen, du camp d'en face — la galerie ne
+     fabrique pas de statblock, elle change le CAMP (seule entrée que l'arche lit pour sa teinte). */
+  const adverse = { ...actif, id: 'e-demo', label: 'Mutant', kind: 'enemy' as const };
   const rien = () => {};
   return (
     <div className="gallery-scene"><div className="gallery-scene-track">
-      <div className="combat-console skin-pont">
-        <PhaseBanner label={<><Icon id="ui/wait" size="sm" /> Tour de l’ennemi</>} actions={[]} />
-        <div className="cc-dock" data-forme="complete">
+      <div className="combat-console" data-forme="complete">
+        <PhaseBanner label={<><Icon id="ui/wait" size="sm" /> Interlude</>} actions={[]} />
+        <div className="cc-dock skin-pont">
           <div className="cc-bay cc-bay-left">
             <div className="cc-bay-body">
               <div className="cc-arsenal">
@@ -1379,6 +1382,19 @@ function CombatConsoleMock() {
               <span className="cc-key">F</span>
             </button>
           </div>
+        </div>
+      </div>
+      {/* FORME SPECTATRICE — l'ARCHE SEULE, sans bande (arbitrage utilisateur 2026-09-20) : c'est ce
+          que le pont montre au tour d'un adversaire et avant le début du combat. L'ennemi porte la
+          teinte d'équipe à ses Blessures et l'anneau en tirets de son camp ; le bandeau de phase se
+          centre au-dessus de l'arche. */}
+      <div className="combat-console" data-forme="spectatrice">
+        <PhaseBanner label={<><Icon id="ui/wait" size="sm" /> Tour de l’ennemi</>} actions={[]} adresse="spectatrice" />
+        {/* La BANDE reste montée, comme à l'écran : c'est elle qui tient l'arche immobile d'une forme
+            à l'autre, et c'est sur elle que la forme spectatrice éteint la matière. Une vignette qui
+            pendrait l'arche à la racine ne montrerait PAS ce que la CSS fait. */}
+        <div className="cc-dock skin-pont">
+          <ConsoleArch active={adverse} ring="var(--danger)" move={{ value: 4, max: 4 }} action={{ value: 1, max: 1 }} />
         </div>
       </div>
     </div></div>

@@ -21,11 +21,13 @@
    Au-dessus de 700px, le tiroir vit à DROITE du dock d'action : recouvrement nul mesuré à 900px
    (dock x219-681, tiroir x846-888) — le calage vertical ne joue qu'aux tranches étroites.
    Son ancrage SUR LE PONT d'exploration appartient au pont (exploration-dock.css), et son ancrage
-   dans le rail de combat à l'écran qui monte le rail (`.hud-rail > .log-drawer`, hud.css). */
+   dans le rail de combat à l'écran qui monte le rail (`.hud-rail > .log-drawer`, hud.css).
+   Le coin BAS où il se pose est celui de la RANGÉE DU MONDE (`.stage-flot`, hud.css) : le pont est
+   la rangée d'en dessous, le tiroir n'a donc aucune réserve à tenir — seulement son air. */
 .log-drawer {
   position: absolute;
   right: 12px;
-  bottom: 92px;
+  bottom: var(--sp-md);
   z-index: 46;
   display: flex;
   flex-direction: column;
@@ -58,29 +60,26 @@
 
 /* ══ Matrice responsive (canon 700 / 560) — UN bloc par tranche ══ */
 @media (max-width: 700px) {
-  /* Le dock de décision engagé monte à 131px du bas à cette largeur et prend presque toute la
-     ligne : à 88px le tiroir mordait 32×42px dessus. */
-  .log-drawer { right: 8px; bottom: 140px; }
+  /* Le bord de l'écran se resserre avec le reste du HUD : seul l'écart droit change. */
+  .log-drawer { right: 8px; }
 }
 @media (max-width: 560px) {
-  /* RÉSERVE DU BAS mesurée sur le PONT de console (`CombatConsole`, composition compacte, passe
-     d'ASSEMBLAGE §1c-ter) : la console est devenue une bande ASSISE sur le bord bas (aucun ancrage),
-     269,4px de haut à 360×640 (magie) — le tiroir se pose JUSTE au-dessus. Sous cette réserve, il
-     passerait SOUS la console (chevauchement mesuré 42×15 à 300px avant la 1re calibration, et
-     11 points de sonde sur le bord haut du pont à 268px après le passage en bande).
-     Le tiroir passe au coin BAS-GAUCHE : la colonne de droite porte déjà le fil d'événements, et
-     la console occupe toute la largeur sous 351px. */
+  /* Le tiroir passe au coin BAS-GAUCHE de la rangée du monde : la colonne de droite porte déjà
+     l'ouvreur du rail dissous (`.hud-rail > .worldmap-btn`, hud.css). */
   .log-drawer {
     left: 4px;
     right: auto;
-    bottom: calc(274px + env(safe-area-inset-bottom, 0px));
   }
   /* Le panneau NAÎT de son déclencheur et sort du flux : sans cela, le tiroir occupait 309px de
-     large même FERMÉ et mordait la colonne voisine (chevauchement mesuré 30×16). */
+     large même FERMÉ et mordait la colonne voisine (chevauchement mesuré 30×16).
+     Une ancre inline se déclare par PAIRE : une demi-ancre laisse l'autre côté en place et
+     SUR-CONTRAINT la boîte — le panneau du pont d'exploration, ancré à droite par son pont, gardait
+     ce `left: 0` et sortait de 261px hors écran à 360 (mesuré x=312..621,6 pour 360px). */
   .ld-panel {
     position: absolute;
     bottom: 100%;
     left: 0;
+    right: auto;
     margin-bottom: 6px;
   }
 }

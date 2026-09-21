@@ -4,18 +4,19 @@
    camp sont rendus par `TeamSegments` (team-segments.css). */
 /* Fil d'événements — BAS-GAUCHE, posé SUR LE TERRAIN juste au-dessus du pont de console (planche
    2026-08-17 : journal `[170,779,330,57]`, aucun cadre, aligné à gauche). Il n'appartient PAS au
-   pont : il flotte au-dessus de lui, et sa réserve du bas est la hauteur du pont elle-même
-   (`--cc-deck-h`, combat-console.css) — jamais un nombre recopié. */
+   pont : il vit dans la RANGÉE DU MONDE (`.stage-flot`, hud.css), dont la boîte s'arrête au bord
+   haut du pont — il n'a donc AUCUNE hauteur de pont à connaître. */
 .combat-feed {
   position: absolute;
   /* Après la plaque de frise (colonne x 10..114 mesurée) — la planche pose le journal à 170/1920. */
   left: 130px;
   right: auto;
   top: auto;
-  /* Réserve : la hauteur du pont, PLUS la bande du bandeau de phase qui se pose à cheval sur son
-     parapet (`.cc-phase`, même coin gauche) — sans elle, le fil et le bouton « Commencer le round »
-     se recouvraient en pause de Round (mesuré à 1280). */
-  bottom: calc(var(--cc-deck-h) + 46px);
+  /* Seule réserve qui reste : le bandeau de phase, SUPERPOSÉ au parapet du pont (il déborde donc
+     dans la rangée du monde, de sa boîte plus son air) — sans elle, le fil et le bouton « Commencer
+     le round » se recouvraient en pause de Round (mesuré à 1280). Les deux grandeurs sont celles que
+     le bandeau déclare (`--cc-phase-h`, `--cc-phase-air`, combat-console.css), jamais un nombre. */
+  bottom: calc(var(--cc-phase-h) + var(--cc-phase-air));
   transform: none;
   display: flex;
   flex-direction: column;

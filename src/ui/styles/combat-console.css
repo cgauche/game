@@ -83,6 +83,16 @@
      sur quatre captures). C'est un plancher TENU (`min-height` ci-dessous) : la réserve ne peut pas
      être plus courte que la boîte qu'elle décrit. */
   --cc-phase-h: 48px;
+  /* AIR entre le bandeau et le parapet : il se pose AU-DESSUS du liseré, jamais à cheval. Publié au
+     même titre que sa hauteur — qui réserve la boîte réserve aussi son air (le fil d'événements,
+     combat-banner.css), et les deux compositions du bandeau lisent la même grandeur. */
+  --cc-phase-air: 3px;
+  /* SAILLIE du pont : ce dont le fronton DÉPASSE la bande (il s'élève au-dessus du liseré par une
+     marge négative). C'est l'EMPREINTE du pont — sa boîte de flux dans la grille du plateau — qui
+     la porte en rembourrage haut : sans elle l'arche mordrait la rangée du monde, et les surfaces
+     basses retrouveraient une hauteur de pont à connaître. Elle vaut le fronton là où le fronton
+     surplombe, zéro là où les régions s'empilent (≤700, `.cc-arch { margin-top: 0 }`). */
+  --cc-saillie: var(--cc-fronton);
   /* ANCRAGE HAUT du bandeau d'OUVERTURE (arbitrage user 2026-08-24) : il se pose sur la CARTE, sous
      la bande de groupe. Au `:root` parce qu'un autre flottant du champ doit pouvoir s'y ranger
      dessous (le fil de combat, tranche ≤700 de hud.css). */
@@ -94,21 +104,19 @@
      parce que le bandeau d'OUVERTURE est monté sur la carte, HORS du pont : il en a besoin aussi. */
   --cc-notch: 4px;
 }
+/* LA BOÎTE DU PONT EST SON EMPREINTE (#1848) : la console n'est plus ancrée au bas du champ, elle
+   EST la rangée basse du plateau (grille de `.stage`, hud.css). Sa boîte vaut donc tout ce qu'elle
+   occupe — la bande, PLUS la saillie du fronton, tenue en rembourrage haut. La racine ne peint
+   rien : la matière (nappe, liseré, ombre portée) est celle de la BANDE et vit sur `.cc-dock`. */
 .combat-console {
   /* Le rail des gouttières suit le portrait (dimensionné au `:root`, avec la hauteur de bande). */
   --cc-rail: calc(var(--cc-portrait) * 0.62);
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
+  padding-top: var(--cc-saillie);
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 5;
-  /* DELTA de la peau `.skin-pont` (components.css) : l'ombre PORTÉE, que le pont projette sur le
-     terrain — l'arche, elle, n'a qu'un filet interne. La nappe, le liseré et leurs grandeurs
-     (`--pont-band`, `--pont-liseret`) viennent de la peau. */
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.55);
 }
 
 /* Bandeau de PHASE (spec zone 7) : SUPERPOSÉ, jamais en flux — posé AU-DESSUS du parapet, côté
@@ -124,7 +132,9 @@
 .cc-phase {
   position: absolute;
   left: 12px;
-  bottom: calc(100% + 3px);
+  /* `100%` porte sur la boîte d'EMPREINTE (bande + saillie du fronton) : le bandeau se pose sur le
+     parapet, donc au-dessus de la BANDE — d'où la saillie retranchée. */
+  bottom: calc(100% - var(--cc-saillie) + var(--cc-phase-air));
   box-sizing: border-box;
   min-height: var(--cc-phase-h);
   display: flex;
@@ -135,6 +145,16 @@
     var(--cc-notch) 0, 100% 0, 100% calc(100% - var(--cc-notch)),
     calc(100% - var(--cc-notch)) 100%, 0 100%, 0 var(--cc-notch)
   );
+}
+/* TROISIÈME ADRESSE (#1848) : en forme SPECTATRICE le pont n'a plus de bande — posé à gauche, le
+   bandeau flotterait seul au-dessus du vide, et sous ~1050px il recouvrait le fronton. Il se centre
+   donc AU-DESSUS de l'arche, la seule chose qui reste à l'écran. L'EMPREINTE du pont vaut alors
+   l'arche elle-même : `100%` mesure déjà le fronton compris, rien à retrancher. */
+.cc-phase[data-phase='spectatrice'] {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  bottom: calc(100% + var(--cc-phase-air));
 }
 .cc-phase-label {
   font-family: var(--font-display);
@@ -155,6 +175,11 @@
    l'ouverture. Son ancrage haut vit au `:root` (avec `--cc-phase-h`) : il tient sous la bande de
    groupe et AU-DESSUS du fil de combat à toute largeur, sans qu'aucun des deux n'ait à se pousser.
    L'ADRESSE est un attribut du bandeau, jamais une classe de plus (cliquet xii). */
+/* Enfant du CHAMP, il vit dans la RANGÉE DU MONDE de la grille du plateau (hud.css) : sa boîte
+   s'arrête au bord haut du pont, il ne peut ni le recouvrir ni avoir à le mesurer. */
+.stage > .cc-phase {
+  grid-area: 1 / 1 / 2 / 2;
+}
 .cc-phase[data-phase='ouverture'] {
   left: 50%;
   right: auto;
@@ -169,47 +194,40 @@
   z-index: 46;
 }
 
-/* MÉDAILLON DE LA FORME SPECTATRICE (arbitrage user 2026-08-24) : le portrait dans un cadre ROND —
-   la forme dit l'état (on regarde), aucune case n'est grisée puisqu'il n'y a plus de case. Le rond
-   est un HABILLAGE de `PortraitTile` (aucun composant de plus) : la primitive garde sa structure,
-   c'est la boîte qui s'arrondit. Les parties du médaillon se visent par ATTRIBUT (patron
-   `[data-overlay]`/`[data-reserve]` déjà en place ici) : le stock de classes du module ne croît pas,
-   et ces attributs sont les ancres stables des captures de jugement. */
-.cc-dock [data-medaillon] {
+/* FORME SPECTATRICE (arbitrage user 2026-08-24, précisé le 2026-09-20 — verbatim : « moi je voulais
+   que cela n'affiche que cette partie sans les barres gauche et droite pour les ennemies et avant le
+   début du combat ») : il ne reste que l'ARCHE. La bande garde sa BOÎTE — c'est elle qui tient la
+   géométrie, donc l'arche au pixel près d'une forme à l'autre (le liseré de la bande pris dans la
+   mesure) — mais sa MATIÈRE s'éteint : nappe, liseré et ombre portée. À l'écran, plus une seule
+   barre de part et d'autre du fronton.
+   Le pont ne prend alors AUCUN clic : de part et d'autre de l'arche, c'est le PLATEAU qu'on touche.
+   L'arche et le bandeau de phase reprennent le leur — ils portent des popovers de règle et le
+   bouton de reprise de Round. */
+.combat-console[data-forme='spectatrice'] {
+  pointer-events: none;
+}
+.combat-console[data-forme='spectatrice'] .cc-arch,
+.combat-console[data-forme='spectatrice'] > .cc-phase {
+  pointer-events: auto;
+}
+.combat-console[data-forme='spectatrice'] > .cc-dock {
+  /* L'arche SEULE, centrée, étirée sur toute la bande : la boîte ne bouge pas, son contenu si. */
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 6px 18px;
+  justify-content: center;
+  padding-inline: var(--cc-marge);
+  /* MATIÈRE ÉTEINTE (la boîte reste) : la nappe et l'ombre ne se peignent plus, et le liseré garde
+   son ÉPAISSEUR — seule sa teinte tombe. Une bordure retirée aurait fait sauter le pont de trois
+   pixels d'une forme à l'autre (mesuré à 1707 : 187,3 contre 184,3). */
+  background-image: none;
+  background-color: transparent;
+  border-top-color: transparent;
+  box-shadow: none;
 }
-.cc-dock [data-medaillon] .ptile,
-.cc-dock [data-medaillon] .ptile-face,
-.cc-dock [data-medaillon] .rig-portrait {
-  width: var(--cc-portrait) !important;
-  height: var(--cc-portrait) !important;
-  border-radius: 50%;
-  overflow: hidden;
-}
-/* Le DESSIN suit sa boîte ronde (même levier que l'arche : `RigPortrait` pose sa taille en ATTRIBUT
-   sur le `<svg>`, et un attribut de présentation cède devant une règle CSS). */
-.cc-dock [data-medaillon] .rig-portrait > svg {
-  width: 100%;
-  height: 100%;
-}
-.cc-dock [data-medaillon] > [data-corps] {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 180px;
-  max-width: 320px;
-}
-.cc-dock [data-medaillon] [data-nom] {
-  font-family: var(--font-display);
-  font-size: 14px;
-  letter-spacing: 0.4px;
-  color: var(--atelier-brass-vif);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* L'ombre PORTÉE sur le terrain était celle de la bande : éteinte avec elle, l'arche la reprend.
+   En `drop-shadow` et non en `box-shadow` : la silhouette du fronton est taillée au `clip-path`, une
+   ombre de boîte l'aurait dessinée au rectangle (épaules coupées comprises). */
+.combat-console[data-forme='spectatrice'] .cc-arch {
+  filter: drop-shadow(0 -8px 24px rgba(0, 0, 0, 0.55));
 }
 
 /* Les quatre RÉGIONS, assises sur le pont : une VOIE par flanc, le fronton au milieu, le coin de
@@ -221,12 +239,14 @@
    même largeur à gauche, le centre des deux voies tomberait à (coin + écart)/2 du centre de
    l'écran (mesuré −87px à 1920 avant cette passe). D'où le rembourrage gauche, exprimé dans les
    MÊMES grandeurs que le coin.
-   Les pistes gardent leur `min-content` pour plancher : quand la largeur ne suffit plus à la
-   réserve (sous ~1250px), la voie droite reprend ce qu'il lui faut et le fronton se décale plutôt
-   que le contenu ne déborde — jamais de case hors écran. */
+   Les deux voies sont ÉTANCHES (#1856) : `minmax(0, 1fr)`, jamais `min-content` pour plancher. Un
+   plancher de contenu ne cède pas — il poussait la travée droite, son coin de sortie et ses
+   alvéoles HORS de l'écran (mesuré à 1100 : 5 éléments hors fenêtre, dont « Fin du tour » à
+   1040..1104). La grille rend ce qu'elle a ; ce qui ne rentre pas se traite par la COMPOSITION
+   (recomposition empilée ≤700), jamais par un débord silencieux. */
 .cc-dock {
   display: grid;
-  grid-template-columns: minmax(min-content, 1fr) auto minmax(min-content, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
   align-items: stretch;
   gap: var(--cc-bay-gap);
   width: 100%;
@@ -241,24 +261,20 @@
      (`padding-left − padding-right = coin + écart`, contrat P-4) est donc préservée. */
   padding-right: var(--cc-marge);
   padding-left: calc(var(--cc-corner) + var(--cc-bay-gap) + var(--cc-marge));
+  /* DELTA de la peau `.skin-pont` (components.css), portée par la BANDE : l'ombre PORTÉE sur le
+     terrain — l'arche, elle, n'a qu'un filet interne. La nappe, le liseré et leurs grandeurs
+     (`--pont-band`, `--pont-liseret`) viennent de la peau. */
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.55);
 }
-/* FORME SPECTATRICE (arbitrage user 2026-08-24, « rond = on regarde, carré = on peut cliquer ») : la
-   bande garde SA géométrie, c'est le CONTENU qui change de forme — un médaillon seul, centré.
-   Aucune grandeur de hauteur n'est reprise ici : le pont est le même objet dans les trois formes. */
-.cc-dock[data-forme='spectatrice'] {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* Rembourrages SYMÉTRIQUES : la réserve miroir du coin n'a plus de coin à équilibrer, et une marge
-     gardée d'un seul côté décentrait le médaillon de la moitié de sa valeur. */
-  padding-inline: var(--cc-marge);
-}
-
+/* ÉTANCHÉITÉ (#1856) : une travée ne revendique pas sa largeur de contenu comme plancher — même
+   loi que les alvéoles (`.cc-grid > *`), un cran plus haut. Sans elle, `minmax(0, 1fr)` ne sert à
+   rien : l'élément de grille repose son propre `min-content` et ressort de l'écran. */
 .cc-bay {
   display: flex;
   flex-direction: column;
   gap: 8px;
   flex: 0 0 auto;
+  min-width: 0;
   padding: 8px 8px 10px;
 }
 /* MATIÈRE UNIQUE DU PONT — arbitrage utilisateur 2026-08-17 (AskUserQuestion, verbatim) : « une matière
@@ -1115,8 +1131,11 @@ button.cc-socle svg {
   }
   /* Sous 900 les régions occupent presque toute la largeur du pont : il n'y a plus de quoi payer la
      réserve miroir du coin (elle ferait déborder la travée droite), le fronton se décale donc de
-     ce que le coin pèse. Les pistes `min-content` garantissent qu'aucune case ne sort de l'écran.
-     La MARGE INTERNE de la bande, elle, reste — des deux côtés : elle ne décale rien. */
+     ce que le coin pèse. La MARGE INTERNE de la bande, elle, reste — des deux côtés : elle ne
+     décale rien.
+     La rangée à QUATRE régions reste arithmétiquement infaisable entre 701 et ~1080px (#1856,
+     mesuré : 9 à 14 éléments hors fenêtre à 900 même avec des voies étanches) : c'est une
+     COMPOSITION qui manque à cette tranche, pas un réglage de pistes. */
   .cc-dock {
     padding-inline: var(--cc-marge);
   }
@@ -1125,6 +1144,9 @@ button.cc-socle svg {
   :root {
     --cc-cell-w: 48px;
     --cc-cell-h: 38px;
+    /* Régions EMPILÉES : le fronton rentre dans le rang (`.cc-arch { margin-top: 0 }`), le pont ne
+       dépasse plus de rien — son empreinte vaut sa bande. */
+    --cc-saillie: 0px;
   }
   .cc-dock {
     /* Régions EMPILÉES : on quitte la voie-par-flanc pour une colonne — le fronton est centré par
@@ -1139,6 +1161,13 @@ button.cc-socle svg {
   .cc-arch {
     margin-top: 0;
   }
+  /* La travée ne tient plus la hauteur du PONT là où les régions s'EMPILENT : elle reprend la
+     sienne. Depuis que la bande est une rangée de la grille du plateau (#1848), sa hauteur est
+     DÉFINIE — `height: 100%` y valait la pile entière, qui grandissait d'autant (mesuré à 700×780 :
+     dock de 1021px pour 572px de boîte, « Fin du tour » 439px sous le bas du champ). */
+  .cc-bay-left {
+    height: auto;
+  }
   /* BANDEAU D'OUVERTURE sous 700 — et SEULEMENT là : c'est à cette largeur que la frise
      d'initiative quitte sa colonne pour une BANDE HAUTE et que le fil de combat monte en haut du
      champ. La zone haute devient alors pleine (bande de groupe jusqu'à 129,6px, frise jusqu'à
@@ -1150,10 +1179,9 @@ button.cc-socle svg {
     left: 4px;
     right: 4px;
     top: auto;
-    /* `--cc-deck-h` plus les 46px du fil, sa boîte et l'air — jamais un nombre sans origine. Le
-       bandeau n'étant pas un enfant du pont (il flotte sur le champ), il ne peut pas se caler sur
-       `100%` : sa boîte de référence est le champ lui-même. */
-    bottom: calc(var(--cc-deck-h) + 94px);
+    /* Au BAS de la rangée du monde, pleine largeur : le pont est la rangée d'en dessous et le fil
+       d'événements est remonté en haut du champ à cette largeur — plus rien à réserver. */
+    bottom: var(--sp-lg);
     transform: none;
     align-items: center;
   }
@@ -1192,9 +1220,8 @@ button.cc-socle svg {
   .cc-phase {
     left: 4px;
     right: 4px;
-    /* Au-dessus du LISERÉ, pas de son côté intérieur : `bottom: 100%` cale l'élément sur la boîte de
-       rembourrage, donc SOUS la bordure — le bandeau masquait alors le liseré sur 349/360 points. */
-    bottom: calc(100% + 3px);
+    /* L'ancrage au-dessus du liseré est celui de la règle de base (aucun fronton à retrancher ici :
+       `--cc-saillie` vaut zéro dès 700) — seule la densité change à cette largeur. */
     padding: 2px 8px;
     gap: 6px;
   }
@@ -1251,19 +1278,23 @@ button.cc-socle svg {
   }
   .cc-conduit { grid-area: conduit; }
   .cc-grid-right { grid-area: cases; justify-self: center; }
-  /* Arche sur UNE ligne : portrait mini, gouttières courtes, nom à la suite. Elle ne surplombe plus
-     rien : elle est une RÉGION du pont en tête de bande, et laisse donc voir la matière du pont
-     elle-même (aucune nappe propre à recaler — d'où zéro couture, même règle qu'en grand). */
+  /* Arche sur UNE ligne : portrait mini, gouttières courtes, nom à la suite. */
   .cc-arch {
-    width: 100%;
     padding: 6px 8px;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
     gap: 6px;
+    clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 12px, 100% 100%, 0 100%, 0 12px);
+  }
+  /* SUR LA BANDE PEINTE, elle ne surplombe plus rien : elle est une RÉGION du pont en tête de bande,
+     et laisse donc voir la matière du pont elle-même (aucune nappe propre à recaler — d'où zéro
+     couture, même règle qu'en grand). En forme SPECTATRICE la bande est éteinte : l'arche garde sa
+     peau, sans quoi il ne resterait rien à voir à cette largeur. */
+  .combat-console[data-forme='complete'] .cc-arch {
+    width: 100%;
     background-image: none;
     background-color: transparent;
-    clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 12px, 100% 100%, 0 100%, 0 12px);
   }
   .cc-arch::before {
     width: 44px;

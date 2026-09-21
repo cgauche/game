@@ -207,11 +207,16 @@ export const PROPRIETES_DE_PLACEMENT = new Set([
   'transform', 'transform-origin', 'translate', 'rotate', 'scale',
   'text-align', 'vertical-align', 'white-space', 'text-overflow', 'overflow-wrap', 'word-break', 'hyphens',
   'visibility', 'pointer-events', 'touch-action', 'user-select', 'resize',
-  'isolation', 'contain', 'will-change', 'list-style',
+  /* `contain` et `container` sont de la même famille : ils déclarent une PORTÉE de mise en page —
+     ce sur quoi une boîte se mesure —, jamais une matière. Une rangée qui se déclare conteneur de
+     requête (`container-type: size`) donne à ses surfaces un repère à elles ; c'est du placement,
+     et c'est l'écran qui compose les rangées. */
+  'isolation', 'contain', 'container', 'will-change', 'list-style',
 ]);
 
 /** Familles de PLACEMENT à préfixe (`flex-grow`, `grid-template-columns`, `padding-top`…). */
 const PREFIXES_DE_PLACEMENT = [
+  'container-',
   'flex-', 'grid-', 'place-', 'align-', 'justify-', 'inset-', 'min-', 'max-',
   'margin-', 'padding-', 'overflow-', 'overscroll-', 'scroll-', 'column-', 'list-style-',
 ];
