@@ -20,6 +20,14 @@
 //   · en combat, la piste `.is-tiles` DÉFILE (scrollWidth > clientWidth) et tient dans sa bande ;
 //   · en combat, la frise en BANDE horizontale va jusqu'au bord droit (réserve ≤ 8px) et son cartouche
 //     de Round reste visible à TOUT décalage de défilement de la piste ;
+//   · en combat, la frise se juge TROIS FOIS : à la pause d'initiative (seul état où les badges de
+//     score sont montés), au tour engagé, et l'acteur au trait EN BAS de l'ordre (piste défilée à
+//     fond, mise en évidence de l'unité active dans le champ) ;
+//   · en combat, à neuf positions de défilement, rien ne se voit dans la TÊTE de la frise — ni
+//     vignette ni mobilier en débord (score, chevron, pastille, encre de l'unité au trait) entre le
+//     bord du champ et le cartouche de Round, et rien ne PEINT SUR lui (rangs d'empilement
+//     comparés) ; au repos, toute entrée qui COMMENCE dans la zone utile de la colonne y FINIT
+//     (hauteur arrondie au pas d'entrée, CONSTANT). Axe qui ne défile pas = NON MESURÉ ;
 //   · la piste du groupe (`.pd-track`) tient sur UNE ligne (aucune carte à un autre `y`) ;
 //   · quand le rail est DISSOUS (`display: contents`, ≤700), son ouvreur d'écran se pose LUI-MÊME
 //     (position hors flux) et reçoit son clic. ANGLE MORT DÉCLARÉ : cet ouvreur n'est monté que
@@ -137,19 +145,173 @@ const PROBE = `(() => {
     const actif = tiles.querySelector('.is-cell[aria-current="step"]');
     const auTraitVisible = actif ? dansLaPiste(actif) : null;
     const round = tiles.querySelector('.is-round');
+    const enBande = getComputedStyle(tiles).flexDirection === 'row';
     let roundVisible = null;
+    // TÊTE DE FRISE : la piste est le conteneur défilant, son rembourrage vit DANS le champ (le clip
+    // se fait au bord de rembourrage) — ce que le cartouche collé ne couvre pas du champ, en amont
+    // de lui sur l axe de défilement ET sur sa propre section, montre ce qui défile. Le MOBILIER en
+    // débord (score, chevron, pastille d etat) sort du rect de sa cellule : il se mesure à part, et
+    // il se mesure aussi SUR le cartouche — à rang d empilement égal, c est lui qui peint.
+    let teteDecouverte = null, teteSurCartouche = null, piedRogne = null, auTrait = null;
+    let teteMesuree = false, piedMesure = false, pas = null;
     if (round) {
       const avantX = tiles.scrollLeft, avantY = tiles.scrollTop;
       tiles.scrollLeft = tiles.scrollWidth;
       tiles.scrollTop = tiles.scrollHeight;
       roundVisible = dansLaPiste(round);
+      const cs2 = getComputedStyle(tiles);
+      const rt = tiles.getBoundingClientRect();
+      const champ = {
+        left: rt.left + parseFloat(cs2.borderLeftWidth), right: rt.right - parseFloat(cs2.borderRightWidth),
+        top: rt.top + parseFloat(cs2.borderTopWidth), bottom: rt.bottom - parseFloat(cs2.borderBottomWidth),
+      };
+      // Rang d empilement EFFECTIF : le premier z-index numérique porté par l élément ou un de ses
+      // ancêtres positionnés, jusqu à la piste.
+      const rang = (el) => {
+        for (let e = el; e && e !== tiles; e = e.parentElement) {
+          const s = getComputedStyle(e);
+          if (s.position !== 'static' && s.zIndex !== 'auto') return parseInt(s.zIndex, 10);
+        }
+        return 0;
+      };
+      const rangRound = rang(round);
+      const inter = (r, z) => {
+        const ox = Math.min(r.right, z.right) - Math.max(r.left, z.left);
+        const oy = Math.min(r.bottom, z.bottom) - Math.max(r.top, z.top);
+        return (ox > 0.5 && oy > 0.5) ? { ox: +ox.toFixed(1), oy: +oy.toFixed(1) } : null;
+      };
+      // Facteur du transform PROPRE de l élément : le rect en tient compte, l encre et le liseré non
+      // — ils sont peints à l échelle, et une marge non mise à l échelle sous-estime le débord.
+      const facteur = (s) => (new DOMMatrixReadOnly(s.transform)).a || 1;
+      // ENCRE : ce qu un élément peint HORS de sa boîte, HALO compris. Le rect seul le manquerait.
+      const encre = (el) => {
+        const r = el.getBoundingClientRect();
+        const s = getComputedStyle(el);
+        const k = facteur(s);
+        let m = 0;
+        if (s.outlineStyle !== 'none') m = Math.max(m, ((parseFloat(s.outlineWidth) || 0) + (parseFloat(s.outlineOffset) || 0)) * k);
+        if (s.boxShadow && s.boxShadow !== 'none') {
+          const nums = (s.boxShadow.match(/-?[0-9.]+px/g) || []).map(parseFloat);
+          if (nums.length >= 3) m = Math.max(m, (Math.abs(nums[0]) + nums[2]) * k, (Math.abs(nums[1]) + nums[2]) * k);
+        }
+        return { left: r.left - m, right: r.right + m, top: r.top - m, bottom: r.bottom + m, width: r.width + 2 * m, height: r.height + 2 * m };
+      };
+      // BOÎTE PEINTE : le rect plus le seul LISERÉ (à l échelle). C est la matière pleine de la
+      // vignette — elle ne doit recouvrir aucun contrôle ni être rognée par un bord ; le halo, lui,
+      // est un dégradé : il a le droit de passer sous le cartouche et de mourir au filet.
+      const peinte = (el) => {
+        const r = el.getBoundingClientRect();
+        const s = getComputedStyle(el);
+        const m = s.outlineStyle === 'none' ? 0
+          : ((parseFloat(s.outlineWidth) || 0) + (parseFloat(s.outlineOffset) || 0)) * facteur(s);
+        return { left: r.left - m, right: r.right + m, top: r.top - m, bottom: r.bottom + m, lisere: +m.toFixed(2) };
+      };
+      const foot = parseFloat(cs2.paddingBottom);
+      // PAS des entrées : l arrondi au pas suppose une hauteur d entrée CONSTANTE. La vignette au
+      // trait comprise (sa mise en évidence est un transform, qui ne change aucune boîte de mise en
+      // page). Le relevé dit le pas réel.
+      const hauteurs = [...tiles.querySelectorAll('.is-cell')].map((c) => c.getBoundingClientRect().height).filter((h) => h > 0.5);
+      if (hauteurs.length) pas = { min: +Math.min(...hauteurs).toFixed(1), max: +Math.max(...hauteurs).toFixed(1) };
+      // TÊTE RÉELLE : du bord du champ à la première entrée, piste non défilée.
+      const c0 = tiles.querySelector('.is-cell');
+      tiles.scrollTop = 0; tiles.scrollLeft = 0;
+      const tete = c0 ? c0.getBoundingClientRect().top - champ.top : 0;
+      const axeMax = enBande ? tiles.scrollWidth - tiles.clientWidth : tiles.scrollHeight - tiles.clientHeight;
+      // Un axe qui ne défile pas n a pas de tête à découvrir : la mesure le DIT au lieu d être verte
+      // par vacuité. Le PIED, lui, ne se juge qu en colonne (l arrondi au pas y vit).
+      teteMesuree = axeMax > 0;
+      piedMesure = axeMax > 0 && !enBande;
+      for (let k = 0; teteMesuree && k <= 8; k++) {
+        const p = Math.round(axeMax * k / 8);
+        if (enBande) tiles.scrollLeft = p; else tiles.scrollTop = p;
+        const rr = round.getBoundingClientRect();
+        // La TÊTE MOINS LE CARTOUCHE, en rectangles exacts : l amont sur l axe de défilement, et les
+        // deux flancs de section que la boîte du cartouche ne couvre pas.
+        const nus = enBande
+          ? [{ left: champ.left, right: rr.left, top: champ.top, bottom: champ.bottom },
+            { left: rr.left, right: rr.right, top: champ.top, bottom: rr.top },
+            { left: rr.left, right: rr.right, top: rr.bottom, bottom: champ.bottom }]
+          : [{ left: champ.left, right: champ.right, top: champ.top, bottom: rr.top },
+            { left: champ.left, right: rr.left, top: rr.top, bottom: rr.bottom },
+            { left: rr.right, right: champ.right, top: rr.top, bottom: rr.bottom }];
+        for (const c of tiles.querySelectorAll('.is-cell')) {
+          const pieces = [{ el: c, quoi: 'vignette' }];
+          for (const m of c.querySelectorAll('.is-score, .ptile-caret, .end-mark, .is-first, .is-preempt, .ptile.active')) {
+            pieces.push({ el: m, quoi: (m.className || '').split(' ')[0] });
+          }
+          for (const { el, quoi } of pieces) {
+            const r = encre(el);
+            if (r.width < 0.5 || r.height < 0.5) continue;
+            for (const z of nus) {
+              const o = inter(r, z);
+              if (o && (!teteDecouverte || o.ox * o.oy > teteDecouverte.ox * teteDecouverte.oy)) teteDecouverte = { ...o, quoi };
+            }
+            const surLui = inter(r, rr);
+            if (surLui && rang(el) >= rangRound
+              && (!teteSurCartouche || surLui.ox * surLui.oy > teteSurCartouche.ox * teteSurCartouche.oy)) {
+              teteSurCartouche = { ...surLui, quoi, rang: rang(el), rangRound };
+            }
+          }
+          // PIED : la hauteur utile (champ moins tête moins réserve du pied) est arrondie AU PAS
+          // d entrée. Le contrat tient si toute entrée qui COMMENCE dans cette zone y FINIT — sinon
+          // la colonne s arrête sur un visage coupé. Se juge au REPOS (k === 0 : le cran d arrêt cale
+          // la première entrée sous le cartouche).
+          if (!piedMesure || k !== 0) continue;
+          const r = c.getBoundingClientRect();
+          const finZone = champ.bottom - foot;
+          if (r.top >= finZone - 0.5) continue;
+          const debord = +(r.bottom - finZone).toFixed(1);
+          if (debord > 0.5 && (!piedRogne || debord > piedRogne.debord)) {
+            piedRogne = { debord, zone: +(finZone - (champ.top + tete)).toFixed(1), reserve: foot };
+          }
+        }
+      }
       tiles.scrollLeft = avantX;
       tiles.scrollTop = avantY;
+      // RELIEF de la vignette AU TRAIT, à la position que l application a elle-même choisie (la mise
+      // en vue a joué) : sa boîte PEINTE ne recouvre aucun contrôle — la pastille « agit en premier »
+      // est un BOUTON —, aucun bord du champ ne la rogne, et son chevron se voit.
+      const cellAuTrait = [...tiles.querySelectorAll('.is-cell')].find((c) => c.querySelector('.ptile.active'));
+      if (cellAuTrait) {
+        const tuile = cellAuTrait.querySelector('.ptile.active');
+        const pb = peinte(tuile);
+        const rr0 = round.getBoundingClientRect();
+        let controle = null;
+        for (const voisine of [cellAuTrait, cellAuTrait.previousElementSibling, cellAuTrait.nextElementSibling]) {
+          if (!voisine || !voisine.classList || !voisine.classList.contains('is-cell')) continue;
+          for (const ctrl of voisine.querySelectorAll('.is-first, .is-preempt')) {
+            const o = inter(pb, ctrl.getBoundingClientRect());
+            if (o && (!controle || o.ox * o.oy > controle.ox * controle.oy)) {
+              controle = { ...o, quoi: (ctrl.className || '').split(' ')[0], sienne: voisine === cellAuTrait };
+            }
+          }
+        }
+        const rogne = {
+          haut: +(champ.top - pb.top).toFixed(1), bas: +(pb.bottom - champ.bottom).toFixed(1),
+          gauche: +(champ.left - pb.left).toFixed(1), droite: +(pb.right - champ.right).toFixed(1),
+        };
+        const car = cellAuTrait.querySelector('.ptile-caret');
+        const rc = car ? car.getBoundingClientRect() : null;
+        auTrait = {
+          lisere: pb.lisere,
+          controle,
+          rogne,
+          sousCartouche: inter(pb, rr0),
+          caret: rc ? { h: +rc.height.toFixed(1), cache: (inter(rc, rr0) || { oy: 0 }).oy, horsChamp: +Math.max(0, champ.top - rc.top, rc.bottom - champ.bottom, champ.left - rc.left, rc.right - champ.right).toFixed(1) } : null,
+        };
+      }
     }
     frise = {
-      bande: getComputedStyle(tiles).flexDirection === 'row',
+      bande: enBande,
       margeDroite: +(window.innerWidth - rs.right).toFixed(1),
       roundVisible,
+      teteMesuree,
+      pas,
+      teteDecouverte,
+      teteSurCartouche,
+      piedMesure,
+      piedRogne,
+      auTrait,
       auTraitVisible,
     };
   }
@@ -246,6 +408,77 @@ async function monterLeDock(session) {
 }
 
 /**
+ * Défauts de la FRISE seule — extraits parce qu'ils se jugent dans DEUX états du combat : la pause
+ * d'initiative (seul état où chaque entrée porte son badge de score, `InitiativeStrip.tsx`) et le
+ * tour engagé. PURE, comme `defauts`.
+ * @param {any} m mesure rendue par `PROBE` @param {string} phase libellé de l'état sondé
+ * @returns {string[]}
+ */
+export function defautsFrise(m, phase) {
+  const out = [];
+  if (!m.frise) return out;
+  // Le haut-droite est LIBRE : la bande va jusqu'au bord, comme à gauche.
+  if (m.frise.bande && m.frise.margeDroite > 8) {
+    out.push(`${phase} ${m.largeur}px : la frise en bande réserve ${m.frise.margeDroite}px à sa droite — aucune colonne n'y vit (plafond 8px)`);
+  }
+  if (m.frise.roundVisible === false) {
+    out.push(`${phase} ${m.largeur}px : le cartouche de Round sort du champ quand la piste est défilée — la frise perd sa tête`);
+  }
+  if (m.frise.roundVisible === null) out.push(`${phase} ${m.largeur}px : aucun cartouche de Round (.is-round) — sonde aveugle sur la tête de frise`);
+  // TÊTE COUVERTE : à toute position de défilement, entre le bord du champ et le cartouche on ne
+  // voit que le fond du cartouche — ni vignette, ni mobilier en débord (#1867).
+  if (m.frise.teteDecouverte) {
+    out.push(`${phase} ${m.largeur}px : piste défilée, ${m.frise.teteDecouverte.quoi} se voit dans la tête de frise sur ${m.frise.teteDecouverte.ox}×${m.frise.teteDecouverte.oy}px — le cartouche de Round ne couvre pas la tête`);
+  }
+  // … et rien ne PEINT SUR lui : le mobilier de vignette suit le cartouche dans le DOM, un rang
+  // d'empilement ÉGAL suffit à le lui faire recouvrir.
+  if (m.frise.teteSurCartouche) {
+    const s = m.frise.teteSurCartouche;
+    out.push(`${phase} ${m.largeur}px : ${s.quoi} peint SUR le cartouche de Round (${s.ox}×${s.oy}px, rang ${s.rang} contre ${s.rangRound}) — la tête collée doit passer devant ce qui défile`);
+  }
+  // TÊTE et PIED NON MESURÉS : un axe qui ne défile pas ne peut ni révéler ni rogner quoi que ce
+  // soit — le contrat y est intestable, pas violé. L'état est DIT au relevé (jamais « couverte » par
+  // vacuité) ; c'est `m.piste` qui garde le cas d'une piste qui DEVRAIT défiler et ne défile pas.
+  // PIED : l'arrondi au pas d'entrée promet que le reliquat tient dans la réserve du pied.
+  if (m.frise.piedRogne) {
+    const p = m.frise.piedRogne;
+    out.push(`${phase} ${m.largeur}px : au repos, l'entrée du pied déborde de ${p.debord}px la zone utile de ${p.zone}px — la hauteur de piste n'est pas un nombre entier d'entrées`);
+  }
+  // PAS CONSTANT : l'arrondi de la hauteur de piste (`--is-pitch`, initiative-strip.css) suppose des
+  // entrées de MÊME hauteur. Une entrée plus haute que les autres — mise en évidence de l'unité au
+  // trait faite en MISE EN PAGE au lieu d'un `transform` — rend cet arrondi faux ET DÉPLAÇABLE : le
+  // visage coupé n'apparaît qu'aux positions où l'entrée haute tombe dans la zone utile (#1867).
+  if (m.frise.pas && m.frise.pas.max > m.frise.pas.min + 0.5) {
+    out.push(`${phase} ${m.largeur}px : le pas d'entrée n'est pas constant (${m.frise.pas.min}px à ${m.frise.pas.max}px) — l'arrondi de la hauteur de piste au pas ne peut pas tomber juste`);
+  }
+  // RELIEF de la vignette AU TRAIT : elle est agrandie À LA PEINTURE (`transform`), donc elle ne
+  // réserve rien d'elle-même — la place se réserve dans le flux (marge de la primitive) et dans les
+  // rembourrages de la piste. Sans réserve, la matière pleine recouvre un CONTRÔLE ou meurt coupée
+  // sur un bord du champ. Le HALO, lui, a le droit de passer sous le cartouche (#1867).
+  if (m.frise.auTrait) {
+    const a = m.frise.auTrait;
+    if (a.controle) {
+      out.push(`${phase} ${m.largeur}px : la vignette au trait recouvre ${a.controle.quoi} (${a.controle.ox}×${a.controle.oy}px, ${a.controle.sienne ? 'sa propre entrée' : 'une entrée voisine'}) — un contrôle recouvert ne reçoit pas son clic`);
+    }
+    for (const [cote, v] of Object.entries(a.rogne)) {
+      if (v > 0.5) out.push(`${phase} ${m.largeur}px : la boîte peinte de la vignette au trait dépasse de ${v}px le bord ${cote} du champ de la piste — son liseré (${a.lisere}px) y est rogné`);
+    }
+    if (a.sousCartouche) {
+      out.push(`${phase} ${m.largeur}px : la boîte peinte de la vignette au trait passe SOUS le cartouche de Round (${a.sousCartouche.ox}×${a.sousCartouche.oy}px) — la mise en vue la gare derrière la tête ; seul le halo a le droit d'y passer`);
+    }
+    if (a.caret && (a.caret.cache > 0.5 || a.caret.horsChamp > 0.5)) {
+      out.push(`${phase} ${m.largeur}px : le chevron de l'unité au trait est masqué sur ${Math.max(a.caret.cache, a.caret.horsChamp)}px de ${a.caret.h}px — la tête et le pied doivent lui réserver sa place`);
+    }
+  }
+  // COUVERTURE : `auTraitVisible` vaut `null` tant qu'aucune entrée n'est au trait (pause
+  // d'initiative, combat fini) — il n'y a alors rien à ramener dans le champ, et rien à dire.
+  if (m.frise.auTraitVisible === false) {
+    out.push(`${phase} ${m.largeur}px : l'acteur au trait est hors du champ de la frise — rien ne l'y ramène (scrollIntoView)`);
+  }
+  return out;
+}
+
+/**
  * Défauts d'une mesure, en clair (liste vide = tout passe). PURE : elle ne lit que `m` — c'est ce
  * qui la rend testable à fixtures (`hud-clickables.test.mjs`, gate `test:recette`).
  * @param {any} m mesure rendue par `PROBE` @param {string} phase `'exploration'` | `'combat'`
@@ -278,21 +511,7 @@ export function defauts(m, phase) {
     else if (!m.groupe.poignee.ok) out.push(`${phase} ${m.largeur}px : la poignée du groupe replié ${JSON.stringify(m.groupe.poignee.rect)} ne reçoit pas son clic — recouverte par ${m.groupe.poignee.hitBy}`);
   }
   if (m.combat) {
-    if (m.frise) {
-      // Le haut-droite est LIBRE : la bande va jusqu'au bord, comme à gauche.
-      if (m.frise.bande && m.frise.margeDroite > 8) {
-        out.push(`${phase} ${m.largeur}px : la frise en bande réserve ${m.frise.margeDroite}px à sa droite — aucune colonne n'y vit (plafond 8px)`);
-      }
-      if (m.frise.roundVisible === false) {
-        out.push(`${phase} ${m.largeur}px : le cartouche de Round sort du champ quand la piste est défilée — la frise perd sa tête`);
-      }
-      if (m.frise.roundVisible === null) out.push(`${phase} ${m.largeur}px : aucun cartouche de Round (.is-round) — sonde aveugle sur la tête de frise`);
-      // COUVERTURE : `auTraitVisible` vaut `null` tant qu'aucune entrée n'est au trait (pause
-      // d'initiative, combat fini) — il n'y a alors rien à ramener dans le champ, et rien à dire.
-      if (m.frise.auTraitVisible === false) {
-        out.push(`${phase} ${m.largeur}px : l'acteur au trait est hors du champ de la frise — rien ne l'y ramène (scrollIntoView)`);
-      }
-    }
+    out.push(...defautsFrise(m, phase));
     // La console doit être MONTÉE et peuplée : sans elle la sonde mesure le bandeau de phase (un seul
     // bouton) et ne voit aucun des recouvrements du pont de tour.
     if (!m.dock) out.push(`${phase} ${m.largeur}px : aucune console (.combat-console) — sonde aveugle sur le pont de tour`);
@@ -367,6 +586,25 @@ async function main() {
     await evaluate(session, `window.__wfrp.fight('enc-mutants')`);
     await sleep(1500);
     await resoudreModales(session, 'ouverture de combat');
+
+    // ── Combat, PAUSE D'INITIATIVE ─────────────────────────────────────────────────────────────
+    // Le combat s'ouvre sur cette pause, et c'est le SEUL état où chaque entrée porte son badge de
+    // score (`InitiativeStrip.tsx`, `p.turn === -1`) : la frise s'y juge avant d'entrer dans le
+    // Round, sinon son mobilier en débord n'est jamais mesuré. Seuls les verdicts de FRISE valent
+    // ici — le pont de tour n'est pas monté.
+    const enPause = await evaluate(session, `(() => { const b = window.__wfrp.store.getState().battle; return !!b && b.turn === -1; })()`);
+    if (!enPause) throw new Error('le combat ne s’ouvre plus sur la pause d’initiative — la frise n’y est plus sondée (badges de score)');
+    for (const w of args.widths) {
+      await setViewport(session, w, HEIGHT);
+      await sleep(600);
+      const m = await evaluate(session, PROBE);
+      const d = defautsFrise(m, 'combat (pause d’initiative)');
+      console.log(`combat (pause) ${w}px — frise ${m.frise ? (m.frise.bande ? 'bande' : 'colonne') + ', tête ' + (!m.frise.teteMesuree ? 'non mesurée' : (m.frise.teteDecouverte || m.frise.teteSurCartouche) ? 'DÉCOUVERTE' : 'couverte') + ', pied ' + (!m.frise.piedMesure ? 'non mesuré' : m.frise.piedRogne ? 'DÉBORDE de ' + m.frise.piedRogne.debord + 'px' : 'entier') : 'ABSENTE'} → ${d.length ? d.length + ' défaut(s)' : 'OK'}`);
+      dire(d);
+      echecs.push(...d);
+    }
+    await setViewport(session, VUE_REFERENCE.largeur, VUE_REFERENCE.hauteur);
+    await sleep(300);
     await monterLeDock(session);
     // Le tiroir du journal ne se juge QU'OUVERT : on le déplie par CLIC RÉEL sur sa poignée (glyphe
     // seul → par sélecteur), au PREMIER tour tenu par un héros — console complète, avant tout tour
@@ -380,7 +618,36 @@ async function main() {
       const m = await evaluate(session, PROBE);
       if (!m.combat) throw new Error(`combat ${w}px : aucune frise d'initiative — le combat n'est pas monté`);
       const d = defauts(m, 'combat');
-      console.log(`combat ${w}px — dock ${m.dock ? m.dock.rect.h + 'px de haut / ' + m.dockBtns.length + ' contrôle(s)' : 'ABSENT'}, piste ${m.piste.clientWidth}/${m.piste.scrollWidth}px dans une bande de ${m.piste.bande}px, frise ${m.frise ? (m.frise.bande ? 'bande' : 'colonne') + ' à ' + m.frise.margeDroite + 'px du bord, Round ' + (m.frise.roundVisible ? 'visible' : 'HORS CHAMP') : 'n/a'}, chevauchement fil×frise ${m.feedXfrise ? m.feedXfrise.ox + '×' + m.feedXfrise.oy + 'px' : 'aucun'} → ${d.length ? d.length + ' défaut(s)' : 'OK'}`);
+      console.log(`combat ${w}px — dock ${m.dock ? m.dock.rect.h + 'px de haut / ' + m.dockBtns.length + ' contrôle(s)' : 'ABSENT'}, piste ${m.piste.clientWidth}/${m.piste.scrollWidth}px dans une bande de ${m.piste.bande}px, frise ${m.frise ? (m.frise.bande ? 'bande' : 'colonne') + ' à ' + m.frise.margeDroite + 'px du bord, Round ' + (m.frise.roundVisible ? 'visible' : 'HORS CHAMP') + ', tête ' + (!m.frise.teteMesuree ? 'non mesurée' : (m.frise.teteDecouverte || m.frise.teteSurCartouche) ? 'DÉCOUVERTE' : 'couverte') + ', pied ' + (!m.frise.piedMesure ? 'non mesuré' : m.frise.piedRogne ? 'DÉBORDE de ' + m.frise.piedRogne.debord + 'px' : 'entier') : 'n/a'}, chevauchement fil×frise ${m.feedXfrise ? m.feedXfrise.ox + '×' + m.feedXfrise.oy + 'px' : 'aucun'} → ${d.length ? d.length + ' défaut(s)' : 'OK'}`);
+      dire(d);
+      echecs.push(...d);
+    }
+
+    // ── Combat, ACTEUR AU TRAIT EN BAS DE L'ORDRE ──────────────────────────────────────────────
+    // La piste est alors DÉFILÉE à fond (`useRamenerEnVue` amène l'entrée au trait en vue) et le
+    // pas d'entrée est sollicité sur toute la hauteur : c'est l'état où une entrée plus HAUTE que
+    // les autres fait sortir la dernière vignette du champ. Le tour est redonné à CHAQUE largeur,
+    // après le changement de viewport : sans changement de tour, la mise en vue ne rejoue pas.
+    const AU_TRAIT_EN_BAS = `(() => {
+      const b = window.__wfrp.store.getState().battle;
+      for (let i = b.order.length - 1; i >= 0; i--) {
+        const r = window.__wfrp.turn(b.order[i]);
+        if (typeof r === 'string' && r.startsWith('\\u2713')) return b.order[i];
+      }
+      return null;
+    })()`;
+    for (const w of args.widths) {
+      await setViewport(session, w, HEIGHT);
+      await sleep(400);
+      await evaluate(session, `window.__wfrp.turn(window.__wfrp.store.getState().battle.order[0])`);
+      await sleep(200);
+      const auTrait = await evaluate(session, AU_TRAIT_EN_BAS);
+      if (!auTrait) throw new Error(`combat ${w}px : aucun combattant de l'ordre ne peut prendre le trait`);
+      await sleep(600);
+      const m = await evaluate(session, PROBE);
+      if (!m.frise) throw new Error(`combat ${w}px (au trait en bas) : aucune frise d'initiative`);
+      const d = defautsFrise(m, 'combat (au trait en bas)');
+      console.log(`combat (au trait en bas) ${w}px — ${auTrait} au trait, frise ${(m.frise.bande ? 'bande' : 'colonne')}, tête ${!m.frise.teteMesuree ? 'non mesurée' : (m.frise.teteDecouverte || m.frise.teteSurCartouche) ? 'DÉCOUVERTE' : 'couverte'}, pied ${!m.frise.piedMesure ? 'non mesuré' : m.frise.piedRogne ? 'DÉBORDE de ' + m.frise.piedRogne.debord + 'px (zone ' + m.frise.piedRogne.zone + 'px)' : 'entier'}, pas ${m.frise.pas ? m.frise.pas.min + '–' + m.frise.pas.max + 'px' : 'n/a'} → ${d.length ? d.length + ' défaut(s)' : 'OK'}`);
       dire(d);
       echecs.push(...d);
     }

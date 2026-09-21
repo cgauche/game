@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { InitiativeStrip, initiativePhase } from './InitiativeStrip';
+import { CHAR_SIZE_PX } from './PortraitTile';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
@@ -42,6 +43,23 @@ describe('InitiativeStrip', () => {
         canFirstIds={[]} onActivate={noop} onPromote={noop} hand={HAND} />,
     );
     expect(html).toMatch(/<div class="is-tiles"><div class="is-round">Round 3<\/div>/);
+  });
+
+  // La piste ARRONDIT sa hauteur au PAS d'entrée : ce pas est CONSTANT, l'entrée au trait comprise.
+  // La mise en évidence de l'unité au trait est donc un `transform` (portrait-tile.css) et non une
+  // boîte plus grande : la tuile garde le côté NOMINAL de sa taille. Que la colonne s'arrête bien
+  // sur une entrée entière se mesure au navigateur (`hud-clickables.mjs`, verdict « l'entrée du pied
+  // déborde la zone utile »).
+  it('l’entrée AU TRAIT garde la boîte des autres (le pas ne bouge pas)', () => {
+    const { h, foe } = fixtures();
+    const html = renderToStaticMarkup(
+      <InitiativeStrip order={['e1', 'h1']} turn={1} round={3} combatants={[h, foe]} over={false}
+        canFirstIds={[]} onActivate={noop} onPromote={noop} hand={HAND} />,
+    );
+    const cotes = [...html.matchAll(/--ptile-px:(\d+)px/g)].map((m) => m[1]);
+    expect(cotes.length).toBe(2);
+    expect(new Set(cotes).size, `deux côtés différents dans la frise : ${cotes.join(', ')}`).toBe(1);
+    expect(cotes[0]).toBe(String(CHAR_SIZE_PX.sm));
   });
 
   // Spec HUD combat §1c-bis : une entrée de frise = vignette + liseré de camp (+ à la pause son

@@ -12,7 +12,10 @@ const combat = () => ({
   largeur: 360,
   combat: true,
   rail: { dissous: true, ouvreurs: [{ i: 0, label: 'Dossier du navire', position: 'absolute', ok: true, hitBy: 'rien', rect: { x: 300, y: 400, w: 44, h: 44 } }] },
-  frise: { bande: true, margeDroite: 4, roundVisible: true, auTraitVisible: true },
+  frise: { bande: true, margeDroite: 4, roundVisible: true, teteMesuree: true, teteDecouverte: null,
+    teteSurCartouche: null, piedMesure: false, piedRogne: null, pas: { min: 40, max: 40 }, auTraitVisible: true,
+    auTrait: { lisere: 3.84, controle: null, rogne: { haut: 0, bas: -4.2, gauche: 0, droite: -8.1 }, sousCartouche: null,
+      caret: { h: 10, cache: 0, horsChamp: 0 } } },
   groupe: { cartes: 4, lignes: 1, poignee: null },
   portraits: [],
   objectif: null,
@@ -153,6 +156,116 @@ test('cartouche de Round ABSENT : la sonde se déclare AVEUGLE, elle ne se tait 
   const m = combat()
   m.frise.roundVisible = null
   rouge(m, 'combat', /sonde aveugle sur la tête de frise/)
+})
+
+test('vignette VISIBLE dans la tête de frise, piste défilée : défaut chiffré', () => {
+  const m = combat()
+  m.frise.teteDecouverte = { ox: 51, oy: 9, quoi: 'vignette' }
+  rouge(m, 'combat', /vignette se voit dans la tête de frise sur 51×9px/)
+})
+
+// Le MOBILIER en débord (score, chevron, pastille d'état) sort du rect de sa cellule : le verdict le
+// NOMME par sa classe, une sonde qui n'itère que les vignettes le manquerait (#1867).
+test('BADGE de score visible dans la tête : défaut nommé par son mobilier', () => {
+  const m = combat()
+  m.frise.teteDecouverte = { ox: 5, oy: 4, quoi: 'is-score' }
+  rouge(m, 'combat', /is-score se voit dans la tête de frise sur 5×4px/)
+})
+
+test('mobilier qui PEINT SUR le cartouche (rang égal) : défaut chiffré, rangs dits', () => {
+  const m = combat()
+  m.frise.teteSurCartouche = { ox: 20, oy: 16, quoi: 'is-score', rang: 2, rangRound: 2 }
+  rouge(m, 'combat', /is-score peint SUR le cartouche de Round \(20×16px, rang 2 contre 2\)/)
+})
+
+test('tête de frise COUVERTE par le cartouche : rien à dire', () => {
+  const m = combat()
+  m.frise.teteDecouverte = null
+  m.frise.teteSurCartouche = null
+  assert.deepEqual(defauts(m, 'combat'), [])
+})
+
+// Un axe qui ne défile pas ne peut RIEN découvrir : le contrat y est intestable, pas violé. L'état
+// est porté par la mesure (`teteMesuree`), que le relevé imprime — il ne se change pas en défaut.
+test('axe qui NE DÉFILE PAS : aucun verdict de tête (l’état est porté par la mesure)', () => {
+  const m = combat()
+  m.frise.teteMesuree = false
+  assert.deepEqual(defauts(m, 'combat'), [])
+})
+
+// ── PIED de la colonne : l'arrondi au pas promet une dernière entrée ENTIÈRE au repos ──────────────
+test('entrée du PIED rognée au repos : défaut chiffré', () => {
+  const m = combat()
+  m.frise.bande = false
+  m.frise.piedMesure = true
+  m.frise.piedRogne = { debord: 9, zone: 380, reserve: 6 }
+  rouge(m, 'combat', /l'entrée du pied déborde de 9px la zone utile de 380px — la hauteur de piste n'est pas un nombre entier d'entrées/)
+})
+
+// L'arrondi au pas suppose une hauteur d'entrée CONSTANTE. Le pas se juge SEUL : une entrée plus
+// haute que les autres ne rogne le pied qu'aux positions où elle tombe dans la zone utile — le
+// verdict du pied ne la verrait pas partout, celui du pas si.
+test('pas d’entrée NON CONSTANT : défaut chiffré, sans attendre un pied rogné', () => {
+  const m = combat()
+  m.frise.bande = false
+  m.frise.piedMesure = true
+  m.frise.piedRogne = null
+  m.frise.pas = { min: 50, max: 62.3 }
+  rouge(m, 'combat', /le pas d'entrée n'est pas constant \(50px à 62\.3px\) — l'arrondi de la hauteur de piste au pas ne peut pas tomber juste/)
+})
+
+// ── RELIEF de la vignette AU TRAIT : la peinture ne réserve rien d'elle-même ────────────────────
+test('vignette au trait qui RECOUVRE un contrôle : défaut nommé, cible et surface', () => {
+  const m = combat()
+  m.frise.auTrait.controle = { ox: 8.3, oy: 18, quoi: 'is-first', sienne: true }
+  rouge(m, 'combat', /la vignette au trait recouvre is-first \(8\.3×18px, sa propre entrée\) — un contrôle recouvert ne reçoit pas son clic/)
+})
+
+test('boîte peinte ROGNÉE par un bord du champ : défaut chiffré, côté nommé', () => {
+  const m = combat()
+  m.frise.auTrait.rogne.bas = 4.8
+  rouge(m, 'combat', /la boîte peinte de la vignette au trait dépasse de 4\.8px le bord bas du champ de la piste — son liseré \(3\.84px\) y est rogné/)
+})
+
+test('chevron de l’unité au trait MASQUÉ par le cartouche : défaut chiffré', () => {
+  const m = combat()
+  m.frise.auTrait.caret.cache = 10.8
+  rouge(m, 'combat', /le chevron de l'unité au trait est masqué sur 10\.8px de 10px/)
+})
+
+test('aucune unité au trait (pause d’initiative) : aucun verdict de relief', () => {
+  const m = combat()
+  m.frise.auTrait = null
+  assert.deepEqual(defauts(m, 'combat'), [])
+})
+
+test('pas d’entrée constant : rien à dire', () => {
+  const m = combat()
+  m.frise.pas = { min: 50, max: 50 }
+  assert.deepEqual(defauts(m, 'combat'), [])
+})
+
+test('colonne qui ne défile pas : aucun verdict de pied (l’arrondi n’y est pas en jeu)', () => {
+  const m = combat()
+  m.frise.bande = false
+  m.frise.piedMesure = false
+  assert.deepEqual(defauts(m, 'combat'), [])
+})
+
+test('colonne défilée dont le pied tient entier : rien à dire', () => {
+  const m = combat()
+  m.frise.bande = false
+  m.frise.piedMesure = true
+  m.frise.piedRogne = null
+  assert.deepEqual(defauts(m, 'combat'), [])
+})
+
+// La BANDE horizontale n'a pas d'arrondi au pas : son pied ne se juge pas, et l'absence de mesure
+// n'y est pas un aveuglement.
+test('bande horizontale : aucun verdict de pied', () => {
+  const m = combat()
+  m.frise.piedMesure = false
+  assert.deepEqual(defauts(m, 'combat'), [])
 })
 
 test('acteur AU TRAIT hors du champ de la frise : défaut nommé', () => {

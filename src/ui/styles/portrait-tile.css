@@ -6,17 +6,38 @@
    visage est `RigPortrait` (rig-portrait.css `.rig-portrait`). Les spécialisations contextuelles de la
    frise, du bandeau de groupe et de la console vivent chez elles (initiative-strip.css,
    party-dock.css, combat-console.css). ══ */
+/* RELIEF de la tuile AU TRAIT — les grandeurs de la peinture, nommées ICI et nulle part ailleurs :
+   l'agrandissement est un `transform`, il ne réserve donc AUCUNE place ; c'est la primitive (axe de
+   ligne) et l'hôte (axe de bloc) qui réservent, sinon l'anneau or est rogné au bord d'un champ ou
+   recouvre un contrôle voisin (#1867). Le liseré est mis à l'échelle par le `transform` : son
+   épaisseur entre dans le relief, nommée, jamais recopiée en littéral. */
+:root {
+  --ptile-active-scale: 1.28;
+  --ptile-outline: 2px;
+  --ptile-outline-air: 1px;
+  /* Décalage du chevron au-dessus de la tuile : il vit hors de la boîte, il se réserve comme elle. */
+  --ptile-caret-air: 11px;
+  --ptile-lisere: calc((var(--ptile-outline) + var(--ptile-outline-air)) * var(--ptile-active-scale));
+}
 .ptile-wrap {
   display: flex;
   align-items: flex-start;
   gap: 3px;
   pointer-events: auto;
+  /* Le chevron est posé par rapport à la GRAPPE, pas à la tuile : dans la tuile il serait mis à
+     l'échelle et remonté par le `transform` de l'unité au trait — il garde ici sa taille et son
+     décalage nominaux. */
+  position: relative;
+  /* RELIEF DE LIGNE : l'origine du grossissement est au bord GAUCHE, tout le surcroît part à droite.
+     La tuile au trait le réserve elle-même en marge — aucun hôte à mettre au courant. */
+  --ptile-relief-inline: calc(var(--ptile-px) * (var(--ptile-active-scale) - 1) + var(--ptile-lisere));
 }
 /* Tuile = carte d'équipe (fond teinté), portrait au-dessus, jauge de vie HORIZONTALE dessous. */
 .ptile {
   position: relative;
-  /* Taille CALCULÉE par la primitive (`CHAR_SIZE_PX` × facteur d'unité active), posée en VARIABLE
-     CSS sur l'élément — jamais une propriété inline (arbitrage user A2, 2026-09-18). */
+  /* Taille NOMINALE de la primitive (`CHAR_SIZE_PX`), posée en VARIABLE CSS sur l'élément — jamais
+     une propriété inline (arbitrage user A2, 2026-09-18). Elle ne dépend pas de l'état : l'unité au
+     trait est grossie par un `transform` (ci-dessous), qui ne change aucune boîte. */
   width: var(--ptile-px);
   display: flex;
   flex-direction: column;
@@ -55,11 +76,20 @@
   /* Cadre épais : la couleur (vert allié / rouge ennemi) + la forme (plein/tirets, R9) se lisent d'un coup d'œil. */
   border-width: 3px;
 }
-/* R6 : l'unité active (déjà agrandie côté React) reçoit le liseré or + halo. */
+/* R6 : l'unité active reçoit le liseré or + halo, et se GROSSIT À L'ŒIL. L'agrandissement est un
+   `transform` : la boîte de MISE EN PAGE ne bouge pas, sinon une entrée de frise devient plus haute
+   que les autres et l'arrondi au pas d'entrée de la colonne ne tient plus (#1867). Origine au bord
+   GAUCHE : tous les portraits d'une colonne gardent le même bord gauche. */
 .ptile.active {
-  outline: 2px solid var(--gold2);
-  outline-offset: 1px;
+  outline: var(--ptile-outline) solid var(--gold2);
+  outline-offset: var(--ptile-outline-air);
   box-shadow: 0 0 12px rgba(255, 224, 102, 0.55);
+  transform: scale(var(--ptile-active-scale));
+  transform-origin: left center;
+  /* La place que la peinture prend à DROITE est réservée dans le flux : sans elle, la tuile grossie
+     recouvre la pastille de sa propre entrée (« agit en premier » est un BOUTON) et la rend
+     incliquable sur ses quatre cinquièmes gauches (#1867). */
+  margin-inline-end: var(--ptile-relief-inline);
   z-index: 1;
 }
 /* Tuile-radio d'un picker (cible de soin, répartition…) : le choix courant, liseré or sans halo. */
@@ -80,8 +110,9 @@
 }
 .ptile-caret {
   position: absolute;
-  top: -11px;
-  left: 50%;
+  top: calc(-1 * var(--ptile-caret-air));
+  /* Centré sur la TUILE (qui ouvre la grappe), pas sur la grappe — la colonne d'États en fait partie. */
+  left: calc(var(--ptile-px) / 2);
   transform: translateX(-50%);
   color: var(--gold2);
   font-size: 10px;

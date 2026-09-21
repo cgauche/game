@@ -908,7 +908,7 @@
     "css": "src/ui/styles/initiative-strip.css",
     "concept": "frise d'initiative : colonne de bois à cartouche de Round collé, une entrée par combattant, badges de premier coup et de pré-emption en débord",
     "perimetre": "HUD de combat (colonne à gauche ; bande horizontale défilable ≤700)",
-    "verrou": "scripts/recette/hud-clickables.mjs — la bande défile, va jusqu'au bord, garde sa tête et son acteur au trait dans le champ"
+    "verrou": "scripts/recette/hud-clickables.mjs — la bande défile, va jusqu'au bord, garde sa tête (cartouche collé couvrant la boîte de rembourrage) et son acteur au trait dans le champ, à pas d'entrée CONSTANT et relief de l'unité au trait réservé"
   },
   {
     "id": "partyDock",

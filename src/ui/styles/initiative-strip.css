@@ -46,12 +46,21 @@
      large — centrer décalerait son portrait vs les tuiles sans badge (frise en zigzag, cf. retour
      2026-06-11). En flex-start tous les portraits partagent le même bord gauche, badge à droite. */
   align-items: flex-start;
-  gap: 6px;
+  gap: var(--is-gap);
   /* Matière du spécimen A (`docs/plans/Spec HUD Combat.dc.html`) : colonne de bois montée sur un
      chant de laiton, cartouche de Round gravé en tête, badges posés en DÉBORD (rien n'élargit une
      vignette). Habillage seul — la géométrie de la colonne est inchangée. */
   position: relative;
-  padding: 9px 8px 12px;
+  /* L'AIR DE TÊTE appartient au CARTOUCHE, jamais à la piste : la piste est le conteneur défilant,
+     son rembourrage vit DANS le champ de défilement, quand le cartouche collé s'arrête au bord de
+     CONTENU — porté ici, il laisserait voir une entrée défilée au-dessus de la tête. La grandeur est
+     nommée ici, `.is-round` la porte (#1867). */
+  --is-head-air: 9px;
+  /* Le FLANC de la piste, même statut que l'air de tête : ce rembourrage vit DANS le champ
+     défilant, donc le cartouche collé doit le couvrir. La grandeur est nommée ici, `.is-round` la
+     reprend en négatif (#1867). */
+  --is-flank: 8px;
+  padding: 0 var(--is-flank) var(--is-foot);
   background: linear-gradient(90deg, var(--hud-frise-edge), var(--atelier-wood-top) 62%, var(--atelier-wood-bottom));
   border: 1px solid var(--wm-frame-dark);
   /* Chant de laiton du bord droit : le trait qui fait « colonne montée » (spécimen A). */
@@ -64,22 +73,39 @@
   overflow-x: visible;
   /* Chaque entrée est un point d'ARRÊT : la colonne ne s'immobilise jamais au milieu d'un visage. */
   scroll-snap-type: y mandatory;
-  /* La colonne s'arrête sur une entrée ENTIÈRE : le pas d'une entrée est fixe (vignette 44 + écart
-     6), la tête (cartouche de Round + rembourrages) est réservée à part, et la hauteur utile est
-     arrondie AU PAS INFÉRIEUR — sans quoi la dernière entrée était coupée en plein portrait et son
-     score tronqué (mesuré en pause, 1280×800). La déclaration simple reste le repli des moteurs
-     sans `round()`. */
-  /* Pas MESURÉ (DOM 1280×800) : entrée 50px, pas 56px (écart 6). Hors entrées, la colonne occupe
-     49px : rembourrage 9 + 12, filets 2, cartouche de Round 26 collé en tête (`sticky`) + son
-     écart 6 — moins les 6px d'écart que la DERNIÈRE entrée ne porte pas. La hauteur utile est donc
-     arrondie AU PAS INFÉRIEUR sur cette base, et le cartouche COLLE : sans lui, la piste défilée
-     n'avait plus de tête et la 12ᵉ entrée se coupait en plein visage (sonde du juge : peau à
-     pleine intensité jusqu'à y=722 contre un filet à 724). */
-  --is-pitch: 56px;
-  --is-head: 52px;
-  /* L'entrée visée par un défilement se cale SOUS le cartouche collé (26 de cartouche + 3 de marge
-     + 6 d'écart = 35px MESURÉS), jamais dessous. */
-  scroll-padding-top: 35px;
+  /* Grandeurs MESURÉES de la colonne (DOM 1280×800), chacune nommée UNE fois : le pas, la tête et le
+     calage du défilement s'en DÉRIVENT, et une tranche qui change un rembourrage les recale toutes
+     (#1867). La déclaration `max-height` simple reste le repli des moteurs sans `round()`. */
+  --is-entry: 50px;
+  --is-gap: 6px;
+  --is-round-h: 26px;
+  /* RELIEF de la vignette AU TRAIT sur l'axe de BLOC : le grossissement est un `transform`, il ne
+     réserve rien. Ce que sa PEINTURE prend se réserve ICI, aux grandeurs nommées par la primitive
+     (portrait-tile.css) — en HAUT le chevron, qui vit au-dessus de la tuile ; en BAS le demi-surcroît
+     d'échelle plus le liseré : sans cela l'anneau or de la DERNIÈRE entrée est rogné par le bord du
+     champ et le chevron de la PREMIÈRE passe sous le cartouche (#1867). Chaque réserve se paie UNE
+     fois : un rembourrage qui couvre déjà le relief le PORTE (`max`), il ne s'y ajoute pas. La base
+     de bloc est la hauteur d'entrée, que seule la frise connaît — une propriété personnalisée
+     dérivée à `:root` s'y résout et hérite résolue. */
+  --is-relief-bas: calc(var(--is-entry) * (var(--ptile-active-scale) - 1) / 2 + var(--ptile-lisere));
+  --is-round-air: 3px;
+  --is-round-margin: max(var(--is-round-air), var(--ptile-caret-air));
+  --is-foot-air: 12px;
+  --is-foot: max(var(--is-foot-air), var(--is-relief-bas));
+  --is-frame: 2px;
+  --is-pitch: calc(var(--is-entry) + var(--is-gap));
+  /* HORS ENTRÉES : l'air de tête, le cartouche et sa marge, le rembourrage du pied, les filets. Les
+     écarts s'annulent — la pile en porte un de moins qu'elle n'a d'entrées. La hauteur utile est
+     arrondie AU PAS INFÉRIEUR sur cette base : la colonne s'arrête sur une entrée ENTIÈRE, jamais
+     sur un visage coupé. Le pas est CONSTANT — la mise en évidence de l'unité au trait est un
+     `transform`, qui ne change aucune boîte (portrait-tile.css, #1867). */
+  --is-head: calc(var(--is-head-air) + var(--is-round-h) + var(--is-round-margin) + var(--is-foot) + var(--is-frame));
+  /* L'entrée visée par un défilement se cale SOUS le cartouche collé : la même tête, moins le pied
+     et les filets, plus l'écart qui la sépare du cartouche. Un calage plus court que la tête réelle
+     gare la piste trop bas et rogne l'entrée du pied (#1867). Ce calage-ci et le cran d'arrêt `y`
+     ci-dessus valent pour la COLONNE : en bande (≤700) l'axe de défilement est X, et c'est la tranche
+     qui y pose son propre cran (`scroll-snap-type: x`). */
+  scroll-padding-top: calc(var(--is-head-air) + var(--is-round-h) + var(--is-round-margin) + var(--is-gap));
   /* La piste ne descend pas plus bas que la plaque : sa borne est celle de la colonne, arrondie au
      pas d'entrée. Au-delà, elle DÉFILE — aucune entrée ne disparaît, et rien ne dépasse sur le pont.
      L'espace disponible est celui de la RANGÉE DU MONDE elle-même (`cqh`, conteneur `.stage-flot`,
@@ -103,9 +129,9 @@
   left: 1px;
   right: 1px;
   bottom: 1px;
-  /* 22px : le rembourrage du pied (12) PLUS la garde qui couvre le résidu d'une entrée suivante
-     quand la piste est défilée hors cran (3px mesurés) — au filet, la matière est pleinement
-     celle du panneau (luminance de bord 15 contre 34 au cœur, sonde pixel). */
+  /* 22px : la rampe est un INDICATEUR, pas une réserve de mise en page — elle couvre le rembourrage
+     du pied et le bas de la dernière entrée, de sorte qu'au filet la matière soit pleinement celle
+     du panneau (luminance de bord 15 contre 34 au cœur, sonde pixel). */
   height: 22px;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(20, 15, 10, 0) 0%, var(--atelier-wood-bottom) 78%);
@@ -160,11 +186,25 @@
      défilement, ce qui rend la hauteur d'entrées CONSTANTE (et donc l'arrondi au pas exact). */
   position: sticky;
   top: 0;
-  z-index: 2;
+  /* La tête collée passe DEVANT tout ce qui défile sous elle, MOBILIER DE VIGNETTE COMPRIS : le
+     score (`.is-score`, rang 2), le chevron et la pastille d'état de `PortraitTile` (rangs 2 et 3,
+     portrait-tile.css) vivent dans le même contexte d'empilement et suivent le cartouche dans le
+     DOM — à rang ÉGAL, c'est la vignette qui peint par-dessus. Le rang du cartouche est donc
+     STRICTEMENT au-dessus du plus haut de ce mobilier (#1867). */
+  z-index: 4;
   background: linear-gradient(90deg, var(--hud-frise-edge), var(--atelier-wood-top) 62%, var(--atelier-wood-bottom));
   align-self: stretch;
+  /* L'air de tête de la piste (`--is-head-air`) : le cartouche le PORTE, donc il le couvre de son
+     fond opaque à toute position de défilement. */
+  padding-top: var(--is-head-air);
   padding-bottom: 5px;
-  margin-bottom: 3px;
+  /* Même loi sur l'axe TRANSVERSE : le cartouche couvre la boîte de REMBOURRAGE de la piste, pas
+     seulement sa boîte de contenu — sinon l'encre d'une vignette défilée (halo de l'unité au trait)
+     se voit à son flanc. Marge négative et rembourrage de la MÊME grandeur nommée : le libellé ne
+     bouge pas d'un pixel (#1867). */
+  margin-inline: calc(-1 * var(--is-flank));
+  padding-inline: var(--is-flank);
+  margin-bottom: var(--is-round-margin);
   border-bottom: 1px solid var(--atelier-brass-hover);
   color: var(--gold2);
   font-family: var(--font-display);
@@ -241,20 +281,23 @@
 /* ══ Matrice responsive (canon 900 / 700 / 560) — UN bloc par tranche ══ */
 @media (max-width: 900px) {
   /* Cartes de la frise compactées : seules les respirations tombent — portrait, Blessures et
-     alertes restent. */
-  .is-tiles { gap: 5px; padding: 6px 5px; }
+     alertes restent. Les deux grandeurs qui changent ici (écart, rembourrage du pied) traversent le
+     pas, la tête et le calage par dérivation — rien à recopier. */
+  .is-tiles { --is-gap: 5px; --is-head-air: 6px; --is-foot-air: 6px; --is-flank: 5px; padding: 0 var(--is-flank) var(--is-foot); }
 }
 @media (max-width: 700px) {
   /* La frise quitte la colonne latérale pour une BANDE HORIZONTALE défilable sous le groupe,
-     cartouche du Round en tête. Le `padding-top` de la piste réserve la place du badge
-     d'initiative, qui déborde du haut de chaque cellule.
+     cartouche du Round en tête. Sur l'axe de DÉFILEMENT (X ici), l'air de tête appartient au
+     cartouche comme en colonne (`--is-head-air`) — sinon une vignette défilée se voit à son flanc
+     gauche. La réserve du badge d'initiative, qui déborde du HAUT de chaque cellule, appartient à la
+     CELLULE (`margin-top`) : portée par la piste, elle tombe hors de la boîte du cartouche étiré et
+     laisse voir le sommet des badges défilés dans sa propre section (#1867).
      PLUS DE RÉSERVE DE DROITE : la plaque de caméra a quitté l'écran de jeu et le rail dégraissé
      s'ancre désormais en BAS à cette largeur (hud.css, `.hud-rail > .worldmap-btn`) — le haut-droite
-     est libre, la bande va jusqu'au bord comme à gauche. Elle réservait 168px pour une colonne qui
-     n'existe plus.
+     est libre, la bande va jusqu'au bord comme à gauche.
      `align-items: stretch` CONTRAINT la piste à la largeur de la bande : `overflow-x: auto` ne mord
-     que sur une boîte bornée — alignée en `flex-start` elle prenait la largeur de son contenu et
-     débordait du HUD sans jamais défiler. */
+     que sur une boîte bornée — alignée en `flex-start` elle prend la largeur de son contenu et
+     déborde du HUD sans jamais défiler. */
   .initiative-strip {
     top: 84px;
     left: 4px;
@@ -267,13 +310,24 @@
   .is-tiles {
     flex-direction: row;
     align-items: center;
-    gap: 5px;
-    padding: 9px 5px 5px;
+    --is-head-air: 5px;
+    /* En BANDE, l'axe de bloc est transverse : la même réserve y porte le badge en débord ET le
+       chevron de la vignette au trait — la plus exigeante des deux gagne, elle ne les additionne pas. */
+    --is-badge-air: max(9px, var(--ptile-caret-air));
+    --is-foot-air: 5px;
+    padding: 0 var(--is-flank) var(--is-foot) 0;
     max-height: none;
     min-width: 0;
     overflow-x: auto;
     /* Bande horizontale : l'arrêt se fait sur la vignette ENTIÈRE, sur l'axe X. */
     scroll-snap-type: x mandatory;
+    /* Et l'entrée visée se cale APRÈS le cartouche collé, comme en colonne — sans ce calage la mise
+       en vue gare l'entrée AU TRAIT sous lui. Le cartouche est du TEXTE et n'a pas de largeur fixe :
+       le calage la MAJORE en signes de la piste (« Round 100 » et ses deux flancs — 101px pour un
+       cartouche qui culmine à 82px, mesuré) ; une entrée calée un peu trop loin reste ENTIÈRE, une
+       entrée calée trop court passe sous la tête (#1867). */
+    --is-round-w: calc(10ch + 2 * var(--is-flank));
+    scroll-padding-inline-start: calc(var(--is-round-w) + var(--is-gap));
   }
   /* La rampe de fondu bascule au bord DROIT : c'est là que la bande déborde (sliver de 11px avant
      la bordure mesuré à 360, x=343..353). Même loi, autre axe. */
@@ -287,19 +341,35 @@
     background: linear-gradient(90deg, rgba(20, 15, 10, 0) 0%, var(--atelier-wood-bottom) 78%);
   }
   .is-round {
-    align-self: center;
+    /* ÉTIRÉ sur la hauteur des entrées, libellé centré dedans : un cartouche de tête couvre la
+       SECTION de la piste — centré, sa boîte laisse passer les vignettes défilées au-dessus comme
+       au-dessous (#1867). */
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* L'écart de tête est celui de la BANDE (`gap`), sur l'axe X : une marge basse rogne l'étirement
+       et rouvre un filet d'entrée sous le cartouche. */
+    margin-bottom: 0;
     flex: 0 0 auto;
     /* La piste DÉFILE ici sur l'axe X : un cartouche collé par le seul `top` n'est collé sur AUCUN
        axe de défilement et sort du champ dès le premier cran. Il colle donc au bord GAUCHE, comme il
-       colle en tête de colonne au-dessus de 700. Mesuré par `scripts/recette/hud-clickables.mjs`
-       (verdict « le cartouche de Round sort du champ quand la piste est défilée »). */
+       colle en tête de colonne au-dessus de 700 (garde : `scripts/recette/hud-clickables.mjs`). */
     left: 0;
-    padding: 0 8px 0 2px;
+    padding: 0 8px 0 calc(2px + var(--is-head-air));
+    /* En bande, l'axe transverse est le BLOC : le flanc à couvrir est la réserve du pied, et le
+       flanc INLINE est l'axe de défilement — sa marge négative y remonterait le cartouche hors du
+       champ. Même loi, axes échangés (#1867). */
+    margin-inline: 0;
+    margin-block-end: calc(-1 * var(--is-foot));
+    padding-block-end: var(--is-foot);
     border-bottom: none;
     border-right: 1px solid var(--border);
     white-space: nowrap;
   }
-  .is-cell { flex: 0 0 auto; }
+  /* La réserve du badge en débord est PORTÉE PAR LA CELLULE : le cartouche étiré couvre alors toute
+     la section de la piste, badges compris. */
+  .is-cell { flex: 0 0 auto; margin-top: var(--is-badge-air); }
 }
 @media (max-width: 560px) {
   /* Empilement HAUT re-mesuré à 360px, bande de groupe REPLIÉE : groupe (6..30), frise (34..86),

@@ -118,7 +118,16 @@ autre ni ne sort du champ, en exploration puis en combat, à 1707/1100/900/700/5
 `--widths`, `--url`) : chaque portrait du groupe et chaque case du pont reçoit SON clic, la piste du
 groupe (`.pd-track`) tient sur UNE ligne, le fil d'événements ne mord pas sur la frise d'initiative,
 la piste `.is-tiles` défile au lieu de déborder, la frise en bande va jusqu'au bord droit (réserve
-≤ 8px), son cartouche de Round et l'acteur AU TRAIT restent dans le champ à tout défilement,
+≤ 8px), son cartouche de Round et l'acteur AU TRAIT restent dans le champ à tout défilement, la
+TÊTE de la frise reste couverte par le cartouche à neuf positions de défilement (ni vignette ni
+mobilier en débord entre le bord du champ et lui, ni sur ses flancs, ni PEINT sur lui — rangs
+d'empilement comparés), toute entrée qui COMMENCE dans la zone utile de la colonne y FINIT, le PAS
+d'entrée est constant (la mise en évidence de l'unité au trait est un `transform`, elle ne change
+aucune boîte), la vignette AU TRAIT réserve son RELIEF (sa boîte peinte — liseré mis à l'échelle du
+`transform` — ne recouvre aucun contrôle, n'est rognée par aucun bord du champ et ne passe sous le
+cartouche que par son halo ; son chevron se voit), et la frise se juge dans ses TROIS états (pause
+d'initiative, badges de score montés ; tour engagé ; acteur au trait EN BAS de l'ordre, piste défilée
+à fond),
 l'ouvreur d'écran d'un rail dissous garde un ancrage hors flux, et la boîte pleine ligne du bandeau
 d'objectif n'avale rien hors de sa tête. Exit ≠ 0 avec la liste des défauts.
 Le TIROIR DU JOURNAL se juge **ouvert** : la sonde le déplie par clic réel sur sa poignée
@@ -129,8 +138,10 @@ sans carte ni poignée, tiroir qui ne s'ouvre pas, console sans case) se DIT « 
 La caméra n'a plus de plaque sur l'écran de jeu (`src/ui/camera-sans-plaque.test.ts`) : `.vc-btn`
 n'est plus sondée. ANGLE MORT DÉCLARÉ : l'ouvreur de dossier de navire n'est monté qu'en combat
 NAVAL — le scénario `enc-mutants` sondé par défaut ne le porte pas.
-Le DÉTECTEUR (`defauts()`) est PUR et testé à fixtures par `scripts/recette/hud-clickables.test.mjs`
-(gate `test:recette`), un cas rouge et un cas vert par verdict. Règle de partage unité ⁄ sonde :
+Le DÉTECTEUR est fait de DEUX fonctions pures exportées par `scripts/recette/hud-clickables.mjs` —
+`defauts` pour la mesure entière, `defautsFrise` pour les seuls verdicts de frise (les passes qui ne
+montent pas le pont l'appellent directement) — testées à fixtures par `scripts/recette/hud-clickables.test.mjs` (gate
+`test:recette`), un cas rouge et un cas vert par verdict. Règle de partage unité ⁄ sonde :
 `docs/charte-ui.md` § « Où se garde un contrat CSS ».
 
 ### CLI — `scripts/recette/console-pont-formes.mjs`

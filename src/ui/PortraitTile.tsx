@@ -21,7 +21,7 @@ import type { Combatant } from '../engine/types';
  *  - la TUILE ne rend jamais le nom (API fermée) : elle le porte en `title`/`aria-label` (a11y) ;
  *    un appelant qui veut le nom VISIBLE le compose à l'EXTÉRIEUR, dans son propre markup ;
  *  - cadre = couleur d'identité/équipe (`ring`), fond d'équipe (`team`), KO grisé ✕,
- *    unité ACTIVE agrandie + liseré or + caret ▼, `selected` = tuile-radio des pickers.
+ *    unité ACTIVE grossie à l'œil + liseré or + caret ▼, `selected` = tuile-radio des pickers.
  * Pur à props (testable en SSR), aucune lecture du store — voir CharFrame pour le wrapper connecté.
  */
 export type CharVariant = 'full' | 'vital' | 'identity';
@@ -37,7 +37,8 @@ export interface PortraitTileProps {
   ring: string;
   variant?: CharVariant;
   size?: CharSize;
-  /** Unité active (HUD) : portrait agrandi ~×1.28 + liseré or + caret ▼. */
+  /** Unité active (HUD) : portrait grossi à l'ŒIL (`transform`, portrait-tile.css — la boîte de mise
+   *  en page ne bouge pas) + liseré or + caret ▼. */
   active?: boolean;
   /** Tuile-radio d'un picker : accentuée comme choix courant. */
   selected?: boolean;
@@ -67,19 +68,18 @@ export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, s
   const endMark = es ? END_STATE_VISUAL[es] : null;
   const showGauge = variant !== 'identity' && !c.inert;
   const showPv = showGauge && c.kind === 'hero' && px >= CHAR_SIZE_PX.md;
-  // R6 : l'unité active est plus grosse que les autres pour la mettre en évidence.
-  const s = active ? Math.round(px * 1.28) : px;
   const Boite = decoratif ? 'span' : 'button';
   return (
-    <div className="ptile-wrap">
+    <div className="ptile-wrap" style={{ '--ptile-px': `${px}px` } as CSSProperties}>
+      {/* Le chevron est porté par la GRAPPE : dans la tuile, le `transform` de l'unité au trait le
+          grossirait et le remonterait avec elle (portrait-tile.css). */}
+      {active && <i className="ptile-caret">▼</i>}
       <Boite
         {...(decoratif ? { 'aria-hidden': true } : { type: 'button' as const, onClick, title: title ?? c.label, 'aria-label': title ?? c.label })}
         className={`ptile ${active ? 'active' : ''} ${selected ? 'sel' : ''} ${hovered ? 'hov' : ''} ${endMark ? `ko ${endMark.className}` : ''} ${team ? `team-${team}` : ''}`}
-        style={{ '--ptile-px': `${s}px` } as CSSProperties}
       >
-        {active && <i className="ptile-caret">▼</i>}
         <span className="ptile-face">
-          <RigPortrait combatant={c} size={s} ring={ring} />
+          <RigPortrait combatant={c} size={px} ring={ring} />
           {endMark && (
             <span className={`end-mark ${endMark.className}`} title={endMark.label} aria-label={endMark.label}>
               <Icon id={endMark.icon} size="sm" />
