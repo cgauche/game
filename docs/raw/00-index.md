@@ -15,7 +15,7 @@ UNE entrée plus un dossier.
 
 <!-- ATLAS-COEURS:DEBUT -->
 - [`4e/`](4e/00-index.md) — livre(s) de cœur : LDB
-- `5e/` — dossier à créer — livre(s) de cœur : CRB
+- [`5e/`](5e/00-index.md) — livre(s) de cœur : CRB
 <!-- ATLAS-COEURS:FIN -->
 
 ## ⚠ Fichiers au-dessus du seuil d'outillage (512 Ko)

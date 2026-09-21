@@ -5,7 +5,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { Buffer } from 'node:buffer'
 import { resolve, join } from 'node:path'
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import {
@@ -20,8 +20,8 @@ import {
   analyzeDiffDuCommit,
   extractMessageSources,
   evaluateAmendInvisible,
-  manifestTickets,
-  evaluateManifestClosure,
+  ticketsDuRegistre,
+  evaluateRegistresPorteurs,
   extractTargetDir,
   validateJugeFile,
   validateJugeVisionFile,
@@ -1393,67 +1393,167 @@ test('evaluateAmendInvisible : --amend sans -m/-F, diff staged ne touche pas src
   assert.equal(evaluateAmendInvisible({ command: 'git commit --amend', stagedTouchesSrc: false }), null)
 })
 
-// ── manifest RAW (prévention #434/#487) ────────────────────────────────────────────────────────────
-const manifestWith = (...tickets) =>
+// ── registres PORTEURS de ticket (prévention #434/#487, généralisée #1825) ────────────────────────
+// Les chemins de registre sont INVENTÉS ici : recopier un chemin réel ferait de ce banc un second
+// porteur de la liste, alors que la liste est de la DONNÉE (`registres-porteurs.json`, dont le banc
+// de forme plus bas mesure qu'elle désigne des fichiers existants).
+const REGISTRES_DE_FIXTURE = [
+  { chemin: 'fixture/premier-registre.json', apres: 'npm run regenere-la-fixture' },
+  { chemin: 'fixture/second-registre.json' },
+]
+const registreAvec = (...tickets) =>
   JSON.stringify(tickets.map((n) => ({ id: `dom#t${n}`, ticket: `#${n}` })), null, 2)
+/** Le chemin de la LISTE elle-même : elle se lit par la MÊME couture que les registres qu'elle
+ *  désigne — dans le contenu que le commit EMPORTE, pas sur le disque du script. */
+const CHEMIN_DE_LA_LISTE = 'scripts/hooks/registres-porteurs.json'
+/** Lit la fixture : la LISTE d'abord, puis `contenus[chemin]`, sinon `null` (aucun contenu emporté).
+ *  `liste` accepte un TEXTE brut (pour jouer une liste cassée) ou `null` (liste absente du commit). */
+const lecteurDe = (contenus, liste = REGISTRES_DE_FIXTURE) => (chemin) => {
+  if (chemin === CHEMIN_DE_LA_LISTE) return typeof liste === 'string' || liste === null ? liste : JSON.stringify(liste, null, 2)
+  return contenus[chemin] ?? null
+}
 
-test('manifestTickets : extrait les #N (ticket et bloque), dédupliqués', () => {
+test('ticketsDuRegistre : extrait les #N (ticket et bloque), dédupliqués', () => {
   const content = JSON.stringify([
     { id: 'a', ticket: '#508' },
     { id: 'b', ticket: '#508' },
     { id: 'c', bloque: 'attend #490 avant câblage' },
   ])
-  assert.deepEqual([...manifestTickets(content)].sort((a, b) => a - b), [490, 508])
+  assert.deepEqual([...ticketsDuRegistre(content)].sort((a, b) => a - b), [490, 508])
 })
 
-test('manifestTickets : null/vide → ensemble vide', () => {
-  assert.equal(manifestTickets(null).size, 0)
-  assert.equal(manifestTickets('').size, 0)
+test('ticketsDuRegistre : null/vide → ensemble vide', () => {
+  assert.equal(ticketsDuRegistre(null).size, 0)
+  assert.equal(ticketsDuRegistre('').size, 0)
 })
 
-test('evaluateManifestClosure : fermeture avec entrée manifest présente → bloqué', () => {
-  const d = evaluateManifestClosure({
+test('evaluateRegistresPorteurs : fermeture avec entrée encore présente → bloqué, et le refus NOMME le fichier', () => {
+  const d = evaluateRegistresPorteurs({
     command: 'git commit -m "corrige #508"',
-    readManifestEmporte: () => manifestWith(508),
+    lireRegistreEmporte: lecteurDe({ 'fixture/premier-registre.json': registreAvec(508) }),
   })
   assert.ok(d)
   assert.match(d.reason, /#508/)
-  assert.match(d.reason, /raw\.manifest\.json/)
-  assert.match(d.reason, /raw:implemente/)
+  assert.match(d.reason, /fixture\/premier-registre\.json/)
+  assert.match(d.reason, /npm run regenere-la-fixture/)
 })
 
-test('evaluateManifestClosure : entrée retirée dans le même commit (manifest stagé sans #N) → passe', () => {
-  const d = evaluateManifestClosure({
+test('evaluateRegistresPorteurs : TOUT registre de la liste mord, pas seulement le premier', () => {
+  const d = evaluateRegistresPorteurs({
     command: 'git commit -m "corrige #508"',
-    readManifestEmporte: () => manifestWith(490), // #508 retiré
+    lireRegistreEmporte: lecteurDe({ 'fixture/second-registre.json': registreAvec(508) }),
+  })
+  assert.ok(d)
+  assert.match(d.reason, /fixture\/second-registre\.json/)
+  // Aucune commande de régénération déclarée pour celui-ci : le refus n'en invente pas.
+  assert.doesNotMatch(d.reason, /npm run/)
+})
+
+test('evaluateRegistresPorteurs : marque retirée dans le MÊME commit (contenu emporté sans #N) → passe', () => {
+  const d = evaluateRegistresPorteurs({
+    command: 'git commit -m "corrige #508"',
+    lireRegistreEmporte: lecteurDe({ 'fixture/premier-registre.json': registreAvec(490) }), // #508 retiré
   })
   assert.equal(d, null)
 })
 
-test('evaluateManifestClosure : commit sans fermeture → intact (silence)', () => {
-  const d = evaluateManifestClosure({
+// Un registre ABSENT du lot se lit quand même : `commit.contenu` rend alors le contenu de HEAD
+// (forme `pathspec`) ou celui de l'index. Le garde ne se tait donc pas parce qu'un registre n'est
+// pas dans le lot — c'est exactement ce qui laisserait fermer un ticket que HEAD porte encore.
+test('evaluateRegistresPorteurs : registre hors du lot — le contenu lu (HEAD) mord comme avant', () => {
+  const d = evaluateRegistresPorteurs({
+    command: 'git commit -m "corrige #508" -- src/ailleurs.ts',
+    lireRegistreEmporte: lecteurDe({ 'fixture/premier-registre.json': registreAvec(508) }),
+  })
+  assert.ok(d)
+  assert.match(d.reason, /fixture\/premier-registre\.json/)
+})
+
+test('evaluateRegistresPorteurs : commit sans fermeture → intact (silence)', () => {
+  const d = evaluateRegistresPorteurs({
     command: 'git commit -m "wip sur #508"',
-    readManifestEmporte: () => manifestWith(508),
+    lireRegistreEmporte: lecteurDe({ 'fixture/premier-registre.json': registreAvec(508) }),
   })
   assert.equal(d, null)
 })
 
-test('evaluateManifestClosure : #N absent du manifest → intact (silence)', () => {
-  const d = evaluateManifestClosure({
+test('evaluateRegistresPorteurs : #N porté par aucun registre → intact (silence)', () => {
+  const d = evaluateRegistresPorteurs({
     command: 'git commit -m "corrige #999"',
-    readManifestEmporte: () => manifestWith(508),
+    lireRegistreEmporte: lecteurDe({ 'fixture/premier-registre.json': registreAvec(508) }),
   })
   assert.equal(d, null)
 })
 
-test('evaluateManifestClosure : multi-fermeture — seuls les tickets encore présents listés', () => {
-  const d = evaluateManifestClosure({
+test('evaluateRegistresPorteurs : multi-fermeture — seuls les tickets encore portés listés', () => {
+  const d = evaluateRegistresPorteurs({
     command: 'git commit -m "corrige #508, ferme #999"',
-    readManifestEmporte: () => manifestWith(508),
+    lireRegistreEmporte: lecteurDe({ 'fixture/premier-registre.json': registreAvec(508) }),
   })
   assert.ok(d)
   assert.match(d.reason, /#508/)
   assert.doesNotMatch(d.reason, /#999/)
+})
+
+// LA LISTE SE LIT DANS LE COMMIT, AU MOMENT DE L'ÉVALUATION. Lue à l'import et sans garde, une
+// liste absente ou cassée faisait LEVER le module — le garde ENTIER muet, `exit 1`, stdout vide ;
+// lue sous la racine du script, un commit de worktree était jugé avec la liste d'un autre arbre.
+test('evaluateRegistresPorteurs : liste ABSENTE du commit → la FERMETURE refuse en nommant la cause', () => {
+  const d = evaluateRegistresPorteurs({
+    command: 'git commit -m "corrige #508"',
+    lireRegistreEmporte: lecteurDe({ 'fixture/premier-registre.json': registreAvec(508) }, null),
+  })
+  assert.ok(d, 'une liste absente ne doit pas laisser fermer en silence')
+  assert.match(d.reason, /#508/)
+  assert.match(d.reason, new RegExp(CHEMIN_DE_LA_LISTE.replace(/[./]/g, '\\$&')))
+  assert.match(d.reason, /absente du contenu emporté/)
+})
+
+test('evaluateRegistresPorteurs : liste au JSON CASSÉ → refus de fermeture, jamais une levée', () => {
+  const d = evaluateRegistresPorteurs({
+    command: 'git commit -m "corrige #508"',
+    lireRegistreEmporte: lecteurDe({}, '[ { "chemin": '),
+  })
+  assert.ok(d)
+  assert.match(d.reason, /JSON illisible/)
+  // Une liste qui n'est pas un tableau est la même classe de panne, et se dit pareil.
+  assert.match(
+    evaluateRegistresPorteurs({ command: 'git commit -m "corrige #508"', lireRegistreEmporte: lecteurDe({}, '{}') }).reason,
+    /n’est pas un tableau/,
+  )
+  // Et un commit qui ne FERME rien reste intact : la liste ne le concerne pas.
+  assert.equal(
+    evaluateRegistresPorteurs({ command: 'git commit -m "wip sur #508"', lireRegistreEmporte: lecteurDe({}, null) }),
+    null,
+  )
+})
+
+test('evaluateRegistresPorteurs : la liste NEUVE du commit jugé fait foi — pas celle d’un autre arbre', () => {
+  // Le commit AJOUTE un registre porteur que la liste d'à côté ne connaît pas : c'est la sienne qui
+  // juge. Lue hors du commit, cette entrée n'existerait pas et la fermeture passerait.
+  const d = evaluateRegistresPorteurs({
+    command: 'git commit -m "corrige #508"',
+    lireRegistreEmporte: lecteurDe(
+      { 'fixture/registre-tout-neuf.json': registreAvec(508) },
+      [...REGISTRES_DE_FIXTURE, { chemin: 'fixture/registre-tout-neuf.json' }],
+    ),
+  })
+  assert.ok(d)
+  assert.match(d.reason, /fixture\/registre-tout-neuf\.json/)
+})
+
+// FORME de la liste elle-même : un chemin qui ne désigne rien rendrait la garde muette sur ce
+// registre, en silence. CE QUE CE BANC NE PROUVE PAS, et que rien hors réseau ne peut prouver :
+// qu'un `#N` porté par un registre désigne une issue OUVERTE — un numéro inventé passe la garde.
+test('#1825 : chaque chemin de `registres-porteurs.json` désigne un fichier qui EXISTE', () => {
+  const liste = JSON.parse(readFileSync(join(repoRoot(), 'scripts', 'hooks', 'registres-porteurs.json'), 'utf8'))
+  assert.ok(Array.isArray(liste) && liste.length, 'la liste des registres porteurs est vide')
+  const fautes = liste
+    .filter((r) => !r || typeof r.chemin !== 'string' || !r.chemin || !existsSync(join(repoRoot(), r.chemin)))
+    .map((r) => JSON.stringify(r))
+  assert.deepEqual(fautes, [], `registre porteur introuvable :\n${fautes.join('\n')}`)
+  const enTrop = liste.flatMap((r) => Object.keys(r).filter((k) => !['chemin', 'apres'].includes(k)))
+  assert.deepEqual(enTrop, [], 'jeu de clés fermé : `chemin` (obligatoire), `apres` (facultatif)')
 })
 
 // ── extractTargetDir (répertoire cible du commit, fix #587) ───────────────────────────────────────

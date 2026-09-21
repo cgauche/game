@@ -1,0 +1,4 @@
+[
+  { "chemin": "src/data/raw.manifest.json", "apres": "npm run raw:implemente" },
+  { "chemin": "scripts/raw/domaines.json" }
+]

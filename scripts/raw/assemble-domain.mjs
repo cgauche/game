@@ -34,6 +34,57 @@ export const cheminDeFiche = (coeur, domain, rawDir = RAWDIR) => join(dossierDuC
  *  fonction, la FICHE faisant foi sur le titre. PUR. */
 export const enTeteDeFiche = (titre) => `# Atlas RAW — ${titre}`
 
+/**
+ * Les topics qu'un rendu de workflow ne PROUVE pas fideles — PUR. Deux valeurs, une seule
+ * conclusion : `faithful:false` (la verification a tenu son refus jusqu'apres la passe de
+ * correction) et `faithful:null` (aucun verdict : l'agent de verification n'a rien rendu, et le
+ * workflow laisse alors le topic sans preuve). Publier l'un comme l'autre, c'est publier EN SILENCE
+ * du texte que personne n'a confronte a la source.
+ * @param {Array<{ topicId?: string, faithful?: boolean|null, issues?: string[] }>} topics
+ */
+export function topicsInfideles(topics = []) {
+  return topics
+    .filter((t) => t && t.faithful !== true)
+    .map((t) => ({
+      topicId: t.topicId ?? '(sans id)',
+      verdict: t.faithful === false ? 'fidelite REFUSEE' : 'JAMAIS verifie',
+      issues: Array.isArray(t.issues) ? t.issues : [],
+    }))
+}
+
+/** LEVE en NOMMANT chaque topic et ses `issues` — la sortie est de corriger le RENDU (rejouer la
+ *  verification ou la correction de fidelite sur ces topics), jamais un drapeau de contournement. */
+function refuserLInfidele(topics, domain) {
+  const fautifs = topicsInfideles(topics)
+  if (!fautifs.length) return
+  const detail = fautifs
+    .map((f) => `- ${f.topicId} : ${f.verdict}${f.issues.length ? ` — ${f.issues.join(' ; ')}` : ''}`)
+    .join('\n')
+  throw new Error(
+    `assemble-domain: le domaine « ${domain} » porte ${fautifs.length} topic(s) dont la fidelite n'est `
+    + `pas prouvee — une fiche ne publie que du texte confronte a la source :\n${detail}\n`
+    + 'Corriger le RENDU (relancer la verification/correction de fidelite sur ces topics), puis rejouer l assemblage.',
+  )
+}
+
+/**
+ * Les domaines qu'un run a SAUTÉS (`sautes`), avec la raison de chacun — PUR.
+ * @param {{ sautes?: Array<{ domain?: string, raison?: string }> }} racine
+ */
+export const domainesSautes = (racine = {}) =>
+  (Array.isArray(racine.sautes) ? racine.sautes : []).filter((s) => s && typeof s.domain === 'string' && s.domain)
+
+/** LÈVE en NOMMANT le domaine sauté et sa raison : la sortie est de REJOUER ce domaine, jamais
+ *  d'assembler une fiche que le run n'a pas produite. */
+function refuserLeSaute(domain, racine, source) {
+  const saute = domainesSautes(racine).find((s) => s.domain === domain)
+  if (!saute) return
+  throw new Error(
+    `assemble-domain: le rendu ${source} déclare le domaine « ${domain} » SAUTÉ — ${saute.raison ?? '(raison non dite)'}. `
+    + "Aucune fiche ne s'écrit d'un domaine que le run n'a pas traité : rejouer ce domaine, puis rejouer l'assemblage.",
+  )
+}
+
 const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/\s+/g, '-')
 
 // Placeholder du champ Implemente : build-implemente le remplira a partir du code (jamais ecrit a la
@@ -46,11 +97,16 @@ function withPlaceholderField(md) {
   return `${stripped}\n\n${IMPLEMENTE_PLACEHOLDER}`
 }
 
-export function assemble(data, { racine = {}, source = '<entrée>', titleArg } = {}) {
+/** `rawDir` est la MEME couture que celle de `cheminDeFiche` : elle dit DANS QUEL Atlas la fiche
+ *  s ecrit. Un banc qui joue l assemblage la pointe sur un arbre jetable — sans elle, il n aurait
+ *  d autre filet que le refus qu il mesure, et une regression du refus salirait `docs/raw/`. */
+export function assemble(data, { racine = {}, source = '<entrée>', titleArg, rawDir = RAWDIR } = {}) {
   const coeur = coeurDuRendu(data, racine, source)
   const domain = data.domain
+  refuserLeSaute(domain, racine, source)
   const title = data.title || titleArg || (domain.charAt(0).toUpperCase() + domain.slice(1))
   const topics = data.topics || []
+  refuserLInfidele(topics, domain)
   const toc = topics.map((t) => `- [${t.title}](#${slug(t.title)})`).join('\n')
   const body = topics.map((t) => withPlaceholderField(t.markdown.trim())).join('\n\n---\n\n')
 
@@ -90,8 +146,8 @@ ${autre}
 
 *Couverture du survey* : ${counts}.
 `
-  const path = cheminDeFiche(coeur, domain)
-  mkdirSync(dossierDuCoeur(coeur), { recursive: true })
+  const path = cheminDeFiche(coeur, domain, rawDir)
+  mkdirSync(dossierDuCoeur(coeur, rawDir), { recursive: true })
   writeFileSync(path, out, 'utf8')
   return { domain, topics: topics.length, coeur, path }
 }
@@ -101,6 +157,15 @@ function main() {
   if (!jsonPath) { console.error('usage: node scripts/raw/assemble-domain.mjs <output.json> [Titre]'); process.exit(1) }
   const parsed = JSON.parse(readFileSync(jsonPath, 'utf8'))
   const racine = parsed.result || parsed
+  // Un domaine SAUTÉ n'est pas dans `domains` : sans ce refus, l'assemblage d'un lot qui en porte un
+  // écrirait les autres fiches et se tairait sur celle qui manque.
+  const sautes = domainesSautes(racine)
+  if (sautes.length)
+    throw new Error(
+      `assemble-domain: le rendu ${jsonPath} déclare ${sautes.length} domaine(s) SAUTÉ(s) :\n`
+      + `${sautes.map((s) => `- ${s.domain} : ${s.raison ?? '(raison non dite)'}`).join('\n')}\n`
+      + "Rejouer ce(s) domaine(s) avant d'assembler — une fiche absente ne doit pas pouvoir se lire « pas encore faite ».",
+    )
   const list = racine.domains && Array.isArray(racine.domains) ? racine.domains : [racine]
   for (const r of list.map((d) => assemble(d, { racine, source: jsonPath, titleArg })))
     console.log(`wrote ${r.path.replace(/\\/g, '/')} — ${r.topics} topics (cœur ${r.coeur})`)

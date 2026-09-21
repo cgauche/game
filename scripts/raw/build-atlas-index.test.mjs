@@ -30,6 +30,13 @@ const DOMAINES = {
   ],
   [COEUR_B]: [{ cle: 'domaine-trois', titre: 'Troisieme Domaine de Fixture' }],
 }
+/** Un cœur dont la carte est ENTIÈRE avant sa première fiche : une aire extraite, une à extraire. */
+const DOMAINES_A_EXTRAIRE = {
+  [COEUR_A]: [
+    { cle: 'domaine-un', titre: 'Premier Domaine de Fixture' },
+    { cle: 'domaine-cadre', titre: 'Domaine Cadre de Fixture', ticket: '#4242' },
+  ],
+}
 /** Registre de fixture : deux cœurs inventés, un supplément SANS cœur, un livre non extrait. */
 const REGISTRE = [
   { abbr: 'XAA', dir: 'Livre Alpha', coeur: COEUR_A },
@@ -96,6 +103,18 @@ test('le bloc des DOMAINES lie chaque CLÉ à sa fiche, et porte son titre en af
     '| [`domaine-un`](domaine-un.md) | Premier Domaine de Fixture |',
     '| [`domaine-deux`](domaine-deux.md) | Second Domaine de Fixture |',
   ])
+})
+
+test('le bloc des DOMAINES : une aire à EXTRAIRE se rend SANS lien et DIT son ticket', () => {
+  const lignes = lignesDesDomaines(DOMAINES_A_EXTRAIRE[COEUR_A])
+  assert.deepEqual(lignes, [
+    '| Domaine | Titre |',
+    '|---|---|',
+    '| [`domaine-un`](domaine-un.md) | Premier Domaine de Fixture |',
+    '| `domaine-cadre` | Domaine Cadre de Fixture — aire cadrée, fiche à extraire (#4242) |',
+  ])
+  // Un lien vers une fiche absente serait MORT : la clé à extraire n'en porte AUCUN.
+  assert.equal(/\(domaine-cadre\.md\)/.test(lignes.join('\n')), false)
 })
 
 test('blocsDeLAtlas — le routeur racine, puis l’index de CHAQUE cœur à dossier ; rien d’écrit à la main', () => {

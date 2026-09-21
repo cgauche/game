@@ -1,6 +1,6 @@
 export const meta = {
   name: 'atlas-raw-fanout',
-  description: "Atlas RAW AUTONOME. Le PERIMETRE (coeur de regles + livres, avec leur langue) ENTRE par `args`, projete de src/data/books.json par `node scripts/raw/workflow-args.mjs <coeur>` : le script ne nomme aucun livre. Par domaine : Cadrage (auto-decouverte des chapitres) -> Cartographie -> Taxonomie -> Survey de tous les livres du perimetre -> Synthese (tables verbatim) -> Boucle d'audit completude+dedup (loop-until-dry) -> Verif fidelite -> correction fidelite. Le champ Implemente des fiches est DERIVE du code par build-implemente (#487) — le workflow ne pose qu'un placeholder. Le LOT de domaines a traiter et la CARTE des domaines du coeur entrent par le meme `args` (--domaines a,b) : le script ne nomme aucun domaine. Zero config par domaine.",
+  description: "Atlas RAW AUTONOME. Le PERIMETRE (coeur de regles + livres, avec leur langue) ENTRE par `args`, projete de src/data/books.json par `node scripts/raw/workflow-args.mjs <coeur>` : le script ne nomme aucun livre. Par domaine : Cadrage (auto-decouverte des chapitres) -> Cartographie -> Taxonomie -> Survey de tous les livres du perimetre -> Synthese (tables verbatim) -> Boucle d'audit completude+dedup (loop-until-dry) -> Verif fidelite -> correction fidelite. Le champ Implemente des fiches est DERIVE du code par build-implemente (#487) — le workflow ne pose qu'un placeholder. Le LOT de domaines a traiter et la CARTE des domaines du coeur entrent par le meme `args` (--domaines a,b) : le script ne nomme aucun domaine. Un domaine SAUTE sort dans `sautes`, avec sa raison, jamais en silence. Mode de REPRISE (`args.reprise` = le rendu d UN domaine, --reprise <rendu.json>) : ne rejoue que Verif -> correction de fidelite -> re-verif sur les topics non prouves fideles, et rend le rendu complete. Zero config par domaine.",
   phases: [
     { title: 'Cadrage', detail: 'auto-decouverte des chapitres du domaine (index)', model: 'sonnet' },
     { title: 'Cartographie', detail: 'inventaire exhaustif a couvrir', model: 'sonnet' },
@@ -20,7 +20,7 @@ const MAXLOOPS = 3
 // (#1825). Chaque defaut de forme LEVE en le NOMMANT : un perimetre devine ferait survoler des
 // livres entiers, et un lot devine relacherait des agents sur des domaines que personne n'a demandes.
 if (typeof args === 'undefined' || args === null || typeof args !== 'object' || Array.isArray(args)) {
-  throw new Error('atlas-domain: `args` absent ou non-objet — le lanceur doit passer le perimetre rendu par `node scripts/raw/workflow-args.mjs <coeur> <drapeau> --domaines a,b` : { coeur, domaines: [{ cle, titre }], lot: [cle], livres: [{ ab, dir, coeur, language }] }')
+  throw new Error('atlas-domain: `args` absent ou non-objet — le lanceur doit passer le perimetre rendu par `node scripts/raw/workflow-args.mjs <coeur> <drapeau> --domaines a,b` : { coeur, domaines: [{ cle, titre }], lot: [cle], livres: [{ ab, dir, coeur, language }], reprise? }')
 }
 const COEUR = args.coeur
 if (typeof COEUR !== 'string' || !COEUR) {
@@ -64,12 +64,36 @@ if (inconnus.length) {
 }
 const CARTE_DOMAINES = DOMAINES.map((d) => '- ' + d.cle + ' : ' + d.titre).join('\n')
 
+// ---- REPRISE, recue du meme `args` ----
+// Re-verifier un rendu DEJA produit sans rejouer le run : un run de plusieurs dizaines d agents ne
+// se jette pas parce qu un agent de verification est reste muet. Le rendu d UN domaine entre, le
+// meme rendu COMPLETE sort.
+const REPRISE = args.reprise === undefined || args.reprise === null ? null : args.reprise
+if (REPRISE !== null) {
+  if (typeof REPRISE !== 'object' || Array.isArray(REPRISE)) {
+    throw new Error('atlas-domain: `args.reprise` non-objet — la reprise attend le rendu d UN domaine, de la forme que ce workflow rend')
+  }
+  if (typeof REPRISE.domain !== 'string' || !REPRISE.domain) {
+    throw new Error('atlas-domain: `args.reprise.domain` absent ou non textuel — le domaine repris ne se devine pas')
+  }
+  if (!Array.isArray(REPRISE.topics) || !REPRISE.topics.length) {
+    throw new Error('atlas-domain: `args.reprise.topics` absent ou vide — une reprise sans topic n a rien a re-verifier')
+  }
+  if (LOT.length !== 1 || LOT[0] !== REPRISE.domain) {
+    throw new Error('atlas-domain: une reprise ne joue QUE le domaine de son rendu (« ' + REPRISE.domain + ' ») — lot recu : ' + LOT.join(', '))
+  }
+}
+
 const dirOf = (ab) => (BOOKS.find((b) => b.ab === ab) || {}).dir
 const bookMap = BOOKS.map((b) => '- ' + b.ab + ' = ' + b.dir + ' (langue : ' + b.language + ')').join('\n')
 const LANGUES = [...new Set(BOOKS.map((b) => b.language))].join(', ')
 // #1816 — fiche `user-doctrine-edition-5e-coeur-remplace-ldb-raw-sauf-errata`.
 const LANGUE_FICHE = 'LANGUE DE LA FICHE : la SYNTHESE que tu rediges est en FRANCAIS parfaitement accentue.'
-const LANGUE_CITATION = 'LANGUE DES CITATIONS : tout ce qui vient du livre — citation, intitule de regle, cellule de table, terme et ABREVIATION de jeu — reste VERBATIM dans la langue de CE livre (' + LANGUES + ' selon le livre, cf. le mapping), jamais traduit ni francise. Une table se transcrit dans sa langue d origine.'
+// Deux clauses, parce que deux gestes : REPERER du texte (inventorier, juger) et le TRANSCRIRE
+// (rediger, augmenter). Une phase qui n ecrit aucune table ne recoit pas la consigne de
+// transcription — elle y serait sans objet.
+const LANGUE_TERMES = 'LANGUE DES CITATIONS : tout ce qui vient du livre — citation, intitule de regle, intitule de section, cellule de table, terme et ABREVIATION de jeu — reste VERBATIM dans la langue de CE livre (' + LANGUES + ' selon le livre, cf. le mapping), jamais traduit ni francise.'
+const LANGUE_TABLES = 'TRANSCRIPTION DES TABLES : une table se transcrit ligne par ligne dans la langue d origine de son livre.'
 const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/\s+/g, '-').slice(0, 48)
 
 const CADRAGE_SCHEMA = { type: 'object', properties: { coverageRefs: { type: 'array', items: { type: 'object', properties: { ab: { type: 'string' }, nn: { type: 'string' } }, required: ['ab', 'nn'] } }, sonnetBooks: { type: 'array', items: { type: 'string' } } }, required: ['coverageRefs'] }
@@ -119,6 +143,7 @@ function cartoPrompt(dom, r) {
     'CARTOGRAPHIE DE SURFACE — domaine "' + dom.title + '". Tu lis UN chapitre et dresses l INVENTAIRE EXHAUSTIF des regles a couvrir.',
     'Chapitre : ' + r.ab + ' ' + r.nn + ' (Glob "' + dir + '/' + r.nn + ' - *.md" puis Read en ENTIER).',
     'Liste CHAQUE regle / table / sous-systeme distinct du domaine present dans ce chapitre (granulaire : 1 table = 1 item kind:"table"). Pour chaque : { item, kind, ref ("' + r.ab + ' ' + r.nn + ' l.X-Y"), gist }. N invente pas. Renvoie { items }.',
+    LANGUE_TERMES,
   ].join('\n')
 }
 
@@ -160,7 +185,8 @@ function synthPrompt(dom, t, hits, covers) {
     '',
     'REGLES : ZERO invention (chaque affirmation/case de table soutenue par un passage LU). RESTE DANS LE PERIMETRE du domaine : une regle qui appartient a un AUTRE domaine se met en **Voir aussi**, on ne la re-traite pas ici. TRANSCRIS REELLEMENT les tables ligne par ligne — il est INTERDIT d ecrire « a transcrire »/TODO/un placeholder a la place d une table. N utilise que les livres du perimetre ci-dessus. Refs/code entre backticks.',
     LANGUE_FICHE,
-    LANGUE_CITATION,
+    LANGUE_TERMES,
+    LANGUE_TABLES,
     'Renvoie { topicId:"' + t.id + '", title:"' + t.t + '", markdown, refs:[...], codeHint }.',
   ].join('\n')
 }
@@ -178,6 +204,8 @@ function auditPrompt(dom, entries, inventory, autre) {
     'Mapping ABBR -> dossier :',
     bookMap,
     '',
+    LANGUE_TERMES,
+    LANGUE_TABLES,
     'TROUS : kind="survole" (item present mais incomplet — table aux bornes, valeur manquante : topicId+what+ref+fix) ; kind="rate" (item/hit ABSENT : newTopicTitle si nouveau topic, sinon topicId d accueil) ; kind="doublon" (meme contenu transcrit dans 2 topics : topicId a DEGRAISSER + fix). Sois exhaustif sur les TABLES. dry=true seulement si AUCUN trou ni doublon. Renvoie { dry, gaps }.',
   ].join('\n')
 }
@@ -191,7 +219,8 @@ function augmentPrompt(dom, existingMd, title, topicId, gaps) {
     '',
     'Produis l entree COMPLETE et autosuffisante (structure ci-dessous), tables VERBATIM ligne par ligne. ZERO invention.',
     LANGUE_FICHE,
-    LANGUE_CITATION,
+    LANGUE_TERMES,
+    LANGUE_TABLES,
     '',
     STRUCT.replace('## <titre>', '## ' + title),
     '',
@@ -229,19 +258,110 @@ async function applyGaps(dom, entries, gaps) {
   updates.forEach((u, i) => {
     if (!u) return
     const info = items[i]
-    const id = u.topicId || (info.isNew ? slug(info.title) : info.topicId)
+    // L id est celui qu on a DEMANDE, jamais celui que l agent renvoie : un agent qui rebaptise son
+    // topic creerait une entree que rien ne relit, en laissant l originale figee a cote.
+    const id = info.isNew ? slug(info.title) : info.topicId
     map.set(id, { topicId: id, title: u.title, markdown: u.markdown, refs: u.refs || [], codeHint: u.codeHint || '' })
   })
   return [...map.values()]
 }
 
+/** Les verdicts de fidelite d un jeu d entrees, KEYES PAR L ENTREE JUGEE (`e.topicId`) et jamais
+ *  par la reponse de l agent : un `topicId` different dans la reponse keyerait un fantome, que ni
+ *  la correction ni l assemblage ne relierait au topic reel. */
+async function verdictsDeFidelite(dom, entries, etiquette) {
+  const rendus = await parallel(entries.map((e) => () =>
+    agent(verifyPrompt(dom, e), { label: dom.domain + ':' + etiquette + ':' + e.topicId, phase: 'Verif', model: 'sonnet', schema: VERIFY_SCHEMA })
+      .then((v) => ({ e, v }))))
+  const parId = {}
+  rendus.forEach((x) => { if (x && x.v) parId[x.e.topicId] = { faithful: x.v.faithful, issues: x.v.issues || [] } })
+  return parId
+}
+
+/**
+ * Verif -> correction de fidelite -> re-verif des SEULS topics touches. `issuesById` ENTRE avec les
+ * verdicts deja acquis (une reprise ne rejoue pas ce qui est prouve) et SORT complete ; `aJuger` est
+ * le sous-ensemble a soumettre a la verification. Rend les entrees a jour.
+ */
+async function passeDeFidelite(dom, entries, issuesById, aJuger) {
+  phase('Verif')
+  Object.assign(issuesById, await verdictsDeFidelite(dom, aJuger, 'verif'))
+  const fidByTopic = {}
+  for (const tid of Object.keys(issuesById)) {
+    const v = issuesById[tid]
+    if (v && !v.faithful && v.issues.length) fidByTopic[tid] = v.issues
+  }
+  const fidGaps = Object.keys(fidByTopic).flatMap((tid) => fidByTopic[tid].map((iss) => ({ kind: 'survole', topicId: tid, what: iss })))
+  if (!fidGaps.length) return entries
+  // corrige la fidelite + re-verifie SEULEMENT les topics touches (economie de quota : plus de 2e passe globale)
+  log(dom.title + ' — correction fidelite : ' + fidGaps.length + ' points / ' + Object.keys(fidByTopic).length + ' topics')
+  const avant = new Set(entries.map((e) => e.topicId))
+  const corrigees = await applyGaps(dom, entries, fidGaps)
+  const touches = new Set(Object.keys(fidByTopic))
+  // Un topic NEUF sorti de la correction n a AUCUN verdict : il entre dans la re-verif avec les autres.
+  const aRelire = corrigees.filter((e) => touches.has(e.topicId) || !avant.has(e.topicId))
+  Object.assign(issuesById, await verdictsDeFidelite(dom, aRelire, 'reverif'))
+  return corrigees
+}
+
+/** Le rendu d un domaine : les topics AVEC leur verdict de fidelite, plus ce que le run a mesure. */
+function renduDeDomaine(dom, entries, issuesById, mesures) {
+  return {
+    domain: dom.domain,
+    title: dom.title,
+    topics: entries.map((e) => ({ topicId: e.topicId, title: e.title, markdown: e.markdown, refs: e.refs, codeHint: e.codeHint || '', faithful: issuesById[e.topicId] ? issuesById[e.topicId].faithful : null, issues: issuesById[e.topicId] ? issuesById[e.topicId].issues : [] })),
+    autre: mesures.autre,
+    inventoryCount: mesures.inventoryCount,
+    auditLoops: mesures.auditLoops,
+    lastAuditDry: mesures.lastAuditDry,
+    surveyCounts: mesures.surveyCounts,
+  }
+}
+
+/**
+ * REPRISE : re-verifier un rendu deja produit, sans rejouer une seule phase de decouverte. Seuls les
+ * topics que le rendu ne PROUVE pas fideles (`faithful !== true`) repassent ; les autres gardent
+ * leur verdict. Sort le MEME rendu, complete.
+ */
+async function reprendreDomaine(rendu) {
+  const declare = DOMAINES.find((d) => d.cle === rendu.domain)
+  const dom = { domain: rendu.domain, title: declare.titre }
+  const entries = rendu.topics.map((t) => ({ topicId: t.topicId, title: t.title, markdown: t.markdown, refs: t.refs || [], codeHint: t.codeHint || '' }))
+  const issuesById = {}
+  // TOUT verdict deja rendu entre tel quel — pas seulement les fideles. Une re-verification MUETTE
+  // (agent mort) ne doit pas EFFACER ce qu un juge avait etabli : un `faithful:false` avec ses
+  // `issues` vaut infiniment mieux qu un `faithful:null` sans issue, que plus rien ne dit comment
+  // corriger. Seuls les topics NON prouves fideles repassent.
+  for (const t of rendu.topics) if (typeof t.faithful === 'boolean') issuesById[t.topicId] = { faithful: t.faithful, issues: t.issues || [] }
+  const mesures = {
+    autre: rendu.autre || [],
+    inventoryCount: rendu.inventoryCount === undefined ? 0 : rendu.inventoryCount,
+    auditLoops: rendu.auditLoops === undefined ? 0 : rendu.auditLoops,
+    lastAuditDry: rendu.lastAuditDry === undefined ? false : rendu.lastAuditDry,
+    surveyCounts: rendu.surveyCounts || [],
+  }
+  const aJuger = entries.filter((e) => !(issuesById[e.topicId] && issuesById[e.topicId].faithful === true))
+  if (!aJuger.length) {
+    log(dom.title + ' — reprise : les ' + entries.length + ' topics sont deja prouves fideles, aucun agent lance')
+    return renduDeDomaine(dom, entries, issuesById, mesures)
+  }
+  log(dom.title + ' — reprise : ' + aJuger.length + ' topic(s) sans preuve de fidelite sur ' + entries.length)
+  const finales = await passeDeFidelite(dom, entries, issuesById, aJuger)
+  return renduDeDomaine(dom, finales, issuesById, mesures)
+}
+
+/**
+ * Un domaine : ses topics verifies, ou la RAISON de son saut. Un domaine saute ne disparait jamais
+ * en silence — le rendu le PORTE, et l assemblage le refuse.
+ */
 async function runDomain(domain) {
-  const dom = { domain, title: DOMAINES.find((d) => d.cle === domain).titre }
+  const declare = DOMAINES.find((d) => d.cle === domain)
+  const dom = { domain, title: declare.titre }
 
   phase('Cadrage')
   const cad = await agent(cadragePrompt(dom), { label: dom.domain + ':cadrage', phase: 'Cadrage', model: 'sonnet', schema: CADRAGE_SCHEMA })
   const COVERAGE = (cad && cad.coverageRefs) || []
-  if (!COVERAGE.length) { log(dom.title + ' — cadrage VIDE (aucun chapitre dedie rendu), domaine saute'); return null }
+  if (!COVERAGE.length) return { saute: 'cadrage VIDE : aucun chapitre dedie rendu par l agent de cadrage' }
   const SONNET = new Set([REFERENCE.ab, ...((cad && cad.sonnetBooks) || [])])
   log(dom.title + ' — cadrage : ' + COVERAGE.map((r) => r.ab + r.nn).join(',') + ' ; denses=' + [...SONNET].join(','))
 
@@ -249,12 +369,13 @@ async function runDomain(domain) {
   const invRes = await parallel(COVERAGE.map((r) => () => agent(cartoPrompt(dom, r), { label: dom.domain + ':carto:' + r.ab + '-' + r.nn, phase: 'Cartographie', model: 'sonnet', schema: INVENTORY_SCHEMA })))
   const inventory = []
   invRes.forEach((x, i) => { if (x && x.items) for (const it of x.items) inventory.push({ item: it.item, kind: it.kind, ref: it.ref, gist: it.gist, src: COVERAGE[i].ab + ' ' + COVERAGE[i].nn }) })
+  if (!inventory.length) return { saute: 'inventaire VIDE : la cartographie n a rapporte aucune regle sur ' + COVERAGE.map((r) => r.ab + ' ' + r.nn).join(', ') }
   log(dom.title + ' — inventaire : ' + inventory.length + ' elements')
 
   phase('Taxonomie')
   const taxo = await agent(taxoPrompt(dom, inventory), { label: dom.domain + ':taxo', phase: 'Taxonomie', model: 'opus', schema: TAXO_SCHEMA })
   const TOPICS = (taxo && taxo.topics) || []
-  if (!TOPICS.length) { log(dom.title + ' — taxonomie VIDE, domaine saute'); return null }
+  if (!TOPICS.length) return { saute: 'taxonomie VIDE : aucun topic decoupe sur ' + inventory.length + ' elements inventories' }
   log(dom.title + ' — ' + TOPICS.length + ' topics')
 
   phase('Survey')
@@ -281,42 +402,36 @@ async function runDomain(domain) {
     loops++
   }
 
-  phase('Verif')
-  const verified = await parallel(entries.map((e) => () => agent(verifyPrompt(dom, e), { label: dom.domain + ':verif:' + e.topicId, phase: 'Verif', model: 'sonnet', schema: VERIFY_SCHEMA }).then((v) => ({ e, v }))))
   const issuesById = {}
-  verified.forEach((x) => { if (x && x.v) issuesById[x.v.topicId || x.e.topicId] = { faithful: x.v.faithful, issues: x.v.issues || [] } })
-  // corrige la fidelite + re-verifie SEULEMENT les topics corriges (economie de quota : plus de 2e passe globale)
-  const fidByTopic = {}
-  verified.forEach((x) => { if (x && x.v && !x.v.faithful && (x.v.issues || []).length) fidByTopic[x.v.topicId || x.e.topicId] = x.v.issues })
-  const fidGaps = Object.keys(fidByTopic).flatMap((tid) => fidByTopic[tid].map((iss) => ({ kind: 'survole', topicId: tid, what: iss })))
-  if (fidGaps.length) {
-    log(dom.title + ' — correction fidelite : ' + fidGaps.length + ' points / ' + Object.keys(fidByTopic).length + ' topics')
-    entries = await applyGaps(dom, entries, fidGaps)
-    const fixed = new Set(Object.keys(fidByTopic))
-    const reVer = await parallel(entries.filter((e) => fixed.has(e.topicId)).map((e) => () => agent(verifyPrompt(dom, e), { label: dom.domain + ':reverif:' + e.topicId, phase: 'Verif', model: 'sonnet', schema: VERIFY_SCHEMA })))
-    reVer.forEach((v) => { if (v) issuesById[v.topicId] = { faithful: v.faithful, issues: v.issues || [] } })
-  }
+  entries = await passeDeFidelite(dom, entries, issuesById, entries)
 
   return {
-    domain: dom.domain,
-    title: dom.title,
-    topics: entries.map((e) => ({ topicId: e.topicId, title: e.title, markdown: e.markdown, refs: e.refs, codeHint: e.codeHint || '', faithful: issuesById[e.topicId] ? issuesById[e.topicId].faithful : null, issues: issuesById[e.topicId] ? issuesById[e.topicId].issues : [] })),
-    autre,
-    inventoryCount: inventory.length,
-    auditLoops: loops,
-    lastAuditDry: lastDry,
-    surveyCounts: BOOKS.map((b, i) => ({ book: b.ab, hits: surveyRes[i] && surveyRes[i].hits ? surveyRes[i].hits.length : 0 })),
+    rendu: renduDeDomaine(dom, entries, issuesById, {
+      autre,
+      inventoryCount: inventory.length,
+      auditLoops: loops,
+      lastAuditDry: lastDry,
+      surveyCounts: BOOKS.map((b, i) => ({ book: b.ab, hits: surveyRes[i] && surveyRes[i].hits ? surveyRes[i].hits.length : 0 })),
+    }),
   }
 }
 
 // ============ EXECUTION (lot) ============
-log('Fan-out Atlas RAW — lot : ' + LOT.join(', '))
+log('Fan-out Atlas RAW — ' + (REPRISE ? 'REPRISE du rendu de : ' : 'lot : ') + LOT.join(', '))
 const domains = []
+const sautes = []
 for (const d of LOT) {
   log('==== Domaine : ' + d + ' ====')
-  const res = await runDomain(d)
-  if (res) domains.push(res)
+  const res = REPRISE ? { rendu: await reprendreDomaine(REPRISE) } : await runDomain(d)
+  if (res.rendu) domains.push(res.rendu)
+  else {
+    // Un domaine SAUTE sort DANS le rendu : un `log` ne se relit pas, et `assemble` ecrirait le
+    // reste du lot sans que rien ne nomme le manquant.
+    sautes.push({ domain: d, raison: res.saute })
+    log('==== Domaine SAUTE : ' + d + ' — ' + res.saute + ' ====')
+  }
 }
-log('Lot termine (coeur ' + COEUR + ', ' + BOOKS.length + ' livre(s), supplements ' + (args.supplements === undefined ? 'non dit' : String(args.supplements)) + ') : ' + domains.map((d) => d.domain + '(' + d.topics.length + 't' + (d.lastAuditDry ? ',sec' : '') + ')').join(' · '))
-// Le rendu PORTE son coeur : `assemble-domain.mjs` refuse d ecrire une fiche sans lui.
-return { coeur: COEUR, supplements: args.supplements === undefined ? null : args.supplements, domains }
+log('Lot termine (coeur ' + COEUR + ', ' + BOOKS.length + ' livre(s), supplements ' + (args.supplements === undefined ? 'non dit' : String(args.supplements)) + ') : ' + domains.map((d) => d.domain + '(' + d.topics.length + 't' + (d.lastAuditDry ? ',sec' : '') + ')').join(' · ') + (sautes.length ? ' ; SAUTES : ' + sautes.map((s) => s.domain).join(', ') : ''))
+// Le rendu PORTE son coeur : `assemble-domain.mjs` refuse d ecrire une fiche sans lui — et refuse
+// tout domaine que `sautes` nomme.
+return { coeur: COEUR, supplements: args.supplements === undefined ? null : args.supplements, domains, sautes }

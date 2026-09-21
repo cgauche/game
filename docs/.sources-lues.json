@@ -15285,7 +15285,8 @@
     ],
     "dossiers": [
       "docs/raw",
-      "docs/raw/4e"
+      "docs/raw/4e",
+      "docs/raw/5e"
     ]
   },
   "scripts/raw/build-catalogs.mjs": {
@@ -15449,7 +15450,8 @@
       "Source/Warhammer v4 - Middenheim la cite du Loup Blanc",
       "Source/Warhammer v4 - Nuits agitees & dures journees",
       "docs/raw",
-      "docs/raw/4e"
+      "docs/raw/4e",
+      "docs/raw/5e"
     ]
   },
   "scripts/raw/build-implemente.mjs": {
@@ -19559,6 +19561,7 @@
       "Source/Warhammer v4 - Nuits agitees & dures journees",
       "docs/raw",
       "docs/raw/4e",
+      "docs/raw/5e",
       "src",
       "src/audio",
       "src/audio/defs",
@@ -20062,6 +20065,7 @@
       "docs/raw/4e/talents.md",
       "docs/raw/4e/tests.md",
       "docs/raw/4e/traumatisme.md",
+      "docs/raw/5e/00-index.md",
       "docs/raw/sources.md",
       "scripts/docs/lib/empreinte-sources.mjs",
       "scripts/guards/lib/lister.mjs",
@@ -20091,7 +20095,8 @@
       "Source/Warhammer v4 - Middenheim la cite du Loup Blanc",
       "Source/Warhammer v4 - Nuits agitees & dures journees",
       "docs/raw",
-      "docs/raw/4e"
+      "docs/raw/4e",
+      "docs/raw/5e"
     ]
   },
   "scripts/raw/reanchor.mjs": {
@@ -20336,7 +20341,8 @@
       "Source/Warhammer v4 - Livre de base version corrigee",
       "Source/Warhammer v4 - Nuits agitees & dures journees",
       "docs/raw",
-      "docs/raw/4e"
+      "docs/raw/4e",
+      "docs/raw/5e"
     ]
   },
   "scripts/raw/reconcile.mjs": {
@@ -20660,6 +20666,7 @@
       "docs/raw/4e/talents.md",
       "docs/raw/4e/tests.md",
       "docs/raw/4e/traumatisme.md",
+      "docs/raw/5e/00-index.md",
       "docs/raw/sources.md",
       "scripts/docs/lib/empreinte-sources.mjs",
       "scripts/guards/lib/importGraph.mjs",
@@ -24488,6 +24495,7 @@
       "Source/Warhammer v4 - Nuits agitees & dures journees",
       "docs/raw",
       "docs/raw/4e",
+      "docs/raw/5e",
       "src",
       "src/audio",
       "src/audio/defs",

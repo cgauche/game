@@ -223,7 +223,8 @@ Trois points d'enregistrement, dans cet ordre :
    qui n'a pas d'entrée propre (la plus spécifique l'emporte), et `raw:reconcile` CRÉDITE les
    chapitres de cœur dont toutes les fiches qui les décrivent sont ainsi déclarées : aucune entrée
    `B2 <ABRÉV> <ch>` à écrire au stock. L'entrée vit aussi longtemps que son ticket
-   (`scripts/hooks/solde-ticket-guard.mjs`, `evaluateManifestClosure`) : à la fermeture elle part,
+   (`scripts/hooks/solde-ticket-guard.mjs`, `evaluateRegistresPorteurs`, qui boucle sur les registres
+   PORTEURS de ticket listés par `scripts/hooks/registres-porteurs.json`) : à la fermeture elle part,
    et tout topic encore non implémenté redevient orphelin, à ticketer nommément.
 2. **`docs/raw/sources.md`** — la page des sources est TRANSVERSE : elle vit à la racine de l'Atlas et
    porte les livres de TOUS les cœurs, quel que soit le cœur du livre ajouté (ou son absence de cœur).
@@ -283,13 +284,27 @@ nouveau livre vient enrichir les fiches de domaine existantes (`combat.md`, `mag
 créer une nouvelle si le livre introduit un domaine inédit (le combat naval de MDG a justifié
 `docs/raw/4e/combat-naval.md`). Un domaine inédit est UNE entrée de `scripts/raw/domaines.json`
 (`{ cle, titre }` sous son cœur) : la fiche porte le nom de la `cle`, le bloc `Domaines` de
-`docs/raw/<coeur>/00-index.md` en est GÉNÉRÉ, et `scripts/raw/domaines.test.mjs` refuse un domaine
-sans fiche comme une fiche sans domaine.
+`docs/raw/<coeur>/00-index.md` en est GÉNÉRÉ, et `scripts/raw/domaines.test.mjs` refuse une fiche
+sans domaine comme un domaine ni extrait ni dû.
+
+Une aire **cadrée dont la fiche reste à extraire** se déclare avec les autres : son entrée porte en
+plus `"ticket": "#N"` — la dette d'EXTRACTION, due par le chantier qui extrait (même graphie que le
+`ticket` de `src/data/raw.manifest.json`, qui porte, lui, la dette d'IMPLÉMENTATION d'une fiche déjà
+écrite). L'index du cœur la rend alors SANS lien, avec son ticket : lier une fiche absente serait un
+lien mort. La marque se RETIRE dans le commit qui publie la fiche — une entrée qui a sa fiche ET un
+`ticket` est refusée, comme une entrée sans fiche ni `ticket`. Tant qu'une aire porte `#N`, le
+pre-commit REFUSE de fermer `#N` (même garde que pour le manifeste : `registres-porteurs.json`).
+
+Un `titre` d'aire ne porte **aucun `#`** : le hook de fermeture scanne les registres porteurs à la
+recherche de `#N`, et y lirait un ticket que ce registre ne doit rien (`scripts/raw/domaines.test.mjs`).
 
 **Un CŒUR de règles de plus** (un livre qui ouvre un corps de règles, pas un supplément) se pose dans
 cet ordre, et l'ordre compte : l'entrée `coeur` de `src/data/books.json`, puis **ensemble** le
 dossier `docs/raw/<coeur>/` avec son `00-index.md` manuscrit ET l'entrée `"<coeur>": [ … ]` de
-`scripts/raw/domaines.json`. Cet index manuscrit DOIT porter la paire de marqueurs
+`scripts/raw/domaines.json` — la carte du cœur naît **ENTIÈRE**, toutes ses aires à `ticket`, AVANT
+sa première extraction : c'est elle qui borne chaque domaine contre les autres (`cadragePrompt`), et
+un premier run contre une carte à une entrée sur-absorberait ses voisines. Cet index manuscrit DOIT
+porter la paire de marqueurs
 `<!-- ATLAS-DOMAINES:DEBUT -->` / `<!-- ATLAS-DOMAINES:FIN -->` — c'est entre eux que
 `node scripts/raw/build-atlas-index.mjs` écrit la table des domaines, et il REFUSE (une ligne, exit 1)
 un index sans la paire, comme un cœur déclaré sans un seul domaine : un cœur sans domaine serait un
@@ -304,8 +319,8 @@ La chaîne, dans l'ordre — **périmètre → workflow → assemble → apply �
    compatibilité d'un supplément avec ce cœur — c'est l'appelant qui déclare, et le résultat porte
    son choix. `--domaines` l'est aussi : il porte le LOT que CE run traite (une ou plusieurs `cle` du
    cœur, séparées par des virgules) ; sans lui, ou sur une clé inconnue, la commande LÈVE en nommant
-   les domaines déclarés pour ce cœur. `domaines` est la CARTE complète du cœur, que le workflow
-   emploie pour tenir chaque domaine dans son périmètre.
+   les domaines déclarés pour ce cœur. `domaines` est la CARTE complète du cœur (`cle`, `titre`),
+   que le workflow emploie pour tenir chaque domaine dans son périmètre au cadrage.
 2. **Workflow multi-agents** — `scripts/raw/atlas-domain.workflow.js` (opt-in « ultracode », cf. skill
    `orchestrer-des-agents`) : un agent par domaine touché fait `extract → verify` adversarial — la
    vérification reconfronte chaque réf/citation à la source, indispensable (des fabrications de
@@ -316,10 +331,36 @@ La chaîne, dans l'ordre — **périmètre → workflow → assemble → apply �
    rien à y éditer quand un livre s'ajoute. Langue des prompts : la **synthèse** d'une fiche est en
    français, les **citations, termes et abréviations de jeu** restent verbatim dans la langue du livre
    cité (champ `language`), jamais traduits. Il ne nomme **aucun domaine** non plus : la carte et le
-   lot lui arrivent par le même `args`. Il rend `{ coeur, supplements, domains: […] }`.
+   lot lui arrivent par le même `args`.
+   Il rend `{ coeur, supplements, domains: […], sautes: [{ domain, raison }] }` —
+   `sautes` nomme les domaines qu'il n'a PAS traités (cadrage, inventaire ou taxonomie vides), et
+   `assemble-domain` refuse un rendu qui en porte : une fiche absente ne doit pas pouvoir se lire
+   « pas encore faite ».
 3. **Assemblage de la fiche** — `node scripts/raw/assemble-domain.mjs <output.json> [Titre]` écrit
    `docs/raw/<coeur>/<domaine>.md` depuis ce JSON : le CHEMIN dit le cœur, et c'est la seule chose
-   qui le dise. Il LÈVE si le rendu ne porte pas son `coeur`, et NOMME ce cœur dans l'en-tête.
+   qui le dise. Il LÈVE si le rendu ne porte pas son `coeur`, et NOMME ce cœur dans l'en-tête. Il
+   REFUSE aussi un rendu dont un topic n'est pas PROUVÉ fidèle — `faithful:false` (refus tenu après
+   la passe de correction) comme `faithful:null` (aucun verdict rendu) —, en nommant chaque topic et
+   ses `issues`. Son refus ressemble à :
+
+   ```
+   assemble-domain: le domaine « tests » porte 2 topic(s) dont la fidelite n'est pas prouvee — une
+   fiche ne publie que du texte confronte a la source :
+   - degres-de-reussite : fidelite REFUSEE — la table est reduite a ses bornes
+   - fortune-et-destin : JAMAIS verifie
+   Corriger le RENDU (relancer la verification/correction de fidelite sur ces topics), puis rejouer
+   l assemblage.
+   ```
+
+   La sortie est de corriger le RENDU, jamais un drapeau de contournement : on REJOUE la
+   vérification sur ces topics-là, **sans rejouer le run**, par le mode de REPRISE du workflow —
+   `node scripts/raw/workflow-args.mjs <coeur> --coeur-seul --domaines <domaine> --reprise
+   <rendu.json>` rend les `args` d'un run qui ne joue que Vérif → correction de fidélité →
+   re-vérif sur les topics non prouvés fidèles, et rend le MÊME rendu complété. `<rendu.json>` est
+   le JSON du run précédent, **tel qu'il sort** : le rendu du lot (`{ coeur, …, domains: […] }`), ce
+   que le lanceur en a emballé (`{ result: { … } }`), ou un domaine nu — rien à redécouper à la
+   main ; c'est `--domaines` qui nomme le domaine à reprendre. Un topic déjà jugé `faithful:false`
+   garde ses `issues` si la re-vérification reste muette : un verdict ne s'efface pas.
 4. **Apply déterministe** (enrichir des fiches DÉJÀ écrites, au lieu d'en assembler une) —
    `node scripts/raw/apply-livre.mjs <ABRÉV> <workflow-output.json>` insère topics + sommaire dans
    les fiches de domaine, **idempotent** via un sentinel `<!-- <ABRÉV>-INTEGRATION -->` (sigle en

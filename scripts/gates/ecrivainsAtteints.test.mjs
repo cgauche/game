@@ -309,9 +309,11 @@ const ATTENDU = {
     'scripts/raw/stockNominatif.test.mjs',
     // +3 le 2026-09-20 (#1825 lot E2) : les deux bancs neufs posent leurs fixtures (catalogue à bloc
     // préservé, fiche d'un autre cœur) sous `mkdtempSync` de os.tmpdir(), `rmSync` en finally ;
-    // l'assembleur est ACQUIS parce que son banc l'importe — ses `writeFileSync` vivent dans
-    // `assemble()`, que seul `main()` appelle, sous sa porte `isMain` (assemble-domain.mjs), et le
-    // banc n'appelle que ses fonctions PURES (`coeurDuRendu`, `dossierDuCoeur`, `cheminDeFiche`).
+    // l'assembleur est ACQUIS parce que son banc l'importe. Mesure du 2026-09-21 (#1825 F1-0-C) :
+    // `assemble()` ÉCRIT, et le banc l'APPELLE — il lui passe son `rawDir` (même couture que
+    // `cheminDeFiche`), pointé sur un `mkdtempSync` de os.tmpdir() : l'arbre n'est jamais écrit, et
+    // le banc le mesure aux deux bouts (refus → dossier jetable VIDE ; publication → fiche DANS le
+    // jetable, absente de `docs/raw/`).
     'scripts/raw/apply-livre.test.mjs',
     'scripts/raw/assemble-domain.mjs',
     'scripts/raw/assemble-domain.test.mjs',
@@ -329,6 +331,16 @@ const ATTENDU = {
     // que sous `mkdtempSync` de os.tmpdir(), et jette ses gabarits à la sortie du process — aucune
     // écriture DANS l'arbre : même classe que `marker-pages.test.mjs` ci-dessus.
     'scripts/guards/lib/depotGabarit.mjs',
+    // +1 le 2026-09-21 (#1825 lot F1-0-C) : le banc de la PROJECTION écrit les rendus de fixture que
+    // `lireRendu` relit (mode de reprise du workflow) sous `mkdtempSync` de os.tmpdir(), `rmSync` en
+    // finally ; le module mesuré (`workflow-args.mjs`) ne fait que LIRE.
+    'scripts/raw/workflow-args.test.mjs',
+    // +1 le 2026-09-21 (#1825 lot F1-0-D) : le banc du WORKFLOW joue la reprise de BOUT EN BOUT —
+    // rendu du run → fichier → `lireRendu` → workflow → fichier → `assemble`. Il écrit ses deux
+    // rendus et son Atlas de sortie sous `mkdtempSync` de os.tmpdir(), `rmSync` en finally ;
+    // `assemble` reçoit ce jetable par son `rawDir` (même couture que `cheminDeFiche`), l'arbre
+    // n'est jamais écrit, et le banc mesure la fiche DANS le jetable.
+    'scripts/raw/atlas-domain.workflow.test.mjs',
   ],
   'raw:check-refs': [],
   // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE

@@ -52,10 +52,15 @@ export function lignesDesCoeurs(rawDir = RAWDIR, registre = REGISTRE_LIVRES) {
  * Les lignes du bloc des DOMAINES d'un cœur : une table `clé (liée à sa fiche) | titre`. PURE.
  * La clé est l'id STABLE — c'est elle qui nomme la fiche et qu'un lot de workflow désigne ; le titre
  * est de l'AFFICHAGE. Le nom de fiche n'est pas une donnée de plus : il EST la clé.
+ * Une aire CADRÉE dont la fiche reste à extraire (entrée à `ticket`) se rend SANS lien et DIT sa
+ * dette : lier une fiche absente rendrait un lien MORT. C'est la présence du `ticket` qui décide —
+ * la fonction ne lit pas le disque, et l'accord avec lui est tenu par `domaines.test.mjs`.
  */
 export function lignesDesDomaines(domaines) {
   return ['| Domaine | Titre |', '|---|---|',
-    ...domaines.map((d) => `| [\`${d.cle}\`](${d.cle}.md) | ${d.titre} |`)]
+    ...domaines.map((d) => (d.ticket
+      ? `| \`${d.cle}\` | ${d.titre} — aire cadrée, fiche à extraire (${d.ticket}) |`
+      : `| [\`${d.cle}\`](${d.cle}.md) | ${d.titre} |`))]
 }
 
 /**

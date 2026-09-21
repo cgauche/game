@@ -42,7 +42,7 @@
 //   `evaluateAntiEsquive`         réfutation d'un commit « ref #N » de substance ;
 //   `evaluateJuge`                preuve de juge adversarial (+ JUGE-VISION sur un écran) ;
 //   `evaluateAmendInvisible`      amend dont le message échappe au contrôle ;
-//   `evaluateManifestClosure`     ticket encore porté par le manifest RAW stagé ;
+//   `evaluateRegistresPorteurs`   ticket encore porté par un registre de `registres-porteurs.json` ;
 //   `evaluateFermetureHorsCommit` `gh issue close` & co — la fermeture passe par le commit ;
 //   `evaluateTombale`             (scripts/hooks/solde-tombale.mjs) commentaire de dette citant le
 //                                 ticket fermé ;
@@ -1637,43 +1637,96 @@ export function avecCibleIgnoree(decision, ignore) {
   }
 }
 
-// ── Manifest RAW (prévention #434/#487) ────────────────────────────────────────────────────────────
-// Le manifest éditorial `src/data/raw.manifest.json` porte les dettes/blocages des topics `(non
-// implémenté)` (`ticket: "#N"` / `bloque: "…#N…"`). Fermer #N tout en le laissant dans le manifest
-// laisse un topic marqué « dette : #N » dans les fiches générées, et l'issue fermée à tort — la
-// régénération (`raw:implemente`) et le retrait d'entrée doivent aller dans le MÊME commit. Le contrôle
-// lit la version STAGÉE du manifest (celle qui va être committée), pas le disque de travail.
-const RAW_MANIFEST_PATH = 'src/data/raw.manifest.json'
-const MANIFEST_TICKET_RE = /#(\d+)/g
+// ── Registres PORTEURS de ticket (prévention #434/#487, généralisée #1825) ────────────────────────
+// Certains registres du dépôt portent, entrée par entrée, la DETTE que doit un ticket : le manifeste
+// éditorial porte la dette d'IMPLÉMENTATION d'un topic (`ticket: "#N"` / `bloque: "…#N…"`), le
+// registre des domaines de l'Atlas porte la dette d'EXTRACTION d'une aire. Fermer #N en le laissant
+// dans l'un d'eux laisse une marque « dette : #N » dans ce que ces registres alimentent, et l'issue
+// fermée à tort : la marque se retire dans le MÊME commit que la fermeture.
+//
+// La LISTE de ces registres est de la DONNÉE (`scripts/hooks/registres-porteurs.json`) : ce hook n'en
+// NOMME aucun, il boucle et cherche `#N` dans le contenu EMPORTÉ de chacun. Un registre porteur de
+// plus = une ligne de donnée, zéro ligne ici. Chaque entrée porte son `chemin` et, quand le registre
+// alimente un artefact généré, la commande `apres` qui le régénère.
+// Pourquoi un SCANNER D'OCTETS et pas les lecteurs typés de chaque registre : ce qui se juge est le
+// contenu que le commit EMPORTE (`commit.contenu`, index ou HEAD selon la forme du commit), pas le
+// disque de travail que ces lecteurs lisent — deux sources différentes, deux verdicts différents.
+// La LISTE se lit par CETTE MÊME couture, et AU MOMENT de l'évaluation — jamais à l'import : un
+// hook ne lève jamais (une lecture à l'import rendrait le garde ENTIER muet sur une liste cassée), et
+// la liste jugée est celle du COMMIT, comme les registres qu'elle nomme — pas celle d'un autre arbre.
+// Liste illisible ou absente : seule l'évaluation de FERMETURE refuse, en nommant la cause (on ne
+// peut pas prouver qu'aucun registre ne porte le ticket) ; toutes les autres portes restent intactes.
+const LISTE_DES_PORTEURS = 'scripts/hooks/registres-porteurs.json'
+const TICKET_RE = /#(\d+)/g
 
-/** Tickets `#N` référencés par le CONTENU (stagé) du manifest RAW. `null`/vide → ensemble vide. */
-export function manifestTickets(manifestContent) {
+/** La liste des registres porteurs telle que le commit l'EMPORTE. LÈVE en nommant la cause —
+ *  `evaluateRegistresPorteurs` la rattrape et la transforme en refus de FERMETURE. */
+export function registresPorteursDuCommit(lireRegistreEmporte) {
+  const brut = lireRegistreEmporte(LISTE_DES_PORTEURS)
+  if (typeof brut !== 'string' || !brut.trim()) throw new Error('absente du contenu emporté par le commit')
+  let liste
+  try {
+    liste = JSON.parse(brut)
+  } catch (e) {
+    throw new Error(`JSON illisible — ${String(e.message ?? e)}`, { cause: e })
+  }
+  if (!Array.isArray(liste)) throw new Error('la liste n’est pas un tableau')
+  const fautives = liste.filter((r) => !r || typeof r.chemin !== 'string' || !r.chemin)
+  if (fautives.length) throw new Error(`${fautives.length} entrée(s) sans \`chemin\``)
+  return liste
+}
+
+/** Tickets `#N` référencés par le CONTENU d'un registre porteur. `null`/vide → ensemble vide. */
+export function ticketsDuRegistre(contenu) {
   const nums = new Set()
-  if (!manifestContent) return nums
-  for (const m of manifestContent.matchAll(MANIFEST_TICKET_RE)) nums.add(Number(m[1]))
+  if (!contenu) return nums
+  for (const m of contenu.matchAll(TICKET_RE)) nums.add(Number(m[1]))
   return nums
 }
 
 /**
- * Décision « fermeture d'un ticket encore présent dans le manifest RAW stagé » (PURE, testable).
- * `readManifestEmporte()` renvoie la version de `src/data/raw.manifest.json` que le commit EMPORTE
- * (ou `null`).
- * Une fermeture de #N dont l'entrée manifest n'a PAS été retirée dans le même commit = deny.
+ * Décision « fermeture d'un ticket encore porté par un registre » (PURE, testable).
+ * `lireRegistreEmporte(chemin)` renvoie la version que le commit EMPORTE (ou `null`) — la LISTE des
+ * registres porteurs se lit par cette même couture, ici, jamais à l'import.
+ * Le refus NOMME le fichier qui porte encore `#N` — sans quoi il faudrait deviner lequel.
+ * @param {{ command: string, lireRegistreEmporte?: (chemin: string) => string|null }} entree
  * @returns {{ reason: string } | null}
  */
-export function evaluateManifestClosure({ command, readManifestEmporte = () => null }) {
+export function evaluateRegistresPorteurs({ command, lireRegistreEmporte = () => null }) {
   const issues = extractClosedIssues(command)
   if (issues.length === 0) return null
-  const tickets = manifestTickets(readManifestEmporte())
-  const stuck = issues.filter((n) => tickets.has(n))
-  if (stuck.length === 0) return null
-  const list = stuck.map((n) => `#${n}`).join(', ')
+  let registres
+  try {
+    registres = registresPorteursDuCommit(lireRegistreEmporte)
+  } catch (e) {
+    // On ne peut pas PROUVER qu'aucun registre ne porte ces tickets : la fermeture se refuse, en
+    // nommant la cause. Le reste du garde ne dépend pas de cette liste et reste intact.
+    return {
+      reason:
+        `⚠ Fermeture de ${issues.map((n) => `#${n}`).join(', ')} impossible à juger : la liste des `
+        + `registres PORTEURS de ticket (\`${LISTE_DES_PORTEURS}\`) est inexploitable — ${String(e.message ?? e)}. `
+        + `Sans elle, rien ne prouve qu'aucun registre ne porte encore ce(s) ticket(s) : rétablir la `
+        + `liste dans le commit, puis re-committer.`,
+    }
+  }
+  const retenus = []
+  for (const registre of registres) {
+    const tickets = ticketsDuRegistre(lireRegistreEmporte(registre.chemin))
+    const stuck = issues.filter((n) => tickets.has(n))
+    if (stuck.length) retenus.push({ registre, stuck })
+  }
+  if (!retenus.length) return null
+  const detail = retenus
+    .map(({ registre, stuck }) =>
+      `${stuck.map((n) => `#${n}`).join(', ')} dans ${registre.chemin}`
+      + (registre.apres ? ` (puis \`${registre.apres}\`)` : ''))
+    .join(' ; ')
   return {
     reason:
-      `⚠ Fermeture de ${list} alors que ce(s) ticket(s) figure(nt) encore dans ${RAW_MANIFEST_PATH} ` +
-      `(version stagée) — un topic resterait marqué « dette : #N » dans les fiches générées, l'issue ` +
-      `fermée à tort. Retirer l'entrée manifest de ${list} et relancer \`npm run raw:implemente\` dans ` +
-      `le MÊME commit (régénère le champ Implémente), puis re-committer.`,
+      `⚠ Fermeture de ${[...new Set(retenus.flatMap((r) => r.stuck))].sort((a, b) => a - b).map((n) => `#${n}`).join(', ')} `
+      + `alors que ce(s) ticket(s) figure(nt) encore dans un registre PORTEUR (contenu emporté par le `
+      + `commit) : ${detail}. La marque se retire dans le MÊME commit que la fermeture — retirer `
+      + `l'entrée, rejouer la régénération quand il y en a une, puis re-committer.`,
   }
 }
 
@@ -2337,7 +2390,7 @@ if (isMain) {
     readRefFile: (n) => readRefFile(n, targetDir),
   })
   const amendInvisible = evaluateAmendInvisible({ command, stagedTouchesSrc: touchesSrc })
-  const manifestClosure = evaluateManifestClosure({ command: text, readManifestEmporte: () => commit.contenu(RAW_MANIFEST_PATH) })
+  const registresPorteurs = evaluateRegistresPorteurs({ command: text, lireRegistreEmporte: (chemin) => commit.contenu(chemin) })
   // Corps `--input <chemin>` : résolu là où la commande s'exécute RÉELLEMENT, comme le `-F` du commit.
   const horsCommit = evaluateFermetureHorsCommit(command, {
     lire: (chemin) => readFileSync(resolve(targetDir, chemin), 'utf8'),
@@ -2391,7 +2444,7 @@ if (isMain) {
     })
     : null
   const rendu = rendre(decisionCumulee([
-    decision, porteDuTicket, antiEsquive, juge, amendInvisible, manifestClosure,
+    decision, porteDuTicket, antiEsquive, juge, amendInvisible, registresPorteurs,
     horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null, stocks, budget,
   ]))
   if (!rendu && hunks?.contexte) {

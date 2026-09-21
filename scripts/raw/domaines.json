@@ -22,5 +22,31 @@
     { "cle": "economie", "titre": "Économie : monnaie, marché, fabrication" },
     { "cle": "bestiaire", "titre": "Bestiaire & Profils de créature" },
     { "cle": "activites", "titre": "Activités & Événements (Entre deux aventures)" }
+  ],
+  "5e": [
+    { "cle": "creation", "titre": "Création de Personnage", "ticket": "#1825" },
+    { "cle": "carrieres", "titre": "Classes, Carrières & Statut", "ticket": "#1825" },
+    { "cle": "competences", "titre": "Compétences", "ticket": "#1825" },
+    { "cle": "talents", "titre": "Talents", "ticket": "#1825" },
+    { "cle": "tests", "titre": "Tests & Degrés de Réussite", "ticket": "#1825" },
+    { "cle": "intrigue", "titre": "Larcins & Subterfuges (vol, discrétion, jeu, pièges)", "ticket": "#1825" },
+    { "cle": "social", "titre": "Interactions sociales (statut, influence, beuverie, mensonge)", "ticket": "#1825" },
+    { "cle": "enquete", "titre": "Enquête, Recherche & Pistage", "ticket": "#1825" },
+    { "cle": "deplacement", "titre": "Déplacement & Voyage (hors combat)", "ticket": "#1825" },
+    { "cle": "artisanat", "titre": "Artisanat : fabrication d'objets, de remèdes et de poisons", "ticket": "#1825" },
+    { "cle": "combat", "titre": "Combat", "ticket": "#1825" },
+    { "cle": "traumatisme", "titre": "Traumatisme & Blessures critiques", "ticket": "#1825" },
+    { "cle": "maladies", "titre": "Maladies, Infections & Effets des poisons", "ticket": "#1825" },
+    { "cle": "psychologie", "titre": "Psychologie", "ticket": "#1825" },
+    { "cle": "etats", "titre": "États", "ticket": "#1825" },
+    { "cle": "corruption", "titre": "Corruption & Mutations", "ticket": "#1825" },
+    { "cle": "avancement", "titre": "Avancement (Points d'Expérience)", "ticket": "#1825" },
+    { "cle": "activites", "titre": "Activités & Événements (Entre deux aventures)", "ticket": "#1825" },
+    { "cle": "religion", "titre": "Religion (Prières, Bénédictions, Miracles)", "ticket": "#1825" },
+    { "cle": "magie", "titre": "Magie (règles)", "ticket": "#1825" },
+    { "cle": "economie", "titre": "Économie : monnaie, marché, marchandage & main-d'œuvre", "ticket": "#1825" },
+    { "cle": "equipement", "titre": "Équipement, objets & encombrement", "ticket": "#1825" },
+    { "cle": "bestiaire", "titre": "Bestiaire & Profils de créature", "ticket": "#1825" },
+    { "cle": "conversion", "titre": "Conversion entre éditions (traits, avantage, difficulté, résilience)", "ticket": "#1825" }
   ]
 }

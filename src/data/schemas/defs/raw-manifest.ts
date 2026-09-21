@@ -1,8 +1,9 @@
 /**
  * Schéma de `raw.manifest.json` — manifeste éditorial du champ Implémente de l'Atlas RAW (#487),
  * généré par `scripts/raw/build-implemente.mjs` : par `id`, ticket de dette ou raison de blocage.
- * Un `id` désigne soit un TOPIC de fiche (`domaine#sujet`), soit une FICHE entière (`domaine`), dont
- * l'entrée couvre alors tout topic sans entrée propre. Le `label` (clé d'ENVELOPPE) est le titre
+ * Un `id` désigne soit un TOPIC de fiche (`<coeur>/<fiche>#<slug>`), soit une FICHE entière
+ * (`<coeur>/<fiche>`), dont l'entrée couvre alors tout topic sans entrée propre — l'Atlas est
+ * PARTITIONNÉ par cœur, et l'`id` le porte. Le `label` (clé d'ENVELOPPE) est le titre
  * VERBATIM que l'`id` adresse — accord gardé par `scripts/raw/build-implemente.test.mjs` (`libelleDe`).
  * Vocabulaire app-interne (tooling), pas une donnée RAW — cf. `EXEMPT_DATASETS` (citationCoverage.mjs).
  */
