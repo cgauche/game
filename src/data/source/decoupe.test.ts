@@ -17,7 +17,7 @@ import {
   blocsCouverts, blocsPlats, cellRefFor, empreinteDe, estErreur, estGraphieDeChapitre,
   estNomDExtraction, estNumeroDeChapitre, fichierDuChapitre, findCells, graphieDeChapitre,
   graphieDuFichier, largeurDeChapitre, normText, numeroDuFichier, parseChapitre, parseTable,
-  prefixesDeChapitres, resoudreAdresse, resoudreFragment, sumOf, tablesOf, titreDuFichier,
+  prefixesDeChapitres, resoudreAdresse, resoudreFragment, stripSpans, sumOf, tablesOf, titreDuFichier,
 } from './decoupe.ts';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
@@ -25,6 +25,7 @@ const LIVRES: { id: string; abbr?: string; dir?: string }[] = JSON.parse(
   readFileSync(join(RACINE, 'src/data/books.json'), 'utf8'),
 );
 const LDB = 'livre-de-base';
+const EDO = 'ennemi-dans-l-ombre';
 
 const _cache = new Map<string, ChapitreParse>();
 
@@ -34,6 +35,14 @@ function cheminChapitre(bookId: string, ch: string): string {
   const f = abbr ? chapterFile(abbr, ch) : null;
   if (!f) throw new Error(`chapitre introuvable : ${bookId} ch.${ch}`);
   return join(RACINE, f.path);
+}
+
+/** Chaque chapitre de chaque livre extrait : `{ bookId, graphie }`. */
+function chapitresDuCorpus(): { bookId: string; graphie: string }[] {
+  return LIVRES.filter((b) => b.dir).flatMap((livre) => listerDossier(join(RACINE, livre.dir!))
+    .map((f) => graphieDuFichier(f))
+    .filter((g): g is string => g != null)
+    .map((graphie) => ({ bookId: livre.id, graphie })));
 }
 
 /** Chapitre `NN` d'un livre, lu au disque (CRLF-robuste) et parsé, avec cache. */
@@ -84,7 +93,7 @@ describe('parseChapitre — blocs, folios, sections', () => {
     expect(enLf.sections.length, 'la fixture doit porter plusieurs sections').toBeGreaterThan(5);
     const image = (c: ChapitreParse) => c.sections.map((s) => ({
       slug: s.slug, occ: s.occ, title: s.title, level: s.level, folio: s.folio,
-      blocks: s.blocks.map((b) => ({ md: b.md, folio: b.folio, folios: b.folios, sum: sumOf(b.md) })),
+      blocks: s.blocks.map((b) => ({ md: b.md, line: b.line, folio: b.folio, folios: b.folios, sum: sumOf(b.md) })),
     }));
     expect(image(enCrlf)).toEqual(image(enLf));
   });
@@ -94,6 +103,41 @@ describe('parseChapitre — blocs, folios, sections', () => {
     const sec = sectionOf('21', 'prejuge-cible');
     expect(sec.blocks.length).toBe(2);
     expect(sec.blocks[0].md).toMatch(/comme les « ostlanders », les « elfes »/);
+    // `21 - Psychologie.md:45` : premier morceau du bloc recollé.
+    expect(sec.blocks[0].line).toBe(45);
+  });
+
+  // `01 - Chapitre 1 - On recherche - aventuriers courageux.md:185-186` : le segment s'ouvre sur une
+  // ligne réduite à un marqueur de folio, le texte commence à la suivante.
+  it('line : un segment ouvert par un marqueur de folio seul pointe la ligne du texte', () => {
+    const bloc = chapitreDe(EDO, '01').sections.flatMap((s) => s.blocks)
+      .find((b) => b.md.includes("tranquille. Celle-ci s'exécutera docilement"));
+    expect(bloc?.line).toBe(186);
+  });
+
+  // `line` est la ligne du fichier où commence `md`, sur tout le corpus extrait.
+  it('line : chaque bloc de chaque chapitre extrait pointe la ligne où commence son texte, en ordre croissant', () => {
+    const ecarts: string[] = [];
+    let blocsVus = 0;
+    for (const { bookId, graphie } of chapitresDuCorpus()) {
+      const lignes = readFileSync(cheminChapitre(bookId, graphie), 'utf8').replace(/\r\n|\r/g, '\n').split('\n');
+      const texte = (n: number) => stripSpans(lignes[n - 1] ?? '').trim();
+      let avant = 0;
+      for (const s of chapitreDe(bookId, graphie).sections) {
+        for (const b of s.blocks) {
+          blocsVus++;
+          const ou = `${bookId} ch.${graphie}:${b.line}`;
+          const ouverture = texte(b.line);
+          if (!ouverture || !b.md.split('\n')[0].startsWith(ouverture)) ecarts.push(`${ou} : n'ouvre pas le texte`);
+          const heading = s.level > 0 && b.line - 1 === s.line;
+          if (b.line > 1 && !heading && texte(b.line - 1)) ecarts.push(`${ou} : la ligne précédente porte du texte`);
+          if (b.line <= avant) ecarts.push(`${ou} : non croissant (précédent ${avant})`);
+          avant = b.line;
+        }
+      }
+    }
+    expect(blocsVus, 'le corpus doit porter des blocs').toBeGreaterThan(30000);
+    expect(ecarts.slice(0, 20), `${ecarts.length} écart(s)`).toEqual([]);
   });
 
   // `05 - _gjdgxs.md:438-441` : le bloc précédent finit par `…protéger une autre.*` (ponctuation
@@ -280,18 +324,13 @@ describe('sumOf — empreinte 64 bits', () => {
     const parSum = new Map<string, string>();
     let blocsVus = 0;
     let collisions = 0;
-    for (const livre of LIVRES.filter((b) => b.dir)) {
-      const dir = join(RACINE, livre.dir!);
-      for (const f of listerDossier(dir)) {
-        const graphie = graphieDuFichier(f);
-        if (graphie == null) continue;
-        for (const b of blocsPlats(chapitreDe(livre.id, graphie))) {
-          if (!b.norm) continue;
-          blocsVus++;
-          const vu = parSum.get(sumOf(b.md));
-          if (vu === undefined) parSum.set(sumOf(b.md), b.norm);
-          else if (vu !== b.norm) collisions++;
-        }
+    for (const { bookId, graphie } of chapitresDuCorpus()) {
+      for (const b of blocsPlats(chapitreDe(bookId, graphie))) {
+        if (!b.norm) continue;
+        blocsVus++;
+        const vu = parSum.get(sumOf(b.md));
+        if (vu === undefined) parSum.set(sumOf(b.md), b.norm);
+        else if (vu !== b.norm) collisions++;
       }
     }
     console.log(`empreintes : ${blocsVus} blocs, ${parSum.size} empreintes, ${collisions} collisions`);

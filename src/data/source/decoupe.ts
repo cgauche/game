@@ -22,7 +22,10 @@
 //    dans un JSON ; `occ` (rang 1-based parmi les slugs identiques du chapitre) lève l'ambiguïté des
 //    titres répétés (« Évolution de Carrière » ×31 dans `08 - Statut.md`).
 //  - BLOCS : segments séparés par une ou plusieurs lignes vides ; le heading lui-même n'est pas un
-//    bloc. Les balises `<span …>` sont retirées du texte rendu, leur `data-folio` est collecté.
+//    bloc. Les balises `<span …>` sont retirées du texte rendu, leur `data-folio` est collecté. `line`
+//    est le numéro 1-based, dans le fichier du chapitre, de la ligne où commence `md` : la première
+//    ligne du segment ouvrant dont le texte, spans retirés, est non vide (un segment réduit à un
+//    marqueur de folio n'ouvre aucun bloc ; un bloc recollé garde la ligne de son premier morceau).
 //  - FOLIO COURANT : les marqueurs `data-folio` sont rares et arbitrairement placés dans le flux ; un
 //    état ROULANT sur le chapitre donne à chaque section et à chaque bloc le dernier folio rencontré
 //    à ou avant son ouverture (`folio`), en plus des marqueurs INTERNES au bloc (`folios`).
@@ -36,8 +39,9 @@
 import { normalize as normalizeCitation, sansBr, brEnSaut } from './normalize.ts';
 import { hash32 } from '../hash.ts';
 
-/** Bloc d'affichage : le markdown rendu, le folio courant à son ouverture, ses marqueurs internes. */
-export interface Bloc { md: string; folio: number | null; folios: number[] }
+/** Bloc d'affichage : le markdown rendu, sa ligne de début dans le fichier du chapitre, le folio
+ *  courant à son ouverture, ses marqueurs internes. */
+export interface Bloc { md: string; line: number; folio: number | null; folios: number[] }
 
 /** Section adressable d'un chapitre (`slug` + `occ` = son adresse). */
 export interface Section {
@@ -254,7 +258,7 @@ const BULLET = /^\s*(?:[-*•]|\d+[.)])\s/;
 const RANGE_KEY = /^\d+\s*[-–—]?\s*\d*$/;
 
 /** Retire les balises `<span>` (le contenu textuel est conservé). */
-const stripSpans = (s: string): string => s.replace(SPAN_TAG, '');
+export const stripSpans = (s: string): string => s.replace(SPAN_TAG, '');
 
 /** Folios (`data-folio`) portés par un fragment de texte, dans l'ordre. */
 function foliosIn(s: string): number[] {
@@ -325,20 +329,29 @@ function recollable(prev: string, next: string): boolean {
 /**
  * Découpe un corps de section en blocs d'affichage (spans retirés, folios collectés, recollage des
  * paragraphes coupés par un saut de folio).
+ * @param debut ligne 1-based, dans le fichier du chapitre, de `lignes[0]`
  */
-function toBlocks(lignes: string[], folioIn: number | null): { blocks: Bloc[]; folioOut: number | null } {
-  const raw: string[] = [];
+function toBlocks(
+  lignes: string[], debut: number, folioIn: number | null,
+): { blocks: Bloc[]; folioOut: number | null } {
+  const raw: { text: string; start: number }[] = [];
   let cur: string[] = [];
-  for (const l of lignes) {
-    if (l.trim() === '') { if (cur.length) { raw.push(cur.join('\n')); cur = []; } } else cur.push(l);
-  }
-  if (cur.length) raw.push(cur.join('\n'));
+  let start = debut;
+  lignes.forEach((l, k) => {
+    if (l.trim() === '') {
+      if (cur.length) { raw.push({ text: cur.join('\n'), start }); cur = []; }
+    } else {
+      if (!cur.length) start = debut + k;
+      cur.push(l);
+    }
+  });
+  if (cur.length) raw.push({ text: cur.join('\n'), start });
 
   const out: Bloc[] = [];
   let running = folioIn;
   let carry: number[] = [];
   let carryCut = false;
-  for (const text of raw) {
+  for (const { text, start } of raw) {
     const folios = foliosIn(text);
     const md = stripSpans(text).trim();
     const at = carry.length
@@ -346,6 +359,7 @@ function toBlocks(lignes: string[], folioIn: number | null): { blocks: Bloc[]; f
       : (OPENS_ON_FOLIO.test(text) && folios.length ? folios[0] : running);
     if (folios.length) running = folios[folios.length - 1];
     if (!md) { carry.push(...folios); carryCut = true; continue; }
+    const line = start + text.split('\n').findIndex((l) => stripSpans(l).trim() !== '');
     const cut = carryCut || OPENS_ON_FOLIO.test(text);
     const blockFolios = [...carry, ...folios];
     carry = []; carryCut = false;
@@ -354,7 +368,7 @@ function toBlocks(lignes: string[], folioIn: number | null): { blocks: Bloc[]; f
       prev.md = `${prev.md} ${md}`;
       prev.folios.push(...blockFolios);
     } else {
-      out.push({ md, folio: at ?? null, folios: blockFolios });
+      out.push({ md, line, folio: at ?? null, folios: blockFolios });
     }
   }
   return { blocks: out, folioOut: running };
@@ -374,11 +388,11 @@ export function parseChapitre(texte: string): ChapitreParse {
   const sections: Section[] = [];
   const seen = new Map<string, number>();
   let running: number | null = null;
-  let cur: Omit<Section, 'blocks'> & { lines: string[] } =
-    { slug: '', occ: 1, title: '', level: 0, line: 1, folio: null, lines: [] };
+  let cur: Omit<Section, 'blocks'> & { lines: string[]; debut: number } =
+    { slug: '', occ: 1, title: '', level: 0, line: 1, folio: null, lines: [], debut: 1 };
   const push = () => {
-    const { lines: body, ...rest } = cur;
-    const { blocks, folioOut } = toBlocks(body, cur.folio);
+    const { lines: body, debut, ...rest } = cur;
+    const { blocks, folioOut } = toBlocks(body, debut, cur.folio);
     sections.push({ ...rest, blocks });
     running = folioOut;
   };
@@ -392,7 +406,7 @@ export function parseChapitre(texte: string): ChapitreParse {
     seen.set(slug, occ);
     const head = foliosIn(lignes[i]);
     if (head.length) running = head[head.length - 1];
-    cur = { slug, occ, title, level: m[1].length, line: i + 1, folio: running, lines: [] };
+    cur = { slug, occ, title, level: m[1].length, line: i + 1, folio: running, lines: [], debut: i + 2 };
   }
   push();
   return { sections };
