@@ -200,7 +200,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 11 | `src/data/props.types.ts:577` |
+| `id` | 11 | `src/data/props.types.ts:567` |
 | `type` | **0 — JAMAIS LU** | — |
 | `label` | 1 | `src/ui/compendium/registry.ts:325` |
 | `labelF` | — | *absent du type TS* |
@@ -210,59 +210,59 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `alsoIn` | — | *absent du type TS* |
 | `maison` | — | *absent du type TS* |
 | `icon` | — | *absent du type TS* |
-| `solid` | 2 | `src/data/props.types.ts:617` |
-| `opaque` | 3 | `src/data/props.types.ts:582` |
-| `cover` | 3 | `src/data/props.types.ts:582` |
-| `light` | 3 | `src/data/props.types.ts:591` |
-| `foot` | 2 | `src/data/props.types.ts:372` |
+| `solid` | 2 | `src/data/props.types.ts:607` |
+| `opaque` | 3 | `src/data/props.types.ts:572` |
+| `cover` | 3 | `src/data/props.types.ts:572` |
+| `light` | 3 | `src/data/props.types.ts:581` |
+| `foot` | 2 | `src/data/props.types.ts:362` |
 | `volume` | 18 | `src/data/index.ts:2804` |
-| `seatSlots` | 4 | `src/data/props.types.ts:400` |
+| `seatSlots` | 4 | `src/data/props.types.ts:390` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `capIdentite` | 2 | `src/data/props.types.ts:576` |
-| `primitives` | 6 | `src/data/props.types.ts:449` |
+| `capIdentite` | 2 | `src/data/props.types.ts:566` |
+| `primitives` | 6 | `src/data/props.types.ts:439` |
 
 ### `PropPrimitive` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `kind` | 5 | `src/data/props.types.ts:275` |
-| `center` | 6 | `src/data/props.types.ts:275` |
-| `size` | 3 | `src/data/props.types.ts:275` |
-| `material` | 3 | `src/data/props.types.ts:551` |
-| `emet` | 2 | `src/data/props.types.ts:588` |
-| `radiusM` | 2 | `src/data/props.types.ts:276` |
-| `heightM` | 2 | `src/data/props.types.ts:276` |
-| `sides` | 2 | `src/data/props.types.ts:276` |
-| `slope` | 1 | `src/data/props.types.ts:277` |
+| `kind` | 5 | `src/data/props.types.ts:265` |
+| `center` | 6 | `src/data/props.types.ts:265` |
+| `size` | 3 | `src/data/props.types.ts:265` |
+| `material` | 3 | `src/data/props.types.ts:541` |
+| `emet` | 2 | `src/data/props.types.ts:578` |
+| `radiusM` | 2 | `src/data/props.types.ts:266` |
+| `heightM` | 2 | `src/data/props.types.ts:266` |
+| `sides` | 2 | `src/data/props.types.ts:266` |
+| `slope` | 1 | `src/data/props.types.ts:267` |
 
 ### `PropSeatSlot` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/props.types.ts:601` |
-| `anchor` | 5 | `src/data/props.types.ts:401` |
+| `id` | 5 | `src/data/props.types.ts:591` |
+| `anchor` | 5 | `src/data/props.types.ts:391` |
 | `facing` | 1 | `src/state/seating.ts:157` |
-| `approach` | 2 | `src/data/props.types.ts:528` |
+| `approach` | 2 | `src/data/props.types.ts:518` |
 
 ### `PropPoint3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `xM` | 16 | `src/data/props.types.ts:169` |
-| `yM` | 16 | `src/data/props.types.ts:168` |
-| `hM` | 15 | `src/data/props.types.ts:168` |
+| `xM` | 16 | `src/data/props.types.ts:159` |
+| `yM` | 16 | `src/data/props.types.ts:158` |
+| `hM` | 15 | `src/data/props.types.ts:158` |
 
 ### `PropSize3` (src/data/props.types.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `xM` | 3 | `src/data/props.types.ts:198` |
-| `yM` | 3 | `src/data/props.types.ts:199` |
-| `hM` | 3 | `src/data/props.types.ts:200` |
+| `xM` | 3 | `src/data/props.types.ts:188` |
+| `yM` | 3 | `src/data/props.types.ts:189` |
+| `hM` | 3 | `src/data/props.types.ts:190` |
 
 ### `CritEscalation` (src/data/criticals.ts)
 
@@ -299,4 +299,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: 99c7b51ff81be24602045bed77e5200299ac94d1 (2094 fichiers, 170 dossiers) corps: c657a803ed4105a42d6f41ea3e146132201ea6de -->
+<!-- sources-empreinte: 837ac4d5717e9fdd6570e44ad2e9687ebe26eefb (2095 fichiers, 170 dossiers) corps: 232773ad698b2550e5262f35191c1fc97161449a -->
