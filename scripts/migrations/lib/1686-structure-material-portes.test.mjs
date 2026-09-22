@@ -19,12 +19,12 @@
  * des `.mjs` à préfixe DATÉ — un `.test.mjs` posé à côté des migrations y serait rejoué ou refusé.
  */
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { joue } from './joue.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const MIGRATION = '2026-09-05-1686-structure-material-mort.mjs';
@@ -73,12 +73,6 @@ function depot(fichiers, migration = TEXTE_MIGRATION) {
 
 const efface = (racine) => fs.rmSync(racine, { recursive: true, force: true });
 
-/** La migration jouée dans le dépôt jetable. REND `{ code, sortie }`. */
-function joue(racine) {
-  const r = spawnSync(process.execPath, [path.join(racine, 'scripts/migrations', MIGRATION)], { encoding: 'utf8' });
-  return { code: r.status, sortie: `${r.stdout ?? ''}${r.stderr ?? ''}` };
-}
-
 /** Les fichiers posés sont INTACTS (octet + horodatage), et aucun autre `src/data/*.json` n'existe. */
 function rienTouche(racine, avant) {
   const fautes = [];
@@ -100,7 +94,7 @@ test('(a) ALLER-RETOUR : l’état d’avant projeté → `structureAppearance.j
   const { racine } = depot({ [CIBLE]: TEXTE_AVANT });
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — la purge doit passer : ${sortie.slice(0, 800)}`);
   assert.ok(
     sortie.includes(`retirée de ${CARDINAL} apparence(s)`),
@@ -117,7 +111,7 @@ test('(b) REJEU sur arbre migré : sortie 0, rien d’écrit (octet ET horodatag
   const { racine, avant } = depot({ [CIBLE]: TEXTE_CIBLE });
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — un rejeu doit être un no-op vert : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /déjà migrée/, `le no-op ne se DIT pas : ${sortie.slice(0, 800)}`);
   assert.deepEqual(rienTouche(racine, avant), [], 'le rejeu a écrit');
@@ -131,7 +125,7 @@ test('(c) CARDINAL DÉPLACÉ (une apparence retirée) : le passage PASSE, sans r
   const { racine } = depot({ [CIBLE]: serialise(ampute) });
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — une apparence en moins n’est pas une anomalie : ${sortie.slice(0, 800)}`);
   assert.ok(
     sortie.includes(`clé \`${CLE}\` retirée de ${CARDINAL - 1} apparence(s)`),
@@ -149,7 +143,7 @@ test('(c bis) PÉRIMÈTRE MIXTE (une apparence déjà à la forme CIBLE) : les p
   const { racine } = depot({ [CIBLE]: serialise(partiel) });
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — un périmètre mixte est légitime : ${sortie.slice(0, 800)}`);
   assert.ok(
     sortie.includes(`clé \`${CLE}\` retirée de ${CARDINAL - 1} apparence(s)`),
@@ -163,7 +157,7 @@ test('(d1) RACINE non-TABLEAU (document canoniquement formaté) → sortie 1 NOM
   const { racine, avant } = depot({ [CIBLE]: serialise({ entries: avantDoc() }) });
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — une racine non-tableau doit ARRÊTER la migration : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /racine non-TABLEAU/, `arrêt sans NOMMER la faute : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /structureAppearance\.json/, `arrêt sans NOMMER le document : ${sortie.slice(0, 800)}`);
@@ -174,7 +168,7 @@ test('(d2) FORMATAGE non canonique (indentation 4) → sortie 1 NOMINATIVE, rien
   const { racine, avant } = depot({ [CIBLE]: JSON.stringify(avantDoc(), null, 4) });
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — un formatage non canonique doit ARRÊTER la migration : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /formatage non canonique/, `arrêt sans NOMMER la faute : ${sortie.slice(0, 800)}`);
   assert.deepEqual(rienTouche(racine, avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -194,7 +188,7 @@ test('(e) CLÉ RESTANTE après écriture (mutant : suppression neutralisée) →
   const { racine } = depot({ [CIBLE]: TEXTE_AVANT }, mutant);
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — une clé restante doit être REFUSÉE : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /ÉCHEC POST-ÉCRITURE/, `le refus ne se DIT pas : ${sortie.slice(0, 800)}`);
   assert.match(sortie, new RegExp(`\`${CLE}\` encore présent sur `), `refus sans NOMMER la clé : ${sortie.slice(0, 800)}`);

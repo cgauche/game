@@ -14,12 +14,12 @@
  * des `.mjs` à préfixe DATÉ — un `.test.mjs` posé à côté des migrations y serait rejoué ou refusé.
  */
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { joue } from './joue.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const MIGRATION = '2026-09-05-1686-ardoise-ids-composes.mjs';
@@ -50,7 +50,6 @@ const ANTIDATE = new Date('2000-01-01T00:00:00Z');
 function depot(mute) {
   const racine = fs.mkdtempSync(path.join(os.tmpdir(), 'migr-1686-'));
   fs.mkdirSync(path.join(racine, 'src/data'), { recursive: true });
-  fs.mkdirSync(path.join(racine, 'scripts/migrations'), { recursive: true });
 
   const docs = {};
   for (const rel of [...DATASETS, ...PROJETS]) docs[rel] = JSON.parse(fs.readFileSync(path.join(RACINE, rel), 'utf8'));
@@ -65,17 +64,10 @@ function depot(mute) {
     fs.utimesSync(cible, ANTIDATE, ANTIDATE);
     avant.set(rel, texte);
   }
-  fs.copyFileSync(path.join(RACINE, 'scripts/migrations', MIGRATION), path.join(racine, 'scripts/migrations', MIGRATION));
   return { racine, avant };
 }
 
 const efface = (racine) => fs.rmSync(racine, { recursive: true, force: true });
-
-/** La migration jouée dans le dépôt jetable. REND `{ code, sortie }`. */
-function joue(racine) {
-  const r = spawnSync(process.execPath, [path.join(racine, 'scripts/migrations', MIGRATION)], { encoding: 'utf8' });
-  return { code: r.status, sortie: `${r.stdout ?? ''}${r.stderr ?? ''}` };
-}
 
 /** Aucun des fichiers lus n'a été touché — ni à l'octet, ni à l'horodatage. */
 function rienEcrit(racine, avant) {
@@ -91,7 +83,7 @@ function rienEcrit(racine, avant) {
 test('TÉMOIN : sur la copie fidèle de l’arbre (déjà migré), la migration sort 0 sans rien écrire', (t) => {
   const { racine, avant } = depot(() => {});
   t.after(() => efface(racine));
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — le dépôt jetable n’est pas jouable : ${sortie.slice(0, 600)}`);
   assert.match(sortie, /déjà migrée/, `le no-op ne se DIT pas : ${sortie.slice(0, 600)}`);
   assert.deepEqual(rienEcrit(racine, avant), []);
@@ -114,7 +106,7 @@ test('PORTE 1 : un porteur `ardoise` HORS masse de toit / primitive → sortie 1
   t.after(() => efface(racine));
   assert.ok(pose, 'aucune ouverture de façade dans les documents de projet — la morsure ne mesure rien');
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — un porteur hors périmètre doit ARRÊTER la migration : ${sortie.slice(0, 600)}`);
   assert.match(sortie, /hors masse de toit/, `arrêt sans NOMMER la classe du porteur : ${sortie.slice(0, 600)}`);
   assert.match(sortie, /features/, `arrêt sans NOMMER le chemin du porteur : ${sortie.slice(0, 600)}`);
@@ -129,7 +121,7 @@ test('PORTE 2 : une entrée revenue à l’id NU est RECOMPOSÉE — l’identit
   });
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — un id NU est la forme SOURCE, elle se migre : ${sortie.slice(0, 600)}`);
   assert.match(sortie, /1 entrée ardoise→toit-ardoise/, `la recomposition ne se DIT pas : ${sortie.slice(0, 600)}`);
   const relu = JSON.parse(fs.readFileSync(path.join(racine, 'src/data/materials.json'), 'utf8'));

@@ -17,13 +17,13 @@
  * des `.mjs` à préfixe DATÉ.
  */
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { listerDossier } from '../../guards/lib/lister.mjs';
+import { joue } from './joue.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const MIGRATION = '2026-09-09-1715-roof-defaults-scenes.mjs';
@@ -45,17 +45,10 @@ function depot(fichiers) {
     fs.utimesSync(cible, ANTIDATE, ANTIDATE);
     avant.set(rel, texte);
   }
-  fs.mkdirSync(path.join(racine, 'scripts/migrations'), { recursive: true });
-  fs.copyFileSync(path.join(RACINE, 'scripts/migrations', MIGRATION), path.join(racine, 'scripts/migrations', MIGRATION));
   return { racine, avant };
 }
 
 const efface = (racine) => fs.rmSync(racine, { recursive: true, force: true });
-
-function joue({ racine }) {
-  const r = spawnSync(process.execPath, [path.join(racine, 'scripts/migrations', MIGRATION)], { encoding: 'utf8' });
-  return { code: r.status, sortie: `${r.stdout ?? ''}${r.stderr ?? ''}` };
-}
 
 /** Les fichiers posés sont INTACTS (octet + horodatage). */
 function rienTouche(racine, avant) {
@@ -107,7 +100,7 @@ test('(a) ALLER-RETOUR : l’état d’avant projeté → chaque projet BYTE-IDE
   const d = depotScenes((rel) => serialise(projetAvant(rel)));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
   for (const rel of PROJETS) {
     assert.ok(
@@ -122,7 +115,7 @@ test('(b) REJEU sur arbre migré : sortie 0, rien d’écrit', (t) => {
   const d = depotScenes((rel) => lire(rel));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
   assert.match(sortie, /roofDefaults posés : 0/, `le no-op ne se DIT pas : ${sortie.slice(0, 1200)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'le rejeu a écrit');
@@ -140,7 +133,7 @@ test('(c) `roofDefaults` INCOMPLET (la couverture manquante) → sortie 1 NOMMAN
   });
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — un \`roofDefaults\` incomplet doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.match(sortie, /`roofDefaults` sans material/, `arrêt sans NOMMER le champ manquant : ${sortie.slice(0, 1200)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -154,7 +147,7 @@ test('(c bis) `roofDefaults` de TYPE inattendu (pente en chaîne) → sortie 1 N
   });
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — une pente non numérique doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.match(sortie, /`roofDefaults` sans pitchDeg/, `arrêt sans NOMMER le champ : ${sortie.slice(0, 1200)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -164,7 +157,7 @@ test('(d) FORMATAGE non canonique (indentation 4) → sortie 1 NOMINATIVE, rien 
   const d = depotScenes((rel) => `${JSON.stringify(projetAvant(rel), null, 4)}\n`);
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} : ${sortie.slice(0, 1200)}`);
   assert.match(sortie, /FORME NON CANONIQUE/, `arrêt sans NOMMER la faute : ${sortie.slice(0, 1200)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -181,7 +174,7 @@ test('(e) CARDINAL DÉPLACÉ (une Scène retirée) : le passage PASSE et pose ce
   });
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — une Scène en moins n’est pas une anomalie : ${sortie.slice(0, 1200)}`);
   assert.ok(
     sortie.includes(`${ampute} — schema`) && sortie.includes(`scènes : ${restantes}`),
@@ -198,7 +191,7 @@ test('(f) `schema` FUTUR : la borne haute est OUVERTE depuis #1687 — le docume
   const d = depotScenes((rel) => serialise({ ...projetAvant(rel), schema: futur }));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — un schema futur doit TRAVERSER : ${sortie.slice(0, 1200)}`);
   for (const rel of PROJETS) {
     assert.ok(sortie.includes(`${rel} — schema ${futur} → ${futur},`), `${rel} : le schema a été RABAISSÉ : ${sortie.slice(0, 1200)}`);
@@ -211,7 +204,7 @@ test('(f bis) `schema` ANTÉRIEUR à la chaîne → sortie 1 NOMMANT le numéro 
   const d = depotScenes((rel) => serialise({ ...projetAvant(rel), schema: ancien }));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — un schema antérieur doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.ok(
     sortie.includes(`\`schema\` inattendu ${ancien} (${SCHEMA_AVANT} ou ≥ ${SCHEMA_APRES} attendus)`),

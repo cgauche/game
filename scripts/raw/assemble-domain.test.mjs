@@ -153,6 +153,33 @@ test('assemble : le Sommaire vise les ancres RÉELLES de la page, homonymes suff
   })
 })
 
+// Les MESURES d'un run (compte d'inventaire, boucles d'audit, bucket « autre », couverture du survey)
+// vivent dans le rendu JSON et au ticket : la fiche publiée n'en porte aucune.
+test('assemble : la fiche ne porte AUCUNE mesure du run, même quand le rendu les fournit', () => {
+  avecAtlasJetable((rawDir) => {
+    const coeur = coeursDuRegistre()[0]
+    const r = assemble(
+      {
+        coeur,
+        domain: 'un-domaine-jamais-declare',
+        title: 'Un Domaine',
+        topics: [topic(true)],
+        inventoryCount: 34,
+        auditLoops: 2,
+        lastAuditDry: true,
+        autre: [{ ref: 'LIVRE 01 l.1', book: 'LIVRE', gist: 'un gist hors taxonomie' }],
+        surveyCounts: [{ book: 'LIVRE', hits: 7 }],
+      },
+      { rawDir },
+    )
+    const page = readFileSync(r.path, 'utf8')
+    for (const mesure of ['éléments inventoriés', "boucle(s) d'audit", 'Hors-taxonomie', 'un gist hors taxonomie', 'Couverture du survey', 'LIVRE 7']) {
+      assert.equal(page.includes(mesure), false, `la fiche ne doit pas porter « ${mesure} »`)
+    }
+    assert.match(page, /jamais écrit à la main\.\n/)
+  })
+})
+
 test('assemble : un topic qui n’ouvre sur AUCUN titre REFUSE la publication, et il est NOMMÉ', () => {
   avecAtlasJetable((rawDir) => {
     const coeur = coeursDuRegistre()[0]

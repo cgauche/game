@@ -133,7 +133,11 @@ export const ECRIT_LU = {
       'sonde `git status --porcelain` avant/après identique, et aucun résidu dans os.tmpdir() ; ' +
       '+1 écrivain le 2026-09-20 (#1825 lot E2) : `guards/lib/jouer-workflow.test.mjs` écrit ses scripts ' +
       'JOUETS sous `mkdtempSync` de os.tmpdir() (`rmSync` en finally) — l’enveloppe qu’il éprouve charge un ' +
-      'FICHIER, et l’arbre n’est jamais écrit',
+      'FICHIER, et l’arbre n’est jamais écrit ; +2 écrivains le 2026-09-22 (#1873) : ' +
+      '`migrations/lib/1825-stocks-atlas-chemins-par-coeur.test.mjs` forge son dépôt sous `mkdtempSync` de ' +
+      'os.tmpdir() (`rmSync` en `t.after`) et y joue la migration par `migrations/lib/joue.mjs`, qui COPIE la ' +
+      'migration dans ce dépôt (`copyFileSync`) — sonde `git status --porcelain` avant/après identique, et ' +
+      'aucun résidu dans os.tmpdir()',
   },
   'test:ops': {
     ecrit: [],
@@ -367,7 +371,7 @@ export const ECRIT_LU = {
         'le banc ne la passe que sur un Atlas JETABLE d’os.tmpdir() (`avecAtlasFixture`) dont il donne le ' +
         '`rawDir` — les pages du dépôt ne sont jamais écrites',
     },
-    lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/'],
+    lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/', '.claude/agents/'],
     raison:
       'harnais de l’Atlas : il lit les fiches que les trois rapports écrivent ; éprouvant les scripts ' +
       'eux-mêmes, il LIT ce qu’ils lisent — Source/ et src/ ; ses deux bancs ' +
@@ -379,7 +383,10 @@ export const ECRIT_LU = {
       '(#1825 lot F0) : la fabrique d’Atlas jetable (`atlasFixture.mjs`) et les deux bancs qui la ' +
       'prennent (`_lib.test.mjs`, `build-atlas-index.test.mjs`), même régime os.tmpdir(), et ' +
       '`build-atlas-index.mjs`, ACQUIS par l’import de son banc — son `writeFileSync` vit dans ' +
-      '`main()`, sous sa porte `isMain`',
+      '`main()`, sous sa porte `isMain` ; +1 lecture le 2026-09-22 (#1873) : ' +
+      '`atlas-domain.workflow.test.mjs` lit les fiches d’agent de .claude/agents/ (frontmatter `tools:`) ' +
+      'pour tenir la liste des types SANS outil d’écriture (scripts/raw/atlas-domain.workflow.test.mjs:312) — ' +
+      'la gate n’est plus sautable : un push qui donne `Edit` à `lecteur` doit la jouer',
   },
   'raw:check-refs': {
     ecrit: [],

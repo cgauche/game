@@ -28,6 +28,7 @@ import { lireRendu, perimetreDeCoeur } from './workflow-args.mjs'
 import { coeursDeDomaines, coeursDuRegistre, domainesDe } from './_lib.mjs'
 import { scanForbiddenCounts } from './check-atlas-counts.mjs'
 import { jouerWorkflow } from '../guards/lib/jouer-workflow.mjs'
+import { listerDossier } from '../guards/lib/lister.mjs'
 
 const SCRIPT = fileURLToPath(new URL('./atlas-domain.workflow.js', import.meta.url))
 const SOURCE = readFileSync(SCRIPT, 'utf8')
@@ -83,6 +84,16 @@ async function promptsDesDeuxRuns() {
   for (const trous of [false, true]) {
     const { promptsParLabel } = await jouerWorkflow(SCRIPT, PERIMETRE(), repondreAvec(trous))
     for (const [cle, p] of promptsParLabel) fusion.set(cle, p)
+  }
+  return fusion
+}
+
+/** Les deux runs, OPTIONS d'agent fusionnées — ce qui PART avec le prompt (type d'agent, modèle). */
+async function optionsDesDeuxRuns() {
+  const fusion = new Map()
+  for (const trous of [false, true]) {
+    const { optionsParLabel } = await jouerWorkflow(SCRIPT, PERIMETRE(), repondreAvec(trous))
+    for (const [cle, o] of optionsParLabel) fusion.set(cle, o)
   }
   return fusion
 }
@@ -236,6 +247,143 @@ test('workflow Atlas : la consigne de TRANSCRIPTION ne va qu’aux phases qui é
   assert.match(carto, /LANGUE DES CITATIONS/)
 })
 
+// ── GRAMMAIRE DES RÉFS (#1873) ────────────────────────────────────────────────────────────────────
+// `<ABBR> <NN> l.<X>` désigne un FICHIER et sa LIGNE. Rien ne le DISAIT aux agents : dès qu'un livre
+// dépasse la centaine de chapitres, `<NN>` a trois chiffres et se lit comme un numéro de PAGE — un
+// agent de vérif est allé chercher « la page 24 » hors du dossier du livre, puis a rendu
+// `faithful:false` sur une fiche dont il reconnaissait le texte exact au mot. Faux négatif de
+// CLASSE : toute phase qui écrit ou lit une réf peut le commettre. La grammaire est donc dite UNE
+// fois, émise AVEC le mapping, et ce banc exige qu'elle atteigne CHAQUE prompt qui touche une réf.
+const GRAMMAIRE = /GRAMMAIRE DES REFS — « <ABBR> <NN> l\.<X> »/
+/** Le MAPPING tel qu'un prompt l'émet (une ligne `- <ABBR> = <dossier> (langue : …)`). */
+const MAPPING = /^- [A-Z]{2,5} = \S.*\(langue : /m
+/** Une RÉF telle que les prompts l'émettent : sigle, préfixe de fichier (réel ou en gabarit), `l.`. */
+const REF = /(?<![\p{L}\p{N}])[A-Z]{2,5} (?:\d+|<NN>) l\./u
+
+test('workflow Atlas : tout prompt qui porte le MAPPING des livres porte la GRAMMAIRE des réfs', async () => {
+  const prompts = await promptsDesDeuxRuns()
+  const avecMapping = [...prompts].filter(([, p]) => MAPPING.test(p))
+  // Non-vacuité : le cadrage, la synthèse, l'audit, l'AUGMENTATION (qui relit la source aux refs des
+  // trous) et la vérif portent le mapping. Un de moins, et le contrat ne jugerait plus ce prompt-là.
+  assert.ok(
+    ['cadrage', 'synth:topic-un', 'audit#1', 'augment:topic-un', 'verif:topic-un']
+      .every((suffixe) => avecMapping.some(([cle]) => cle.endsWith(suffixe))),
+    `prompts porteurs du mapping : ${avecMapping.map(([cle]) => cle).join(' · ')}`,
+  )
+  assert.deepEqual(avecMapping.filter(([, p]) => !GRAMMAIRE.test(p)).map(([cle]) => cle), [])
+})
+
+test('workflow Atlas : tout prompt qui ÉMET ou LIT une réf porte la GRAMMAIRE des réfs', async () => {
+  const prompts = await promptsDesDeuxRuns()
+  const avecRef = [...prompts].filter(([, p]) => REF.test(p))
+  // Non-vacuité : la carto et le survey ÉMETTENT les refs, la synthèse/l'audit/la vérif les LISENT.
+  // L'augmentation les lit aussi, mais le prompt CAPTURÉ sous ce label est celui de la correction de
+  // FIDÉLITÉ, dont les points n'ont pas de ref : c'est le contrat du MAPPING qui la juge.
+  assert.ok(
+    ['carto:BKA-05', 'survey:BKA', 'synth:topic-un', 'audit#1', 'verif:topic-un']
+      .every((suffixe) => avecRef.some(([cle]) => cle.endsWith(suffixe))),
+    `prompts porteurs de refs : ${avecRef.map(([cle]) => cle).join(' · ')}`,
+  )
+  assert.deepEqual(avecRef.filter(([, p]) => !GRAMMAIRE.test(p)).map(([cle]) => cle), [])
+})
+
+test('workflow Atlas : la grammaire dite au juge de FIDÉLITÉ désigne un FICHIER et une LIGNE, jamais une PAGE', async () => {
+  const verif = (await promptsDesDeuxRuns()).get(`Verif:${LOT[0]}:verif:topic-un`)
+  assert.ok(verif, 'prompt de vérif absent')
+  assert.match(verif, GRAMMAIRE)
+  assert.match(verif, /le FICHIER \.md dont le nom commence par « <NN> - »/)
+  assert.match(verif, /a sa LIGNE <X>/)
+  assert.match(verif, /<NN> est ce PREFIXE DE NOM DE FICHIER/)
+  // L'exclusion est EXPLICITE : c'est elle qui a manqué, pas la définition.
+  assert.match(verif, /ce n est JAMAIS un numero de PAGE, ni du livre imprime, ni d un PDF/)
+  assert.match(verif, /ni PDF, ni sortie brute d extracteur/)
+})
+
+// ── LECTURE SEULE (#1873) ────────────────────────────────────────────────────────────────
+// Un agent du run a EDITÉ un fichier de `Source/` pour compléter une phrase tronquée, puis la fiche a
+// CITÉ la ligne réparée comme preuve : l'extraction fabriquait sa propre source. Deux verrous, l'un
+// hors du prompt (le TYPE d'agent, dont les outils n'écrivent pas), l'autre dedans (la clause). Ce
+// banc mesure les OPTIONS RÉELLEMENT ENVOYÉES par le script, pas son texte.
+
+/** Les types d'agent du dépôt qui n'ont AUCUN outil d'écriture — lus à `.claude/agents/`, jamais
+ *  écrits en dur : un agent dont on ajouterait `Edit` sortirait de cette liste sans que rien ne mente. */
+const OUTILS_ECRIVANTS = ['Edit', 'Write', 'MultiEdit', 'NotebookEdit']
+const typesEnLectureSeule = () => {
+  const dossier = fileURLToPath(new URL('../../.claude/agents/', import.meta.url))
+  const types = []
+  for (const f of listerDossier(dossier).filter((n) => n.endsWith('.md'))) {
+    const tete = readFileSync(join(dossier, f), 'utf8').split(/^---\s*$/m)[1] || ''
+    const nom = /^name:\s*(\S+)/m.exec(tete)
+    const outils = /^tools:\s*(.+)$/m.exec(tete)
+    // Pas de `tools:` = l'agent hérite de TOUS les outils, écriture comprise : jamais lecture seule.
+    if (!nom || !outils) continue
+    const liste = outils[1].split(',').map((s) => s.trim())
+    if (!liste.some((o) => OUTILS_ECRIVANTS.includes(o))) types.push(nom[1])
+  }
+  return types
+}
+
+test('workflow Atlas : les types d’agent en lecture seule se lisent au dépôt (sinon le contrat est vide)', () => {
+  const types = typesEnLectureSeule()
+  assert.ok(types.includes('lecteur') && types.includes('juge'), `types en lecture seule lus : ${types.join(', ')}`)
+})
+
+test('workflow Atlas : AUCUN agent ne part sans `agentType` en LECTURE SEULE, ni sans `model` écrit', async () => {
+  const options = await optionsDesDeuxRuns()
+  const lectureSeule = typesEnLectureSeule()
+  assert.ok(options.size >= 7, `trop peu d'agents capturés : ${[...options.keys()].join(' · ')}`)
+  const fautifs = [...options].filter(([, o]) => !lectureSeule.includes(o.agentType))
+  assert.deepEqual(fautifs.map(([cle, o]) => `${cle} : agentType=${JSON.stringify(o.agentType)}`), [])
+  // Le `model` reste ÉCRIT à chaque site : rien ne prouve que le modèle du script prime sur celui du
+  // frontmatter de l'agent, et un étage muet retomberait sur le modèle de session.
+  const sansModele = [...options].filter(([, o]) => typeof o.model !== 'string' || !o.model)
+  assert.deepEqual(sansModele.map(([cle]) => cle), [])
+})
+
+test('workflow Atlas : le type suit ce que la phase FAIT — `juge` là où l’on refute, `lecteur` ailleurs', async () => {
+  const options = await optionsDesDeuxRuns()
+  const parType = { juge: [], lecteur: [] }
+  for (const [cle, o] of options) (parType[o.agentType] ||= []).push(cle)
+  // AUDIT de complétude et VÉRIF de fidélité confrontent une entrée à la source et REFUTENT ;
+  // l'augmentation, elle, RÉDIGE — elle reste un lecteur, sous le même label de phase `Audit`.
+  assert.deepEqual(parType.juge.sort(), [`Audit:${LOT[0]}:audit#1`, `Audit:${LOT[0]}:audit#2`, `Verif:${LOT[0]}:reverif:topic-un`, `Verif:${LOT[0]}:verif:topic-un`].sort())
+  assert.ok(parType.lecteur.includes(`Audit:${LOT[0]}:augment:topic-un`), parType.lecteur.join(' · '))
+})
+
+test('workflow Atlas : TOUT prompt porte la clause de LECTURE SEULE, avec le refus de RÉPARER la source', async () => {
+  const prompts = await promptsDesDeuxRuns()
+  const muets = [...prompts].filter(([, p]) => !/LECTURE SEULE — tu n ECRIS, ne modifies, ne crees et ne supprimes AUCUN fichier/.test(p))
+  assert.deepEqual(muets.map(([cle]) => cle), [])
+  for (const [, p] of prompts) {
+    assert.match(p, /ne se REPARE JAMAIS : tu le SIGNALES dans le champ `sourceAbimee`/)
+    assert.match(p, /cites la regle TELLE QUE le fichier la porte, troncature comprise/)
+  }
+})
+
+test('workflow Atlas : un signalement de source ABÎMÉE remonte au rendu du domaine', async () => {
+  const { rendu } = await jouerWorkflow(SCRIPT, PERIMETRE(), (p, o) => {
+    const base = repondreAvec(false)(p, o)
+    return o.phase === 'Synthese'
+      ? { ...base, sourceAbimee: [{ ref: 'BKA 05 l.7', constat: 'phrase tronquee en fin de fichier' }] }
+      : base
+  })
+  assert.deepEqual(rendu.domains[0].sourceAbimee, [{ phase: 'Synthese', ref: 'BKA 05 l.7', constat: 'phrase tronquee en fin de fichier' }])
+  // Un run sans signalement rend la clé, vide : l'orchestrateur lit une mesure, pas une absence.
+  const { rendu: sain } = await jouerWorkflow(SCRIPT, PERIMETRE(), repondreAvec(false))
+  assert.deepEqual(sain.domains[0].sourceAbimee, [])
+})
+
+test('workflow Atlas : une REPRISE ne PERD pas les signalements déjà rendus, et ajoute les siens', async () => {
+  const { rendu } = await jouerWorkflow(SCRIPT, ARGS_DE_REPRISE(), (p, o) => {
+    assert.equal(o.phase, 'Verif')
+    return { topicId: 'jamais-juge', faithful: true, issues: [], sourceAbimee: [{ ref: 'BKA 05 l.8', constat: 'table fusionnee' }] }
+  })
+  assert.deepEqual(rendu.domains[0].sourceAbimee, [
+    { phase: 'Synthese', ref: 'BKA 05 l.7', constat: 'phrase tronquee en fin de fichier' },
+    { phase: 'Verif', ref: 'BKA 05 l.8', constat: 'table fusionnee' },
+  ])
+})
+
 // ── REPRISE ───────────────────────────────────────────────────────────────────────────────────────
 // Un run coûte des dizaines d'agents : il ne se jette pas parce qu'un agent de vérification est
 // resté muet. Le rendu entre, seuls les topics SANS preuve de fidélité repassent, le rendu sort.
@@ -251,6 +399,7 @@ const RENDU_A_REPRENDRE = () => ({
   auditLoops: 1,
   lastAuditDry: true,
   surveyCounts: [{ book: 'BKA', hits: 2 }, { book: 'SPG', hits: 0 }],
+  sourceAbimee: [{ phase: 'Synthese', ref: 'BKA 05 l.7', constat: 'phrase tronquee en fin de fichier' }],
 })
 const ARGS_DE_REPRISE = (rendu = RENDU_A_REPRENDRE()) => ({ ...PERIMETRE(), reprise: rendu })
 /** Les phases de DÉCOUVERTE : aucune ne doit être atteinte par une reprise. */

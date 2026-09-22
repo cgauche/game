@@ -15,6 +15,8 @@ import { readFileSync } from 'node:fs'
  * @typedef {object} RunDeWorkflow
  * @property {any} rendu ce que le script `return`
  * @property {Map<string, string>} promptsParLabel `phase:label` → prompt ENVOYÉ
+ * @property {Map<string, any>} optionsParLabel `phase:label` → OPTIONS envoyées (type d'agent, modèle,
+ *   schéma) : ce qu'un banc doit pouvoir juger sans relire le source à la regex
  * @property {string[]} journal ce que le script a passé à `log`
  */
 
@@ -29,9 +31,11 @@ import { readFileSync } from 'node:fs'
 export async function jouerWorkflow(chemin, argsDuRun, repondre) {
   const source = readFileSync(chemin, 'utf8').replace(/^export const meta/m, 'const meta')
   const promptsParLabel = new Map()
+  const optionsParLabel = new Map()
   const journal = []
   const agent = (prompt, opts) => {
     promptsParLabel.set(`${opts.phase}:${opts.label}`, prompt)
+    optionsParLabel.set(`${opts.phase}:${opts.label}`, opts)
     return Promise.resolve(repondre(prompt, opts))
   }
   // Les doublures font ce que fait le harnais, point par point :
@@ -61,5 +65,5 @@ export async function jouerWorkflow(chemin, argsDuRun, repondre) {
     `return (async () => {\n${source}\n})()`,
   )
   const rendu = await fabrique(agent, parallel, pipeline, () => {}, (m) => journal.push(m), argsDuRun, undefined)
-  return { rendu, promptsParLabel, journal }
+  return { rendu, promptsParLabel, optionsParLabel, journal }
 }

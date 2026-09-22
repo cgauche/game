@@ -26,13 +26,13 @@
  * des `.mjs` à préfixe DATÉ.
  */
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { listerDossier } from '../../guards/lib/lister.mjs';
+import { joue } from './joue.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const MIGRATION = '2026-09-10-1687-usable-sieges.mjs';
@@ -57,17 +57,10 @@ function depot(fichiers) {
     fs.utimesSync(cible, ANTIDATE, ANTIDATE);
     avant.set(rel, texte);
   }
-  fs.mkdirSync(path.join(racine, 'scripts/migrations'), { recursive: true });
-  fs.copyFileSync(path.join(RACINE, 'scripts/migrations', MIGRATION), path.join(racine, 'scripts/migrations', MIGRATION));
   return { racine, avant };
 }
 
 const efface = (racine) => fs.rmSync(racine, { recursive: true, force: true });
-
-function joue({ racine }) {
-  const r = spawnSync(process.execPath, [path.join(racine, 'scripts/migrations', MIGRATION)], { encoding: 'utf8' });
-  return { code: r.status, sortie: `${r.stdout ?? ''}${r.stderr ?? ''}` };
-}
 
 /** Les fichiers posés sont INTACTS (octet + horodatage). */
 function rienTouche(racine, avant) {
@@ -154,7 +147,7 @@ test('(a) ALLER-RETOUR : l’état d’avant projeté → chaque projet BYTE-IDE
   const d = depotScenes((rel) => serialise(projetAvant(rel)));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
   for (const rel of PROJETS) {
     assert.ok(
@@ -169,7 +162,7 @@ test('(b) REJEU sur arbre migré : sortie 0, rien d’écrit', (t) => {
   const d = depotScenes((rel) => lire(rel));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
   assert.ok(
     sortie.includes(`usable posés : 0 (déjà activées : ${SIEGES_PAR_PROJET[PORTEUR]}`),
@@ -198,7 +191,7 @@ test('(c) `usable` de FORME inattendue (une chaîne) → sortie 1 NOMMANT l’en
   });
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.ok(vise, 'aucune entité à places mutée — le scénario ne mord pas');
   assert.equal(code, 1, `sortie ${code} — un \`usable\` de forme inattendue doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.ok(
@@ -212,7 +205,7 @@ test('(d) FORMATAGE non canonique (indentation 4) → sortie 1 NOMINATIVE, rien 
   const d = depotScenes((rel) => `${JSON.stringify(projetAvant(rel), null, 4)}\n`);
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} : ${sortie.slice(0, 1200)}`);
   assert.match(sortie, /FORME NON CANONIQUE/, `arrêt sans NOMMER la faute : ${sortie.slice(0, 1200)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -230,7 +223,7 @@ test('(e) CARDINAL DÉPLACÉ (une Scène retirée) : le passage PASSE, sans reca
   });
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — une Scène en moins n’est pas une anomalie : ${sortie.slice(0, 1200)}`);
   assert.ok(
     sortie.includes(`${PORTEUR} — schema ${SCHEMA_AVANT} → ${SCHEMA_APRES}, usable posés : ${SIEGES_PAR_PROJET[PORTEUR]}`),
@@ -258,7 +251,7 @@ test('(e bis) CARDINAL DÉPLACÉ (un siège retiré) : le passage PASSE et pose 
   });
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.ok(ampute, 'aucune entité à places retirée — le scénario ne mord pas');
   assert.equal(code, 0, `sortie ${code} — un siège en moins n’est pas une anomalie : ${sortie.slice(0, 1200)}`);
   assert.ok(
@@ -276,7 +269,7 @@ test('(f) BORNE HAUTE OUVERTE : un `schema` FUTUR traverse en NO-OP nommé — a
   const d = depotScenes((rel) => serialise({ ...JSON.parse(lire(rel)), schema: futur }));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — un schema futur doit TRAVERSER : ${sortie.slice(0, 1200)}`);
   for (const rel of PROJETS) {
     assert.ok(
@@ -292,7 +285,7 @@ test('(f bis) `schema` ANTÉRIEUR à la chaîne → sortie 1 NOMMANT le numéro 
   const d = depotScenes((rel) => serialise({ ...projetAvant(rel), schema: ancien }));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — un schema antérieur doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.ok(
     sortie.includes(`\`schema\` inattendu ${ancien} (${SCHEMA_AVANT} ou plus récent attendu)`),
@@ -309,7 +302,7 @@ test('(g) CATALOGUE MUET (aucun type à places) → sortie 1 demandant l’arbit
   });
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — un catalogue sans place doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.match(sortie, /ARBITRAGE REQUIS — aucun type de décor à `seatSlots`/, `arrêt sans DIRE pourquoi : ${sortie.slice(0, 1200)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');

@@ -28,7 +28,7 @@
     { "cle": "carrieres", "titre": "Classes, Carrières & Statut", "ticket": "#1825" },
     { "cle": "competences", "titre": "Compétences", "ticket": "#1825" },
     { "cle": "talents", "titre": "Talents", "ticket": "#1825" },
-    { "cle": "tests", "titre": "Tests & Degrés de Réussite", "ticket": "#1825" },
+    { "cle": "tests", "titre": "Tests & Success Levels (SL)" },
     { "cle": "intrigue", "titre": "Larcins & Subterfuges (vol, discrétion, jeu, pièges)", "ticket": "#1825" },
     { "cle": "social", "titre": "Interactions sociales (statut, influence, beuverie, mensonge)", "ticket": "#1825" },
     { "cle": "enquete", "titre": "Enquête, Recherche & Pistage", "ticket": "#1825" },

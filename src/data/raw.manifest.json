@@ -66,5 +66,11 @@
     "type": "raw.manifest",
     "label": "Option « Attraper Froid »",
     "ticket": "#674"
+  },
+  {
+    "id": "5e/tests",
+    "type": "raw.manifest",
+    "label": "Atlas RAW — Tests & Success Levels (SL)",
+    "ticket": "#1873"
   }
 ]

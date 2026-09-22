@@ -20,12 +20,12 @@
  * des `.mjs` à préfixe DATÉ.
  */
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { joue } from './joue.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const MIGRATION_DATA = '2026-09-07-1691-relief-en-donnee.mjs';
@@ -68,17 +68,10 @@ function depot(migration, fichiers) {
     fs.utimesSync(cible, ANTIDATE, ANTIDATE);
     avant.set(rel, texte);
   }
-  fs.mkdirSync(path.join(racine, 'scripts/migrations'), { recursive: true });
-  fs.copyFileSync(path.join(RACINE, 'scripts/migrations', migration), path.join(racine, 'scripts/migrations', migration));
   return { racine, avant, migration };
 }
 
 const efface = (racine) => fs.rmSync(racine, { recursive: true, force: true });
-
-function joue({ racine, migration }) {
-  const r = spawnSync(process.execPath, [path.join(racine, 'scripts/migrations', migration)], { encoding: 'utf8' });
-  return { code: r.status, sortie: `${r.stdout ?? ''}${r.stderr ?? ''}` };
-}
 
 /** Les fichiers posés sont INTACTS (octet + horodatage). */
 function rienTouche(racine, avant) {
@@ -101,7 +94,7 @@ test('(a) ALLER-RETOUR data : l’état d’avant projeté → terrains.json ET 
   const d = depotData(serialiseData(terrainsAvant()), serialiseData(materialsAvant()));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 800)}`);
   assert.ok(sortie.includes(`${BLOCS.length} terrain(s) à bloc plein reçoivent leur matière`), `la pose ne DIT pas son compte : ${sortie.slice(0, 800)}`);
   assert.ok(
@@ -117,7 +110,7 @@ test('(b) REJEU data sur arbre migré : sortie 0, rien d’écrit', (t) => {
   const d = depotData(TEXTE_TERRAINS, TEXTE_MATERIALS);
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /déjà migrée/, `le no-op ne se DIT pas : ${sortie.slice(0, 800)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'le rejeu a écrit');
@@ -130,7 +123,7 @@ test('(c) BLOC PLEIN inconnu de la table des matières → sortie 1 NOMMANT le t
   const d = depotData(serialiseData(renomme), serialiseData(materialsAvant()));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 1, `sortie ${code} — un bloc sans matière déclarée doit ARRÊTER : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /aucune matière déclarée pour le\(s\) bloc\(s\) palissade/, `arrêt sans NOMMER le terrain : ${sortie.slice(0, 800)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -141,7 +134,7 @@ test('(c bis) `matiere` SANS bloc plein → sortie 1 NOMMANT le terrain, rien d�
   const d = depotData(serialiseData(orphelin), serialiseData(materialsAvant()));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 1, `sortie ${code} — une matière sans bloc doit ARRÊTER : ${sortie.slice(0, 800)}`);
   assert.ok(sortie.includes(TERRAINS_DOC[0].id), `arrêt sans NOMMER le terrain : ${sortie.slice(0, 800)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -161,7 +154,7 @@ test('(d) DEUX entrées `roof` sans couverture → sortie 1 : le plan ne se dés
   const d = depotData(serialiseData(terrainsAvant()), serialiseData(deuxPlans));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 1, `sortie ${code} — deux plans candidats doivent ARRÊTER : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /2 entrée\(s\) `roof` sans `couverture`/, `arrêt sans CHIFFRER l’écart : ${sortie.slice(0, 800)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -171,7 +164,7 @@ test('(e) FORMATAGE data non canonique (indentation 4) → sortie 1 NOMINATIVE, 
   const d = depotData(JSON.stringify(terrainsAvant(), null, 4), serialiseData(materialsAvant()));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 1, `sortie ${code} : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /formatage non canonique/, `arrêt sans NOMMER la faute : ${sortie.slice(0, 800)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -218,7 +211,7 @@ test('(f) ALLER-RETOUR scènes : l’état d’avant projeté → chaque projet 
   const d = depotScenes((rel) => serialiseScene(projetAvant(rel)));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
   for (const rel of PROJETS) {
     assert.ok(
@@ -233,7 +226,7 @@ test('(g) REJEU scènes sur arbre migré : sortie 0, rien d’écrit', (t) => {
   const d = depotScenes((rel) => lire(rel));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
   assert.match(sortie, /reliefDefaults posés : 0/, `le no-op ne se DIT pas : ${sortie.slice(0, 1200)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'le rejeu a écrit');
@@ -251,7 +244,7 @@ test('(h) `reliefDefaults` INCOMPLET (une partie manquante) → sortie 1 NOMMANT
   });
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 1, `sortie ${code} — un \`reliefDefaults\` incomplet doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.match(sortie, /`reliefDefaults` sans cliff/, `arrêt sans NOMMER la partie manquante : ${sortie.slice(0, 1200)}`);
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'la migration a écrit alors que l’arrêt précède toute écriture');
@@ -268,7 +261,7 @@ test('(i) CARDINAL DÉPLACÉ (une Scène retirée) : le passage PASSE et pose ce
   });
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 0, `sortie ${code} — une Scène en moins n’est pas une anomalie : ${sortie.slice(0, 1200)}`);
   assert.ok(
     sortie.includes(`${ampute} — schema`) && sortie.includes(`reliefDefaults posés : ${restantes} (déjà migrées : 0, scènes : ${restantes})`),
@@ -285,7 +278,7 @@ test('(j) `schema` FUTUR : la borne haute est OUVERTE depuis #1715 — le docume
   const d = depotScenes((rel) => serialiseScene({ ...projetAvant(rel), schema: futur }));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 0, `sortie ${code} — un schema futur doit TRAVERSER : ${sortie.slice(0, 1200)}`);
   for (const rel of PROJETS) {
     assert.ok(sortie.includes(`${rel} — schema ${futur} → ${futur},`), `${rel} : le schema a été RABAISSÉ : ${sortie.slice(0, 1200)}`);
@@ -298,7 +291,7 @@ test('(j bis) `schema` ANTÉRIEUR à la chaîne → sortie 1 NOMMANT le numéro 
   const d = depotScenes((rel) => serialiseScene({ ...projetAvant(rel), schema: ancien }));
   t.after(() => efface(d.racine));
 
-  const { code, sortie } = joue(d);
+  const { code, sortie } = joue(d.racine, d.migration);
   assert.equal(code, 1, `sortie ${code} — un schema antérieur doit ARRÊTER : ${sortie.slice(0, 1200)}`);
   assert.ok(
     sortie.includes(`\`schema\` inattendu ${ancien} (${SCHEMA_AVANT} ou ≥ ${SCHEMA_APRES} attendus)`),

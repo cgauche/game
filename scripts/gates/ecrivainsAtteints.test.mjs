@@ -118,6 +118,9 @@ const ATTENDU = {
     // fait `migrations:replay` — elle est en `--dry` et n'écrit rien. L'arbre n'est jamais touché.
     'scripts/migrations/2026-09-14-1699-source-chemins-ascii.mjs',
     'scripts/migrations/lib/1699-source-chemins-ascii.test.mjs',
+    // +1 le 2026-09-22 (#1873) : le banc de la migration #1825 des stocks de l'Atlas ; son dépôt
+    // jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
+    'scripts/migrations/lib/1825-stocks-atlas-chemins-par-coeur.test.mjs',
     // +3 le 2026-09-05 : morsure des portes des trois migrations #1686 (lot 1 ids composés, lot 2
     // fusion des matières, lot 3a-2 purge de `structureAppearance.material`) ; leur dépôt jetable vit
     // sous `os.tmpdir()`, l'arbre n'est jamais écrit.
@@ -140,6 +143,9 @@ const ATTENDU = {
     'scripts/migrations/lib/croissance.test.mjs',
     'scripts/migrations/lib/empreinteRejeu.test.mjs',
     'scripts/migrations/lib/idempotence-ordre-des-cles.test.mjs',
+    // +1 le 2026-09-22 (#1873) : `joue.mjs` COPIE la migration jouée dans le dépôt jetable que lui donne
+    // chaque banc de migration (`copyFileSync`, sous `os.tmpdir()`) ; l'arbre n'est jamais écrit.
+    'scripts/migrations/lib/joue.mjs',
     'scripts/migrations/replay-head.mjs',
     'scripts/raw/build-implemente.mjs',
     'scripts/test/verrou.mjs',

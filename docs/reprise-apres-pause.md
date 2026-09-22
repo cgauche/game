@@ -200,8 +200,8 @@ PORTE est `.github/workflows/ci.yml` (« CI », push, pull_request) : elle joue 
 gates sur CHAQUE branche `chantier/**`, et c'est son verdict — jamais un artefact local — qui
 autorise une tête à entrer dans `main`. Elle CLASSE d'abord le push
 (`scripts/gates/classerPush.mjs`) : un push dont tous les fichiers changés tombent sous
-`.claude/`, `.agents/`, `.codex/`, `AGENTS.md`, `CLAUDE.md` ne joue que les 8 gates qui LISENT un de
-ces chemins (`agents:check`, `test:agents`, `test:hooks`, `test:ops`, `test:docs`, `deps:unused`, `docs:check`, `docs:empreinte`) ; les 18 autres sont sautées.
+`.claude/`, `.agents/`, `.codex/`, `AGENTS.md`, `CLAUDE.md` ne joue que les 9 gates qui LISENT un de
+ces chemins (`agents:check`, `test:agents`, `test:hooks`, `test:ops`, `test:docs`, `deps:unused`, `docs:check`, `docs:empreinte`, `test:raw`) ; les 17 autres sont sautées.
 
 `npm run ops:publier` joue le train : rebase, docs dérivés, push de la BRANCHE, attente du run CI de
 cette branche, fast-forward de `main`, pilotage. Il refuse à la première étape rouge en la nommant,
@@ -243,4 +243,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: e351c392c0681cc3648aac8ce85469b667b9f108 (25 fichiers, 8 dossiers) corps: 3db39668742122a58f1b607bcbabb4eb224be038 -->
+<!-- sources-empreinte: d30348882e727ca498da6aeb0b65c8ebe9954b69 (25 fichiers, 8 dossiers) corps: 175864012063360cbc3e3ffe9c895b6e289e18c6 -->

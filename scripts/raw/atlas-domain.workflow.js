@@ -85,7 +85,43 @@ if (REPRISE !== null) {
 }
 
 const dirOf = (ab) => (BOOKS.find((b) => b.ab === ab) || {}).dir
-const bookMap = BOOKS.map((b) => '- ' + b.ab + ' = ' + b.dir + ' (langue : ' + b.language + ')').join('\n')
+// GRAMMAIRE d une ref, dite UNE SEULE fois et EMISE AVEC le mapping (#1873) : `<NN>` est le prefixe
+// du nom de FICHIER, de la largeur propre au livre (cf. `graphieDeChapitre`, src/data/source/
+// decoupe.ts) ; a trois chiffres il se lit comme un numero de page, et un agent va chercher la
+// regle dans une page — ou dans une autre extraction — puis juge INFIDELE une fiche exacte au mot.
+const GRAMMAIRE_REFS = [
+  'GRAMMAIRE DES REFS — « <ABBR> <NN> l.<X> » (ou « l.<X>-<Y> ») designe, dans le dossier du livre <ABBR>, le FICHIER .md dont le nom commence par « <NN> - », a sa LIGNE <X> (numerotation des lignes DE CE FICHIER, la premiere ligne etant 1 ; jusqu a la ligne <Y> incluse).',
+  '<NN> est ce PREFIXE DE NOM DE FICHIER, ecrit tel que le fichier le porte (zeros de tete compris) : ce n est JAMAIS un numero de PAGE, ni du livre imprime, ni d un PDF.',
+  'La source a ouvrir, et la seule, est ce dossier de fichiers .md : ni PDF, ni sortie brute d extracteur, ni aucune autre copie du meme livre.',
+].join('\n')
+const MAPPING_LIVRES = BOOKS.map((b) => '- ' + b.ab + ' = ' + b.dir + ' (langue : ' + b.language + ')').join('\n') + '\n' + GRAMMAIRE_REFS
+// LECTURE SEULE (#1873) — un agent d extraction qui REPARE le fichier source qu il cite ensuite
+// fabrique sa propre preuve : la fiche devient exacte parce que la source a bouge. Deux verrous, une
+// definition chacun : le TYPE d agent (outils sans ecriture, `.claude/agents/`) et cette clause, tous
+// deux poses au point UNIQUE `lire()` — aucun appel d agent ne peut y echapper.
+const LECTURE_SEULE = [
+  'LECTURE SEULE — tu n ECRIS, ne modifies, ne crees et ne supprimes AUCUN fichier, nulle part : ni un fichier de source, ni une fiche, ni un brouillon, ni un scratch. Lire et rendre ta reponse structuree sont tes SEULS gestes.',
+  'Un passage de la source TRONQUE, fusionne, duplique ou visiblement abime ne se REPARE JAMAIS : tu le SIGNALES dans le champ `sourceAbimee` de ta reponse ([{ ref, constat }]), et tu cites la regle TELLE QUE le fichier la porte, troncature comprise. Reparer la source que tu cites, c est fabriquer ta preuve.',
+].join('\n')
+// Types d agent en LECTURE SEULE declares au depot (`.claude/agents/`) : leurs outils n incluent ni
+// Edit ni Write. REPERER et REDIGER lisent ; JUGER la completude ou la fidelite refute.
+const TYPE_LECTURE = 'lecteur'
+const TYPE_JUGEMENT = 'juge'
+/** Les signalements de source ABIMEE du domaine COURANT, recoltes au point unique. */
+let ABIMEES = []
+/**
+ * Le POINT UNIQUE par ou part tout agent : type d agent en lecture seule (surchargeable par
+ * `agentType` pour une phase de jugement), clause de lecture seule jointe au prompt, et recolte du
+ * signalement de source abimee. Le `model` reste ECRIT a chaque site d appel.
+ */
+const lire = (prompt, opts) => Promise.resolve(agent(prompt + '\n' + LECTURE_SEULE, { agentType: TYPE_LECTURE, ...opts })).then((rendu) => {
+  if (rendu && Array.isArray(rendu.sourceAbimee)) {
+    for (const s of rendu.sourceAbimee) {
+      if (s && s.ref && s.constat) ABIMEES.push({ phase: opts.phase, ref: s.ref, constat: s.constat })
+    }
+  }
+  return rendu
+})
 const LANGUES = [...new Set(BOOKS.map((b) => b.language))].join(', ')
 // #1816 — fiche `user-doctrine-edition-5e-coeur-remplace-ldb-raw-sauf-errata`.
 const LANGUE_FICHE = 'LANGUE DE LA FICHE : la SYNTHESE que tu rediges est en FRANCAIS parfaitement accentue.'
@@ -96,13 +132,16 @@ const LANGUE_TERMES = 'LANGUE DES CITATIONS : tout ce qui vient du livre — cit
 const LANGUE_TABLES = 'TRANSCRIPTION DES TABLES : une table se transcrit ligne par ligne dans la langue d origine de son livre.'
 const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/\s+/g, '-').slice(0, 48)
 
-const CADRAGE_SCHEMA = { type: 'object', properties: { coverageRefs: { type: 'array', items: { type: 'object', properties: { ab: { type: 'string' }, nn: { type: 'string' } }, required: ['ab', 'nn'] } }, sonnetBooks: { type: 'array', items: { type: 'string' } } }, required: ['coverageRefs'] }
-const INVENTORY_SCHEMA = { type: 'object', properties: { items: { type: 'array', items: { type: 'object', properties: { item: { type: 'string' }, kind: { type: 'string' }, ref: { type: 'string' }, gist: { type: 'string' } }, required: ['item', 'ref'] } } }, required: ['items'] }
-const TAXO_SCHEMA = { type: 'object', properties: { topics: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, t: { type: 'string' }, hint: { type: 'string' }, covers: { type: 'array', items: { type: 'string' } } }, required: ['id', 't', 'hint'] } } }, required: ['topics'] }
-const SURVEY_SCHEMA = { type: 'object', properties: { hits: { type: 'array', items: { type: 'object', properties: { topicId: { type: 'string' }, ref: { type: 'string' }, gist: { type: 'string' } }, required: ['topicId', 'ref', 'gist'] } } }, required: ['hits'] }
-const SYNTH_SCHEMA = { type: 'object', properties: { topicId: { type: 'string' }, title: { type: 'string' }, markdown: { type: 'string' }, refs: { type: 'array', items: { type: 'string' } }, codeHint: { type: 'string' } }, required: ['topicId', 'title', 'markdown', 'refs'] }
-const AUDIT_SCHEMA = { type: 'object', properties: { dry: { type: 'boolean' }, gaps: { type: 'array', items: { type: 'object', properties: { kind: { type: 'string', enum: ['survole', 'rate', 'doublon'] }, topicId: { type: 'string' }, newTopicTitle: { type: 'string' }, what: { type: 'string' }, ref: { type: 'string' }, fix: { type: 'string' } }, required: ['kind', 'what'] } } }, required: ['dry', 'gaps'] }
-const VERIFY_SCHEMA = { type: 'object', properties: { topicId: { type: 'string' }, faithful: { type: 'boolean' }, issues: { type: 'array', items: { type: 'string' } } }, required: ['topicId', 'faithful', 'issues'] }
+// Le SIGNALEMENT d une source abimee : le champ que la clause de lecture seule promet a l agent.
+// Hors `required` — la plupart des passages vont bien, et un champ exige ferait inventer un constat.
+const ABIMEE = { type: 'array', items: { type: 'object', properties: { ref: { type: 'string' }, constat: { type: 'string' } }, required: ['ref', 'constat'] } }
+const CADRAGE_SCHEMA = { type: 'object', properties: { sourceAbimee: ABIMEE, coverageRefs: { type: 'array', items: { type: 'object', properties: { ab: { type: 'string' }, nn: { type: 'string' } }, required: ['ab', 'nn'] } }, sonnetBooks: { type: 'array', items: { type: 'string' } } }, required: ['coverageRefs'] }
+const INVENTORY_SCHEMA = { type: 'object', properties: { sourceAbimee: ABIMEE, items: { type: 'array', items: { type: 'object', properties: { item: { type: 'string' }, kind: { type: 'string' }, ref: { type: 'string' }, gist: { type: 'string' } }, required: ['item', 'ref'] } } }, required: ['items'] }
+const TAXO_SCHEMA = { type: 'object', properties: { sourceAbimee: ABIMEE, topics: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, t: { type: 'string' }, hint: { type: 'string' }, covers: { type: 'array', items: { type: 'string' } } }, required: ['id', 't', 'hint'] } } }, required: ['topics'] }
+const SURVEY_SCHEMA = { type: 'object', properties: { sourceAbimee: ABIMEE, hits: { type: 'array', items: { type: 'object', properties: { topicId: { type: 'string' }, ref: { type: 'string' }, gist: { type: 'string' } }, required: ['topicId', 'ref', 'gist'] } } }, required: ['hits'] }
+const SYNTH_SCHEMA = { type: 'object', properties: { sourceAbimee: ABIMEE, topicId: { type: 'string' }, title: { type: 'string' }, markdown: { type: 'string' }, refs: { type: 'array', items: { type: 'string' } }, codeHint: { type: 'string' } }, required: ['topicId', 'title', 'markdown', 'refs'] }
+const AUDIT_SCHEMA = { type: 'object', properties: { sourceAbimee: ABIMEE, dry: { type: 'boolean' }, gaps: { type: 'array', items: { type: 'object', properties: { kind: { type: 'string', enum: ['survole', 'rate', 'doublon'] }, topicId: { type: 'string' }, newTopicTitle: { type: 'string' }, what: { type: 'string' }, ref: { type: 'string' }, fix: { type: 'string' } }, required: ['kind', 'what'] } } }, required: ['dry', 'gaps'] }
+const VERIFY_SCHEMA = { type: 'object', properties: { sourceAbimee: ABIMEE, topicId: { type: 'string' }, faithful: { type: 'boolean' }, issues: { type: 'array', items: { type: 'string' } } }, required: ['topicId', 'faithful', 'issues'] }
 
 const STRUCT = [
   '## <titre>',
@@ -127,7 +166,7 @@ function cadragePrompt(dom) {
     'CADRAGE du domaine "' + dom.title + '" (id ' + dom.domain + ') pour l Atlas RAW du coeur de regles « ' + COEUR + ' ». Tu decouvres TOUS les chapitres (tous les livres du perimetre ci-dessous) qui contiennent des regles de ce domaine.',
     'Lis les index : "' + REFERENCE.dir + '/00 - Index.md" (livre de REFERENCE du perimetre, ' + REFERENCE.ab + ', OBLIGATOIRE) puis les "00 - Index.md" des autres livres si pertinents. Grep au besoin les termes du domaine dans le livre de reference pour confirmer.',
     'Mapping ABBR -> dossier :',
-    bookMap,
+    MAPPING_LIVRES,
     '',
     'Les domaines de l Atlas — le TIEN est "' + dom.domain + '" ; les chapitres-FOYERS de tout AUTRE domaine sont HORS de ton perimetre :',
     CARTE_DOMAINES,
@@ -143,6 +182,7 @@ function cartoPrompt(dom, r) {
     'CARTOGRAPHIE DE SURFACE — domaine "' + dom.title + '". Tu lis UN chapitre et dresses l INVENTAIRE EXHAUSTIF des regles a couvrir.',
     'Chapitre : ' + r.ab + ' ' + r.nn + ' (Glob "' + dir + '/' + r.nn + ' - *.md" puis Read en ENTIER).',
     'Liste CHAQUE regle / table / sous-systeme distinct du domaine present dans ce chapitre (granulaire : 1 table = 1 item kind:"table"). Pour chaque : { item, kind, ref ("' + r.ab + ' ' + r.nn + ' l.X-Y"), gist }. N invente pas. Renvoie { items }.',
+    GRAMMAIRE_REFS,
     LANGUE_TERMES,
   ].join('\n')
 }
@@ -163,6 +203,7 @@ function surveyPrompt(dom, b, TOPICS) {
     'TOPICS (tag le plus proche ; sinon topicId="autre" + suggestion dans gist) :',
     TOPICS.map((t) => '- ' + t.id + ' : ' + t.t).join('\n'),
     'Pour chaque passage REELLEMENT lu : { topicId, ref ("' + b.ab + ' <NN> l.<debut>-<fin>", lignes reelles), gist (1 phrase, en francais) }. Les termes de jeu cites restent dans la langue du livre (' + b.language + '), jamais traduits. N invente rien ; si rien, hits:[]. Renvoie { hits }.',
+    GRAMMAIRE_REFS,
   ].join('\n')
 }
 
@@ -172,7 +213,7 @@ function synthPrompt(dom, t, hits, covers) {
   return [
     'Tu rediges UNE entree de l Atlas RAW : referentiel AUTOSUFFISANT du coeur de regles « ' + COEUR + ' » — repondre a toute question ET auditer le code SANS ouvrir les livres. Domaine : ' + dom.title + '. Topic : "' + t.t + '" (id ' + t.id + ').',
     'Mapping ABBR -> dossier (et LANGUE de chaque livre) :',
-    bookMap,
+    MAPPING_LIVRES,
     'Ce topic DOIT couvrir : ' + cov,
     'Passages-candidats du survey :',
     hitText,
@@ -202,7 +243,7 @@ function auditPrompt(dom, entries, inventory, autre) {
     'ENTREES PRODUITES (confronte a l inventaire ET a la source — ouvre les fichiers source pour verifier que tables/valeurs sont COMPLETES) :',
     entries.map((e) => '### ' + e.topicId + '\n' + e.markdown).join('\n\n'),
     'Mapping ABBR -> dossier :',
-    bookMap,
+    MAPPING_LIVRES,
     '',
     LANGUE_TERMES,
     LANGUE_TABLES,
@@ -216,6 +257,8 @@ function augmentPrompt(dom, existingMd, title, topicId, gaps) {
     existingMd ? ('ENTREE ACTUELLE (a COMPLETER/CORRIGER, pas a raccourcir sauf doublon) :\n' + existingMd) : 'NOUVEAU TOPIC (a creer).',
     'POINTS A TRAITER (lis la source aux refs ; transcris/ajoute/corrige pour de vrai ; pour un doublon, retire la redite et renvoie a l autre topic) :',
     gaps.map((g) => '- (' + g.kind + ') ' + g.what + (g.ref ? ' [' + g.ref + ']' : '') + (g.fix ? ' -> ' + g.fix : '')).join('\n'),
+    'Mapping ABBR -> dossier :',
+    MAPPING_LIVRES,
     '',
     'Produis l entree COMPLETE et autosuffisante (structure ci-dessous), tables VERBATIM ligne par ligne. ZERO invention.',
     LANGUE_FICHE,
@@ -234,7 +277,7 @@ function verifyPrompt(dom, entry) {
     'TITRE : ' + entry.title + '\nREFS : ' + (entry.refs || []).join(' | '),
     'MARKDOWN :\n' + entry.markdown,
     'Pour CHAQUE ref, ouvre la source (mapping ci-dessous), LIS, confirme. Verifie SPECIALEMENT les TABLES/valeurs transcrites (recopie exacte). Traque inventions, lignes fausses, valeurs/tables erronees, autre systeme, refs introuvables, livre hors perimetre, et toute citation TRADUITE la ou le verbatim de la langue du livre est exige.',
-    bookMap,
+    MAPPING_LIVRES,
     'Renvoie { topicId:"' + entry.topicId + '", faithful, issues:[...] }.',
   ].join('\n')
 }
@@ -252,7 +295,7 @@ async function applyGaps(dom, entries, gaps) {
     const existing = info.isNew ? null : entries.find((e) => e.topicId === info.topicId)
     const title = info.isNew ? info.title : (existing ? existing.title : info.topicId)
     const tid = info.isNew ? slug(info.title) : info.topicId
-    return agent(augmentPrompt(dom, existing ? existing.markdown : null, title, tid, info.gaps), { label: dom.domain + ':augment:' + tid, phase: 'Audit', model: 'opus', schema: SYNTH_SCHEMA })
+    return lire(augmentPrompt(dom, existing ? existing.markdown : null, title, tid, info.gaps), { label: dom.domain + ':augment:' + tid, phase: 'Audit', model: 'opus', schema: SYNTH_SCHEMA })
   }))
   const map = new Map(entries.map((e) => [e.topicId, e]))
   updates.forEach((u, i) => {
@@ -271,7 +314,7 @@ async function applyGaps(dom, entries, gaps) {
  *  la correction ni l assemblage ne relierait au topic reel. */
 async function verdictsDeFidelite(dom, entries, etiquette) {
   const rendus = await parallel(entries.map((e) => () =>
-    agent(verifyPrompt(dom, e), { label: dom.domain + ':' + etiquette + ':' + e.topicId, phase: 'Verif', model: 'sonnet', schema: VERIFY_SCHEMA })
+    lire(verifyPrompt(dom, e), { label: dom.domain + ':' + etiquette + ':' + e.topicId, phase: 'Verif', model: 'sonnet', agentType: TYPE_JUGEMENT, schema: VERIFY_SCHEMA })
       .then((v) => ({ e, v }))))
   const parId = {}
   rendus.forEach((x) => { if (x && x.v) parId[x.e.topicId] = { faithful: x.v.faithful, issues: x.v.issues || [] } })
@@ -315,6 +358,9 @@ function renduDeDomaine(dom, entries, issuesById, mesures) {
     auditLoops: mesures.auditLoops,
     lastAuditDry: mesures.lastAuditDry,
     surveyCounts: mesures.surveyCounts,
+    // Ce qu une source a d ABIME, SIGNALE et jamais repare : ce qui ENTRE (une reprise garde les
+    // signalements deja rendus) plus ce que CE passage d agents a recolte.
+    sourceAbimee: (mesures.sourceAbimee || []).concat(ABIMEES),
   }
 }
 
@@ -324,6 +370,7 @@ function renduDeDomaine(dom, entries, issuesById, mesures) {
  * leur verdict. Sort le MEME rendu, complete.
  */
 async function reprendreDomaine(rendu) {
+  ABIMEES = []
   const declare = DOMAINES.find((d) => d.cle === rendu.domain)
   const dom = { domain: rendu.domain, title: declare.titre }
   const entries = rendu.topics.map((t) => ({ topicId: t.topicId, title: t.title, markdown: t.markdown, refs: t.refs || [], codeHint: t.codeHint || '' }))
@@ -339,6 +386,7 @@ async function reprendreDomaine(rendu) {
     auditLoops: rendu.auditLoops === undefined ? 0 : rendu.auditLoops,
     lastAuditDry: rendu.lastAuditDry === undefined ? false : rendu.lastAuditDry,
     surveyCounts: rendu.surveyCounts || [],
+    sourceAbimee: rendu.sourceAbimee || [],
   }
   const aJuger = entries.filter((e) => !(issuesById[e.topicId] && issuesById[e.topicId].faithful === true))
   if (!aJuger.length) {
@@ -355,31 +403,32 @@ async function reprendreDomaine(rendu) {
  * en silence — le rendu le PORTE, et l assemblage le refuse.
  */
 async function runDomain(domain) {
+  ABIMEES = []
   const declare = DOMAINES.find((d) => d.cle === domain)
   const dom = { domain, title: declare.titre }
 
   phase('Cadrage')
-  const cad = await agent(cadragePrompt(dom), { label: dom.domain + ':cadrage', phase: 'Cadrage', model: 'sonnet', schema: CADRAGE_SCHEMA })
+  const cad = await lire(cadragePrompt(dom), { label: dom.domain + ':cadrage', phase: 'Cadrage', model: 'sonnet', schema: CADRAGE_SCHEMA })
   const COVERAGE = (cad && cad.coverageRefs) || []
   if (!COVERAGE.length) return { saute: 'cadrage VIDE : aucun chapitre dedie rendu par l agent de cadrage' }
   const SONNET = new Set([REFERENCE.ab, ...((cad && cad.sonnetBooks) || [])])
   log(dom.title + ' — cadrage : ' + COVERAGE.map((r) => r.ab + r.nn).join(',') + ' ; denses=' + [...SONNET].join(','))
 
   phase('Cartographie')
-  const invRes = await parallel(COVERAGE.map((r) => () => agent(cartoPrompt(dom, r), { label: dom.domain + ':carto:' + r.ab + '-' + r.nn, phase: 'Cartographie', model: 'sonnet', schema: INVENTORY_SCHEMA })))
+  const invRes = await parallel(COVERAGE.map((r) => () => lire(cartoPrompt(dom, r), { label: dom.domain + ':carto:' + r.ab + '-' + r.nn, phase: 'Cartographie', model: 'sonnet', schema: INVENTORY_SCHEMA })))
   const inventory = []
   invRes.forEach((x, i) => { if (x && x.items) for (const it of x.items) inventory.push({ item: it.item, kind: it.kind, ref: it.ref, gist: it.gist, src: COVERAGE[i].ab + ' ' + COVERAGE[i].nn }) })
   if (!inventory.length) return { saute: 'inventaire VIDE : la cartographie n a rapporte aucune regle sur ' + COVERAGE.map((r) => r.ab + ' ' + r.nn).join(', ') }
   log(dom.title + ' — inventaire : ' + inventory.length + ' elements')
 
   phase('Taxonomie')
-  const taxo = await agent(taxoPrompt(dom, inventory), { label: dom.domain + ':taxo', phase: 'Taxonomie', model: 'opus', schema: TAXO_SCHEMA })
+  const taxo = await lire(taxoPrompt(dom, inventory), { label: dom.domain + ':taxo', phase: 'Taxonomie', model: 'opus', schema: TAXO_SCHEMA })
   const TOPICS = (taxo && taxo.topics) || []
   if (!TOPICS.length) return { saute: 'taxonomie VIDE : aucun topic decoupe sur ' + inventory.length + ' elements inventories' }
   log(dom.title + ' — ' + TOPICS.length + ' topics')
 
   phase('Survey')
-  const surveyRes = await parallel(BOOKS.map((b) => () => agent(surveyPrompt(dom, b, TOPICS), { label: dom.domain + ':survey:' + b.ab, phase: 'Survey', model: SONNET.has(b.ab) ? 'sonnet' : 'haiku', schema: SURVEY_SCHEMA })))
+  const surveyRes = await parallel(BOOKS.map((b) => () => lire(surveyPrompt(dom, b, TOPICS), { label: dom.domain + ':survey:' + b.ab, phase: 'Survey', model: SONNET.has(b.ab) ? 'sonnet' : 'haiku', schema: SURVEY_SCHEMA })))
   const byTopic = {}
   TOPICS.forEach((t) => { byTopic[t.id] = [] })
   const autre = []
@@ -387,13 +436,14 @@ async function runDomain(domain) {
   log(dom.title + ' — survey : ' + Object.values(byTopic).reduce((n, a) => n + a.length, 0) + ' passages ; ' + autre.length + ' hors-taxo')
 
   phase('Synthese')
-  let entries = (await parallel(TOPICS.map((t) => () => agent(synthPrompt(dom, t, byTopic[t.id] || [], t.covers), { label: dom.domain + ':synth:' + t.id, phase: 'Synthese', model: 'opus', schema: SYNTH_SCHEMA })))).filter(Boolean)
+  let entries = (await parallel(TOPICS.map((t) => () => lire(synthPrompt(dom, t, byTopic[t.id] || [], t.covers), { label: dom.domain + ':synth:' + t.id, phase: 'Synthese', model: 'opus', schema: SYNTH_SCHEMA })))).filter(Boolean)
 
   phase('Audit')
   let loops = 0
   let lastDry = false
   while (loops < MAXLOOPS) {
-    const audit = await agent(auditPrompt(dom, entries, inventory, autre), { label: dom.domain + ':audit#' + (loops + 1), phase: 'Audit', model: 'opus', schema: AUDIT_SCHEMA })
+    // L audit CONFRONTE les entrees a la source et refute : c est un JUGEMENT, pas une redaction.
+    const audit = await lire(auditPrompt(dom, entries, inventory, autre), { label: dom.domain + ':audit#' + (loops + 1), phase: 'Audit', model: 'opus', agentType: TYPE_JUGEMENT, schema: AUDIT_SCHEMA })
     const gaps = (audit && audit.gaps) || []
     lastDry = !!(audit && audit.dry)
     log(dom.title + ' — audit #' + (loops + 1) + ' : ' + gaps.length + ' trous' + (lastDry ? ' — sec' : ''))

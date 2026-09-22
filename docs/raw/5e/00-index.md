@@ -22,7 +22,7 @@ s'y rend sans lien, avec le ticket qui doit son extraction — garde
 | `carrieres` | Classes, Carrières & Statut — aire cadrée, fiche à extraire (#1825) |
 | `competences` | Compétences — aire cadrée, fiche à extraire (#1825) |
 | `talents` | Talents — aire cadrée, fiche à extraire (#1825) |
-| `tests` | Tests & Degrés de Réussite — aire cadrée, fiche à extraire (#1825) |
+| [`tests`](tests.md) | Tests & Success Levels (SL) |
 | `intrigue` | Larcins & Subterfuges (vol, discrétion, jeu, pièges) — aire cadrée, fiche à extraire (#1825) |
 | `social` | Interactions sociales (statut, influence, beuverie, mensonge) — aire cadrée, fiche à extraire (#1825) |
 | `enquete` | Enquête, Recherche & Pistage — aire cadrée, fiche à extraire (#1825) |

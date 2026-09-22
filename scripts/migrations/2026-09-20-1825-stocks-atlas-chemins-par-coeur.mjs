@@ -19,9 +19,10 @@
  * bouge pas.
  * NE BOUGE PAS : une page que l'Atlas porte AUSSI à sa racine (le routeur `00-index.md`) — le chemin
  * cité y reste vrai.
- * IDEMPOTENT : rejouée sur l'état final, aucun chemin à plat ne subsiste et elle sort 0 sans écrire.
- * FAIL-FAST GROUPÉ, AVANT toute écriture : un nom porté par DEUX cœurs (le chemin cité ne dirait
- * plus lequel), un `docs/raw/…md` qui ne désigne aucun fichier de l'arbre après réécriture.
+ * IDEMPOTENT : rejouée sur l'état final, aucun chemin à plat ne subsiste et elle sort 0 sans écrire,
+ * même quand l'Atlas porte un nom sous plusieurs cœurs sans qu'aucun stock ne le cite à plat.
+ * FAIL-FAST GROUPÉ, AVANT toute écriture : un nom CITÉ À PLAT que deux cœurs portent (le chemin cité
+ * ne dirait plus lequel), un `docs/raw/…md` qui ne désigne aucun fichier de l'arbre après réécriture.
  * TÉMOIN : le texte d'arrivée, ramené à plat (tout `docs/raw/<coeur>/` → `docs/raw/`), est IDENTIQUE
  * au texte de départ ramené à plat — la migration n'a rien changé d'AUTRE qu'un préfixe de chemin.
  */
@@ -54,10 +55,12 @@ for (const page of pages) {
 const anomalies = [];
 /** Nom de page -> chemin relatif unique sous un cœur. */
 const cible = new Map();
+/** Nom de page -> chemins relatifs sous PLUSIEURS cœurs. */
+const ambigus = new Map();
 for (const [nom, relatifs] of sousCoeur) {
   if (aLaRacine.has(nom)) continue;
   if (relatifs.length > 1) {
-    anomalies.push(`« ${nom} » vit sous ${relatifs.length} cœurs (${relatifs.join(', ')}) — un chemin à plat ne dirait pas lequel`);
+    ambigus.set(nom, relatifs);
     continue;
   }
   cible.set(nom, relatifs[0]);
@@ -76,7 +79,16 @@ for (const fichier of FICHIERS) {
   const abs = path.join(ROOT, fichier);
   const brut = fs.readFileSync(abs, 'utf8');
   let n = 0;
+  /** Les noms ambigus cités à plat dans CE stock — une anomalie par nom, pas par occurrence. */
+  const citesAmbigus = new Set();
   const apres = brut.replace(CITATION, (tout, nom) => {
+    const relatifs = ambigus.get(nom);
+    if (relatifs) {
+      if (citesAmbigus.has(nom)) return tout;
+      citesAmbigus.add(nom);
+      anomalies.push(`${fichier} : « ${RAWDIR}/${nom} » est cité à plat, que l'Atlas porte sous ${relatifs.length} cœurs (${relatifs.join(', ')}) — le chemin ne dit pas lequel`);
+      return tout;
+    }
     const relatif = cible.get(nom);
     if (!relatif) return tout;
     n += 1;
@@ -85,6 +97,7 @@ for (const fichier of FICHIERS) {
   try { JSON.parse(apres); } catch (e) { anomalies.push(`${fichier} : le document réécrit n'est plus un JSON valide (${e.message})`); continue; }
   assert.equal(aPlat(apres), aPlat(brut), `${fichier} : la migration a changé autre chose qu'un préfixe de chemin`);
   for (const [, nom] of apres.matchAll(CITATION)) {
+    if (citesAmbigus.has(nom)) continue;
     if (!fs.existsSync(path.join(ROOT, RAWDIR, nom))) anomalies.push(`${fichier} : « ${RAWDIR}/${nom} » ne désigne aucune page de l'Atlas`);
   }
   for (const m of apres.matchAll(new RegExp(String.raw`${echappe(RAWDIR)}/[\w.-]+/[\w.-]+\.md`, 'gu'))) {

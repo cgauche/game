@@ -14,10 +14,10 @@
 **Couverture (profondeur), par groupe de livres** :
 
 - **Cœur 4e** : ✅ 40 traités par une fiche · 📖 33 transcrits par un catalogue seul (jamais traités) · 🟡 0 effleurés · ⬜ 1 trous, sur 74 chapitres-règles (hors artefacts OCR).
-- **Cœur 5e** : ✅ 0 traités par une fiche · 📖 0 transcrits par un catalogue seul (jamais traités) · 🟡 0 effleurés · ⬜ 116 trous, sur 116 chapitres-règles (hors artefacts OCR).
+- **Cœur 5e** : ✅ 33 traités par une fiche · 📖 0 transcrits par un catalogue seul (jamais traités) · 🟡 17 effleurés · ⬜ 67 trous, sur 117 chapitres-règles (hors artefacts OCR).
 - **Livres sans cœur déclaré** : ✅ 48 traités par une fiche · 📖 45 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous, sur 95 chapitres-règles (hors artefacts OCR).
 
-Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3874 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2471 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **710 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅0·📖0·🟡0·⬜116 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
+Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3830 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2470 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **667 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅33·📖0·🟡17·⬜67 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -239,58 +239,58 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - 🔻 enfoui l.52-250 « MENEUR DE JEU » — titre orné rétrogradé par l'extraction, 14 réf
   - 📖 l.39-51 « Trahison de Tzeentch » — transcrit en catalogue, jamais traité, 0 réf
 
-## CRB — ✅ 0 · 📖 0 · 🟡 0 · ⬜ 116
+## CRB — ✅ 33 · 📖 0 · 🟡 17 · ⬜ 67
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 001 | Cover | ➖ hors-règle | couverture : la seule accroche « A GRIM WORLD OF PERILOUS ADVENTURE » (3 lignes) |
 | 002 | Contents | ➖ hors-règle | sommaire (tables de renvois de pages) |
 | 003 | Credits | ➖ hors-règle | crédits d'édition |
-| 004 | Introduction | ➖ hors-règle | |
+| 004 | Introduction | ✅ | 18 (5e/tests.md ×18) |
 | 005 | Character Building | ⬜ |  |
-| 006 | 1. Species | ⬜ |  |
-| 007 | Character Sheet Explained | ⬜ |  |
-| 008 | Humans (Reiklanders) | ⬜ |  |
-| 009 | Dwarfs | ⬜ |  |
-| 010 | Halflings | ⬜ |  |
-| 011 | High Elves | ⬜ |  |
-| 012 | Wood Elves | ⬜ |  |
+| 006 | 1. Species | ✅ | 6 (5e/tests.md ×6) |
+| 007 | Character Sheet Explained | ✅ | 4 (5e/tests.md ×4) |
+| 008 | Humans (Reiklanders) | 🟡 | 2 (5e/tests.md ×2) |
+| 009 | Dwarfs | 🟡 | 2 (5e/tests.md ×2) |
+| 010 | Halflings | 🟡 | 2 (5e/tests.md ×2) |
+| 011 | High Elves | 🟡 | 2 (5e/tests.md ×2) |
+| 012 | Wood Elves | 🟡 | 2 (5e/tests.md ×2) |
 | 013 | 2. Class and Career | ⬜ |  |
 | 014 | 3. Characteristics | ⬜ |  |
 | 015 | 4. Skills | ⬜ |  |
-| 016 | 5. Talents, Trappings, and Final Game Details | ⬜ |  |
-| 017 | 6. Personality and Background | ⬜ |  |
+| 016 | 5. Talents, Trappings, and Final Game Details | 🟡 | 2 (5e/tests.md ×2) |
+| 017 | 6. Personality and Background | 🟡 | 2 (5e/tests.md ×2) |
 | 018 | Class and Careers | ⬜ |  |
 | 019 | Skills and Talents | ⬜ |  |
-| 020 | Skills | ⬜ |  |
-| 021 | Talents | ⬜ |  |
-| 022 | Rules | ⬜ |  |
-| 023 | Tests | ⬜ |  |
-| 024 | Making a Test | ⬜ |  |
-| 025 | Fate and Fortune | ⬜ |  |
-| 026 | Using the Rules | ⬜ |  |
-| 027 | Theft and Skullduggery | ⬜ |  |
-| 028 | Flattery, Bribery, and Status | ⬜ |  |
-| 029 | Nosing Around | ⬜ |  |
-| 030 | Life Beyond the Walls | ⬜ |  |
-| 031 | Cunning Crafts | ⬜ |  |
-| 032 | Getting Around | ⬜ |  |
-| 033 | Combat | ⬜ |  |
-| 034 | Taking Your Turn | ⬜ |  |
+| 020 | Skills | ✅ | 15 (5e/tests.md ×15) |
+| 021 | Talents | ✅ | 22 (5e/tests.md ×22) |
+| 022 | Rules | ✅ | 13 (5e/tests.md ×13) |
+| 023 | Tests | ✅ | 11 (5e/tests.md ×11) |
+| 024 | Making a Test | ✅ | 359 (5e/tests.md ×359) |
+| 025 | Fate and Fortune | ✅ | 71 (5e/tests.md ×71) |
+| 026 | Using the Rules | ✅ | 3 (5e/tests.md ×3) |
+| 027 | Theft and Skullduggery | ✅ | 6 (5e/tests.md ×6) |
+| 028 | Flattery, Bribery, and Status | ✅ | 3 (5e/tests.md ×3) |
+| 029 | Nosing Around | ✅ | 4 (5e/tests.md ×4) |
+| 030 | Life Beyond the Walls | 🟡 | 2 (5e/tests.md ×2) |
+| 031 | Cunning Crafts | 🟡 | 2 (5e/tests.md ×2) |
+| 032 | Getting Around | ✅ | 4 (5e/tests.md ×4) |
+| 033 | Combat | ✅ | 4 (5e/tests.md ×4) |
+| 034 | Taking Your Turn | ✅ | 5 (5e/tests.md ×5) |
 | 035 | Moving in Combat | ⬜ |  |
-| 036 | Attacking | ⬜ |  |
-| 037 | Momentum | ⬜ |  |
-| 038 | Injury, Healing, and Death | ⬜ |  |
-| 039 | Disease and Infection | ⬜ |  |
-| 040 | Poisons | ⬜ |  |
-| 041 | Psychology | ⬜ |  |
-| 042 | Conditions | ⬜ |  |
+| 036 | Attacking | ✅ | 29 (5e/tests.md ×29) |
+| 037 | Momentum | ✅ | 5 (5e/tests.md ×5) |
+| 038 | Injury, Healing, and Death | ✅ | 11 (5e/tests.md ×11) |
+| 039 | Disease and Infection | 🟡 | 2 (5e/tests.md ×2) |
+| 040 | Poisons | 🟡 | 2 (5e/tests.md ×2) |
+| 041 | Psychology | ✅ | 4 (5e/tests.md ×4) |
+| 042 | Conditions | ✅ | 14 (5e/tests.md ×14) |
 | 043 | Corruption and Mutation | ⬜ |  |
 | 044 | Between Adventures | ⬜ |  |
 | 045 | Spending XP | ⬜ |  |
 | 046 | Regional Events | ⬜ |  |
-| 047 | Character Events | ⬜ |  |
-| 048 | Endeavours | ⬜ |  |
+| 047 | Character Events | ✅ | 4 (5e/tests.md ×4) |
+| 048 | Endeavours | 🟡 | 2 (5e/tests.md ×2) |
 | 049 | Religion and Belief | ⬜ |  |
 | 050 | Gods of the Empire | ⬜ |  |
 | 051 | The Cults | ⬜ |  |
@@ -307,18 +307,18 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 062 | Dwarf Ancestor Gods | ⬜ |  |
 | 063 | Halfling Gods | ⬜ |  |
 | 064 | Chaos Gods | ⬜ |  |
-| 065 | Prayers | ⬜ |  |
-| 066 | Blessings | ⬜ |  |
-| 067 | Miracles | ⬜ |  |
+| 065 | Prayers | ✅ | 10 (5e/tests.md ×10) |
+| 066 | Blessings | 🟡 | 2 (5e/tests.md ×2) |
+| 067 | Miracles | ✅ | 4 (5e/tests.md ×4) |
 | 068 | Magic | ⬜ |  |
 | 069 | The Aethyr | ⬜ |  |
-| 070 | Magic Rules | ⬜ |  |
-| 071 | Colour Magic | ⬜ |  |
-| 072 | Witch Magic | ⬜ |  |
+| 070 | Magic Rules | ✅ | 11 (5e/tests.md ×11) |
+| 071 | Colour Magic | ✅ | 10 (5e/tests.md ×10) |
+| 072 | Witch Magic | ✅ | 3 (5e/tests.md ×3) |
 | 073 | Dark Magic | ⬜ |  |
-| 074 | Chaos Magic | ⬜ |  |
-| 075 | The Gamemaster | ⬜ |  |
-| 076 | Running the Game | ⬜ |  |
+| 074 | Chaos Magic | 🟡 | 1 (5e/tests.md ×1) |
+| 075 | The Gamemaster | ✅ | 12 (5e/tests.md ×12) |
+| 076 | Running the Game | ✅ | 97 (5e/tests.md ×97) |
 | 077 | Glorious Reikland | ⬜ |  |
 | 078 | The Lie of the Land | ⬜ |  |
 | 079 | The Powers That Be | ⬜ |  |
@@ -328,21 +328,21 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 083 | Going to Market | ⬜ |  |
 | 084 | Craftsmanship | ⬜ |  |
 | 085 | Encumbrance | ⬜ |  |
-| 086 | Weapons | ⬜ |  |
+| 086 | Weapons | ✅ | 6 (5e/tests.md ×6) |
 | 087 | Armour | ⬜ |  |
 | 088 | Packs and Containers | ⬜ |  |
 | 089 | Clothing and Accessories | ⬜ |  |
-| 090 | Food, Drink, and Lodging | ⬜ |  |
+| 090 | Food, Drink, and Lodging | 🟡 | 2 (5e/tests.md ×2) |
 | 091 | Tools and Kits | ⬜ |  |
 | 092 | Books and Documents | ⬜ |  |
 | 093 | Trade Tools and Workshops | ⬜ |  |
 | 094 | Animals and Vehicles | ⬜ |  |
 | 095 | Travel Prices | ⬜ |  |
 | 096 | Poisons | ⬜ |  |
-| 097 | Herbs and Remedies | ⬜ |  |
+| 097 | Herbs and Remedies | ✅ | 4 (5e/tests.md ×4) |
 | 098 | Prosthetics | ⬜ |  |
 | 099 | Magical Items | ⬜ |  |
-| 100 | Miscellaneous Trappings | ⬜ |  |
+| 100 | Miscellaneous Trappings | 🟡 | 2 (5e/tests.md ×2) |
 | 101 | Hirelings | ⬜ |  |
 | 102 | Bestiary | ⬜ |  |
 | 103 | Creature Hit Locations | ⬜ |  |
@@ -356,9 +356,9 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 111 | Daemons, the Gibbering Hosts | ⬜ |  |
 | 112 | The Loathsome Ratmen | ⬜ |  |
 | 113 | Creature Templates | ⬜ |  |
-| 114 | Ungrakk's Brayherd | ⬜ |  |
-| 115 | Creature Traits | ⬜ |  |
-| 116 | Appendix I | ⬜ |  |
+| 114 | Ungrakk's Brayherd | 🟡 | 2 (5e/tests.md ×2) |
+| 115 | Creature Traits | ✅ | 5 (5e/tests.md ×5) |
+| 116 | Appendix I | ✅ | 22 (5e/tests.md ×22) |
 | 117 | Appendix II | ⬜ |  |
 | 118 | Appendix III | ⬜ |  |
 | 119 | Appendix IV | ⬜ |  |
@@ -368,33 +368,24 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
+- **CRB 004** (Introduction) :
+  - ➖ l.19-24 « NEW TO ROLEPLAYING GAMES » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
 - **CRB 005** (Character Building) :
   - ⬜ l.20-25 « FITTING IN » — candidat trou de règle, 0 réf
-- **CRB 008** (Humans (Reiklanders)) :
-  - ⬜ l.65-76 « Fate » — candidat trou de règle, 0 réf
 - **CRB 009** (Dwarfs) :
   - ⬜ l.61-64 « Fluent Languages » — candidat trou de règle, 0 réf
   - ⬜ l.65-68 « Starting Skills » — candidat trou de règle, 0 réf
-  - ⬜ l.69-86 « Starting Talents » — candidat trou de règle, 0 réf
-- **CRB 010** (Halflings) :
-  - ⬜ l.41-78 « Halfling Physical Characteristics » — candidat trou de règle, 0 réf
-- **CRB 011** (High Elves) :
-  - ⬜ l.57-80 « Fluent Languages » — candidat trou de règle, 0 réf
 - **CRB 012** (Wood Elves) :
   - ⬜ l.47-68 « Wood Elf Physical Characteristics » — candidat trou de règle, 0 réf
-  - ⬜ l.69-86 « Starting Talents » — candidat trou de règle, 0 réf
   - ⬜ l.87-94 « SYLVAN COUSINS » — candidat trou de règle, 0 réf
 - **CRB 013** (2. Class and Career) :
   - ⬜ l.17-104 « CAREER LEVEL » — candidat trou de règle, 0 réf
-- **CRB 016** (5. Talents, Trappings, and Final Game Details) :
-  - ⬜ l.15-90 « STARTING WEALTH » — candidat trou de règle, 0 réf
 - **CRB 017** (6. Personality and Background) :
   - ⬜ l.5-8 « Who are You? » — candidat trou de règle, 0 réf
   - ⬜ l.9-20 « Choose an Ambition » — candidat trou de règle, 0 réf
   - ⬜ l.21-26 « Achieving Your Ambitions » — candidat trou de règle, 0 réf
   - ⬜ l.27-33 « What Brings You Together? » — candidat trou de règle, 0 réf
   - ⬜ l.34-65 « QUESTIONS » — candidat trou de règle, 0 réf
-  - ⬜ l.66-71 « Party Ambition » — candidat trou de règle, 0 réf
   - ⬜ l.72-87 « PLAYER REFERENCE » — candidat trou de règle, 0 réf
 - **CRB 018** (Class and Careers) :
   - ⬜ l.11-14 « CLASSES » — candidat trou de règle, 0 réf
@@ -553,12 +544,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.4076-4105 « Career Path » — candidat trou de règle, 0 réf
   - ⬜ l.4106-4117 « Wrecker Captain — Silver 5 » — candidat trou de règle, 0 réf
 - **CRB 020** (Skills) :
-  - ⬜ l.3-10 « SKILLS » — candidat trou de règle, 0 réf
-  - ⬜ l.11-20 « Basic and Advanced Skills » — candidat trou de règle, 0 réf
-  - ⬜ l.21-56 « Grouped Skills and Specialisation » — candidat trou de règle, 0 réf
   - ⬜ l.57-60 « Animal Care (Int) *advanced* » — candidat trou de règle, 0 réf
   - ⬜ l.61-66 « Animal Training (Int) *advanced, grouped* » — candidat trou de règle, 0 réf
-  - ⬜ l.67-72 « Art (Dex) *basic, grouped* » — candidat trou de règle, 0 réf
   - ⬜ l.73-76 « Athletics (Ag) *basic* » — candidat trou de règle, 0 réf
   - ⬜ l.77-80 « Bribery (Fel) *basic* » — candidat trou de règle, 0 réf
   - ⬜ l.81-86 « Channelling (WP) *advanced, grouped* » — candidat trou de règle, 0 réf
@@ -583,7 +570,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.165-170 « Melee (WS) *basic, grouped* » — candidat trou de règle, 0 réf
   - ⬜ l.171-174 « Navigation (I) *basic* » — candidat trou de règle, 0 réf
   - ⬜ l.175-178 « Outdoor Survival (Int) *basic* » — candidat trou de règle, 0 réf
-  - ⬜ l.179-182 « Perception (I) *basic* » — candidat trou de règle, 0 réf
   - ⬜ l.183-188 « Perform (Ag) *advanced, grouped* » — candidat trou de règle, 0 réf
   - ⬜ l.189-192 « Pick Lock (Dex) *advanced* » — candidat trou de règle, 0 réf
   - ⬜ l.193-196 « Play (Dex) *advanced, grouped* » — candidat trou de règle, 0 réf
@@ -606,11 +592,9 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.7-10 « Accurate Shot » — candidat trou de règle, 0 réf
   - ⬜ l.11-14 « Acute Sense (Sense) » — candidat trou de règle, 0 réf
   - ⬜ l.15-18 « Aethyric Attunement » — candidat trou de règle, 0 réf
-  - ⬜ l.19-22 « Alley Cat » — candidat trou de règle, 0 réf
   - ⬜ l.23-26 « Ambidextrous » — candidat trou de règle, 0 réf
   - ⬜ l.27-30 « Animal Affinity » — candidat trou de règle, 0 réf
   - ⬜ l.31-44 « Arcane Magic (Lore) » — candidat trou de règle, 0 réf
-  - ⬜ l.45-48 « Argumentative » — candidat trou de règle, 0 réf
   - ⬜ l.49-52 « Artistic (Art) » — candidat trou de règle, 0 réf
   - ⬜ l.53-58 « Attractive » — candidat trou de règle, 0 réf
   - ⬜ l.59-62 « Beat Blade » — candidat trou de règle, 0 réf
@@ -626,7 +610,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.105-108 « Catfall » — candidat trou de règle, 0 réf
   - ⬜ l.109-112 « Cat-tongued » — candidat trou de règle, 0 réf
   - ⬜ l.113-128 « Chaos Magic (Lore) » — candidat trou de règle, 0 réf
-  - ⬜ l.129-132 « Combat Aware » — candidat trou de règle, 0 réf
   - ⬜ l.133-138 « Combat Master » — candidat trou de règle, 0 réf
   - ⬜ l.139-142 « Commanding Presence » — candidat trou de règle, 0 réf
   - ⬜ l.143-146 « Concoct » — candidat trou de règle, 0 réf
@@ -641,7 +624,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.185-188 « Dirty Fighting » — candidat trou de règle, 0 réf
   - ⬜ l.189-192 « Disarm » — candidat trou de règle, 0 réf
   - ⬜ l.193-196 « Distract » — candidat trou de règle, 0 réf
-  - ⬜ l.197-200 « Doomed » — candidat trou de règle, 0 réf
   - ⬜ l.201-223 « DOOMINGS » — candidat trou de règle, 0 réf
   - ⬜ l.224-227 « Dual Wielder » — candidat trou de règle, 0 réf
   - ⬜ l.228-233 « Embezzle » — candidat trou de règle, 0 réf
@@ -661,35 +643,18 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.290-293 « Gregarious » — candidat trou de règle, 0 réf
   - ⬜ l.294-297 « Gunner » — candidat trou de règle, 0 réf
   - ⬜ l.298-301 « Hardy » — candidat trou de règle, 0 réf
-  - ⬜ l.302-307 « Hatred (Group) » — candidat trou de règle, 0 réf
   - ⬜ l.308-311 « Holy Hatred » — candidat trou de règle, 0 réf
   - ⬜ l.312-315 « Holy Visions » — candidat trou de règle, 0 réf
   - ⬜ l.316-339 « Hunter's Eye » — candidat trou de règle, 0 réf
-  - ⬜ l.340-743 « Invoke (Deity) » — candidat trou de règle, 0 réf
-- **CRB 024** (Making a Test) :
-  - ⬜ l.25-36 « DARKNESS AND TESTS » — candidat trou de règle, 0 réf
-  - ⬜ l.37-145 « CRITICALS AND FUMBLES » — candidat trou de règle, 0 réf
-- **CRB 027** (Theft and Skullduggery) :
-  - ⬜ l.49-106 « EXAMPLE DIFFICULTIES OF COMMON UNDERHANDED TASKS » — candidat trou de règle, 0 réf
-  - ⬜ l.107-258 « EXAMPLE OUTCOMES » — candidat trou de règle, 0 réf
 - **CRB 028** (Flattery, Bribery, and Status) :
-  - ⬜ l.54-85 « SOCIAL TEST DIFFICULTY FACTORS » — candidat trou de règle, 0 réf
   - ⬜ l.86-259 « Making Friends (and Enemies) » — candidat trou de règle, 0 réf
   - ⬜ l.260-269 « Mistaken Identity » — candidat trou de règle, 0 réf
 - **CRB 029** (Nosing Around) :
-  - ⬜ l.45-89 « EXAMPLE DIFFICULTIES OF COMMON INVESTIGATIVE TASKS » — candidat trou de règle, 0 réf
-  - ⬜ l.90-203 « BATTLE TONGUE » — candidat trou de règle, 0 réf
   - ⬜ l.204-209 « Tracking » — candidat trou de règle, 0 réf
-- **CRB 032** (Getting Around) :
-  - ⬜ l.37-140 « HOW FAR, THOUGH? » — candidat trou de règle, 0 réf
 - **CRB 035** (Moving in Combat) :
   - ⬜ l.43-58 « Disengaging » — candidat trou de règle, 0 réf
-- **CRB 036** (Attacking) :
-  - ⬜ l.42-253 « 4: Apply Damage » — candidat trou de règle, 0 réf
 - **CRB 038** (Injury, Healing, and Death) :
-  - ⬜ l.123-201 « ARM CRITICAL WOUNDS » — candidat trou de règle, 0 réf
   - ⬜ l.202-299 « Broken Bones » — candidat trou de règle, 0 réf
-  - ⬜ l.300-303 « Tongue » — candidat trou de règle, 0 réf
 - **CRB 039** (Disease and Infection) :
   - ⬜ l.75-152 « Itching Pox » — candidat trou de règle, 0 réf
   - ⬜ l.153-198 « Infection » — candidat trou de règle, 0 réf
@@ -700,7 +665,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.61-144 « Manifestation Time » — candidat trou de règle, 0 réf
 - **CRB 048** (Endeavours) :
   - ⬜ l.27-67 « Elves and Yenlui » — candidat trou de règle, 0 réf
-  - ⬜ l.68-207 « Change Career » — candidat trou de règle, 0 réf
   - ⬜ l.208-221 « Training » — candidat trou de règle, 0 réf
 - **CRB 050** (Gods of the Empire) :
   - ⬜ l.37-40 « The Chaos Gods » — candidat trou de règle, 0 réf
@@ -723,7 +687,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.47-62 « Blessing of Battle » — candidat trou de règle, 0 réf
   - ⬜ l.63-80 « Blessing of Charisma » — candidat trou de règle, 0 réf
   - ⬜ l.81-96 « Blessing of Courage » — candidat trou de règle, 0 réf
-  - ⬜ l.97-146 « Blessing of Fortune » — candidat trou de règle, 0 réf
   - ⬜ l.147-170 « Blessing of Protection » — candidat trou de règle, 0 réf
   - ⬜ l.171-188 « Blessing of Savagery » — candidat trou de règle, 0 réf
   - ⬜ l.189-212 « Blessing of Wisdom » — candidat trou de règle, 0 réf
@@ -735,7 +698,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.123-154 « Fury's Call » — candidat trou de règle, 0 réf
   - ⬜ l.155-162 « An Invitation » — candidat trou de règle, 0 réf
   - ⬜ l.163-168 « Cat's Eyes » — candidat trou de règle, 0 réf
-  - ⬜ l.169-176 « Cheat the Odds » — candidat trou de règle, 0 réf
   - ⬜ l.177-222 « Ranald's Grace » — candidat trou de règle, 0 réf
   - ⬜ l.223-251 « Rhya's Shelter » — candidat trou de règle, 0 réf
   - ⬜ l.252-269 « Rhya's Union » — candidat trou de règle, 0 réf
@@ -744,7 +706,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.342-381 « Twin-tailed Comet » — candidat trou de règle, 0 réf
   - ⬜ l.382-387 « Lord of the Hunt » — candidat trou de règle, 0 réf
   - ⬜ l.388-405 « Tanglefoot » — candidat trou de règle, 0 réf
-  - ⬜ l.406-425 « Hoarfrost's Chill » — candidat trou de règle, 0 réf
   - ⬜ l.426-455 « The Snow King's Judgement » — candidat trou de règle, 0 réf
   - ⬜ l.456-477 « Blind Justice » — candidat trou de règle, 0 réf
   - ⬜ l.478-493 « Truth Will Out » — candidat trou de règle, 0 réf
@@ -759,17 +720,11 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.21-24 « Fumbled Casting » — candidat trou de règle, 0 réf
   - ⬜ l.25-28 « Duration » — candidat trou de règle, 0 réf
   - ⬜ l.29-32 « Magic Missiles » — candidat trou de règle, 0 réf
-  - ⬜ l.33-38 « Touch Spells in Combat » — candidat trou de règle, 0 réf
   - ⬜ l.39-46 « Ingredients » — candidat trou de règle, 0 réf
-  - ⬜ l.47-118 « Spellcasting Limitations » — candidat trou de règle, 0 réf
   - ⬜ l.119-122 « Memorising Spells » — candidat trou de règle, 0 réf
-  - ⬜ l.123-154 « Grimoires » — candidat trou de règle, 0 réf
-  - ⬜ l.155-226 « Dispelling Persistent Spells » — candidat trou de règle, 0 réf
-  - ⬜ l.227-596 « Animal Friend » — candidat trou de règle, 0 réf
 - **CRB 071** (Colour Magic) :
   - ⬜ l.382-574 « Blinding Light » — candidat trou de règle, 0 réf
 - **CRB 076** (Running the Game) :
-  - ⬜ l.105-153 « Extended Tests » — candidat trou de règle, 0 réf
   - ⬜ l.154-240 « Roads & Rivers » — candidat trou de règle, 0 réf
 - **CRB 078** (The Lie of the Land) :
   - ⬜ l.15-58 « The Grey Mountains » — candidat trou de règle, 0 réf
@@ -809,10 +764,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.59-132 « STORMVERMIN » — candidat trou de règle, 0 réf
 - **CRB 113** (Creature Templates) :
   - ⬜ l.103-148 « SPELLCASTER » — candidat trou de règle, 0 réf
-- **CRB 114** (Ungrakk's Brayherd) :
-  - ⬜ l.47-180 « UNGRAKK - GOR BEASTLORD (COMMANDER) » — candidat trou de règle, 0 réf
 - **CRB 115** (Creature Traits) :
-  - ⬜ l.5-8 « Afraid (Target) » — candidat trou de règle, 0 réf
   - ⬜ l.9-12 « Amphibious » — candidat trou de règle, 0 réf
   - ⬜ l.13-16 « Animosity (Target) » — candidat trou de règle, 0 réf
   - ⬜ l.17-20 « Belligerent » — candidat trou de règle, 0 réf
@@ -824,7 +776,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.62-65 « Constrictor » — candidat trou de règle, 0 réf
   - ⬜ l.66-69 « Construct » — candidat trou de règle, 0 réf
   - ⬜ l.70-73 « Corrosive Blood » — candidat trou de règle, 0 réf
-  - ⬜ l.74-81 « Corruption (Strength) » — candidat trou de règle, 0 réf
   - ⬜ l.82-87 « Daemonic (Rating) » — candidat trou de règle, 0 réf
   - ⬜ l.88-91 « Disease (Type) » — candidat trou de règle, 0 réf
   - ⬜ l.92-95 « Distracting » — candidat trou de règle, 0 réf
@@ -844,7 +795,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.168-171 « Magic Resistance » — candidat trou de règle, 0 réf
   - ⬜ l.172-181 « Mental Corruption » — candidat trou de règle, 0 réf
   - ⬜ l.182-185 « Mutation » — candidat trou de règle, 0 réf
-  - ⬜ l.186-189 « Night Vision » — candidat trou de règle, 0 réf
   - ⬜ l.190-193 « Painless » — candidat trou de règle, 0 réf
   - ⬜ l.194-197 « Petrifying Gaze » — candidat trou de règle, 0 réf
   - ⬜ l.198-201 « Regeneration » — candidat trou de règle, 0 réf
@@ -2162,4 +2112,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: a490278ac6b5d9baac9797a7e23229615371893d (461 fichiers, 20 dossiers) corps: 8cc89259a03d0eba336e53260f107805eb060ea5 -->
+<!-- sources-empreinte: 035c74cadfe98b9556e23e5436c2fb4f0141df1d (462 fichiers, 20 dossiers) corps: 3b6803b9613ca0eaf1d66732488d418ec4b90355 -->

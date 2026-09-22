@@ -135,15 +135,6 @@ export function assemble(data, { racine = {}, source = '<entrée>', titleArg, ra
   refuserLInfidele(topics, domain)
   const body = topics.map((t) => withPlaceholderField(t.markdown.trim())).join('\n\n---\n\n')
 
-  const autre = (data.autre || []).length
-    ? (data.autre || []).map((h) => `- \`${h.ref}\` (${h.book}) — ${h.gist}`).join('\n')
-    : '_(aucun)_'
-
-  const counts = (data.surveyCounts || []).map((c) => `${c.book} ${c.hits}`).join(' · ')
-  const meta = []
-  if (data.inventoryCount != null) meta.push(`${data.inventoryCount} éléments inventoriés`)
-  if (data.auditLoops != null) meta.push(`${data.auditLoops} boucle(s) d'audit` + (data.lastAuditDry ? ' (sec)' : ' (plafond atteint)'))
-
   const page = (toc) => `${enTeteDeFiche(title)}
 
 > Référentiel **autosuffisant** des règles du cœur **${coeur}** (RAW), consolidé sur les livres autorisés, à usage
@@ -151,7 +142,7 @@ export function assemble(data, { racine = {}, source = '<entrée>', titleArg, ra
 > (last-recours = la source). Abréviations : [\`sources.md\`](../sources.md). Index : [\`00-index.md\`](00-index.md).
 >
 > ⚠️ Agent-généré + vérifié (passe adversariale). Le champ **Implémente** est DÉRIVÉ du code
-> (\`npm run raw:implemente\`), jamais écrit à la main. ${meta.join(' · ')}.
+> (\`npm run raw:implemente\`), jamais écrit à la main.
 
 ## Sommaire
 
@@ -160,16 +151,6 @@ ${toc}
 ---
 
 ${body}
-
----
-
-## Hors-taxonomie (bucket « autre »)
-
-${autre}
-
----
-
-*Couverture du survey* : ${counts}.
 `
   // Le Sommaire se lit dans la PAGE : ses ancres se calculent sur la page elle-même, Sommaire vide
   // (une ligne de liste n'est pas un titre — la table d'ancres est la même des deux côtés).

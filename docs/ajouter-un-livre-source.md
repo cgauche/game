@@ -423,6 +423,12 @@ La chaîne, dans l'ordre — **périmètre → workflow → assemble → apply �
    français, les **citations, termes et abréviations de jeu** restent verbatim dans la langue du livre
    cité (champ `language`), jamais traduits. Il ne nomme **aucun domaine** non plus : la carte et le
    lot lui arrivent par le même `args`.
+   Tous ses agents sont en **LECTURE SEULE** (type d'agent sans outil d'écriture, posé au point
+   unique `lire()`, et clause dans chaque prompt) : un passage de source tronqué ou fusionné se
+   SIGNALE (`sourceAbimee: [{ phase, ref, constat }]`, remonté au rendu du domaine) et ne se répare
+   jamais — un agent qui corrige la source qu'il cite ensuite fabrique sa propre preuve. APRÈS un
+   run, `git status --porcelain` du worktree doit donc être IDENTIQUE à ce qu'il était AVANT : toute
+   écriture apparue rend le rendu suspect (une preuve a pu être fabriquée) et se remonte au ticket.
    Il rend `{ coeur, supplements, domains: […], sautes: [{ domain, raison }] }` —
    `sautes` nomme les domaines qu'il n'a PAS traités (cadrage, inventaire ou taxonomie vides), et
    `assemble-domain` refuse un rendu qui en porte : une fiche absente ne doit pas pouvoir se lire

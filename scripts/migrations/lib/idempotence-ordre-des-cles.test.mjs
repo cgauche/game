@@ -38,7 +38,6 @@
  * d'un invariant que les migrations POSSÈDENT au lieu de l'ordre des AUTRES clés.
  */
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -46,6 +45,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { ATTENDU_ROUGE } from '../replay.mjs';
+import { joue } from './joue.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const MIGRATIONS = path.join(RACINE, 'scripts/migrations');
@@ -87,14 +87,6 @@ function depotJetable(fichier, transforme) {
 
 /** Le dépôt jetable, effacé : il ne porte que des COPIES, donc rien de l'arbre ne part avec. */
 const efface = (racine) => fs.rmSync(racine, { recursive: true, force: true });
-
-/** La migration jouée dans le dépôt jetable. REND `{ code, stdout, stderr }`. */
-function joue(racine, migration) {
-  const cible = path.join(racine, 'scripts/migrations', migration);
-  if (!fs.existsSync(cible)) fs.copyFileSync(path.join(MIGRATIONS, migration), cible);
-  const r = spawnSync(process.execPath, [cible], { encoding: 'utf8' });
-  return { code: r.status, stdout: r.stdout ?? '', stderr: r.stderr ?? '' };
-}
 
 /**
  * TÉMOIN D'ÉCRITURE — l'horodatage seul ne suffit pas sous Windows (granularité de l'ordre de la

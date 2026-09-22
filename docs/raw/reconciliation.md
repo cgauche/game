@@ -8,7 +8,7 @@
 > Tolérance ligne = ±20.
 
 **Sens A — code → Atlas (tous livres)** : 12 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 2 réf(s) sans chapitre (non réconciliables par cette mesure). Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
-**Sens B — Atlas → code** : 3 marqueur(s) « (non implémenté) » (tous docs), dont 1 sous dette déclarée, 0 sans entrée et 2 hors champ Implémente · LDB (cœur 4e) : 1 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédits : 12 · 11 crédité(s) par une source folio de `src/data` · 0 sous dette de fiche déclarée) · CRB (cœur 5e) : 0 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédits : 0 · 0 crédité(s) par une source folio de `src/data` · 0 sous dette de fiche déclarée).
+**Sens B — Atlas → code** : 19 marqueur(s) « (non implémenté) » (tous docs), dont 17 sous dette déclarée, 0 sans entrée et 2 hors champ Implémente · LDB (cœur 4e) : 1 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédits : 12 · 11 crédité(s) par une source folio de `src/data` · 0 sous dette de fiche déclarée) · CRB (cœur 5e) : 0 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédits : 50 · 0 crédité(s) par une source folio de `src/data` · 50 sous dette de fiche déclarée).
 
 ## A0 — Résumé Sens A par livre
 
@@ -158,15 +158,31 @@
 
 ## B1 — Règles décrites par l'Atlas marquées « (non implémenté) »
 
-1 sous dette déclarée · 0 sans entrée de `src/data/raw.manifest.json` · 2 hors champ `**Implémente :**`.
+17 sous dette déclarée · 0 sans entrée de `src/data/raw.manifest.json` · 2 hors champ `**Implémente :**`.
 
 - **00-index.md** L41 — hors champ Implémente (prose) — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
 - **4e/00-index.md** L18 — hors champ Implémente (prose) — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
 - **4e/bestiaire.md** L382 — bloqué — **Implémente :** (non implémenté)
+- **5e/tests.md** L168 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L297 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L485 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L576 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L700 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L790 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L933 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L1042 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L1099 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L1166 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L1296 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L1375 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L1471 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L1538 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L1610 — dette #1873 — **Implémente :** (non implémenté)
+- **5e/tests.md** L1659 — dette #1873 — **Implémente :** (non implémenté)
 
 ### Dettes de FICHE — ce qu'elles couvrent ENCORE
 
-_Aucune entrée de fiche au manifest._
+- **5e/tests.md** (#1873) — couvre 16 topic(s) sur 16
 
 ## B2 LDB (cœur 4e) — Chapitres cités par l'Atlas, jamais référencés dans le code
 
@@ -181,11 +197,11 @@ LDB 38
 
 ## B2 CRB (cœur 5e) — Chapitres cités par l'Atlas, jamais référencés dans le code
 
-_Avant crédits (0)_ : —
+_Avant crédits (50)_ : CRB 4 · CRB 6 · CRB 7 · CRB 8 · CRB 9 · CRB 10 · CRB 11 · CRB 12 · CRB 16 · CRB 17 · CRB 20 · CRB 21 · CRB 22 · CRB 23 · CRB 24 · CRB 25 · CRB 26 · CRB 27 · CRB 28 · CRB 29 · CRB 30 · CRB 31 · CRB 32 · CRB 33 · CRB 34 · CRB 36 · CRB 37 · CRB 38 · CRB 39 · CRB 40 · CRB 41 · CRB 42 · CRB 47 · CRB 48 · CRB 65 · CRB 66 · CRB 67 · CRB 70 · CRB 71 · CRB 72 · CRB 74 · CRB 75 · CRB 76 · CRB 86 · CRB 90 · CRB 97 · CRB 100 · CRB 114 · CRB 115 · CRB 116
 
 _Crédités par une source folio de `src/data/*.json` (0, donnée référencée sans réf de ligne)_ : —
 
-_Sous dette de fiche déclarée (0, toutes les fiches qui décrivent le chapitre sont ticketées)_ : —
+_Sous dette de fiche déclarée (50, toutes les fiches qui décrivent le chapitre sont ticketées)_ : CRB 4 (#1873 — 5e/tests) · CRB 6 (#1873 — 5e/tests) · CRB 7 (#1873 — 5e/tests) · CRB 8 (#1873 — 5e/tests) · CRB 9 (#1873 — 5e/tests) · CRB 10 (#1873 — 5e/tests) · CRB 11 (#1873 — 5e/tests) · CRB 12 (#1873 — 5e/tests) · CRB 16 (#1873 — 5e/tests) · CRB 17 (#1873 — 5e/tests) · CRB 20 (#1873 — 5e/tests) · CRB 21 (#1873 — 5e/tests) · CRB 22 (#1873 — 5e/tests) · CRB 23 (#1873 — 5e/tests) · CRB 24 (#1873 — 5e/tests) · CRB 25 (#1873 — 5e/tests) · CRB 26 (#1873 — 5e/tests) · CRB 27 (#1873 — 5e/tests) · CRB 28 (#1873 — 5e/tests) · CRB 29 (#1873 — 5e/tests) · CRB 30 (#1873 — 5e/tests) · CRB 31 (#1873 — 5e/tests) · CRB 32 (#1873 — 5e/tests) · CRB 33 (#1873 — 5e/tests) · CRB 34 (#1873 — 5e/tests) · CRB 36 (#1873 — 5e/tests) · CRB 37 (#1873 — 5e/tests) · CRB 38 (#1873 — 5e/tests) · CRB 39 (#1873 — 5e/tests) · CRB 40 (#1873 — 5e/tests) · CRB 41 (#1873 — 5e/tests) · CRB 42 (#1873 — 5e/tests) · CRB 47 (#1873 — 5e/tests) · CRB 48 (#1873 — 5e/tests) · CRB 65 (#1873 — 5e/tests) · CRB 66 (#1873 — 5e/tests) · CRB 67 (#1873 — 5e/tests) · CRB 70 (#1873 — 5e/tests) · CRB 71 (#1873 — 5e/tests) · CRB 72 (#1873 — 5e/tests) · CRB 74 (#1873 — 5e/tests) · CRB 75 (#1873 — 5e/tests) · CRB 76 (#1873 — 5e/tests) · CRB 86 (#1873 — 5e/tests) · CRB 90 (#1873 — 5e/tests) · CRB 97 (#1873 — 5e/tests) · CRB 100 (#1873 — 5e/tests) · CRB 114 (#1873 — 5e/tests) · CRB 115 (#1873 — 5e/tests) · CRB 116 (#1873 — 5e/tests)
 
 **VRAIS hors-code (après crédits) :**
 _Aucun._
@@ -193,5 +209,5 @@ _Aucun._
 ## Livres vus par la mesure
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, LDB, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
-Atlas : AA, ACE, ADE I, ADE II, AU1, EDO, EDOC, LDB, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: e76e5736c41e41f5e2f33c4a860dc783dc461dc8 (4113 fichiers, 152 dossiers) corps: 2c1f2cb437e6d400598242c4ea0acde163240039 -->
+Atlas : AA, ACE, ADE I, ADE II, AU1, CRB, EDO, EDOC, LDB, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
+<!-- sources-empreinte: 2179b5e579f0bfba611dfe11f99d7e689600cb4f (4114 fichiers, 152 dossiers) corps: 467b3887d1104ba6bb21ab67b485b61304f31717 -->

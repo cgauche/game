@@ -22,12 +22,12 @@
  * des `.mjs` à préfixe DATÉ — un `.test.mjs` posé à côté des migrations y serait rejoué ou refusé.
  */
 import { strict as assert } from 'node:assert';
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { joue } from './joue.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const MIGRATION = '2026-09-05-1686-materials.mjs';
@@ -74,7 +74,6 @@ const ANTIDATE = new Date('2000-01-01T00:00:00Z');
 function depot(fichiers) {
   const racine = fs.mkdtempSync(path.join(os.tmpdir(), 'migr-1686-mat-'));
   fs.mkdirSync(path.join(racine, 'src/data'), { recursive: true });
-  fs.mkdirSync(path.join(racine, 'scripts/migrations'), { recursive: true });
 
   const avant = new Map();
   for (const [rel, texte] of Object.entries(fichiers)) {
@@ -83,17 +82,10 @@ function depot(fichiers) {
     fs.utimesSync(cible, ANTIDATE, ANTIDATE);
     avant.set(rel, texte);
   }
-  fs.copyFileSync(path.join(RACINE, 'scripts/migrations', MIGRATION), path.join(racine, 'scripts/migrations', MIGRATION));
   return { racine, avant };
 }
 
 const efface = (racine) => fs.rmSync(racine, { recursive: true, force: true });
-
-/** La migration jouée dans le dépôt jetable. REND `{ code, sortie }`. */
-function joue(racine) {
-  const r = spawnSync(process.execPath, [path.join(racine, 'scripts/migrations', MIGRATION)], { encoding: 'utf8' });
-  return { code: r.status, sortie: `${r.stdout ?? ''}${r.stderr ?? ''}` };
-}
 
 /** Les fichiers posés sont INTACTS (octet + horodatage), et AUCUN autre `src/data/*.json` n'existe. */
 function rienTouche(racine, avant) {
@@ -123,7 +115,7 @@ test('(a) ALLER-RETOUR : les 3 sources projetées → `materials.json` BYTE-IDEN
   const { racine } = depot({ ...TEXTE_SOURCE });
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — la fusion doit passer : ${sortie.slice(0, 800)}`);
   assert.ok(
     sortie.includes(`migré — ${CIBLE_DOC.length} matière(s)`),
@@ -140,7 +132,7 @@ test('(b) REJEU sur arbre migré : sortie 0, taille et horodatage INCHANGÉS', (
   t.after(() => efface(racine));
   const tailleAvant = fs.statSync(path.join(racine, CIBLE)).size;
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — un rejeu doit être un no-op vert : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /déjà migrée/, `le no-op ne se DIT pas : ${sortie.slice(0, 800)}`);
   assert.equal(fs.statSync(path.join(racine, CIBLE)).size, tailleAvant, 'la taille de la cible a bougé au rejeu');
@@ -151,7 +143,7 @@ test('(c) état MIXTE (une source recréée à côté de la cible) → sortie 1 
   const { racine, avant } = depot({ [CIBLE]: TEXTE_CIBLE, 'src/data/roofMaterials.json': TEXTE_SOURCE['src/data/roofMaterials.json'] });
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — un état mixte doit ARRÊTER la migration : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /état MIXTE/, `arrêt sans NOMMER l’état : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /roofMaterials\.json/, `arrêt sans NOMMER la source survivante : ${sortie.slice(0, 800)}`);
@@ -172,7 +164,7 @@ test('(d) FORME ÉTRANGÈRE (une entrée de source portant déjà son `domain`) 
   const { racine, avant } = depot(fichiers);
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — une forme étrangère doit ARRÊTER la migration : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /propMaterials\.json/, `arrêt sans NOMMER le document fautif : ${sortie.slice(0, 800)}`);
   assert.match(sortie, new RegExp(porteuse), `arrêt sans NOMMER l’entrée fautive : ${sortie.slice(0, 800)}`);
@@ -194,7 +186,7 @@ test('(d-bis) CARDINAL DÉPLACÉ (une matière retirée d’une source) : la fus
   const { racine } = depot(fichiers);
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 0, `sortie ${code} — un cardinal déplacé n'est PAS une anomalie : ${sortie.slice(0, 800)}`);
   const produit = JSON.parse(fs.readFileSync(path.join(racine, CIBLE), 'utf8'));
   assert.equal(produit.length, CIBLE_DOC.length - 1, 'la fusion n’a pas porté le périmètre mesuré');
@@ -217,7 +209,7 @@ test('(e) CLÉ ÉTRANGÈRE (une clé `N` de toit injectée dans une entrée prop
   const { racine, avant } = depot(fichiers);
   t.after(() => efface(racine));
 
-  const { code, sortie } = joue(racine);
+  const { code, sortie } = joue(racine, MIGRATION);
   assert.equal(code, 1, `sortie ${code} — une clé étrangère doit ARRÊTER la migration : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /la clé `N`/, `arrêt sans NOMMER la clé fautive : ${sortie.slice(0, 800)}`);
   assert.match(sortie, /« prop » ET « roof »/, `arrêt sans NOMMER les deux domaines : ${sortie.slice(0, 800)}`);
