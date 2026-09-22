@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 /**
  * `parseProject` est la porte UNIQUE des documents de projet (#811, #877) : « Exporter JSON »,
- * « Importer JSON… », « ▶ Tester » et la modale « Avancé » la passent comme « Enregistrer ».
+ * « Importer JSON… » et « ▶ Tester » la passent comme « Enregistrer ». La modale « Avancé » passe
+ * sa propre porte, le schéma des blocs (`SCHEMA_BLOCS_AVANCES` + `formatZodError`, `saveAdvanced`).
  * Mesuré sur le chemin RÉEL : `<Editor>` monté, menu Fichier déroulé, et le Blob que
  * `downloadText` fabrique intercepté.
  *
@@ -181,6 +182,17 @@ describe('Éditeur — « Importer JSON… » : DEUX causes de refus, chacune LU
     expect(refus, 'et la règle enfreinte est dite').toContain('« ref » absente');
     expect(scenesChargees, 'rien du document refusé n’est chargé').not.toContain('Salle importée');
     expect(scenesChargees, 'la scène ouverte est intacte').toContain('Salle d’export');
+  });
+
+  it.each([
+    ['scènes nulles', { schema: 2, id: 'x', label: 'X', versionContenu: 1, scenes: [null] }],
+    ['scène en chaîne', { schema: 2, id: 'x', label: 'X', scenes: ['a'] }],
+  ])('JSON que la MIGRATION ne traverse pas (%s) : le refus se LIT, jamais un rejet muet', async (_nom, doc) => {
+    await monter(sceneSaine());
+    const { refus, scenesChargees } = await importe(JSON.stringify(doc));
+    expect(refus).toContain('Import refusé : ce fichier ne peut pas être ouvert. Ce document n’est pas un projet lisible.');
+    expect(refus, 'le rapport de la porte reste consultable en détail').toContain('Projet invalide : document mal formé');
+    expect(scenesChargees).toContain('Salle d’export');
   });
 
   it('document SAIN : il charge, et aucun refus ne s’affiche', async () => {

@@ -38,9 +38,8 @@ const mkGet = (sc: Scene, combatants: Combatant[]): (() => GameState) =>
   (() => ({ scene: sc, battle: { combatants }, facing: {}, net: initialNet(), log: () => {} })) as unknown as () => GameState;
 
 /** TOUT ce que la ligne du jet NOMME : les chips (modificateurs du jeteur) ET la composition de sa
- *  Difficulté (les circonstances de la table, `LDB 14 l.91-96` — elles ont quitté les chips en #1153,
- *  le palier les porte). Un test qui ne lirait que `mods` déclarerait disparue une circonstance
- *  simplement déplacée dans la Difficulté. */
+ *  Difficulté (les circonstances de la table, `LDB 14 l.91-96`, que porte le palier — #1153). Un test
+ *  qui ne lirait que `mods` ne verrait pas une circonstance portée par la Difficulté. */
 const nomme = (d: RollBreakdown): ModLine[] => [...(d.mods ?? []), ...(d.difficultyParts ?? [])];
 
 describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.114 / 14)', () => {

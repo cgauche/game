@@ -1,5 +1,6 @@
-import type { ProjectDoc } from './worldMap';
+import { parseProject, exigerUnRefus, refusDeForme, type ProjectDoc } from './worldMap';
 import type { NarratifBlock } from './campaignNarratif';
+import type { GameState } from './store';
 
 /** Un projet éditeur SÉRIALISÉ en localStorage. Même forme que `ProjectDoc` (SOURCE UNIQUE du schéma
  *  de projet, jamais un littéral `schema`/champs dupliqués), mais RELÂCHÉE pour le stock legacy : un
@@ -39,6 +40,81 @@ export interface SavedProject {
 export const NOM_DE_PROJET_ABSENT = '(sans nom)';
 export function nomDeProjet(label: string | undefined | null): string {
   return label?.trim() || NOM_DE_PROJET_ABSENT;
+}
+
+/** Le document de projet d'une entrée de bibliothèque, SOURCE UNIQUE de tout écran qui la lit
+ *  (ouverture de l'éditeur, « Jouer » et « Exporter » de la bibliothèque de campagnes), rendu
+ *  `unknown` : la porte `parseProject` décide, et refuse nommément ce qui reste sans identité.
+ *  - `id` : celui du document ; à défaut (stock d'avant #1552), la clé de l'entrée.
+ *  - `label` : le nom de l'entrée dès qu'il n'est pas vide — c'est lui que listent les deux écrans
+ *    (`nomDeProjet`) ; à défaut, celui du document (#1343).
+ *  - `versionContenu` : 0 quand le document n'en porte pas (dédup #766).
+ *  Le `type` et la provenance d'un document antérieur viennent de la migration 6→7
+ *  (`PROJECT_MIGRATIONS`), pas d'ici. */
+export function documentDeLEntree(p: SavedProject): unknown {
+  const doc = p.project as Record<string, unknown>;
+  return {
+    ...doc,
+    id: doc.id ?? p.id,
+    label: p.label?.trim() ? p.label : doc.label,
+    ...(doc.versionContenu === undefined ? { versionContenu: 0 } : {}),
+  };
+}
+
+/** La campagne LANCÉE depuis une entrée de bibliothèque (`setPendingCampaign`), SOURCE UNIQUE de tout
+ *  écran qui la joue (« Jouer » de la bibliothèque, « Choisir » du picker de `PartyScreen`) : le
+ *  document passe la porte `parseProject(documentDeLEntree(p))` — migré, validé — et un refus lève
+ *  `ProjetRefuse`, laissé à l'appelant. Le `label` est celui du document PARSÉ, donc déjà celui de
+ *  `documentDeLEntree` ; l'`id` et la scène d'entrée sont ceux de l'ENTRÉE (clé du picker), et une
+ *  scène d'entrée absente du document lève `ProjetRefuse` de cause `'entree'`. */
+export function campagneDeLEntree(p: SavedProject): NonNullable<GameState['pendingCampaign']> {
+  const { label, scenes, worldMap, activeAxes, narratif } = parseProject(documentDeLEntree(p));
+  // #1627
+  if (!scenes.some((s) => s.id === p.startSceneId)) {
+    throw refusDeForme('entree', ['startSceneId'], `scène de départ « ${p.startSceneId} » absente du projet`);
+  }
+  return {
+    id: p.id,
+    label,
+    scenes,
+    startSceneId: p.startSceneId,
+    worldMap: worldMap ?? null,
+    ...(activeAxes !== undefined ? { activeAxes } : {}),
+    narratif,
+  };
+}
+
+/**
+ * Les gestes du JOUEUR sur une campagne de sa bibliothèque, chacun avec ce que son refus ÉNONCE : le
+ * geste qui a échoué, rien de plus — le départ d'une entrée peut manquer sans que son export échoue.
+ */
+const GESTES_DU_JOUEUR = {
+  jouer: 'Cette campagne ne peut pas être jouée en l’état.',
+  exporter: 'Cette campagne ne peut pas être exportée en l’état.',
+} as const;
+
+/** Geste du joueur sur une entrée de sa bibliothèque — union FERMÉE. */
+export type GesteDuJoueur = keyof typeof GESTES_DU_JOUEUR;
+
+/** Message à afficher au JOUEUR quand une campagne de SA bibliothèque ne passe plus la porte
+ *  `parseProject` au moment du `geste` — même frontière que `playerImportError`
+ *  (`ui/CampaignLibraryScreen.tsx`). SOURCE UNIQUE des écrans qui la jouent ou l'exportent. */
+export function playerEntryError(err: unknown, geste: GesteDuJoueur): string {
+  return refusJoueur(
+    err,
+    'Campagne de bibliothèque refusée :',
+    `${GESTES_DU_JOUEUR[geste]} Demandez-en une nouvelle version à son auteur.`,
+  );
+}
+
+/** Le refus de la porte (`ProjetRefuse`) JOURNALISÉ (`console.error`, diagnostic) puis remplacé par un
+ *  message générique : le langage de schéma n'atteint jamais l'écran du joueur. Toute autre erreur
+ *  n'est pas un refus de la porte : elle remonte telle quelle (même règle que
+ *  `refusDeLaPorteDuProjet`, `ui/editor/ProjectModals.tsx`). */
+export function refusJoueur(err: unknown, diagnostic: string, generique: string): string {
+  exigerUnRefus(err);
+  console.error(diagnostic, err.message);
+  return generique;
 }
 
 const KEY = 'wfrp4.editor-projects.v1';

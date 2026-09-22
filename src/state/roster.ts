@@ -1,7 +1,7 @@
 import { Combatant } from '../engine/types';
 import { Money } from '../engine/money';
 import type { CreatorDraft } from '../ui/creator/draft';
-import { migrateDoc, type MigrationMap } from './migrateDoc';
+import { migrateDoc, type MigrationMap, type RaisonDeRefus } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 import { remapNameToLabelDeep } from './instanceIdMigration';
 import { remapSkillIdDeep } from './skillIdMigration';
@@ -113,6 +113,18 @@ export function rosterExport(entry: RosterEntry): string {
  *  (jamais un `null` muet) — l'appelant UI l'affiche tel quel. */
 export type RosterImportResult = { entry: RosterEntry; error?: undefined } | { entry?: undefined; error: string };
 
+/** Message d'import par raison de refus de la migration : un export sans version (antérieur au tag
+ *  `v`) ou d'une version que la chaîne ne sait pas monter se ré-exporte ; un fichier que la migration
+ *  ne sait pas lire est invalide. */
+const MESSAGE_DU_REFUS_DE_MIGRATION: Record<RaisonDeRefus, 'picker.import.error' | 'picker.import.error.version'> = {
+  'non-objet': 'picker.import.error',
+  'version-absente': 'picker.import.error.version',
+  'version-future': 'picker.import.error.version',
+  'migrateur-manquant': 'picker.import.error.version',
+  'migrateur-immobile': 'picker.import.error.version',
+  'migrateur-en-echec': 'picker.import.error',
+};
+
 /** Lit une chaîne `rosterExport` (ou un `RosterEntry` nu antérieur au tag `kind`/`v`) → `RosterEntry`,
  *  ou une erreur EXPLICITE si invalide. Passe par `migrateDoc` (chaîne `ROSTER_MIGRATIONS`) : un
  *  export `kind` différent, ou de version future/inconnue, est REFUSÉ avec un message dédié —
@@ -129,8 +141,9 @@ export function rosterImport(str: string): RosterImportResult {
   const raw = parsed as { kind?: unknown; v?: unknown; version?: unknown };
   if (raw.kind !== undefined && raw.kind !== EXPORT_KIND) return { error: t('picker.import.error.version') };
   const normalized = { ...raw, version: typeof raw.v === 'number' ? raw.v : raw.version };
-  const doc = migrateDoc(normalized, EXPORT_VERSION, ROSTER_MIGRATIONS);
-  if (!doc) return { error: t('picker.import.error.version') };
+  const issue = migrateDoc(normalized, EXPORT_VERSION, ROSTER_MIGRATIONS);
+  if (!issue.ok) return { error: t(MESSAGE_DU_REFUS_DE_MIGRATION[issue.raison]) };
+  const doc = issue.doc;
   const hero = (doc as { hero?: { id?: unknown } }).hero;
   if (!hero || typeof hero !== 'object' || typeof hero.id !== 'string') return { error: t('picker.import.error') };
   const w = (doc as { wealth?: unknown }).wealth;

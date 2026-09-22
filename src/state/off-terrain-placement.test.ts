@@ -35,9 +35,10 @@ describe('placeCombatant — drapeau positionnel offTerrain (op offTerrainMod, M
 });
 
 /**
- * PAYLOAD STRICT de l'op (#1789) — `offTerrainMod` a quitté `OPS_NON_TYPEES` : son terrain d'ÉLECTION
- * est un `idDe('terrain')`, refusé AU PARSE s'il ne résout pas. Sans cette porte, un id fantaisiste
- * rendait `requiredTerrains` non vide et `offTerrain` VRAI sur TOUTE case — un malus permanent, muet.
+ * PAYLOAD STRICT de l'op (#1789) — `offTerrainMod` est une op TYPÉE (`OP_DEFS`) : son terrain
+ * d'ÉLECTION est un `idDe('terrain')`, refusé AU PARSE s'il ne résout pas. Sans cette porte, un id
+ * fantaisiste rendrait `requiredTerrains` non vide et `offTerrain` VRAI sur TOUTE case — un malus
+ * permanent, muet.
  */
 describe('offTerrainMod — le terrain d’élection est un id du registre, tenu au parse (#1789)', () => {
   it('accepte un id de `terrains.json` et refuse un id inconnu, en le NOMMANT', () => {

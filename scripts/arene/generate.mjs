@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/arene/arene-projet.json` (`projectDoc()` : projet schema courant, { schema, <identité>, narratif, scenes, worldMap }).
+ * Génère `src/scenes/arene/arene-projet.json` (`projectDoc()` : paquet de projet au schema courant, forme décidée par `documentDeProjet`).
  * OUTIL D'AUTEUR (itération de layout) — le JSON commité reste la source canonique, 100 %
  * éditable dans l'éditeur. Usage : `tsx scripts/arene/generate.mjs` (tsx car `scripts/campagne/lib.mjs` importe
  * `buildScene` du moteur — l'ASCII, l'architecture, les murs, les couches et les rencontres sont compilés par le compilateur

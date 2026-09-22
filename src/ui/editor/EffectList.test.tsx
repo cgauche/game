@@ -6,6 +6,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { EffectList, newEffect, EFFECT_MENU_GROUPS } from './EffectList';
 import { convertTo } from './AddMenu';
 import type { Effect } from '../../state/scene';
+import { DAY_PHASES } from '../../engine/clock';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -23,6 +24,11 @@ describe('EffectList — Effet setTime (jour/nuit via trigger, #T1c)', () => {
     expect(html).toMatch(/Régler l’heure sur/);
     expect(html).toContain('Nuit');
     expect(html).toContain('Aube');
+  });
+  it('une option de phase ne porte que son libellé : l’id d’icône n’est jamais écrit en texte', () => {
+    const effects: Effect[] = [{ type: 'setTime', phase: 'nuit' } as Effect];
+    const html = renderToStaticMarkup(<EffectList effects={effects} onChange={() => {}} ctx={ctx} />);
+    for (const p of DAY_PHASES) expect(html).not.toContain(p.icon);
   });
 });
 

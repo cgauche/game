@@ -2,12 +2,12 @@
 /** #766 lot C : la bibliothèque de campagnes (menu principal) — liste les campagnes du jeu + la
  *  bibliothèque locale, importe un projet portable (JSON → `SavedProject` publié), en supprime un
  *  (local seulement). Contrats POSITIFS. */
-import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { CampaignLibraryScreen, buildImportedProject, importDecision, playerImportError, PlayerFacingImportError } from './CampaignLibraryScreen';
 import { allBuiltinCampaigns } from '../scenes/campaign';
-import { CURRENT_PROJECT_SCHEMA } from '../state/worldMap';
+import { CURRENT_PROJECT_SCHEMA, ProjetRefuse } from '../state/worldMap';
 import {
   projectSave,
   projectsLoad,
@@ -15,7 +15,10 @@ import {
   __resetLibraryForTest,
   __setIdbBackendForTest,
   type IdbBackend,
+  type SavedProject,
 } from '../state/projectLibrary';
+import { emptyScene, type Scene } from '../state/scene';
+import { useGame } from '../state/store';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -155,9 +158,11 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
     });
   }
   async function unmount() {
+    if (!container.isConnected) return;
     await act(async () => root.unmount());
     container.remove();
   }
+  afterEach(unmount);
 
   it('liste les campagnes du jeu et les entrées de la bibliothèque locale', async () => {
     const entry = buildImportedProject(builtinDocJson(0));
@@ -183,6 +188,144 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
 
     await mount();
     expect(container.textContent ?? '').toContain('(sans nom)');
+    await unmount();
+  });
+
+  it.each([
+    ['Jouer', /ne peut pas être jouée en l’état/],
+    ['Exporter', /ne peut pas être exportée en l’état/],
+  ] as const)('« %s » une entrée que la porte REFUSE : message JOUEUR du GESTE AU PANNEAU DE DÉTAIL, effacé au changement de sélection', async (geste, message) => {
+    const entry = buildImportedProject(builtinDocJson(0));
+    entry.id = 'lib-fixture-refusee';
+    entry.label = 'Campagne refusée';
+    entry.project = { ...entry.project, schema: 999 as typeof CURRENT_PROJECT_SCHEMA };
+    projectSave(entry);
+    const consoleErr = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const onClose = vi.fn();
+
+    await act(async () => {
+      root.render(<CampaignLibraryScreen onClose={onClose} />);
+    });
+    const row = Array.from(container.querySelectorAll('button.listrow')).find((el) => el.textContent?.includes('Campagne refusée')) as HTMLButtonElement;
+    await act(async () => row.click());
+    const bouton = Array.from(container.querySelectorAll('.modal-actions button')).find((el) => el.textContent === geste) as HTMLButtonElement;
+    await act(async () => bouton.click());
+
+    const alertes = container.querySelectorAll('[role="alert"]');
+    expect(alertes).toHaveLength(1);
+    const alerte = alertes[0];
+    expect(alerte.closest('.master-detail-list'), 'jamais au rail de la liste').toBeNull();
+    expect(bouton.closest('.modal-actions')!.parentElement!.contains(alerte), 'près des boutons de l’entrée').toBe(true);
+    expect(alerte.classList.contains('chip') && alerte.classList.contains('tone-danger')).toBe(true);
+    const txt = alerte.textContent ?? '';
+    expect(txt).toMatch(message);
+    expect(txt).toMatch(/Demandez-en une nouvelle version à son auteur\./);
+    expect(txt.toLowerCase()).not.toMatch(/schema|migration/);
+    expect(consoleErr).toHaveBeenCalled();
+    expect(onClose, 'l’écran reste ouvert').not.toHaveBeenCalled();
+
+    const autre = Array.from(container.querySelectorAll('button.listrow')).find((el) => el.textContent?.includes(allBuiltinCampaigns[0].label)) as HTMLButtonElement;
+    await act(async () => autre.click());
+    expect(container.querySelector('[role="alert"]'), 'effacé au changement de sélection').toBeNull();
+
+    consoleErr.mockRestore();
+    await unmount();
+  });
+
+  /** Clique la rangée nommée `nom` puis le bouton `geste` de son panneau de détail. */
+  async function clique(nom: string, geste: string) {
+    const row = Array.from(container.querySelectorAll('button.listrow')).find((el) => el.textContent?.includes(nom)) as HTMLButtonElement;
+    await act(async () => row.click());
+    const bouton = Array.from(container.querySelectorAll('.modal-actions button')).find((el) => el.textContent === geste) as HTMLButtonElement;
+    await act(async () => bouton.click());
+  }
+
+  it('« Jouer » une entrée d’AVANT #1552 (document sans identité) : elle SE JOUE, sans refus — même lecture que l’éditeur (#1343)', async () => {
+    const { type: _muette, ...sceneMuette } = { ...emptyScene(4, 4), id: 'scene-ancienne', label: 'Salle ancienne' };
+    const ancienne = {
+      id: 'proj-ancien', label: 'Campagne d’avant', startSceneId: 'scene-ancienne', savedAt: 1, published: true,
+      project: { schema: 6, scenes: [sceneMuette as Scene], narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] } },
+    } as SavedProject;
+    await projectSave(ancienne);
+    useGame.setState({ pendingCampaign: null } as never);
+    const onClose = vi.fn();
+
+    await act(async () => {
+      root.render(<CampaignLibraryScreen onClose={onClose} />);
+    });
+    await clique('Campagne d’avant', 'Jouer');
+
+    expect(container.querySelector('[role="alert"]'), 'aucun refus').toBeNull();
+    expect(onClose).toHaveBeenCalled();
+    const pc = useGame.getState().pendingCampaign;
+    expect(pc?.id).toBe('proj-ancien');
+    expect(pc?.scenes.map((s) => s.id)).toEqual(['scene-ancienne']);
+    await unmount();
+  });
+
+  it('« Jouer » une entrée au départ INCONNU : le message dit le JEU refusé, et l’EXPORT de la même entrée réussit', async () => {
+    const entry = buildImportedProject(builtinDocJson(0));
+    entry.id = 'lib-fixture-depart';
+    entry.label = 'Départ perdu';
+    entry.startSceneId = 'SCENE-INEXISTANTE';
+    await projectSave(entry);
+    const consoleErr = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await mount();
+    await clique('Départ perdu', 'Jouer');
+    const txt = container.querySelector('[role="alert"]')?.textContent ?? '';
+    expect(txt).toBe('Cette campagne ne peut pas être jouée en l’état. Demandez-en une nouvelle version à son auteur.');
+
+    const OrigCreateObjectURL = URL.createObjectURL;
+    const OrigRevokeObjectURL = URL.revokeObjectURL;
+    const telecharges: Blob[] = [];
+    URL.createObjectURL = (b: Blob | MediaSource) => { telecharges.push(b as Blob); return 'blob:fake'; };
+    URL.revokeObjectURL = () => {};
+    try {
+      const bouton = Array.from(container.querySelectorAll('.modal-actions button')).find((el) => el.textContent === 'Exporter') as HTMLButtonElement;
+      await act(async () => bouton.click());
+    } finally {
+      URL.createObjectURL = OrigCreateObjectURL;
+      URL.revokeObjectURL = OrigRevokeObjectURL;
+    }
+    expect(container.querySelector('[role="alert"]'), 'l’export n’échoue pas').toBeNull();
+    expect(telecharges).toHaveLength(1);
+
+    consoleErr.mockRestore();
+    await unmount();
+  });
+
+  it('« Exporter » une copie au nom d’entrée DIVERGENT : le document exporté porte le nom que la liste montre (#1343)', async () => {
+    const { scenes: _sc, startSceneId: _st, worldMap: _wm, narratif: _na, label: _lb, ...identiteDuPaquet } = allBuiltinCampaigns[0];
+    const copie = {
+      id: 'entree-copie', label: 'Mon nom', startSceneId: 'scene-copie', savedAt: 1, published: true,
+      project: {
+        ...identiteDuPaquet, type: 'projet', schema: CURRENT_PROJECT_SCHEMA, label: 'Nom du paquet',
+        scenes: [{ ...emptyScene(4, 4), id: 'scene-copie', label: 'Salle copiée' }],
+        narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
+      },
+    } as unknown as SavedProject;
+    await projectSave(copie);
+
+    await mount();
+    // Patron `export-passe-la-porte.test.tsx` : surcharges PLATES le temps du geste, puis restaurées.
+    const OrigCreateObjectURL = URL.createObjectURL;
+    const OrigRevokeObjectURL = URL.revokeObjectURL;
+    const telecharges: Blob[] = [];
+    URL.createObjectURL = (b: Blob | MediaSource) => { telecharges.push(b as Blob); return 'blob:fake'; };
+    URL.revokeObjectURL = () => {};
+    try {
+      await clique('Mon nom', 'Exporter');
+    } finally {
+      URL.createObjectURL = OrigCreateObjectURL;
+      URL.revokeObjectURL = OrigRevokeObjectURL;
+    }
+
+    expect(container.querySelector('[role="alert"]'), 'aucun refus').toBeNull();
+    expect(telecharges).toHaveLength(1);
+    const exporte = JSON.parse(await telecharges[0].text()) as { label: string; id: string };
+    expect(exporte.label).toBe('Mon nom');
+    expect(exporte.id).toBe(allBuiltinCampaigns[0].id);
     await unmount();
   });
 
@@ -363,14 +506,17 @@ describe('playerImportError — frontière d’affichage (#780)', () => {
       .toBe('Fichier illisible : ce n’est pas du JSON valide.');
   });
 
-  it('un `Error` simple portant le même TEXTE n’est PAS traité comme un message joueur (discrimination par classe, pas par texte)', () => {
-    const msg = playerImportError(new Error('Fichier illisible : ce n’est pas du JSON valide.'));
-    expect(msg).toMatch(/n’est pas une campagne exploitable/);
+  it('un `Error` simple portant le même TEXTE n’est PAS traité comme un message joueur : il remonte (discrimination par classe, pas par texte)', () => {
+    const bogue = new Error('Fichier illisible : ce n’est pas du JSON valide.');
+    expect(() => playerImportError(bogue)).toThrow(bogue);
   });
 
-  it('remplace tout autre message par un langage JOUEUR, sans terme de schéma', () => {
-    const msg = playerImportError(new Error('Projet invalide : meta.version doit être un nombre.'));
+  it('remplace un refus de la porte par un langage JOUEUR, sans terme de schéma', () => {
+    const consoleErr = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const msg = playerImportError(new ProjetRefuse('schema', [], 'Projet invalide : meta.version doit être un nombre.'));
     expect(msg).toMatch(/n’est pas une campagne exploitable/);
     expect(msg.toLowerCase()).not.toMatch(/meta\.version|schema/);
+    expect(consoleErr).toHaveBeenCalled();
+    consoleErr.mockRestore();
   });
 });

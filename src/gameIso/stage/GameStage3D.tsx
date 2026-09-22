@@ -1076,7 +1076,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // Retenu sur le read-set de la CUISSON (`worldBakeDeps`) : le couvert se déduit des masses bâties,
   // donc d'un sous-ensemble de ce que lit `worldFaces` — 6,9 ms sur 60×60 à 81 masses, qu'une
   // référence de scène par tick repayait pour un couvert identique.
-  // Ce read-set est à longueur VARIABLE (une entrée par décor volumique de la scène) : il se porte au
+  // Ce read-set est à longueur VARIABLE (une entrée par recette volumique EMPLOYÉE et par matériau qu'elles nomment) : il se porte au
   // retenteur du dépôt, jamais à un hook React, dont le jeu de dépendances doit être de longueur
   // CONSTANTE (`memoByRefDeps` compare longueur PUIS identité, position par position).
   const abris = abrisRetenus(jeton, bakeDeps, () => shelterField(scene));

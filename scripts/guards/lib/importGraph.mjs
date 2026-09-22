@@ -5,6 +5,8 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 
 // Extensions de MODULE que le dépôt écrit réellement : les libs de garde et les générateurs vivent en
 // `.mjs` (109 imports relatifs de `src/**` vers `scripts/**` mesurés le 2026-09-02), donc `.mjs`/`.cjs`
@@ -18,11 +20,30 @@ const EXTS = ['.ts', '.tsx', '.mts', '.mjs', '.cjs', '.js'];
  *  @type {RegExp} */
 export const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)|\bimport\s+['"](\.[^'"]+)['"]/g;
 
-/** Un `import type …` / `export type …` est EFFACÉ à la compilation : l'arc existe pour le TYPAGE,
- *  jamais à l'exécution. Un appelant qui marche le graphe pour un EFFET DE MODULE (une configuration
- *  posée au chargement) doit donc les retrancher, sans quoi il conclut à une atteignabilité que le
- *  bundle ne réalise pas. @type {RegExp} */
-const TYPE_ONLY_RE = /^[ \t]*(?:import|export)[ \t]+type[ \t][^\n]*$/gm;
+/** Options de compilation du DÉPÔT (`tsconfig.json`), converties par le compilateur lui-même : c'est
+ *  d'elles (`isolatedModules`, `verbatimModuleSyntax`, `preserveValueImports`…) que dépend l'effacement
+ *  d'un import. */
+const TSCONFIG_URL = new URL('../../../tsconfig.json', import.meta.url);
+const COMPILER_OPTIONS = ts.convertCompilerOptionsFromJson(
+  JSON.parse(readFileSync(TSCONFIG_URL, 'utf8')).compilerOptions,
+  dirname(fileURLToPath(TSCONFIG_URL)),
+).options;
+
+/**
+ * Le source tel que la COMPILATION l'émet : `ts.transpileModule` (le compilateur DÉCLARÉ du dépôt,
+ * fichier par fichier comme le bundler en `isolatedModules`) sous les options du dépôt. Tout import
+ * que la compilation EFFACE en est absent — `import type`, spécifieur `type`, import dont les liaisons
+ * ne servent qu'au typage, `import('…')` en position de type — et un import à EFFET DE BORD y reste.
+ * Oracle, pas heuristique : c'est ce que demande un appelant qui suit un EFFET DE MODULE (une
+ * configuration posée au chargement), sans quoi il conclut à une atteignabilité que le bundle ne
+ * réalise pas. Un module JS n'a aucun arc de type : il est rendu tel quel.
+ * @param {string} fichier chemin (son extension choisit TS ou TSX) @param {string} texte
+ * @returns {string}
+ */
+export function sourceALExecution(fichier, texte) {
+  if (!/\.[cm]?tsx?$/.test(fichier)) return texte;
+  return ts.transpileModule(texte, { fileName: fichier, compilerOptions: COMPILER_OPTIONS }).outputText;
+}
 
 /** Extensions qu'un spécificateur peut porter LUI-MÊME (le chemin désigne alors le fichier). */
 const EXTS_EXPLICITES = [...EXTS, '.json'];
@@ -47,7 +68,7 @@ export function resolveImport(fromFile, spec) {
 /**
  * Enfants d'un module : TOUS ses imports relatifs résolus, sans borne. `null` = fichier absent (hors
  * closure) ; `[]` = membre sans graphe à lire (`.json`, #487) ou illisible.
- * `typesEffaces` retranche les arcs de TYPE PUR, ceux que la compilation efface.
+ * `typesEffaces` lit le source À L'EXÉCUTION (`sourceALExecution`) : les arcs effacés n'y sont plus.
  * @param {string} abs @param {string} rel @param {boolean} typesEffaces @returns {string[]|null}
  */
 function enfantsDe(abs, rel, typesEffaces) {
@@ -59,7 +80,7 @@ function enfantsDe(abs, rel, typesEffaces) {
   } catch {
     return [];
   }
-  if (typesEffaces) text = text.replace(TYPE_ONLY_RE, '');
+  if (typesEffaces) text = sourceALExecution(abs, text);
   const enfants = [];
   for (const m of text.matchAll(IMPORT_RE)) {
     const resolved = resolveImport(abs, m[1] ?? m[2] ?? m[3]);
@@ -77,7 +98,7 @@ function enfantsDe(abs, rel, typesEffaces) {
  * 2026-08-23) — sans partage, chaque fichier est relu et re-résolu 11 fois. Le cache porte les
  * enfants NON filtrés : il reste valable quel que soit le prédicat. Par défaut le cache naît et
  * meurt avec l'appel : aucun état ne survit entre deux marches indépendantes.
- * `typesEffaces` marche les arcs d'EXÉCUTION seuls (cf. `TYPE_ONLY_RE`) : c'est ce que demande un
+ * `typesEffaces` marche les arcs d'EXÉCUTION seuls (cf. `sourceALExecution`) : c'est ce que demande un
  * appelant qui suit un EFFET DE MODULE plutôt qu'une dépendance de typage. Le cache porte les enfants
  * SOUS CE RÉGIME : deux marches de régimes différents ne le partagent pas.
  * @param {string[]} roots

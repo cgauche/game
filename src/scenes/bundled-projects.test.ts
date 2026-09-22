@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
-import { parseProject, type ProjectDoc } from '../state/worldMap';
+import { parseProject, ProjetRefuse, type ProjectDoc } from '../state/worldMap';
 import { validateScene } from '../state/validateScene';
 import { emptyScene } from '../state/scene';
 import { books, buildings, findCrewRoleById, findNavalTrait, findVehicleById } from '../data';
@@ -286,19 +286,26 @@ describe('paquets de campagne bundlés — se relisent tous dans le modèle COUR
   });
 
   /**
-   * CONTRE-PREUVE de la PORTE d'identité (`worldMap.ts:757`), sur une enveloppe CONSTRUITE — aucun
-   * paquet livré n'en est le sujet. La scène est dépouillée de son `type` : au format 2 une scène ne
-   * s'annonçait pas, c'est `PROJECT_MIGRATIONS[6]` qui le pose (#1552). L'enveloppe est COMPLÈTE par
-   * ailleurs (`label`, `versionContenu`) : seule l'identité manque, et le motif attendu NOMME le champ
-   * refusé — `/id/` seul serait satisfait par l'en-tête du message (« JSON inval*id*e ») et par
-   * n'importe quel autre champ absent.
+   * CONTRE-PREUVE de la PORTE d'identité (`parseProject`, `src/state/worldMap.ts`), sur une enveloppe
+   * CONSTRUITE — aucun paquet livré n'en est le sujet. La scène est dépouillée de son `type` : au
+   * format 2 une scène ne s'annonçait pas, c'est `PROJECT_MIGRATIONS[6]` qui le pose (#1552).
+   * L'enveloppe est COMPLÈTE par ailleurs (`label`, `versionContenu`) : seule l'identité manque, et le
+   * refus porte une faute au chemin `id` — lue dans ses FAUTES, jamais dans le texte du rapport.
    */
   const ENVELOPPE_SCHEMA_2 = (identite: Record<string, unknown>) => {
     const { type: _type, ...sceneSansType } = emptyScene(4, 4) as unknown as Record<string, unknown>;
     return { schema: 2, scenes: [{ ...sceneSansType, id: 'fixture-scene', label: 'Fixture' }], label: 'Fixture', versionContenu: 1, ...identite };
   };
-  /** Le champ refusé, tel que `validateDocument` l'énumère : une puce «  - <champ>: … » par champ. */
-  const REFUS_NOMME_ID = /^\s*- id: /m;
+  /** Le refus de la porte pour ce document, ou `null` s'il passe. */
+  const refusDe = (doc: unknown): ProjetRefuse | null => {
+    try {
+      parseProject(doc);
+      return null;
+    } catch (e) {
+      if (e instanceof ProjetRefuse) return e;
+      throw e;
+    }
+  };
 
   it('la même enveloppe AVEC son identité passe la porte — la contre-preuve ci-dessous ne mesure que l’identité', () => {
     expect(() => parseProject(ENVELOPPE_SCHEMA_2({ id: 'fixture-schema-2' }))).not.toThrow();
@@ -306,7 +313,10 @@ describe('paquets de campagne bundlés — se relisent tous dans le modèle COUR
 
   it('CONTRE-PREUVE : un paquet ramené au format PRÉCÉDENT (schema 2, sans identité) est REFUSÉ À LA PORTE, qui NOMME `id`', () => {
     // La migration monte la forme 2→7 mais n'INVENTE aucune identité : la porte refuse, en la nommant.
-    expect(() => parseProject(ENVELOPPE_SCHEMA_2({}))).toThrow(REFUS_NOMME_ID);
+    const refus = refusDe(ENVELOPPE_SCHEMA_2({}));
+    expect(refus?.cause).toBe('schema');
+    expect(refus?.fautes.some((f) => f.chemin.join('.') === 'id'), 'une faute au chemin `id`').toBe(true);
+    expect(refus?.message, 'le rapport des scripts nomme toujours le champ').toMatch(/^\s*- id: /m);
   });
 
   /**

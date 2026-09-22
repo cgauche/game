@@ -6,8 +6,8 @@
  *    Le registre couvre les DEUX racines (`src/data` par basename, `src/scenes` par chemin relatif).
  *  - `validateDocument(schema, value)` : porte par SCHÉMA, pour un seam qui n'a PAS de nom de
  *    fichier — `parseProject` sert du JSON committé, du localStorage et de l'import utilisateur.
- * `formatZodError` est partagée par les deux (un module `.test` n'est pas importable par le code
- * applicatif).
+ * Le format d'une faute a UNE source (`rapportDeFautes`) : `formatZodError` en dérive pour la porte
+ * par fichier, `validateDocument` rend les fautes elles-mêmes (`Faute`). credo.md:7, 2ᵉ phrase.
  */
 import type { z } from 'zod';
 import { SCHEMA_DEFS } from './_registry.generated';
@@ -19,10 +19,33 @@ import { valeursDe, type MetaChamp } from './grammaire/meta';
 /** Le registre des DEUX racines de documents (`src/data` + `src/scenes`). */
 export const DEFS_DE_DOCUMENT: readonly SchemaDef[] = [...SCHEMA_DEFS, ...SCHEMA_DEFS_SCENES];
 
-/** Formate un `ZodError` en message ACTIONNABLE : `<sujet> → <chemin.du.champ>: <erreur>`. */
-export function formatZodError(sujet: string, error: z.ZodError): string {
-  const lines = error.issues.map((iss) => `  - ${iss.path.join('.') || '(racine)'}: ${iss.message}`);
+/** Une FAUTE d'un document refusé, telle que zod la trouve : son chemin, son message (jamais
+ *  reformulé) et son code. Type SANS zod : une surface lit les fautes sans importer le validateur. */
+export type Faute = { readonly chemin: readonly (string | number)[]; readonly message: string; readonly code: string };
+
+/** Les fautes d'un `ZodError`, dans l'ordre de ses `issues`. */
+export function fautesDe(error: z.ZodError): readonly Faute[] {
+  return error.issues.map((iss) => ({
+    chemin: iss.path.map((k) => (typeof k === 'number' ? k : String(k))),
+    message: iss.message,
+    code: iss.code,
+  }));
+}
+
+/** Le chemin d'une faute tel que le rapport l'écrit : `scenes.0.entities.3.ref`, `(racine)` si vide. */
+export function cheminLisible(chemin: readonly (string | number)[]): string {
+  return chemin.join('.') || '(racine)';
+}
+
+/** Rapport ACTIONNABLE d'une liste de fautes : `<sujet> — …` puis une puce `<chemin>: <message>` par faute. */
+export function rapportDeFautes(sujet: string, fautes: readonly Faute[]): string {
+  const lines = fautes.map((f) => `  - ${cheminLisible(f.chemin)}: ${f.message}`);
   return `${sujet} — JSON invalide contre son schéma :\n${lines.join('\n')}`;
+}
+
+/** Formate un `ZodError` en message ACTIONNABLE — le rapport de ses fautes (`rapportDeFautes`). */
+export function formatZodError(sujet: string, error: z.ZodError): string {
+  return rapportDeFautes(sujet, fautesDe(error));
 }
 
 /** Schéma zod d'un document par nom de fichier (`characteristics.json`, `arene/arene-projet.json`),
@@ -136,9 +159,9 @@ export function validateDataset(file: string, value: unknown): string | null {
 }
 
 /** Valide `value` contre `schema` — porte du seam SANS nom de fichier (chargement d'un projet depuis
- *  le localStorage ou un import utilisateur). Même format d'erreur actionnable ; `sujet` nomme le
- *  document dans le message. */
-export function validateDocument(schema: z.ZodTypeAny, value: unknown, sujet = 'Document'): string | null {
+ *  le localStorage ou un import utilisateur). Rend les FAUTES (`null` si valide) : l'appelant en
+ *  tire son rapport (`rapportDeFautes`) et sa surface les lit sans re-parser de texte. */
+export function validateDocument(schema: z.ZodTypeAny, value: unknown): readonly Faute[] | null {
   const result = schema.safeParse(value);
-  return result.success ? null : formatZodError(sujet, result.error);
+  return result.success ? null : fautesDe(result.error);
 }

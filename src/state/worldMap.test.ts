@@ -31,12 +31,12 @@ describe('parseProject — validation du format projet v2', () => {
 
   it('schéma 1 (aucune migration 1→2 définie) → refus EXPLICITE, pas un throw sec muet', () => {
     expect(() => parseProject({ schema: 1, scenes: [scene('s1')] }))
-      .toThrow(/Projet invalide ou version non supportée.*schema=1/);
+      .toThrow(/Projet invalide : version non supportée \(schema=1\)/);
   });
 
   it('schéma futur inconnu (99) → refus EXPLICITE (on ne devine pas une structure future)', () => {
     expect(() => parseProject({ schema: 99, scenes: [scene('s1')] }))
-      .toThrow(/Projet invalide ou version non supportée.*schema=99/);
+      .toThrow(/Projet invalide : version future \(schema=99\)/);
   });
 
   it('schéma absent → lève', () => {
@@ -111,7 +111,7 @@ describe('parseProject — validation du format projet v2', () => {
   it('#217 : MapPlace.port.ref inconnue → erreur EXPLICITE (fail-fast, jamais un port silencieusement vide)', () => {
     const mapBadRef = { id: 'm', label: 'Côte', places: [{ id: 'l1', label: 'Nulle-part', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'port-qui-n-existe-pas' } }], routes: [] };
     const doc = { schema: 2, meta: metaAnterieure, scenes: [scene('s1')], worldMap: mapBadRef as never };
-    expect(() => parseProject(JSON.parse(JSON.stringify(doc)))).toThrow(/réf de port inconnue/);
+    expect(() => parseProject(JSON.parse(JSON.stringify(doc)))).toThrow(/worldMap\.places\.0\.port\.ref: .*« port-qui-n-existe-pas » absent de naval-ports\.json/);
   });
 
   it('resolvePortRef : sans ref, retourne le port TEL QUEL (même référence)', () => {
@@ -296,7 +296,7 @@ describe('parseProject — porte de schéma', () => {
     // au passage à 5, où « le futur » était devenu le présent et ne mesurait plus rien).
     const futur = CURRENT_PROJECT_SCHEMA + 1;
     expect(() => parseProject({ schema: futur, scenes: [scene('s1')], narratif: narratifVide }))
-      .toThrow(new RegExp(`Projet invalide ou version non supportée.*schema=${futur}`));
+      .toThrow(new RegExp(`Projet invalide : version future \\(schema=${futur}\\)`));
   });
 
   it('`encounters[].enemies` (forme ANTÉRIEURE) est refusé PAR SON NOM, jamais absorbé en silence', () => {

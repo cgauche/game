@@ -357,7 +357,8 @@ function propVolumeSignature(scene: Scene): string {
  * moissons de catalogue ci-dessous (#1343). Les entrées sont comparées par IDENTITÉ, terme à terme, à
  * chaque geste de l'hôte : un objet cité N fois n'y détecte rien de plus que la première fois, et
  * gonfle la comparaison à proportion de ce que la scène POSE. Le `Set` garde l'ordre de première
- * rencontre — deux scènes au même catalogue employé rendent la même liste. PURE.
+ * rencontre — deux scènes au même catalogue employé rendent le même ENSEMBLE, dans l'ordre de leurs
+ * entités et de leurs corps, que `propVolumeSignature` et `scene.architecture` portent déjà. PURE.
  */
 const depsUniques = (moisson: (ajouter: (dep: unknown) => void) => void): readonly unknown[] => {
   const out = new Set<unknown>();

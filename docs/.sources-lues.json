@@ -12207,7 +12207,8 @@
       "src/ui/useRamenerEnVue.ts",
       "src/ui/useRollFrisson.ts",
       "src/ui/weaponStats.ts",
-      "src/ui/worldMapViewport.ts"
+      "src/ui/worldMapViewport.ts",
+      "tsconfig.json"
     ],
     "dossiers": [
       "src/engine",
@@ -18541,6 +18542,7 @@
       "src/state/merchants/types.ts",
       "src/state/meta-effects.test.ts",
       "src/state/meteo-codex-vif.test.ts",
+      "src/state/migrateDoc.test.ts",
       "src/state/migrateDoc.ts",
       "src/state/miscast-step.test.ts",
       "src/state/miscast.test.ts",
@@ -18585,6 +18587,7 @@
       "src/state/overcast-timed.test.ts",
       "src/state/parapet-collapse.test.ts",
       "src/state/parite-ordre-de.test.ts",
+      "src/state/parseProject-porte.test.ts",
       "src/state/party-wipe.test.ts",
       "src/state/party-z.test.ts",
       "src/state/partyCompose.test.ts",
@@ -19560,7 +19563,8 @@
       "src/vi-mock-isolate-guard.test.ts",
       "src/vite-env.d.ts",
       "src/weapon-load-owner-guard.test.ts",
-      "src/worktree-isolation-guard.test.ts"
+      "src/worktree-isolation-guard.test.ts",
+      "tsconfig.json"
     ],
     "dossiers": [
       "Source/WH - V4 - Aux Armes",
@@ -23606,6 +23610,7 @@
       "src/state/merchants/types.ts",
       "src/state/meta-effects.test.ts",
       "src/state/meteo-codex-vif.test.ts",
+      "src/state/migrateDoc.test.ts",
       "src/state/migrateDoc.ts",
       "src/state/miscast-step.test.ts",
       "src/state/miscast.test.ts",
@@ -23650,6 +23655,7 @@
       "src/state/overcast-timed.test.ts",
       "src/state/parapet-collapse.test.ts",
       "src/state/parite-ordre-de.test.ts",
+      "src/state/parseProject-porte.test.ts",
       "src/state/party-wipe.test.ts",
       "src/state/party-z.test.ts",
       "src/state/partyCompose.test.ts",
@@ -24625,7 +24631,8 @@
       "src/vi-mock-isolate-guard.test.ts",
       "src/vite-env.d.ts",
       "src/weapon-load-owner-guard.test.ts",
-      "src/worktree-isolation-guard.test.ts"
+      "src/worktree-isolation-guard.test.ts",
+      "tsconfig.json"
     ],
     "dossiers": [
       "Source/WH - V4 - Aux Armes",

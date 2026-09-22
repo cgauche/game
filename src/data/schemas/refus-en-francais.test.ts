@@ -7,9 +7,9 @@
  *  - la porte par FICHIER (`validateDataset`) — le refus que le Compendium rend au save ;
  *  - la porte de la modale « Avancé » de l'éditeur (`SCHEMA_BLOCS_AVANCES` + `formatZodError`,
  *    `src/ui/editor/Editor.tsx:910`), qui ne passe PAS par le registre de documents ;
- *  - la GARDE DE CLASSE : tout fichier de `src/data/schemas/**` qui importe zod en VALEUR atteint la
- *    locale transitivement. Sans elle, un def futur bâti sur `ref`/`avancement` seuls parlerait
- *    anglais sans qu'aucun banc ne bouge.
+ *  - la GARDE DE CLASSE : tout fichier de PRODUCTION de `src/**` qui importe zod en VALEUR atteint la
+ *    locale transitivement. Sans elle, un schéma futur bâti hors de la grammaire parlerait anglais
+ *    sans qu'aucun banc ne bouge.
  *
  * Le refus reste NOMINATIF : chemin du champ et options attendues sont conservés. Traduire n'est pas
  * appauvrir.
@@ -17,7 +17,8 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { clotureDImports } from '../../../scripts/guards/lib/importGraph.mjs';
+import { clotureDImports, sourceALExecution } from '../../../scripts/guards/lib/importGraph.mjs';
+import { estFichierVitest } from '../../../scripts/guards/lib/fichierVitest.mjs';
 import { listerArbre } from '../../../scripts/guards/lib/lister.mjs';
 import { validateDataset, formatZodError } from './validate';
 import { SCHEMA_BLOCS_AVANCES } from '../../ui/editor/Editor';
@@ -61,23 +62,30 @@ describe('les refus de schéma parlent français (#1588)', () => {
 
   /**
    * GARDE DE CLASSE — la question n'est pas « ces deux cas parlent-ils français ? » mais « un schéma
-   * PEUT-IL naître hors de la locale ? ». Réponse mesurée sur le graphe d'imports d'EXÉCUTION : un
-   * `import type` est effacé à la compilation et ne porte aucun effet de module, il ne compte donc
-   * pas comme une atteinte (`typesEffaces`, `scripts/guards/lib/importGraph.mjs`).
+   * PEUT-IL naître hors de la locale ? ». Réponse mesurée sur le source À L'EXÉCUTION : un import que
+   * la compilation efface ne porte aucun effet de module, il ne compte donc ni comme porteur de zod ni
+   * comme atteinte (`sourceALExecution`, `scripts/guards/lib/importGraph.mjs`).
    */
-  it('GARDE — tout fichier de `schemas/**` important zod en VALEUR atteint la locale', () => {
-    const PERIMETRE = 'src/data/schemas';
-    const LOCALE = `${PERIMETRE}/grammaire/locale-fr.ts`;
-    const ZOD_EN_VALEUR = /^[ \t]*import[ \t]+(?!type[ \t])[^\n]*from[ \t]*['"]zod['"]/m;
+  it('GARDE — tout fichier de production de `src/**` important zod en VALEUR atteint la locale', () => {
+    const LOCALE = 'src/data/schemas/grammaire/locale-fr.ts';
+    const ZOD_EN_VALEUR = /\bfrom\s*['"]zod['"]|\bimport\s*['"]zod['"]/;
 
-    const porteurs = listerArbre(PERIMETRE, { filtre: (rel) => rel.endsWith('.ts') && !rel.includes('.test.') })
-      .map((rel) => `${PERIMETRE}/${rel}`)
-      .filter((f) => f !== LOCALE && ZOD_EN_VALEUR.test(readFileSync(resolve(f), 'utf8')));
+    const porteurs = listerArbre('src', {
+      filtre: (rel) => /\.tsx?$/.test(rel) && !rel.endsWith('.d.ts') && !estFichierVitest(rel),
+    })
+      .map((rel) => `src/${rel}`)
+      .filter((f) => f !== LOCALE)
+      // Un source dont le TEXTE ne nomme pas zod n'en importe rien : seul le reste passe par l'oracle.
+      .map((f) => ({ f, texte: readFileSync(resolve(f), 'utf8') }))
+      .filter(({ f, texte }) => ZOD_EN_VALEUR.test(texte) && ZOD_EN_VALEUR.test(sourceALExecution(f, texte)))
+      .map(({ f }) => f);
 
-    expect(porteurs.length, 'périmètre vide = faux vert : la garde ne mesurerait rien').toBeGreaterThan(100);
+    // Plancher anti-faux-vert : un porteur TÉMOIN dans `schemas/**` et un hors, que le périmètre doit voir.
+    expect(porteurs, 'périmètre sans ses témoins = faux vert : la garde ne mesurerait rien')
+      .toEqual(expect.arrayContaining(['src/data/schemas/defs/props.ts', 'src/ui/editor/Editor.tsx']));
 
-    // Cache PARTAGÉ : les 128 marches sont du MÊME régime (`typesEffaces`), et se recouvrent presque
-    // toutes — sans partage, chaque module de la grammaire est relu et re-résolu à chaque def.
+    // Cache PARTAGÉ : toutes les marches sont du MÊME régime (`typesEffaces`), et se recouvrent presque
+    // toutes — sans partage, chaque module de la grammaire est relu et re-résolu à chaque porteur.
     const cache = new Map<string, string[] | null>();
     const orphelins = porteurs.filter((f) => !clotureDImports([resolve(f)], { typesEffaces: true, cache }).has(LOCALE));
     expect(orphelins).toEqual([]);

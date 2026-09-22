@@ -87,7 +87,7 @@ describe('Le monde de l’écran de jeu est VOLUMIQUE, et lui seul (#1176 C5a)',
     // Ordre du DOM : le canevas AVANT le SVG (donc peint dessous, overlays au-dessus).
     expect(canvas!.compareDocumentPosition(svg!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect((svg as HTMLElement).style.background).toBe('transparent');
-    // La couche monde a quitté le SVG : plus aucun jeton porteur de `data-cid` n'y subsiste.
+    // La couche monde est peinte au canevas : le SVG ne porte aucun jeton `data-cid`.
     expect(el.querySelectorAll('[data-cid]').length).toBe(0);
   });
 });

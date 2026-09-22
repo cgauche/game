@@ -34,7 +34,7 @@ export function setPickProbe(p: PickProbe | null): void {
 import { portRepairVessel, portCareenVessel, portInstallUpgrade, damageVesselHull, setVesselHull } from './seaVoyageFlow';
 import { seaBoardEventById } from '../engine/seaVoyage';
 import { beginShipwreck } from './shipwreck';
-import { placeOfScene, placeById, routesEtat, visiblePlaces, type MapRoute, type WorldMap } from './worldMap';
+import { placeOfScene, placeById, routesEtat, visiblePlaces, documentDeProjet, MAISON_PROJET_AUTHORE, type MapRoute, type WorldMap } from './worldMap';
 import { buildRiverDayCascade } from './riverVoyageFlow';
 import { findVehicleById } from '../data';
 import { estAbsent } from './terrain';
@@ -61,14 +61,15 @@ import { applyOps } from '../engine/ops';
 import { parseQualityInstance } from '../engine/qualities/normalize';
 import { formatImperial } from '../engine/clock';
 import { testScenarios, type TestScenario } from '../scenes/test-scenarios';
-import { builtinCampaigns, allBuiltinCampaigns } from '../scenes/campaign';
-import { projectsLoad } from './projectLibrary';
+import { builtinCampaigns, allBuiltinCampaigns, campagneDuJeu } from '../scenes/campaign';
+import { projectsLoad, projectSave, type SavedProject } from './projectLibrary';
+import { emptyNarratif } from './campaignNarratif';
 import { makeShowcaseParty } from '../data/pregens';
 import { hoverTargeting } from './targeting';
 import { maneuverShip } from './shipManeuver';
 import { etageActif, getViewZ, setViewZ } from './viewLevel';
 import { setRevealAll, computeStateVisible } from './visionState';
-import { doorIsOpen } from './scene';
+import { doorIsOpen, emptyScene } from './scene';
 import { rule, setRule, ruleDef, OPTIONAL_RULES, type RuleValue } from '../engine/policy';
 import { houseRulesMutability, resetHouseRule } from './houseRules';
 import { cadence } from '../engine/cadence';
@@ -969,6 +970,32 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
       return editeur.listerEntites!();
     },
 
+    /** Entrée de BIBLIOTHÈQUE DE PROJETS minimale et VALIDE (#1343) : une scène vide (`emptyScene`)
+     *  enveloppée par le constructeur UNIQUE du document (`documentDeProjet`), identité d'un projet
+     *  d'auteur (`MAISON_PROJET_AUTHORE`) — elle passe `parseProject`. Rien n'est écrit : la recette la
+     *  DÉFORME pour son cas, puis la pose par `projectSave`. */
+    projectMinimal: (id = 'projet-recette', label = 'Projet de recette'): SavedProject => {
+      const scene = emptyScene();
+      const project = documentDeProjet(
+        { type: 'projet', id, label, versionContenu: 1, maison: MAISON_PROJET_AUTHORE },
+        [scene],
+        { narratif: emptyNarratif() },
+      );
+      return { id, label, startSceneId: scene.id, savedAt: Date.now(), published: false, project };
+    },
+
+    /** POSE une entrée en bibliothèque de projets par `projectSave` (#1343) — le cache de
+     *  `projectsLoad` est mis à jour, AUCUN rechargement requis ; un écran qui liste les projets
+     *  (« Ouvrir » de l'éditeur, bibliothèque de campagnes) les relit à son OUVERTURE, pas s'il est
+     *  déjà ouvert. Aucune porte : une entrée DÉFORMÉE se pose telle quelle, c'est le refus du geste
+     *  mesuré ensuite qu'on recette. SETUP seulement. */
+    projectSave: async (entree: SavedProject) => {
+      const issue = await projectSave(entree);
+      return issue.ok
+        ? `✓ projet « ${entree.id} » posé en bibliothèque${issue.degraded ? ' (miroir localStorage seul)' : ''}`
+        : `✗ projet « ${entree.id} » non posé : ${issue.message}`;
+    },
+
     /** Charge une CAMPAGNE BUILT-IN sans dérouler le character creator ×4 à la main :
      *  __wfrp.campaign('loup-et-saumure', 42). Sans argument : liste les ids. `sceneId` (optionnel)
      *  démarre ailleurs qu'à l'entrée par défaut. MÊME chemin que le picker `PartyScreen` (`setParty` +
@@ -977,10 +1004,13 @@ export function buildApi(scenarios: readonly TestScenario[] = testScenarios) {
       if (!id) return builtinCampaigns.map((c) => `${c.id} — ${c.label}`);
       const c = builtinCampaigns.find((b) => b.id === id);
       if (!c) return `✗ « ${id} » introuvable — ids : ${builtinCampaigns.map((b) => b.id).join(', ')}`;
+      if (sceneId !== undefined && !c.scenes.some((sc) => sc.id === sceneId)) {
+        return `✗ scène « ${sceneId} » introuvable dans « ${id} » — ids : ${c.scenes.map((sc) => sc.id).join(', ')}`;
+      }
       const s = g();
       if (seed != null) s.seedRng(seed);
       s.setParty(makeShowcaseParty()); // campagnes built-in sans pré-tirés propres — groupe canonique (4 piliers)
-      s.setPendingCampaign({ id: c.id, label: c.label, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap, narratif: c.narratif });
+      s.setPendingCampaign(campagneDuJeu(c));
       s.loadProject(c.scenes, sceneId ?? c.startSceneId, c.worldMap ?? null, c.narratif);
       s.setScreen('campaign');
       const after = useGame.getState();

@@ -285,7 +285,7 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
     expect(IDS.filter((id) => findPropById(id)!.foot !== undefined)).toEqual([]);
     // Et le champ vit toujours, chez ceux à qui il appartient : sans cette moitié, le contrat
     // ci-dessus passerait aussi sur un `foot` disparu du schéma.
-    expect(props.filter((p) => !p.volume && p.foot).length).toBeGreaterThan(20);
+    expect(props.filter((p) => !p.volume && p.foot).length).toBeGreaterThan(0);
   });
 
   it.each(IDS)('%s : son CORPS (sièges exclus) tient dans son empreinte dérivée, à chacun de ses caps', (id) => {

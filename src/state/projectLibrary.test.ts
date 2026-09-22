@@ -10,8 +10,14 @@ import {
   __setOpenIdbRequestForTest,
   IdbBackend,
   SavedProject,
+  documentDeLEntree,
+  campagneDeLEntree,
+  playerEntryError,
 } from './projectLibrary';
-import { Scene } from './scene';
+import { Scene, emptyScene } from './scene';
+import { parseProject, CURRENT_PROJECT_SCHEMA, ProjetRefuse } from './worldMap';
+import { allBuiltinCampaigns } from '../scenes/campaign';
+import { allAxes } from '../data';
 
 const KEY = 'wfrp4.editor-projects.v1';
 const TOMBSTONE_KEY = 'wfrp4.editor-projects.tombstones.v1';
@@ -458,5 +464,126 @@ describe('projectLibrary — bibliothèque de projets éditeur (localStorage)', 
       expect(localStorage.getItem(TOMBSTONE_KEY)).toBeNull();
       expect(projectsLoad()).toEqual([]);
     });
+  });
+});
+
+describe('documentDeLEntree — le document d’une entrée de bibliothèque, lu par UNE fonction (#1343)', () => {
+  const narratif = { affaires: [], indices: [], presetsPnj: [], objets: [] };
+  const scene = { ...emptyScene(4, 4), id: 'scene-a', label: 'Salle A' };
+
+  it('entrée d’AVANT #1552 (document sans identité) : la porte accepte, avec l’id et le nom de l’entrée, version 0', () => {
+    const { type: _muette, ...sceneMuette } = scene;
+    const entree = {
+      id: 'proj-ancien', label: 'Campagne d’avant', startSceneId: 'scene-a', savedAt: 1, published: true,
+      project: { schema: 6, scenes: [sceneMuette as Scene], narratif },
+    } as SavedProject;
+    expect(() => parseProject(structuredClone(entree.project)), 'le document brut est refusé').toThrow(/id/);
+    const doc = parseProject(documentDeLEntree(entree));
+    expect(doc.id).toBe('proj-ancien');
+    expect(doc.label).toBe('Campagne d’avant');
+    expect(doc.versionContenu).toBe(0);
+  });
+
+  it('copie d’AVANT E5 au nom divergent : le nom de l’ENTRÉE prime, l’id et la version restent ceux du document', () => {
+    const { scenes: _sc, startSceneId: _st, worldMap: _wm, narratif: _na, label: _lb, ...identiteDuPaquet } = allBuiltinCampaigns[0];
+    const entree = {
+      id: 'entree-copie', label: 'Mon nom', startSceneId: 'scene-a', savedAt: 1, published: true,
+      project: { ...identiteDuPaquet, type: 'projet', schema: CURRENT_PROJECT_SCHEMA, label: 'Nom du paquet', versionContenu: 4, scenes: [scene], narratif },
+    } as unknown as SavedProject;
+    const doc = parseProject(documentDeLEntree(entree));
+    expect(doc.label).toBe('Mon nom');
+    expect(doc.id).toBe(allBuiltinCampaigns[0].id);
+    expect(doc.versionContenu).toBe(4);
+  });
+
+  it('entrée au nom VIDE : le nom du document reste', () => {
+    const entree = {
+      id: 'e', label: '  ', startSceneId: 'scene-a', savedAt: 1, published: true,
+      project: { type: 'projet', schema: CURRENT_PROJECT_SCHEMA, id: 'doc-id', label: 'Nom du document', versionContenu: 1, maison: 'fixture de test', scenes: [scene], narratif },
+    } as unknown as SavedProject;
+    expect(parseProject(documentDeLEntree(entree)).label).toBe('Nom du document');
+  });
+});
+
+describe('campagneDeLEntree — la campagne LANCÉE depuis une entrée, par la porte (#1343)', () => {
+  const narratif = { affaires: [], indices: [], presetsPnj: [], objets: [] };
+  const scene = { ...emptyScene(4, 4), id: 'scene-a', label: 'Salle A' };
+
+  it('entrée d’un ANCIEN schéma : ses scènes sont MIGRÉES avant d’être posées', () => {
+    const { type: _t, reliefDefaults: _r, ...sceneAncienne } = scene;
+    const entree = {
+      id: 'proj-ancien', label: 'Campagne d’avant', startSceneId: 'scene-a', savedAt: 1, published: true,
+      project: { schema: 6, scenes: [sceneAncienne as Scene], narratif },
+    } as SavedProject;
+    const lancee = campagneDeLEntree(entree);
+    expect(lancee.id).toBe('proj-ancien');
+    expect(lancee.label).toBe('Campagne d’avant');
+    expect(lancee.startSceneId).toBe('scene-a');
+    expect(lancee.worldMap).toBeNull();
+    expect(lancee.scenes[0].type).toBe('scene');
+    expect(lancee.scenes[0].reliefDefaults).toBeDefined();
+  });
+
+  it('entrée FAUTIVE : la porte lève ProjetRefuse, jamais rattrapé ici', () => {
+    const entree = {
+      id: 'proj-fautif', label: 'Fautive', startSceneId: 'x', savedAt: 1, published: true,
+      project: { schema: CURRENT_PROJECT_SCHEMA, scenes: [{ id: 'x' } as unknown as Scene], narratif },
+    } as SavedProject;
+    expect(() => campagneDeLEntree(entree)).toThrow(ProjetRefuse);
+  });
+
+  it('entrée dont la scène de départ n’est PAS une scène du document : ProjetRefuse de cause « entree », au chemin `startSceneId`', () => {
+    const entree = {
+      id: 'proj-depart', label: 'Départ perdu', startSceneId: 'scene-disparue', savedAt: 1, published: true,
+      project: { type: 'projet', schema: CURRENT_PROJECT_SCHEMA, id: 'proj-depart', label: 'Départ perdu', versionContenu: 1, maison: 'fixture de test', scenes: [scene], narratif },
+    } as unknown as SavedProject;
+    let refus: unknown;
+    try {
+      campagneDeLEntree(entree);
+    } catch (err) {
+      refus = err;
+    }
+    expect(refus).toBeInstanceOf(ProjetRefuse);
+    expect((refus as ProjetRefuse).cause).toBe('entree');
+    expect((refus as ProjetRefuse).fautes.map((f) => f.chemin)).toEqual([['startSceneId']]);
+    expect(campagneDeLEntree({ ...entree, startSceneId: 'scene-a' }).startSceneId, 'la même entrée, départ réparé, se lance').toBe('scene-a');
+  });
+
+  it('document aux `activeAxes` déclarés : la campagne lancée les porte (#409)', () => {
+    const axes = allAxes.filter((a) => !a.core).map((a) => a.id);
+    expect(axes.length, 'le registre porte des axes hors socle').toBeGreaterThan(0);
+    const entree = {
+      id: 'proj-axes', label: 'Campagne à axes', startSceneId: 'scene-a', savedAt: 1, published: true,
+      project: { type: 'projet', schema: CURRENT_PROJECT_SCHEMA, id: 'proj-axes', label: 'Campagne à axes', versionContenu: 1, maison: 'fixture de test', scenes: [scene], narratif, activeAxes: axes },
+    } as unknown as SavedProject;
+    expect(campagneDeLEntree(entree).activeAxes).toEqual(axes);
+  });
+
+  it('un bogue du JEU (hors `ProjetRefuse`) REMONTE tel quel, sans diagnostic de refus', () => {
+    const consoleErr = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() => playerEntryError(new TypeError('x'), 'jouer')).toThrow(TypeError);
+    expect(consoleErr, 'aucun diagnostic de refus').not.toHaveBeenCalled();
+  });
+
+  it('un refus RÉEL de la porte devient le message générique du joueur, diagnostic journalisé', () => {
+    const entree = {
+      id: 'proj-fautif', label: 'Fautive', startSceneId: 'scene-a', savedAt: 1, published: true,
+      project: {
+        type: 'projet', schema: CURRENT_PROJECT_SCHEMA, id: 'proj-fautif', label: 'Fautive', versionContenu: 1, maison: 'fixture de test',
+        scenes: [{ ...scene, entities: [{ id: 'p0', kind: 'prop', pos: { x: 1, y: 1 }, label: 'Fantôme', ref: 'decor-inexistant' }] }],
+        narratif,
+      },
+    } as unknown as SavedProject;
+    let refus: unknown;
+    try {
+      campagneDeLEntree(entree);
+    } catch (err) {
+      refus = err;
+    }
+    expect(refus, 'la porte refuse le décor à `ref` inexistante').toBeInstanceOf(ProjetRefuse);
+    const consoleErr = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(playerEntryError(refus, 'jouer')).toBe('Cette campagne ne peut pas être jouée en l’état. Demandez-en une nouvelle version à son auteur.');
+    expect(playerEntryError(refus, 'exporter')).toBe('Cette campagne ne peut pas être exportée en l’état. Demandez-en une nouvelle version à son auteur.');
+    expect(consoleErr).toHaveBeenCalledWith('Campagne de bibliothèque refusée :', (refus as ProjetRefuse).message);
   });
 });

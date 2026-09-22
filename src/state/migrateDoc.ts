@@ -8,28 +8,48 @@
  * persistée, `SAVE_VERSION` monte et les saves antérieures se JETTENT, `saves.ts`). Ne pas purger le
  * roster ni les projets par imitation : ce sont d'autres axes persistants, avec leurs consommateurs.
  *
- * Sémantique : un doc `vN` traverse `migrations[N]`, `[N+1]`… jusqu'à
- * `targetVersion`. Refus explicite (retourne `null`, jamais une exception ni une donnée corrompue) si :
- * pas un objet, `version` absente/non numérique, version FUTURE (plus récente que l'app — on ne devine
- * pas une structure inconnue), trou dans la chaîne (pas de migrateur pour une version rencontrée), ou
- * un migrateur qui ne fait pas progresser `version`.
+ * Sémantique : un doc `vN` traverse `migrations[N]`, `[N+1]`… jusqu'à `targetVersion`. Refus
+ * explicite et NOMMÉ (`RaisonDeRefus`, jamais une exception ni une donnée corrompue) si : pas un objet,
+ * `version` absente/non numérique, version FUTURE (plus récente que l'app — on ne devine pas une
+ * structure inconnue), trou dans la chaîne (pas de migrateur pour une version rencontrée), migrateur
+ * qui ne fait pas progresser `version`, ou migrateur qui LÈVE sur un document qu'il ne sait pas lire.
  */
 
 /** Table de migrations séquentielles : la clé N met à niveau un doc vN → v(N+1). */
 export type MigrationMap = Record<number, (doc: Record<string, unknown>) => Record<string, unknown>>;
 
-export function migrateDoc(parsed: unknown, targetVersion: number, migrations: MigrationMap): Record<string, unknown> | null {
-  if (!parsed || typeof parsed !== 'object') return null;
+/** Pourquoi la migration refuse — union FERMÉE, lue par l'appelant pour dire son refus. */
+export type RaisonDeRefus =
+  | 'non-objet'
+  | 'version-absente'
+  | 'version-future'
+  | 'migrateur-manquant'
+  | 'migrateur-immobile'
+  | 'migrateur-en-echec';
+
+/** Issue d'une migration : le document à jour, ou la raison du refus, la version où la chaîne s'est
+ *  arrêtée et, pour un migrateur qui a levé, son message. */
+export type IssueDeMigration =
+  | { readonly ok: true; readonly doc: Record<string, unknown> }
+  | { readonly ok: false; readonly raison: RaisonDeRefus; readonly version: unknown; readonly detail?: string };
+
+export function migrateDoc(parsed: unknown, targetVersion: number, migrations: MigrationMap): IssueDeMigration {
+  if (!parsed || typeof parsed !== 'object') return { ok: false, raison: 'non-objet', version: undefined };
   let doc = parsed as Record<string, unknown>;
   let v = typeof doc.version === 'number' ? doc.version : NaN;
-  if (!Number.isFinite(v) || v > targetVersion) return null; // version inconnue ou plus récente que l'app
+  if (!Number.isFinite(v)) return { ok: false, raison: 'version-absente', version: doc.version };
+  if (v > targetVersion) return { ok: false, raison: 'version-future', version: v };
   while (v < targetVersion) {
     const up = migrations[v];
-    if (!up) return null; // pas de migrateur pour cette version → on refuse (plutôt que corrompre)
-    doc = up(doc);
+    if (!up) return { ok: false, raison: 'migrateur-manquant', version: v };
+    try {
+      doc = up(doc);
+    } catch (e) {
+      return { ok: false, raison: 'migrateur-en-echec', version: v, detail: e instanceof Error ? e.message : String(e) };
+    }
     const next = typeof doc.version === 'number' ? doc.version : NaN;
-    if (!Number.isFinite(next) || next <= v) return null; // un migrateur DOIT faire progresser la version
+    if (!Number.isFinite(next) || next <= v) return { ok: false, raison: 'migrateur-immobile', version: v };
     v = next;
   }
-  return doc;
+  return { ok: true, doc };
 }

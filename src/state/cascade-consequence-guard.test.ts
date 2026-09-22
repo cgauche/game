@@ -119,21 +119,11 @@ describe('cliquet composeur — canal journal: déprécié des CascadeApplier (#
  */
 const CONTENT_DIRS = ['src/state', 'src/engine'];
 
-/** Baseline par fichier — voir doc ci-dessus. Reste 1 occurrence dans 1 fichier de CODE : l'IRRÉDUCTIBLE
- *  au dériveur, avec SA raison mesurée (#1262 V3 Lj, #1294). Les re-prints passés au CATALOGUE sont
- *  comptés à part (`CATALOG_BASELINE` ci-dessous) — une migration i18n ne fait plus DISPARAÎTRE un site
- *  du compteur. */
-const CONTENT_BASELINE: Record<string, number> = {
-  // #295 — le site GARDÉ nominativement du redémarrage vapeur (`seaVoyageFlow`, `runRestart`) a QUITTÉ
-  // ce compte au lot V8c₃ : il est passé au catalogue (`sv.engineRestart`), où `CATALOG_BASELINE` le
-  // compte à SON titre — déplacé, jamais effacé.
-  // RÉSORBÉS dans le dériveur (#1262 V3 Lj) : stock #410 (merchantFlow ×2, portFlow ×2, engine/magic ×2,
-  // engine/provisions ×2, engine/travel ×1) + 4 sites #295 (pursuitFlow, shipwreck, travelFlow ×2) ;
-  // puis (#1294) le Test opposé INLINE de `combat/triggeredTest.ts` (×2), rendu par la forme OPPOSÉE
-  // du dériveur (`traceLineOf`, `casc.opposedTrace`).
-  // #1318 V8c₂ : les 6 irréductibles de travelFlow/riverVoyageFlow ont QUITTÉ ce compte pour le
-  // catalogue — ils sont comptés là-bas, pas effacés.
-};
+/** Baseline par fichier — voir doc ci-dessus. VIDE : aucun fichier de CODE ne re-printe un jet. Le jet
+ *  rendu passe par le dériveur (`traceLineOf`, forme OPPOSÉE `casc.opposedTrace` — #1262 V3 Lj, #1294) ;
+ *  les re-prints IRRÉDUCTIBLES au dériveur vivent au CATALOGUE, comptés par `CATALOG_BASELINE`
+ *  ci-dessous (#295, #1318) — une migration i18n ne fait donc pas DISPARAÎTRE un site du compte. */
+const CONTENT_BASELINE: Record<string, number> = {};
 
 /**
  * VOLET CATALOGUE (#1318 V8c₂) — le compteur ci-dessus lit du CODE ; depuis que la narration passe par
@@ -158,11 +148,11 @@ const DERIVEUR_KEYS = new Set([
 const CATALOG_BASELINE = [
   'cf.wardTestFail', 'cf.handGateFail', 'cf.handGatePass', // #410 : Tests de gate, journal = seule surface
   'cs.shameOvercome', 'cs.dispelRoll', // #410 : jet incisé dans la narration
-  // #1318 V8c₂ — les 5 venus de travelFlow/riverVoyageFlow (les mêmes qu'avant migration, au même titre) :
+  // #1318 V8c₂ — narrations de voyage (travelFlow/riverVoyageFlow) :
   'tf.beastExhausted', // bêtes de l'attelage : porteur SANS identité, dé parenthétique en justification
   'rv.holeInline', 'rv.fragRefloat', // calfatage / renflouage IA : idem
-  // #1318 V8c₃ — le site #295 de `seaVoyageFlow.runRestart`, venu du compteur de CODE au même titre :
-  // la ligne porte le DR CUMULÉ du Test étendu (`lastDR`), que le patron du dériveur ne saurait dire.
+  // #1318 V8c₃, #295 — `seaVoyageFlow.runRestart` : la ligne porte le DR CUMULÉ du Test étendu
+  // (`lastDR`), que le patron du dériveur ne saurait dire.
   'sv.engineRestart',
 ].sort();
 

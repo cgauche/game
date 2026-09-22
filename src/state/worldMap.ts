@@ -469,11 +469,11 @@ export function declutterPositions(
 // `narratif` vide, la 4→5 aplatit la poche `meta`, la 5→6 donne au libellé de scène et de carte sa
 // graphie `label` et fait s'annoncer les statblocs embarqués, la 6→7 fait s'annoncer le document
 // LUI-MÊME et ses scènes et pose la provenance, la 7→8 pose les matières de relief de chaque scène.
-import { migrateDoc, type MigrationMap } from './migrateDoc';
+import { migrateDoc, type MigrationMap, type RaisonDeRefus } from './migrateDoc';
 import { findPropById } from '../data';
 import { ACTION_FOUILLER } from './usable';
 import { type NarratifBlock, emptyNarratif } from './campaignNarratif';
-import { validateDocument } from '../data/schemas/validate';
+import { validateDocument, rapportDeFautes, type Faute } from '../data/schemas/validate';
 import { projetSchema, SCHEMA_PROJET } from '../data/schemas/defs-scenes/projet';
 import type { SourceRef } from '../data/schemas/grammaire/valeurs';
 
@@ -527,10 +527,14 @@ export const CURRENT_PROJECT_SCHEMA = SCHEMA_PROJET;
  * bibliothèque, export d'une entrée. Il vit ICI, avec `ProjectDoc`, `CURRENT_PROJECT_SCHEMA` et la
  * porte `parseProject` : ce qu'on écrit et ce qu'on relit ont un seul propriétaire.
  *
- * ORDRE D'ÉCRITURE : `id`, `type`, `label` en tête, puis le reste de l'identité, puis `schema` —
- * l'enveloppe que le dépôt PORTE (les `*-projet.json` committés). Les clés optionnelles ne
- * s'écrivent que FOURNIES : un `worldMap: undefined` posé se lirait « carte effacée » au diff du
- * document, là où son absence dit « aucune carte ».
+ * Les générateurs de campagne y DÉLÈGUENT aussi (`projectDoc`, `scripts/campagne/lib.mjs`) : une
+ * seule fabrique de la forme (credo.md:3-4).
+ *
+ * ORDRE D'ÉCRITURE : `id`, `type`, `label`, `schema`, le reste de l'identité, `narratif`, `scenes`,
+ * puis `worldMap` et `activeAxes` — l'ordre des paquets GÉNÉRÉS, figé à l'octet par
+ * `src/scenes/generateurs-byte-stables.test.ts`. Les clés optionnelles ne s'écrivent que FOURNIES :
+ * un `worldMap: undefined` posé se lirait « carte effacée » au diff du document, là où son absence
+ * dit « aucune carte ».
  */
 export function documentDeProjet(
   identite: ProjectIdentite,
@@ -542,12 +546,12 @@ export function documentDeProjet(
     id,
     type,
     label,
-    ...resteDeLIdentite,
     schema: CURRENT_PROJECT_SCHEMA,
+    ...resteDeLIdentite,
+    narratif,
     scenes,
     ...(worldMap ? { worldMap } : {}),
     ...(activeAxes ? { activeAxes } : {}),
-    narratif,
   };
 }
 
@@ -952,43 +956,105 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
 export const MAISON_PROJET_AUTHORE =
   'campagne authorée à l’éditeur de scènes — aucun livre ne la publie, le document ne cite aucun folio à sa racine';
 
-/** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (jamais un
- *  throw sec sans espoir de migration) si : document mal formé, `schema` absent/non numérique,
- *  `schema` FUTUR (plus récent que l'app — on ne devine pas une structure inconnue), trou dans la
- *  chaîne de migration (pas de migrateur défini pour ce schema), ou forme finale invalide
- *  (`scenes` absent/non-tableau). Les anciens formats (tableau de scènes nu, scène unique) restent
- *  refusés : ils n'ont jamais porté de `schema`. Chaque scène ressort passée par `normalizeScene`
- *  (`scene.ts`) : les collections requises qu'un vieux document (même schema 2) ne portait pas encore
- *  sont complétées ici, au SEUL point d'entrée, jamais par un `?? []` dispersé côté consommateur. */
 /** Vue TS du document PROUVÉ par `projetSchema`. La fabrique `document()` scelle ses nœuds — `z.infer`
  *  y vaut `unknown` (cf. `grammaire/document.ts`) —, la vue se pose donc ici, une fois. */
 type ProjetProuve = { [K in keyof ProjectDoc]: ProjectDoc[K] };
 
-export function parseProject(data: unknown): Omit<ProjectDoc, 'schema'> {
-  const obj = data as Record<string, unknown> | null;
-  if (!obj || typeof obj !== 'object') {
-    throw new Error('Projet invalide : document absent ou mal formé.');
-  }
-  const migrated = migrateDoc({ ...obj, version: obj.schema }, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS);
-  if (!migrated || !Array.isArray(migrated.scenes)) {
-    throw new Error(
-      `Projet invalide ou version non supportée (schema=${JSON.stringify(obj.schema)}) — attendu ` +
-      `{ schema: ${CURRENT_PROJECT_SCHEMA}, scenes: [...] }, et aucune migration n'est disponible vers ce format.`,
-    );
-  }
-  // Porte UNIQUE du document (#1466) : `projetSchema` porte la FORME et les quatre sémantiques du
-  // seam — FK `activeAxes` → `axes.json`, invariants du bloc narratif, FK intra-document
-  // `entity.presetId` → `narratif.presetsPnj`, invariant d'identité. Validé AVANT `resolvePortRef` et
-  // `normalizeScene` : le schéma voit le document tel qu'il est authoré. `version` est la clé de
-  // travail de `migrateDoc`, pas un champ du document : elle ne lui est pas soumise.
-  const { version: _version, ...doc } = migrated;
-  const invalide = validateDocument(projetSchema, doc, 'Projet');
-  if (invalide) throw new Error(invalide);
+/** Étape de la porte qui a refusé : document mal formé (illisible comme projet, ou que la migration
+ *  n'a pas pu traverser), version sans migration, schéma, ou entrée de bibliothèque
+ *  (`campagneDeLEntree`, #1627). */
+export type CauseDeRefus = 'mal-forme' | 'version' | 'schema' | 'entree';
 
-  const worldMap = (migrated.worldMap as WorldMap) ?? undefined;
-  if (worldMap) {
-    worldMap.places = worldMap.places.map((p) => (p.port ? { ...p, port: resolvePortRef(p.port) } : p));
+/** Refus de la porte `parseProject`, MESURÉ : la cause et les fautes (chemin + message), à charge de
+ *  l'appelant de les dire à sa surface. Le `message` reste le rapport TECHNIQUE de la porte. Patron :
+ *  `EntreeEnSceneNonAtteinte` (`entreeEnScene.ts`). */
+export class ProjetRefuse extends Error {
+  readonly cause: CauseDeRefus;
+  readonly fautes: readonly Faute[];
+
+  constructor(cause: CauseDeRefus, fautes: readonly Faute[], message: string) {
+    super(message);
+    this.name = 'ProjetRefuse';
+    this.cause = cause;
+    this.fautes = fautes;
   }
+}
+
+/** Toute erreur qui n'est pas un refus de la porte remonte telle quelle : SOURCE UNIQUE des
+ *  traducteurs de `ProjetRefuse` (`refusJoueur`, `refusDeLaPorteDuProjet`). */
+export function exigerUnRefus(err: unknown): asserts err is ProjetRefuse {
+  if (!(err instanceof ProjetRefuse)) throw err;
+}
+
+/** Refus hors schéma : une seule faute, rapportée `Projet invalide : <faute>.` */
+export function refusDeForme(cause: CauseDeRefus, chemin: readonly (string | number)[], faute: string): ProjetRefuse {
+  return new ProjetRefuse(cause, [{ chemin, message: faute, code: cause }], `Projet invalide : ${faute}.`);
+}
+
+/** Ce que la porte dit d'un refus de MIGRATION, par la raison que `migrateDoc` NOMME : un numéro
+ *  absent ou illisible et un document que les migrations ne savent pas lire sont des documents mal
+ *  formés ; une version future ou sans chemin de migration est une affaire de version. */
+const REFUS_DE_MIGRATION: Record<RaisonDeRefus, { cause: CauseDeRefus; chemin: readonly string[]; faute: (schema: string, detail?: string) => string }> = {
+  'non-objet': { cause: 'mal-forme', chemin: [], faute: () => 'document absent ou mal formé' },
+  'version-absente': { cause: 'mal-forme', chemin: ['schema'], faute: (s) => `« schema » absent ou non numérique (schema=${s})` },
+  'version-future': {
+    cause: 'version',
+    chemin: ['schema'],
+    faute: (s) => `version future (schema=${s}) : cette version du jeu lit jusqu'au schema ${CURRENT_PROJECT_SCHEMA}`,
+  },
+  'migrateur-manquant': {
+    cause: 'version',
+    chemin: ['schema'],
+    faute: (s) => `version non supportée (schema=${s}) : aucune migration depuis ce schema vers le schema ${CURRENT_PROJECT_SCHEMA}`,
+  },
+  'migrateur-immobile': {
+    cause: 'version',
+    chemin: ['schema'],
+    faute: (s) => `version non supportée (schema=${s}) : sa migration ne fait pas progresser le schema`,
+  },
+  'migrateur-en-echec': { cause: 'mal-forme', chemin: [], faute: (_s, detail) => `document mal formé (${detail})` },
+};
+
+function refusDeMigration(raison: RaisonDeRefus, schema: unknown, detail?: string): ProjetRefuse {
+  const { cause, chemin, faute } = REFUS_DE_MIGRATION[raison];
+  return refusDeForme(cause, chemin, faute(JSON.stringify(schema), detail));
+}
+
+/** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (`ProjetRefuse`,
+ *  jamais un throw sec sans espoir de migration), dont la cause se LIT : la raison d'un refus de
+ *  migration est celle que `migrateDoc` nomme (`REFUS_DE_MIGRATION`) ; puis forme finale invalide
+ *  (`scenes` absent/non-tableau) ou schéma enfreint. Les anciens formats (tableau de scènes nu,
+ *  scène unique) restent refusés : ils n'ont jamais porté de `schema`. Chaque scène ressort passée
+ *  par `normalizeScene` (`scene.ts`) : les collections requises absentes d'un document ancien (même
+ *  schema 2) sont complétées ici, au SEUL point d'entrée, jamais par un `?? []` dispersé côté
+ *  consommateur. La porte n'altère JAMAIS ce qu'on lui passe. Ce qui suit le schéma travaille sur
+ *  un document PROUVÉ : une exception y est une faute du jeu, pas de l'auteur, et se propage. */
+export function parseProject(data: unknown): Omit<ProjectDoc, 'schema'> {
+  // `version` est la clé de travail de `migrateDoc` : le `schema` du document y est recopié. Seul
+  // `null`/`undefined` n'a pas de champ à lire ; tout le reste, `migrateDoc` le juge.
+  const obj = data as Record<string, unknown> | null | undefined;
+  const issue = migrateDoc(obj == null ? obj : { ...obj, version: obj.schema }, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS);
+  if (!issue.ok) throw refusDeMigration(issue.raison, issue.version, issue.detail);
+  const migrated = issue.doc;
+  if (!Array.isArray(migrated.scenes)) {
+    throw refusDeForme('mal-forme', ['scenes'], '« scenes » absent ou non-tableau');
+  }
+  // Porte UNIQUE du document (#1466) : `projetSchema` porte la FORME et les sémantiques du seam —
+  // FK `activeAxes` → `axes.json`, FK `worldMap.places[].port.ref` → `naval-ports.json`, invariants
+  // du bloc narratif, FK intra-document `entity.presetId` → `narratif.presetsPnj`, invariant
+  // d'identité. Validé AVANT `resolvePortRef` et `normalizeScene` : le schéma voit le document tel
+  // qu'il est authoré. `version` est la clé de travail de `migrateDoc`, pas un champ du document :
+  // elle ne lui est pas soumise.
+  const { version: _version, ...doc } = migrated;
+  const fautes = validateDocument(projetSchema, doc);
+  if (fautes) throw new ProjetRefuse('schema', fautes, rapportDeFautes('Projet', fautes));
+
+  // Carte et lieux NEUFS : les ports se résolvent sur la copie, jamais sur le document reçu.
+  const carteRecue = migrated.worldMap as WorldMap | undefined;
+  const worldMap = carteRecue && {
+    ...carteRecue,
+    places: carteRecue.places.map((p) => (p.port ? { ...p, port: resolvePortRef(p.port) } : p)),
+  };
   const activeAxes = (migrated.activeAxes as string[] | undefined) ?? undefined;
   const narratif = migrated.narratif as NarratifBlock;
   // Le schéma VIENT de prouver la forme : le document se relit donc sous sa VUE TS, en une conversion

@@ -1213,10 +1213,10 @@ export const STRUCTURES_OPS = [
   { op: "aggravateSymptom", signature: "disease,op,otherwise,severity,symptomId", dataset: "maladies.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" }, // EDOC 08 l.104-108 (#674)
   { op: "diseaseTestMod", signature: "amount,op", dataset: "maladies.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "grantSymptom", signature: "disease,op,symptomId", dataset: "maladies.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" }, // EDOC 08 l.106-108 (#674)
-  // signature `op,radius` -> `indice,op,traitId` (#1508 T3, 2026-09-07) : l'op est TYPÉE
-  // (`OP_DEFS.domeWard`) et porte le Trait qu'elle octroie ; elle a quitté `OPS_NON_TYPEES`. Sa ZONE
-  // DISPARAÎT du payload : elle est déjà écrite par la ligne « Cible » du sort (ZdE, LDB 47 l.28) et
-  // l'op la LIT (`OpsCtx.sourceSpell.zde`) — une zone, une déclaration.
+  // signature `indice,op,traitId` (#1508 T3, 2026-09-07) : l'op est TYPÉE (`OP_DEFS.domeWard`) et
+  // porte le Trait qu'elle octroie. Sa ZONE n'est pas au payload : elle est écrite par la ligne
+  // « Cible » du sort (ZdE, LDB 47 l.28) et l'op la LIT (`OpsCtx.sourceSpell.zde`) — une zone, une
+  // déclaration.
   { op: "domeWard", signature: "indice,op,traitId", dataset: "spells.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "endPsych", signature: "op,type", dataset: "psychology.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "endPsych", signature: "op,type", dataset: "talents.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },

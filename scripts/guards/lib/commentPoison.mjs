@@ -311,6 +311,19 @@ const NO_MORE_HERE_RX = new RegExp(
   'i',
 );
 
+// Le DÉPART d'un artefact de code : le passé composé du verbe de départ, collé à un artefact
+// BACK-TICKÉ — sujet juste avant, ou complément juste après. Le lecteur y apprend d'où l'artefact
+// est parti, jamais ce qu'il est. Population mesurée 2026-09-22 sur `src/**`+`scripts/**` (#1343) :
+// 25 commentaires pour le verbe nu ; ses 4 sites back-tickés, tous des tombales, reformulés du même
+// geste. Hors artefact back-tické, la forme reste HORS famille (angle mort déclaré à l'en-tête du test).
+// Formes couvertes et faux positifs écartés : LITTÉRAUX dans `src/comment-poison-guard.test.ts`.
+const QUITTE = '(?:a|ont)' + GAP + 'quitt[ée]e?s?(?![\\wÀ-ÿ])';
+const TICKED = BT + '[^' + BT + '\\n]+' + BT;
+const LEFT_ARTIFACT_RX = new RegExp(
+  '(?:' + TICKED + GAP + QUITTE + '|\\b' + QUITTE + GAP + TICKED + ')',
+  'i',
+);
+
 // Le RAPPEL D'ANCIEN ÉTAT le plus courant du dépôt : la locution de cessation suivie d'un artefact
 // de CODE nommé, sans négation verbale (« … — plus de X », « (plus de X en dur) »). Même exigence
 // que la famille voisine : le complément doit nommer un artefact de code, jamais une ressource de
@@ -427,6 +440,7 @@ export const TOMBSTONE_FAMILIES = [
   { rx: OF_YORE_RX, label: 'passé nostalgique (état révolu)' },
   { rx: NO_MORE_CODE_RX, label: 'n’est plus du code (nature révolue du site)' },
   { rx: NO_MORE_HERE_RX, label: 'n’est / ne vit plus ici (site quitté)' },
+  { rx: LEFT_ARTIFACT_RX, label: 'artefact back-tické parti (départ révolu)' },
   // #1486 : la locution de cessation NUE devant un artefact de code nommé — 8 vraies tombales sur les
   // 10 sites échantillonnés du 2026-08-23, sur une population de 248 commentaires ; le vocabulaire
   // fermé et les exclusions de quantité/comparaison ramènent cette population aux seuls artefacts.

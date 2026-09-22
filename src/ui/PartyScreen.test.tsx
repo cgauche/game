@@ -1,6 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { HeroSelector, PartyScreenView, slotKeyNav } from './PartyScreen';
+import { HeroSelector, PartyScreen, PartyScreenView, slotKeyNav } from './PartyScreen';
+import { projectSave, __resetLibraryForTest, type SavedProject } from '../state/projectLibrary';
+import { builtinCampaigns } from '../scenes/campaign';
+import { CURRENT_PROJECT_SCHEMA, resolveActiveAxes } from '../state/worldMap';
+import { emptyScene } from '../state/scene';
+import { allAxes } from '../data';
+import { useGame } from '../state/store';
 import { heroSubtitle } from './CharCard';
 import { makePregens } from '../data/pregens';
 import { rosterAdd } from '../state/roster';
@@ -261,5 +270,89 @@ describe('PartyScreen — présentation par le PERSONNAGE (plus de bouton « Qui
     const [career] = sub.split(' — ');
     expect(career.length).toBeGreaterThan(0);
     expect(render([hero], initialNet())).toContain('candidate-sub');
+  });
+});
+
+describe('PartyScreen — « Choisir » une campagne : construite par sa fabrique, par la porte (#1343)', () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(async () => {
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    await __resetLibraryForTest();
+    useGame.setState({ pendingCampaign: null, scene: null, net: initialNet() } as never);
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+  afterEach(async () => {
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  /** Ouvre la modale de choix par « Changer », puis clique « Choisir » sur la rangée nommée `nom`. */
+  async function choisir(nom: string) {
+    await act(async () => root.render(<PartyScreen />));
+    const changer = Array.from(document.querySelectorAll('button')).find((b) => b.textContent === 'Changer') as HTMLButtonElement;
+    await act(async () => changer.click());
+    const rangee = Array.from(document.querySelectorAll('.picker-modal .pregen-row')).find((r) => r.textContent?.includes(nom))!;
+    await act(async () => (rangee.querySelector('button') as HTMLButtonElement).click());
+  }
+
+  it('un projet PUBLIÉ que la porte refuse : alerte générique DANS la modale, qui reste ouverte, aucune campagne posée', async () => {
+    const fautive = {
+      id: 'proj-fautif', label: 'Campagne fautive', startSceneId: 'scene-a', savedAt: 1, published: true,
+      project: { schema: 999 as typeof CURRENT_PROJECT_SCHEMA, scenes: [], narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] } },
+    } as unknown as SavedProject;
+    await projectSave(fautive);
+    const consoleErr = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await choisir('Campagne fautive');
+
+    const alertes = document.querySelectorAll('[role="alert"]');
+    expect(alertes).toHaveLength(1);
+    const alerte = alertes[0];
+    expect(alerte.closest('.picker-modal'), 'dans la modale de choix').not.toBeNull();
+    expect(alerte.classList.contains('chip') && alerte.classList.contains('tone-danger')).toBe(true);
+    const txt = alerte.textContent ?? '';
+    expect(txt).toBe('Cette campagne ne peut pas être jouée en l’état. Demandez-en une nouvelle version à son auteur.');
+    expect(txt.toLowerCase()).not.toMatch(/schema|migration/);
+    expect(consoleErr).toHaveBeenCalled();
+    expect(useGame.getState().pendingCampaign, 'aucune campagne posée').toBeNull();
+    consoleErr.mockRestore();
+  });
+
+  it('une campagne du JEU se lance par sa fabrique, et la modale se ferme', async () => {
+    const c = builtinCampaigns[0];
+    await choisir(c.label);
+
+    expect(document.querySelector('[role="alert"]'), 'aucun refus').toBeNull();
+    const pc = useGame.getState().pendingCampaign;
+    expect(pc?.id).toBe(c.id);
+    expect(pc?.label).toBe(c.label);
+    expect(pc?.startSceneId).toBe(c.startSceneId);
+    expect(pc?.scenes).toEqual(c.scenes);
+    expect(pc?.worldMap).toEqual(c.worldMap);
+    expect(pc?.narratif).toEqual(c.narratif);
+    expect(document.querySelector('.picker-modal'), 'modale fermée').toBeNull();
+  });
+
+  it('un projet PUBLIÉ aux `activeAxes` déclarés : ses axes deviennent ceux de la compagnie (#409)', async () => {
+    const axes = allAxes.filter((a) => !a.core);
+    const publie = {
+      id: 'proj-axes', label: 'Campagne à axes', startSceneId: 'scene-a', savedAt: 1, published: true,
+      project: {
+        type: 'projet', schema: CURRENT_PROJECT_SCHEMA, id: 'proj-axes', label: 'Campagne à axes', versionContenu: 1,
+        maison: 'fixture de test', scenes: [{ ...emptyScene(4, 4), id: 'scene-a', label: 'Salle A' }],
+        narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] }, activeAxes: axes.map((a) => a.id),
+      },
+    } as unknown as SavedProject;
+    await projectSave(publie);
+
+    await choisir('Campagne à axes');
+
+    expect(resolveActiveAxes(useGame.getState().pendingCampaign ?? {})).toEqual(axes.map((a) => a.id));
+    const rail = Array.from(document.querySelectorAll('.compo-ax')).map((el) => el.textContent);
+    expect(rail, 'le rail de composition montre les axes de la campagne').toEqual(axes.map((a) => a.label));
   });
 });

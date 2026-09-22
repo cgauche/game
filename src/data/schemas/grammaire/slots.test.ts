@@ -168,6 +168,10 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // bâtiment, à côté de `defs-scenes/scene.ts › couvertureSchema` (la couverture posée par la scène).
       "idDe('material', 'roof')",
       "idDe('material', 'roof')",
+      // +1 site ADOPTÉ (#1343 lot B, 2026-09-22) : `defs-scenes/worldmap.ts › places[].port.ref` désigne
+      // le PORT d'un lieu de la carte du monde (`naval-ports.json`) — une réf inconnue est une faute de
+      // schéma nommée à son chemin, jamais un refus levé après la porte.
+      "idDe('navalPort')",
       // 1 → 2 (#1657 B3-2b-a) : `defs/ship-stations.ts › requiresTrait` porte EN DONNÉE le gate d'une
       // station (`cale` — MSRC 07 l.94 ; `nid-de-pie` — MDG 12 l.299), à côté de `defs/vehicles.ts ›
       // ship.traits`. Sans ce champ, `shipCritical.ts` brancherait par id de station.

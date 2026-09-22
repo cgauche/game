@@ -23,18 +23,25 @@
 // toute sa famille. Elle porte donc, à sa ligne, le path DÉCLARÉ et le champ OBSERVÉ qui divergent.
 // Mesuré le 2026-09-18 : DIX lignes relèvent de cette exception — `reliefDefaults` et `roofDefaults`
 // des quatre projets de scène et de `semences-de-scene.json`, tous servis par les MÊMES schémas de
-// `defs-scenes/scene.ts` (`slotsStock.mjs:84-248` et ci-dessous) ; s'y ajoutent les références
-// ENVELOPPÉES du même angle mort inverse (`buildings.json | features`, `ship-stations.json |
-// requiresTrait`, `structures.json`/`vehicles.json | traits`).
+// `defs-scenes/scene.ts` (`slotsStock.mjs:84-248` et ci-dessous) ; s'y ajoutent, de la même projection
+// sur le dernier segment-clé, `props.json | light` (`[].light.tone` → `tone`) et `props.json |
+// primitives` (`[].volume.primitives[]|N.material` → `material`), et les références ENVELOPPÉES de
+// l'angle mort inverse (`buildings.json | features`, `ship-stations.json | requiresTrait`,
+// `structures.json`/`vehicles.json | traits`).
 // Tout autre cas reste une DÉRIVE : une référence neuve s'ADOPTE, elle ne s'inscrit pas.
+// Symétrique, un DÉPART sans adoption : une ligne que la PROJECTION joint à une déclaration VOISINE
+// (même dernier segment-clé, autre path) quitte le stock sans que son champ ait adopté la fabrique ;
+// son compte vit alors à l'angle mort de projection (`ANGLES_MORTS_SLOTS`, ci-dessous), jamais ici.
+// Mesuré le 2026-09-22 : les quatre lignes `<projet> | ref` (444 `ref` d'entités de scène), jointes
+// à `worldMap.places[].port.ref` quand ce champ a adopté `idDe('navalPort')`.
 //
 // ANGLES MORTS — SOURCE UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`),
 // rendus aussi au doc §6.3 ; la garde compare les trois :
 //   - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 //   - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).
-//   - La PROJECTION path → champ retient le DERNIER segment-clé : deux paths distincts qui finissent sur la même clé se joignent au même champ observé (couverture sur-estimée à la marge).
+//   - La PROJECTION path → champ retient le DERNIER segment-clé : deux paths distincts qui finissent sur la même clé se joignent au même champ observé, et la couverture y est SUR-estimée — jusqu’à couvrir un champ ENTIER qu’aucun slot ne déclare. Mesuré le 2026-09-22 : la déclaration de `worldMap.places[].port.ref` (`idDe('navalPort')`) se joint aux `ref` des entités de scène des 4 paquets `*-projet.json` (444 occurrences : 314 `prop`, 130 `personnage`), qui ne portent AUCUN slot déclaré à leur path — le `ref` d’un décor est résolu par le `superRefine` par `kind` de `sceneEntitySchema` (`idDe('prop')`, #877), celui d’un personnage par aucun schéma (`defs-scenes/scene.ts`).
 //   - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
-//   - `valeursAuPath` ne descend PAS dans une branche d’union (`|N`) : la branche servie est celle qui parse, la donnée ne la porte pas — un slot sous union rend 0 valeur posée, et la résolution y est vacueuse.
+//   - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
 /** Slots d'espèce `id` visant une entité INTERNE à une scène (type hors `_ids.generated`) :
  *  listés, JAMAIS résolus par ce volet. VIDE aujourd'hui — la garde asserte l'ÉGALITÉ, donc toute
@@ -81,7 +88,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arene-projet.json", champ: "modes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "optionals", occurrences: 13, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "qualities", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "arene-projet.json", champ: "ref", occurrences: 406, lot: "L2/L3 #1473", date: "2026-08-26" }, // 293→406 : +113 OCCURRENCES — 24 ids de décor sont posés dans cette scène, 23 n'y résolvaient rien faute d'entrée `props.json` (#1680 ligne 14) ; `toile` ×4 résolvait déjà, par le Trait homonyme
   // #1691 : `<scène> › reliefDefaults` — la matière de chaque PARTIE de relief (falaise, rampe,
   // tablier, pilier), lue par `gameIso/builders/floors.ts`. Le SLOT EST DÉCLARÉ et il RÉSOUT :
   // `defs-scenes/scene.ts › reliefDefaultsSchema` pose `idDe('material','relief')` sur chacune des
@@ -121,7 +127,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "barge-du-sel-projet.json", champ: "members", occurrences: 7, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "postes", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "qualities", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "barge-du-sel-projet.json", champ: "ref", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" }, // 5→6 : +1 OCCURRENCE — le décor du point d'appareillage NOMME son type au générateur (#877) au lieu de laisser sa `ref` absente ; le couple (dataset, champ) ne bouge pas, seul son compte
   { dataset: "barge-du-sel-projet.json", champ: "reliefDefaults", occurrences: 3, lot: "L2/L3 #1473", date: "2026-09-07" },
   { dataset: "barge-du-sel-projet.json", champ: "roofDefaults", occurrences: 3, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "barge-du-sel-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -193,7 +198,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "diligence-projet.json", champ: "a", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "diligence-projet.json", champ: "b", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "diligence-projet.json", champ: "modes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" },
-  { dataset: "diligence-projet.json", champ: "ref", occurrences: 20, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "diligence-projet.json", champ: "reliefDefaults", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-07" },
   { dataset: "diligence-projet.json", champ: "roofDefaults", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "diligence-projet.json", champ: "roomZoneIds", occurrences: 38, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -253,7 +257,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "loup-et-saumure-projet.json", champ: "port", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "postes", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "qualities", occurrences: 30, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "loup-et-saumure-projet.json", champ: "ref", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" }, // 10→12 : +2 OCCURRENCES — les deux décors des quais NOMMENT leur type au générateur (#877) au lieu de laisser leur `ref` absente ; le couple (dataset, champ) ne bouge pas, seul son compte
   { dataset: "loup-et-saumure-projet.json", champ: "reliefDefaults", occurrences: 5, lot: "L2/L3 #1473", date: "2026-09-07" },
   { dataset: "loup-et-saumure-projet.json", champ: "roofDefaults", occurrences: 5, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "loup-et-saumure-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -301,7 +304,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "progression-schemas.derived.json", champ: "livres", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "progression-schemas.derived.json", champ: "titresPage", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "props.json", champ: "light", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" }, // 3→6 : +3 OCCURRENCES — les trois luminaires allumés par #1680 ligne 5 (`applique-murale` et `lustre-opera` en `chandelle`, `lanterne-de-poupe` en `lanterne`) portent un `light.tone`, comme les trois déjà comptés. L'ADOPTION de la fabrique NE SOLDE PAS cette ligne, mesuré le 2026-09-02 : `idDe('lightTone')` sur `light.tone` déclare un slot au path `[].light.tone`, que `champDuPath` projette sur `tone` — jamais sur le champ PORTEUR `light` que le scan observe (angle mort déclaré en tête de ce fichier). La ligne se solde avec cet angle mort, pas avant.
-  { dataset: "props.json", champ: "primitives", occurrences: 297, lot: "L2/L3 #1473", date: "2026-08-26" }, // 89 → 172 : les 11 recettes du LOT A #1644 (contenants et mobilier de base) ; 172 → 297 (#1343 lot B, 2026-09-21) : les 17 recettes du mobilier d'opéra/théâtre — 125 primitives de plus, AUCUNE référence neuve de forme neuve (mêmes `material` du domaine `prop` que le lot A)
+  { dataset: "props.json", champ: "primitives", occurrences: 297, lot: "L2/L3 #1473", date: "2026-08-26" }, // EXCEPTION NOMMÉE d'angle mort (en-tête) : fabrique ADOPTÉE (`idDe('material', 'prop')`, `defs/props.ts`), slots RÉSOLUS ; path DÉCLARÉ `[].volume.primitives[]|N.material` projeté sur `material`, champ OBSERVÉ `primitives`. 89 → 172 (#1644 lot A) → 297 (#1343 lot B) : les recettes volumiques du catalogue
   { dataset: "psychology.json", champ: "becomes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "psychology.json", champ: "failCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "psychology.json", champ: "immuneToFromTarget", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

@@ -1,7 +1,7 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` (`projectDoc()` : projet schema 4
- * `{ schema: 4, meta, narratif, scenes, worldMap }`).
+ * Génère `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` (`projectDoc()` : paquet de projet au
+ * schema courant, forme décidée par `documentDeProjet`).
  * Modelé sur `scripts/arene/generate.mjs` — RÉUTILISE `scene()`/`hero()`/`NPC()`/`P()`/`flowOf()`/
  * `flagWhen()`/`testNode()`/`poste()` de `scripts/campagne/lib.mjs` (IMPORT, zéro modification de ce fichier).
  *

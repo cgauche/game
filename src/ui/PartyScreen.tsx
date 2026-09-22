@@ -6,8 +6,8 @@ import { makePregensWithWealth } from '../data/pregens';
 import { rosterLoad, rosterRemove, rosterAdd, rosterExport, rosterImport } from '../state/roster';
 import { PARTY_MAX } from '../state/combatants';
 import { downloadText, fileSlug } from '../state/fileIo';
-import { campaign, builtinCampaigns } from '../scenes/campaign';
-import { publishedProjects } from '../state/projectLibrary';
+import { campaign, builtinCampaigns, campagneDuJeu } from '../scenes/campaign';
+import { publishedProjects, campagneDeLEntree, playerEntryError, type SavedProject } from '../state/projectLibrary';
 import { Combatant } from '../engine/types';
 import { Money } from '../engine/money';
 import { axisScore, AXIS_QUALIFY_MIN } from '../engine/axes';
@@ -149,12 +149,25 @@ export function PartyScreen() {
 function CampaignSelect({ currentId, onClose }: { currentId: string | undefined; onClose: () => void }) {
   const setPendingCampaign = useGame((s) => s.setPendingCampaign);
   const published = useState(() => publishedProjects())[0];
+  const [refusEntree, setRefusEntree] = useState<string | null>(null);
   const pick = (pc: GameState['pendingCampaign']) => {
     setPendingCampaign(pc);
     onClose();
   };
+  const pickEntree = (p: SavedProject) => {
+    setRefusEntree(null);
+    let lancee: ReturnType<typeof campagneDeLEntree>;
+    try {
+      lancee = campagneDeLEntree(p);
+    } catch (err) {
+      setRefusEntree(playerEntryError(err, 'jouer'));
+      return;
+    }
+    pick(lancee);
+  };
   return (
     <Modal variant="plain" className="picker-modal" title={t('party.campaign.pick.title')} onClose={onClose} backdropClose>
+        {refusEntree && <p className="chip tone-danger" role="alert">{refusEntree}</p>}
         <div className="pregen-list">
           <div className="pregen-row">
             <span className="campaign-row-name"><Icon id="scenario/arena" size="sm" /> {t('campaign.builtin')}</span>
@@ -168,7 +181,7 @@ function CampaignSelect({ currentId, onClose }: { currentId: string | undefined;
               <button
                 className="btn small btn-primary"
                 disabled={currentId === c.id}
-                onClick={() => pick({ id: c.id, label: c.label, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap, narratif: c.narratif })}
+                onClick={() => pick(campagneDuJeu(c))}
               >
                 {currentId === c.id ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
               </button>
@@ -180,7 +193,7 @@ function CampaignSelect({ currentId, onClose }: { currentId: string | undefined;
               <button
                 className="btn small btn-primary"
                 disabled={currentId === p.id}
-                onClick={() => pick({ id: p.id, label: p.label, scenes: p.project.scenes, startSceneId: p.startSceneId, worldMap: p.project.worldMap ?? null, narratif: p.project.narratif })}
+                onClick={() => pickEntree(p)}
               >
                 {currentId === p.id ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
               </button>

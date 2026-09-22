@@ -6,7 +6,7 @@
  *
  *  - voie AFFINE : hit-test natif du navigateur (`elementFromPoint` + `data-cid`) — l'élément peint
  *    en DERNIER sous le pixel gagne, c'est-à-dire le dernier du tri de profondeur (`stage/objs.ts`) ;
- *  - voie VOLUMIQUE : aucun jeton SVG ne porte plus de `data-cid` (la couche monde a quitté le SVG),
+ *  - voie VOLUMIQUE : aucun jeton SVG ne porte de `data-cid` (la couche monde est peinte au canevas),
  *    et un canevas n'a pas d'arbre à interroger — `GameStage3D` INSCRIT ici un lanceur de rayon
  *    (`backends/webgl/spriteRaycast.ts`), dont le verdict est la DISTANCE CAMÉRA.
  *

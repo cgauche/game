@@ -144,10 +144,9 @@ describe('schémas de progression (PDF -> careerLevels.json)', () => {
     expect([...audit.livresArtefact].sort()).toEqual(porteursDeCarriere);
     // L'ORDRE de `livres` est celui du parcours d'extraction : l'artefact ne le promet pas, et le
     // figer ici gèlerait un accident de génération. C'est l'ENSEMBLE qui est le contrat.
-    // #1467 L1b V-FLIP-CONFIG : la prose « généré par… / ne pas éditer » a quitté la DONNÉE (elle
-    // décrivait le def, pas le document) — elle vit au JSDoc de `defs/progression-schemas-derived.ts`.
-    // Ce que l'artefact porte, et que ce volet gèle, c'est son ENVELOPPE de document, dont le
-    // `type` est ce que la fabrique vérifie au parse.
+    // #1467 L1b V-FLIP-CONFIG : l'artefact ne porte aucune prose de provenance (aucune clé `__…`) —
+    // « généré par » décrit le def, et vit au JSDoc de `defs/progression-schemas-derived.ts`. Ce volet
+    // gèle l'ENVELOPPE de document, dont le `type` est ce que la fabrique vérifie au parse.
     expect(artefact.id).toBe('progression-schemas-derived');
     expect(artefact.type).toBe('progression-schemas.derived');
     expect(artefact.label).toBe('Schémas de progression (relevé dérivé)');

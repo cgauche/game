@@ -4,9 +4,12 @@
 // est un faux objet local. Lancé par `npm run test:recette`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { isAbsolute } from 'node:path'
 import {
   ALT,
   DELAI_EVALUATE,
+  champParLibelle,
+  clickButtonByText,
   MOD_ALT,
   checkServer,
   frapperTouche,
@@ -18,6 +21,7 @@ import {
   expressionRestaurerStockage,
   instantanerStockage,
   isNavigationError,
+  poserFichier,
   restaurerStockage,
   TARGET_NAVIGATED,
   verdictArbreGele,
@@ -25,6 +29,7 @@ import {
   withReloadRetry,
 } from './lib.mjs'
 import { ENTETE_RACINE } from '../port-dev.mjs'
+import { JSDOM } from 'jsdom'
 
 /** Session factice : `evaluate` (via `rpc`) répond « app prête » immédiatement, aucun réseau. */
 function fakeSession() {
@@ -417,4 +422,112 @@ test('realKey* : la CHAÎNE nue est refusée par un message qui NOMME la forme a
 
 test('frapperTouche : l’alias français EST `realKey` (même geste, même forme)', () => {
   assert.equal(frapperTouche, realKey)
+})
+
+// ------------------------------------------------- champParLibelle : racine `dans`
+
+/** Session dont la page est un DOM jsdom : l'expression est évaluée DANS ce document. */
+function sessionSurDom(html) {
+  const dom = new JSDOM(html, { runScripts: 'outside-only' })
+  return { dom, session: { rpc: async (_m, p) => ({ result: { value: dom.window.eval(p.expression) } }) } }
+}
+const DEUX_NOMS = `
+  <aside class="inspecteur"><label class="field"><span>Nom</span><input id="nom-scene"></label></aside>
+  <div class="modal-overlay"><label class="field"><span>Nom</span><input id="nom-projet"></label></div>`
+
+test('champParLibelle : sans racine, le PREMIER champ du document porteur du libellé', async () => {
+  const { dom, session } = sessionSurDom(DEUX_NOMS)
+  const sel = await champParLibelle(session, 'Nom')
+  assert.equal(dom.window.document.querySelector(sel).id, 'nom-scene')
+})
+
+test('champParLibelle : `dans` vise le champ de CETTE racine quand le libellé vit deux fois', async () => {
+  const { dom, session } = sessionSurDom(DEUX_NOMS)
+  const sel = await champParLibelle(session, 'Nom', { dans: '.modal-overlay' })
+  assert.equal(dom.window.document.querySelector(sel).id, 'nom-projet')
+})
+
+test('champParLibelle : racine `dans` absente = null, comme un libellé introuvable', async () => {
+  const { session } = sessionSurDom(DEUX_NOMS)
+  assert.equal(await champParLibelle(session, 'Nom', { dans: '.absente' }), null)
+})
+
+// ------------------------------------------------- clickButtonByText : bouton d'une `rangee`
+
+/** Liste de campagnes à un « Choisir » par rangée (patron de la modale « Choisir la campagne »). Le
+ *  bouton VISÉ est celui que `scrollIntoView` reçoit : jsdom n'en a pas, le stub note son `id`. La
+ *  rangée à apostrophe n'est PAS la première : un `rangee` ignoré viserait un autre bouton. */
+function sessionRangees(arene = 'L’Arène') {
+  const { dom, session } = sessionSurDom(`
+    <ul class="picker">
+      <li><strong>La Diligence</strong><button id="choisir-diligence">Choisir</button></li>
+      <li><strong>Le Loup et la Saumure</strong><button id="choisir-loup">Choisir</button></li>
+      <li><strong>${arene}</strong><span>3 scènes</span><button id="choisir-arene">Choisir</button></li>
+    </ul>`)
+  dom.window.Element.prototype.scrollIntoView = function () { dom.window.vise = this.id }
+  return { dom, session }
+}
+
+test('clickButtonByText : `rangee` vise le bouton de la rangée qui porte ce texte, pas le premier', async () => {
+  const { dom, session } = sessionRangees()
+  await clickButtonByText(session, 'Choisir', { rangee: 'Le Loup et la Saumure' })
+  assert.equal(dom.window.vise, 'choisir-loup')
+})
+
+for (const [dansLeDom, demandee] of [['L’Arène', "L'Arène"], ["L'Arène", 'L’Arène']]) {
+  test(`clickButtonByText : \`rangee\` normalise l’apostrophe comme le libellé (DOM « ${dansLeDom} », rangee « ${demandee} »)`, async () => {
+    const { dom, session } = sessionRangees(dansLeDom)
+    await clickButtonByText(session, 'Choisir', { rangee: demandee })
+    assert.equal(dom.window.vise, 'choisir-arene')
+  })
+}
+
+test('clickButtonByText : `rangee` introuvable = refus NOMMANT la rangée, aucun clic', async () => {
+  const { dom, session } = sessionRangees()
+  await assert.rejects(() => clickButtonByText(session, 'Choisir', { rangee: 'Middenheim' }), /rangée « Middenheim »/)
+  assert.equal(dom.window.vise, undefined)
+})
+
+// ------------------------------------------------- poserFichier : domaine DOM du CDP
+
+/** Session dont le domaine `DOM` du CDP est servi par un document jsdom : `nodeId` = rang dans
+ *  `noeuds`, 0 = introuvable (la convention du CDP) ; `poses` collectionne les `setFileInputFiles`. */
+function sessionDomCdp(html) {
+  const dom = new JSDOM(html)
+  const noeuds = [null, dom.window.document]
+  const poses = []
+  const rpc = async (methode, params) => {
+    if (methode === 'DOM.getDocument') return { root: { nodeId: 1 } }
+    if (methode === 'DOM.querySelector') {
+      const el = noeuds[params.nodeId].querySelector(params.selector)
+      if (!el) return { nodeId: 0 }
+      noeuds.push(el)
+      return { nodeId: noeuds.length - 1 }
+    }
+    if (methode === 'DOM.setFileInputFiles') poses.push({ id: noeuds[params.nodeId].id, files: params.files })
+    return {}
+  }
+  return { poses, session: { rpc } }
+}
+const DEUX_IMPORTS = `
+  <div class="editor-toolbar"><input type="file" id="import-editeur"></div>
+  <div class="worldmap-overlay"><input type="file" id="import-bibliotheque"></div>`
+
+test('poserFichier : pose le chemin ABSOLU sur l’input de la racine `dans`', async () => {
+  const { poses, session } = sessionDomCdp(DEUX_IMPORTS)
+  const absolu = await poserFichier(session, 'input[type=file]', 'x.json', { dans: '.worldmap-overlay' })
+  assert.deepEqual(poses, [{ id: 'import-bibliotheque', files: [absolu] }])
+  assert.equal(isAbsolute(absolu), true)
+})
+
+test('poserFichier : input absent = refus NOMMANT le sélecteur, rien de posé', async () => {
+  const { poses, session } = sessionDomCdp('<div></div>')
+  await assert.rejects(() => poserFichier(session, 'input.absent', 'x.json'), /input\.absent/)
+  assert.deepEqual(poses, [])
+})
+
+test('poserFichier : racine `dans` absente = refus NOMMANT la racine', async () => {
+  const { poses, session } = sessionDomCdp(DEUX_IMPORTS)
+  await assert.rejects(() => poserFichier(session, 'input[type=file]', 'x.json', { dans: '.modal-overlay' }), /\.modal-overlay/)
+  assert.deepEqual(poses, [])
 })

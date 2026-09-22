@@ -7,84 +7,123 @@ import { testScenarios, TestScenario } from '../../scenes/test-scenarios';
 import { projectsLoad, projectRemove, nomDeProjet, SavedProject } from '../../state/projectLibrary';
 import { allBuiltinCampaigns, BuiltinCampaign } from '../../scenes/campaign';
 import { Row, Stack } from '../Layout';
+import { exigerUnRefus, type ProjetRefuse } from '../../state/worldMap';
+import { cheminLisible, type Faute } from '../../data/schemas/validate';
+import { projetDoc } from '../../data/schemas/defs-scenes/projet';
 
-/** Un refus d'ouverture RENDU à l'auteur : `message` en mots d'auteur, `detail` = le rapport brut de
- *  la porte (`parseProject`), replié sous le message. */
-export type RefusOuverture = { message: string; detail?: string };
+/** Un refus RENDU à l'auteur : `message` en mots d'auteur, `detail` = le rapport de la porte
+ *  (`parseProject`), replié sous le message quand le message ne le reprend pas. */
+export type RefusRendu = { message: string; detail?: string };
 
-/** Champs d'IDENTITÉ du document de projet (`projetSchema`) : un refus qui les nomme est un refus
- *  d'identité — le projet n'a pas de nom, aucun réglage de contenu ne le sauvera. */
-const CHAMPS_IDENTITE = ['id', 'label', 'versionContenu', 'type'];
-const REFUS_IDENTITE_RX = new RegExp(`^\\s*-\\s*(${CHAMPS_IDENTITE.join('|')}):`, 'm');
-
-/**
- * Traduit le refus de la porte en refus d'ÉCRAN. Un rapport de validation est un texte TECHNIQUE
- * (chemins de schéma), même si sa langue est le français (`grammaire/locale-fr.ts`) : quand il porte
- * sur l'IDENTITÉ, l'auteur lit d'abord ce qui lui arrive, en mots d'auteur, et le rapport reste
- * consultable dessous. Les autres refus (contenu invalide) gardent leur détail en message : ils
- * nomment le champ à corriger.
- */
-export function refusDOuverture(erreur: unknown): RefusOuverture {
-  const brut = erreur instanceof Error ? erreur.message : 'Projet invalide';
-  return REFUS_IDENTITE_RX.test(brut)
-    ? { message: 'Ce projet n’a pas de nom : impossible de l’ouvrir tel quel.', detail: brut }
-    : { message: brut };
-}
-
-/** Une faute du rapport de la porte : `  - <chemin>: <message>` (`formatZodError`,
- *  `src/data/schemas/validate.ts`) — le chemin est technique, le message est déjà en français. */
-const LIGNE_DE_FAUTE = /^\s*-\s*([^:]+):\s*(.+)$/;
-/** Chemin d'une ENTITÉ de scène dans le document de projet. */
-const CHEMIN_DENTITE = /^scenes\.(\d+)\.entities\.(\d+)\b/;
-
-/** Où vit la faute, en mots d'AUTEUR : la scène et l'entité telles qu'il les NOMME à l'écran. Un
- *  chemin de schéma (`scenes.0.entities.3.ref`) ne désigne rien qu'il puisse aller corriger ; à défaut
- *  de résoudre le chemin sur le document, il est rendu TEL QUEL plutôt que passé sous silence. */
-function ouViteLaFaute(chemin: string, doc: unknown): string {
-  const m = CHEMIN_DENTITE.exec(chemin);
-  if (!m) return chemin;
-  const scenes = (doc as { scenes?: { id?: string; label?: string; entities?: { id?: string; label?: string }[] }[] } | null)?.scenes;
-  const sc = scenes?.[Number(m[1])];
-  const ent = sc?.entities?.[Number(m[2])];
-  if (!sc || !ent) return chemin;
-  return `scène « ${sc.label ?? sc.id} », entité « ${ent.label ?? ent.id} »`;
+/** Le refus RENDU dans sa modale, en `role="alert"` : le message en `.chip.tone-danger`, le rapport
+ *  replié derrière la primitive `.fold` (`components.css`), une ligne du rapport par bloc. */
+export function ChipDeRefus({ refus }: { refus: RefusRendu }) {
+  return (
+    <Stack role="alert">
+      <p className="chip tone-danger">{refus.message}</p>
+      {refus.detail && (
+        <details className="fold">
+          <summary><span className="fold-title">Détail technique</span></summary>
+          <div className="fold-body">
+            {refus.detail.split('\n').map((ligne, i) => <div key={i}>{ligne}</div>)}
+          </div>
+        </details>
+      )}
+    </Stack>
+  );
 }
 
 /**
  * Les gestes qui font passer un document par la porte `parseProject`, chacun avec le VERBE de son
- * refus et la CONSÉQUENCE qu'il ÉNONCE. UNE table : verbe et conséquence ne sont pas
- * deux chaînes libres qu'un appelant pourrait désaccorder — « Import refusé : ce projet ne pourrait
- * plus être rouvert » serait faux, rien n'ayant jamais été ouvert ni écrit.
+ * refus, la CONSÉQUENCE qu'il ÉNONCE, et ce qu'il dit d'un projet SANS NOM. UNE table : ces chaînes
+ * ne sont pas libres, un appelant ne peut pas les désaccorder — « Import refusé : ce projet ne
+ * pourrait plus être rouvert » serait faux, rien n'ayant jamais été ouvert ni écrit.
  */
 const GESTES_DE_PORTE = {
-  enregistrement: { verbe: 'Enregistrement refusé', consequence: 'ce projet ne pourrait plus être rouvert' },
-  export: { verbe: 'Export refusé', consequence: 'ce fichier ne pourrait plus être rouvert' },
-  import: { verbe: 'Import refusé', consequence: 'ce fichier ne peut pas être ouvert' },
-  test: { verbe: 'Mise à l’essai refusée', consequence: 'ce projet ne pourrait pas être joué' },
+  ouverture: {
+    verbe: 'Ouverture refusée',
+    consequence: 'ce projet ne peut pas être ouvert',
+    sansNom: 'Ce projet n’a pas de nom : impossible de l’ouvrir tel quel.',
+  },
+  enregistrement: {
+    verbe: 'Enregistrement refusé',
+    consequence: 'ce projet ne pourrait plus être rouvert',
+    sansNom: 'Ce projet n’a pas de nom : impossible de l’enregistrer tel quel.',
+  },
+  export: {
+    verbe: 'Export refusé',
+    consequence: 'ce fichier ne pourrait plus être rouvert',
+    sansNom: 'Ce projet n’a pas de nom : impossible de l’exporter tel quel.',
+  },
+  import: {
+    verbe: 'Import refusé',
+    consequence: 'ce fichier ne peut pas être ouvert',
+    sansNom: 'Ce projet n’a pas de nom : impossible de l’importer tel quel.',
+  },
+  test: {
+    verbe: 'Mise à l’essai refusée',
+    consequence: 'ce projet ne pourrait pas être joué',
+    sansNom: 'Ce projet n’a pas de nom : impossible de le mettre à l’essai tel quel.',
+  },
 } as const;
 
 /** Geste dont la porte du document peut opposer un refus — union FERMÉE. */
 export type GesteDePorte = keyof typeof GESTES_DE_PORTE;
 
+/** Une faute SANS NOM : elle porte sur `id` ou `label` à la racine du document — aucun réglage de
+ *  contenu ne sauvera le projet. credo.md:7, 1ʳᵉ phrase. */
+const estSansNom = (f: Faute): boolean => f.chemin.length === 1 && (f.chemin[0] === 'id' || f.chemin[0] === 'label');
+
+/** Où vit la faute, en mots d'AUTEUR : la scène et l'entité telles qu'il les NOMME à l'écran, sinon
+ *  le champ racine sous son LIBELLÉ de document (`projetDoc.meta`). Un chemin de schéma
+ *  (`scenes.0.entities.3.ref`) ne désigne rien qu'il puisse aller corriger ; ce qui ne se résout pas
+ *  est rendu TEL QUEL plutôt que passé sous silence. */
+function ouVitLaFaute(chemin: Faute['chemin'], doc: unknown): string {
+  const [racine, iScene, entites, iEntite] = chemin;
+  if (racine === 'scenes' && typeof iScene === 'number' && entites === 'entities' && typeof iEntite === 'number') {
+    const scenes = (doc as { scenes?: { id?: string; label?: string; entities?: { id?: string; label?: string }[] }[] } | null)?.scenes;
+    const sc = scenes?.[iScene];
+    const ent = sc?.entities?.[iEntite];
+    if (sc && ent) return `scène « ${sc.label ?? sc.id} », entité « ${ent.label ?? ent.id} »`;
+  }
+  const libelle = typeof racine === 'string' ? projetDoc.meta[racine]?.label : undefined;
+  return cheminLisible(libelle ? [libelle, ...chemin.slice(1)] : chemin);
+}
+
+/** Ce qu'un refus HORS SCHÉMA dit à l'auteur, par CAUSE : le rapport technique reste en détail. */
+const PHRASE_DE_CAUSE: Record<Exclude<ProjetRefuse['cause'], 'schema'>, string> = {
+  version: 'Ce projet vient d’une version du jeu que celle-ci ne sait pas lire.',
+  'mal-forme': 'Ce document n’est pas un projet lisible.',
+  entree: 'Sa scène de départ n’existe pas dans le projet.',
+};
+
 /**
- * Traduit en refus d'ÉCRAN le refus que la porte oppose à un geste — sœur de `refusDOuverture`,
- * même porte (`parseProject`), autre moment. Ce que l'auteur doit savoir tient en deux faits : la
- * CONSÉQUENCE du refus, et OÙ est la première faute. Les suivantes sont COMPTÉES : un rapport de
- * schéma entier n'est pas une consigne de correction. PURE et testée — la modale ne fait que
- * l'afficher (`saveError`, #811).
+ * Traduit en refus d'ÉCRAN le refus que la porte oppose à un geste — UN traducteur pour tous les
+ * gestes, qui lit la CAUSE et les fautes (`ProjetRefuse`), jamais le texte du rapport. Une version
+ * illisible ou un document mal formé se disent en mots d'auteur ; un projet SANS NOM aussi. Sinon,
+ * ce que l'auteur doit savoir tient en deux faits : la CONSÉQUENCE du refus, et OÙ est la première
+ * faute ; les suivantes sont COMPTÉES. Le rapport de la porte reste en `detail` dès que le message
+ * ne le reprend pas. Toute autre erreur n'est pas un refus de la porte : elle remonte telle quelle.
  */
-export function refusDeLaPorteDuProjet(erreur: unknown, doc: unknown, geste: GesteDePorte): string {
-  const { verbe, consequence } = GESTES_DE_PORTE[geste];
-  const brut = erreur instanceof Error ? erreur.message : String(erreur);
-  const fautes = brut.split('\n').map((l) => LIGNE_DE_FAUTE.exec(l)).filter((m): m is RegExpExecArray => m !== null);
-  const premiere = fautes[0];
-  const entete = `${verbe} : ${consequence}.`;
-  if (!premiere) return `${entete} Rapport de la porte : ${brut}`;
-  const autres = fautes.length - 1;
-  const suite = autres > 0 ? ` (et ${autres} autre${autres > 1 ? 's' : ''} à corriger)` : '';
-  // Une phrase reprend en MAJUSCULE après le point : `ouViteLaFaute` rend un fragment (« scène … »),
+export function refusDeLaPorteDuProjet(erreur: unknown, doc: unknown, geste: GesteDePorte): RefusRendu {
+  exigerUnRefus(erreur);
+  const { verbe, consequence, sansNom } = GESTES_DE_PORTE[geste];
+  if (erreur.cause !== 'schema') {
+    return { message: `${verbe} : ${consequence}. ${PHRASE_DE_CAUSE[erreur.cause]}`, detail: erreur.message };
+  }
+  if (erreur.fautes.some(estSansNom)) return { message: sansNom, detail: erreur.message };
+  const [premiere, ...autres] = erreur.fautes;
+  const suite = autres.length > 0 ? ` (et ${autres.length} autre${autres.length > 1 ? 's' : ''} à corriger)` : '';
+  // Une phrase reprend en MAJUSCULE après le point : `ouVitLaFaute` rend un fragment (« scène … »),
   // il est donc INTRODUIT au lieu d'être recollé nu derrière la ponctuation.
-  return `${entete} Faute : ${ouViteLaFaute(premiere[1], doc)} — ${premiere[2]}${suite}`;
+  const message = `${verbe} : ${consequence}. Faute : ${ouVitLaFaute(premiere.chemin, doc)} — ${premiere.message}${suite}`;
+  return autres.length > 0 ? { message, detail: erreur.message } : { message };
+}
+
+/** Refus d'un geste HORS de la porte (fichier qui n'est pas du JSON, groupe vide) : le verbe vient
+ *  de la même table, le `motif` dit ce qui manque. */
+export function refusMotive(geste: GesteDePorte, motif: string): RefusRendu {
+  return { message: `${GESTES_DE_PORTE[geste].verbe} : ${motif}.` };
 }
 
 /** « Ouvrir » : reprendre un projet enregistré (localStorage), repartir d'une campagne du jeu
@@ -103,7 +142,7 @@ export function OpenProjectModal({
   onClose: () => void;
   /** Refus de la porte à l'ouverture d'un projet (#1552) — la modale reste ouverte et le DIT :
    *  `message` est écrit en mots d'auteur (règle 4), `detail` porte le rapport de la porte, replié. */
-  error?: RefusOuverture | null;
+  error?: RefusRendu | null;
 }) {
   const [projects, setProjects] = useState(() => projectsLoad());
   const [delError, setDelError] = useState<string | null>(null);
@@ -117,17 +156,7 @@ export function OpenProjectModal({
 
   return (
     <Modal variant="plain" className="wide" title="Ouvrir" onClose={onClose}>
-      {error && (
-        <div className="chip tone-danger" role="alert">
-          <span>{error.message}</span>
-          {error.detail && (
-            <details>
-              <summary>Détail technique</summary>
-              <span>{error.detail}</span>
-            </details>
-          )}
-        </div>
-      )}
+      {error && <ChipDeRefus refus={error} />}
       {delError && <p className="chip tone-danger" role="alert">{delError}</p>}
       {projects.length > 0 && (
         <>
@@ -155,7 +184,7 @@ export function OpenProjectModal({
             <span className="lr-name">
               <Icon id={bc.icon} size="sm" /> {bc.label}
             </span>
-            <span className="chip">s'ouvre en copie</span>
+            <span className="chip">s’ouvre en copie</span>
             <button className="btn small btn-primary" onClick={() => onBuiltin(bc)}>
               Ouvrir
             </button>
@@ -166,10 +195,10 @@ export function OpenProjectModal({
       <Stack>
         {testScenarios.map((sc) => (
           <div className="listrow" key={sc.id}>
-            <span className="lr-name">
-              {sc.icon} {sc.title}
-            </span>
-            <span className="chip">{sc.partyNote}</span>
+            <div className="lr-name">
+              <Icon id={sc.icon} size="sm" /> {sc.title}
+              <div className="hint">{sc.partyNote}</div>
+            </div>
             <button className="btn small" onClick={() => onScenario(sc)}>
               Ouvrir
             </button>
@@ -196,8 +225,8 @@ export function SaveProjectModal({
   initialStartId: string;
   onSave: (name: string, published: boolean, startSceneId: string) => void;
   onClose: () => void;
-  /** #811 : message de l'échec le plus récent de `projectSave`, ou `null` si le chemin nominal. */
-  error?: string | null;
+  /** #811 : refus le plus récent (porte du document ou échec de `projectSave`), ou `null` si le chemin nominal. */
+  error?: RefusRendu | null;
 }) {
   const [name, setName] = useState(initialName);
   const [published, setPublished] = useState(initialPublished);
@@ -205,7 +234,7 @@ export function SaveProjectModal({
 
   return (
     <Modal variant="plain" title="Enregistrer le projet" onClose={onClose}>
-      {error && <p className="chip tone-danger" role="alert">{error}</p>}
+      {error && <ChipDeRefus refus={error} />}
       <label className="field">
         <span>Nom</span>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ma campagne" autoFocus />

@@ -1,7 +1,7 @@
 /**
  * Schémas zod de la CARTE DU MONDE d'un projet (`src/state/worldMap.ts`) — lieux, routes, services.
  *
- * ORDRE DU SEAM : le schéma voit `places[].port` AVANT `resolvePortRef` (`worldMap.ts:512`), donc
+ * ORDRE DU SEAM : le schéma voit `places[].port` AVANT `resolvePortRef` (`parseProject`), donc
  * sous ses DEUX formes documentées (`worldMap.ts:181-183`) — la forme SPARSE par référence
  * (`{ ref, lighthouse }`, le catalogue `naval-ports.json` fournissant les défauts) et la forme
  * CONCRÈTE à plat (`PortProfile` complet). Un port sans `ref` porte donc son profil en entier.
@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { effectSchema, waterExposureModeSchema } from './effets';
 import { conditionSchema } from '../grammaire/mecanique';
 import { enumNomme } from '../grammaire/valeurs';
+import { idDe } from '../grammaire/ref';
 import type { Condition } from '../../../engine/flowCore';
 
 /** `TravelMode` (`engine/travel.ts`) — `'pied'`/`'monture'` ou id de `vehicles.json`. */
@@ -22,7 +23,7 @@ export const windDirectionSchema = enumNomme({ nord: 'Nord', sud: 'Sud', est: 'E
  *  `lighthouse` (hors catalogue) : un phare veille sur l'approche (`MDG 13 l.333-351`). */
 export const portProfileSchema = z
   .strictObject({
-    ref: z.string().optional(),
+    ref: idDe('navalPort').optional(),
     /** Indice de Taille du Lieu. Le MDG n'imprime AUCUNE échelle : c'est celle de `MSRC 13 l.44-50`
      *  (1 Hameau … 4 Grande ville) que son Index des ports emploie — mesuré 2026-09-01, 39/39 ports de
      *  `naval-ports.json` dans 1..4, et `MDG 15 l.249` nomme « hameau ou petit village (Taille 1 ou 2) ». */

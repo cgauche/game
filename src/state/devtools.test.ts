@@ -23,6 +23,8 @@ import { sceneToAscii } from './sceneToAscii';
 import { GLYPHES_RESERVES } from '../data/schemas/grammaire/carte-ascii';
 import { t } from '../i18n';
 import { findSpellById } from '../data';
+import { projectsLoad, __resetLibraryForTest, __setIdbBackendForTest, type SavedProject } from './projectLibrary';
+import { parseProject } from './worldMap';
 
 describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, victoire normale)', () => {
   beforeEach(() => {
@@ -214,6 +216,33 @@ describe('__wfrp — autres commandes de recette', () => {
     await vi.advanceTimersByTimeAsync(400);
     expect(await verdict).toContain("l'éditeur ne s'est pas monté");
     expect(await verdict, 'le refus nomme le helper appelé, jamais son voisin').toContain('editorPatchEntity');
+  });
+});
+
+describe('__wfrp.projectMinimal / projectSave — poser un projet en bibliothèque sans recharger (#1343)', () => {
+  beforeEach(async () => {
+    const store = new Map<string, SavedProject>();
+    __setIdbBackendForTest({
+      getAll: async () => [...store.values()],
+      put: async (e: SavedProject) => void store.set(e.id, e),
+      delete: async (id: string) => void store.delete(id),
+      clear: async () => store.clear(),
+    });
+    await __resetLibraryForTest();
+  });
+  afterEach(() => __setIdbBackendForTest(null));
+
+  it('projectMinimal rend une entrée que la porte du document accepte', () => {
+    const entree = buildApi().projectMinimal('p-recette', 'Recette');
+    expect(() => parseProject(entree.project)).not.toThrow();
+    expect(entree.project.scenes.map((s) => s.id)).toContain(entree.startSceneId);
+  });
+
+  it('projectSave écrit par la fonction projectSave de la bibliothèque : projectsLoad la rend aussitôt', async () => {
+    const api = buildApi();
+    const out = await api.projectSave(api.projectMinimal('p-recette', 'Recette'));
+    expect(out).toContain('✓');
+    expect(projectsLoad().map((p) => p.id)).toContain('p-recette');
   });
 });
 
@@ -553,6 +582,14 @@ describe('__wfrp.campaign — charge une campagne BUILT-IN sans le character cre
     if (!otherSceneId) return; // projet à une seule scène — rien à vérifier ici
     buildApi().campaign('loup-et-saumure', 1, otherSceneId);
     expect(useGame.getState().scene?.id).toBe(otherSceneId);
+  });
+
+  it('sceneId hors des scènes du projet : refus NOMMANT la scène, rien de chargé', () => {
+    const msg = buildApi().campaign('loup-et-saumure', 1, 'SCENE-INEXISTANTE') as string;
+    expect(msg).toMatch(/^✗ scène « SCENE-INEXISTANTE » introuvable dans « loup-et-saumure »/);
+    const s = useGame.getState();
+    expect(s.party).toEqual([]);
+    expect(s.scene).toBeNull();
   });
 });
 

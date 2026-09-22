@@ -692,10 +692,7 @@ describe('Éditeur — mode calage du calque de référence', () => {
   });
 });
 
-/**
- * L'AFFORDANCE de bascule de voie a quitté l'écran (#1176 P3-4, commit C5a), puis l'interrupteur
- * lui-même (commit C5b) : le monde volumique est LE monde, ici comme au jeu.
- */
+/** Le monde volumique est LE monde, ici comme au jeu (#1176 P3-4) : aucun interrupteur de voie. */
 describe('Éditeur — aucun interrupteur de voie ne subsiste', () => {
   it('aucun interrupteur de voie dans la barre de vue', async () => {
     const h = await monter({ mode: 'select' });

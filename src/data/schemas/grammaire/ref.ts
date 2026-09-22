@@ -55,6 +55,8 @@ export const TYPES = {
   structure: { dataset: 'structures.json', specsOpen: false },
   career: { dataset: 'careers.json', specsOpen: false },
   navalTrait: { dataset: 'naval-traits.json', specsOpen: false },
+  // PORT du catalogue naval : `MapPlace.port.ref` résout AU PARSE, toutes les réfs mortes nommées.
+  navalPort: { dataset: 'naval-ports.json', specsOpen: false },
   shipStation: { dataset: 'ship-stations.json', specsOpen: false },
   crewRole: { dataset: 'crew-roles.json', specsOpen: false },
   table: { dataset: 'tables.json', specsOpen: false },

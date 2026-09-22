@@ -129,3 +129,38 @@ test('`typesEffaces` : un arc de TYPE PUR ne porte aucun effet de module, la mar
     rmSync(racine, { recursive: true, force: true })
   }
 })
+
+test('`typesEffaces` : la marche suit ce que le BUNDLER garde — tout arc effacé à la compilation en sort, l’effet de bord et la valeur servie restent', () => {
+  const racine = mkdtempSync(join(tmpdir(), 'import-graph-'))
+  try {
+    mkdirSync(join(racine, 'src'), { recursive: true })
+    writeFileSync(join(racine, 'src', 'a.ts'), [
+      'import type {',
+      '  T,',
+      '  U,',
+      "} from './multi'",
+      "import { type V, type W } from './accolades'",
+      "export type { Z } from './reexport'",
+      "import { S } from './typeSeul'",
+      "import { type M, m } from './mixte'",
+      "import './effetDeBord'",
+      'let t: import(\'./positionType\').T',
+      "let u: typeof import('./typeofImport')",
+      'let s: S',
+      "import('./dynamique').then((d) => d)",
+      'export const a = m',
+      '',
+    ].join('\n'))
+    const cibles = ['multi', 'accolades', 'reexport', 'typeSeul', 'mixte', 'effetDeBord', 'positionType', 'typeofImport', 'dynamique']
+    for (const c of cibles) writeFileSync(join(racine, 'src', `${c}.ts`), 'export const m = 1\nexport const S = 1\nexport type T = number\n')
+    const atteints = (regime) => cibles.filter((c) =>
+      [...clotureDImports([join(racine, 'src', 'a.ts')], regime)].some((m) => m.endsWith(`/src/${c}.ts`)))
+
+    assert.deepEqual(atteints({}), cibles, 'la marche PAR DÉFAUT suit tous les arcs, de type compris')
+    assert.deepEqual(atteints({ typesEffaces: true }), ['mixte', 'effetDeBord', 'dynamique'],
+      'sous `typesEffaces`, restent la valeur SERVIE d’un import mixte, l’effet de bord et l’import dynamique ; ' +
+      'l’import dont la liaison ne sert qu’au typage (`typeSeul`) sort comme les autres arcs de type')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})

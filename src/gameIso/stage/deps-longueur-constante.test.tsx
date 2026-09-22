@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 /**
- * DÉPENDANCES DE RÉTENTION À LONGUEUR VARIABLE — le read-set de la cuisson (`worldBakeDeps`) porte UNE
- * ENTRÉE PAR DÉCOR VOLUMIQUE de la scène (recette + matériaux, `backends/webgl/sceneMeshes.ts`) : sa
- * longueur suit la population, donc CHANGE dès qu'une scène en remplace une autre.
+ * DÉPENDANCES DE RÉTENTION À LONGUEUR VARIABLE — le read-set de la cuisson (`worldBakeDeps`) porte une
+ * entrée par RECETTE volumique EMPLOYÉE et une par MATÉRIAU qu'elles nomment, chacune une seule fois
+ * (`depsUniques`, `backends/webgl/sceneMeshes.ts`) : sa longueur suit le catalogue EMPLOYÉ, donc CHANGE
+ * dès qu'une scène en remplace une autre qui pose d'autres recettes.
  *
  * Deux faits mesurés ici, sur l'écran MONTÉ :
  *  1. aucun avertissement React « changed size between renders » — un tel jeu de dépendances ne peut
@@ -39,18 +40,18 @@ function hero(id: string, pos: { x: number; y: number }): Combatant {
   } as unknown as Combatant;
 }
 
-/** Un décor du catalogue qui porte VRAIMENT une recette volumique : c'est lui qui pèse dans le
- *  read-set de la cuisson (une entrée de recette + une par matériau de primitive). */
-const REF_VOLUMIQUE = 'applique-murale';
+/** Des décors du catalogue qui portent VRAIMENT chacun une recette volumique DISTINCTE : ce sont
+ *  elles qui pèsent dans le read-set de la cuisson (une entrée par recette employée). */
+const REFS_VOLUMIQUES = ['caisse', 'tonneau', 'coffre', 'urne'] as const;
 
-function décor(id: string, x: number): SceneEntity {
-  return { id, kind: 'prop', ref: REF_VOLUMIQUE, pos: { x, y: 1 } } as SceneEntity;
+function décor(id: string, ref: string, x: number): SceneEntity {
+  return { id, kind: 'prop', ref, pos: { x, y: 1 } } as SceneEntity;
 }
 
-/** Scène de 6×6 portant `n` décors volumiques. */
+/** Scène de 6×6 portant les `n` premières recettes volumiques de `REFS_VOLUMIQUES`, une instance chacune. */
 function scèneAvec(n: number): Scene {
   const scene = emptyScene(6, 6);
-  for (let i = 0; i < n; i++) scene.entities.push(décor(`app-${i}`, i));
+  for (let i = 0; i < n; i++) scene.entities.push(décor(`vol-${i}`, REFS_VOLUMIQUES[i], i));
   return scene;
 }
 
@@ -82,14 +83,14 @@ describe('GameStage3D — le read-set de la cuisson n’est jamais remis tel que
     vi.restoreAllMocks();
   });
 
-  it('prémisse : la longueur du read-set SUIT la population de décors volumiques', () => {
-    expect(findPropById(REF_VOLUMIQUE)?.volume, 'le décor témoin doit porter une recette').toBeTruthy();
+  it('prémisse : la longueur du read-set SUIT le nombre de recettes volumiques employées', () => {
+    for (const ref of REFS_VOLUMIQUES) expect(findPropById(ref)?.volume, `${ref} doit porter une recette`).toBeTruthy();
     const court = worldBakeDeps(scèneAvec(1), 1).length;
-    const long = worldBakeDeps(scèneAvec(3), 1).length;
+    const long = worldBakeDeps(scèneAvec(4), 1).length;
     expect(long).toBeGreaterThan(court);
   });
 
-  it('un changement de scène qui change la population volumique n’émet AUCUN avertissement de taille', () => {
+  it('un changement de scène qui change les recettes volumiques employées n’émet AUCUN avertissement de taille', () => {
     poser(scèneAvec(1));
     container = document.createElement('div');
     root = createRoot(container);
@@ -114,7 +115,7 @@ describe('GameStage3D — le read-set de la cuisson n’est jamais remis tel que
     act(() => root!.render(<MondeDeCampagne />));
     expect(spy.mock.calls.length).toBe(auMontage);
 
-    // Une scène NEUVE (population volumique différente) : il se recalcule.
+    // Une scène NEUVE (recettes volumiques différentes) : il se recalcule.
     act(() => { poser(scèneAvec(4)); });
     act(() => root!.render(<MondeDeCampagne />));
     expect(spy.mock.calls.length).toBeGreaterThan(auMontage);

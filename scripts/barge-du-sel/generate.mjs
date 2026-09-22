@@ -1,7 +1,7 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/barge-du-sel/barge-du-sel-projet.json` (`projectDoc()` : paquet de projet
- * `{ <identité>, schema: CURRENT_PROJECT_SCHEMA, narratif, scenes, worldMap }`).
+ * Génère `src/scenes/barge-du-sel/barge-du-sel-projet.json` (`projectDoc()` : paquet de projet au
+ * schema courant, forme décidée par `documentDeProjet`).
  * Mini-campagne navale « La Barge du Sel » (issue #218, expérience auteur) — modelée sur
  * `scripts/loup-et-saumure/generate.mjs` : RÉUTILISE `scene()`/`hero()`/`P()`/`flowOf()`/`poste()`/
  * `resetIds()` de `scripts/campagne/lib.mjs` (IMPORT, zéro modification de ce fichier).

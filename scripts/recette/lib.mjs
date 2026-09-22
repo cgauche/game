@@ -3,7 +3,7 @@
 // Chrome, zéro dépendance nouvelle. Voir docs/recette-navigateur.md § « Preuve headless (agents) ».
 import { spawn, spawnSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import { ENTETE_RACINE, RACINE, normaliserRacine, racineDepuisEntete, urlDev } from '../port-dev.mjs';
@@ -726,23 +726,40 @@ export async function setMobileViewport(session) {
  * sortie propre quand le même libellé vit dans deux zones de l'écran (un « Fermer » de modale et
  * celui du bandeau), là où `exact` ne départage pas.
  *
+ * `rangee` = texte d'une RANGÉE (sous-chaîne, mêmes normalisations) : quand chaque rangée d'une liste
+ * porte le même bouton (cinq « Choisir » dans la modale « Choisir la campagne »), seuls comptent les
+ * boutons de la rangée qui porte ce texte — l'ancêtre le plus proche de ce texte qui contient un
+ * bouton candidat. Ni `dans` ni `exact` ne départagent des boutons de même libellé dans la même racine.
+ *
  * `modifiers` = les touches TENUES pendant le clic (`MOD_ALT`), même paramètre que `survoler`.
  */
-export async function clickButtonByText(session, texte, { exact = false, dans, modifiers = 0 } = {}) {
+export async function clickButtonByText(session, texte, { exact = false, dans, rangee, modifiers = 0 } = {}) {
   const rect = await evaluate(session, `(() => {
     const norm = (s) => (s || '').replace(/\\s+/g, ' ').replace(/[\\u2019']/g, "'").trim();
     const target = norm(${JSON.stringify(texte)});
     const racine = ${dans ? `document.querySelector(${JSON.stringify(dans)})` : 'document'};
     if (!racine) return null;
     const els = Array.from(racine.querySelectorAll('button, [role="button"]'));
-    const matches = els.filter((b) => ${exact} ? norm(b.textContent) === target : norm(b.textContent).includes(target));
+    const libelles = els.filter((b) => ${exact} ? norm(b.textContent) === target : norm(b.textContent).includes(target));
+    const rangee = ${rangee === undefined ? 'null' : `norm(${JSON.stringify(rangee)})`};
+    const porte = (e) => norm(e.textContent).includes(rangee);
+    const deLaRangee = new Set();
+    if (rangee !== null) {
+      const porteurs = Array.from(racine.querySelectorAll('*')).filter((e) => porte(e) && !Array.from(e.children).some(porte));
+      for (const p of porteurs) {
+        let a = p;
+        while (a && !libelles.some((b) => a.contains(b))) a = a === racine ? null : a.parentElement;
+        if (a) for (const b of libelles) if (a.contains(b)) deLaRangee.add(b);
+      }
+    }
+    const matches = rangee === null ? libelles : libelles.filter((b) => deLaRangee.has(b));
     const el = matches[0];
     if (!el) return null;
     el.scrollIntoView({ block: 'center', inline: 'center' });
     const r = el.getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2, textes: matches.slice(0, 5).map((b) => norm(b.textContent)) };
   })()`);
-  if (!rect) throw new Error(`clickButtonByText : aucun bouton ne matche « ${texte} »${dans ? ` dans « ${dans} »` : ''}`);
+  if (!rect) throw new Error(`clickButtonByText : aucun bouton ne matche « ${texte} »${dans ? ` dans « ${dans} »` : ''}${rangee !== undefined ? ` dans la rangée « ${rangee} »` : ''}`);
   if (rect.textes && rect.textes.length > 1) {
     console.warn(`clickButtonByText « ${texte} » : ${rect.textes.length} boutons matchent (${rect.textes.join(' | ')}) — le PREMIER est cliqué. Préciser avec { exact: true } si ce n'est pas celui-là.`);
   }
@@ -970,13 +987,19 @@ export async function selectOption(session, selecteur, valeur) {
  * il ne change ni le style ni le comportement. Il PERSISTE en revanche jusqu'au démontage du nœud —
  * React ne retire pas un attribut qu'il n'a pas posé ; chaque appel tire donc une marque NEUVE, et
  * une recette qui vise le même champ deux fois doit reprendre le sélecteur que l'appel vient de rendre.
+ *
+ * `dans` = sélecteur RACINE où chercher, même option que `clickButtonByText` : quand le même libellé
+ * vit dans deux zones de l'écran (le « Nom » de l'inspecteur et celui de la modale « Enregistrer »).
+ * Racine absente = `null`, comme un libellé introuvable.
  */
-export async function champParLibelle(session, libelle, { exact = true } = {}) {
+export async function champParLibelle(session, libelle, { exact = true, dans } = {}) {
   const marque = `recette-champ-${Math.random().toString(36).slice(2, 8)}`
   const trouve = await evaluate(session, `(() => {
     const norm = (s) => (s || '').replace(/\\s+/g, ' ').replace(/[\\u2019']/g, "'").trim();
     const target = norm(${JSON.stringify(libelle)});
-    const champs = Array.from(document.querySelectorAll('input, select, textarea'));
+    const racine = ${dans ? `document.querySelector(${JSON.stringify(dans)})` : 'document'};
+    if (!racine) return null;
+    const champs = Array.from(racine.querySelectorAll('input, select, textarea'));
     const el = champs.find((c) => {
       const nom = norm((c.labels && c.labels[0] ? c.labels[0].textContent : '') || c.getAttribute('aria-label') || '');
       return ${exact} ? nom === target : nom.includes(target);
@@ -986,6 +1009,29 @@ export async function champParLibelle(session, libelle, { exact = true } = {}) {
     return true;
   })()`)
   return trouve ? `[data-recette="${marque}"]` : null
+}
+
+/**
+ * PEUPLE un `input[type=file]` désigné par un SÉLECTEUR avec le fichier `chemin` (résolu en absolu),
+ * par `DOM.setFileInputFiles` — l'`input` reçoit son `change` sans aucun dialogue. Cliquer son
+ * `<label>` ouvrirait le sélecteur de fichier de l'OS, qu'aucun pilote ne ferme.
+ *
+ * `dans` = sélecteur RACINE où chercher, même option que `clickButtonByText`. REFUSE en le nommant :
+ * racine absente, `input` absent — jamais un geste silencieux qui n'a rien posé.
+ */
+export async function poserFichier(session, selecteur, chemin, { dans } = {}) {
+  await session.rpc('DOM.enable');
+  const { root } = await session.rpc('DOM.getDocument', { depth: 0 });
+  let racine = root.nodeId;
+  if (dans) {
+    racine = (await session.rpc('DOM.querySelector', { nodeId: racine, selector: dans })).nodeId;
+    if (!racine) throw new Error(`poserFichier : racine « ${dans} » absente`);
+  }
+  const { nodeId } = await session.rpc('DOM.querySelector', { nodeId: racine, selector: selecteur });
+  if (!nodeId) throw new Error(`poserFichier « ${selecteur} » : aucun input${dans ? ` dans « ${dans} »` : ''}`);
+  const absolu = resolve(chemin);
+  await session.rpc('DOM.setFileInputFiles', { nodeId, files: [absolu] });
+  return absolu;
 }
 
 /**

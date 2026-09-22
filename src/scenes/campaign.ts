@@ -4,8 +4,9 @@
  *  (bourg + zones + expéditions) sont enregistrées → les transitions résolvent, et sa carte du
  *  monde alimente le voyage (#T2). */
 import { Scene } from '../state/scene';
-import { WorldMap, emptyWorldMap, parseProject, type ProjectIdentite } from '../state/worldMap';
+import { WorldMap, emptyWorldMap, parseProject, documentDeProjet, type ProjectDoc, type ProjectIdentite } from '../state/worldMap';
 import type { NarratifBlock } from '../state/campaignNarratif';
+import type { GameState } from '../state/store';
 import areneProjet from './arene/arene-projet.json';
 import loupEtSaumureProjet from './loup-et-saumure/loup-et-saumure-projet.json';
 import bargeDuSelProjet from './barge-du-sel/barge-du-sel-projet.json';
@@ -37,8 +38,59 @@ export interface BuiltinCampaign extends ProjectIdentite {
   scenes: Scene[];
   startSceneId: string;
   worldMap: WorldMap | null;
+  /** `ProjectDoc.activeAxes` (#409), présent seulement si le paquet en déclare. */
+  activeAxes?: string[];
   /** Bloc narratif du paquet (#765) — acheminé au runtime par `loadProject` (#767). */
   narratif: NarratifBlock;
+}
+
+/** La campagne LANCÉE depuis une campagne du jeu (`setPendingCampaign`), SOURCE UNIQUE de tout site
+ *  qui la joue (picker de `PartyScreen`, bibliothèque de campagnes, `__wfrp.campaign`). Son paquet a
+ *  passé `parseProject` au chargement de ce module. */
+export function campagneDuJeu(c: BuiltinCampaign): NonNullable<GameState['pendingCampaign']> {
+  return {
+    id: c.id,
+    label: c.label,
+    scenes: c.scenes,
+    startSceneId: c.startSceneId,
+    worldMap: c.worldMap,
+    ...(c.activeAxes !== undefined ? { activeAxes: c.activeAxes } : {}),
+    narratif: c.narratif,
+  };
+}
+
+/** Ce qu'OUVRE dans l'éditeur la COPIE d'une campagne du jeu (#367) — SOURCE UNIQUE de `loadBuiltin`
+ *  (`ui/editor/Editor.tsx`), qui ne fait que la poser. Tout y est une copie PROFONDE : l'édition ne
+ *  touche jamais le paquet commité. L'identité est ENTIÈRE (provenance comprise), sans le `label`, que
+ *  l'éditeur renomme ; `activeAxes` n'y figure que si la campagne en déclare. */
+export function copieDuJeu(c: BuiltinCampaign): {
+  depart: Scene;
+  autresScenes: Scene[];
+  worldMap: WorldMap | null;
+  activeAxes?: string[];
+  narratif: NarratifBlock;
+  identite: Omit<ProjectIdentite, 'label'>;
+} {
+  const depart = c.scenes.find((s) => s.id === c.startSceneId);
+  if (!depart) throw new Error(`copieDuJeu : scène de départ « ${c.startSceneId} » absente de « ${c.id} »`);
+  const { scenes: _sc, startSceneId: _st, worldMap, activeAxes, narratif, label: _lb, ...identite } = c;
+  const copie = <T>(v: T): T => JSON.parse(JSON.stringify(v));
+  return {
+    depart: copie(depart),
+    autresScenes: c.scenes.filter((s) => s.id !== depart.id).map(copie),
+    worldMap: worldMap ? copie(worldMap) : null,
+    ...(activeAxes !== undefined ? { activeAxes: [...activeAxes] } : {}),
+    narratif: copie(narratif),
+    identite,
+  };
+}
+
+/** Le document PORTABLE d'une campagne du jeu, rendu par son EXPORT (bibliothèque de campagnes).
+ *  L'identité est RECONDUITE : un export qui la laisserait tomber rendrait un document anonyme, que
+ *  sa propre porte refuserait. */
+export function documentDuJeu(c: BuiltinCampaign): ProjectDoc {
+  const { scenes, startSceneId: _start, worldMap, activeAxes, narratif, ...identite } = c;
+  return documentDeProjet(identite, scenes, { worldMap, activeAxes, narratif });
 }
 
 /**
@@ -75,50 +127,37 @@ function identiteDe(doc: ProjectIdentite, fichier: string): ProjectIdentite & { 
   };
 }
 
-const loupEtSaumure = parseProject(loupEtSaumureProjet);
-const bargeDuSel = parseProject(bargeDuSelProjet);
-const diligence = parseProject(diligenceProjet);
+/** La campagne BUILT-IN DÉRIVÉE d'un paquet passé par `parseProject` — SOURCE UNIQUE de la dérivation
+ *  (sa première scène est l'entrée). `activeAxes` n'y figure que si le paquet en déclare, comme pour
+ *  une entrée de bibliothèque (`campagneDeLEntree`, `state/projectLibrary.ts`). */
+export function campagneDuPaquet(doc: Omit<ProjectDoc, 'schema'>, fichier: string): BuiltinCampaign {
+  return {
+    ...identiteDe(doc, fichier),
+    scenes: doc.scenes,
+    startSceneId: doc.scenes[0].id,
+    worldMap: doc.worldMap ?? null,
+    ...(doc.activeAxes !== undefined ? { activeAxes: doc.activeAxes } : {}),
+    narratif: doc.narratif,
+  };
+}
 
 /** « La Diligence » — chapitre 1 de L'Ennemi Intérieur : paquet éditeur portant SES scènes
  *  (`diligence.scenes`, la première étant l'entrée) et la carte du monde du chapitre. Exposée à part
  *  (comme `areneCampaign`) pour que ses Scènes se réutilisent sans re-parser le paquet. */
-export const diligenceCampaign: BuiltinCampaign = {
-  ...identiteDe(diligence, 'diligence-projet.json'),
-  scenes: diligence.scenes,
-  startSceneId: diligence.scenes[0].id,
-  worldMap: diligence.worldMap ?? null,
-  narratif: diligence.narratif,
-};
+export const diligenceCampaign: BuiltinCampaign = campagneDuPaquet(parseProject(diligenceProjet), 'diligence-projet.json');
 
 /** Campagnes BUILT-IN proposées au picker en plus de l'Arène (chemin `pendingCampaign: null`
  *  historique). Ajouter une campagne étalon = un item ICI, jamais un chemin parallèle. */
 export const builtinCampaigns: BuiltinCampaign[] = [
-  {
-    ...identiteDe(loupEtSaumure, 'loup-et-saumure-projet.json'),
-    scenes: loupEtSaumure.scenes,
-    startSceneId: loupEtSaumure.scenes[0].id,
-    worldMap: loupEtSaumure.worldMap ?? null,
-    narratif: loupEtSaumure.narratif,
-  },
-  {
-    ...identiteDe(bargeDuSel, 'barge-du-sel-projet.json'),
-    scenes: bargeDuSel.scenes,
-    startSceneId: bargeDuSel.scenes[0].id,
-    worldMap: bargeDuSel.worldMap ?? null,
-    narratif: bargeDuSel.narratif,
-  },
+  campagneDuPaquet(parseProject(loupEtSaumureProjet), 'loup-et-saumure-projet.json'),
+  campagneDuPaquet(parseProject(bargeDuSelProjet), 'barge-du-sel-projet.json'),
   diligenceCampaign,
 ];
 
 /** L'Arène (chemin `pendingCampaign: null` historique) sous la MÊME forme `BuiltinCampaign`, pour
- *  la réutiliser partout où une liste homogène est nécessaire (#367 : « Ouvrir » de l'éditeur). */
-export const areneCampaign: BuiltinCampaign = {
-  ...identiteDe(projet, 'arene-projet.json'),
-  scenes: arene.map((c) => c.scene),
-  startSceneId: arene[0].id,
-  worldMap: campaignWorldMap,
-  narratif: projet.narratif,
-};
+ *  la réutiliser partout où une liste homogène est nécessaire (#367 : « Ouvrir » de l'éditeur). Sa
+ *  carte est `campaignWorldMap`, jamais `null`. */
+export const areneCampaign: BuiltinCampaign = { ...campagneDuPaquet(projet, 'arene-projet.json'), worldMap: campaignWorldMap };
 
 /** Toutes les campagnes BUILT-IN (Arène + `builtinCampaigns`), source unique pour tout listing
  *  homogène (picker de campagne ET « Ouvrir » de l'éditeur, #367). */

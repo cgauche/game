@@ -2212,9 +2212,10 @@ export const useGame = create<GameState>((set, get) => ({
   loadProject: (scenes, entryId, worldMap, narratif) => {
     // Enregistre toutes les scènes du projet (pour que les portes reveal:'door'
     // résolvent leurs intérieurs), puis démarre la scène d'entrée.
+    const entry = scenes.find((s) => s.id === entryId);
+    if (!entry) throw new Error(`loadProject : scène d’entrée « ${entryId} » absente (${scenes.map((s) => s.id).join(', ')})`);
     for (const s of scenes) registerScene(s);
-    const entry = scenes.find((s) => s.id === entryId) ?? scenes[0];
-    if (entry) get().startScene(entry);
+    get().startScene(entry);
     // La carte du PROJET remplace celle de la campagne (restaurée par le reset de startScene) ;
     // un projet sans carte n'offre pas de voyage.
     if (worldMap !== undefined) set({ worldMap });
@@ -2227,7 +2228,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Document SOURCE de la partie (#766) : snapshot AUTO-SUFFISANT du paquet, embarqué au save par
     // `stateFields` → au chargement, `applyLoadedSave` ré-enregistre ces scènes et re-dérive le narratif.
     // Posé APRÈS startScene (qui vide `campaignDoc` via le reset à l'init) — jamais sur le chemin Arène.
-    set({ campaignDoc: { scenes, worldMap: worldMap ?? null, narratif: narratif ?? emptyNarratif(), startSceneId: entry?.id ?? entryId } });
+    set({ campaignDoc: { scenes, worldMap: worldMap ?? null, narratif: narratif ?? emptyNarratif(), startSceneId: entry.id } });
   },
 
   /** Transition vers une autre scène (conserve groupe, flags, inventaire, argent).

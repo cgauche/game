@@ -49,6 +49,26 @@ const worldMap: WorldMap = {
   id: 'snap-carte', label: 'Carte', places: [{ id: 'p', label: 'Bourg', pos: { x: 0, y: 0 }, scene: 'scene-a' }], routes: [],
 };
 
+describe('loadProject — la scène d’entrée est une scène du paquet, ou le chargement LÈVE', () => {
+  beforeEach(() => {
+    resetSceneRegistry();
+    useGame.setState(useGame.getInitialState());
+  });
+
+  it.each([
+    ['id inconnu', [scene('sa'), scene('sb')], 'INEXISTANTE', /« INEXISTANTE » absente \(sa, sb\)/],
+    ['paquet sans scène', [], 'x', /« x » absente \(\)/],
+  ] as const)('%s : aucune scène démarrée ni enregistrée, aucun `campaignDoc` écrit', (_nom, scenes, entree, motif) => {
+    useGame.getState().loadProject([scene('avant')], 'avant');
+    const docAvant = useGame.getState().campaignDoc;
+    expect(() => useGame.getState().loadProject([...scenes], entree)).toThrow(motif);
+    expect(useGame.getState().scene?.id).toBe('avant');
+    expect(useGame.getState().campaignDoc).toBe(docAvant);
+    useGame.getState().transitionTo('sb');
+    expect(useGame.getState().scene?.id).toBe('avant');
+  });
+});
+
 describe('#766 — save de campagne auto-suffisante et rejouable', () => {
   beforeEach(() => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();

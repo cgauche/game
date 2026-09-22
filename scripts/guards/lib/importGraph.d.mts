@@ -1,4 +1,5 @@
 export const IMPORT_RE: RegExp;
+export function sourceALExecution(fichier: string, texte: string): string;
 export function resolveImport(fromFile: string, spec: string): string | null;
 export function clotureDImports(
   roots: string[],

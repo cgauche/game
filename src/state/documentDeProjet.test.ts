@@ -1,9 +1,11 @@
 /**
  * `documentDeProjet` est L'ENVELOPPE que l'application écrit — la SEULE, partagée par les trois
  * sorties d'un projet (« Enregistrer »/« Exporter JSON » de l'éditeur, import de fichier à la
- * bibliothèque, export d'une entrée). Ce que ce banc tient : l'ORDRE des clés, qui est l'enveloppe
- * que le dépôt PORTE (`*-projet.json` committés), et le fait qu'une clé optionnelle non fournie ne
- * s'écrive PAS — un `worldMap: undefined` posé se lirait « carte effacée » au diff du document.
+ * bibliothèque, export d'une entrée) et par les générateurs de campagne (`projectDoc`,
+ * `scripts/campagne/lib.mjs`). Ce que ce banc tient : l'ORDRE des clés, celui des paquets GÉNÉRÉS
+ * (figé à l'octet par `src/scenes/generateurs-byte-stables.test.ts`), et le fait qu'une clé
+ * optionnelle non fournie ne s'écrive PAS — un `worldMap: undefined` posé se lirait « carte
+ * effacée » au diff du document.
  */
 import { describe, it, expect } from 'vitest';
 import { documentDeProjet, parseProject, CURRENT_PROJECT_SCHEMA, type ProjectIdentite } from './worldMap';
@@ -21,10 +23,9 @@ const IDENTITE: ProjectIdentite = {
 const SCENES = (): Scene[] => [{ ...emptyScene(4, 4), id: 'scene-banc', label: 'Salle du banc' }];
 
 describe('documentDeProjet — l’enveloppe UNIQUE du document de projet', () => {
-  it('écrit `id`, `type`, `label` EN TÊTE, puis le reste de l’identité, puis `schema`', () => {
+  it('écrit `id`, `type`, `label`, `schema` EN TÊTE, puis le reste de l’identité, `narratif`, `scenes`', () => {
     const doc = documentDeProjet(IDENTITE, SCENES(), { narratif: emptyNarratif() });
-    expect(Object.keys(doc).slice(0, 3)).toEqual(['id', 'type', 'label']);
-    expect(Object.keys(doc)).toEqual(['id', 'type', 'label', 'versionContenu', 'maison', 'schema', 'scenes', 'narratif']);
+    expect(Object.keys(doc)).toEqual(['id', 'type', 'label', 'schema', 'versionContenu', 'maison', 'narratif', 'scenes']);
     expect(doc.schema).toBe(CURRENT_PROJECT_SCHEMA);
   });
 
@@ -46,7 +47,7 @@ describe('documentDeProjet — l’enveloppe UNIQUE du document de projet', () =
       narratif: emptyNarratif(),
     });
     expect(Object.keys(doc)).toEqual(
-      ['id', 'type', 'label', 'versionContenu', 'maison', 'schema', 'scenes', 'worldMap', 'activeAxes', 'narratif'],
+      ['id', 'type', 'label', 'schema', 'versionContenu', 'maison', 'narratif', 'scenes', 'worldMap', 'activeAxes'],
     );
     expect(doc.activeAxes).toEqual(['negoce']);
   });

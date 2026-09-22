@@ -662,7 +662,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             <select value={e.phase ?? 'nuit'} onChange={(ev) => onChange({ type: 'setTime', phase: ev.target.value as DayPhaseId })}>
               {DAY_PHASES.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.icon} {p.label}
+                  {p.label}
                 </option>
               ))}
             </select>

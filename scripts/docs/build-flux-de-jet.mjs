@@ -6,8 +6,7 @@
  *  - le CYCLE : les membres de `RollVerb` (`src/state/flowVerbs.ts`) ;
  *  - le REGISTRE : chaque entrée de `FLOW_VERBS` (kind, verbes, porteur du jet ou `pidIsActor`/
  *    `coop`, actions de résolution), confrontée à `FLOWS` (`src/state/rollFlowSpecs.ts`) et au
- *    registre des modales (`src/state/modalArbiter.ts`) — le manuscrit renvoyait à des « ~ligne
- *    1441 » d'un fichier que `FLOW_VERBS` a quitté ;
+ *    registre des modales (`src/state/modalArbiter.ts`) ;
  *  - les FABRIQUES et LENTILLES partagées à réutiliser, avec leur site réel ;
  *  - les ATOMES obligatoires, lus dans la garde anti-dérive elle-même ;
  *  - les GARDES : chemin ancré + intitulé de leur `describe(...)`.

@@ -81,7 +81,6 @@ export function findMap(key: string): MapEntry {
  *  est déjà compilée dans le document, rien n'est rebâti. */
 export function loadProjectMaps(path: string): MapEntry[] {
   const doc = parseProject(JSON.parse(readFileSync(path, 'utf8')));
-  if (!doc.scenes.length) throw new Error(`projet « ${path} » : aucune scène dans le document.`);
   const file = basename(path);
   return doc.scenes.map((scene) => ({
     key: `${path}#${scene.id}`,

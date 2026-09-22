@@ -43,7 +43,7 @@ export const projetDoc = document(
      *  proposé). La version de FORME du document est `schema`, jamais ce champ. */
     versionContenu: z.number(),
     auteur: z.string().min(1).optional(),
-    scenes: z.array(sceneSchema),
+    scenes: z.array(sceneSchema).min(1, 'le projet ne porte aucune scène : il en faut au moins une pour l’ouvrir ou le jouer.'),
     worldMap: worldMapSchema.optional(),
     /** Axes de forces/faiblesses ACTIFS de la campagne (#409) — absent = socle `coreAxisIds`. */
     activeAxes: z.array(z.string()).optional(),

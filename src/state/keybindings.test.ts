@@ -125,13 +125,13 @@ describe('raccourcis — aucune collision de touche NON DÉCLARÉE', () => {
 });
 
 /**
- * LA CAMÉRA SE PILOTE AU CLAVIER (et au geste) : la plaque de boutons a quitté l'écran de jeu
- * (spec `docs/plans/2026-08-16-spec-hud-combat.md`, zone 6). Les trois commandes
- * qu'elle portait encore seule — bascule de vue, inspection, recentrage — sont donc des raccourcis
- * du registre, et le recentrage remet AUSSI le zoom (la molette avance par incréments continus :
- * aucune suite de crans ne retombe sur 1, et plus aucun afficheur de zoom n'existe à l'écran).
+ * LA CAMÉRA SE PILOTE AU CLAVIER (et au geste) : l'écran de jeu ne porte aucune plaque de boutons
+ * de caméra (spec `docs/plans/2026-08-16-spec-hud-combat.md`, zone 6). Bascule de vue, inspection et
+ * recentrage sont donc des raccourcis du registre, et le recentrage remet AUSSI le zoom (la molette
+ * avance par incréments continus : aucune suite de crans ne retombe sur 1, et aucun afficheur de zoom
+ * n'existe à l'écran).
  */
-describe('raccourcis — les commandes de vue de l’ancienne plaque', () => {
+describe('raccourcis — la caméra se pilote au clavier : bascule de vue, inspection, recentrage', () => {
   it('V bascule la vue sur l’écran de jeu, et se TAIT en vue subjective (le POV a sa propre bascule)', () => {
     const b = binding('toggle-view');
     expect(b.codes).toEqual(['KeyV']);

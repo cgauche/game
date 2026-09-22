@@ -7,7 +7,7 @@
  * hors registre ne passe pas en silence).
  */
 import { describe, it, expect } from 'vitest';
-import { validateDataset, validateDocument, schemaForFile, formatZodError } from './validate';
+import { validateDataset, validateDocument, schemaForFile, formatZodError, fautesDe, rapportDeFautes } from './validate';
 import { schema as characteristicsSchema } from './defs/characteristics';
 import { projetSchema } from './defs-scenes/projet';
 import areneProjet from '../../scenes/arene/arene-projet.json';
@@ -56,11 +56,20 @@ describe('validateDataset — point de validation partagé (#176)', () => {
     expect(validateDataset('arene/arene-projet.json', areneProjet)).toBeNull();
   });
 
-  it('validateDocument — porte par SCHÉMA (le seam n\'a pas de nom de fichier)', () => {
-    expect(validateDocument(projetSchema, areneProjet, 'Projet')).toBeNull();
-    const err = validateDocument(projetSchema, { ...(areneProjet as object), schema: 2 }, 'Projet');
-    expect(err).toContain('Projet — JSON invalide');
-    expect(err).toContain('schema');
+  it('validateDocument — porte par SCHÉMA (le seam n\'a pas de nom de fichier) : rend les FAUTES', () => {
+    expect(validateDocument(projetSchema, areneProjet)).toBeNull();
+    const fautes = validateDocument(projetSchema, { ...(areneProjet as object), schema: 2 });
+    expect(fautes?.map((f) => f.chemin)).toContainEqual(['schema']);
+    expect(rapportDeFautes('Projet', fautes!)).toContain('Projet — JSON invalide');
+  });
+
+  it('formatZodError DÉRIVE du rapport des fautes : une seule source du format de ligne', () => {
+    const res = characteristicsSchema.safeParse([{ abr: 'CC' }]);
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(formatZodError('x.json', res.error)).toBe(rapportDeFautes('x.json', fautesDe(res.error)));
+      expect(fautesDe(res.error).map((f) => f.message)).toEqual(res.error.issues.map((i) => i.message));
+    }
   });
 
   it('schemaForFile résout le schéma registré par nom de fichier', () => {

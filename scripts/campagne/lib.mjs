@@ -1,7 +1,6 @@
 /**
- * Outillage d'AUTHORING de CAMPAGNE — helpers purs pour composer un projet (`ProjectDoc`, format courant
- * `{ schema: 8, <identité>?, narratif, scenes, worldMap }` — `CURRENT_PROJECT_SCHEMA`, `src/state/worldMap.ts` ;
- * `projectDoc()` ci-dessous en est la SEULE fabrique)
+ * Outillage d'AUTHORING de CAMPAGNE — helpers purs pour composer un projet (`ProjectDoc`, construit par
+ * `documentDeProjet`, `src/state/worldMap.ts`, via `projectDoc()` ci-dessous)
  * partagé par TOUTES les campagnes (Arène, « Le Loup et la Saumure », …). Le JSON commité
  * (`src/scenes/<campagne>/<campagne>-projet.json`) reste la SOURCE CANONIQUE, 100 % éditable dans
  * l'éditeur : ce script n'est qu'un outil d'auteur (itération de layout), PAS un build — ne pas le
@@ -13,7 +12,7 @@
  * que les VALIDER exactement (fail-fast, doctrine « labels interdits »).
  */
 import { buildScene } from '../../src/state/mapSpec.ts';
-import { CURRENT_PROJECT_SCHEMA } from '../../src/state/worldMap.ts';
+import { documentDeProjet } from '../../src/state/worldMap.ts';
 import { emptyNarratif } from '../../src/state/campaignNarratif.ts';
 import { findCreatureById, byId, findSpellById, findTraitById, findTrappingById, findVehicleById, species as SPECIES_CATALOG } from '../../src/data/index.ts';
 import { creatureSpeciesOptions } from '../../src/gameIso/rig/creatures/index.ts';
@@ -184,18 +183,13 @@ export function scene({ id, label, desc, ambiance = 'exterieur', weather, music,
   return buildScene(spec);
 }
 
-/** Fabrique UNIQUE du document de projet (schema courant, #809) — aucun générateur ne réécrit un
- *  littéral `schema:`. Ordre de clés reproduisant EXACTEMENT les paquets committés :
- *  `{ id, type, label, schema, <reste de l'identité + provenance>, narratif, scenes, worldMap }` —
- *  le document s'OUVRE sur son identité, comme l'éditeur l'écrit (`src/ui/editor/Editor.tsx`,
- *  `identiteCourante`). L'enveloppe est PLATE (#1467 L1b) et posée par la fabrique `document()`
- *  (#1552), les champs d'identité prenant la place qu'occupait la poche `meta`. Le `type` est POSÉ
- *  ICI : un document s'annonce, et son schéma l'exige — aucun générateur ne le retape. L'IDENTITÉ et
- *  la PROVENANCE (`source` ∨ `maison`) restent à l'appelant : elles nomment SA campagne et ne se
- *  devinent pas. `narratif` par défaut = bloc vide (`emptyNarratif()`, mêmes clés que `NarratifBlock`). */
+/** Le document de projet d'un générateur : DÉLÈGUE au constructeur `documentDeProjet`
+ *  (`src/state/worldMap.ts`), qui décide la forme et l'ordre des clés. Le `type` est POSÉ ICI : un
+ *  document s'annonce, et son schéma l'exige — aucun générateur ne le retape. L'IDENTITÉ et la
+ *  PROVENANCE (`source` ∨ `maison`) restent à l'appelant : elles nomment SA campagne et ne se devinent
+ *  pas. `narratif` par défaut = bloc vide (`emptyNarratif()`, mêmes clés que `NarratifBlock`). */
 export function projectDoc({ identite, scenes, worldMap, narratif = emptyNarratif() }) {
-  const { id, label, ...reste } = identite;
-  return { id, type: 'projet', label, schema: CURRENT_PROJECT_SCHEMA, ...reste, narratif, scenes, worldMap };
+  return documentDeProjet({ ...identite, type: 'projet' }, scenes, { worldMap, narratif });
 }
 
 let propSeq = 0;

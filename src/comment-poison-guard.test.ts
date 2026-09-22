@@ -67,6 +67,17 @@ const GARDE = {
       'famille tombale — 5 sites mesurés le 2026-09-05 (`src/state/partyFlow.ts:767`, `src/state/combat/triggeredTest.ts:375`, ' +
       '`src/state/poste-ammo.test.ts:159`, `src/gameIso/stage/entree-en-scene-demontage.test.tsx:12`, ' +
       '`src/gameIso/backends/webgl/cacheBorne.ts:149`), tous une absence À L’EXÉCUTION, aucun une tombale.',
+    'Le DÉPART au passé composé n’est mesuré que collé à un artefact BACK-TICKÉ : sans lui, la forme reste HORS de la ' +
+      'famille tombale — 13 commentaires mesurés le 2026-09-22 dans `src/**`+`scripts/**` après purge, dont aucun ne ' +
+      'raconte l’histoire du code : 11 un départ À L’EXÉCUTION (un combattant hors de la rencontre, une arme hors de ' +
+      'l’inventaire, un corps hors du canevas), 2 un moment de GARDE (`scripts/docs/build-registre-jets.mjs`, ' +
+      '`scripts/guards/lib/stocksNominatifs.mjs`). L’angle mort est RÉEL : le même relevé (#1343) a réécrit À LA MAIN ' +
+      '9 tombales de cette forme SANS artefact back-tické (`GameStage3D.test.tsx`, `spritePicker.ts`, ' +
+      '`keybindings.test.ts`, `marques-parite.test.tsx`, `combatFlow-los.test.ts`, `progression-schemas.test.ts`, ' +
+      '`cascade-consequence-guard.test.ts` ×2, `editeur-monde-volumique.test.tsx`) — la suivante de cette forme ' +
+      '(« la couche monde a quitté le SVG ») passe la garde. Le démonstratif en complément (« ce compte ») ' +
+      'reste hors famille pour la même raison : il ne distingue pas le code du jeu. Le verbe de victoire (« l’a ' +
+      'emporté ») : 4 sites, tous du vocabulaire de JEU.',
   ],
   baseline: {
     fichier: 'scripts/guards/lib/legacyVocabStock.mjs',
@@ -331,6 +342,21 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
     expect(tombstonesIn('// Le FICHIER, lui, ne vit plus ici : il est DÉRIVÉ du def porteur.')).toContain(L);
     expect(tombstonesIn("// Les péripéties d'AUTEUR ne sont plus ici : chacune est SON étape de monde.")).toContain(L);
     expect(tombstonesIn('/** la conversion n’est plus\n *  ici : le résolveur la porte. */')).toContain(L);
+  });
+
+  it('cas plantés : le DÉPART d’un artefact back-tické est une tombale (#1343, 2026-09-22)', () => {
+    const L = 'artefact back-tické parti (départ révolu)';
+    expect(tombstonesIn('// `domeWard` a QUITTÉ `OPS_NON_TYPEES` : le Trait se nomme par `traitId`.')).toContain(L);
+    expect(tombstonesIn('/** le manuscrit renvoyait à un fichier que `FLOW_VERBS` a quitté ; */')).toContain(L);
+    expect(tombstonesIn('// l’op est TYPÉE ; elle a quitté\n  // `OPS_NON_TYPEES`.')).toContain(L);
+    expect(tombstonesIn('// les sites `a` et `b` ont quittés le compte.')).toContain(L);
+  });
+
+  it('faux positifs écartés : le départ À L’EXÉCUTION, sans artefact back-tické (#1343, 2026-09-22)', () => {
+    expect(tombstonesIn('// un slot référençant une arme qui a quitté l’inventaire est élagué.')).toEqual([]);
+    expect(tombstonesIn('// le curseur a QUITTÉ l’étape défense orpheline')).toEqual([]);
+    expect(tombstonesIn('// la marque de ceux qui ont quitté la manche (`tavernFlow`).')).toEqual([]);
+    expect(tombstonesIn('// `quitterLaDefense` : le curseur quitte l’étape.')).toEqual([]);
   });
 
   it('faux positif écarté : l’adverbe de DISTANCE dit une absence à l’EXÉCUTION (2026-09-05)', () => {

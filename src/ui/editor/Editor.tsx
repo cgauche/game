@@ -16,12 +16,12 @@ import { Inspector } from './Inspector';
 import { LogicDock, LogicTab } from './LogicDock';
 import { WorldMapEditor } from './WorldMapEditor';
 import { NarratifEditor } from './NarratifEditor';
-import { OpenProjectModal, SaveProjectModal, refusDOuverture, refusDeLaPorteDuProjet, type GesteDePorte, type RefusOuverture } from './ProjectModals';
-import { projectSave, projectsLoad, SavedProject } from '../../state/projectLibrary';
+import { OpenProjectModal, SaveProjectModal, ChipDeRefus, refusDeLaPorteDuProjet, refusMotive, type GesteDePorte, type RefusRendu } from './ProjectModals';
+import { projectSave, projectsLoad, documentDeLEntree, SavedProject } from '../../state/projectLibrary';
 import { downloadText } from '../../state/fileIo';
 import { sceneToAscii, type SceneAsciiExport } from '../../state/sceneToAscii';
 import { testScenarios, type TestScenario } from '../../scenes/test-scenarios';
-import { allBuiltinCampaigns, type BuiltinCampaign } from '../../scenes/campaign';
+import { allBuiltinCampaigns, copieDuJeu, type BuiltinCampaign } from '../../scenes/campaign';
 import { WorldMap, parseProject, documentDeProjet, MAISON_PROJET_AUTHORE, type ProjectDoc, type ProjectIdentite } from '../../state/worldMap';
 import { type NarratifBlock, emptyNarratif } from '../../state/campaignNarratif';
 import { nextEntityId } from '../../state/entityId';
@@ -166,23 +166,24 @@ export function Editor({
   const [activeAxes, setActiveAxes] = useState<string[] | undefined>(undefined);
   /** Bloc NARRATIF du paquet de campagne (#765) — affaires/indices/PNJ/objets, préservé au round-trip. */
   const [narratif, setNarratif] = useState<NarratifBlock>(emptyNarratif());
-  /** Identité de campagne (#765/#766) — préservée au round-trip, absente d'un projet legacy sans identité. */
-  const [identite, setIdentite] = useState<ProjectIdentite | undefined>(undefined);
+  /** Identité de campagne (#765/#766) — préservée au round-trip, absente d'un projet legacy sans identité.
+   *  SANS son `label` : le nom du projet a UNE source, `projectName`. */
+  const [identite, setIdentite] = useState<Omit<ProjectIdentite, 'label'> | undefined>(undefined);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState('La Diligence');
   const [published, setPublished] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<RefusRendu | null>(null);
   /** Refus d'un geste du menu Fichier — export, import, mise à l'essai : ces gestes n'ont AUCUNE
    *  modale à eux où poser leur refus, là où `saveError`/`loadError` tiennent dans la leur. UN seul
    *  état pour les trois, portant le TITRE du geste refusé : même matière (`.chip.tone-danger` en
    *  `role="alert"`, dans une modale), et jamais une boîte du navigateur (#877). */
-  const [refusDuGeste, setRefusDuGeste] = useState<{ titre: string; message: string } | null>(null);
+  const [refusDuGeste, setRefusDuGeste] = useState<({ titre: string } & RefusRendu) | null>(null);
   /** Refus du JSON collé dans la modale « Avancé » — rendu DANS cette modale, comme `saveError` dans
    *  la sienne : un refus se lit là où le geste a été fait. */
   const [advError, setAdvError] = useState<string | null>(null);
   /** Refus de la porte `parseProject` à l'ouverture d'un projet : rendu DANS la modale « Ouvrir »
    *  (même contrat que `saveError`, #811), jamais jeté à l'auteur par une boîte du navigateur. */
-  const [loadError, setLoadError] = useState<RefusOuverture | null>(null);
+  const [loadError, setLoadError] = useState<RefusRendu | null>(null);
 
   // --- Panneau Logique (dock bas) ---
   // Un SEUL état pour le dock : l'onglet déplié, ou `null` = replié. « Ouvert » n'est pas un fait
@@ -642,21 +643,18 @@ export function Editor({
    * franchit plus `parseProject` : l'enveloppe exige `id`/`label` et une provenance.
    */
   function identiteCourante(nom: string, id: string): ProjectIdentite {
-    return identite ?? { type: 'projet' as const, id, label: nom, versionContenu: 1, maison: MAISON_PROJET_AUTHORE };
+    return { ...(identite ?? { type: 'projet' as const, id, versionContenu: 1, maison: MAISON_PROJET_AUTHORE }), label: nom };
   }
   /** L'ÉTAT VIVANT de l'éditeur lié au constructeur unique du document (`state/worldMap`) — les
    *  trois sorties du projet (enregistrer, exporter, mettre à l'essai) partent d'ici. */
   function documentCourant(nom: string, id: string): ProjectDoc {
     return documentDeProjet(identiteCourante(nom, id), [scene, ...otherScenes], { worldMap, activeAxes, narratif });
   }
-  /**
-   * La porte UNIQUE du document (`parseProject`), passée AVANT toute écriture : rend le refus À LIRE,
-   * ou `null`. Le document part en COPIE — la porte résout les références de port EN PLACE
-   * (`resolvePortRef`), et l'état de l'éditeur n'a pas à muter pour avoir été vérifié.
-   */
-  function refusDeLaPorte(doc: ProjectDoc, geste: GesteDePorte): string | null {
+  /** La porte UNIQUE du document (`parseProject`), passée AVANT toute écriture : rend le refus À LIRE,
+   *  ou `null`. */
+  function refusDeLaPorte(doc: ProjectDoc, geste: GesteDePorte): RefusRendu | null {
     try {
-      parseProject(structuredClone(doc));
+      parseProject(doc);
       return null;
     } catch (refus) {
       return refusDeLaPorteDuProjet(refus, doc, geste);
@@ -670,7 +668,7 @@ export function Editor({
     // s'importe (#877) : refusé, rien n'est téléchargé et l'auteur le lit.
     const refus = refusDeLaPorte(project, 'export');
     if (refus) {
-      setRefusDuGeste({ titre: TITRE_EXPORT, message: refus });
+      setRefusDuGeste({ titre: TITRE_EXPORT, ...refus });
       return;
     }
     setRefusDuGeste(null);
@@ -687,21 +685,17 @@ export function Editor({
       try {
         data = JSON.parse(txt);
       } catch (erreur) {
-        setRefusDuGeste({ titre: TITRE_IMPORT, message: `Import refusé : ce fichier n’est pas du JSON${ouCaCasse(erreur)}.` });
+        setRefusDuGeste({ titre: TITRE_IMPORT, ...refusMotive('import', `ce fichier n’est pas du JSON${ouCaCasse(erreur)}`) });
         return;
       }
       let paquet: ReturnType<typeof parseProject>;
       try {
-        paquet = parseProject(data); // paquet ({ type: 'projet', schema: 8, id, label, versionContenu, scenes, worldMap?, activeAxes?, narratif })
+        paquet = parseProject(data);
       } catch (refus) {
-        setRefusDuGeste({ titre: TITRE_IMPORT, message: refusDeLaPorteDuProjet(refus, data, 'import') });
+        setRefusDuGeste({ titre: TITRE_IMPORT, ...refusDeLaPorteDuProjet(refus, data, 'import') });
         return;
       }
-      const { scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = paquet;
-      if (!scenes.length) {
-        setRefusDuGeste({ titre: TITRE_IMPORT, message: 'Import refusé : document sans aucune scène.' });
-        return;
-      }
+      const { scenes, worldMap: wm, activeAxes: aa, narratif: na, label, ...ident } = paquet;
       setRefusDuGeste(null);
       setOtherScenes(scenes.slice(1).map(clone));
       setWorldMap(wm ?? null);
@@ -715,7 +709,7 @@ export function Editor({
       // du document masqué à l'écran.
       setIdentite(ident);
       setProjectId(ident.id);
-      setProjectName(ident.label);
+      setProjectName(label);
       setSel(null);
       resetScene(clone(scenes[0]));
     });
@@ -727,13 +721,13 @@ export function Editor({
     if (party.length === 0) {
       setRefusDuGeste({
         titre: TITRE_TEST,
-        message: 'Mise à l’essai refusée : aucun aventurier au groupe. Ajoutez-en au moins un par « Nouvelle partie » avant de tester la scène.',
+        ...refusMotive('test', 'aucun aventurier au groupe. Ajoutez-en au moins un par « Nouvelle partie » avant de tester la scène'),
       });
       return;
     }
     const refus = refusDeLaPorte(documentCourant(projectName, projectId ?? scene.id), 'test');
     if (refus) {
-      setRefusDuGeste({ titre: TITRE_TEST, message: refus });
+      setRefusDuGeste({ titre: TITRE_TEST, ...refus });
       return;
     }
     setRefusDuGeste(null);
@@ -757,68 +751,46 @@ export function Editor({
    *  commité — `projectId` reste `null`, donc « Enregistrer » crée un NOUVEAU projet localStorage
    *  (#367, même garantie que `loadScenario` pour les scénarios de test). */
   function loadBuiltin(bc: BuiltinCampaign) {
-    const start = bc.scenes.find((s) => s.id === bc.startSceneId) ?? bc.scenes[0];
-    const rest = bc.scenes.filter((s) => s.id !== start.id);
-    setOtherScenes(rest.map(clone));
-    setWorldMap(bc.worldMap ? JSON.parse(JSON.stringify(bc.worldMap)) : null);
-    setActiveAxes(undefined);
-    setNarratif(emptyNarratif());
-    // L'identité ENTIÈRE du paquet built-in (provenance comprise) : une copie de « La Diligence »
-    // reste tirée du même folio. Seul `projectId` reste `null` — l'enregistrement crée une entrée neuve.
-    const { scenes: _sc, startSceneId: _st, worldMap: _wm, narratif: _na, ...identiteDuPaquet } = bc;
-    setIdentite(identiteDuPaquet);
+    const copie = copieDuJeu(bc);
+    setOtherScenes(copie.autresScenes);
+    setWorldMap(copie.worldMap);
+    setActiveAxes(copie.activeAxes);
+    setNarratif(copie.narratif);
+    // Seul `projectId` reste `null` — l'enregistrement crée une entrée neuve.
+    setIdentite(copie.identite);
     setProjectId(null);
     setProjectName(`Copie de ${bc.label}`);
     setPublished(false);
     setSel(null);
-    resetScene(clone(start));
+    resetScene(copie.depart);
     setOpenOpen(false);
   }
-  /**
-   * Le document d'une entrée de bibliothèque, RENDU À SON IDENTITÉ avant la porte `parseProject`.
-   * Un projet enregistré avant #1552 n'a pas d'identité À LA RACINE du document, mais l'ENTRÉE, elle,
-   * en porte une : `SavedProject.id`/`label` sont la clé et le nom de la bibliothèque. Ils sont donc
-   * RECONDUITS ici, au chemin de chargement — jamais dans le schéma, dont l'exigence reste entière :
-   * ce qui n'a AUCUNE identité reconstructible se fait refuser nommément par la porte.
-   * `versionContenu` démarre à 0 : le document ne dit pas sa version de contenu, et une valeur
-   * SUPÉRIEURE à celle d'un import futur ferait perdre le remplacement (dédup #766). Le `type` et la
-   * PROVENANCE, eux, ne sont pas reposés ici : la migration 6→7 (`PROJECT_MIGRATIONS`) les porte déjà
-   * pour tout document antérieur — mesuré.
-   */
-  function documentDeLEntree(p: SavedProject): unknown {
-    const doc = p.project as Record<string, unknown>;
-    return {
-      ...doc,
-      id: doc.id ?? p.id,
-      label: doc.label ?? p.label,
-      ...(doc.versionContenu === undefined ? { versionContenu: 0 } : {}),
-    };
-  }
-  /** Rend le REFUS quand le document ne s'ouvre pas (porte de schéma, document sans scène), `null`
+  /** Rend le REFUS quand le document ne s'ouvre pas (porte du document), `null`
    *  quand la scène est posée. La modale ignore cette valeur (elle lit `loadError`) ; le pont de
    *  recette (`editeur.ouvrir`, #1478) en fait son verdict — un `✓` sur un document refusé mentirait. */
-  function loadSaved(p: SavedProject): RefusOuverture | null {
+  function loadSaved(p: SavedProject): RefusRendu | null {
     let scenes: Scene[];
     let wm: WorldMap | undefined;
     let aa: string[] | undefined;
     let na: NarratifBlock;
-    let ident: ProjectIdentite;
+    let label: string;
+    let ident: Omit<ProjectIdentite, 'label'>;
+    const doc = documentDeLEntree(p);
     try {
-      ({ scenes, worldMap: wm, activeAxes: aa, narratif: na, ...ident } = parseProject(documentDeLEntree(p))); // même validation/migration que l'import JSON
+      ({ scenes, worldMap: wm, activeAxes: aa, narratif: na, label, ...ident } = parseProject(doc)); // même validation/migration que l'import JSON
     } catch (e) {
-      const refus = refusDOuverture(e);
+      const refus = refusDeLaPorteDuProjet(e, doc, 'ouverture');
       setLoadError(refus);
       return refus;
     }
     setLoadError(null);
-    if (!scenes.length) return { message: 'document sans aucune scène' };
     setOtherScenes(scenes.slice(1).map(clone));
     setWorldMap(wm ? JSON.parse(JSON.stringify(wm)) : null);
     setActiveAxes(aa);
     setNarratif(na);
     setIdentite(ident);
     setProjectId(p.id);
-    setProjectName(p.label);
+    setProjectName(label);
     setPublished(p.published);
     setSel(null);
     resetScene(clone(scenes[0]));
@@ -849,7 +821,7 @@ export function Editor({
       project,
     });
     if (!res.ok) {
-      setSaveError(res.message);
+      setSaveError({ message: res.message });
       return;
     }
     setSaveError(null);
@@ -1207,7 +1179,7 @@ export function Editor({
       )}
       {refusDuGeste && (
         <Modal variant="plain" title={refusDuGeste.titre} onClose={() => setRefusDuGeste(null)}>
-          <p className="chip tone-danger" role="alert">{refusDuGeste.message}</p>
+          <ChipDeRefus refus={refusDuGeste} />
           <div className="modal-actions">
             <button className="btn btn-primary" onClick={() => setRefusDuGeste(null)}>
               Fermer

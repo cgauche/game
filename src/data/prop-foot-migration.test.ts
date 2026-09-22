@@ -12,10 +12,8 @@ import { scenarioEntities } from '../scenes/opera/furnished';
 import type { AreneSceneFactory } from '../../scripts/arene/scenes.d.mts';
 
 /**
- * Empreintes de TYPE portées par le catalogue de décor (`props.json` `foot`), figées à la valeur
- * qu'elles avaient dans les defs de vignette avant leur migration — plus les trois variantes longues
- * de mobilier d'Opéra créées par cette même migration, et celles qu'un MODÈLE a depuis recalées, chacune
- * motivée à sa ligne.
+ * Empreintes de TYPE portées par le catalogue de décor (`props.json` `foot`) : une ligne par
+ * BILLBOARD qui en déclare une, à sa valeur de migration sauf recalage par un MODÈLE, motivé à sa ligne.
  */
 const LEGACY_PROP_FOOT_TABLE: [string, number, number][] = [
   ['abreuvoir', 2, 1],
@@ -39,14 +37,7 @@ const LEGACY_PROP_FOOT_TABLE: [string, number, number][] = [
   ['passerelle-d-embarquement', 2, 1],
   ['rouleau-de-cordage', 1, 1],
   ['stalle-ecurie', 1, 1],
-  // `table-2x1` a QUITTÉ cette table : c'est une RECETTE, et depuis #1509 un décor à recette n'a plus
-  // de `foot` — ses deux cases viennent de son corps (migration
-  // `2026-09-03-1509-foot-volumique-mort.mjs`). La table ci-dessus ne liste plus que des BILLBOARDS,
-  // les seuls à qui le champ appartient.
-  // Par la MÊME porte, le lot B de #1343 a emporté `bureau-2x1`, `etabli-2x1`, `rideau-scene` et
-  // `rangee-sieges` : devenus recettes, leurs 2×1 / 2×1 / 3×1 / 3×1 sont désormais DÉRIVÉS de leurs
-  // corps (3,40 m, 3,40 m, 5,60 m, 5,40 m), et c'est
-  // `gameIso/catalog/props-volumiques.test.ts` `EMPREINTES_ATTENDUES` qui les tient.
+  // L'empreinte d'une RECETTE dérive de son corps (#1509), tenue par `gameIso/catalog/props-volumiques.test.ts` `EMPREINTES_ATTENDUES`.
   // Cette liste ne peut que DÉCROÎTRE : chaque billboard converti en sort.
   ['tente', 2, 2],
   ['tribune', 3, 1],

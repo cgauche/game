@@ -143,10 +143,9 @@ function comptesVolumiques(): Record<string, number> {
  * Une case de marche gagnée ou perdue, une bande de portée qui change de largeur, un anneau qui
  * disparaît : tout se voit ici.
  *
- * MISE À JOUR 2026-08-19 (spec HUD § ARBITRAGE) : la zone de COURSE (`run`, 36 cases sur ce témoin)
- * a quitté les oracles de tour ordinaire — « par défaut seule la zone de déplacement est affichée ».
- * Elle n'est plus peinte que sous l'intention de Course, d'où le 4ᵉ témoin ci-dessous : le compte 36
- * est CONSERVÉ tel quel, il a seulement changé de condition.
+ * Tour ordinaire : « par défaut seule la zone de déplacement est affichée » (spec HUD § ARBITRAGE,
+ * `docs/plans/2026-08-16-spec-hud-combat.md`, 2026-08-19). La zone de COURSE (`run`, 36 cases sur ce
+ * témoin) ne se peint que sous l'intention de Course : 4ᵉ témoin ci-dessous.
  */
 const ORACLE_NEUTRE: Record<string, number> = {
   walk: 62, rangeBand: 100, team: 2, teamActive: 1, zoneSmoke: 2, zoneFire: 1, ringContour: 2,
@@ -159,8 +158,8 @@ const ORACLE_FOULE: Record<string, number> = {
  *  les deux cases occupées par les ennemis : 98 marques `intent`, EN PLUS des portées permanentes
  *  (le joueur voit la Charge par-dessus sa Marche, pas à sa place). Le reste est l'oracle neutre. */
 const ORACLE_INTENTION: Record<string, number> = { ...ORACLE_NEUTRE, intent: 98 };
-/** 4ᵉ témoin (spec § 2026-08-19) : Course ARMÉE. Sa zone se peint en nature `run` — les 36 mêmes cases
- *  qu'un tour ordinaire peignait d'office avant l'arbitrage — et RIEN en `intent` : cette intention
+/** 4ᵉ témoin (spec § 2026-08-19) : Course ARMÉE. Sa zone se peint en nature `run` — 36 cases sur ce
+ *  témoin — et RIEN en `intent` : cette intention
  *  délègue son affichage au champ au lieu d'écrire deux fois la même vérité. */
 const ORACLE_COURSE: Record<string, number> = { ...ORACLE_NEUTRE, run: 36 };
 
