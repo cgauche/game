@@ -93,11 +93,11 @@ describe('paquet de campagne schema 3 — bloc narratif', () => {
   });
 
   it('(f) LÈVE (message clair NOMMANT le champ, pas TypeError) si un doc schema 3 natif n\'a pas de bloc narratif', () => {
-    expect(() => parseProject({ schema: 3, meta: { id: 'fixture', label: 'Fixture', version: 1 }, scenes: [scene] })).toThrow(/narratif: Invalid input: expected object/);
+    expect(() => parseProject({ schema: 3, meta: { id: 'fixture', label: 'Fixture', version: 1 }, scenes: [scene] })).toThrow(/narratif: Entrée invalide : objet attendu/);
   });
 
   it('(g) LÈVE si un registre du narratif n\'est pas un tableau', () => {
-    expect(() => parseProject({ schema: 3, meta: { id: 'fixture', label: 'Fixture', version: 1 }, scenes: [scene], narratif: { affaires: [], indices: [] } })).toThrow(/narratif\.presetsPnj: Invalid input: expected array/);
+    expect(() => parseProject({ schema: 3, meta: { id: 'fixture', label: 'Fixture', version: 1 }, scenes: [scene], narratif: { affaires: [], indices: [] } })).toThrow(/narratif\.presetsPnj: Entrée invalide : tableau attendu/);
   });
 
   it('(h) doc schema 3 avec un meta valide parse et restitue l’id, APLATI à la racine', () => {

@@ -18,6 +18,12 @@ const EXTS = ['.ts', '.tsx', '.mts', '.mjs', '.cjs', '.js'];
  *  @type {RegExp} */
 export const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)|\bimport\s+['"](\.[^'"]+)['"]/g;
 
+/** Un `import type …` / `export type …` est EFFACÉ à la compilation : l'arc existe pour le TYPAGE,
+ *  jamais à l'exécution. Un appelant qui marche le graphe pour un EFFET DE MODULE (une configuration
+ *  posée au chargement) doit donc les retrancher, sans quoi il conclut à une atteignabilité que le
+ *  bundle ne réalise pas. @type {RegExp} */
+const TYPE_ONLY_RE = /^[ \t]*(?:import|export)[ \t]+type[ \t][^\n]*$/gm;
+
 /** Extensions qu'un spécificateur peut porter LUI-MÊME (le chemin désigne alors le fichier). */
 const EXTS_EXPLICITES = [...EXTS, '.json'];
 
@@ -41,9 +47,10 @@ export function resolveImport(fromFile, spec) {
 /**
  * Enfants d'un module : TOUS ses imports relatifs résolus, sans borne. `null` = fichier absent (hors
  * closure) ; `[]` = membre sans graphe à lire (`.json`, #487) ou illisible.
- * @param {string} abs @param {string} rel @returns {string[]|null}
+ * `typesEffaces` retranche les arcs de TYPE PUR, ceux que la compilation efface.
+ * @param {string} abs @param {string} rel @param {boolean} typesEffaces @returns {string[]|null}
  */
-function enfantsDe(abs, rel) {
+function enfantsDe(abs, rel, typesEffaces) {
   if (!existsSync(abs)) return null;
   if (rel.endsWith('.json')) return [];
   let text;
@@ -52,6 +59,7 @@ function enfantsDe(abs, rel) {
   } catch {
     return [];
   }
+  if (typesEffaces) text = text.replace(TYPE_ONLY_RE, '');
   const enfants = [];
   for (const m of text.matchAll(IMPORT_RE)) {
     const resolved = resolveImport(abs, m[1] ?? m[2] ?? m[3]);
@@ -69,11 +77,14 @@ function enfantsDe(abs, rel) {
  * 2026-08-23) — sans partage, chaque fichier est relu et re-résolu 11 fois. Le cache porte les
  * enfants NON filtrés : il reste valable quel que soit le prédicat. Par défaut le cache naît et
  * meurt avec l'appel : aucun état ne survit entre deux marches indépendantes.
+ * `typesEffaces` marche les arcs d'EXÉCUTION seuls (cf. `TYPE_ONLY_RE`) : c'est ce que demande un
+ * appelant qui suit un EFFET DE MODULE plutôt qu'une dépendance de typage. Le cache porte les enfants
+ * SOUS CE RÉGIME : deux marches de régimes différents ne le partagent pas.
  * @param {string[]} roots
- * @param {{ retenir?: (abs: string) => boolean, cache?: Map<string, string[]|null> }} [options]
+ * @param {{ retenir?: (abs: string) => boolean, cache?: Map<string, string[]|null>, typesEffaces?: boolean }} [options]
  * @returns {Set<string>} chemins POSIX relatifs à la racine du repo
  */
-export function clotureDImports(roots, { retenir, cache = new Map() } = {}) {
+export function clotureDImports(roots, { retenir, cache = new Map(), typesEffaces = false } = {}) {
   const seen = new Set();
   const cwdPosix = resolve('.').split('\\').join('/') + '/';
   const stack = [...roots.map((r) => resolve(r).split('\\').join('/'))];
@@ -84,7 +95,7 @@ export function clotureDImports(roots, { retenir, cache = new Map() } = {}) {
     if (seen.has(rel)) continue;
     let enfants = cache.get(abs);
     if (enfants === undefined) {
-      enfants = enfantsDe(abs, rel);
+      enfants = enfantsDe(abs, rel, typesEffaces);
       cache.set(abs, enfants);
     }
     if (enfants === null) continue;

@@ -341,15 +341,17 @@ describe('OP_DEFS — payload strict par op, repli nominatif, rouge au SITE', ()
     expect(res.success).toBe(false);
     const issues = res.error!.issues;
     expect(issues.map((i) => i.path.join('.'))).toContain('amount');
-    expect(JSON.stringify(issues)).toMatch(/Invalid input/);
+    // Le CODE d'issue du payload est REPORTÉ (jamais aplati en `custom`) : c'est lui le contrat, la
+    // phrase appartient à la locale. Le préfixe `GameOp « heal » : ` est du code MAISON, lui stable.
+    expect(issues.map((i) => i.code)).toContain('invalid_union');
+    expect(JSON.stringify(issues)).toMatch(/GameOp « heal » : /);
   });
 
   it('une op TYPÉE à CLÉ EN TROP est refusée par la clé NOMMÉE, pas par un message générique', () => {
     const res = gameOpSchema.safeParse({ op: 'kill', zzz: 1 });
     expect(res.success).toBe(false);
-    const texte = JSON.stringify(res.error!.issues);
-    expect(texte).toMatch(/Unrecognized key/);
-    expect(texte).toMatch(/zzz/);
+    expect(res.error!.issues.map((i) => i.code)).toContain('unrecognized_keys');
+    expect(JSON.stringify(res.error!.issues)).toMatch(/zzz/);
   });
 
   it('la clé `op` SURCHARGÉE d’une `Condition` (comparateur) ne passe pas par ce rouge', () => {

@@ -18,10 +18,11 @@ const CHAMPS_IDENTITE = ['id', 'label', 'versionContenu', 'type'];
 const REFUS_IDENTITE_RX = new RegExp(`^\\s*-\\s*(${CHAMPS_IDENTITE.join('|')}):`, 'm');
 
 /**
- * Traduit le refus de la porte en refus d'ÉCRAN. Un rapport de validation est un texte technique en
- * anglais : quand il porte sur l'IDENTITÉ, l'auteur lit d'abord ce qui lui arrive, en français
- * (règle 4), et le rapport reste consultable dessous. Les autres refus (contenu invalide) gardent
- * leur détail en message : ils nomment le champ à corriger.
+ * Traduit le refus de la porte en refus d'ÉCRAN. Un rapport de validation est un texte TECHNIQUE
+ * (chemins de schéma), même si sa langue est le français (`grammaire/locale-fr.ts`) : quand il porte
+ * sur l'IDENTITÉ, l'auteur lit d'abord ce qui lui arrive, en mots d'auteur, et le rapport reste
+ * consultable dessous. Les autres refus (contenu invalide) gardent leur détail en message : ils
+ * nomment le champ à corriger.
  */
 export function refusDOuverture(erreur: unknown): RefusOuverture {
   const brut = erreur instanceof Error ? erreur.message : 'Projet invalide';

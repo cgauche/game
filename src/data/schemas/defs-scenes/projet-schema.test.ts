@@ -60,6 +60,22 @@ const fautes = (valeur: unknown, schema: typeof projetSchema | typeof narratifSc
   return res.success ? [] : res.error.issues.map((i) => `${i.path.join('.')} :: ${i.message}`);
 };
 
+/**
+ * Chemin + CODE d'issue + la donnée que l'issue NOMME (clé en trop, options attendues, borne). C'est
+ * la forme STABLE d'un refus de la dépendance : le `message`, lui, appartient à la locale FR
+ * (`grammaire/locale-fr.ts`) et rote à chaque montée de zod. `fautes` reste la porte des messages
+ * MAISON, que le dépôt écrit et tient.
+ */
+const fautesCodees = (valeur: unknown, schema: typeof projetSchema = projetSchema) => {
+  const res = schema.safeParse(valeur);
+  expect(res.success).toBe(false);
+  return res.success ? [] : res.error.issues.map((i) => {
+    const brut = i as unknown as Record<string, unknown>;
+    const nommee = brut.keys ?? brut.values ?? brut.maximum ?? brut.minimum;
+    return `${i.path.join('.')} :: ${i.code}${nommee === undefined ? '' : ` ${JSON.stringify(nommee)}`}`;
+  });
+};
+
 describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resolvePortRef)', () => {
   it('un projet minimal parse : les collections que `normalizeScene` comble sont OPTIONNELLES', () => {
     const res = projetSchema.safeParse(projet());
@@ -81,8 +97,8 @@ describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resol
     const entite = (over: Jouet) => [sceneMinimale({ entities: [{ id: 'coffre', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'coffre', ...over }] })];
 
     expect(projetSchema.safeParse(projet({ scenes: entite({ usable: { assise: true, actions: [{ id: 'fouiller', flow: FLOW, unique: true }] } }) })).success).toBe(true);
-    expect(fautes(projet({ scenes: entite({ interact: { flow: FLOW } }) })))
-      .toEqual(['scenes.0.entities.0 :: Unrecognized key: "interact"']);
+    expect(fautesCodees(projet({ scenes: entite({ interact: { flow: FLOW } }) })))
+      .toEqual(['scenes.0.entities.0 :: unrecognized_keys ["interact"]']);
     expect(fautes(projet({ scenes: entite({ usable: { actions: [{ id: 'fouiller', flow: FLOW }, { id: 'fouiller', flow: FLOW }] } }) })))
       .toEqual([expect.stringMatching(/^scenes\.0\.entities\.0\.usable :: usable\.actions : deux actions partagent le même `id`/)]);
     // `assise` ne se DÉSACTIVE pas par `false` : le fait est présent ou absent, jamais nié.
@@ -113,22 +129,22 @@ describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resol
    * nominatif, au chemin — la garde ne dit pas « invalide », elle dit OÙ.
    */
   it('une pente de RÉFÉRENCE hors plage est REFUSÉE au chemin, aux DEUX bornes', () => {
-    const pente = (deg: number) => fautes(projet({ scenes: [sceneMinimale({ roofDefaults: { material: 'toit-ardoise', pitchDeg: deg, riseMaxStoreys: 1 } })] }));
-    expect(pente(90)).toEqual([`scenes.0.roofDefaults.pitchDeg :: Too big: expected number to be <=${PENTE_TOIT_DEG.max}`]);
-    expect(pente(0)).toEqual([`scenes.0.roofDefaults.pitchDeg :: Too small: expected number to be >=${PENTE_TOIT_DEG.min}`]);
+    const pente = (deg: number) => fautesCodees(projet({ scenes: [sceneMinimale({ roofDefaults: { material: 'toit-ardoise', pitchDeg: deg, riseMaxStoreys: 1 } })] }));
+    expect(pente(90)).toEqual([`scenes.0.roofDefaults.pitchDeg :: too_big ${PENTE_TOIT_DEG.max}`]);
+    expect(pente(0)).toEqual([`scenes.0.roofDefaults.pitchDeg :: too_small ${PENTE_TOIT_DEG.min}`]);
     expect(projetSchema.safeParse(projet({ scenes: [sceneMinimale({ roofDefaults: { material: 'toit-ardoise', pitchDeg: PENTE_TOIT_DEG.max, riseMaxStoreys: 1 } })] })).success).toBe(true);
   });
 
   it('une pente POSÉE sur un CORPS suit la même plage, au chemin du corps', () => {
     const corps = [{ id: 'corps-1', storeys: [], facades: [], masses: [], roofDefaults: { pitchDeg: 90 } }];
-    expect(fautes(projet({ scenes: [sceneMinimale({ architecture: corps })] }))).toEqual([
-      `scenes.0.architecture.0.roofDefaults.pitchDeg :: Too big: expected number to be <=${PENTE_TOIT_DEG.max}`,
+    expect(fautesCodees(projet({ scenes: [sceneMinimale({ architecture: corps })] }))).toEqual([
+      `scenes.0.architecture.0.roofDefaults.pitchDeg :: too_big ${PENTE_TOIT_DEG.max}`,
     ]);
   });
 
   it('une clé inconnue sur une scène est REFUSÉE (schéma STRICT)', () => {
-    expect(fautes(projet({ scenes: [sceneMinimale({ inventedField: 'poison' })] }))).toEqual([
-      'scenes.0 :: Unrecognized key: "inventedField"',
+    expect(fautesCodees(projet({ scenes: [sceneMinimale({ inventedField: 'poison' })] }))).toEqual([
+      'scenes.0 :: unrecognized_keys ["inventedField"]',
     ]);
   });
 
@@ -147,19 +163,19 @@ describe('projetSchema — la FORME que voit le seam (avant normalizeScene/resol
     expect(projetSchema.safeParse(avecStatbloc(statblocMinimal({ char: { 'capacite-de-combat': 30, M: 4, B: 5 } }))).success).toBe(true);
     expect(projetSchema.safeParse(avecStatbloc(statblocMinimal({ char: {} }))).success).toBe(true);
     // Une clé HORS canon est nommée, jamais avalée.
-    expect(fautes(avecStatbloc(statblocMinimal({ char: { ZZZZ: 7 } })))).toEqual([
-      'scenes.0.entities.0.statblock.char :: Unrecognized key: "ZZZZ"',
+    expect(fautesCodees(avecStatbloc(statblocMinimal({ char: { ZZZZ: 7 } })))).toEqual([
+      'scenes.0.entities.0.statblock.char :: unrecognized_keys ["ZZZZ"]',
     ]);
     // La coquille d'authoring la plus plausible — une Caractéristique mal orthographiée — mord aussi.
-    expect(fautes(avecStatbloc(statblocMinimal({ char: { endurence: 35 } })))).toEqual([
-      'scenes.0.entities.0.statblock.char :: Unrecognized key: "endurence"',
+    expect(fautesCodees(avecStatbloc(statblocMinimal({ char: { endurence: 35 } })))).toEqual([
+      'scenes.0.entities.0.statblock.char :: unrecognized_keys ["endurence"]',
     ]);
   });
 
   it('le statbloc embarqué DOIT s’annoncer : `type: \'statblock\'` (#1467 L1b)', () => {
     const { type: _sans, ...muet } = statblocMinimal();
-    expect(fautes(avecStatbloc(muet))).toEqual([
-      'scenes.0.entities.0.statblock.type :: Invalid input: expected "statblock"',
+    expect(fautesCodees(avecStatbloc(muet))).toEqual([
+      'scenes.0.entities.0.statblock.type :: invalid_value ["statblock"]',
     ]);
   });
 });
@@ -325,10 +341,10 @@ describe('projetSchema — les quatre sémantiques du seam, chacune NOMMÉE', ()
   });
 
   it('(e) le document DOIT s’annoncer : `type: \'projet\'`, et chaque scène EMBARQUÉE aussi (#1552)', () => {
-    expect(fautes(sans('type'))).toEqual(['type :: Invalid input: expected "projet"']);
+    expect(fautesCodees(sans('type'))).toEqual(['type :: invalid_value ["projet"]']);
     const { type: _muette, ...sceneMuette } = sceneMinimale();
-    expect(fautes(projet({ scenes: [sceneMuette] }))).toEqual([
-      'scenes.0.type :: Invalid input: expected "scene"',
+    expect(fautesCodees(projet({ scenes: [sceneMuette] }))).toEqual([
+      'scenes.0.type :: invalid_value ["scene"]',
     ]);
   });
 
@@ -403,7 +419,7 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
       expect(fautes(sansCle(cle)), `« ${cle} » amputé`).toEqual([expect.stringMatching(new RegExp(`^${cle} :: `))]);
     }
     expect(fautes({ ...reel(), label: '' })).toEqual([expect.stringMatching(/^label :: /)]);
-    expect(fautes({ ...reel(), type: 'scene' })).toEqual(['type :: Invalid input: expected "projet"']);
+    expect(fautesCodees({ ...reel(), type: 'scene' })).toEqual(['type :: invalid_value ["projet"]']);
   });
 
   it('PROVENANCE réelle : la Diligence cite son folio ; sans provenance c’est rouge, les DEUX ensemble passent', () => {
@@ -414,12 +430,12 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
   });
 
   it('SCEAU sur la donnée réelle : `schema` non courant, clé inconnue et scène muette sont refusés', () => {
-    expect(fautes({ ...reel(), schema: 6 })).toEqual([`schema :: Invalid input: expected ${SCHEMA_PROJET}`]);
+    expect(fautesCodees({ ...reel(), schema: 6 })).toEqual([`schema :: invalid_value [${SCHEMA_PROJET}]`]);
     // Chemin VIDE : la clé inconnue est rapportée à la RACINE du document.
-    expect(fautes({ ...reel(), champInconnu: 1 })).toEqual([' :: Unrecognized key: "champInconnu"']);
+    expect(fautesCodees({ ...reel(), champInconnu: 1 })).toEqual([' :: unrecognized_keys ["champInconnu"]']);
     const d = reel();
     const { type: _muette, ...sceneMuette } = (d.scenes as Jouet[])[0];
-    expect(fautes({ ...d, scenes: [sceneMuette] })).toEqual(['scenes.0.type :: Invalid input: expected "scene"']);
+    expect(fautesCodees({ ...d, scenes: [sceneMuette] })).toEqual(['scenes.0.type :: invalid_value ["scene"]']);
   });
 });
 

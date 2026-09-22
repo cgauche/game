@@ -301,6 +301,6 @@ describe('parseProject — porte de schéma', () => {
 
   it('`encounters[].enemies` (forme ANTÉRIEURE) est refusé PAR SON NOM, jamais absorbé en silence', () => {
     const doc = { schema: 2, meta: metaAnterieure, scenes: [{ ...scene('s1'), encounters: [{ id: 'e1', enemies: [{ ref: 'gobelin', count: 2 }] }] }] };
-    expect(() => parseProject(doc)).toThrow(/scenes\.0\.encounters\.0: Unrecognized key: "enemies"/);
+    expect(() => parseProject(doc)).toThrow(/scenes\.0\.encounters\.0: Clé non reconnue : "enemies"/);
   });
 });

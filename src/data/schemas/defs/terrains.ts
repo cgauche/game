@@ -44,8 +44,8 @@ const doc = document(
     built: z.literal(true).optional(),
     absence: z.literal(true).optional(),
     bordDuMonde: z.literal(true).optional(),
-    // Message FR NOMMANT la valeur refusée : le défaut zod (« Too big: expected string to have <1
-    // characters ») est anglais et ne dit pas ce qu'on lisait.
+    // Message NOMMANT la valeur refusée : le défaut zod (issue `too_big`) dit la BORNE, jamais le
+    // glyphe qu'on lisait ni à quoi il sert.
     ascii: z
       .string()
       .length(1, {

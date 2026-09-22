@@ -11,6 +11,7 @@
  * (`{ref:{id}}`, `{wildcard}`, `{talentId, spec}`…) sont les lots L2/L3 (#1463).
  */
 import { z } from 'zod';
+import './locale-fr';
 import { IDS_PAR_DATASET, IDS_PAR_DISCRIMINANT, SPECS_PAR_DATASET } from '../_ids.generated';
 import { marque } from './slots';
 import { idsVivants, idsVivantsDuDiscriminant } from './idsVivants';

@@ -436,7 +436,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
       entries: arr,
       // Une entrée NEUVE part de ce que le def DÉTERMINE (`brouillonNeuf`) : le `type` d'enveloppe et,
       // pour un document discriminé, la valeur que le `select` affiche en tête — sinon l'écran promet
-      // un cas que l'état ne porte pas (union des champs présentés, refus « Invalid option » au save).
+      // un cas que l'état ne porte pas (union des champs présentés, refus `invalid_value` au save).
       initial: arr[index] ?? brouillonNeuf(file, arr as Record<string, unknown>[]),
       index,
       file,

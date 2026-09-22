@@ -119,7 +119,11 @@ describe('terrains — rôles à porteur UNIQUE et glyphe d’authoring UNIQUE, 
     expect(dit, 'le refus ne cite pas `ascii` en chemin.').toMatch(/@\d+\.ascii/);
     expect(dit, 'le refus ne CITE pas la valeur refusée.').toContain('« ## »');
     expect(dit, 'le refus ne dit pas la règle en français (UN SEUL caractère).').toContain('UN SEUL caractère');
-    expect(dit, 'le refus sort le message zod ANGLAIS par défaut.').not.toContain('Too big');
+    // POSITIF de bout en bout : le message MAISON (`defs/terrains.ts`) occupe TOUTE la ligne de refus,
+    // donc aucun défaut de la dépendance ne s'y substitue. Une assertion négative sur la phrase de zod
+    // passerait à vide dès que zod la reformule.
+    expect(dit, 'le refus n’est pas le message maison de bout en bout.')
+      .toMatch(/@\d+\.ascii : glyphe d’authoring « ## » : UN SEUL caractère — /);
   });
 
   it('les deux rôles sont portés par des entrées DISTINCTES — le bord du monde n’est pas une absence', () => {

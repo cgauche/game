@@ -71,8 +71,10 @@ export function ouCaCasse(erreur: unknown): string {
  *  schéma de Scène (`dialogueSchema`/`triggerSchema`/`encounterDefSchema`, `scene.ts:785-787`), pas
  *  une redite : ce que l'auteur colle est tenu à la même exigence que ce que le document porte. Le
  *  conteneur est réécrit parce que `sceneSchema.pick()` est refusé par zod sur un objet PORTANT DES
- *  RAFFINEMENTS, et un sous-ensemble de trois clés n'en hérite aucun. */
-const SCHEMA_BLOCS_AVANCES = z.strictObject({
+ *  RAFFINEMENTS, et un sous-ensemble de trois clés n'en hérite aucun.
+ *  EXPORTÉ pour que la porte de cette modale (`saveAdvanced` : ce schéma + `formatZodError`) soit
+ *  mesurable hors montage — c'est elle qui rend le refus que l'auteur lit (#1588). */
+export const SCHEMA_BLOCS_AVANCES = z.strictObject({
   dialogues: z.array(dialogueSchema).optional(),
   triggers: z.array(triggerSchema).optional(),
   encounters: z.array(encounterDefSchema).optional(),

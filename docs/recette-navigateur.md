@@ -1437,6 +1437,10 @@ Pièges vécus À L'ÉDITEUR (deux recettes, 2026-09-21) — tous re-mesurés au
   sous `Suspense`) : après la bascule d'écran, le DOM n'existe pas encore. Attendre `.editor-toolbar`
   (`src/ui/editor/EditorToolbar.tsx:163`) avant tout geste — `editorOpen(id)` attend déjà le montage
   par le pont, mais un clic direct dans la barre ne l'attend pas.
+  Au TOUT PREMIER accès d'une session de dev fraîche, Vite n'a pas encore compilé ce chunk : une
+  attente de ~9 s sur `.editor-toolbar` expire alors qu'il arrive. Viser ~20 s pour ce premier accès
+  (les suivants sont instantanés, le chunk étant en cache) — un timeout ici se lit comme un écran
+  cassé, il ne l'est pas.
 - **« Importer JSON… » est un `input[type=file]` CACHÉ derrière un `<label>`**
   (`src/ui/editor/EditorToolbar.tsx:111-126`) : le cliquer ouvrirait le dialogue de fichier de l'OS,
   qu'aucun pilote ne ferme. Le peupler par `DOM.setFileInputFiles` (CDP) sur l'`input`, qui déclenche

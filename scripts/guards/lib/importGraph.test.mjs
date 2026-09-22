@@ -8,7 +8,10 @@
 //      se voie ici, jamais par surprise chez un consommateur ;
 //   3. la MARCHE NON BORNÉE (`clotureDImports` sans prédicat) atteint, elle, les libs de `scripts/` —
 //      c'est ce que `lister.test.mjs` (#1679 L3b) exige pour voir un listing dans une lib de garde
-//      atteinte par un générateur, là où `closureOf` ne rend AUCUN module `scripts/`.
+//      atteinte par un générateur, là où `closureOf` ne rend AUCUN module `scripts/` ;
+//   4. `typesEffaces` retranche les arcs de TYPE PUR — un appelant qui suit un EFFET DE MODULE (la
+//      locale zod posée au chargement, #1588) conclurait sinon à une atteignabilité que le bundle ne
+//      réalise pas, un `import type` étant effacé à la compilation.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
@@ -100,6 +103,28 @@ test('MARCHE NON BORNÉE : depuis une racine de `scripts/`, `clotureDImports` at
     // Contre-épreuve : la MEME racine sous `closureOf` ne rend AUCUN module `scripts/`.
     const bornee = [...closureOf([join(racine, 'scripts', 'docs', 'g.mjs')])]
     assert.deepEqual(bornee.filter((m) => m.includes('/scripts/guards/')), [])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('`typesEffaces` : un arc de TYPE PUR ne porte aucun effet de module, la marche ne le suit pas', () => {
+  const racine = mkdtempSync(join(tmpdir(), 'import-graph-'))
+  try {
+    mkdirSync(join(racine, 'src'), { recursive: true })
+    // `a` n'atteint `effet` QUE par un `import type` : l'arc existe au typage, jamais à l'exécution.
+    writeFileSync(join(racine, 'src', 'a.ts'), "import type { T } from './pont'\nexport const a = 1\n")
+    writeFileSync(join(racine, 'src', 'pont.ts'), "import './effet'\nexport type T = number\n")
+    writeFileSync(join(racine, 'src', 'effet.ts'), 'globalThis.pose = true\n')
+    const depart = [join(racine, 'src', 'a.ts')]
+
+    const auTypage = [...clotureDImports(depart)]
+    assert.equal(auTypage.filter((m) => m.endsWith('/src/effet.ts')).length, 1,
+      'la marche PAR DÉFAUT suit l’arc de type — c’est son régime historique')
+
+    const alExecution = [...clotureDImports(depart, { typesEffaces: true })]
+    assert.deepEqual(alExecution.filter((m) => m.endsWith('/src/effet.ts')), [],
+      'sous `typesEffaces`, un module atteint par le seul `import type` reste HORS marche')
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }

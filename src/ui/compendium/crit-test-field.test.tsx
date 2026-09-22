@@ -10,8 +10,8 @@
  *
  * CE QU'IL MORD : la racine `FlowEditor` normalise ce qu'elle rend en `{kind:'seq', steps}`
  * (`asSteps`/`seqOf`, `src/ui/editor/FlowEditor.tsx`) — montée sur ce champ, le premier geste
- * d'édition ferait perdre son `kind` au nœud et le save serait refusé (« expected "test" »,
- * « Unrecognized key: "steps" »). Le champ compose donc `NoeudTestField`, le SOUS-éditeur de nœud
+ * d'édition ferait perdre son `kind` au nœud et le save serait refusé (issues `invalid_value` sur
+ * `kind`, `unrecognized_keys` sur `steps`). Le champ compose donc `NoeudTestField`, le SOUS-éditeur de nœud
  * `test` (`TestFields` + un `FlowEditor` par branche servie), celui-là même que `FlowEditor` monte
  * à l'intérieur d'un Flow de sort ; une rangée de Critique SERT ses deux branches (`critical.ts`),
  * elle les édite donc toutes les deux.
