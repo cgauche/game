@@ -1,5 +1,5 @@
 // Volet « hooks de modules » du rendu sous win32 (#1801) — enregistré par `plateforme-win32.mjs`.
-// Pour un module DU DÉPÔT (hors `node_modules`), `node:path` se résout en `path.win32` et `node:url`
+// Pour un module DU DÉPÔT (`estModuleDuDepot`), `node:path` se résout en `path.win32` et `node:url`
 // en un `fileURLToPath` qui rend la graphie Windows : c'est ce que ce code reçoit d'un hôte win32.
 // Les modules de `node_modules` et node lui-même gardent leur `path` : ils ne sont pas jugés ici.
 // La RACINE du dépôt rendu est celle que `run()` donne au générateur (`initialize`).
@@ -26,10 +26,17 @@ export const versPosix = (chemin) => {
   return /^[A-Za-z]:\//.test(s) ? s.slice(LECTEUR.length) : s
 }
 
+/** URL `file:` du dossier racine du dépôt rendu, barre finale comprise. */
+export const urlDuDepot = (racine) => url.pathToFileURL(path.join(racine, '/')).href
+
+/** `true` si l'adresse (URL `file:`) est celle d'un module du dépôt, hors `node_modules`. */
+export const estModuleDuDepot = (adresse, depot) =>
+  typeof adresse === 'string' && adresse.startsWith(depot) && !adresse.includes('/node_modules/')
+
 let depot = null
 
 export function initialize({ racine }) {
-  depot = url.pathToFileURL(path.join(racine, '/')).href
+  depot = urlDuDepot(racine)
 }
 
 const moduleDeSource = (source) => `data:text/javascript,${encodeURIComponent(source)}`
@@ -62,9 +69,7 @@ const REMPLACANTS = new Map([
 ])
 
 export async function resolve(specificateur, contexte, suivant) {
-  const parent = contexte.parentURL
   const remplacant = REMPLACANTS.get(specificateur)
-  if (remplacant && parent?.startsWith(depot) && !parent.includes('/node_modules/'))
-    return { url: remplacant, shortCircuit: true }
+  if (remplacant && estModuleDuDepot(contexte.parentURL, depot)) return { url: remplacant, shortCircuit: true }
   return suivant(specificateur, contexte)
 }

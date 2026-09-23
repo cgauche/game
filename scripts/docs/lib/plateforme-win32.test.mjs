@@ -3,15 +3,19 @@
 // `load`, aucun fichier du dépôt touché), puis rendu par `build-all.mjs` sur l'arbre réel, en
 // `--check` : vert sur un hôte POSIX, rouge rendu sous `--plateforme win32` et sous `--check --tout`.
 // Sur un hôte win32, le rendu natif EST le rendu sous win32 : la mutation y rougit en natif, et le
-// test le déclare.
+// test le déclare. Le lieu d'un module décide de ce qu'il voit : le dépôt voit win32, `node_modules`
+// voit l'hôte (`estModuleDuDepot`, plateforme-win32-hooks.mjs).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import path from 'node:path'
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url))
 const BUILD_ALL = path.join(RACINE, 'scripts', 'docs', 'build-all.mjs')
+const PLATEFORME_WIN32 = fileURLToPath(new URL('plateforme-win32.mjs', import.meta.url))
 const HOTE = process.platform
 
 const donnee = (source) => `data:text/javascript,${encodeURIComponent(source)}`
@@ -102,6 +106,44 @@ test('`--check --tout` rend chaque générateur sur l\'hôte ET sous win32 : le 
   assert.ok(r.sortie.includes(ROUGE_ATTENDU(cas.script)), r.sortie)
   if (HOTE === 'win32') t.diagnostic('hôte win32 : une seule passe, le rendu natif')
   else assert.ok(!r.sortie.includes(ROUGE_NATIF(cas.script)), r.sortie)
+})
+
+/** `node --import plateforme-win32.mjs <args>` depuis `racine`, dépôt rendu : ce que voit un module selon son LIEU. */
+function sousWin32(racine, args) {
+  const r = spawnSync(process.execPath, ['--import', PLATEFORME_WIN32, ...args], {
+    cwd: racine,
+    encoding: 'utf8',
+    env: { ...process.env, WFRP_PLATEFORME_RACINE: racine },
+  })
+  assert.equal(r.status, 0, `${r.stdout}${r.stderr}`)
+  return r.stdout.trim()
+}
+
+test('rendu sous win32 : `process.cwd()` est en `C:\\` pour le code du dépôt, celui de l’hôte pour node_modules', () => {
+  const racine = realpathSync(mkdtempSync(path.join(tmpdir(), 'plateforme-win32-')))
+  try {
+    const vuDe = "import path from 'node:path'\nexport const vu = () => [process.cwd(), path.resolve('x')]\n"
+    mkdirSync(path.join(racine, 'src'))
+    mkdirSync(path.join(racine, 'node_modules', 'tiers'), { recursive: true })
+    writeFileSync(path.join(racine, 'src', 'depot.mjs'), vuDe)
+    writeFileSync(path.join(racine, 'node_modules', 'tiers', 'tiers.mjs'), vuDe)
+    writeFileSync(
+      path.join(racine, 'src', 'entree.mjs'),
+      "import { vu as depot } from './depot.mjs'\nimport { vu as tiers } from '../node_modules/tiers/tiers.mjs'\n" +
+        'console.log(JSON.stringify({ depot: depot(), tiers: tiers() }))\n',
+    )
+    const vu = JSON.parse(sousWin32(racine, [path.join(racine, 'src', 'entree.mjs')]))
+    const windows = (chemin) => `C:${chemin.replaceAll('/', '\\')}`
+    assert.deepEqual(vu.depot, [windows(racine), windows(path.join(racine, 'x'))])
+    assert.deepEqual(vu.tiers, [racine, path.join(racine, 'x')])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('rendu sous win32 : tsx (node_modules) trouve `tsconfig.json` et son `jsx` sur l’arbre réel', () => {
+  const source = "import { getTsconfig } from 'get-tsconfig'\nconsole.log(getTsconfig()?.config.compilerOptions.jsx)\n"
+  assert.equal(sousWin32(RACINE, ['--input-type=module', '--eval', source]), 'react-jsx')
 })
 
 test('`--plateforme` inconnue : refus nommé, rien de rendu', () => {
