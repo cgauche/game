@@ -109,14 +109,9 @@ import { dataLabel } from '../data';
 // au Codex — la scène d'abordage est compilée, elle n'authore pas son sol.
 import { defautsDeCompilation } from '../data';
 import { t, t as tr } from '../i18n'; // `tr` : alias pour les portées où `t` est un identifiant local (résultat de jet)
-import type { WindAspect } from '../engine/seaWeather';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { windAspectSchema } from '../data/schemas/defs/sea-weather';
 
-/** Libellé de l'ASPECT du vent — `windAspect` rend un ID (`face`/`arriere`/`lateral`), que le flux
- *  collait derrière « vent » (« vent arriere »). Résolveur TOTAL : aucun repli-id. */
-const SEA_ASPECT_KEY = { face: 'sv.windFace', arriere: 'sv.windArriere', lateral: 'sv.windLateral' } as const;
-function seaAspectLabel(aspect: WindAspect): string {
-  return t(SEA_ASPECT_KEY[aspect]);
-}
 import { stepPrecision, idDansLaSequence } from './rollSeam';
 import { actorIn } from './combatants';
 import type { PlayerText } from '../i18n/playerText';
@@ -455,7 +450,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
   const cell = windEffect(sea.weather.vent, aspect, rigging);
   const m = windAdjustedM(Math.max(0, baseM), cell, sail);
   const affaler = !!(cell.affaler && sail);
-  const label = cell.encalmine && sail ? t('sv.becalmed') : affaler ? t('sv.strikeSails') : seaAspectLabel(aspect);
+  const label = cell.encalmine && sail ? t('sv.becalmed') : affaler ? t('sv.strikeSails') : libelleDeValeur(windAspectSchema, aspect);
   return { m, sail, mode: propulsion?.mode ?? null, label, affaler };
 }
 

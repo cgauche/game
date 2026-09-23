@@ -26,7 +26,7 @@ import { CODEX } from './registry';
 import { CLES_ENVELOPPE, LIBELLES_ENVELOPPE, document } from '../../data/schemas/grammaire/document';
 import { metaPourFichier, DEFS_DE_DOCUMENT, noeudObjet, schemaForFile } from '../../data/schemas/validate';
 import { enumNomme } from '../../data/schemas/grammaire/valeurs';
-import { defDe } from '../../data/schemas/grammaire/slots';
+import { defDe } from '../../data/schemas/grammaire/descente';
 import { stripComments } from '../../../scripts/guards/lib/hardcode.mjs';
 
 const handleDemo = () => document(

@@ -288,6 +288,15 @@
     "verrou": "npm run gen && git diff --exit-code"
   },
   {
+    "id": "descendre",
+    "type": "primitives.manifest",
+    "label": "descendre/enfantsDe",
+    "fichier": "src/data/schemas/grammaire/descente.ts",
+    "concept": "descente d'un arbre de schémas zod : enfants d'un nœud avec leur segment de path, parcours en largeur, identité par appel, élagage ou arrêt par le visiteur",
+    "perimetre": "toute lecture qui marche un schéma zod : validation, introspection des docs générés, gardes de grammaire, Codex",
+    "verrou": "src/data/schemas/grammaire/descente.test.ts"
+  },
+  {
     "id": "menuCard",
     "type": "primitives.manifest",
     "label": "MenuCard/MenuSection/MenuButton/MenuToggle",

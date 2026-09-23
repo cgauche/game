@@ -144,14 +144,14 @@ export interface OptionsDocument {
   /** Champs qu'une variante réglée republie (`variantOf`, #563/#564). */
   readonly variantes?: readonly string[];
   /** Schéma d'une VALEUR du record — exigé par la famille `record`, refusé partout ailleurs. */
-  readonly valeurRecord?: z.ZodTypeAny;
+  readonly valeurRecord?: z.ZodType;
   /**
    * Schéma d'une RANGÉE du document — admissible dans TOUTE famille : la charge est orthogonale à
    * l'emballage du fichier. Même mécanique que `valeurRecord` : la fabrique pose
    * `entries: z.array(rangee)` sur l'entrée, avec sa méta FR (`META_CHARGE`) — un def à rangées
    * ne redéclare donc jamais sa charge, `die` compris (`options.deDeTirage`).
    */
-  readonly rangee?: z.ZodTypeAny;
+  readonly rangee?: z.ZodType;
   /**
    * Le document porte un DÉ DE TIRAGE : la fabrique pose `die` (requis) avec sa méta FR
    * (`META_CHARGE`). Sans cette déclaration, `die` n'existe pas sur le document — le poser à tous
@@ -272,7 +272,7 @@ export interface DocumentHandle<T extends string> {
  * optionnel ») : le verrou d'un document qui exige est au PARSE, il ne rétrécit jamais le type
  * partagé par tous les documents.
  */
-function champEnveloppe<S extends z.ZodTypeAny>(optionnel: S, exige: boolean, nonVide: S = optionnel): z.ZodOptional<S> {
+function champEnveloppe<S extends z.ZodType>(optionnel: S, exige: boolean, nonVide: S = optionnel): z.ZodOptional<S> {
   return (exige ? nonVide : optionnel.optional()) as z.ZodOptional<S>;
 }
 
@@ -310,7 +310,7 @@ function enveloppe(type: string, idDocument?: z.ZodType<string>, exiges: readonl
  * déroulé unique du dépôt (`noyauEnum`, `grammaire/meta.ts`), celui-là même dont la lecture des
  * libellés d'un enum nommé (`valeursDe`, #1694) tire son noyau.
  */
-export function optionsEnum(noeud: z.ZodTypeAny): readonly string[] | undefined {
+export function optionsEnum(noeud: z.ZodType): readonly string[] | undefined {
   const noyau = noyauEnum(noeud);
   return noyau ? Object.values(noyau._zod!.def!.entries as Record<string, string>) : undefined;
 }
@@ -358,7 +358,7 @@ function verifieExposition(type: string, exposition: Exposition): void {
  * lui, vit sous `entries`, que la fabrique pose seule (`options.valeurRecord`/`options.cleRecord` en
  * `record`, `options.rangee` ailleurs) et qu'un def ne redéclare pas.
  */
-export function document<T extends string, C extends Record<string, z.ZodTypeAny>>(
+export function document<T extends string, C extends Record<string, z.ZodType>>(
   type: T,
   famille: FamilleDocument,
   champs: C & ChampsHorsEnveloppe<C>,
@@ -428,7 +428,7 @@ export function document<T extends string, C extends Record<string, z.ZodTypeAny
   verifieExposition(type, exposition);
   const entree = z.strictObject({
     ...enveloppe(type, idDocument, exiges),
-    ...(champs as Record<string, z.ZodTypeAny>),
+    ...(champs as Record<string, z.ZodType>),
   }) as z.ZodObject<z.ZodRawShape>;
   const declarees = [...(variantes ?? [])];
   for (const k of declarees) {

@@ -84,6 +84,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `ItemIcon` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `MediaSelect` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U |  |
 | `gen-registry (_registry.generated)` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `descendre/enfantsDe` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `MenuCard/MenuSection/MenuButton/MenuToggle` |  |  |  |  |  |  |  |  | U |  |  |  |  | U |  |  |
 | `ScreenMeta` |  |  |  |  | U |  | U | U |  |  | U |  |  |  | U |  |
 | `Tabs` |  |  |  |  | U |  | U | U |  | U | U |  |  |  | U | U |
@@ -207,4 +208,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: cea2c009690b797e883bfb82b87561bf628a49a7 (1824 fichiers, 2 dossiers) corps: 821ac4427ade52af328902db61a066bf40af4c79 -->
+<!-- sources-empreinte: d2b3efb952fab37c3f293e55d07edcf07408b9d1 (1824 fichiers, 2 dossiers) corps: a78feaa35ac0c2f6c1d6e2b5c0c08cbee1eea72b -->

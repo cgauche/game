@@ -17,7 +17,7 @@ import { estGraphieDeChapitre } from '../../source/decoupe';
  * (`grammaire/meta.ts`) au lieu de tenir sa propre table par valeur.
  *
  * Le porteur est le NŒUD, jamais la clé de premier niveau : un enum niché (`[].outcomes[].on`) ou
- * partagé par 2 950 chemins (`actorRefSchema`) se nomme UNE fois, ici, comme un champ de racine.
+ * partagé entre defs (`actorRefSchema`) se nomme UNE fois, ici, comme un champ de racine.
  *
  * Une valeur peut porter, EN PLUS de son libellé, un HINT mécanique (`hints`, même porteur : le nœud) :
  * ce que la règle FAIT quand cette valeur est choisie, lu par `hintDeValeur` (`grammaire/meta.ts`) et
@@ -556,7 +556,7 @@ export const replisSansExposeSchema = z.strictObject({
  * l.73-78) comme prix de base (MDG 15 l.422-434, MSRC 13 l.84-89). Les quatre clés se déclarent ICI,
  * une seule fois pour le dépôt ; ce que la colonne CONTIENT reste au porteur.
  */
-export const parSaison = <T extends z.ZodTypeAny>(valeur: T) =>
+export const parSaison = <T extends z.ZodType>(valeur: T) =>
   z.strictObject({ printemps: valeur, ete: valeur, automne: valeur, hiver: valeur });
 
 /**
@@ -747,14 +747,18 @@ export const TESTS_DE_CORRUPTION = ['resistance', 'calme'] as const;
 export type TestDeCorruption = (typeof TESTS_DE_CORRUPTION)[number];
 
 /** Référence de Compétence BORNÉE à `TESTS_DE_CORRUPTION` : porte UNIQUE des deux slots
- *  `corruptionExposure.skill`. Sans elle, toute Compétence passe la porte et le runtime la rabote
- *  en silence — la donnée mentirait sur le Test réellement joué. Forme ENUM (patron `charKeySchema`) :
- *  l'alphabet TYPE l'id, il ne le branche pas ; les deux Compétences n'étant pas spécialisables,
- *  aucun régime `spec`/`choix` n'a de sens ici — d'où la réf nue plutôt que `refOuSpec('skill')`. */
+ *  `corruptionExposure.skill` (`LDB 19 l.23-75`). La feuille `idDe('skill')` (`grammaire/ref.ts`) porte
+ *  la référence ; la borne se compose EN SORTIE de la feuille (`transform`), sans cloner la feuille. */
+const estTestDeCorruption = (v: unknown): v is TestDeCorruption => (TESTS_DE_CORRUPTION as readonly unknown[]).includes(v);
 export const refTestDeCorruption = z.strictObject({
-  id: z.enum(TESTS_DE_CORRUPTION, {
-    error: (iss) =>
-      `corruptionExposure.skill : « ${String(iss.input)} » hors des deux Compétences admises — Résistance (« resistance ») ou Calme (« calme ») (LDB 19 l.23-75).`,
+  id: idDe('skill').transform((v, ctx): TestDeCorruption => {
+    if (estTestDeCorruption(v)) return v;
+    ctx.addIssue({
+      code: 'custom',
+      input: v,
+      message: `corruptionExposure.skill : « ${v} » hors des deux Compétences admises — Résistance (« resistance ») ou Calme (« calme ») (LDB 19 l.23-75).`,
+    });
+    return z.NEVER;
   }),
 });
 

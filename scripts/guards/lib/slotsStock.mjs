@@ -14,19 +14,12 @@
 //     lit au doc §6.2. Une ligne se solde en faisant ADOPTER la fabrique de référence (`ref`/`refs`/
 //     `specRef`/`pick`, toutes sur `idDe`) par le schéma du champ — concept par concept en L2/L3
 //     (#1473) — et part dans le MÊME commit que l'adoption.
-//   - `SLOTS_INTERNES` — FOSSILE (#1463, meurt au commit 2 de R1) : un nœud marqué d'espèce `id`,
-//     retrouvé par la marche du schéma, dont le `type` est INCONNU du registre `_ids.generated`.
 //   - `SLOTS_INATTEIGNABLES` — un couple dont des occurrences n'ont AUCUNE case qui porte une chaîne :
 //     aucune n'est un slot (angle mort `ANGLES_MORTS_SLOTS`). Compte = ces occurrences-là seules ; la
 //     ligne se solde quand la donnée ou le scan leur rend une case-chaîne.
-// Les trois ne font que DÉCROÎTRE : une référence neuve s'ADOPTE, elle ne s'inscrit pas.
+// Les deux ne font que DÉCROÎTRE : une référence neuve s'ADOPTE, elle ne s'inscrit pas.
 //
 // ANGLES MORTS : `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`), rendus au doc §6.3.
-
-/** FOSSILE : nœuds marqués d'espèce `id` visant un type hors `_ids.generated` (marche du schéma) :
- *  listés, JAMAIS résolus par ce volet. VIDE aujourd'hui — la garde asserte l'ÉGALITÉ, donc toute
- *  apparition est un rouge NOMINATIF, pas un silence. */
-export const SLOTS_INTERNES = [];
 
 /** Couples dont des occurrences n'ont AUCUNE case qui porte une chaîne, au compte de ces seules
  *  occurrences — mesurés par `occurrencesInatteignables` (`scripts/docs/lib/slots-registre.mts`). */
@@ -59,7 +52,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arcane-phenomena.json", champ: "spellIds", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arcane-phenomena.json", champ: "tableId", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "a", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "arene-projet.json", champ: "acts", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "ambush", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "appearance", occurrences: 25, lot: "L2/L3 #1473", date: "2026-09-01" }, // +3 : les 3 statblocs d'auteur muets (nuées de rats, dragon) portent leur Espèce
   { dataset: "arene-projet.json", champ: "b", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -78,7 +70,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arene-projet.json", champ: "traits", occurrences: 11, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "walls", occurrences: 235, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "weapon", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "arene-projet.json", champ: "skill", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "ref", occurrences: 406, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R1 : 291 `prop` atteints (`idDe('prop')` de la branche `prop` de `sceneEntitySchema`, `defs-scenes/scene.ts:169`) + 115 `personnage` (`ref` en chaîne libre : dette réelle, #1882)
   { dataset: "axes.json", champ: "talents", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "a", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -139,9 +130,8 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "criticals.json", champ: "apresDelai", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-02" },
   { dataset: "criticals.json", champ: "onHealGrant", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "criticals.json", champ: "onNextCritWhileCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "criticals.json", champ: "ops", occurrences: 215, lot: "L2/L3 #1473", date: "2026-09-02" },
+  { dataset: "criticals.json", champ: "ops", occurrences: 207, lot: "L2/L3 #1473", date: "2026-09-02" },
   { dataset: "criticals.json", champ: "perRound", occurrences: 2, lot: "L2/L3 #1473", date: "2026-09-02" },
-  { dataset: "criticals.json", champ: "recoveryPenalty", occurrences: 4, lot: "L2/L3 #1473", date: "2026-09-02" },
   { dataset: "criticals.json", champ: "sequels", occurrences: 26, lot: "L2/L3 #1473", date: "2026-09-02" },
   { dataset: "criticals.json", champ: "subject", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "criticals.json", champ: "traumas", occurrences: 48, lot: "L2/L3 #1473", date: "2026-09-02" },
@@ -165,7 +155,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "etats.json", champ: "ops", occurrences: 14, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "etats.json", champ: "passive", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "etats.json", champ: "subject", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "etats.json", champ: "value", occurrences: 2, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "flow-stakes.json", champ: "flow", occurrences: 16, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "flow-stakes.json", champ: "phase", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "flow-stakes.json", champ: "rule", occurrences: 33, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -229,7 +218,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "mutations.json", champ: "eyes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "mutations.json", champ: "features", occurrences: 54, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "mutations.json", champ: "ops", occurrences: 2, lot: "L3 #1473", date: "2026-08-31" }, // #862 : 1ʳᵉ op authorée de mutations.json (re-ciblage `onDayStart` de Haine sporadique)
-  { dataset: "mutations.json", champ: "passive", occurrences: 106, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "mutations.json", champ: "passive", occurrences: 50, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "mutations.json", champ: "skill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "naval-ports.json", champ: "production", occurrences: 38, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "naval-traits.json", champ: "passive", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -251,7 +240,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "qualities.json", champ: "beats", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "qualities.json", champ: "escapeStrength", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "qualities.json", champ: "opposed", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "qualities.json", champ: "passive", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-28" },
   // #1661 : 10 → 11 — le 2ᵉ État Hémorragique offert par Taillade (`AA 08 l.87`) est une op de plus
   // dans le MÊME champ `ops` déjà stocké, pas un champ de référence neuf.
   { dataset: "qualities.json", champ: "ops", occurrences: 11, lot: "L2/L3 #1473", date: "2026-09-05" },
@@ -306,8 +294,8 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "spells.json", champ: "skill", occurrences: 50, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "stars.json", champ: "ascendant", occurrences: 11, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "stars.json", champ: "ops", occurrences: 55, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "symptoms.json", champ: "ops", occurrences: 12, lot: "L1b #1467", date: "2026-08-28" }, // 12 : les réfs du cycle (`onTick`) comptent ici, sous la feuille `EffectOp` du nœud `test` (#1657 B2b)
-  { dataset: "symptoms.json", champ: "passive", occurrences: 26, lot: "L1b #1467", date: "2026-08-28" }, // 25 → 26 (#1599) : l'État *Exténué* du Malaise (LDB 20 l.188) s'écrit désormais en op `condition` du canal passif
+  { dataset: "symptoms.json", champ: "ops", occurrences: 8, lot: "L1b #1467", date: "2026-08-28" }, // les réfs du cycle (`onTick`) comptent ici, sous la feuille `EffectOp` du nœud `test` (#1657 B2b)
+  { dataset: "symptoms.json", champ: "passive", occurrences: 3, lot: "L1b #1467", date: "2026-08-28" }, // #1599 : l'État *Exténué* du Malaise (LDB 20 l.188) s'écrit désormais en op `condition` du canal passif
   // #1599, 2026-09-06 : la fenêtre de Détermination d'une op `condition` PASSIVE (`resolveWindow`,
   // LDB 20 l.170) vise une règle optionnelle. Aucun site ne la valide : l'op `condition` est dans
   // `OPS_NON_TYPEES` (`grammaire/mecanique.ts:114`), et `refusLoose` (`:147`) ne lit pas `resolveWindow`
@@ -317,9 +305,7 @@ export const SLOTS_SANS_DECLARATION = [
   // le scan nomme le champ PORTEUR : `moderee` (Convulsions −20, LDB 20 l.157) et `grave` (Fièvre : le
   // seul État *Inconscient*, LDB 20 l.170 — le palier S'AJOUTE, les −10 de base tiennent sans être
   // recopiés). 6 → 6 + 1.
-  { dataset: "symptoms.json", champ: "moderee", occurrences: 6, lot: "L1b #1467", date: "2026-09-05" },
   { dataset: "symptoms.json", champ: "grave", occurrences: 1, lot: "L1b #1467", date: "2026-09-05" },
-  { dataset: "symptoms.json", champ: "visiblePassive", occurrences: 1, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "tables.json", champ: "ops", occurrences: 79, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "tables.json", champ: "skill", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "talents.json", champ: "effects", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -342,7 +328,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "traits.json", champ: "markMutations", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "of", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "ops", occurrences: 21, lot: "L2/L3 #1473", date: "2026-08-31" }, // +1 (#862) : État Exténué du réveil du Désespoir (VDM 09 l.280)
-  { dataset: "traits.json", champ: "passive", occurrences: 49, lot: "L1b #1467", date: "2026-08-28" }, // +1 : Trait Entêté (charMod FM), EDOC 07 folio 22 (#673)
+  { dataset: "traits.json", champ: "passive", occurrences: 28, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "traits.json", champ: "subject", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "suppressesCapabilities", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "traits.json", champ: "value", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -353,7 +339,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "trappings.json", champ: "diseases", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "exceptGroups", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "onlyGroups", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "trappings.json", champ: "ops", occurrences: 53, lot: "L1b #1467", date: "2026-08-28" },
+  { dataset: "trappings.json", champ: "ops", occurrences: 29, lot: "L1b #1467", date: "2026-08-28" },
   { dataset: "trappings.json", champ: "passive", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "qualities", occurrences: 438, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "trappings.json", champ: "shape", occurrences: 43, lot: "L2/L3 #1473", date: "2026-08-26" },

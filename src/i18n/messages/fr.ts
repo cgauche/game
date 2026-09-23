@@ -1719,9 +1719,6 @@ export const fr = {
   // (`face`/`arriere`/`lateral`) — le flux les collait derrière « vent » (« vent arriere »). Les trois
   // libellés sont le VERBATIM de la table Direction du vent, MDG 13 l.267-270 : « Vent de face » /
   // « Vent arrière » / « Vent latéral » — seule la capitale tombe (l'incise les veut en minuscule).
-  'sv.windFace': 'vent de face',
-  'sv.windArriere': 'vent arrière',
-  'sv.windLateral': 'vent latéral',
   'sv.forcePace': 'Forcer le rythme',
   'sv.navigation': 'Navigation',
   'sv.progression': 'Progression',

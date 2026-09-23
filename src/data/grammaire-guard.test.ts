@@ -26,7 +26,7 @@ import { neufsDe } from '../../scripts/migrations/replay.mjs';
 import { scan } from '../../scripts/guards/lib/grammaireGuard.mjs';
 import { GRAMMAIRE_STOCK } from '../../scripts/guards/lib/grammaireStock.mjs';
 import { ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
-import { defDe, enfantsDe, PROFONDEUR_MAX } from './schemas/grammaire/slots';
+import { defDe, descendre } from './schemas/grammaire/descente';
 import * as valeurs from './schemas/grammaire/valeurs';
 import * as reference from './schemas/grammaire/reference';
 import { ref, specRef, pick } from './schemas/grammaire/ref';
@@ -92,8 +92,8 @@ const PERIMETRE = ['src/data/schemas/defs', 'src/data/schemas/defs-scenes', 'src
 const PERIMETRE_FABRIQUES = ['src/data/schemas/grammaire'];
 
 /**
- * Signatures d'objet DÉCLARÉES par la grammaire, dérivées par marche des schémas (`enfantsDe`, la
- * descente unique) : chaque nœud `object` rencontré donne le jeu de ses clés, nommé par les symboles
+ * Signatures d'objet DÉCLARÉES par la grammaire, dérivées par la descente de chaque schéma (`descendre`,
+ * `grammaire/descente.ts`) : chaque nœud `object` rencontré donne le jeu de ses clés, nommé par les symboles
  * exportés qui le portent. Aucune liste de clés n'est écrite à la main.
  *
  * Un même jeu de clés est porté par PLUSIEURS schémas (`{n,plus,sides}` → 4 candidats,
@@ -110,24 +110,20 @@ function signaturesDeLaGrammaire(
   melanger: (entrees: [string, unknown][]) => [string, unknown][] = (entrees) => entrees,
 ): { nom: string; cles: string[] }[] {
   const out = new Map<string, { noms: Set<string>; cles: string[] }>();
-  const marcher = (noeud: unknown, nom: string, ancetres: ReadonlySet<unknown>, profondeur: number): void => {
-    if (!noeud || typeof noeud !== 'object' || ancetres.has(noeud) || profondeur > PROFONDEUR_MAX) return;
-    const def = defDe(noeud);
-    if (!def) return;
-    if (def.type === 'object' && def.shape) {
-      const cles = Object.keys(def.shape);
-      if (cles.length >= 2) {
+  const marcher = (racines: readonly [string, unknown][]): void => {
+    for (const [nom, v] of racines)
+      descendre([v], ({ def }) => {
+        if (def.type !== 'object' || !def.shape) return;
+        const cles = Object.keys(def.shape);
+        if (cles.length < 2) return;
         const cle = cles.slice().sort().join(',');
         const porteurs = out.get(cle) ?? { noms: new Set<string>(), cles };
         porteurs.noms.add(nom);
         out.set(cle, porteurs);
-      }
-    }
-    const pile = new Set(ancetres).add(noeud);
-    for (const e of enfantsDe(def)) marcher(e.noeud, nom, pile, profondeur + 1);
+      });
   };
   const sources: Record<string, unknown> = { ...valeurs, ...reference };
-  for (const [nom, v] of melanger(Object.entries(sources))) if (defDe(v)) marcher(v, nom, new Set(), 0);
+  marcher(melanger(Object.entries(sources)).filter(([, v]) => defDe(v)));
   // Les fabriques FERMÉES de `ref.ts` ne rendent leur forme qu'APPELÉES : la signature cible
   // (`{id, spec, choix}`, `{pick, of}`…) est le canon que toute réf re-tapée recouvre.
   const fabriques: [string, unknown][] = [
@@ -135,7 +131,7 @@ function signaturesDeLaGrammaire(
     ['specRef()', specRef('skill')],
     ['pick()', pick('skill')],
   ];
-  for (const [nom, v] of melanger(fabriques)) marcher(v, nom, new Set(), 0);
+  marcher(melanger(fabriques));
   return [...out.values()].map(({ noms, cles }) => ({ nom: [...noms].sort().join('|'), cles }));
 }
 

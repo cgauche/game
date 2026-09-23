@@ -27,7 +27,7 @@ manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-g
 mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
 au hook, ou une primitive née ailleurs n'y passent jamais.
 
-97 primitives.
+98 primitives.
 
 | Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |
 |---|---|---|---|---|---|
@@ -48,6 +48,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | briques de salon coop : plaque et champ du code de room, sièges avec présence, ligne d'attribution, bandeau de liaison | `CoopInvite / CoopCodeInput / SeatList / CoopAssignRow / CoopBanner` | `src/ui/CoopPanels.tsx` | `src/ui/styles/coop-panels.css` | salon « Jouer en ligne » et sous-écran Coopération du menu ☰ | aucune recopie de ligne siège/attribution : la même brique sert le lobby et le menu |
 | cérémonie de tirage du créateur : attente, roulant, rendu, gain de PX en direct | `CreatorDice` | `src/ui/creator/CreatorDice.tsx` | — | Race, Carrière, Caractéristiques, Signe astral | — |
 | gabarit d’étape du créateur : bande d’action requise, zone de choix, zone de description | `CreatorStepFrame` | `src/ui/creator/CreatorStepFrame.tsx` | `src/ui/styles/creator-step.css` | toutes les étapes du créateur | src/ui/creator/creator-ossature.test.tsx |
+| descente d'un arbre de schémas zod : enfants d'un nœud avec leur segment de path, parcours en largeur, identité par appel, élagage ou arrêt par le visiteur | `descendre/enfantsDe` | `src/data/schemas/grammaire/descente.ts` | — | toute lecture qui marche un schéma zod : validation, introspection des docs générés, gardes de grammaire, Codex | src/data/schemas/grammaire/descente.test.ts |
 | galerie du design system in-app (DEV) : chaque primitive montée vivante avec des données réelles | `DesignGallery` | `src/ui/gallery/DesignGallery.tsx` | — | référence de goût des primitives d’UI | — |
 | cadre de détail de l’élue : nom, chips méta, rubriques, prose scrollable | `DetailFrame` | `src/ui/DetailFrame.tsx` | — | créateur, pickers, Codex | — |
 | le DÉ comme matière : gemme, chiffre gravé, roulis, matière dorée, scène centrale qui voile son hôte | `DiceRoll` | `src/ui/DiceRoll.tsx` | `src/ui/styles/dice-roll.css` | roulis d’une fenêtre de jet, encrier du créateur, d100 textuel d’une ligne de jet | aucune face de dé redessinée hors de ce module (tone="gold" couvre l’Atelier) |
@@ -128,4 +129,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 76b5feba2bee03bd5afc48c9cc30269386d3de50 (6 fichiers, 0 dossiers) corps: 517756781f595a158b19b460a8f7c01bdd24c802 -->
+<!-- sources-empreinte: 53c2bf7b2da8a5164b569597d758776ab23021b1 (6 fichiers, 0 dossiers) corps: 06c3cfc94654ab0e799104687fc2798a51bcecb0 -->

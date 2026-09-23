@@ -13,7 +13,6 @@
 import { z } from 'zod';
 import './locale-fr';
 import { IDS_PAR_DATASET, IDS_PAR_DISCRIMINANT, SPECS_PAR_DATASET } from '../_ids.generated';
-import { marque } from './slots';
 import { idsVivants, idsVivantsDuDiscriminant } from './idsVivants';
 
 declare const marqueDeType: unique symbol;
@@ -168,25 +167,22 @@ export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<
   if (valeur !== undefined) idsSousListe(type, valeur);
   const admis = (): readonly string[] => (valeur === undefined ? idsDe(type) : idsSousListe(type, valeur));
   const site = valeur === undefined ? `idDe('${type}')` : `idDe('${type}', '${valeur}')`;
-  const feuille = marque(
-    z
-      .string()
-      .superRefine((v, ctx) => {
-        if (admis().includes(v)) {
-          if (parseDeMesure) ctx.addIssue({ code: 'custom', message: `repère de ${site}`, params: { [REPERE]: type }, continue: true });
-          return;
-        }
-        ctx.addIssue({
-          code: 'custom',
-          message:
-            valeur === undefined
-              ? `ref('${type}') : id « ${v} » absent de ${dataset} (registre _ids.generated.ts).`
-              : `ref('${type}', '${valeur}') : id « ${v} » hors de la sous-liste « ${valeur} » de ${dataset} (registre _ids.generated.ts).`,
-        });
-      })
-      .transform((v) => v as Id<T>),
-    { espece: 'id', type, site },
-  );
+  const feuille = z
+    .string()
+    .superRefine((v, ctx) => {
+      if (admis().includes(v)) {
+        if (parseDeMesure) ctx.addIssue({ code: 'custom', message: `repère de ${site}`, params: { [REPERE]: type }, continue: true });
+        return;
+      }
+      ctx.addIssue({
+        code: 'custom',
+        message:
+          valeur === undefined
+            ? `ref('${type}') : id « ${v} » absent de ${dataset} (registre _ids.generated.ts).`
+            : `ref('${type}', '${valeur}') : id « ${v} » hors de la sous-liste « ${valeur} » de ${dataset} (registre _ids.generated.ts).`,
+      });
+    })
+    .transform((v) => v as Id<T>);
   FEUILLES_D_ID.add(feuille);
   return feuille;
 }
@@ -272,11 +268,11 @@ export function refs<T extends TypeEntite>(type: T, opts?: { min?: number }): z.
 }
 
 /** Référence `{ id }` de `type`, composée FERMÉE avec les champs propres au porteur (`extra`). */
-export function ref<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
+export function ref<T extends TypeEntite, E extends Record<string, z.ZodType> = Record<string, never>>(
   type: T,
   extra?: E,
 ): z.ZodType<unknown> {
-  return z.strictObject({ id: idDe(type), ...((extra ?? {}) as Record<string, z.ZodTypeAny>) });
+  return z.strictObject({ id: idDe(type), ...((extra ?? {}) as Record<string, z.ZodType>) });
 }
 
 /**
@@ -303,7 +299,7 @@ const SENTINELLE_DE_SPEC = /^au[\s-]+choix$/i;
  *  = `spec` XOR `choix` obligatoire (`specRef`), `false` = les deux peuvent manquer (`refOuSpec`). */
 function noeudASpecialisation<T extends TypeEntite>(
   type: T,
-  extra: Record<string, z.ZodTypeAny> | undefined,
+  extra: Record<string, z.ZodType> | undefined,
   exigeUnRegime: boolean,
 ): z.ZodType<RefASpecialisation> {
   const dataset = cibleDe(type);
@@ -313,7 +309,7 @@ function noeudASpecialisation<T extends TypeEntite>(
       id: idDe(type),
       spec: z.string().min(1).optional(),
       choix: z.union([z.literal(true), z.array(z.string().min(1))]).optional(),
-      ...((extra ?? {}) as Record<string, z.ZodTypeAny>),
+      ...((extra ?? {}) as Record<string, z.ZodType>),
     })
     .superRefine((v, ctx) => {
       const aSpec = v.spec != null;
@@ -372,7 +368,7 @@ function noeudASpecialisation<T extends TypeEntite>(
  * catalogue de specs (`estSpecialisable`) ; `spec`/`choix` sont ensuite validés contre ce catalogue
  * quand le type ferme ses spécialisations.
  */
-export function specRef<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
+export function specRef<T extends TypeEntite, E extends Record<string, z.ZodType> = Record<string, never>>(
   type: T,
   extra?: E,
 ): z.ZodType<unknown> {
@@ -386,7 +382,7 @@ export function specRef<T extends TypeEntite, E extends Record<string, z.ZodType
  * écrire dès qu'une donnée désigne une entrée « toute spécialisation comprise » aussi bien qu'une
  * spécialisation précise.
  */
-export function refOuSpec<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
+export function refOuSpec<T extends TypeEntite, E extends Record<string, z.ZodType> = Record<string, never>>(
   type: T,
   extra?: E,
 ): z.ZodType<RefASpecialisation> {

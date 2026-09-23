@@ -13,7 +13,7 @@ import type { z } from 'zod';
 import { SCHEMA_DEFS } from './_registry.generated';
 import { SCHEMA_DEFS_SCENES } from './_registry-scenes.generated';
 import type { SchemaDef } from './types';
-import { defDe, enfantsDe } from './grammaire/slots';
+import { defDe, descendre } from './grammaire/descente';
 import { valeursDe, type MetaChamp } from './grammaire/meta';
 
 /** Le registre des DEUX racines de documents (`src/data` + `src/scenes`). */
@@ -50,7 +50,7 @@ export function formatZodError(sujet: string, error: z.ZodError): string {
 
 /** Schéma zod d'un document par nom de fichier (`characteristics.json`, `arene/arene-projet.json`),
  *  ou undefined s'il n'est pas registré. */
-export function schemaForFile(file: string): z.ZodTypeAny | undefined {
+export function schemaForFile(file: string): z.ZodType | undefined {
   return DEFS_DE_DOCUMENT.find((d) => d.file === file)?.schema;
 }
 
@@ -62,28 +62,21 @@ export function metaPourFichier(file: string): Readonly<Record<string, MetaChamp
 }
 
 /**
- * NŒUD OBJET sous un nœud quelconque — le premier nœud à `shape`, atteint par la descente UNIQUE
- * (`enfantsDe`, `grammaire/slots.ts`) à travers l'emballage de famille, le sceau et les enveloppes
- * (`z.array`, `.pipe`, refines, `optional`). C'est le seul chemin schéma→atelier vers les NŒUDS d'un
- * document scellé, à TOUTE profondeur : la méta publiée ne porte que le libellé du CHAMP, celui de ses
- * VALEURS vit sur le nœud (`enumNomme`, #1694).
+ * NŒUD OBJET sous un nœud quelconque — le premier nœud à `shape` atteint par la descente
+ * (`descendre`, `grammaire/descente.ts`, largeur d'abord, règle `identite` : le plus PROCHE) à travers
+ * l'emballage de famille, le sceau et les enveloppes (`z.array`, `.pipe`, refines, `optional`, `lazy`).
+ * C'est le seul chemin schéma→atelier vers les NŒUDS d'un document scellé, à TOUTE profondeur : la
+ * méta publiée ne porte que le libellé du CHAMP, celui de ses VALEURS vit sur le nœud (`enumNomme`,
+ * #1694).
  */
 export function noeudObjet(schema: unknown): unknown {
-  let niveau: unknown[] = [schema];
-  const vus = new Set<unknown>();
-  for (let profondeur = 0; profondeur < 8 && niveau.length; profondeur++) {
-    const suivant: unknown[] = [];
-    for (const n of niveau) {
-      if (!n || typeof n !== 'object' || vus.has(n)) continue;
-      vus.add(n);
-      const def = defDe(n);
-      if (!def) continue;
-      if (def.shape) return n;
-      for (const e of enfantsDe(def)) suivant.push(e.noeud);
-    }
-    niveau = suivant;
-  }
-  return undefined;
+  let trouve: unknown;
+  descendre([schema], ({ noeud, def }) => {
+    if (!def.shape) return;
+    trouve = noeud;
+    return 'arreter';
+  });
+  return trouve;
 }
 
 /** NŒUD zod d'un champ de PREMIER NIVEAU d'un document (`undefined` hors registre, ou si le document
@@ -161,7 +154,7 @@ export function validateDataset(file: string, value: unknown): string | null {
 /** Valide `value` contre `schema` — porte du seam SANS nom de fichier (chargement d'un projet depuis
  *  le localStorage ou un import utilisateur). Rend les FAUTES (`null` si valide) : l'appelant en
  *  tire son rapport (`rapportDeFautes`) et sa surface les lit sans re-parser de texte. */
-export function validateDocument(schema: z.ZodTypeAny, value: unknown): readonly Faute[] | null {
+export function validateDocument(schema: z.ZodType, value: unknown): readonly Faute[] | null {
   const result = schema.safeParse(value);
   return result.success ? null : fautesDe(result.error);
 }

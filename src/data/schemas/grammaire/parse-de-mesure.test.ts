@@ -12,7 +12,7 @@ import { execFileSync } from 'node:child_process';
 import { z } from 'zod';
 import { estFeuilleDId, idDe, reperesDuParse } from './ref';
 import { gameOpSchema, OP_DEFS } from './mecanique';
-import { defDe, enfantsDe } from './slots';
+import { descendre } from './descente';
 import { IDS_PAR_DATASET } from '../_ids.generated';
 import { DEFS_DE_DOCUMENT } from '../validate';
 import { scannerDonnees } from '../../../../scripts/docs/lib/structures-scan.mjs';
@@ -95,27 +95,13 @@ type Charge = { value: unknown; issues: Issue[] };
 type Run = (charge: Charge, ctx: unknown) => Charge;
 type AvecRun = { _zod: { run: Run } };
 
-/** Enfants que le parse exécute et que `enfantsDe` ne visite pas. Un `z.lazy` exécute son `innerType`
- *  mis en cache, là où `enfantsDe` rappelle le `getter`, qui construit une autre instance. */
-const ENFANTS_HORS_DESCENTE = ['keyType', 'catchall', 'left', 'right', 'rest'] as const;
-
 /** Chaque nœud atteint depuis les racines, une fois, avec le premier path de schéma qui l'atteint. */
 function noeudsAtteints(racines: readonly (readonly [string, unknown])[]): Map<object, string> {
   const vus = new Map<object, string>();
-  const file: [unknown, string][] = racines.map(([nom, s]) => [s, nom]);
-  for (let i = 0; i < file.length; i++) {
-    const [noeud, nom] = file[i];
-    if (!noeud || typeof noeud !== 'object' || vus.has(noeud)) continue;
-    const def = defDe(noeud);
-    if (!def) continue;
-    vus.set(noeud, nom);
-    for (const e of enfantsDe(def)) file.push([e.noeud, nom + e.segment]);
-    for (const k of ENFANTS_HORS_DESCENTE) {
-      const enfant = (def as Record<string, unknown>)[k];
-      if (enfant !== undefined) file.push([enfant, `${nom}<${k}>`]);
-    }
-    if (def.type === 'lazy') file.push([(noeud as { _zod: { innerType: unknown } })._zod.innerType, nom]);
-  }
+  descendre(
+    racines.map(([, s]) => s),
+    ({ noeud, path, racine }) => void vus.set(noeud, racines[racine][0] + path),
+  );
   return vus;
 }
 

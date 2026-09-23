@@ -11,7 +11,6 @@ import type { StakeRef } from '../../index';
 import { messageRecurrenceHorloge, type GameOp } from '../../../engine/ops';
 import { INDICE_TEMPLATE, type Condition, type EffectOp, type EffectTrigger, type Flow } from '../../../engine/flowCore';
 import { chaosAlignSchema, charKeySchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption, symptomSeveritySchema } from './valeurs';
-import { marque } from './slots';
 import { idDe, ref, refs, refOuSpec } from './ref';
 
 /** `PerSL` (`src/engine/ops.ts:146`) — échelle « par +N DR » d'un payload d'op. */
@@ -223,10 +222,8 @@ export const gameOpSchema: z.ZodType<GameOp> = z.looseObject({ op: z.string() })
 // ============================================================================
 
 export const compareOpSchema = z.enum(['>=', '<=', '==', '<', '>']);
-/** ACTEUR désigné par une mécanique — 2ᵉ espèce de slot, retrouvée par la marche (`slots.ts`). La
- *  marque de slot et les libellés de valeurs vivent sur le MÊME nœud : `marque` rend la feuille telle
- *  quelle, il n'y a donc pas de second registre. */
-export const actorRefSchema = marque(enumNomme({ target: 'la cible', caster: 'le lanceur' }), { espece: 'acteur', site: 'actorRefSchema' });
+/** ACTEUR désigné par une mécanique. */
+export const actorRefSchema = enumNomme({ target: 'la cible', caster: 'le lanceur' });
 
 /** `Relation | Camp` (`src/engine/relations.ts`) — union complète lue par la Condition `relation`.
  *  Resserré depuis `z.string()` (variantes `domains`/`talents`/`etats`/`spells`) : les 9 JSON ne
@@ -403,7 +400,7 @@ export const flowTestSchema = z.strictObject({
     .superRefine((v, ctx) => {
       if (isMenaceId(v)) return;
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `menace « ${v} » : aucune spec de ce nom sur le talent « resistance » (talents.json). Valeurs admises : ${menaceIds().join(', ')}`,
       });
     })

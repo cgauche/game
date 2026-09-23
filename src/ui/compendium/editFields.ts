@@ -6,7 +6,7 @@
 import { LIBELLES_ENVELOPPE, type CleEnveloppe } from '../../data/schemas/grammaire/document';
 import { valeursDe, type MetaChamp } from '../../data/schemas/grammaire/meta';
 import { adresseUnPassage } from '../../data/schemas/grammaire/valeurs';
-import { defDe } from '../../data/schemas/grammaire/slots';
+import { defDe } from '../../data/schemas/grammaire/descente';
 
 export type FieldKind = 'text' | 'textarea' | 'number' | 'checkbox' | 'stringList' | 'numberList' | 'source' | 'descRef' | 'recordNumber' | 'recordText' | 'object' | 'json' | 'select';
 

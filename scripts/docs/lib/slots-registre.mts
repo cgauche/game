@@ -11,8 +11,7 @@
 import { SCHEMA_DEFS } from '../../../src/data/schemas/_registry.generated';
 import { SCHEMA_DEFS_SCENES } from '../../../src/data/schemas/_registry-scenes.generated';
 import type { SchemaDef } from '../../../src/data/schemas/types';
-import { slotsDe, type Slot } from '../../../src/data/schemas/grammaire/slots';
-import { reperesDuParse, TYPES, type TypeEntite } from '../../../src/data/schemas/grammaire/ref';
+import { reperesDuParse, type TypeEntite } from '../../../src/data/schemas/grammaire/ref';
 import { nomDeDocument, type OccurrenceDeReference, type ReferencesParPorteur } from './structures-scan.mjs';
 import { parUnitesDeCode } from '../../guards/lib/lister.mjs';
 
@@ -25,22 +24,12 @@ export function defsDeDocument(): SchemaDef[] {
   return [...SCHEMA_DEFS, ...SCHEMA_DEFS_SCENES].map((d) => ({ ...d, file: nomDeDocument(d.file) }));
 }
 
-/** FOSSILE (#1463, meurt au commit 2 de R1) : les nœuds marqués retrouvés par la marche du schéma.
- *  Ne sert plus la jointure ; seuls `SLOTS_INTERNES` et l'angle mort `acteur` le lisent encore. */
-export function slotsDeclares(defs: readonly SchemaDef[] = defsDeDocument()): Slot[] {
-  return defs.flatMap((d) => slotsDe(d.root, d.file, d.schema));
-}
-
-/** Le type vise-t-il un type d'entité du registre `_ids.generated` ? */
-export const estTypeDuRegistre = (type: string | undefined): type is TypeEntite =>
-  type !== undefined && Object.prototype.hasOwnProperty.call(TYPES, type);
-
 /**
  * Un SLOT : une case `(porteur, clé)` d'un document du scan dont la valeur est validée par `idDe` au
  * parse de mesure, avec son type. `path` : son path de DONNÉE, indices normalisés en `[]` ; une
  * référence portée par une CLÉ de record s'y écrit `{}` (la case est alors `(record, clé)`).
  */
-export type SlotDuParse = {
+export type Slot = {
   readonly dataset: string;
   readonly path: string;
   readonly type: TypeEntite;
@@ -60,7 +49,7 @@ function pathNormalise(path: readonly PropertyKey[], parCle: boolean): string {
 }
 
 /** Les slots d'UN document : chaque repère de son parse de mesure, rendu en case du document. */
-function slotsDuDocument(dataset: string, schema: SchemaDef['schema'], document: unknown): SlotDuParse[] {
+function slotsDuDocument(dataset: string, schema: SchemaDef['schema'], document: unknown): Slot[] {
   return reperesDuParse(schema, document).map((r) => {
     let porteur: unknown = null;
     let noeud: unknown = document;
@@ -85,14 +74,14 @@ export type ScanDesReferences = {
 };
 
 /** Tous les slots des documents du scan, parsés par leur def (`defsDeDocument`). */
-export function slotsDuParse(scan: Pick<ScanDesReferences, 'brutParNom'>, defs: readonly SchemaDef[] = defsDeDocument()): SlotDuParse[] {
+export function slotsDuParse(scan: Pick<ScanDesReferences, 'brutParNom'>, defs: readonly SchemaDef[] = defsDeDocument()): Slot[] {
   return defs.filter((d) => scan.brutParNom.has(d.file)).flatMap((d) => slotsDuDocument(d.file, d.schema, scan.brutParNom.get(d.file)));
 }
 
 const cleDeCouple = (c: { dataset: string; champ: string }) => `${c.dataset} | ${c.champ}`;
 
 /** Les CASES `(porteur, clé)` inscrites par le scan qui sont des slots. */
-function casesTouchees(scan: ScanDesReferences, slots: readonly SlotDuParse[]): Map<object, Set<string | number>> {
+function casesTouchees(scan: ScanDesReferences, slots: readonly Slot[]): Map<object, Set<string | number>> {
   const touchees = new Map<object, Set<string | number>>();
   for (const s of slots) {
     if (!scan.referencesParPorteur.get(s.porteur)?.has(s.cle)) continue;
@@ -107,7 +96,7 @@ function casesTouchees(scan: ScanDesReferences, slots: readonly SlotDuParse[]): 
  * slot. Toucher n'est pas atteindre : une occurrence n'est ATTEINTE que si TOUTES ses cases le sont
  * (`couplesDeReference`).
  */
-export function occurrencesTouchees(scan: ScanDesReferences, slots: readonly SlotDuParse[]): Set<OccurrenceDeReference> {
+export function occurrencesTouchees(scan: ScanDesReferences, slots: readonly Slot[]): Set<OccurrenceDeReference> {
   const touchees = new Set<OccurrenceDeReference>();
   for (const [porteur, cles] of casesTouchees(scan, slots))
     for (const k of cles) touchees.add(scan.referencesParPorteur.get(porteur)!.get(k)!);
@@ -118,8 +107,8 @@ export function occurrencesTouchees(scan: ScanDesReferences, slots: readonly Slo
 export type LigneDeSlots = { dataset: string; path: string; type: TypeEntite; valeurs: number; couples: string[] };
 
 /** Le REGISTRE des slots, une ligne par (document, path de slot, type), triée. */
-export function registreDesSlots(scan: ScanDesReferences, slots: readonly SlotDuParse[]): LigneDeSlots[] {
-  const groupes = new Map<string, SlotDuParse[]>();
+export function registreDesSlots(scan: ScanDesReferences, slots: readonly Slot[]): LigneDeSlots[] {
+  const groupes = new Map<string, Slot[]>();
   for (const s of slots) {
     const k = `${s.dataset}\u0000${s.path}\u0000${s.type}`;
     if (!groupes.has(k)) groupes.set(k, []);
@@ -143,7 +132,7 @@ export type CoupleDeReference = { dataset: string; champ: string; occurrences: n
  * Tous les couples observés, avec leur compte d'occurrences et la part ATTEINTE : une occurrence l'est
  * quand elle a au moins une case et que chacune est un slot.
  */
-export function couplesDeReference(scan: ScanDesReferences, slots: readonly SlotDuParse[]): CoupleDeReference[] {
+export function couplesDeReference(scan: ScanDesReferences, slots: readonly Slot[]): CoupleDeReference[] {
   const touchees = casesTouchees(scan, slots);
   const avecCase = new Set<OccurrenceDeReference>();
   const manquees = new Set<OccurrenceDeReference>();
@@ -170,7 +159,7 @@ export function couplesDeReference(scan: ScanDesReferences, slots: readonly Slot
  * `SLOTS_SANS_DECLARATION`, keyé par le compte OBSERVÉ total ; ce que la mesure ne voit pas est dit
  * à `ANGLES_MORTS_SLOTS`.
  */
-export function champsSansSlot(scan: ScanDesReferences, slots: readonly SlotDuParse[]): CoupleDeReference[] {
+export function champsSansSlot(scan: ScanDesReferences, slots: readonly Slot[]): CoupleDeReference[] {
   return couplesDeReference(scan, slots).filter((c) => c.atteintes < c.occurrences);
 }
 
@@ -196,7 +185,7 @@ export function occurrencesInatteignables(scan: ScanDesReferences): CoupleInatte
 }
 
 /** Les couples dont TOUTES les occurrences observées sont ATTEINTES — la JOINTURE. */
-export function champsJoints(scan: ScanDesReferences, slots: readonly SlotDuParse[]): string[] {
+export function champsJoints(scan: ScanDesReferences, slots: readonly Slot[]): string[] {
   return couplesDeReference(scan, slots)
     .filter((c) => c.atteintes === c.occurrences)
     .map(cleDeCouple)

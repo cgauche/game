@@ -22,18 +22,6 @@
 // (table bornée par `MARQUE_HORS_STRATE`), rendu par le générateur depuis le disque du jour. Ce qui
 // se cliquette est la SIGNATURE ; qu'une même signature soit écrite 1 ou 300 fois ne change pas la
 // dette de structure, et graver ce compte ferait rougir le stock à chaque entrée de donnée ajoutée.
-//
-// DÉFAUT D'INSTRUMENT, qui produit du BRUIT dans ce stock (#1687, levée hors de ce cliquet) :
-// `choixDeclares` (`scripts/docs/lib/zod-introspect.mts`) marche en DFS mémoïsé PAR IDENTITÉ et
-// borné à `PROFONDEUR_MEMO = 12` — borne ATTEIGNANTE, mesurée sur `arene-projet.json` : 452 clés
-// visitées à 12 contre 488 à 20 et au-delà. Le PREMIER chemin qui atteint un nœud décide donc s'il
-// est vu, et une retouche de SCHÉMA — sans un octet de donnée changé — déplace des objets entre
-// strates. Quatre objets `effect` d'`arene-projet.json` en donnent la mesure (#1687 lot 3-I) : le
-// chemin court `interact` cède à `usable → refine → actions[] → flow` (plus profond), `ouvreReference`
-// (`structures-scan.mts`) ne tient plus leur littéral d'enum DÉCLARÉ pour une clé étrangère, et ces
-// quatre objets comptent ici — leur donnée, elle, n'a pas bougé d'un octet.
-// Ce bruit SE LIT : régénérer, puis lire les couples périmée/neuve d'un MÊME dataset — c'est une
-// reventilation d'instrument, jamais une dette qui bouge. Il ne s'entérine pas comme un solde.
 
 export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/activities.json', ref: 'battle | amount,scale,side,target', occurrence: 1 },
@@ -146,9 +134,13 @@ export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/criticals.json', ref: 'of | bonusOf', occurrence: 1 },
   { fichier: 'src/data/criticals.json', ref: 'of | dice', occurrence: 1 },
   { fichier: 'src/data/criticals.json', ref: 'ops | amount,ignoreAP,ignoreTB,op', occurrence: 1 },
+  { fichier: 'src/data/criticals.json', ref: 'ops | char,durationHours,mod,op', occurrence: 1 },
+  { fichier: 'src/data/criticals.json', ref: 'ops | char,durationRounds,mod,op', occurrence: 1 },
   { fichier: 'src/data/criticals.json', ref: 'ops | den,durationRounds,num,op', occurrence: 1 },
   { fichier: 'src/data/criticals.json', ref: 'ops | durationRounds,hands,op', occurrence: 1 },
   { fichier: 'src/data/criticals.json', ref: 'ops | op', occurrence: 1 },
+  { fichier: 'src/data/criticals.json', ref: 'recoveryPenalty | amount,char,movementOnly,op', occurrence: 1 },
+  { fichier: 'src/data/criticals.json', ref: 'recoveryPenalty | amount,char,op', occurrence: 1 },
   { fichier: 'src/data/criticals.json', ref: 'recoveryPenalty | den,num,op', occurrence: 1 },
   { fichier: 'src/data/criticals.json', ref: 'success | kind,steps', occurrence: 1 },
   { fichier: 'src/data/criticals.json', ref: 'sum | dice', occurrence: 1 },
@@ -341,10 +333,12 @@ export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/mutations.json', ref: 'effect | on,ops,type', occurrence: 1 },
   { fichier: 'src/data/mutations.json', ref: 'effects | flow,on,trigger', occurrence: 1 },
   { fichier: 'src/data/mutations.json', ref: 'flow | effect,kind', occurrence: 1 },
+  { fichier: 'src/data/mutations.json', ref: 'passive | amount,char,op', occurrence: 1 },
   { fichier: 'src/data/mutations.json', ref: 'passive | amount,loc,op', occurrence: 1 },
   { fichier: 'src/data/mutations.json', ref: 'passive | amount,noDeviation,op', occurrence: 1 },
   { fichier: 'src/data/mutations.json', ref: 'passive | amount,op', occurrence: 1 },
   { fichier: 'src/data/mutations.json', ref: 'passive | bare,damage,label,op,plusBF,qualities', occurrence: 1 },
+  { fichier: 'src/data/mutations.json', ref: 'passive | char,mod,op', occurrence: 1 },
   { fichier: 'src/data/mutations.json', ref: 'passive | mod,op', occurrence: 1 },
   { fichier: 'src/data/mutations.json', ref: 'passive | mod,op,skill', occurrence: 1 },
   { fichier: 'src/data/names.json', ref: 'lastNameSuffixes | F,M', occurrence: 1 },
@@ -455,6 +449,7 @@ export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/qualities.json', ref: 'indice | label,unite', occurrence: 1 },
   { fichier: 'src/data/qualities.json', ref: 'opposed | attacker', occurrence: 1 },
   { fichier: 'src/data/qualities.json', ref: 'passive | amount,bypass,op', occurrence: 1 },
+  { fichier: 'src/data/qualities.json', ref: 'passive | amount,char,op', occurrence: 1 },
   { fichier: 'src/data/qualities.json', ref: 'passive | chargeGated,op', occurrence: 1 },
   { fichier: 'src/data/qualities.json', ref: 'passive | drMod,op,phase', occurrence: 1 },
   { fichier: 'src/data/qualities.json', ref: 'passive | equals,mod,op', occurrence: 1 },
@@ -794,20 +789,24 @@ export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/symptoms.json', ref: 'flow | cond,kind,then', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'flow | fail,kind,success,test', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'gate | kind,op,value', occurrence: 1 },
+  { fichier: 'src/data/symptoms.json', ref: 'moderee | char,mod,op', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'onTick | afterDays,once,ops', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'onTick | afterDays,test', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'onTick | difficultyBySeverity,test', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'onTick | test', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'ops | addNegativeSL,die,op,rows', occurrence: 1 },
+  { fichier: 'src/data/symptoms.json', ref: 'ops | amount,char,op', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'ops | amount,ignoreAP,ignoreTB,op', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'ops | op', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'passive | amount,op', occurrence: 1 },
+  { fichier: 'src/data/symptoms.json', ref: 'passive | char,mod,op', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'passiveBySeverity | grave', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'passiveBySeverity | moderee', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'resolveWindow | minutes,scale', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'success | kind,steps', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'test | fail,kind,success,test', occurrence: 1 },
   { fichier: 'src/data/symptoms.json', ref: 'then | effect,kind', occurrence: 1 },
+  { fichier: 'src/data/symptoms.json', ref: 'visiblePassive | char,mod,op', occurrence: 1 },
   { fichier: 'src/data/tables.json', ref: 'amount | dice', occurrence: 1 },
   { fichier: 'src/data/tables.json', ref: 'brass | times', occurrence: 1 },
   { fichier: 'src/data/tables.json', ref: 'montant | brass', occurrence: 1 },
@@ -990,6 +989,7 @@ export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/traits.json', ref: 'passive | amount,op', occurrence: 1 },
   { fichier: 'src/data/traits.json', ref: 'passive | blocked,op,skill', occurrence: 1 },
   { fichier: 'src/data/traits.json', ref: 'passive | bonus,op,skill', occurrence: 1 },
+  { fichier: 'src/data/traits.json', ref: 'passive | char,mod,op', occurrence: 1 },
   { fichier: 'src/data/traits.json', ref: 'passive | keyword,op', occurrence: 1 },
   { fichier: 'src/data/traits.json', ref: 'passive | mod,op', occurrence: 1 },
   { fichier: 'src/data/traits.json', ref: 'passive | mod,op,skill', occurrence: 1 },
@@ -1057,10 +1057,15 @@ export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/trappings.json', ref: 'ops | afterDuration,op,ops', occurrence: 1 },
   { fichier: 'src/data/trappings.json', ref: 'ops | afterHours,forHours,op,ops', occurrence: 1 },
   { fichier: 'src/data/trappings.json', ref: 'ops | afterMinutes,op,ops', occurrence: 1 },
+  { fichier: 'src/data/trappings.json', ref: 'ops | amount,char,op', occurrence: 1 },
   { fichier: 'src/data/trappings.json', ref: 'ops | amount,ignoreAP,ignoreTB,op', occurrence: 1 },
   { fichier: 'src/data/trappings.json', ref: 'ops | amount,op,resource', occurrence: 1 },
   { fichier: 'src/data/trappings.json', ref: 'ops | attr,mod,op', occurrence: 1 },
+  { fichier: 'src/data/trappings.json', ref: 'ops | bonus,char,op', occurrence: 1 },
   { fichier: 'src/data/trappings.json', ref: 'ops | bonus,op,skill', occurrence: 1 },
+  { fichier: 'src/data/trappings.json', ref: 'ops | char,durationHours,mod,op', occurrence: 1 },
+  { fichier: 'src/data/trappings.json', ref: 'ops | char,mod,op', occurrence: 1 },
+  { fichier: 'src/data/trappings.json', ref: 'ops | char,op', occurrence: 1 },
   { fichier: 'src/data/trappings.json', ref: 'ops | count,op', occurrence: 1 },
   { fichier: 'src/data/trappings.json', ref: 'ops | den,num,op', occurrence: 1 },
   { fichier: 'src/data/trappings.json', ref: 'ops | level,op,skill', occurrence: 1 },

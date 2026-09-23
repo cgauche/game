@@ -30,7 +30,7 @@ import {
 } from './lib/structures-lexique.mjs';
 import { champsJoints, champsSansSlot, registreDesSlots, slotsDuParse } from './lib/slots-registre.mjs';
 import { effectSchema } from '../../src/data/schemas/defs-scenes/effets';
-import { defDe, enfantsDe } from '../../src/data/schemas/grammaire/slots';
+import { defDe, enfantsDe } from '../../src/data/schemas/grammaire/descente';
 
 const OUT = 'docs/structures-donnees.md';
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
@@ -54,8 +54,7 @@ const echappe = (s: string) => String(s).replace(/\|/g, '\\|');
 
 /** Discriminants DÉCLARÉS des options d'`effectSchema` (le `z.lazy` est déroulé par `enfantsDe`). */
 function discriminantsDeffet(): string[] {
-  const def = defDe(effectSchema)!;
-  const cible = def.type === 'lazy' ? enfantsDe(def)[0]?.noeud : effectSchema;
+  const cible = defDe(effectSchema)?.type === 'lazy' ? enfantsDe(effectSchema)[0]?.noeud : effectSchema;
   const options = defDe(cible)?.options ?? [];
   return options.flatMap((o) => {
     const litteral = defDe(o)?.shape?.type;
@@ -124,11 +123,7 @@ out += tableau(
   const orphelins = scan.documents.filter((d) => !parFichierDeclare.has(d.nom));
   out += `Documents qu’AUCUNE def ne déclare : **${orphelins.length}**`;
   out += `${orphelins.length ? ` — ${orphelins.map((d) => `\`${d.chemin}\``).join(' ')}` : ''}.\n`;
-  const tronquees = declares.filter((d) => d.tronquee);
-  out += `Defs dont le relevé déclaré est TRONQUÉ par la borne d’introspection : **${tronquees.length}**`;
-  out += `${tronquees.length ? ` — ${tronquees.map((d) => `\`${d.file}\``).join(' ')}` : ''}. Au-delà de la\n`;
-  out += 'borne, `classeZod`/`clesDeclarees` écrivent le marqueur `(profondeur)` au lieu de la forme : la\n';
-  out += 'troncature se COMPTE ici, elle ne se tait pas.\n\n';
+  out += '\n';
 }
 
 out += '### 1bis. Index des ids (le cœur du détecteur)\n\n';

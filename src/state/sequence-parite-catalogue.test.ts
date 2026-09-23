@@ -29,6 +29,8 @@ import { ammoFamilyLabel } from '../engine/items';
 import { spellMoney } from '../engine/money';
 import { qualityClassLabel } from '../engine/qualities/craftEconomy';
 import { structureCollapseLog } from '../engine/structureCritical';
+import { libelleDeValeur } from '../data/schemas/grammaire/meta';
+import { windAspectSchema } from '../data/schemas/defs/sea-weather';
 import { traitArgSkeleton } from '../engine/traits/dispatch';
 import { validateCareerChange } from '../engine/advancement';
 import { talentMaxLabel } from '../engine/careerSlots';
@@ -514,9 +516,9 @@ const V8C3: Site[] = [
   },
   {
     // CORRIGÉ : `windAspect` rend un id — le flux écrivait « vent arriere », sans accent.
-    site: 'seaVoyageFlow.ts:439 — ASPECT du vent (id de `windAspect` rendu à l’écran)',
+    site: 'seaVoyageFlow.ts:453 — ASPECT du vent (id de `windAspect` rendu à l’écran, libellé lu au nœud `windAspectSchema`)',
     avant: 'vent arrière',
-    apres: t('sv.windArriere'),
+    apres: libelleDeValeur(windAspectSchema, 'arriere'),
   },
   {
     // CORRIGÉ (micro-passe) : la clé rendait « babord » ; MDG 13 l.263 écrit « bâbord ».

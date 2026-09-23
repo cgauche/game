@@ -43,7 +43,7 @@ const doc = document(
     // (`riverPerilNav`) n'aurait ni coups ni Dégâts à annoncer — le jet redeviendrait muet (#1117).
     for (const p of perils) {
       if (p.kind === 'navTest' && !p.onFail) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${p.id} : péril à Test d'évitement sans onFail — le jet ne pourrait pas dire son enjeu` });
+        ctx.addIssue({ code: 'custom', message: `${p.id} : péril à Test d'évitement sans onFail — le jet ne pourrait pas dire son enjeu` });
       }
     }
   }),

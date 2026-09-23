@@ -114,7 +114,7 @@
 - l.107 — `src/engine/naval-traits.test.ts:301` — it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (MSRC 12 l.107/109)', () => {
 - l.111 — `src/data/index.ts:2595` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.117 — `src/engine/naval-traits.test.ts:304` — it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
-- l.137 — `src/data/schemas/defs/sea-weather.ts:106` — /** Gréement de course (MSRC 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
+- l.137 — `src/data/schemas/defs/sea-weather.ts:107` — /** Gréement de course (MSRC 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
 - l.140 — `src/engine/naval-traits.test.ts:191` — it('Gréement de course → −10 au Test de Navigation (MSRC 12 l.140) ; converti −1 DR d’équipage', () => {
 
 ### ADE II 4 — 4/5 ligne(s) code hors couverture (propriétaire : 4e/combat.md)
@@ -210,4 +210,4 @@ _Aucun._
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, LDB, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, CRB, EDO, EDOC, LDB, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: fcd4968786561635da837d8721c71dc12b6c8a8e (4130 fichiers, 152 dossiers) corps: 689aaf66d282fe6f8ac2a7ddf80ce71e993e4f02 -->
+<!-- sources-empreinte: 3b71c0a893bb16accab571d49e794d06c1e0c5c1 (4133 fichiers, 152 dossiers) corps: e0a170cbfadf91d6c12a82f3447571f3114efb68 -->

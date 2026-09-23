@@ -18,7 +18,7 @@ export interface SchemaDef {
   /** Racine du dataset — émise par `scripts/gen-registry.mjs`, jamais déclarée par le def. */
   root: RacineDocument;
   /** Schéma zod STRICT du dataset (racine = le tableau/objet exact du JSON). */
-  schema: z.ZodTypeAny;
+  schema: z.ZodType;
   /**
    * Famille du document, MESURÉE sur la structure réelle du dataset et déclarée par son def : elle
    * dit si le document porte des ids de premier niveau (`entite`/`record`) ou n'en porte aucun par

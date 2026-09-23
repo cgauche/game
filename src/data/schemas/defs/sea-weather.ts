@@ -12,7 +12,7 @@
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
-import { difficultySchema, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
+import { difficultySchema, enumNomme, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
 
 export const file = 'sea-weather.json';
 export const famille = 'config';
@@ -25,7 +25,8 @@ const windForce = z.enum([
   'vent-violent',
   'violente-tempete',
 ]);
-const windAspect = z.enum(['arriere', 'lateral', 'face']);
+/** Aspect du vent relatif au cap (MDG 13 l.262-270). */
+export const windAspectSchema = enumNomme({ arriere: 'vent arrière', lateral: 'vent latéral', face: 'vent de face' });
 const windEffectCell = z.strictObject({
   pctSail: z.number().optional(),
   pctOther: z.number().optional(),
@@ -33,7 +34,7 @@ const windEffectCell = z.strictObject({
   affaler: z.boolean().optional(),
   virement: z.boolean().optional(),
 });
-const windEffectTable = z.record(windForce, z.record(windAspect, windEffectCell));
+const windEffectTable = z.record(windForce, z.record(windAspectSchema, windEffectCell));
 
 const champs = {
   table: z.array(
@@ -104,7 +105,7 @@ const champs = {
   effetDuVent: windEffectTable,
   effetDuVentClinfoc: windEffectTable,
   /** Gréement de course (MSRC 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
-  effetDuVentGreementDelta: z.record(windAspect, z.number()),
+  effetDuVentGreementDelta: z.record(windAspectSchema, z.number()),
   affaler: z.strictObject({
     difficulty: difficultySchema,
     failCritLocation: z.string(),

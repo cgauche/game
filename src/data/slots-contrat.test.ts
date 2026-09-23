@@ -7,17 +7,15 @@ import {
   champsJoints,
   champsSansSlot,
   couplesDeReference,
-  estTypeDuRegistre,
   occurrencesInatteignables,
   occurrencesTouchees,
   registreDesSlots,
-  slotsDeclares,
   slotsDuParse,
-  type SlotDuParse,
+  type Slot,
 } from '../../scripts/docs/lib/slots-registre.mjs';
 import { scanDuCorpus, scannerDonnees } from '../../scripts/docs/lib/structures-scan.mjs';
 import { ANGLES_MORTS_SLOTS, MANDAT_SLOTS } from '../../scripts/docs/lib/structures-lexique.mjs';
-import { SLOTS_INATTEIGNABLES, SLOTS_INTERNES, SLOTS_SANS_DECLARATION } from '../../scripts/guards/lib/slotsStock.mjs';
+import { SLOTS_INATTEIGNABLES, SLOTS_SANS_DECLARATION } from '../../scripts/guards/lib/slotsStock.mjs';
 import { champsAveugles, ecartsDeStock, lignesMalQualifiees } from '../../scripts/guards/lib/stock.mjs';
 
 /**
@@ -59,7 +57,7 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
   `${c.dataset} | ${c.champ} | ${c.occurrences}`;
 
 /** Plafond du cliquet de `SLOTS_SANS_DECLARATION` — #1473. */
-const DETTE_ADOPTION_MAX = 299;
+const DETTE_ADOPTION_MAX = 292;
 
 /** Plafond du cliquet de `SLOTS_INATTEIGNABLES` — #1473. */
 const INATTEIGNABLES_MAX = 4;
@@ -94,7 +92,7 @@ const JOINTURES_PLANCHER = [
 
 const couple = (dataset: string, champ: string) => couplesDeReference(scan, SLOTS).find((c) => c.dataset === dataset && c.champ === champ);
 const slotsAuPath = (dataset: string, path: string) => SLOTS.filter((s) => s.dataset === dataset && s.path === path);
-const couplesTouches = (slots: readonly SlotDuParse[]) => [...new Set([...occurrencesTouchees(scan, slots)].map((o) => `${o.dataset} | ${o.champ}`))].sort();
+const couplesTouches = (slots: readonly Slot[]) => [...new Set([...occurrencesTouchees(scan, slots)].map((o) => `${o.dataset} | ${o.champ}`))].sort();
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {
@@ -104,8 +102,8 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
     expect(GARDE.angleMort, 'les angles morts se lisent dans UNE source (`ANGLES_MORTS_SLOTS`), jamais recopiés.').toBe(ANGLES_MORTS_SLOTS);
     expect(
       GARDE.angleMort.length,
-      'quatre angles morts déclarés au 2026-09-23 (#1473 R1) : `acteur`, nœud marqué d’un type hors registre, occurrence sans case qui porte une chaîne, référence portée par une clé de record.',
-    ).toBeGreaterThanOrEqual(4);
+      'deux angles morts déclarés au 2026-09-23 (#1473 R1) : occurrence sans case qui porte une chaîne, référence portée par une clé de record.',
+    ).toBeGreaterThanOrEqual(2);
     expect(GARDE.mandat, 'le mandat se lit dans UNE source (`MANDAT_SLOTS`), jamais reformulé.').toBe(MANDAT_SLOTS);
     expect(GARDE.baseline).toMatchObject({ fichier: 'scripts/guards/lib/slotsStock.mjs', decroissant: true });
     expect(GARDE.ticket).toBe('#1466');
@@ -207,7 +205,7 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
       writeFileSync(join(dossier, 'src/data/grille.json'), JSON.stringify([[{ skillId: 'alpha' }, { skillId: 'beta' }], [{ skillId: 'beta' }]]));
       const fixture = scannerDonnees(dossier);
       const grille = fixture.brutParNom.get('grille.json') as { skillId: string }[][];
-      const slots: SlotDuParse[] = grille.flat().map((porteur) => ({
+      const slots: Slot[] = grille.flat().map((porteur) => ({
         dataset: 'grille.json',
         path: '[][].skillId',
         type: 'skill',
@@ -226,23 +224,6 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
     expect(readFileSync(join(ROOT, 'docs/structures-donnees.md'), 'utf8')).toContain(
       '| `ship-criticals.json` | `tablesDeChute[].bandes[].hauteurs{}` | `shipStation` | 6 | — |',
     );
-  });
-
-  it('FOSSILE (#1463, meurt au commit 2 de R1) : les nœuds marqués d’un type hors registre == `SLOTS_INTERNES`, vide', () => {
-    const marche = slotsDeclares(DEFS);
-    const cle = (s: { dataset: string; path: string; type?: string }) => `${s.dataset} | ${s.path} | ${s.type ?? '—'}`;
-    const internes = marche.filter((s) => s.espece === 'id' && !estTypeDuRegistre(s.type));
-    expect(
-      internes.map(cle).sort(),
-      'écart entre les nœuds marqués d’espèce `id` visant un type INCONNU du registre et `SLOTS_INTERNES` — un type entre au registre (`TYPES`) avec le lot qui migre son concept.',
-    ).toEqual(SLOTS_INTERNES.map(cle).sort());
-    expect(SLOTS_INTERNES.length, 'le stock des slots INTERNES a GONFLÉ.').toBeLessThanOrEqual(0);
-    expect(SLOTS_INTERNES.filter((s) => !/^\d{4}-\d{2}-\d{2}$/.test(s.date))).toEqual([]);
-    expect(
-      GARDE.angleMort.some((a) => a.includes('`acteur`')),
-      'l’espèce `acteur` sort de la résolution sans que l’angle mort le dise.',
-    ).toBe(true);
-    expect(marche.filter((s) => s.espece === 'acteur').length, 'aucun nœud `acteur` : l’angle mort porterait sur du vide.').toBeGreaterThan(0);
   });
 
   it('COUVERTURE : les champs porteurs de réfs OBSERVÉES sans slot déclaré == stock, et ne CROISSENT pas', () => {

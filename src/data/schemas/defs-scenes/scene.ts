@@ -154,7 +154,7 @@ const baseDEntiteSchema = z.strictObject({
 
 /** Branche d'une entité de scène : les champs partagés, son `kind` et sa `ref`. Le littéral
  *  DISCRIMINE la branche, `entityKindSchema` en NOMME la valeur (vocabulaire à libellés). */
-const brancheDEntite = <R extends z.ZodTypeAny>(kind: EntityKindId, ref: R) =>
+const brancheDEntite = <R extends z.ZodType>(kind: EntityKindId, ref: R) =>
   z.strictObject({ ...baseDEntiteSchema.shape, kind: z.literal(kind).pipe(entityKindSchema), ref });
 
 type EntityKindId = z.infer<typeof entityKindSchema>;
@@ -171,7 +171,7 @@ export const sceneEntitySchema = z.discriminatedUnion('kind', [
     // de la feuille `idDe('prop')`. Une ref absente se DIT ici, en nommant l'entité.
     if (ent.ref === undefined) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['ref'],
         message: `décor « ${ent.id} » : « ref » absente — un décor NOMME son type au catalogue (props.json)`,
       });
@@ -183,7 +183,7 @@ export const sceneEntitySchema = z.discriminatedUnion('kind', [
     // les schemas) : elle lit le registre GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
     if (capDecorAdmis(ent.ref !== undefined && VOLUMIQUES.has(ent.ref), ent.facing)) return;
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       path: ['facing'],
       message: `décor volumique « ${ent.ref} » au cap ${ent.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`,
     });
@@ -702,7 +702,7 @@ const refuseAretesDupliquees = (walls: z.infer<typeof wallSegSchema>[], ctx: z.R
   for (const [k, vus] of parArete) {
     if (vus.length < 2) continue;
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       path: [vus[1]],
       message: `arête ${k} × ${vus.length} — une arête ne porte qu'un segment (index d'arêtes, state/wallIndex.ts)`,
     });

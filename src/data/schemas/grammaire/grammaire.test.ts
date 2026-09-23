@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { listerDossier } from '../../../../scripts/guards/lib/lister.mjs';
 import { z } from 'zod';
+import merchantsJson from '../../merchants.json';
 import skillsJson from '../../skills.json';
 import talentsJson from '../../talents.json';
 import tablesJson from '../../tables.json';
@@ -19,10 +20,9 @@ import { descRefSchema, enumNomme, sourceRefSchema } from './valeurs';
 import { proseAdressable, versDisque } from './prose';
 import { PROSE_INLINE_TOLEREE } from './prose-inline';
 import type { DescRef as DescRefParseur } from '../../source/decoupe';
-import { ref, refs, specRef, pick, idDe, cibleDe, estSpecialisable, TYPES, type Id } from './ref';
+import { ref, refs, specRef, pick, idDe, estSpecialisable, TYPES, type Id } from './ref';
 import { byId, type SkillData, type TypeResolu } from '../../index';
 import { avancement } from './avancement';
-import { slotsDe } from './slots';
 import { SANS_LIVRE } from './sans-livre';
 import { SCHEMA_DEFS } from '../_registry.generated';
 import { IDS_PAR_DATASET } from '../_ids.generated';
@@ -570,10 +570,10 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     if (!d) return undefined;
     return d.type === 'array' ? d.element : d.innerType;
   };
-  const shapeDe = (schema: unknown): Record<string, z.ZodTypeAny> | undefined => {
+  const shapeDe = (schema: unknown): Record<string, z.ZodType> | undefined => {
     let n: unknown = schema;
     for (let i = 0; i < 12 && n; i++) {
-      const shape = (n as { shape?: Record<string, z.ZodTypeAny> }).shape;
+      const shape = (n as { shape?: Record<string, z.ZodType> }).shape;
       if (shape) return shape;
       n = noeudInterne(n);
     }
@@ -1086,19 +1086,16 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
     expect(noeud.safeParse('etat-cree-au-compendium').success).toBe(false);
   });
 
-  it('la MARCHE d’un `pick` récursif se coupe sur le nœud lui-même et rend ses slots', () => {
-    const slots = slotsDe('src/data', 'jouet.json', pick('skill'));
-    expect(slots.map((s) => s.path)).toEqual(['|0.of[]|0.id', '|0.of[]|1.id', '|1.table.id']);
-    expect(new Set(slots.map((s) => s.type))).toEqual(new Set(['skill', 'table']));
-  });
-
-  it('la MARCHE retrouve la référence à son path exact (source de l’intégrité référentielle générique)', () => {
-    const jouet = z.array(z.strictObject({ comp: ref('skill'), sorts: refs('spell').optional() }));
-    expect(slotsDe('src/data', 'jouet.json', jouet)).toEqual([
-      { root: 'src/data', dataset: 'jouet.json', path: '[].comp.id', type: 'skill', espece: 'id', cardinalite: 'liste' },
-      { root: 'src/data', dataset: 'jouet.json', path: '[].sorts[]', type: 'spell', espece: 'id', cardinalite: 'liste' },
-    ]);
-    expect(cibleDe('skill')).toBe('skills.json');
+  it('`merchants.json` adopte `refs(\'trapping\')` : le dataset RÉEL parse, et un id de trapping inventé casse au parse', () => {
+    const def = SCHEMA_DEFS.find((d) => d.file === 'merchants.json')!;
+    const merchants = def.schema.parse(JSON.parse(JSON.stringify(merchantsJson)));
+    expect(Array.isArray(merchants)).toBe(true);
+    const faux = JSON.parse(JSON.stringify(merchantsJson)) as { curated?: string[] }[];
+    const porteur = faux.find((m) => m.curated?.length)!;
+    porteur.curated![0] = 'objet-qui-n-existe-pas';
+    const res = def.schema.safeParse(faux);
+    expect(res.success).toBe(false);
+    expect(JSON.stringify(res.error?.issues)).toMatch(/objet-qui-n-existe-pas.*trappings\.json/);
   });
 });
 
