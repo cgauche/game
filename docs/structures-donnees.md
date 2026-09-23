@@ -598,7 +598,7 @@ nombre d’entrées qui la portent.
 | `src/data/obsessions.json` | object | pipe à la racine | config | 1 | `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
 | `src/data/oups.json` | array | liste | table | 8 | `id`:string(8) `kind`:string(8) `label`:string(8) `max`:number(7) `min`:number(7) `source`:object(8) `type`:string(8) |
 | `src/data/peripeties.json` | array | liste | entité | 10 | `desc`:string(10) `id`:string(10) `kind`:string(10) `label`:string(10) `roll`:number(10) `source`:object(10) `type`:string(10) |
-| `src/data/pregens.json` | array | liste | entité | 8 | `ambitionLong`:string(8) `ambitionShort`:string(8) `build`:number(2) `career`:string(8) `careerTalent`:string(2) `id`:string(8) `label`:string(8) `motivation`:string(8) `pettySpells`:array(1) `seed`:number(8) `sex`:string(2) `species`:string(8) `type`:string(8) |
+| `src/data/pregens.json` | array | liste | entité | 8 | `ambitionLong`:string(8) `ambitionShort`:string(8) `build`:number(2) `career`:string(8) `careerTalent`:object(2) `id`:string(8) `label`:string(8) `motivation`:string(8) `pettySpells`:array(1) `seed`:number(8) `sex`:string(2) `species`:string(8) `type`:string(8) |
 | `src/data/primitives.manifest.json` | array | liste | entité | 97 | `concept`:string(97) `css`:string(47) `fichier`:string(97) `id`:string(97) `label`:string(97) `nature`:string(5) `perimetre`:string(97) `poseurs`:array(11) `type`:string(97) `verrou`:string(97) |
 | `src/data/problemes-vehicule.json` | object | pipe à la racine | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
 | `src/data/progression-schemas.derived.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `livres`:array(1) `schemas`:array(1) `type`:string(1) |
@@ -1080,8 +1080,8 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 
 | Concept | Signature du lexique | Statut | Occurrences |
 |---|---|---|---|
-| reference | `id` | cible | 8185 |
-| reference | `id,spec` | cible | 1327 |
+| reference | `id` | cible | 8186 |
+| reference | `id,spec` | cible | 1328 |
 | reference | `choix,id` | cible | 278 |
 | reference | `id,type` | cible | 0 |
 | reference | `count,id,type` | cible | 0 |
@@ -1113,7 +1113,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `random` | historique | 21 |
 | reference | `text` | declaree | 577 |
 | reference | `id-nu` | historique | 2235 |
-| refs | `ids-nus` | cible | 729 |
+| refs | `ids-nus` | cible | 730 |
 | monnaie | `brass,gold,silver` | cible | 465 |
 | monnaie | `brass` | cible | 0 |
 | monnaie | `gold` | cible | 27 |
@@ -1159,8 +1159,8 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **882** (cible 415 · declaree 6 · historique 131 · divergente 330). Objets JSON parcourus : **49108**, dont **31730** portent une forme
-mesurée. Champs porteurs de référence MESURÉS : **86**.
+Lignes concept × dataset × champ × forme : **885** (cible 418 · declaree 6 · historique 131 · divergente 330). Objets JSON parcourus : **49110**, dont **31732** portent une forme
+mesurée. Champs porteurs de référence MESURÉS : **87**.
 
 Entrées de racine sans concept de valeur : **4139** sur **4226** —
 un document n’est ni orphelin ni hors strate : ce compte est le seul porteur de ce qu’aucun concept ne revendique.
@@ -1168,7 +1168,7 @@ Dont, NOMMÉES, celles qu’un concept de valeur revendiquerait sans la clause `
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-490 ligne(s), 24112 occurrence(s).
+492 ligne(s), 24114 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1452,6 +1452,8 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `kind` | `id-nu` | historique | `night-stakes.json` | 9 | — | `night-stakes.json` `voyage-stakes.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `rule` | `id-nu` | historique | `night-stakes.json` | 15 | — | `regles.json` `skills.json` `symptoms.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `career` | `id-nu` | historique | `pregens.json` | 8 | — | `careers.json` `creatures.json` `groups.json` `skills.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
+| entité | `careerTalent` | `id` | cible | `pregens.json` | 1 | — | `talents.json` |  |
+| entité | `careerTalent` | `id,spec` | cible | `pregens.json` | 1 | — | `gods.json` `skills.json` `talents.json` `traits.json` |  |
 | entité | `species` | `id-nu` | historique | `pregens.json` | 8 | — | `obsessions.json` `skills.json` `species.json` `talents.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
 | entité | `light` | `tone+…` | divergente | `props.json` | 6 | — | `lightTones.json` `spells.json` `trappings.json` |  |
 | entité | `primitives` | `material+…` | divergente | `props.json` | 297 | — | `materials.json` |  |
@@ -1666,7 +1668,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 
 ### 3.2 liste de références (ids nus) — `refs` (strate Référence)
 
-77 ligne(s), 729 occurrence(s).
+78 ligne(s), 730 occurrence(s).
 Reconnu par : tableau de chaînes dont au moins un élément résout
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1720,6 +1722,7 @@ Reconnu par : tableau de chaînes dont au moins un élément résout
 | config | `creatureIds` | `ids-nus` | cible | `montures.json` | 8 | `creatures.json` `montures.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `features` | `ids-nus` | cible | `mutations.json` | 54 | `mutations.json` `spells.json` `traits.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `production` | `ids-nus` | cible | `naval-ports.json` | 38 | `land-cargo.json` `sea-cargo.json` `systemes.manifest.json` `terrains.json` `trappings.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
+| entité | `pettySpells` | `ids-nus` | cible | `pregens.json` | 1 | `spells.json` `trappings.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | config | `livres` | `ids-nus` | cible | `progression-schemas.derived.json` | 1 | `books.json` `skills.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | config | `titresPage` | `ids-nus` | cible | `progression-schemas.derived.json` | 2 | `careers.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `immuneToFromTarget` | `ids-nus` | cible | `psychology.json` | 1 | `mass-battle.json` `psychology.json` `traits.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
@@ -2535,7 +2538,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13456** objets sur **49108** ne sont portés par AUCUNE
+Au-delà des orphelines, **13456** objets sur **49110** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -3804,11 +3807,11 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `sea-perils.ts` | 57 | `evasion` | test | divergente | `difficulty+…` | — |
 | `sea-perils.ts` | 68 | `tourbillonSwim` | test | divergente | `difficulty,skill+…` | — |
 | `sea-weather.ts` | 108 | `affaler` | test | divergente | `difficulty+…` | — |
-| `spells.ts` | 29 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 30 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 38 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 47 | — | — | hors lexique | `kind` | `conditionSchema` |
-| `spells.ts` | 50 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 36 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 37 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 45 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 54 | — | — | hors lexique | `kind` | `conditionSchema` |
+| `spells.ts` | 57 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `steam-breakdown.ts` | 28 | `restart` | test | divergente | `char,difficulty,skill+…` | — |
 | `talents.ts` | 74 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
 | `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
@@ -4275,7 +4278,7 @@ dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **3465** — espèce `id` **475**, espèce `acteur` **2990**.
+Slots déclarés : **3470** — espèce `id` **480**, espèce `acteur` **2990**.
 
 ### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)
 
@@ -4379,6 +4382,11 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `miscast.json` | `[].entries[].test.onFailHard.ops[].days\|0\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `miscast.json` | `[].entries[].test.onFailHard.ops[].days\|2.sum[]\|0\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `mutations.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `pregens.json` | `[].species` | `species` | `species` | liste | 8 | 8 / 8 |
+| `pregens.json` | `[].career` | `career` | `career` | liste | 8 | 8 / 8 |
+| `pregens.json` | `[].careerTalent.id` | `id` | `talent` | liste | 2 | 2 / 2 |
+| `pregens.json` | `[].pettySpells[]` | `pettySpells` | `spell` | liste | 2 | 2 / 2 |
+| `pregens.json` | `[].weaponChoice` | `weaponChoice` | `trapping` | liste | 0 | 0 / 0 |
 | `problemes-vehicule.json` | `entries[].mount.riderTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `props.json` | `[].volume.primitives[]\|0.material` | `material` | `material` | liste | 297 | 297 / 297 |
 | `props.json` | `[].volume.primitives[]\|1.material` | `material` | `material` | liste | 297 | 297 / 297 |
@@ -4760,7 +4768,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 
-Champs porteurs de réfs OBSERVÉES que le déclaré ATTEINT : **27** — `activities.json | rule` `arcane-phenomena.json | spellIds` `arene-projet.json | material` `arene-projet.json | ref` `arene-projet.json | spells` `arene-projet.json | tiles` `barge-du-sel-projet.json | ref` `barge-du-sel-projet.json | tiles` `buildings.json | roofMaterial` `creatures.json | spells` `defauts-de-compilation.json | cheminDeRonde` `defauts-de-compilation.json | masse` `defauts-de-compilation.json | pont` `diligence-projet.json | ref` `diligence-projet.json | style` `diligence-projet.json | tiles` `gods.json | blessings` `gods.json | chaosSpells` `gods.json | miracles` `loup-et-saumure-projet.json | ref` `loup-et-saumure-projet.json | tiles` `merchants.json | curated` `river-criticals.json | stations` `semences-de-scene.json | terrain` `ship-criticals.json | stations` `terrains.json | matiere` `terrains.json | overlayProp`. Une jointure VIDE rendrait ce volet muet :
+Champs porteurs de réfs OBSERVÉES que le déclaré ATTEINT : **30** — `activities.json | rule` `arcane-phenomena.json | spellIds` `arene-projet.json | material` `arene-projet.json | ref` `arene-projet.json | spells` `arene-projet.json | tiles` `barge-du-sel-projet.json | ref` `barge-du-sel-projet.json | tiles` `buildings.json | roofMaterial` `creatures.json | spells` `defauts-de-compilation.json | cheminDeRonde` `defauts-de-compilation.json | masse` `defauts-de-compilation.json | pont` `diligence-projet.json | ref` `diligence-projet.json | style` `diligence-projet.json | tiles` `gods.json | blessings` `gods.json | chaosSpells` `gods.json | miracles` `loup-et-saumure-projet.json | ref` `loup-et-saumure-projet.json | tiles` `merchants.json | curated` `pregens.json | career` `pregens.json | pettySpells` `pregens.json | species` `river-criticals.json | stations` `semences-de-scene.json | terrain` `ship-criticals.json | stations` `terrains.json | matiere` `terrains.json | overlayProp`. Une jointure VIDE rendrait ce volet muet :
 la garde l’exige NON VIDE.
 
 ### 6.2 Couverture — réfs observées qu’AUCUN slot ne déclare
@@ -4770,7 +4778,7 @@ La dette d’ADOPTION du registre : un `(dataset, champ)` porteur de référence
 (`scripts/guards/lib/slotsStock.mjs`, garde `src/data/slots-contrat.test.ts`) — il se solde concept
 par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 
-**338** couples (dataset, champ) sans slot déclaré.
+**337** couples (dataset, champ) sans slot déclaré.
 
 | Dataset | Champ | Occurrences observées |
 |---|---|---|
@@ -4973,8 +4981,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `naval-traits.json` | `skill` | 3 |
 | `night-stakes.json` | `kind` | 9 |
 | `night-stakes.json` | `rule` | 15 |
-| `pregens.json` | `career` | 8 |
-| `pregens.json` | `species` | 8 |
+| `pregens.json` | `careerTalent` | 2 |
 | `progression-schemas.derived.json` | `livres` | 1 |
 | `progression-schemas.derived.json` | `titresPage` | 2 |
 | `props.json` | `light` | 6 |
@@ -5116,7 +5123,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 ### 6.3 Angles morts DÉCLARÉS de ce volet
 
 Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`) — l’espèce `acteur`
-pèse **2990** slots sur 3465.
+pèse **2990** slots sur 3470.
 
 - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).
@@ -5124,4 +5131,4 @@ pèse **2990** slots sur 3465.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: 923277ac13aa9040877eae639d5babdcae2b3848 (386 fichiers, 10 dossiers) corps: 2b5e8e964763caf8eae0044503aa0a4a00554221 -->
+<!-- sources-empreinte: 59c763bc4508c538427ebb78053ccf211410fc49 (386 fichiers, 10 dossiers) corps: 2657a6e532377a69f54975cf0bbfb73a7608f0fc -->

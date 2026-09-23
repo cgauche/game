@@ -124,6 +124,8 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // le catalogue de bâtiments passé du code à la donnée. UNE instance de fabrique.
       "idDe('building')",
       "idDe('career')",
+      // +1 site ADOPTÉ (#1520, 2026-09-23) : `defs/pregens.ts › career`.
+      "idDe('career')",
       "idDe('creature')",
       // +1 site ADOPTÉ (#1657 B3-2b-a) : `grammaire/mecanique.ts › crewTargetSchema.role` désigne le
       // SEUL rôle d'équipage que le livre nomme comme cible d'un coup (MSRC 07 l.86 « au timonier »).
@@ -206,14 +208,20 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // (`flowTestSchema.skill`), qui n'est pas un champ de DEF. La référence « Canon détaché »
       // (`athletisme`, MDG 13 l.763) reste VALIDÉE, par la marche de la grammaire.
       ...Array.from({ length: 35 }, () => "idDe('skill')"),
+      // +1 site ADOPTÉ (#1520, 2026-09-23) : `defs/pregens.ts › species`, type `species` ajouté à `TYPES`.
+      "idDe('species')",
       // +8 sites ADOPTÉS (#1897, 2026-09-23) — la référence de SORT : `defs/creatures.ts › spells`,
       // `defs-scenes/scene.ts › combat.spells`, `defs-scenes/communs.ts › customStatblockSchema.spells`,
       // `defs/gods.ts › blessings`/`miracles`/`chaosSpells` (`refs('spell')`), `defs-scenes/effets.ts ›
       // sortSchema` (`learnSpell.spell` et `castSpell.spellId`, UN nœud partagé) et
       // `grammaire/valeurs.ts › castingNumberModSchema.scope.spellIds`.
       ...Array.from({ length: 8 }, () => "idDe('spell')"),
+      // +1 site ADOPTÉ (#1520, 2026-09-23) : `defs/pregens.ts › pettySpells`, sous-liste discriminée
+      // `family` de `spells.json` (`export const discriminant`, `defs/spells.ts`).
+      "idDe('spell', 'mineure')",
       ...Array.from({ length: 4 }, () => "idDe('table')"),
-      ...Array.from({ length: 6 }, () => "idDe('talent')"),
+      // … 6 → 7 (#1520, 2026-09-23) : `defs/pregens.ts › careerTalent` (`refOuSpec('talent')`).
+      ...Array.from({ length: 7 }, () => "idDe('talent')"),
       // +1 site ADOPTÉ (#1690) : `defs-scenes/scene.ts › layerSchema.tiles` résout CHAQUE case de la
       // grille contre `terrains.json` — 18 154 cellules sur les 4 projets livrés.
       "idDe('terrain')",
@@ -230,6 +238,8 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       "idDe('terrain')",
       "idDe('terrain')",
       "idDe('trait')",
+      "idDe('trapping')",
+      // +1 site ADOPTÉ (#1520, 2026-09-23) : `defs/pregens.ts › weaponChoice`.
       "idDe('trapping')",
     ]);
   });

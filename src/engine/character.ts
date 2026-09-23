@@ -86,9 +86,20 @@ function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: strin
  * collections du moteur — plus jamais `concreteLabel` (affichage, multilangue).
  */
 export function talentRefKeyOf(label: string): string {
+  const { talentId, spec } = talentRefOfLabel(label);
+  return refKey(talentId, spec);
+}
+
+/** Talent désigné par id (et id de spécialisation) — la forme que `createHero` reçoit pour le Talent
+ *  de carrière. */
+export type TalentChoisi = Pick<TalentInstance, 'talentId' | 'spec'>;
+
+/** Libellé CONCRET d'authoring (« Béni (Sigmar) ») → `{ talentId, spec }` en ids — mêmes résolveurs
+ *  que `talentRefKeyOf`, couture label→id du bord AUTHORING. */
+export function talentRefOfLabel(label: string): TalentChoisi {
   const { name, spec } = splitLabel(label);
-  const id = talentIdByLabel(name);
-  return refKey(id, spec != null ? resolveSpecId('talents', id, spec) : undefined);
+  const talentId = talentIdByLabel(name);
+  return { talentId, spec: spec != null ? resolveSpecId('talents', talentId, spec) : spec };
 }
 
 /**
@@ -223,9 +234,9 @@ export interface CreateHeroOptions {
   label: string;
   /** Caractéristiques saisies manuellement (sinon tirage base + 2d10). */
   manualChars?: Partial<Characteristics>;
-  /** Talent de carrière choisi — libellé CONCRET (spec résolue) ; peut être un talent d'espèce
-   *  déjà possédé (→ times 2, l.502). Défaut : 1re entrée du Niveau (résolue). */
-  careerTalent?: string;
+  /** Talent de carrière choisi, en ids ; peut être un talent d'espèce déjà possédé (→ times 2,
+   *  l.502). Défaut : 1re entrée du Niveau (résolue). */
+  careerTalent?: TalentChoisi;
   /** Répartition des 40 augmentations, clé = entrée BRUTE de la liste de carrière ou ajoutée
    *  par un talent (sinon +5 sur les 8 entrées du Niveau). */
   skillAdvances?: Record<string, number>;
@@ -313,14 +324,12 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const speciesTalents = opts.speciesTalentsResolved
     ?? resolveSpeciesTalents(sp, { rng, choices: opts.speciesTalentChoices });
   const talents: TalentInstance[] = [];
-  const addTalent = (label: string) => {
-    const { name, spec: rawSpec } = splitLabel(label);
-    const id = talentIdByLabel(name);
-    const spec = rawSpec != null ? resolveSpecId('talents', id, rawSpec) : rawSpec;
-    const existing = talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''));
+  const addTalentRef = ({ talentId, spec }: TalentChoisi) => {
+    const existing = talents.find((t) => t.talentId === talentId && (t.spec ?? '') === (spec ?? ''));
     if (existing) existing.times += 1;
-    else talents.push({ talentId: id, spec, times: 1 });
+    else talents.push({ talentId, spec, times: 1 });
   };
+  const addTalent = (label: string) => addTalentRef(talentRefOfLabel(label));
   for (const t of speciesTalents) addTalent(t);
 
   const talentEntries = level?.talents ?? [];
@@ -329,18 +338,15 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     // Défaut : 1re entrée du Niveau dont le Maxi n'est pas atteint (les Maxi 1 déjà possédés
     // via l'espèce sont sautés — cas Nain Lire/Écrire + Agitateur).
     for (const ref of talentEntries) {
-      const candidate = resolveEntry(advancementLabel('talents', ref), opts.specChoices);
+      const candidate = talentRefOfLabel(resolveEntry(advancementLabel('talents', ref), opts.specChoices));
       const probe: Combatant = { characteristics: chars, talents } as Combatant;
-      const { name, spec: rawSpec } = splitLabel(candidate);
-      const candidateId = talentIdByLabel(name);
-      const spec = rawSpec != null ? resolveSpecId('talents', candidateId, rawSpec) : rawSpec;
-      if (!talentMaxReached(probe, candidateId, spec)) {
+      if (!talentMaxReached(probe, candidate.talentId, candidate.spec)) {
         chosenTalent = candidate;
         break;
       }
     }
   }
-  if (chosenTalent) addTalent(chosenTalent);
+  if (chosenTalent) addTalentRef(chosenTalent);
 
   // Signe astral (ADE II 3) : effet appliqué AUX ATTRIBUTS DE DÉPART (±carac) + Talents octroyés.
   // AVANT heroSoFar (careerSkillAdditions voit un « Maître artisan » du signe) et avant les effets
@@ -463,11 +469,9 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     }
   }
   if (chosenTalent) {
-    const { name, spec: rawSpec } = splitLabel(chosenTalent);
-    const talentOptionId = talentIdByLabel(name);
-    const spec = rawSpec != null ? resolveSpecId('talents', talentOptionId, rawSpec) : rawSpec;
-    const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerId), talentOptionId, spec);
-    if (slot) designateSlot(hero, opts.careerId, slot, talentOptionId, spec, [...sSlots, ...tSlots]);
+    const { talentId, spec } = chosenTalent;
+    const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerId), talentId, spec);
+    if (slot) designateSlot(hero, opts.careerId, slot, talentId, spec, [...sSlots, ...tSlots]);
   }
 
   recomputeLoadout(hero); // dérive weapons/armure/encombrement ; auto-génère le loadout par défaut (Mêlée/Distance)

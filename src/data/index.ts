@@ -2902,8 +2902,7 @@ export function bookAbr(id: string | null | undefined): string {
   return livreParId(id)?.abbr ?? id;
 }
 /** Culte/Dieu (LDB 41) : `id` = slug STABLE (« sigmar »), `label` = nom affiché (« Sigmar »), Bénédictions/
- *  Miracles en ids de sort, desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace
- *  les `cults/defs/*.ts` (codegen retiré). */
+ *  Miracles en ids de sort, desc = lore en Markdown (Codex). Dataset éditable (Compendium). */
 export interface GodData {
   id: string;
   type: 'gods';

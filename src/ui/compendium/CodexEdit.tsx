@@ -142,8 +142,7 @@ type Entry = Record<string, unknown>;
 /** ids d'un champ-liste de refs — descend dans les branches `of` d'un `{pick}` (`AdvancementRef`) et
  *  dans le `choice` d'une `TrappingRef` ; ignore les `{text}` narratifs et jokers. Une CHAÎNE BRUTE (ex.
  *  `criticalsTete.traumas: string[]`) est traitée comme un id DIRECT (#173 : ces listes référencent
- *  leur dataset par id, jamais par libellé — cf. `STRING_LIST_LABEL_EXCEPTIONS` pour l'unique
- *  contre-exemple documenté). */
+ *  leur dataset par id, jamais par libellé). */
 function refIdsIn(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
   const out: string[] = [];
@@ -158,14 +157,6 @@ function refIdsIn(v: unknown): string[] {
   }
   return out;
 }
-
-/** (categorie.champ) où un champ-liste de CHAÎNES de `REF_LIST_DATASET` porte légitimement des
- *  LIBELLÉS et non des ids — SEULE exception connue : `pregens.pettySpells` (libellés d'AUTHORING de
- *  sorts de Magie mineure, validés + résolus en id par la fabrique du pré-tiré, `src/data/pregens.ts`
- *  fonction `buildPregenHero` — #421 ; jamais relu par id depuis le JSON). Toute autre liste de
- *  chaînes d'un champ-réf DOIT contenir des ids qui résolvent (#173 : un éditeur par datalist-de-
- *  labels y écrivait un libellé, cassant `traumaFicheById` au runtime — cf. `criticalsTete.traumas`). */
-const STRING_LIST_LABEL_EXCEPTIONS = new Set(['pregens.pettySpells']);
 
 /** Champs-réf NICHÉS (une valeur ou une liste, sous un sous-objet/sous-tableau — hors de portée de
  *  `REF_LIST_DATASET`, qui ne regarde QUE les champs top-level de `entry`) : même garantie de
@@ -196,10 +187,9 @@ export function validateEntry(categoryKey: string, entry: Entry, entries: Entry[
   // que le navigateur du Codex et l'éditeur utilisent pour retrouver l'entrée.
   if (!entryKey(entry).trim()) errors.push('libellé vide');
   // Refs résolvables : chaque `{id}` (ou chaîne directe) d'un champ-réf doit exister dans son dataset —
-  // détecté par nom de champ (table unique), sauf la contre-exception déclarée ci-dessus.
+  // détecté par nom de champ (table unique).
   for (const [field, ds] of Object.entries(REF_LIST_DATASET)) {
     if (!(field in entry)) continue;
-    if (STRING_LIST_LABEL_EXCEPTIONS.has(`${categoryKey}.${field}`)) continue;
     const known = new Set((datasetArray(ds) as { id?: string }[]).map((e) => e.id).filter(Boolean));
     for (const id of refIdsIn(entry[field])) {
       if (id === '') errors.push(`${field} : réf à choisir (${ds})`);

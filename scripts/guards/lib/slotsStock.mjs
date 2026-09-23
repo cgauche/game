@@ -27,7 +27,8 @@
 // sur le dernier segment-clé, `props.json | light` (`[].light.tone` → `tone`) et `props.json |
 // primitives` (`[].volume.primitives[]|N.material` → `material`), et les références ENVELOPPÉES de
 // l'angle mort inverse (`buildings.json | features`, `ship-stations.json | requiresTrait`,
-// `structures.json`/`vehicles.json | traits`).
+// `structures.json`/`vehicles.json | traits`, et, mesuré le 2026-09-23, `pregens.json | careerTalent`
+// — `[].careerTalent.id` → `id`).
 // Tout autre cas reste une DÉRIVE : une référence neuve s'ADOPTE, elle ne s'inscrit pas.
 // Symétrique, un DÉPART sans adoption : une ligne que la PROJECTION joint à une déclaration VOISINE
 // (même dernier segment-clé, autre path) quitte le stock sans que son champ ait adopté la fabrique ;
@@ -293,8 +294,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "naval-traits.json", champ: "skill", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "night-stakes.json", champ: "kind", occurrences: 9, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "night-stakes.json", champ: "rule", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "pregens.json", champ: "career", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "pregens.json", champ: "species", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "pregens.json", champ: "careerTalent", occurrences: 2, lot: "L3 #1473 (R0 `chantier/1473-r0`, commit `4dc682a33`, retire `champDuPath`)", date: "2026-09-23" }, // NAÎT sous l'exception nommée en tête : `refOuSpec('talent')` ADOPTÉE au schéma (#1520), slot DÉCLARÉ au path `[].careerTalent.id`, 2 valeurs, 0 non résolue — la projection le joint à `id`, jamais au champ OBSERVÉ `careerTalent` (référence ENVELOPPÉE, angle mort inverse).
   { dataset: "progression-schemas.derived.json", champ: "livres", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "progression-schemas.derived.json", champ: "titresPage", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "props.json", champ: "light", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" }, // 3→6 : +3 OCCURRENCES — les trois luminaires allumés par #1680 ligne 5 (`applique-murale` et `lustre-opera` en `chandelle`, `lanterne-de-poupe` en `lanterne`) portent un `light.tone`, comme les trois déjà comptés. L'ADOPTION de la fabrique NE SOLDE PAS cette ligne, mesuré le 2026-09-02 : `idDe('lightTone')` sur `light.tone` déclare un slot au path `[].light.tone`, que `champDuPath` projette sur `tone` — jamais sur le champ PORTEUR `light` que le scan observe (angle mort déclaré en tête de ce fichier). La ligne se solde avec cet angle mort, pas avant.

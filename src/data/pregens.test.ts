@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { makePregens, makePregensWithWealth, makeShowcaseParty, pregen, pregenParty, PREGEN } from './pregens';
-import { skillInstanceLabel, talentConcrete, findSpellById, levelsForCareer, blessingsOf } from './index';
+import { skillInstanceLabel, talentConcrete, findSpellById, levelsForCareer, blessingsOf, pregens as definitions } from './index';
 import { parseStatus } from '../engine/creation';
+import { validateDataset } from './schemas/validate';
 import { toBrass } from '../engine/money';
+import { setDataset } from './overrides';
 
 describe('Personnages pré-tirés', () => {
   it('se génèrent tous sans erreur (labels d’espèce/carrière valides)', () => {
@@ -163,6 +165,33 @@ describe('Sélection de groupe — pregen / pregenParty', () => {
 
   it('lève sur un seed inconnu (pas d’undefined silencieux d’un find/slice raté)', () => {
     expect(() => pregen(9999)).toThrow();
+  });
+
+  /** Un sort hors Magie mineure est refusé AU PARSE (`idDe('spell', 'mineure')`, LDB 10 l.714), nommément. */
+  it('refuse au schéma un sort authoré hors Magie mineure, en le nommant', () => {
+    const base = definitions.find((d) => d.seed === PREGEN.sorcier)!;
+    expect(validateDataset('pregens.json', [...definitions, { ...base, id: 'essai-sort', seed: 90001, pettySpells: ['benediction-de-bataille'] }]))
+      .toMatch(/benediction-de-bataille.*mineure/);
+  });
+
+  /** Un Talent de carrière laissé en « choix » fait écarter le pré-tiré en le NOMMANT (jamais un héros construit). */
+  it('écarte en le nommant un pré-tiré dont le Talent de carrière est en « choix »', () => {
+    const base = definitions.find((d) => d.seed === PREGEN.sorcier)!;
+    const leve = (def: typeof base, motif: RegExp) => {
+      const erreurs: string[] = [];
+      const orig = console.error;
+      console.error = (...a: unknown[]) => { erreurs.push(a.map((x) => (x instanceof Error ? x.message : String(x))).join(' ')); };
+      const livres = [...definitions];
+      setDataset('pregens', [...livres, def]);
+      try {
+        expect(makePregens().some((h) => h.id === `pregen-${def.seed}`), 'le pré-tiré fautif a été construit').toBe(false);
+      } finally {
+        setDataset('pregens', livres);
+        console.error = orig;
+      }
+      expect(erreurs.some((e) => motif.test(e)), erreurs.join('\n')).toBe(true);
+    };
+    leve({ ...base, id: 'essai-choix', seed: 90002, careerTalent: { id: 'beni', choix: true } }, /essai-choix.*choix/);
   });
 
   it('makeShowcaseParty = les 4 piliers (soldat, tueur, sorcier, chasseur)', () => {

@@ -41,7 +41,8 @@ export interface CibleDeType {
  * chantier migrent (Compétence, puis Talent/Trait/Objet/Sort/Créature/Véhicule/Structure, +
  * Carrière et Trait NAVAL au L-gram-2 #1463) + la TABLE, cible de `pick({ table })`, + la MATIÈRE du
  * monde (#1686), premier type dont le dataset est DISCRIMINÉ (`idDe('material', 'prop')`), + le
- * TERRAIN et le DÉCOR (#1690 : `layer.tiles` résout un terrain, `terrains › overlayProp` un décor).
+ * TERRAIN et le DÉCOR (#1690 : `layer.tiles` résout un terrain, `terrains › overlayProp` un décor),
+ * + l'ESPÈCE (#1520 : `pregens.json › species`).
  * Un type s'ajoute avec le lot qui le migre, jamais « au cas où ».
  */
 export const TYPES = {
@@ -54,6 +55,7 @@ export const TYPES = {
   vehicle: { dataset: 'vehicles.json', specsOpen: false },
   structure: { dataset: 'structures.json', specsOpen: false },
   career: { dataset: 'careers.json', specsOpen: false },
+  species: { dataset: 'species.json', specsOpen: false },
   navalTrait: { dataset: 'naval-traits.json', specsOpen: false },
   // PORT du catalogue naval : `MapPlace.port.ref` résout AU PARSE, toutes les réfs mortes nommées.
   navalPort: { dataset: 'naval-ports.json', specsOpen: false },

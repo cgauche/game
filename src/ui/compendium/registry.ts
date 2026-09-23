@@ -1883,7 +1883,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       id: p.id,
       label: p.label, sub: join(findSpeciesById(p.species)?.label ?? p.species, findCareerById(p.career)?.label ?? p.career),
       meta: facts(fact('Motivation', p.motivation), fact('Graine', p.seed)),
-      sections: p.pettySpells?.length ? sections(chips('Sorts', 'pettySpells', p.pettySpells)) : undefined,
+      sections: p.pettySpells?.length ? sections(chips('Sorts', 'spells', p.pettySpells.map((id) => refLabel('spells', { id })))) : undefined,
     })),
   },
   {

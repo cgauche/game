@@ -41,7 +41,7 @@ import {
   pettySpellQuotaFor,
 } from '../../engine/creation';
 import { rule } from '../../engine/policy';
-import { createHero, resolveSpeciesTalents, RANDOM_ENTRY_RE } from '../../engine/character';
+import { createHero, resolveSpeciesTalents, RANDOM_ENTRY_RE, talentRefOfLabel } from '../../engine/character';
 import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs } from '../../engine/careerSlots';
 import { careerSkillAdditions } from '../../engine/talentEffects';
 import { findSpeciesById, rigSpeciesId, findTalent, careers, levelsForCareer, findSpell, advancementLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData, trappingRefLabel, type TrappingRef } from '../../data';
@@ -785,7 +785,7 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
     label: d.label.trim() || 'Aventurier',
     manualChars: draftChars(d),
     charAdvancesAlloc: d.charAdvancesAlloc,
-    careerTalent: d.careerTalent,
+    careerTalent: d.careerTalent ? talentRefOfLabel(d.careerTalent) : undefined,
     skillAdvances: d.skillAdvances,
     speciesSkillAdvances: { plus5, plus3 },
     speciesTalentsResolved: resolvedSpeciesTalents(d),
