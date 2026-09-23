@@ -4,7 +4,7 @@
 // vérifie/répare le numéro de ligne (la ré-extraction Marker a fait dériver les anciennes lignes).
 //   node scripts/raw/reanchor.mjs            → rapport + GATE (exit 1 sur dérive/ambigu/hausse ❌)
 //   node scripts/raw/reanchor.mjs --apply    → réécrit en place les dérives HIGH (citation unique)
-//   node scripts/raw/reanchor.mjs --check    → même GATE, et compare le rapport au committé sans écrire
+//   node scripts/raw/reanchor.mjs --check    → même GATE, puis `ecrireOuVerifier` sur le rapport
 //     (refusé avec `--apply`/`--remap`, qui réécrivent les FICHES). Le rapport décrit les fiches TELLES
 //     QUE LE DISQUE LES PORTE : après `--apply`/`--remap`, il se rend d'un balayage de plus, sans mode.
 // ✅ ligne juste · 🔧 dérive HIGH (auto) · 🟡 ambigu (MEDIUM, manuel) · ❌ introuvable (LOW) ·

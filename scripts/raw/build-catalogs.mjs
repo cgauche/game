@@ -10,7 +10,7 @@
 // (perte connue de l'extraction Marker, aucun mécanisme `inc` ne la couvre encore) — préservé tel quel
 // par extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
 // `appendPreservedBlocks` recolle en FIN de fichier : #1839.
-// node scripts/raw/build-catalogs.mjs [--check]   (`--check` compare chaque catalogue sans écrire)
+// node scripts/raw/build-catalogs.mjs [--check]   (`--check` : `ecrireOuVerifier` par catalogue)
 import { existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { BOOKS, blockStartRe, chapterFile as chapterFileLib, esc, livresDeCatalogue, pagesDeLAtlas, readText } from './_lib.mjs'

@@ -27,8 +27,8 @@
 //   Les mesures fines (trous de ligne, `(non implémenté)`, folios ignorés, réfs sans chapitre) restent
 //   IMPRIMÉES et jamais assertées. Lecteur = `lireStockJson` (check-code-refs.mjs), écart = `ecartsDeStock`
 //   (guards/lib/stock.mjs) — jamais un troisième.
-// Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs  ·  `--check` : compare
-//   au committé sans écrire, APRÈS le cliquet — les deux rouges se disent.
+// Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs  ·  `--check` :
+//   `ecrireOuVerifier`, APRÈS le cliquet — les deux rouges se disent.
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'

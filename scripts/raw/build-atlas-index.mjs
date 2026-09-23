@@ -8,7 +8,7 @@
 // aucun chemin de cœur n'est écrit.
 // Le reste de chaque page est MANUSCRIT : seuls les blocs entre marqueurs sont réécrits (patron
 // `injecte` de `scripts/docs/build-all.mjs`).
-// Re-run : node scripts/raw/build-atlas-index.mjs (`--check` : compare sans écrire, corps périmé déclaré par `declarerCorpsPerime`).
+// Re-run : node scripts/raw/build-atlas-index.mjs (`--check` : `declarerCorpsPerime`).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { declarerCorpsPerime } from '../docs/lib/empreinte-sources.mjs'

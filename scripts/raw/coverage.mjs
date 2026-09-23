@@ -15,7 +15,7 @@
 // du LIVRE (teneur, niveau de section) vit dans son entrée de `src/data/books.json` ; ce qu'on sait de
 // ses CHAPITRES (hors-règle, catalogues) dans `scripts/raw/chapitres.json`. Les deux se lisent par les
 // accesseurs de `_lib.mjs` — zéro ligne ici.
-// Sortie : docs/raw/coverage.md  ·  `--check` : compare au committé sans écrire.
+// Sortie : docs/raw/coverage.md  ·  `--check` : `ecrireOuVerifier`.
 import { existsSync } from 'node:fs'
 import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { join } from 'node:path'
