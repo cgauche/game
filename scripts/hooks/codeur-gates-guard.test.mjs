@@ -142,12 +142,12 @@ test('DRIVER : silence (aucune sortie) hors du cas visé, et jamais une sortie n
 
 test('la liste est LUE dans ECRIT_LU (une gate ajoutée là est couverte sans toucher au hook)', () => {
   const lues = gatesDeLaCi()
-  for (const gate of ['lint', 'docs:check', 'test:ops']) {
+  for (const gate of ['lint', 'docs:check:tout', 'test:ops']) {
     assert.ok(lues.includes(gate), `« ${gate} » est une clé d’ECRIT_LU mais le hook ne la voit pas`)
     assert.ok(gate in ECRIT_LU, `« ${gate} » a quitté ECRIT_LU : le verrou perd sa source`)
   }
   assert.equal(
-    evaluate({ agentType: 'codeur', commande: 'npm run docs:check' })?.decision,
+    evaluate({ agentType: 'codeur', commande: 'npm run docs:check:tout' })?.decision,
     'deny',
     'sans liste injectée, le hook doit refuser en lisant la table réelle',
   )

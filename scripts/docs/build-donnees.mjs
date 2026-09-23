@@ -3,13 +3,13 @@
 // src/data/donnees.manifest.json ; tout ce que l'arbre permet de DÉRIVER (liste des fichiers réels,
 // nombre d'entrées, présence d'un schéma zod, complétude du manifeste) est CALCULÉ ici. Sortie :
 // docs/donnees.md. Re-run : node scripts/docs/build-donnees.mjs (npm run docs:donnees). Mode --check
-// (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé, exit 1 avec
-// message actionnable si diff — jamais d'écriture en mode --check. Mécanique d'émission partagée :
-// emitOrCheck (scripts/docs/lib/jsdocUnion.mjs), patron `scripts/docs/build-systemes.mjs`.
+// (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé, corps périmé
+// déclaré si diff — jamais d'écriture en mode --check. Mécanique d'émission partagée :
+// `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), patron `scripts/docs/build-systemes.mjs`.
 import { readFileSync, existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { sortieOutilLocal } from '../lancer-local.mjs'
-import { emitOrCheck } from './lib/jsdocUnion.mjs'
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 import { FOLIO_RATCHET } from '../guards/lib/folioRatchetStock.mjs'
 
 const DATA_DIR = 'src/data'
@@ -391,12 +391,12 @@ out += [
   "`famille` et `meta` **À PLAT**. Le générateur de registre est TEXTUEL (lecture par regex, jamais un",
   "import) — la sanction diffère donc PAR EXPORT, et une seule est silencieuse :",
   "",
-  "- `file` non conforme au filtre `scripts/gen-registry.mjs:370` (`^export const file = '`, guillemet",
+  "- `file` non conforme au filtre de `genOne` (`scripts/gen-registry.mjs`, `^export const file = '`, guillemet",
   "  SIMPLE littéral) : le def est **ÉCARTÉ du registre, en silence** — double quote, `: string` annoté,",
   "  littéral gabarit et `= doc.file` compilent tous et sortent pourtant du registre. Seul cet export",
   "  décide de l'appartenance au registre.",
   "- `meta` non plat : le def **RESTE au registre** et perd son entrée `meta` (invisible de `presents()`,",
-  "  `scripts/gen-registry.mjs:382`) — l'atelier retombe sur la clé technique, sans qu'aucun gate rougisse.",
+  "  `genOne`, `scripts/gen-registry.mjs`) — l'atelier retombe sur la clé technique, sans qu'aucun gate rougisse.",
   "- `schema`/`famille` destructurés (`export const { schema } = doc`) **COMPILERAIENT** : la",
   "  destructuration crée un vrai nom importable. La garde n'y protège pas la compilation mais la",
   "  CONVENTION — forme plate unique, lisible par un codemod.",
@@ -489,7 +489,7 @@ if (errors.length) {
 }
 
 const CHECK = process.argv.includes('--check')
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path: 'docs/donnees.md',
   check: CHECK,

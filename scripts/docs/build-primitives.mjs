@@ -4,11 +4,11 @@
 // dérivent.
 // Re-run : node scripts/docs/build-primitives.mjs (npm run docs:primitives).
 // Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
-// exit 1 avec message actionnable si diff — jamais d'écriture en mode --check.
+// corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
 import { readFileSync, existsSync } from 'node:fs'
 import { FEUILLES_PARTAGEES, RACINE_DES_MODULES, moduleHorsCouche } from '../guards/lib/cssCouches.mjs'
 import { parUnitesDeCode } from '../guards/lib/lister.mjs'
-import { emitOrCheck } from './lib/jsdocUnion.mjs'
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 
 const SOURCE = 'src/data/primitives.manifest.json'
 const CIBLE = 'docs/primitives.md'
@@ -83,7 +83,7 @@ for (const p of lignes) {
   out += `| ${cell(p.concept)} | \`${cell(p.label)}\` | \`${cell(p.fichier)}\` | ${css} | ${cell(p.perimetre)} | ${cell(p.verrou)} |\n`
 }
 
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path: CIBLE,
   check: process.argv.includes('--check'),

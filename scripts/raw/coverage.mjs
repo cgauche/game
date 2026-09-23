@@ -15,14 +15,14 @@
 // du LIVRE (teneur, niveau de section) vit dans son entrée de `src/data/books.json` ; ce qu'on sait de
 // ses CHAPITRES (hors-règle, catalogues) dans `scripts/raw/chapitres.json`. Les deux se lisent par les
 // accesseurs de `_lib.mjs` — zéro ligne ici.
-// Sortie : docs/raw/coverage.md
+// Sortie : docs/raw/coverage.md  ·  `--check` : compare au committé sans écrire.
 import { existsSync } from 'node:fs'
 import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, coeurDe, esc, chapterFile, estHorsRegle, folioSpan, motifHorsRegle, niveauDeSectionDe, pagesDeLAtlas, readText, teneurDe } from './_lib.mjs'
 import { graphieDuFichier, numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
-import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
+import { ecrireOuVerifier } from '../docs/lib/empreinte-sources.mjs'
 export const RAWDIR = 'docs/raw'
 // Acceptation DÉCLARÉE à la couture (`pagesDeLAtlas`) : tout sauf les rapports générés — l'épreuve
 // datée et les pages d'auteur CITENT des chapitres, et ce qu'elles citent est couvert.
@@ -422,7 +422,13 @@ function main(rawDir = RAWDIR) {
   const summaryLine = ['**Couverture (profondeur), par groupe de livres** :', '', ...lignesGroupe, '', `Section-granulaire (niveau de heading ADAPTATIF par livre — ${niveauxTxt}, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur ${gSecCatalogue + gSecHorsRegle + gSecHoles} section(s) non couvertes par une fiche : **${gSecCatalogue} transcrite(s) en catalogue** (recopiées, pas traitées) · **${gSecHorsRegle} hors-règle** (chapitre explicitement exclu) · **${gSecHolesScenario} bruit de scénario** (livres de teneur \`scenario\` ${campagnesPures} : prose de campagne, aucune règle) · **${gSecHolesRegle} candidat(s) trou de règle** (reste : ${resteDesLivres} — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et ${gSecEnfoui} titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (\`ABBR NN p.X\`, #606) : ${gIgnoredFolios} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : ${perBook.join(' · ')}.`].join('\n')
   const summaryIdx = out.indexOf(SUMMARY_PLACEHOLDER)
   out[summaryIdx] = summaryLine
-  ecrireDoc(join(rawDir, 'coverage.md'), out.join('\n'))
+  ecrireOuVerifier({
+    out: out.join('\n'),
+    path: join(rawDir, 'coverage.md'),
+    check: process.argv.includes('--check'),
+    staleMsg: `raw:coverage — ${join(rawDir, 'coverage.md')} est PÉRIMÉ (fiche de l'Atlas ou Source changée).`,
+    rerunMsg: '  → relancer `npm run raw:coverage` et committer le résultat.',
+  })
   console.log(`coverage profondeur : ✅ ${gOk} · 📖 ${gCat} · 🟡 ${gMid} · ⬜ ${gHole} (sur ${denom} chapitres) · sections non-fiche : catalogue ${gSecCatalogue} · hors-règle ${gSecHorsRegle} · scénario ${gSecHolesScenario} · règle ${gSecHolesRegle} · 🔻enfoui ${gSecEnfoui} · folios ignorés ${gIgnoredFolios}`)
   console.log('par livre : ' + perBook.join(' · '))
 }

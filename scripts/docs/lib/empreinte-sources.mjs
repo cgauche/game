@@ -73,17 +73,20 @@ export function motifDeRejeu(texte, empreinteSources) {
   return null
 }
 
+/** Le pied est un commentaire HTML : seul un doc Markdown le porte. Une cible de CODE
+ *  (`*.generated.ts`) est vérifiée par son corps seul — le pied ne se pose, ne se lit et ne se juge
+ *  que sur une cible `.md`. */
+export const porteUnPied = (cible) => cible.endsWith('.md')
+
 /**
  * Écrit un doc généré en CONSERVANT le pied qu'il portait. Un générateur joué SEUL (`npm run
- * raw:catalogs` en CI, suivi d'un `git diff --exit-code`) réécrit sa cible : sans cela il effacerait
- * la signature posée par `docs:build`, et le dépôt sortirait sale. Le pied redevient juste au
- * prochain `docs:build` ; s'il ment sur un doc STAGÉ, `--empreinte` le nomme.
+ * docs:<x>`, `npm run raw:<x>`) réécrit sa cible : sans cela il effacerait la signature posée par
+ * `docs:build`. Le pied redevient juste au prochain `docs:build` ; s'il ment sur un doc STAGÉ,
+ * `--empreinte` le nomme.
  *
- * N'ÉCRIT QUE SI LE RENDU DIFFÈRE. Les trois rapports d'Atlas réécrivaient leur `.md` à CHAQUE run
- * (`coverage.mjs:422`, `reconcile.mjs:367`, `reanchor.mjs:344`) pendant que la suite lit ce même
- * dossier (`src/oversize-search-blindspot.test.ts:86`, `scripts/docs/manual-docs-ratchet.test.mjs:32`) :
- * jouées en LANES parallèles (`scripts/gates/toutes.mjs`), c'était un lecteur sur un fichier en
- * cours d'écriture. Patron : `scripts/gen-registry.mjs:417,702` (`if (changed) writeFileSync`).
+ * N'ÉCRIT QUE SI LE RENDU DIFFÈRE : la suite lit les dérivés pendant que les gates tournent en LANES
+ * parallèles (`scripts/gates/toutes.mjs`), et un fichier réécrit à l'identique serait un lecteur sur
+ * un fichier en cours d'écriture.
  */
 export function ecrireDoc(chemin, contenu) {
   let actuel
@@ -91,6 +94,48 @@ export function ecrireDoc(chemin, contenu) {
   const pied = actuel === null ? null : lirePied(actuel)
   const rendu = pied ? avecPied(contenu, pied) : contenu
   if (actuel !== rendu) writeFileSync(chemin, rendu)
+}
+
+/**
+ * Bit du code de sortie qui dit « corps périmé » — une seule convention pour tout dérivé. Le bit 1
+ * reste celui de tout autre rouge (cliquet, refus, exception), si bien qu'un générateur dont le
+ * cliquet ET le corps sont rouges sort en 3, et que `build-all.mjs --check` nomme les deux.
+ */
+export const CODE_CORPS_PERIME = 2
+
+/** Déclare un corps périmé au code de sortie SANS quitter le processus : un cliquet posé avant garde
+ *  son bit, et ce qui suit l'appel peut encore parler. */
+export function declarerCorpsPerime() {
+  process.exitCode = (Number(process.exitCode) || 0) | CODE_CORPS_PERIME
+}
+
+/**
+ * LA primitive d'un dérivé : écrit `out` dans `path` (par `ecrireDoc`) — ou, sous `check`, le
+ * compare au corps committé SANS RIEN ÉCRIRE. Un corps périmé imprime `staleMsg`, la première
+ * divergence NOMMÉE et l'aperçu des suivantes (`apercuDivergences`), puis `rerunMsg`, et se déclare
+ * au code de sortie (`declarerCorpsPerime`) : la primitive ne quitte jamais le processus, un
+ * générateur à plusieurs cibles les nomme donc TOUTES.
+ * Le pied « sources-empreinte » est posé après coup par build-all.mjs : la comparaison porte sur le
+ * corps. `okMsg` / `writeMsg` sont facultatifs (un générateur qui résume lui-même ne les passe pas).
+ * REND `true` quand le corps était déjà à jour.
+ */
+export function ecrireOuVerifier({ out, path: chemin, check, staleMsg, rerunMsg, okMsg, writeMsg }) {
+  const actuel = existeFichier(chemin) ? retirerPied(readFileSync(chemin, 'utf8')) : null
+  const aJour = actuel === out
+  if (!check) {
+    ecrireDoc(chemin, out)
+    if (writeMsg) console.log(writeMsg)
+    return aJour
+  }
+  if (aJour) {
+    if (okMsg) console.log(okMsg)
+    return true
+  }
+  console.error(staleMsg)
+  console.error(apercuDivergences(out, actuel))
+  console.error(rerunMsg)
+  declarerCorpsPerime()
+  return false
 }
 
 /** Hash de BLOB git du contenu d'un fichier du disque — comparable à la colonne de `git ls-files -s`. */
@@ -264,7 +309,7 @@ function premiereDivergence(k, regeneree, committee) {
  * puis l'aperçu des `max` premières lignes divergentes des DEUX côtés, puis le compte du reste.
  * Vide = les deux corps sont identiques ; `committe` à `null` = le doc n'est pas sur le disque.
  * Sœur de `deltaSourcesLues` pour l'autre moitié du rouge de fraîcheur — les SOURCES d'un côté, le
- * CORPS de l'autre, quand un générateur compare son rendu au fichier (`emitOrCheck`, jsdocUnion.mjs).
+ * CORPS de l'autre, quand un générateur compare son rendu au fichier (`ecrireOuVerifier`).
  */
 export function apercuDivergences(regenere, committe, max = 10) {
   if (committe === null) return 'le doc committé est ABSENT du dépôt'

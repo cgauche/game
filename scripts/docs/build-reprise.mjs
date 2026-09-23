@@ -12,15 +12,15 @@
  * en fabriquer un pour six phrases de motivation créerait une source de vérité de plus.
  *
  * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * exit 1 avec message actionnable si diff — jamais d'écriture en mode --check.
+ * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
  *
  *   node scripts/docs/build-reprise.mjs
  */
 import { readFileSync, existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
-import { emitOrCheck } from './lib/jsdocUnion.mjs'
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 import { repartitionWorkers } from '../test/partition.mjs'
-import { AVANT_LES_LANES, LANES, ECRIT_LU } from '../gates/toutes.mjs'
+import { LANES, ECRIT_LU } from '../gates/toutes.mjs'
 import { gatesDeCi } from '../gates/gatesDeCi.mjs'
 import { ETATS as ETATS_PORTE, PORTE, WORKFLOWS as REGISTRE_WORKFLOWS, corpsRun } from '../gates/workflowsDuDepot.mjs'
 import { DOCUMENTAIRE, gatesSautables } from '../gates/classerPush.mjs'
@@ -238,7 +238,7 @@ const NB_GATES_TOUJOURS = GATES_TOUJOURS.length
 const NB_GATES_SAUTABLES = SAUTABLES.size
 
 const lignesLanes = LANES.map((l) => `| \`${l.nom}\` | ${listeCode(l.gates)} |`).join('\n')
-const NB_GATES_CLASSEES = AVANT_LES_LANES.length + LANES.reduce((n, l) => n + l.gates.length, 0)
+const NB_GATES_CLASSEES = LANES.reduce((n, l) => n + l.gates.length, 0)
 const NB_GATES_MESUREES = Object.keys(ECRIT_LU).length
 /** Écrivain = gate qui écrit à chaque run (`ecrit`) OU qui PEUT écrire, porte nommée (`ecritFerme`). */
 const NB_ECRIVAINS = Object.values(ECRIT_LU).filter(
@@ -511,10 +511,8 @@ nomme ${NB_REFUS_PREPUSH} refus, et celui qui exige un run vert ne vaut que pour
 Ajouter une gate, c'est ajouter UN step à \`ci.yml\` — rien d'autre ne la récite.
 
 **Rejeu LOCAL \`npm run gates\`** (\`${script('gates')}\`), un confort de diagnostic, jamais une porte :
-${NB_GATES_CLASSEES} gates classées, d'abord
-une phase SÉRIE \`AVANT_LES_LANES\` (${listeCode(AVANT_LES_LANES)}) — les gates qui ÉCRIVENT dans
-l'arbre, jouées seules pour qu'aucun lecteur ne tombe sur un fichier à moitié écrit — puis
-${LANES.length} lanes parallèles de LECTEURS :
+${NB_GATES_CLASSEES} gates classées en ${LANES.length} lanes parallèles de LECTEURS — aucune gate
+n'écrit dans l'arbre, un dérivé s'y VÉRIFIE (\`docs:check:tout\`) :
 
 | Lane | Gates |
 |---|---|
@@ -533,7 +531,7 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 \`src/npm-lock-hoisted-guard.test.ts\`) refuse un lock amputé.
 `
 
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path: 'docs/reprise-apres-pause.md',
   check: process.argv.includes('--check'),

@@ -15,13 +15,14 @@
  * La part ÉDITORIALE (ordre de la curation, pièges de vocabulaire, doctrine verbatim) vit ICI.
  *
  * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * exit 1 si diff — jamais d'écriture en mode --check.
+ * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
  *
  *   node scripts/docs/build-sort.mjs
  */
 import { readFileSync, existsSync } from 'node:fs'
 import ts from 'typescript'
-import { emitOrCheck, loadSource, renderFields, jsdocRole } from './lib/jsdocUnion.mjs'
+import { loadSource, renderFields, jsdocRole } from './lib/jsdocUnion.mjs'
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 
 const OUTIL = 'build-sort'
 const DEF = 'src/data/schemas/defs/spells.ts'
@@ -365,7 +366,7 @@ ${table(GARDES_MESUREES, ['Garde', 'Ce qu’elle verrouille (son propre `describ
 typées — une valeur mal formée casse la compilation avant le runtime.
 `
 
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path: 'docs/ajouter-un-sort.md',
   check: process.argv.includes('--check'),

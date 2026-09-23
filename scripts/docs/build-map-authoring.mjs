@@ -11,14 +11,15 @@
  * avec la lecture AST + JSDoc du socle `scripts/docs/lib/jsdocUnion.mjs` (patron build-effects.mjs).
  *
  * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * exit 1 avec message actionnable si diff — jamais d'écriture en mode --check.
+ * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
  *
  *   node scripts/docs/build-map-authoring.mjs
  */
 import { readFileSync, existsSync } from 'node:fs'
 import { listerArbre } from '../guards/lib/lister.mjs'
 import ts from 'typescript'
-import { emitOrCheck, loadSource, jsdocRole, findAlias, aliasDoc, indexerConstantes } from './lib/jsdocUnion.mjs'
+import { loadSource, jsdocRole, findAlias, aliasDoc, indexerConstantes } from './lib/jsdocUnion.mjs'
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 import { fileExports } from './lib/engineExports.mjs'
 
 const OUTIL = 'build-map-authoring'
@@ -543,7 +544,7 @@ ${
 }
 `
 
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path: 'docs/map-authoring.md',
   check: process.argv.includes('--check'),

@@ -225,6 +225,9 @@ const ATTENDU = {
     // `writeFileSync`) sous `os.tmpdir()` ; l'arbre n'est jamais écrit.
     'scripts/docs/lib/canauxMecaniques.test.mjs',
     'scripts/docs/lib/empreinte-sources.mjs',
+    // +1 le 2026-09-23 (#1801) : le banc de `ecrireOuVerifier` joue la primitive sur un doc JETABLE
+    // (`mkdtempSync` + `writeFileSync` sous `os.tmpdir()`) ; l'arbre n'est jamais écrit.
+    'scripts/docs/lib/empreinte-sources.test.mjs',
     // +2 le 2026-09-14 (#1759) : le test de contrat importe `installer` pour
     // monter l'enveloppe de `fs` à nu (la casse d'un chemin lu se juge sans sous-processus).
     // L'écriture de ce module est la sienne propre — `<WFRP_LECTURES_SORTIE>.<pid>.json`, derrière la
@@ -248,10 +251,8 @@ const ATTENDU = {
     'scripts/test/verrou.mjs',
   ],
   build: [],
-  'docs:check': ['scripts/docs/build-all.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
+  'docs:check:tout': ['scripts/docs/build-all.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
   'docs:empreinte': ['scripts/docs/build-all.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
-  'raw:coverage': ['scripts/docs/lib/empreinte-sources.mjs'],
-  'raw:reconcile': ['scripts/docs/lib/empreinte-sources.mjs', 'scripts/raw/build-implemente.mjs'],
   'test:raw': [
     'scripts/docs/lib/empreinte-sources.mjs',
     // +1 le 2026-09-20 (#1825 lot F0) : le banc du contrat d'acceptation de l'Atlas IMPORTE
@@ -262,11 +263,6 @@ const ATTENDU = {
     'scripts/raw/anchor-fill.mjs',
     'scripts/raw/build-implemente.mjs',
     'scripts/raw/build-implemente.test.mjs',
-    // +1 le 2026-09-20 (#1825 lot F0) : le banc de l'aiguillage des catalogues FORGE un dépôt
-    // (`mkdtempSync` + `mkdirSync`/`writeFileSync`, `rmSync` en finally, sous `os.tmpdir()`) pour
-    // mesurer ce que la magie `:(glob)` porte — l'arbre du dépôt ne peut pas discriminer les deux
-    // grammaires de glob. Aucune écriture DANS l'arbre : même classe que `check-source-format.test.mjs`.
-    'scripts/raw/catalogues-aiguillage.test.mjs',
     'scripts/raw/check-code-refs.test.mjs',
     'scripts/raw/check-entity-in-chapter.test.mjs',
     'scripts/raw/check-folio-continuity.test.mjs',
@@ -373,10 +369,13 @@ const ATTENDU = {
   'raw:check-refs': [],
   // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE
   // `fieldBlockMask` de `build-implemente.mjs` (frontière du bloc de champ généré, source unique) ;
-  // la réécriture des fiches de ce module vit derrière sa porte `isMain` (build-implemente.mjs:670).
+  // la réécriture des fiches de ce module vit derrière sa porte `isMain` (`main` de build-implemente.mjs).
   // Mesure du 2026-09-11 (`scripts/docs/lib/enregistreur-lectures.mjs` en `--import` sur le CLI) :
   // 4 137 lectures, ZÉRO écriture.
-  'raw:check-code-refs': ['scripts/raw/build-implemente.mjs'],
+  // +1 le 2026-09-23 (#1801) : `build-implemente.mjs` importe `declarerCorpsPerime` du socle
+  // d'empreinte, dont l'écrivain (`ecrireDoc`) n'est appelé que par un générateur — la gate n'en
+  // appelle aucun.
+  'raw:check-code-refs': ['scripts/docs/lib/empreinte-sources.mjs', 'scripts/raw/build-implemente.mjs'],
   // La garde des renvois d'ancre de l'Atlas (#1824) n'atteint AUCUN module écrivain : elle lit les
   // pages, calcule leurs ancres et rend son verdict — l'outil qui répare vit à côté
   // (scripts/raw/reparer-ancres.mjs), et c'est LUI qui importe la garde, jamais l'inverse.
@@ -399,7 +398,6 @@ const ATTENDU = {
   // `--ecrire-stock` (check-source-puces.mjs:159) que ci.yml ne passe pas ; déclarée en
   // `ecritFerme` sur `scripts/raw/source-puces-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
   'raw:check-source-puces': ['scripts/raw/check-source-puces.mjs'],
-  'raw:reanchor': ['scripts/docs/lib/empreinte-sources.mjs', 'scripts/raw/reanchor.mjs'],
   'server:typecheck': [],
 }
 
@@ -421,8 +419,8 @@ test('la sonde n’est pas AVEUGLE : elle voit les écrivains connus, et ignore 
   const mesure = ecrivainsParGate(RACINE)
   // Trois vérités indépendantes, chacune vérifiable à la main.
   assert.ok(
-    mesure['raw:coverage'].includes('scripts/docs/lib/empreinte-sources.mjs'),
-    '`ecrireDoc` est le seam par lequel raw:coverage écrit docs/raw/coverage.md',
+    mesure['docs:check:tout'].includes('scripts/docs/lib/empreinte-sources.mjs'),
+    '`ecrireOuVerifier` est le seam par lequel tout générateur écrit sa cible',
   )
   assert.ok(
     mesure['test:hooks'].includes('scripts/hooks/new-src-file-guard.test.mjs'),

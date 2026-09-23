@@ -9,4 +9,4 @@ export function verifieExhaustiviteDesIds(
   defauts?: Readonly<Record<string, string>>,
 ): void;
 export function idsDuDataset(racine: unknown, famille?: string): string[] | null;
-export function genAll(verbose?: boolean): void;
+export function genAll(verbose?: boolean, options?: { check?: boolean }): void;

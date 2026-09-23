@@ -5,12 +5,12 @@
 //   lexique  → scripts/docs/lib/structures-lexique.mts (concepts FERMÉS, une entrée = un concept)
 // Sortie : docs/structures-donnees.md. Re-run : npx tsx scripts/docs/build-structures.mts
 // (npm run docs:structures). Mode --check (chaîné dans npm run docs:check) : régénère en mémoire,
-// compare au .md committé, exit 1 avec message actionnable si diff — jamais d'écriture en --check.
+// compare au .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en --check.
 //
 // Le doc est la carte de PILOTAGE du chantier #1463 : le stock nominatif décroissant qu'il
 // alimente vit dans scripts/guards/lib/structuresStock.mjs (garde src/data/structures-contrat.test.ts).
 import { execFileSync } from 'node:child_process';
-import { emitOrCheck } from './lib/jsdocUnion.mjs';
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -633,7 +633,7 @@ out += `${MANDAT_SLOTS}\n\n`;
   out += '\n\n';
 }
 
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path: OUT,
   check: process.argv.includes('--check'),

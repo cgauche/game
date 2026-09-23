@@ -2,8 +2,8 @@
  * Génère `docs/test-scenarios.md` — catalogue des scénarios de test navigateur.
  * Re-run : `node scripts/docs/build-test-scenarios.mjs` (`npm run docs:test-scenarios`).
  * Mode --check (chaîné dans `npm run docs:check`) : régénère en mémoire, compare au .md committé,
- * exit 1 si diff — jamais d'écriture en mode --check. Composé via `emitOrCheck` de
- * `scripts/docs/lib/jsdocUnion.mjs`.
+ * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check. Composé via `ecrireOuVerifier` de
+ * `scripts/docs/lib/empreinte-sources.mjs`.
  *
  * Objet (#903 suite) — la table « Catalogue actuel » recopiait à la main un sous-ensemble du
  * registre réel (`_registry.generated.ts`, 34 scénarios) : mesuré 9 scénarios ABSENTS du .md
@@ -29,7 +29,7 @@ import { readFileSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { estFichierVitest } from '../guards/lib/fichierVitest.mjs'
 import { join } from 'node:path'
-import { emitOrCheck } from './lib/jsdocUnion.mjs'
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 
 const DIR = 'src/scenes/test-scenarios'
 const SECTIONS = [
@@ -264,7 +264,7 @@ lines.push(
 
 const out = lines.join('\n') + '\n'
 const path = 'docs/test-scenarios.md'
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path,
   check: process.argv.includes('--check'),

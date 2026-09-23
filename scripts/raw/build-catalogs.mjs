@@ -10,14 +10,14 @@
 // (perte connue de l'extraction Marker, aucun mécanisme `inc` ne la couvre encore) — préservé tel quel
 // par extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
 // `appendPreservedBlocks` recolle en FIN de fichier : #1839.
-// node scripts/raw/build-catalogs.mjs
+// node scripts/raw/build-catalogs.mjs [--check]   (`--check` compare chaque catalogue sans écrire)
 import { existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, blockStartRe, chapterFile as chapterFileLib, esc, livresDeCatalogue, pagesDeLAtlas, readText } from './_lib.mjs'
 import { titreDuFichier } from '../../src/data/source/decoupe.ts'
-import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
+import { ecrireOuVerifier } from '../docs/lib/empreinte-sources.mjs'
 
 export const RAWDIR = 'docs/raw'
 // Acceptation DÉCLARÉE à la couture : les catalogues — l'écrivain relit OÙ vit déjà le catalogue
@@ -33,8 +33,8 @@ export const cataloguesDeLAtlas = (rawDir = RAWDIR) => pagesDeLAtlas(rawDir, { c
  *  silence, là où un catalogue porte des blocs de livres qui n'en déclarent AUCUN. */
 export function cheminDeCatalogue(file, pages = cataloguesDeLAtlas()) {
   const page = pages.find((p) => p.nom === file)
-  // Séparateurs NORMALISÉS : `ecrireDoc` KEYE son pied d'empreinte par le chemin, et un rapport
-  // committé ne doit pas dire deux choses selon la machine qui l'écrit.
+  // Séparateurs NORMALISÉS : ce chemin est celui que nomment le journal et le rouge de `--check`,
+  // le même sur toute machine.
   if (page) return page.chemin.replace(/\\/g, '/')
   throw new Error(
     `build-catalogs: le catalogue « ${file} » ne vit sous AUCUN cœur de l'Atlas — son cœur vient `
@@ -103,6 +103,7 @@ function chapterFile(abbr, nn, range) {
 }
 
 function main() {
+const check = process.argv.includes('--check')
 // Fail-fast : sans extraction sur disque, `chapterFile` rend null pour TOUT chapitre et le
 // catalogue s'écrirait VIDE, écrasant le committé. On refuse avant la moindre écriture.
 const dirsVides = BOOKS.filter(([, dir]) => !existsSync(dir) || !listerDossier(dir).some((f) => f.endsWith('.md')))
@@ -130,7 +131,13 @@ for (const dom of CATALOGUES) {
   const path = cheminDeCatalogue(dom.file, pagesCatalogues)
   const preserved = extractPreservedBlocks(path)
   const body = appendPreservedBlocks(header + parts.join('\n') + '\n', preserved)
-  ecrireDoc(path, body)
+  ecrireOuVerifier({
+    out: body,
+    path,
+    check,
+    staleMsg: `build-catalogs — ${path} est PÉRIMÉ (chapitre source ou registre des catalogues changé).`,
+    rerunMsg: '  → relancer `npm run raw:catalogs` et committer le résultat.',
+  })
   log.push(`${dom.file} : ${refs.length} ch., ${Math.round(body.length / 1024)} Ko${missing.length ? ' · MANQUE ' + missing.join(', ') : ''}${preserved.length ? ` · ${preserved.length} bloc(s) préservé(s)` : ''}`)
 }
 console.log(log.join('\n'))

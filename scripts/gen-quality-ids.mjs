@@ -1,7 +1,8 @@
 // Génère src/engine/qualities/qualityId.generated.ts depuis src/data/qualities.json — GÉNÉRÉ par
 // `node scripts/gen-quality-ids.mjs` (`npm run gen:quality-ids`), NE PAS ÉDITER À LA MAIN.
-// Mode --check (chaîné dans la garde src/engine/qualities/ids.test.ts) : régénère en mémoire,
-// compare au fichier committé, exit 1 si diff — jamais d'écriture en mode --check.
+// Mode --check (joué par `npm run docs:check`, ligne de `GENERATORS` dans scripts/docs/build-all.mjs) :
+// régénère en mémoire, compare au fichier committé, corps périmé déclaré (`ecrireOuVerifier`) si
+// diff — jamais d'écriture en mode --check.
 //
 // Union de LITTÉRAUX seulement (aucun export runtime) : un id retiré de `qualities.json` fait
 // échouer la compilation aux sites d'appel qui le citaient, jamais un objet exhaustif qui
@@ -10,7 +11,7 @@
 // consommé). Zéro paire écrite à la main : une qualité ajoutée/renommée dans `qualities.json`
 // régénère l'union sans y toucher.
 import { readFileSync } from 'node:fs';
-import { emitOrCheck } from './docs/lib/jsdocUnion.mjs';
+import { ecrireOuVerifier } from './docs/lib/empreinte-sources.mjs';
 
 const DATA = 'src/data/qualities.json';
 const OUT = 'src/engine/qualities/qualityId.generated.ts';
@@ -24,7 +25,7 @@ out += ` * Union des \`id\` déclarés dans ${DATA} — le typage réel des cons
 out += ` */\n`;
 out += `export type QualityId =\n  | '${ids.join(`'\n  | '`)}';\n`;
 
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path: OUT,
   check: process.argv.includes('--check'),

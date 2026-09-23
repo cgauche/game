@@ -27,7 +27,8 @@
 //   Les mesures fines (trous de ligne, `(non implémenté)`, folios ignorés, réfs sans chapitre) restent
 //   IMPRIMÉES et jamais assertées. Lecteur = `lireStockJson` (check-code-refs.mjs), écart = `ecartsDeStock`
 //   (guards/lib/stock.mjs) — jamais un troisième.
-// Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs
+// Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs  ·  `--check` : compare
+//   au committé sans écrire, APRÈS le cliquet — les deux rouges se disent.
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -42,7 +43,7 @@ import {
   loadAbbrMap, folioCitationsFromJson, chargerDette, registresDeFiches, parseFiche,
   stemDeFiche, couvertureDe, stemDe, MANIFEST_PATH,
 } from './build-implemente.mjs'
-import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
+import { ecrireOuVerifier } from '../docs/lib/empreinte-sources.mjs'
 
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
 export const RAWDIR = 'docs/raw'
@@ -529,7 +530,6 @@ export function ecartsTrousDurs(entrees, stock, registre = REGISTRE_LIVRES) {
 
 function main() {
   const data = computeReconciliation()
-  ecrireDoc(join(RAWDIR, 'reconciliation.md'), renderReport(data))
   const noChapterCount = [...data.codeNoCh.values()].reduce((n, a) => n + a.length, 0)
   console.log(`Sens A : ${data.hardA.length} trou(s) dur(s) chapitre-livre · ${data.softA.length} chapitre(s)-livre à lignes non pinées · ${noChapterCount} réf(s) sans chapitre (hors mesure) · folios Atlas ignorés ${data.folioIgnored}`)
   for (const [book, st] of [...data.bookStats].sort((a, b) => parUnitesDeCode(a[0], b[0])))
@@ -569,6 +569,14 @@ function main() {
   }
   if (neuves.length || perimees.length || coeur.length || data.etrangers.length) process.exitCode = 1
   else console.log(`Cliquet des trous durs : ${entrees.length} trou(s) dur(s), tous au stock (${Object.keys(stock).length} entrée(s)) — aucun neuf, aucun périmé, aucun livre de cœur.`)
+  const rapport = join(RAWDIR, 'reconciliation.md')
+  ecrireOuVerifier({
+    out: renderReport(data),
+    path: rapport,
+    check: process.argv.includes('--check'),
+    staleMsg: `raw:reconcile — ${rapport} est PÉRIMÉ (code ou Atlas changé).`,
+    rerunMsg: '  → relancer `npm run raw:reconcile` et committer le résultat.',
+  })
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith('reconcile.mjs')

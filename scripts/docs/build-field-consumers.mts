@@ -2,7 +2,7 @@
  * Rapport des CONSOMMATEURS PAR CHAMP — GÉNÉRÉ. Sortie : docs/consommateurs-de-champs.md.
  * Re-run : `npx tsx scripts/docs/build-field-consumers.mts` (`npm run docs:field-consumers`).
  * Mode --check (chaîné dans `npm run docs:check`) : régénère en mémoire, compare au .md committé,
- * exit 1 si diff — jamais d'écriture en mode --check.
+ * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
  *
  * Objet (#903) — la mesure INVERSE de `build-entity-orphans.mjs` : celui-ci répond « qui cite cet
  * ID d'ENTITÉ de catalogue ? », celui-ci répond « qui LIT ce CHAMP d'un TYPE de donnée structuré ? ».
@@ -83,7 +83,7 @@
  */
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { emitOrCheck } from './lib/jsdocUnion.mjs'
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 import { listProdFiles, scanFieldReads, fieldOwnership, groupByField } from '../guards/lib/fieldConsumers.mjs'
 import { TARGETS, fieldsOf } from '../guards/lib/fieldConsumerTargets.mjs'
 
@@ -265,7 +265,7 @@ export function buildFieldConsumersMd(files: string[] = listProdFiles(SRC_DIR)):
 /** CLI : écriture du `.md`, ou `--check` (chaîné dans `npm run docs:check`). */
 if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
   const { md, totalFields, totalUnread } = buildFieldConsumersMd()
-  emitOrCheck({
+  ecrireOuVerifier({
     out: md,
     path: OUT,
     check: process.argv.includes('--check'),

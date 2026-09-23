@@ -10,10 +10,9 @@
 // repayer les vingt autres.
 //
 // TROIS PHASES, et l'ordre est la garantie :
-//   1. `npm run gen`, puis les gates qui ÉCRIVENT dans l'arbre (`AVANT_LES_LANES`) — EN SÉRIE. Ce
-//      qu'elles réécrivent est NOMMÉ tout de suite, au lieu d'un « l'arbre a changé » sept minutes
-//      plus tard, et aucune lane ne peut lire un fichier pendant qu'une autre l'écrit.
-//   2. les LANES, qui ne contiennent plus que des LECTEURS.
+//   1. `npm run gen` — `build` et la suite appellent `genAll()` depuis deux lanes : joué une fois ici,
+//      il ne leur reste rien à écrire, et un registre périmé se dit tout de suite.
+//   2. les LANES, qui ne contiennent que des LECTEURS (aucune gate de ci.yml n'écrit dans l'arbre).
 //   3. le RÉSUMÉ, puis la photo de l'arbre. Dans cet ordre : un résumé est ce qu'on vient de payer,
 //      il s'imprime AVANT tout ce qui pourrait encore échouer.
 //
@@ -21,8 +20,8 @@
 // ferait sauter serait payé au passage suivant. Une gate rouge pose son verdict, fait rendre 1 au
 // run, et les lanes continuent : le résumé rend TOUS les rouges de la tête en un seul mur. Un
 // prérequis absent est un rouge comme un autre : il ne concerne que la gate qui LIT ce chemin
-// (chacune teste les SIENS). Ne sautent ce qui suit que les DEUX cas où un verdict de plus serait
-// FAUX : un signal, un écrivain qui a RÉÉCRIT l'arbre.
+// (chacune teste les SIENS). Seul un signal arrête le run : les arbres en cours sont tués, aucun
+// verdict de plus ne serait juste.
 //
 // SOUS CHARGE, UN PROCESSUS PEUT NE PAS DÉMARRER : le 2026-09-04, quatre lanes en parallèle ont fait
 // rendre `3221225794` (STATUS_DLL_INIT_FAILED) au loader Windows sur quatre spawns d'un même run —
@@ -230,9 +229,9 @@ export const ECRIT_LU = {
     ecrit: [],
     ecritFerme: {
       'src/_registry.generated.ts':
-        'le `buildStart` de vite.config.ts:16 appelle `genAll()`, qui n’écrit que `if (changed)` ' +
-        '(scripts/gen-registry.mjs:435,662) — `toutes.mjs` joue `npm run gen` AVANT les lanes et REFUSE si un ' +
-        'registre bouge, donc il ne reste rien à écrire',
+        'le `buildStart` du plugin `registryGen` (vite.config.ts) appelle `genAll()`, qui n’écrit que si ' +
+        'le rendu diffère (`ecrireDoc`, scripts/docs/lib/empreinte-sources.mjs) — `toutes.mjs` joue ' +
+        '`npm run gen` AVANT les lanes et REFUSE si un registre bouge, donc il ne reste rien à écrire',
     },
     lit: ['src/', 'server/src/', 'scripts/', 'docs/', 'Source/', '.gitattributes', 'vite.config.ts'],
     raison:
@@ -266,7 +265,7 @@ export const ECRIT_LU = {
     },
     lit: ['src/', 'scripts/', 'Source/', 'tsconfig.json', 'vite.config.ts', 'package.json', 'index.html'],
     raison:
-      '`gen && vite build` : le typage est jugé par la gate `typecheck` (ci.yml:52, avant `build`), ' +
+      '`gen && vite build` : le typage est jugé par la gate `typecheck` (step `npm run typecheck` de ci.yml, avant `build`), ' +
       '`build` juge que le bundle se construit, et `dist/` n’est lu par aucune gate ; LIT tsconfig.json ' +
       'parce que l’esbuild de Vite y relit `target`/`jsx`/`useDefineForClassFields` pour transformer ' +
       'chaque module TS (les `meaningfulFields` que Vite 5.4 recopie dans `tsconfigRaw`) — `paths`, lui, ' +
@@ -276,13 +275,14 @@ export const ECRIT_LU = {
       'la déclaration reste, une sur-déclaration ne peut que RESSERRER les lanes ; LIT aussi index.html ' +
       '(l’entrée) et package.json',
   },
-  'docs:check': {
+  'docs:check:tout': {
     ecrit: [],
     lit: ['docs/', 'src/', 'scripts/', 'Source/', '.claude/memory/'],
     raison:
-      'les générateurs y tournent en `--check` : ils COMPARENT (build-all.mjs, `if (check) continue`) ; ' +
-      'LIT .claude/memory/ parce que `build-doctrines.mjs` dérive `docs/doctrines.md` des fiches ' +
-      '`.claude/memory/user-*.md` SUIVIES par git (build-doctrines.mjs:195)',
+      'chaque générateur de `GENERATORS` rejoué en `--check` (`ecrireOuVerifier` COMPARE sans écrire), ' +
+      'puis les vérificateurs purs ; LIT Source/ (catalogues et rapports d’Atlas) et .claude/memory/ ' +
+      'parce que `build-doctrines.mjs` dérive `docs/doctrines.md` des fiches `.claude/memory/user-*.md` ' +
+      'SUIVIES par git (`fichesSuivies`)',
   },
   'docs:empreinte': {
     ecrit: [],
@@ -296,30 +296,6 @@ export const ECRIT_LU = {
       'de l’INDEX (`indexGit`, `git ls-files -s`, empreinte-sources.mjs:143), jamais du disque : angle mort ' +
       'de la sonde (sous-processus git), d’où `.claude/memory/` déclaré par LECTURE — les fiches `user-*.md` ' +
       'sont des sources de `docs/doctrines.md` (docs/.sources-lues.json) et leur blob entre dans le verdict (#1738)',
-  },
-  'raw:coverage': {
-    ecrit: [],
-    ecritFerme: {
-      'docs/raw/coverage.md':
-        'scripts/raw/coverage.mjs:422 passe par `ecrireDoc`, qui n’écrit QUE si le rendu diffère du fichier ' +
-        '(scripts/docs/lib/empreinte-sources.mjs, patron gen-registry.mjs:435) : sur l’arbre PROPRE qu’exige ce ' +
-        'lanceur, un rapport à jour n’est pas réécrit. S’il est périmé au commit, il est réécrit UNE fois et ' +
-        '`photoArbre` avant/après fait REFUSER le run — jamais un vert de course',
-    },
-    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
-    raison:
-      'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT Source/ ' +
-      'et son propre code',
-  },
-  'raw:reconcile': {
-    ecrit: [],
-    ecritFerme: {
-      'docs/raw/reconciliation.md': 'scripts/raw/reconcile.mjs:411, même seam `ecrireDoc` et même porte que raw:coverage',
-    },
-    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
-    raison:
-      'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT Source/, ' +
-      'son stock `scripts/raw/reconciliation-stock.json` et son propre code',
   },
   'test:raw': {
     ecrit: [],
@@ -477,48 +453,22 @@ export const ECRIT_LU = {
       'scripts/raw/source-format-stock.json ; le seul module écrivain atteint est le détecteur ' +
       'lui-même, dont l’écriture est fermée par sa porte `--ecrire-stock`',
   },
-  'raw:reanchor': {
-    ecrit: [],
-    ecritFerme: {
-      'docs/raw/reanchor.md':
-        'scripts/raw/reanchor.mjs:344, même seam `ecrireDoc` et même porte que raw:coverage ; la réécriture des ' +
-        'FICHES (l.309) est gardée par `apply || remap`, que la commande de ci.yml ne passe pas',
-    },
-    lit: [
-      'docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/',
-      'scripts/guards/lib/', 'scripts/port-dev.mjs', 'scripts/docs/lib/empreinte-sources.mjs',
-    ],
-    raison:
-      'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT le registre ' +
-      'de livres, le normaliseur de références et son stock scripts/raw/reanchor-low-stock.json',
-  },
   'server:typecheck': {
     ecrit: [],
     lit: ['server/'],
     prerequis: [{ chemin: 'server/node_modules', pose: 'npm --prefix server ci' }],
     raison:
       '`tsc` du sous-projet serveur, sans émission ; PRÉREQUIS : le sous-projet a ses PROPRES dépendances, ' +
-      'posées par la commande de .github/workflows/ci.yml:86 — sans elles `tsc` rend un TS2688 brut sur ' +
+      'posées par le step `npm --prefix server ci` de .github/workflows/ci.yml — sans elles `tsc` rend un TS2688 brut sur ' +
       '@cloudflare/workers-types, que rien ne rattache au dossier manquant',
   },
 }
 
 /**
- * Gates jouées EN SÉRIE, AVANT les lanes, parce qu'elles ÉCRIVENT dans l'arbre — l'ordre est la
- * seule chose qui empêche un lecteur d'une autre lane de tomber sur un fichier à moitié écrit.
- * Leur écriture est censée être un NON-ÉVÉNEMENT (le rendu est déjà celui du commit) ; quand elle
- * survient, la phase la NOMME et refuse, au lieu de laisser un « l'arbre a changé » anonyme tomber
- * sept minutes plus tard.
- * `ECRIT_LU` reste la vérité mesurée : ce n'est pas parce qu'une gate sort des lanes qu'elle cesse
- * d'écrire.
- */
-export const AVANT_LES_LANES = ['raw:coverage', 'raw:reconcile', 'raw:reanchor']
-
-/**
  * Les LANES, nominatives. Une lane est une SÉRIE ; les lanes tournent ensemble. Elles ne portent que
- * des LECTEURS (les écrivains sont dans `AVANT_LES_LANES`), et la morsure `conflitsEntreLanes` le
- * verrouille. Une gate de `ci.yml` qui n'est ni dans une lane ni dans la phase série fait REFUSER le
- * run, avec son nom : le classement est une décision, pas un silence (patron `CI_SEULEMENT`).
+ * des LECTEURS, et la morsure `conflitsEntreLanes` le verrouille. Une gate de `ci.yml` qui n'est dans
+ * aucune lane fait REFUSER le run, avec son nom : le classement est une décision, pas un silence
+ * (patron `CI_SEULEMENT`).
  *
  * TROIS lanes, et non quatre : la première exécution réelle (2026-09-04) a fait rendre au loader
  * Windows `STATUS_DLL_INIT_FAILED` sur quatre spawns concurrents. Une lane de moins, c'est −25 % de
@@ -557,14 +507,14 @@ export const LANES = [
   {
     nom: 'docs',
     gates: [
-      'docs:check', 'docs:empreinte', 'test:raw', 'raw:check-refs', 'raw:check-code-refs', 'raw:check-ancres',
+      'docs:check:tout', 'docs:empreinte', 'test:raw', 'raw:check-refs', 'raw:check-code-refs', 'raw:check-ancres',
       'raw:check-folio-continuity', 'raw:check-source-tables', 'raw:check-source-format',
       'raw:check-source-puces', 'test:docs',
       'agents:check', 'build',
     ],
     raison:
-      'tous les LECTEURS de docs/ et docs/raw/ — leurs trois écrivains ont déjà tourné, en série, avant que ' +
-      'cette lane ne commence. `build` y tient parce que c’est une des gates les moins chères (22,5 s au ' +
+      'tous les LECTEURS de docs/ et docs/raw/ — aucun n’y écrit : `docs:check:tout` vérifie chaque dérivé ' +
+      'sans l’écrire. `build` y tient parce que c’est une des gates les moins chères (22,5 s au ' +
       'dernier run : il ne joue plus que `gen && vite build`) et que cette lane est la plus courte — 70,8 s ' +
       'sans lui, 93,2 s avec (durees.json, 2026-09-08), loin sous le mur de `types` ; il n’écrit d’ailleurs ' +
       'que les registres déjà régénérés par `gen` en phase préalable',
@@ -575,11 +525,13 @@ export const LANES = [
  * Plafond de durée par gate, en SECONDES : ×3 de la pire durée observée, jamais moins. Sans plafond,
  * une gate bloquée tient sa lane pour toujours — vécu : `server:typecheck` a rendu 0xC0000142 après
  * 33 434 s (9 h 17). Une gate EXPIRÉE est un ROUGE nommé, pas un silence.
- * Mesures de référence : pire gate hors `test` et `docs:check` = `typecheck` 77,8 s (série du
+ * Mesures de référence : pire gate hors `test` et `docs:check:tout` = `typecheck` 77,8 s (série du
  * 2026-09-07 ; ×3 = 233, largement sous les 600) ; `test` 275,1 s et il RALENTIT sous bornage
- * (×3 = 825) ; `docs:check` vaut 209,4 s quand il rejoue tout (×3 = 629).
+ * (×3 = 825) ; `docs:check:tout` : le rejeu complet valait 209,4 s (2026-09-07) avant d'absorber les
+ * trois rapports d'Atlas (7,0 s en phase série, 2026-09-08), soit 216,4 s au pire observé — mesuré
+ * SEUL à 130,3 s le 2026-09-23 (#1801) ; ×3 = 650.
  */
-export const TIMEOUTS = { defaut: 600, test: 900, 'docs:check': 900 }
+export const TIMEOUTS = { defaut: 600, test: 900, 'docs:check:tout': 650 }
 
 /**
  * Cœurs servis à la SUITE pendant les lanes. Mesuré sur cette machine, suite SEULE et sans lane :
@@ -596,7 +548,7 @@ export const COEURS_SUITE_EN_LANES = 10
 /** Dossier des sorties de gate : un fichier par gate et par PID (patron `scripts/test/run.mjs`). */
 export const dossierSorties = (racine) => join(racine, 'node_modules', '.cache', 'gates')
 
-/** Durées du dernier run, par gate — la seule source du COÛT ESTIMÉ d'une gate sautée. */
+/** Durées du dernier run, par gate — la mesure qui compose les LANES et pose les TIMEOUTS. */
 export const fichierDurees = (racine) => join(dossierSorties(racine), 'durees.json')
 
 /** Nom de FICHIER de la sortie d'une gate : le nom de gate porte des `:`, que Windows refuse. */
@@ -605,14 +557,6 @@ export const fichierDeSortie = (gate, pid) => `${encodeURIComponent(gate)}-${pid
 /** Motif de nom d'une sortie de gate : `<segment>-<pid>.txt` (`fichierDeSortie`). */
 const MOTIF_SORTIE = /-\d+\.txt$/
 
-/** Durées du dernier run (`{}` au premier). */
-function lireDurees(racine) {
-  try {
-    return JSON.parse(readFileSync(fichierDurees(racine), 'utf8'))
-  } catch {
-    return {}
-  }
-}
 
 /**
  * PRÉREQUIS ABSENTS d'une gate : les entrées de son `prerequis` (ECRIT_LU) dont le `chemin`, relatif
@@ -657,7 +601,7 @@ export function conflitsEntreLanes(lanes = LANES, ecritLu = ECRIT_LU) {
  * gate ajoutée à la CI ARRÊTE `npm run gates` tant qu'on n'a pas dit ce qu'elle écrit, ce qu'elle lit
  * et où elle court.
  */
-export function refusDeCouverture(noms, lanes = LANES, ecritLu = ECRIT_LU, avant = AVANT_LES_LANES) {
+export function refusDeCouverture(noms, lanes = LANES, ecritLu = ECRIT_LU) {
   const refus = []
   const placees = new Map()
   const poser = (gate, ou) => {
@@ -665,11 +609,10 @@ export function refusDeCouverture(noms, lanes = LANES, ecritLu = ECRIT_LU, avant
     else placees.set(gate, ou)
     if (!noms.includes(gate)) refus.push(`${gate} : nommée par ${ou}, absente de ci.yml — la retirer`)
   }
-  for (const gate of avant) poser(gate, 'la phase série AVANT_LES_LANES')
   for (const lane of lanes) for (const gate of lane.gates) poser(gate, `la lane ${lane.nom}`)
   for (const nom of noms) {
     if (!placees.has(nom))
-      refus.push(`${nom} : gate de ci.yml sans place — la mettre dans LANES ou AVANT_LES_LANES, avec ce qu'elle ÉCRIT et LIT`)
+      refus.push(`${nom} : gate de ci.yml sans place — la mettre dans LANES, avec ce qu'elle ÉCRIT et LIT`)
     if (!ecritLu[nom]) refus.push(`${nom} : aucune entrée ÉCRIT/LU — la mesurer avant de la placer`)
     // `lit` NON VIDE, pas seulement l'entrée : c'est `lit` qui décide si la gate est sautable sur un
     // push documentaire (`gatesSautables`, scripts/gates/classerPush.mjs) — une gate sans lecture
@@ -857,10 +800,6 @@ export function photoArbre(racine) {
 
 const secondesDepuis = (debut) => (Date.now() - debut) / 1000
 
-/** Ce que le résumé imprime pour une gate qui n'a pas été jouée faute d'un rouge ailleurs. */
-export const coutEstime = (durees, nom) =>
-  typeof durees[nom] === 'number' ? `~${durees[nom].toFixed(1)} s au dernier run` : 'coût inconnu'
-
 /**
  * Joue toutes les gates exigées. `racine`, `argv` et `journal` sont INJECTÉS : sans cela, ni la
  * politique d'arrêt ni le résumé ne se mesurent autrement qu'en jouant les vraies gates.
@@ -871,7 +810,6 @@ export async function principal({
   argv = process.argv,
   journal = (t) => process.stderr.write(t),
   lanes: lanesDeclarees = LANES,
-  avant = AVANT_LES_LANES,
   ecritLu = ECRIT_LU,
 } = {}) {
   const LISTE = argv.includes('--liste')
@@ -900,11 +838,11 @@ export async function principal({
 
   // La couverture se juge sur ci.yml ENTIER, jamais sur le sous-ensemble de `--gates` : la table des
   // lanes doit couvrir le fichier, et une gate écartée d'un run ne la rend pas fautive.
-  const manques = refusDeCouverture(toutesLesGates.map((g) => g.nom), lanesDeclarees, ecritLu, avant)
+  const manques = refusDeCouverture(toutesLesGates.map((g) => g.nom), lanesDeclarees, ecritLu)
   if (manques.length) {
     journal(
       `[gates] REFUS — la table des lanes ne couvre pas ci.yml :\n${manques.map((m) => `  ${m}`).join('\n')}\n` +
-        '[gates] scripts/gates/toutes.mjs : LANES, AVANT_LES_LANES et ECRIT_LU.\n',
+        '[gates] scripts/gates/toutes.mjs : LANES et ECRIT_LU.\n',
     )
     return 1
   }
@@ -922,10 +860,10 @@ export async function principal({
     return 0
   }
 
-  // `npm run gen` AVANT tout : `build` ET la suite appellent `genAll()` (vite.config.ts:16), qui
-  // réécrit `src/**/*.generated.ts` si un registre a bougé. Joué une fois ici, il ne reste rien à
-  // écrire — et un registre périmé se dit MAINTENANT. C'est le step « Dérive des registres générés »
-  // de ci.yml, joué localement.
+  // `npm run gen` AVANT tout : `build` ET la suite appellent `genAll()` (plugin `registryGen` de
+  // vite.config.ts) depuis deux lanes, et réécriraient `src/**/*.generated.ts` en même temps si un
+  // registre avait bougé. Joué une fois ici, il ne leur reste rien à écrire — et un registre périmé
+  // se dit MAINTENANT, avant sept minutes de lanes.
   const avantGen = Date.now()
   const gen = spawnSync('npm', ['run', 'gen'], {
     cwd: racine,
@@ -951,26 +889,19 @@ export async function principal({
 
   mkdirSync(dossierSorties(racine), { recursive: true })
   purgerPerimes({ dossier: dossierSorties(racine), motif: MOTIF_SORTIE, ageMs: PEREMPTION_MS })
-  const durees = lireDurees(racine)
 
   const aJouerParNom = new Map(aJouer.map((g) => [g.nom, g]))
   const verdicts = new Map()
   const vivants = new Map()
-  // LISTE FERMÉE, deux causes (#1772), et chacune rend FAUX ce qui suivrait :
-  //   1. `arreterSurSignal` — les arbres en cours sont tués, rien ne peut plus rendre de verdict ;
-  //   2. un écrivain de la phase série qui a RÉÉCRIT l'arbre — les lecteurs liraient un arbre qui
-  //      n'est pas le commit, donc des verdicts qui ne valent pas pour le contenu jugé.
-  // AUCUN verdict de gate n'en est une instance, pas même un refus de prérequis : les autres gates
-  // lisent le même arbre propre, et chacune teste SES PROPRES prérequis (`prerequisAbsents`), donc
-  // leur verdict est juste. Un rouge ne pose jamais `arret`.
-  let arret = null
-
+  // Seul un SIGNAL arrête le run (#1772) : les arbres en cours sont tués, rien ne peut plus rendre de
+  // verdict. AUCUN verdict de gate n'arrête quoi que ce soit, pas même un refus de prérequis : les
+  // autres gates lisent le même arbre propre, et chacune teste SES PROPRES prérequis
+  // (`prerequisAbsents`), donc leur verdict est juste.
   const arreterSurSignal = (signal) => {
     journal(
       `\n[gates] ${signal} — arrêt : l'ARBRE de chaque gate en cours est tué (un enfant survivant garderait ` +
         'le verrou de suite et des cœurs).\n',
     )
-    arret = `signal ${signal}`
     for (const pid of vivants.values()) tuerArbre(pid)
     process.exit(130)
   }
@@ -1039,7 +970,7 @@ export async function principal({
   }
 
   /** Pose le verdict d'une gate. Aucun verdict n'ARME quoi que ce soit : le résumé compte tout
-   *  verdict non vert, et les lanes vont au bout (voir la liste fermée de `arret`). */
+   *  verdict non vert, et les lanes vont au bout. */
   const poser = (nom, r) => {
     const secondes = secondesDepuis(r.debut)
     const statut = r.expiree ? 'EXPIRÉE' : r.code === 0 ? 'vert' : 'ROUGE'
@@ -1063,50 +994,9 @@ export async function principal({
   const photoDepart = photoArbre(racine)
   const debutTotal = Date.now()
 
-  // PHASE 1 — les écrivains, en série. Une seule d'entre elles peut réécrire l'arbre, et si elle le
-  // fait, on le dit ICI, avec les chemins, au lieu d'un verdict de course sept minutes plus tard.
-  const enSerieAvant = avant.filter((n) => aJouerParNom.has(n))
-  let refusEcriture = null
-  if (!SERIE) {
-    for (const nom of enSerieAvant) {
-      if (arret) {
-        verdicts.set(nom, { statut: 'sautée', secondes: 0, raison: `${arret} — ${coutEstime(durees, nom)}` })
-        continue
-      }
-      const debutGate = Date.now()
-      poser(nom, { ...(await jouerGate(aJouerParNom.get(nom), null)), debut: debutGate })
-      const apres = photoArbre(racine)
-      if (photoDepart.texte !== null && apres.texte !== null && apres.texte !== photoDepart.texte) {
-        const bouges = apres.texte
-          .split('\n')
-          .filter((l) => l.trim() && !photoDepart.texte.includes(l))
-        refusEcriture =
-          `[gates] REFUS — « ${nom} » a RÉÉCRIT l'arbre : son rendu n'est pas celui du commit.\n` +
-          `${bouges.map((l) => `  ${l}`).join('\n')}\n` +
-          '[gates] régénère et committe ces fichiers, puis rejoue les gates.\n'
-        // PAS de `break` : les écrivains RESTANTS doivent être marqués « sautée » par la garde en tête
-        // de boucle. Sortir ici les laisserait sans verdict, et le résumé les imprimerait « déjà
-        // jouée » — un verdict FAUX pour une gate jamais jouée. `refusEcriture` n'est donc posé
-        // qu'ICI, par le PREMIER fautif : les suivantes n'atteignent plus la comparaison de photos.
-        arret = `${nom} a réécrit l'arbre`
-      }
-    }
-  }
-
   // PHASE 2 — les lanes, qui ne portent que des lecteurs.
-  const lanes = lanesAJouer(
-    aJouer.filter((g) => SERIE || !avant.includes(g.nom)),
-    { serie: SERIE, lanes: lanesDeclarees },
-  )
-  // Un refus d'écriture tranche AVANT les lanes : ce qu'elles auraient joué est SAUTÉ, avec son coût,
-  // et le résumé le nomme au lieu de le passer pour « déjà joué ».
-  if (refusEcriture)
-    for (const lane of lanes)
-      for (const nom of lane.gates)
-        verdicts.set(nom, { statut: 'sautée', secondes: 0, raison: `${arret} — ${coutEstime(durees, nom)}` })
-  // Les lanes n'ont pas à relire `arret` : elles ne tournent QUE s'il n'y a pas de refus d'écriture
-  // (ci-dessous), et un signal sort par `process.exit`. Un rouge, lui, ne l'arme jamais.
-  const dureesLanes = refusEcriture ? [] : await Promise.all(lanes.map(jouerLane))
+  const lanes = lanesAJouer(aJouer, { serie: SERIE, lanes: lanesDeclarees })
+  const dureesLanes = await Promise.all(lanes.map(jouerLane))
   const mur = secondesDepuis(debutTotal)
 
   // PHASE 3 — le RÉSUMÉ D'ABORD, dans l'ordre de ci.yml. L'ordonnancement en lanes ne doit pas
@@ -1117,7 +1007,7 @@ export async function principal({
     const v = verdicts.get(gate.nom)
     if (!v) continue
     const exit = typeof v.code === 'number' ? ` (exit ${v.code})` : ''
-    journal(`[gates] ${gate.nom} — ${v.statut}${exit} — ${v.secondes.toFixed(1)} s — ${v.fichier ?? v.raison}\n`)
+    journal(`[gates] ${gate.nom} — ${v.statut}${exit} — ${v.secondes.toFixed(1)} s — ${v.fichier}\n`)
     if (v.statut === 'vert') continue
     code = 1
     if (v.statut === 'EXPIRÉE') journal(`[gates]   expirée au plafond de ${(v.limiteMs / 1000).toFixed(0)} s (TIMEOUTS)\n`)
@@ -1136,19 +1026,15 @@ export async function principal({
       : '[gates] 0 spawn rejoué — aucune pression de chargement\n',
   )
   if (attenteVerrouMs) journal(`[gates] dont ${(attenteVerrouMs / 1000).toFixed(0)} s d'attente du verrou de suite\n`)
-  if (refusEcriture) {
-    journal(refusEcriture)
-    code = 1
-  }
 
-  // Les durées de CE run servent de coût estimé au prochain — écriture au mieux, jamais un verdict.
+  // Les durées de CE run sont la mesure des LANES et des TIMEOUTS — écriture au mieux, jamais un verdict.
   try {
     writeFileSync(
       fichierDurees(racine),
-      `${JSON.stringify(Object.fromEntries([...verdicts].filter(([, v]) => v.statut !== 'sautée').map(([n, v]) => [n, v.secondes])), null, 2)}\n`,
+      `${JSON.stringify(Object.fromEntries([...verdicts].map(([n, v]) => [n, v.secondes])), null, 2)}\n`,
     )
   } catch {
-    /* cache indisponible : le prochain résumé dira « coût inconnu » */
+    /* cache indisponible : la mesure de ce run est perdue, rien d'autre */
   }
 
   const photoFin = photoArbre(racine)

@@ -18,14 +18,15 @@
  * La part ÉDITORIALE (critère de décision, frontière donnée/machinerie, recettes) vit ICI.
  *
  * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * exit 1 si diff — jamais d'écriture en mode --check.
+ * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
  *
  *   node scripts/docs/build-mecanique.mjs
  */
 import { readFileSync, existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import ts from 'typescript'
-import { emitOrCheck, loadSource, firstSentence, jsdocBody } from './lib/jsdocUnion.mjs'
+import { loadSource, firstSentence, jsdocBody } from './lib/jsdocUnion.mjs'
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 
 const OUTIL = 'build-mecanique'
 const FLOWCORE = 'src/engine/flowCore.ts'
@@ -425,7 +426,7 @@ primitives, \`CLAUDE.md\`). Ne pas dupliquer une op qui existe déjà sous un au
 ${table(GARDES_MESUREES, ['Garde', 'Ce qu’elle verrouille (son propre `describe`)'], (g) => `| \`${g.p}\` | ${g.quoi} |`)}
 `
 
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path: 'docs/ajouter-une-mecanique.md',
   check: process.argv.includes('--check'),

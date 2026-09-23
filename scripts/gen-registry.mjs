@@ -4,14 +4,17 @@
  * cassé sous tsx) : l'index généré marche partout (app Vite, Vitest, scripts tsx), est
  * inspectable et sans coût runtime. Réutilisable pour créatures / tenues / modèles / etc.
  *
- *   node scripts/gen-registry.mjs
+ *   node scripts/gen-registry.mjs            (`npm run gen`, écrit)
+ *   node scripts/gen-registry.mjs --check    (ligne de `GENERATORS`, scripts/docs/build-all.mjs : compare sans écrire)
  *
  * Câblé dans `npm run gen` (+ `npm run build`). Ajouter une entrée = déposer un fichier
  * dans le `defs/` correspondant, puis relancer (auto en dev via le plugin Vite).
  */
-import { readdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { listerDossier } from './guards/lib/lister.mjs';
 import { join } from 'node:path';
 import { estFichierVitest } from './guards/lib/fichierVitest.mjs';
+import { ecrireOuVerifier } from './docs/lib/empreinte-sources.mjs';
 
 /**
  * `importDir` : chemin (relatif au fichier `out`) d'où importer chaque entrée. Défaut `./defs`
@@ -356,11 +359,23 @@ export const REGISTRIES = [
 // dans le même dossier `src/data/schemas/defs/` que le registre SCHEMA_DEFS ci-dessus — un fichier
 // déposé y est déjà repris par le générateur générique (aucune entrée REGISTRIES supplémentaire).
 
-function genOne(r) {
+/** Le registre des ids de la donnée (`genIds`). */
+const SORTIE_IDS = 'src/data/schemas/_ids.generated.ts';
+
+/** Tous les fichiers que ce générateur écrit EN ENTIER — ses cibles dans `GENERATORS` (build-all.mjs). */
+export const SORTIES = [...REGISTRIES.map((r) => r.out), SORTIE_IDS];
+
+/** Le rouge d'un registre périmé en `--check` : `genAll` résume lui-même le reste. */
+const MESSAGES_DE = (out) => ({
+  staleMsg: `gen-registry — ${out} est PÉRIMÉ (un fichier de defs ou une donnée a changé).`,
+  rerunMsg: '  → relancer `npm run gen` et committer le résultat.',
+});
+
+function genOne(r, check) {
   const importDir = r.importDir ?? './defs';
   let entries;
   try {
-    entries = readdirSync(r.dir);
+    entries = listerDossier(r.dir);
   } catch {
     return { arrayName: r.arrayName, dir: r.dir, files: 0, changed: false, missing: true };
   }
@@ -378,7 +393,7 @@ function genOne(r) {
   // `optionalFields` : champ qu'un module de def exporte OU NON (`meta`, #1466 — posée par
   // `document()`, absente des defs sans export `meta` ; adoption par def : lot L1b #1467).
   // Détection par CONVENTION D'EXPORT NOMMÉ,
-  // comme `file`/`schema`/`famille` : le générateur est TEXTUEL (readdirSync + regex, jamais d'import
+  // comme `file`/`schema`/`famille` : le générateur est TEXTUEL (listing + regex, jamais d'import
   // runtime), donc un export absent doit être vu AVANT d'être importé, sinon le module généré ne compile pas.
   const presents = (f) => (r.optionalFields ?? []).filter((fn) => new RegExp(`^export const ${fn}\\b`, 'm').test(readFileSync(join(r.dir, f), 'utf8')));
   const imports = files.map((f, i) => {
@@ -411,11 +426,8 @@ function genOne(r) {
     imports.join('\n') + '\n\n' +
     `export const ${r.arrayName}: ${r.type}[] = [${arr.join(', ')}];\n` +
     unionDecl;
-  // n'écrit que si le contenu change (évite de toucher le mtime → boucles de watch)
-  let prev = '';
-  try { prev = readFileSync(r.out, 'utf8'); } catch { /* nouveau */ }
-  const changed = prev !== body;
-  if (changed) writeFileSync(r.out, body);
+  // `ecrireDoc` n'écrit que si le contenu change (évite de toucher le mtime → boucles de watch).
+  const changed = !ecrireOuVerifier({ out: body, path: r.out, check, ...MESSAGES_DE(r.out) });
   return { arrayName: r.arrayName, dir: r.dir, files: files.length, changed, missing: false };
 }
 
@@ -532,7 +544,7 @@ export function idsDuDataset(racine, famille) {
  */
 export function discriminantsDeclares(dir = 'src/data/schemas/defs') {
   const parDataset = new Map();
-  for (const f of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts'))) {
+  for (const f of listerDossier(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts'))) {
     const src = readFileSync(join(dir, f), 'utf8');
     const dataset = src.match(/^export const file = '([^']+)';$/m)?.[1];
     const champ = src.match(/^export const discriminant = '([^']+)';$/m)?.[1];
@@ -571,7 +583,7 @@ export function idsParDiscriminant(racine, champ, dataset) {
 function famillesDeclarees() {
   const dir = 'src/data/schemas/defs';
   const parDataset = new Map();
-  for (const f of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts'))) {
+  for (const f of listerDossier(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts'))) {
     const src = readFileSync(join(dir, f), 'utf8');
     const dataset = src.match(/^export const file = '([^']+)';$/m)?.[1];
     const famille = src.match(/^export const famille = '([^']+)';$/m)?.[1];
@@ -604,9 +616,9 @@ export function verifieExhaustiviteDesIds(datasetsAIds, familles = famillesDecla
   if (fautes.length) throw new Error(`gen-registry: exhaustivité du registre d'ids — ${fautes.length} faute(s) :\n  ${fautes.join('\n  ')}`);
 }
 
-function genIds() {
+function genIds(check) {
   const dir = 'src/data';
-  const out = 'src/data/schemas/_ids.generated.ts';
+  const out = SORTIE_IDS;
   const ids = [];
   const specs = [];
   const cacheJson = new Map();
@@ -617,7 +629,7 @@ function genIds() {
   const familles = famillesDeclarees();
   const discriminants = discriminantsDeclares();
   const sousListes = [];
-  for (const f of readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
+  for (const f of listerDossier(dir).filter((f) => f.endsWith('.json'))) {
     let racine;
     try { racine = JSON.parse(readFileSync(join(dir, f), 'utf8')); } catch { continue; }
     const idsDuFichier = idsDuDataset(racine, familles.get(f));
@@ -697,10 +709,7 @@ function genIds() {
         `  ${lit(f)}: {\n${Object.entries(parValeur).map(([v, l]) => `    ${lit(v)}: [${l.map(lit).join(', ')}],\n`).join('')}  },\n`)
       .join('') +
     `};\n`;
-  let prev = '';
-  try { prev = readFileSync(out, 'utf8'); } catch { /* nouveau */ }
-  const changed = prev !== body;
-  if (changed) writeFileSync(out, body);
+  const changed = !ecrireOuVerifier({ out: body, path: out, check, ...MESSAGES_DE(out) });
   return { out, datasets: ids.length, ids: ids.reduce((n, [, l]) => n + l.length, 0), changed };
 }
 
@@ -712,8 +721,8 @@ function genIds() {
  * pass/fail de l'outil `rtk`. En mode verbose (exécution directe `npm run gen`), détail complet
  * inchangé (usage : audit manuel de ce que le générateur a vu).
  */
-export function genAll(verbose = false) {
-  const results = REGISTRIES.map(genOne);
+export function genAll(verbose = false, { check = false } = {}) {
+  const results = REGISTRIES.map((r) => genOne(r, check));
   let unchangedCount = 0;
   for (const res of results) {
     if (res.missing) {
@@ -726,7 +735,7 @@ export function genAll(verbose = false) {
       unchangedCount++;
     }
   }
-  const idsRes = genIds();
+  const idsRes = genIds(check);
   if (idsRes.changed || verbose) {
     console.log(`gen-registry: IDS_PAR_DATASET ← ${idsRes.ids} ids / ${idsRes.datasets} datasets (${idsRes.out})${idsRes.changed ? '' : ' [inchangé]'}`);
   } else {
@@ -739,5 +748,5 @@ export function genAll(verbose = false) {
 
 // Exécution directe (node scripts/gen-registry.mjs) : détail complet (audit manuel).
 if (import.meta.url === `file://${join(process.cwd(), 'scripts/gen-registry.mjs').replace(/\\/g, '/')}` || process.argv[1]?.endsWith('gen-registry.mjs')) {
-  genAll(true);
+  genAll(true, { check: process.argv.includes('--check') });
 }

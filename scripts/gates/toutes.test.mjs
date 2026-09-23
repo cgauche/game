@@ -3,7 +3,7 @@
 // joue que les nommées, un enfant qui dépasse son plafond tombe AVEC SON ARBRE, le refus du verrou
 // de suite se reconnaît à sa sortie — et la POLITIQUE D'ARRÊT comme le RÉSUMÉ se mesurent pour de
 // bon, sur un dépôt jetable à trois gates factices (c'est ce que
-// `principal({ racine, lanes, avant, ecritLu, journal })` rend possible).
+// `principal({ racine, lanes, ecritLu, journal })` rend possible).
 //   node --test scripts/gates/toutes.test.mjs
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -15,13 +15,11 @@ import { fileURLToPath } from 'node:url'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
   ATTENTE_VERROU,
-  AVANT_LES_LANES,
   COEURS_SUITE_EN_LANES,
   ECRIT_LU,
   LANES,
   TIMEOUTS,
   conflitsEntreLanes,
-  coutEstime,
   descendantsDe,
   estRefusDuVerrou,
   fichierDeSortie,
@@ -43,9 +41,9 @@ const RACINE = fileURLToPath(new URL('../..', import.meta.url))
 const NOMS = gatesDeCi({ cwd: RACINE }).map((g) => g.nom)
 const gate = (nom) => ({ nom, commande: `npm run ${nom}` })
 
-test('toute gate de ci.yml a une place — une lane, ou la phase série des écrivains', () => {
-  assert.deepEqual(refusDeCouverture(NOMS), [], 'LANES / AVANT_LES_LANES / ECRIT_LU ne couvrent pas ci.yml')
-  const placees = [...LANES.flatMap((l) => l.gates), ...AVANT_LES_LANES]
+test('toute gate de ci.yml a une place — une lane', () => {
+  assert.deepEqual(refusDeCouverture(NOMS), [], 'LANES / ECRIT_LU ne couvrent pas ci.yml')
+  const placees = LANES.flatMap((l) => l.gates)
   assert.equal(placees.length, NOMS.length, `${NOMS.length} gates dans ci.yml, ${placees.length} placées`)
   assert.equal(new Set(placees).size, placees.length, 'une gate placée deux fois')
 })
@@ -59,37 +57,37 @@ test('la couverture est un DÉTECTEUR : une gate déplacée hors de toute place 
   const inconnue = [...LANES, { nom: 'neuve', gates: ['gate-qui-nexiste-pas'] }]
   assert.match(refusDeCouverture(NOMS, inconnue).join('\n'), /gate-qui-nexiste-pas : nommée par la lane neuve/)
   assert.match(
-    refusDeCouverture(['vigie'], [{ nom: 'seule', gates: ['vigie'] }], {}, []).join('\n'),
+    refusDeCouverture(['vigie'], [{ nom: 'seule', gates: ['vigie'] }], {}).join('\n'),
     /vigie : aucune entrée ÉCRIT\/LU/,
   )
   // `lit` VIDE est un refus à part : c'est `lit` qui décide si la gate est sautable sur un push
   // documentaire (`gatesSautables`, scripts/gates/classerPush.mjs).
   assert.match(
-    refusDeCouverture(['muette'], [{ nom: 'seule', gates: ['muette'] }], { muette: { ecrit: [], lit: [] } }, []).join('\n'),
+    refusDeCouverture(['muette'], [{ nom: 'seule', gates: ['muette'] }], { muette: { ecrit: [], lit: [] } }).join('\n'),
     /muette : entrée ÉCRIT\/LU sans « lit »/,
   )
-  // Une gate à la fois en lane ET en phase série serait jouée deux fois.
+  // Une gate dans deux lanes serait jouée deux fois.
   assert.match(
-    refusDeCouverture(['x'], [{ nom: 'l', gates: ['x'] }], { x: { ecrit: [], lit: ['src/'] } }, ['x']).join('\n'),
-    /x : placée deux fois/,
+    refusDeCouverture(['x'], [{ nom: 'l', gates: ['x'] }, { nom: 'm', gates: ['x'] }], { x: { ecrit: [], lit: ['src/'] } }).join('\n'),
+    /x : placée deux fois \(la lane l ET la lane m\)/,
   )
 })
 
-test('aucune lane n’écrit ce qu’une AUTRE lit — les écrivains ont quitté les lanes', () => {
+test('aucune gate de ci.yml n’écrit dans l’arbre — aucune lane n’écrit ce qu’une AUTRE lit', () => {
   assert.deepEqual(conflitsEntreLanes(), [])
   for (const lane of LANES)
     for (const g of lane.gates)
-      assert.deepEqual(ECRIT_LU[g].ecrit, [], `${g} écrit à chaque run : sa place est AVANT_LES_LANES`)
+      assert.deepEqual(ECRIT_LU[g].ecrit, [], `${g} écrit à chaque run : un dérivé se VÉRIFIE (\`--check\`), il ne se réécrit pas en gate`)
 })
 
-test('le détecteur de course VOIT : un écrivain remis en lane rouvre le conflit', () => {
-  // MORSURE : `raw:coverage` ÉCRIT docs/raw/coverage.md (ECRIT_LU le dit) et la suite LIT docs/.
-  // Remis dans la lane docs, le conflit doit être nommé — sinon la table ne protège plus rien.
-  const lanes = LANES.map((l) => (l.nom === 'docs' ? { ...l, gates: [...l.gates, 'raw:coverage'] } : l))
-  const ecritLu = { ...ECRIT_LU, 'raw:coverage': { ...ECRIT_LU['raw:coverage'], ecrit: ['docs/raw/coverage.md'] } }
+test('le détecteur de course VOIT : un écrivain mis en lane ouvre le conflit', () => {
+  // MORSURE : un écrivain fictif de docs/raw/coverage.md dans la lane docs, alors que la suite LIT
+  // docs/ — le conflit doit être nommé, sinon la table ne protège plus rien.
+  const lanes = LANES.map((l) => (l.nom === 'docs' ? { ...l, gates: [...l.gates, 'ecrivain'] } : l))
+  const ecritLu = { ...ECRIT_LU, ecrivain: { ecrit: ['docs/raw/coverage.md'], lit: ['docs/'] } }
   assert.match(
     conflitsEntreLanes(lanes, ecritLu).join('\n'),
-    /lane docs : raw:coverage ÉCRIT docs\/raw\/coverage\.md · lane suite : test LIT docs\//,
+    /lane docs : ecrivain ÉCRIT docs\/raw\/coverage\.md · lane suite : test LIT docs\//,
   )
 })
 
@@ -105,9 +103,9 @@ test('chaque gate porte une RAISON, et chaque écriture fermée porte SA porte',
 test('--serie joue EXACTEMENT les mêmes gates que les lanes, dans l’ordre de ci.yml', () => {
   const aJouer = NOMS.map(gate)
   assert.deepEqual(lanesAJouer(aJouer, { serie: true })[0].gates, NOMS)
-  const sous = ['test', 'lint', 'docs:check'].map(gate)
-  assert.deepEqual(lanesAJouer(sous, { serie: true })[0].gates, ['test', 'lint', 'docs:check'])
-  assert.deepEqual(new Set(lanesAJouer(sous).flatMap((l) => l.gates)), new Set(['test', 'lint', 'docs:check']))
+  const sous = ['test', 'lint', 'docs:check:tout'].map(gate)
+  assert.deepEqual(lanesAJouer(sous, { serie: true })[0].gates, ['test', 'lint', 'docs:check:tout'])
+  assert.deepEqual(new Set(lanesAJouer(sous).flatMap((l) => l.gates)), new Set(['test', 'lint', 'docs:check:tout']))
   assert.deepEqual(lanesAJouer(sous).map((l) => l.nom), ['suite', 'types', 'docs'], 'une lane vide ne se lance pas')
 })
 
@@ -115,7 +113,7 @@ test('un plafond par gate, jamais un défaut muet', () => {
   assert.equal(limiteDe('gate-inconnue'), TIMEOUTS.defaut * 1000)
   assert.equal(limiteDe('test'), TIMEOUTS.test * 1000)
   assert.ok(TIMEOUTS.test > TIMEOUTS.defaut)
-  assert.ok(TIMEOUTS['docs:check'] >= 629, 'docs:check vaut 209,4 s quand il rejoue tout — ×3 = 629 s au moins')
+  assert.ok(TIMEOUTS['docs:check:tout'] >= 650, 'docs:check:tout vaut 216,4 s au pire observé — ×3 = 650 s au moins')
 })
 
 test('un enfant qui dépasse son plafond est EXPIRÉ, et son ARBRE tombe avec lui', async () => {
@@ -280,11 +278,6 @@ test('une photo de l’arbre IMPOSSIBLE ne LÈVE pas : elle se rend', () => {
   }
 })
 
-test('le coût estimé d’une gate sautée vient du dernier run, ou se dit inconnu', () => {
-  assert.equal(coutEstime({ test: 275.1 }, 'test'), '~275.1 s au dernier run')
-  assert.equal(coutEstime({}, 'test'), 'coût inconnu')
-})
-
 /**
  * Dépôt jetable : un `ci.yml` de gates FACTICES, un `package.json` qui les porte, un commit.
  * `principal` y est joué pour de vrai — c'est la seule façon de mesurer la politique d'arrêt et le
@@ -342,7 +335,6 @@ test('un ROUGE ne coupe RIEN : ce qui le suit dans sa lane est JOUÉ, et le rés
         { nom: 'b', gates: ['rouge', 'apres'] },
         { nom: 'c', gates: ['lente2'] },
       ],
-      avant: [],
       ecritLu: Object.fromEntries(['lente', 'rouge', 'apres', 'lente2'].map((n) => [n, { ecrit: [], lit: ['src/'] }])),
     })
     const sortie = lignes.join('')
@@ -353,7 +345,6 @@ test('un ROUGE ne coupe RIEN : ce qui le suit dans sa lane est JOUÉ, et le rés
     assert.match(sortie, /\[gates\] lente — vert \(exit 0\) — /)
     assert.match(sortie, /\[gates\] lente2 — vert \(exit 0\) — /)
     assert.match(sortie, /\[gates\] apres — vert \(exit 0\) — /, '`apres` suit un rouge dans SA lane : elle est jouée')
-    assert.doesNotMatch(sortie, /sautée/, 'un rouge ordinaire ne fait sauter aucune gate')
     assert.match(sortie, /ce rouge est le sujet/, 'la queue du rouge doit être imprimée')
     assert.match(sortie, /0 spawn rejoué/)
   } finally {
@@ -377,7 +368,6 @@ test('DEUX rouges dans DEUX lanes distinctes sont rendus par UN SEUL run', async
         { nom: 'a', gates: ['rouge1'] },
         { nom: 'b', gates: ['lente', 'rouge2'] },
       ],
-      avant: [],
       ecritLu: Object.fromEntries(['rouge1', 'rouge2', 'lente'].map((n) => [n, { ecrit: [], lit: ['src/'] }])),
     })
     const sortie = lignes.join('')
@@ -386,7 +376,6 @@ test('DEUX rouges dans DEUX lanes distinctes sont rendus par UN SEUL run', async
     assert.match(sortie, /\[gates\] rouge2 — ROUGE \(exit 7\) — /)
     assert.match(sortie, /premier rouge/)
     assert.match(sortie, /second rouge/)
-    assert.doesNotMatch(sortie, /sautée/)
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
@@ -411,7 +400,6 @@ test('--serie rend les MÊMES verdicts que les lanes : deux rouges, deux lignes,
         { nom: 'a', gates: ['rouge1'] },
         { nom: 'b', gates: ['lente', 'rouge2'] },
       ],
-      avant: [],
       ecritLu: Object.fromEntries(['rouge1', 'rouge2', 'lente'].map((n) => [n, { ecrit: [], lit: ['src/'] }])),
     })
     const sortie = lignes.join('')
@@ -421,7 +409,6 @@ test('--serie rend les MÊMES verdicts que les lanes : deux rouges, deux lignes,
     assert.match(sortie, /\[gates\] lente — vert \(exit 0\) — /)
     assert.match(sortie, /premier rouge/)
     assert.match(sortie, /second rouge/)
-    assert.doesNotMatch(sortie, /sautée/, 'une lane unique ne dispense pas de jouer ce qui suit un rouge')
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
@@ -439,7 +426,6 @@ test('DEUX rouges dans la MÊME lane sont tous deux JOUÉS et rendus', async () 
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
       lanes: [{ nom: 'a', gates: ['rouge1', 'rouge2'] }],
-      avant: [],
       ecritLu: Object.fromEntries(['rouge1', 'rouge2'].map((n) => [n, { ecrit: [], lit: ['src/'] }])),
     })
     const sortie = lignes.join('')
@@ -448,7 +434,6 @@ test('DEUX rouges dans la MÊME lane sont tous deux JOUÉS et rendus', async () 
     assert.match(sortie, /\[gates\] rouge2 — ROUGE \(exit 5\) — /)
     assert.match(sortie, /premier rouge/)
     assert.match(sortie, /second rouge/)
-    assert.doesNotMatch(sortie, /sautée/)
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
@@ -467,7 +452,6 @@ test('le RÉSUMÉ s’imprime même si la photo de fin devient impossible', asyn
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
       lanes: [{ nom: 'a', gates: ['saborde'] }],
-      avant: [],
       ecritLu: { saborde: { ecrit: [], lit: ['src/'] } },
     })
     const sortie = lignes.join('')
@@ -480,10 +464,9 @@ test('le RÉSUMÉ s’imprime même si la photo de fin devient impossible', asyn
   }
 })
 
-test('une gate de la phase SÉRIE qui réécrit l’arbre est REFUSÉE, en nommant le fichier', async () => {
+test('une gate qui réécrit l’arbre fait REFUSER le run à la photo de fin', async () => {
   const { racine } = depotDeGates([
     { nom: 'ecrivain', corps: `import { writeFileSync } from 'node:fs'\nwriteFileSync('rapport.md', 'périmé\\n')\n` },
-    { nom: 'ecrivain2', corps: LENTE },
     { nom: 'lecteur', corps: LENTE },
   ])
   try {
@@ -495,26 +478,17 @@ test('une gate de la phase SÉRIE qui réécrit l’arbre est REFUSÉE, en nomma
       racine,
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
-      lanes: [{ nom: 'a', gates: ['lecteur'] }],
-      // DEUX écrivains en série : le second ne doit pas être joué, et surtout pas passé pour justifié.
-      avant: ['ecrivain', 'ecrivain2'],
+      lanes: [{ nom: 'a', gates: ['ecrivain', 'lecteur'] }],
       ecritLu: {
-        ecrivain: { ecrit: ['rapport.md'], lit: ['src/'] },
-        ecrivain2: { ecrit: ['rapport.md'], lit: ['src/'] },
+        ecrivain: { ecrit: [], lit: ['src/'] },
         lecteur: { ecrit: [], lit: ['rapport.md'] },
       },
     })
     const sortie = lignes.join('')
-    assert.equal(code, 1)
-    assert.match(sortie, /« ecrivain » a RÉÉCRIT l'arbre/)
-    assert.match(sortie, /rapport\.md/, 'le refus doit NOMMER le fichier réécrit')
-    assert.match(sortie, /——— résumé ———/)
-    // Le lecteur n'a jamais démarré : l'écrivain a tranché AVANT les lanes, pas sept minutes plus tard.
-    assert.match(sortie, /\[gates\] lecteur — sautée/)
-    // L'écrivain RESTANT porte le même verdict, avec sa cause et son coût — jamais « déjà justifiée »,
-    // qui serait FAUX : elle n'a pas été jouée, donc elle ne justifie rien.
-    assert.match(sortie, /\[gates\] ecrivain2 — sautée — 0\.0 s — ecrivain a réécrit l'arbre — coût inconnu/)
-    assert.doesNotMatch(sortie, /ecrivain2 — déjà justifiée/)
+    assert.equal(code, 1, 'un arbre réécrit rend le run ROUGE, même quand chaque gate est verte')
+    assert.match(sortie, /\[gates\] ecrivain — vert/)
+    assert.match(sortie, /\[gates\] lecteur — vert/, 'un écrivain ne fait sauter aucune gate')
+    assert.match(sortie, /——— résumé ———[\s\S]*l'arbre a CHANGÉ pendant le run/)
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
@@ -546,7 +520,6 @@ const jouerAvecPrerequis = (racine, prerequis, lignes, argv) =>
     argv,
     journal: (t) => lignes.push(t),
     lanes: [{ nom: 'a', gates: ['serveur'] }],
-    avant: [],
     ecritLu: { serveur: { ecrit: [], lit: ['deps/'], prerequis } },
   })
 
@@ -589,7 +562,6 @@ test('un PRÉREQUIS absent ne fait sauter AUCUNE gate — ni sa lane, ni les aut
         { nom: 'a', gates: ['serveur', 'suivante'] },
         { nom: 'b', gates: ['voisine'] },
       ],
-      avant: [],
       ecritLu: {
         serveur: { ecrit: [], lit: ['deps/'], prerequis: [{ chemin: 'deps/absent', pose: 'cmd qui pose' }] },
         suivante: { ecrit: [], lit: ['src/'] },
@@ -604,7 +576,6 @@ test('un PRÉREQUIS absent ne fait sauter AUCUNE gate — ni sa lane, ni les aut
     assert.match(sortie, /\[gates\] suivante — vert \(exit 0\) — /, 'la MÊME lane continue après un refus de prérequis')
     assert.match(sortie, /\[gates\] voisine — ROUGE \(exit 9\) — /, 'une AUTRE lane rend son verdict réel')
     assert.match(sortie, /la voisine a son propre rouge/, 'les DEUX rouges sont rendus par un seul run')
-    assert.doesNotMatch(sortie, /sautée/)
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
@@ -652,7 +623,7 @@ test('tout PRÉREQUIS de la table est relatif, posé par une commande, et LU par
   assert.deepEqual(
     ECRIT_LU['server:typecheck'].prerequis,
     [{ chemin: 'server/node_modules', pose: 'npm --prefix server ci' }],
-    'le sous-projet serveur a ses propres dépendances (.github/workflows/ci.yml:86)',
+    'le sous-projet serveur a ses propres dépendances (step `npm --prefix server ci` de .github/workflows/ci.yml)',
   )
   // Le détecteur VOIT : un chemin absolu, un chemin hors des lectures, une pose absente.
   assert.match(
@@ -691,7 +662,6 @@ const lanceParGates = async (racine, argv, lignes) =>
     argv,
     journal: (t) => lignes.push(t),
     lanes: [{ nom: 'a', gates: ['alpha', 'beta'] }],
-    avant: [],
     ecritLu: { alpha: { ecrit: [], lit: ['src/'] }, beta: { ecrit: [], lit: ['src/'] } },
   })
 

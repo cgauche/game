@@ -1,8 +1,6 @@
 // CLASSEMENT D'UN PUSH — documentaire ou produit (#1738).
 //
-// Module FEUILLE : il n'importe que `node:*` et la constante SANS DÉPENDANCE du pathspec des
-// catalogues (`scripts/raw/gate-catalogues.mjs`, le seul site qui l'écrit). La CI l'exécute AVANT
-// `npm ci`, donc rien de `node_modules` ne peut l'atteindre, et `gatesSautables` reçoit
+// Module FEUILLE : il n'importe que `node:*`. La CI l'exécute AVANT `npm ci`, donc rien de `node_modules` ne peut l'atteindre, et `gatesSautables` reçoit
 // `ECRIT_LU`/`gatesDeCi()` en PARAMÈTRE au lieu de les importer.
 //
 // Ce qu'un push déclenche se décide par ce que les gates LISENT (`ECRIT_LU[gate].lit`,
@@ -13,7 +11,6 @@ import { execFileSync } from 'node:child_process'
 import { argv, env, exit, stderr, stdout } from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
-import { COMMANDE_GATE_CATALOGUES } from '../raw/gate-catalogues.mjs'
 
 /**
  * Chemins NON EXÉCUTABLES, chacun avec sa raison. Un push dont TOUS les fichiers changés tombent
@@ -45,10 +42,6 @@ export const DOCUMENTAIRE = {
  * toujours, puisque tout ce qui suit en dépend.
  */
 export const CI_SEULEMENT_PRODUIT = {
-  "npm run gen && git diff --exit-code -- '*.generated.ts'":
-    'confronte les registres générés à src/ et src/data/ — aucun chemin documentaire n’y entre',
-  [COMMANDE_GATE_CATALOGUES]:
-    'confronte les catalogues Atlas à Source/ et docs/raw/ — aucun chemin documentaire n’y entre',
   'npm --prefix server ci':
     'install du worker, prérequis du seul `server:typecheck` — inutile quand rien de server/ ne bouge',
 }

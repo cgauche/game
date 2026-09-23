@@ -5,10 +5,11 @@
 // Sortie : docs/campagne-effects.md.
 // Re-run : node scripts/docs/build-effects.mjs (npm run docs:effects).
 // Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
-// exit 1 avec message actionnable si diff — jamais d'écriture en mode --check.
+// corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
 // Lecture d'union / extraction JSDoc / écriture-vérification : scripts/docs/lib/jsdocUnion.mjs
 // (socle PARTAGÉ avec build-vocabulaire.mjs).
-import { indexerConstantes, readZodUnionMembers, renderFields, emitOrCheck } from './lib/jsdocUnion.mjs'
+import { indexerConstantes, readZodUnionMembers, renderFields } from './lib/jsdocUnion.mjs'
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 
 const SRC = 'src/data/schemas/defs-scenes/effets.ts'
 const SRC_OPS = 'src/data/schemas/grammaire/mecanique.ts'
@@ -37,7 +38,7 @@ for (const r of merged) {
 }
 out += `\n_${merged.length} Effects — dérivés de \`${SRC}\`._\n`
 
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path: OUT,
   check: process.argv.includes('--check'),

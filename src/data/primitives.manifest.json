@@ -285,7 +285,7 @@
     "fichier": "scripts/gen-registry.mjs",
     "concept": "registre-par-defs auto-chargé (dépose un fichier → intégré)",
     "perimetre": "tout dataset extensible (créatures, tenues, armes, sons, icônes…)",
-    "verrou": "npm run gen && git diff --exit-code"
+    "verrou": "npm run docs:check (ligne `GENERATORS` de scripts/docs/build-all.mjs)"
   },
   {
     "id": "menuCard",

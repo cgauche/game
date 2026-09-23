@@ -55,10 +55,9 @@ export function listerDossier(dir, { absent = 'lever' } = {}) {
  *   · `**` entre deux `/` vaut ZÉRO ou PLUSIEURS dossiers : le motif atteint la page posée à la
  *     racine comme celle posée sous un dossier de cœur.
  * C'est la grammaire que ce dépôt ÉCRIT (le motif des catalogues de l'Atlas,
- * `scripts/raw/gate-catalogues.mjs`, en aiguillage de fusion et en cible de générateur). Le PATHSPEC
+ * `scripts/raw/motif-catalogues.mjs`, en aiguillage de fusion et en cible de générateur). Le PATHSPEC
  * git nu ne la partage PAS — il est en `fnmatch` sans `FNM_PATHNAME`, où `*` traverse `/` et où
- * `**` suivi d'un `/` exige un dossier réel. C'est la magie `:(glob)` qui la lui donne, et c'est pourquoi
- * `gate-catalogues.mjs` DÉRIVE son pathspec du motif au lieu de l'écrire deux fois.
+ * `**` suivi d'un `/` exige un dossier réel ; seule la magie `:(glob)` la lui donne.
  * SEUL site du dépôt qui sait lire un motif.
  * @param {string} motif @returns {RegExp}
  */

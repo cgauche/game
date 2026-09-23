@@ -1,7 +1,8 @@
 // Générateur du champ `**Implémente :**` des fiches docs/raw/*.md (#487) : le champ est DÉRIVÉ du
 // code (jamais écrit à la main — cf. game-doc-derivee-jamais-ecrite-a-la-main). Patron de
 // build-systemes.mjs : manifest éditorial (src/data/raw.manifest.json) + calcul + mode --check qui
-// régénère en mémoire, compare au committé, exit 1 sans écrire.
+// régénère en mémoire, compare au committé sans écrire : fiche périmée = corps périmé
+// (`declarerCorpsPerime`), dette orpheline ou sans objet = sortie 1.
 // Re-run : node scripts/raw/build-implemente.mjs (npm run raw:implemente).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { parUnitesDeCode, listerArbre } from '../guards/lib/lister.mjs'
@@ -9,6 +10,7 @@ import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { refRe, span, bookOf, BOOKS, estLivreExtrait, esc, folioRange, allAbbrAlternation, pagesDeLAtlas, readText } from './_lib.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
+import { declarerCorpsPerime } from '../docs/lib/empreinte-sources.mjs'
 
 export const RAWDIR = 'docs/raw'
 export const SRC_DIR = 'src'
@@ -744,17 +746,16 @@ function main() {
   }
 
   if (CHECK) {
-    let failed = false
     if (touched.length) {
       console.error(`raw:implemente — ${touched.length} fiche(s) PÉRIMÉE(s) (champ Implémente divergent du code) :`)
       for (const r of touched) console.error(`  docs/raw/${r.doc}`)
       console.error('  → relancer `npm run raw:implemente` et committer.')
-      failed = true
+      declarerCorpsPerime()
     }
-    if (orphans.length) { printOrphans(orphans); failed = true }
-    if (sansObjet.length) { printSansObjet(sansObjet); failed = true }
-    if (failed) process.exit(1)
-    console.log('raw:implemente — OK (champs Implémente à jour · tout non-implémenté ticketé · toute dette de fiche couvre un topic)')
+    if (orphans.length) printOrphans(orphans)
+    if (sansObjet.length) printSansObjet(sansObjet)
+    if (orphans.length || sansObjet.length) process.exitCode = (Number(process.exitCode) || 0) | 1
+    if (!process.exitCode) console.log('raw:implemente — OK (champs Implémente à jour · tout non-implémenté ticketé · toute dette de fiche couvre un topic)')
     return
   }
 

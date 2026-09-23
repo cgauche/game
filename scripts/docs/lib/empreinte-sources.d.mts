@@ -55,3 +55,21 @@ export function deltaSourcesLues(
 ): { generateur: string; champ: 'cibles' | 'dossiers' | 'fichiers'; ajoutes: string[]; retires: string[] }[];
 
 export function existeFichier(chemin: string): boolean;
+
+export function porteUnPied(cible: string): boolean;
+
+export function ecrireDoc(chemin: string, contenu: string): void;
+
+export const CODE_CORPS_PERIME: number;
+
+export function declarerCorpsPerime(): void;
+
+export function ecrireOuVerifier(args: {
+  out: string;
+  path: string;
+  check: boolean;
+  staleMsg: string;
+  rerunMsg: string;
+  okMsg?: string;
+  writeMsg?: string;
+}): boolean;

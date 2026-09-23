@@ -8,10 +8,11 @@
 // aucun chemin de cœur n'est écrit.
 // Le reste de chaque page est MANUSCRIT : seuls les blocs entre marqueurs sont réécrits (patron
 // `injecte` de `scripts/docs/build-all.mjs`).
-// Re-run : node scripts/raw/build-atlas-index.mjs (`--check` : compare sans écrire, exit 1 si périmé).
+// Re-run : node scripts/raw/build-atlas-index.mjs (`--check` : compare sans écrire, corps périmé déclaré par `declarerCorpsPerime`).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { declarerCorpsPerime } from '../docs/lib/empreinte-sources.mjs'
 import { booksDe, coeursDe, coeursDuRegistre, domainesDe, livresDeCoeur, pagesDeLAtlas, REGISTRE_LIVRES } from './_lib.mjs'
 
 export const RAWDIR = 'docs/raw'
@@ -124,7 +125,7 @@ function regenerer() {
   }
   if (check && perimes.length) {
     console.error('build-atlas-index — relancer `node scripts/raw/build-atlas-index.mjs` et committer.')
-    process.exit(1)
+    declarerCorpsPerime()
   }
 }
 

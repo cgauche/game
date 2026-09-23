@@ -17,12 +17,12 @@
  * La part ÉDITORIALE (comment activer, quoi faire avant de rapporter une absence) vit ICI, en dur.
  *
  * Mode --check (chaîné dans npm run docs:check via scripts/docs/build-all.mjs) : régénère en
- * mémoire, compare au .md committé, exit 1 si diff — jamais d'écriture en mode --check.
+ * mémoire, compare au .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
  *
  *   node scripts/docs/build-regles-optionnelles.mjs
  */
 import { readFileSync, existsSync } from 'node:fs'
-import { emitOrCheck } from './lib/jsdocUnion.mjs'
+import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 
 const OUTIL = 'build-regles-optionnelles'
 const DATA = 'src/data/reglesOptionnelles.json'
@@ -243,7 +243,7 @@ rangée quand la règle atteint sa valeur de déclenchement.
 ${sectionsGroupes}
 `
 
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path: 'docs/regles-optionnelles.md',
   check: process.argv.includes('--check'),

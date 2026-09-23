@@ -301,8 +301,9 @@ export default tseslint.config(
     // elle-même ») ; le crochet de l'enregistreur de lectures porte ses exemptions AU SITE, avec leur raison.
     files: [
       'scripts/docs/**', 'scripts/raw/**', 'scripts/guards/lib/**',
-      // Les deux racines du registre qui ne vivent dans aucun de ces trois dossiers.
-      'scripts/gen-sorts-doc.mts', 'scripts/data/check-progression-schemas.mjs',
+      // Les racines du registre qui ne vivent dans aucun de ces trois dossiers.
+      'scripts/gen-registry.mjs', 'scripts/gen-quality-ids.mjs', 'scripts/gen-sorts-doc.mts',
+      'scripts/data/check-progression-schemas.mjs',
     ],
     ignores: ['scripts/guards/lib/lister.mjs'],
     rules: {

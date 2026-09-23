@@ -8,8 +8,8 @@
  * lit s.curated directement depuis la donnée JSON.
  *
  * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au
- * .md committé, exit 1 avec message actionnable si diff — jamais d'écriture en --check.
- * Composé via `emitOrCheck` de scripts/docs/lib/jsdocUnion.mjs.
+ * .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en --check.
+ * Composé via `ecrireOuVerifier` de scripts/docs/lib/empreinte-sources.mjs.
  *
  *   npx tsx scripts/gen-sorts-doc.mts
  */
@@ -17,7 +17,7 @@ import { spells } from '../src/data';
 import { spellSupport } from '../src/engine/spellspec';
 import { isMagicMissile } from '../src/engine/magic';
 import { spellOps } from '../src/state/flow';
-import { emitOrCheck } from './docs/lib/jsdocUnion.mjs';
+import { ecrireOuVerifier } from './docs/lib/empreinte-sources.mjs';
 import { parLibelle } from './guards/lib/lister.mjs';
 
 const ICON = { mecanique: '✅', partiel: '🟡', narratif: '📜' } as const;
@@ -86,7 +86,7 @@ lines.splice(10, 0,
 const out = lines.join('\n');
 const summary = `${spells.length} sorts — ✅ ${totals.mecanique} · 🟡 ${totals.partiel} · 📜 ${totals.narratif} · curés ${totals.curated}`;
 const path = 'docs/sorts-implementation.md';
-emitOrCheck({
+ecrireOuVerifier({
   out,
   path,
   check: process.argv.includes('--check'),
