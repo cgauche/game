@@ -57,7 +57,7 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
   `${c.dataset} | ${c.champ} | ${c.occurrences}`;
 
 /** Plafond du cliquet de `SLOTS_SANS_DECLARATION` — #1473. */
-const DETTE_ADOPTION_MAX = 292;
+const DETTE_ADOPTION_MAX = 283;
 
 /** Plafond du cliquet de `SLOTS_INATTEIGNABLES` — #1473. */
 const INATTEIGNABLES_MAX = 4;
@@ -172,10 +172,10 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
   });
 
   it('un couple ATTEINT EN PARTIE reste au stock à son compte OBSERVÉ total', () => {
-    const c = couple('talents.json', 'skill')!;
+    const c = couple('spells.json', 'skill')!;
     expect(c.atteintes).toBeGreaterThan(0);
     expect(c.atteintes).toBeLessThan(c.occurrences);
-    expect(SLOTS_SANS_DECLARATION.find((l) => l.dataset === 'talents.json' && l.champ === 'skill')?.occurrences).toBe(c.occurrences);
+    expect(SLOTS_SANS_DECLARATION.find((l) => l.dataset === 'spells.json' && l.champ === 'skill')?.occurrences).toBe(c.occurrences);
   });
 
   it('RÉCURSION : un `test.skill` sous un flux de dialogue est un slot (`loup-et-saumure-projet.json › skill`, joint)', () => {

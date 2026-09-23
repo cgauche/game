@@ -471,7 +471,6 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "sea-events.json", champ: "params", signature: "temperature+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "sea-shanties.json", champ: "captainOps", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
   { concept: "reference", dataset: "sea-shanties.json", champ: "crewOps", signature: "char+…", statut: "divergente", strate: "Référence", occurrences: 1, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "reference", dataset: "sea-weather.json", champ: "spec", signature: "projectiles", statut: "divergente", strate: "Référence", occurrences: 3, lot: "L3 #1463", date: "2026-08-23" },
   // #1716 : `semences-de-scene.json` — ce qu'une scène NEUVE reçoit à sa création porte les MÊMES
   // formes que les scènes qu'elle sème, par les MÊMES schémas (`reliefDefaultsSchema`,
   // `sceneRoofDefaultsSchema` de `defs-scenes/scene.ts`) : les deux records d'ids nus se mesurent en

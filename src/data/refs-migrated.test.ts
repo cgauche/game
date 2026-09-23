@@ -14,6 +14,7 @@ import {
   specLabel, refLabel, specEntryId, specEntryLabel, specResolves, SPEC_SOURCES, type SpecsSource, type SpecEntry, books,
 } from './index';
 import { avancement } from './schemas/grammaire/avancement';
+import { OPS_NON_TYPEES } from './schemas/grammaire/mecanique';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
@@ -382,14 +383,10 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     });
   });
 
-  // FILET SUR LE WALK, jamais sur `talents.passive` seul : `gameOpRefFk.mjs` est AVEUGLE aux réfs
-  // OBJET (angle mort déclaré :23-33), donc ce test EST la couverture des `skill.id` d'op. Une op de
-  // cette liste posée demain dans `traits.json`/`creatures.json`/un Flow de sort tombe ici.
-  // LISTE DÉRIVÉE de l'union `GameOp` : toute op dont le payload porte un slot `skill`.
-  const OPS_A_REF_DE_COMPETENCE = ['grantCareerSkill', 'skillMod', 'skillDRBonus', 'grantReverseToken', 'castPenalty', 'corruptionExposure'];
-  // Les ops dont la référence est OBLIGATOIRE (les autres admettent l'absence : `skillDRBonus` ancré
-  // sur un `testType` naval, `castPenalty` sur TOUTE magie, `grantReverseToken` sur tout Test).
-  const REF_DE_COMPETENCE_REQUISE = new Set(['grantCareerSkill', 'skillMod']);
+  // FILET SUR LE WALK des ops de `OPS_NON_TYPEES` à référence de Compétence : leur payload est loose,
+  // et `gameOpRefFk.mjs` est aveugle aux réfs OBJET (angle mort déclaré :23-33). Une op TYPÉE dans
+  // `OP_DEFS` (`grammaire/mecanique.ts`) quitte cette liste : son `refOuSpec('skill')` refuse au parse.
+  const OPS_A_REF_DE_COMPETENCE = ['grantReverseToken'];
 
   /** VERDICT PUR du filet, sur un corpus quelconque : la liste des graphies fautives rencontrées.
    *  L'extraire permet de MESURER que le filet mord (contrôle positif ci-dessous) au lieu de le
@@ -397,11 +394,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   const echecsDeRefDeCompetence = (corpus: unknown): string[] => {
     const echecs: string[] = [];
     walk(corpus, (o) => {
-      if (typeof o.op !== 'string' || !OPS_A_REF_DE_COMPETENCE.includes(o.op)) return;
-      if (o.skill == null) {
-        if (REF_DE_COMPETENCE_REQUISE.has(o.op)) echecs.push(`${o.op} sans référence de Compétence : ${JSON.stringify(o)}`);
-        return;
-      }
+      if (typeof o.op !== 'string' || !OPS_A_REF_DE_COMPETENCE.includes(o.op) || o.skill == null) return;
       if (!isObj(o.skill)) { echecs.push(`${o.op} sans réf emboîtée { skill: { id } } : ${JSON.stringify(o)}`); return; }
       if (o.spec !== undefined) echecs.push(`${o.op} : « spec » FRÈRE de « skill » — la spécialisation vit DANS la référence : ${JSON.stringify(o)}`);
       if (!byId('skill', (o.skill as { id: string }).id)) echecs.push(`${o.op} : id de Compétence qui ne résout pas : ${JSON.stringify(o)}`);
@@ -409,45 +402,18 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     return echecs;
   };
 
-  it('ops à référence de Compétence (grantCareerSkill, skillMod, skillDRBonus, grantReverseToken, castPenalty, corruptionExposure) = `skill: { id, spec? }` qui résout', () => {
-    // PÉRIMÈTRE EXHAUSTIF PAR CONSTRUCTION (`DOCUMENTS_AUTHORES`), jamais une liste de datasets : ces
-    // ops vivent aussi bien dans `traumas`/`trappings`/`tables`/`miscast`/`activities`/`drunkenness`/
-    // `mutations`/`naval-traits`/`sea-shanties` que dans les entités, et une liste se périme en
-    // silence — MESURÉ : la graphie plate remise dans `traumas.json` passait sous un walk listé.
+  it('ops à référence de Compétence NON TYPÉES (grantReverseToken) = `skill: { id, spec? }` qui résout', () => {
+    // PÉRIMÈTRE EXHAUSTIF PAR CONSTRUCTION (`DOCUMENTS_AUTHORES`), jamais une liste de datasets.
+    expect(OPS_A_REF_DE_COMPETENCE.filter((op) => !OPS_NON_TYPEES.includes(op)), 'op typée dans OP_DEFS : elle sort du filet').toEqual([]);
     expect(echecsDeRefDeCompetence(DOCUMENTS_AUTHORES)).toEqual([]);
   });
 
-  it('CONTRÔLE POSITIF — le filet MORD sur les deux graphies mortes (mutation EN MÉMOIRE, jamais au disque)', () => {
-    const corpus = DOCUMENTS_AUTHORES;
-    // Le corpus AU REPOS est propre : sans ça, les deux mesures ci-dessous ne prouveraient rien.
-    expect(echecsDeRefDeCompetence(corpus)).toEqual([]);
-
-    // (a) réf remise À PLAT (`skill: "corps-a-corps"`) — la régression mesurée sur `traumas.json`.
-    const aPlat = JSON.parse(JSON.stringify(corpus)) as unknown;
-    let mutesAPlat = 0;
-    walk(aPlat, (o) => {
-      if (typeof o.op !== 'string' || !OPS_A_REF_DE_COMPETENCE.includes(o.op) || !isObj(o.skill)) return;
-      const r = o.skill as { id: string; spec?: string };
-      if (r.spec != null) o.spec = r.spec;
-      o.skill = r.id;
-      mutesAPlat++;
-    });
-    expect(mutesAPlat, 'aucune réf à muter — le contrôle ne mesurerait rien').toBeGreaterThan(0);
-    expect(echecsDeRefDeCompetence(aPlat).length).toBe(mutesAPlat);
-    expect(echecsDeRefDeCompetence(aPlat)[0]).toContain('sans réf emboîtée');
-
-    // (b) `spec` remise en FRÈRE de `skill` — une seule occurrence suffit à faire rougir.
-    const specFrere = JSON.parse(JSON.stringify(corpus)) as unknown;
-    let pose = false;
-    walk(specFrere, (o) => {
-      if (pose || typeof o.op !== 'string' || !OPS_A_REF_DE_COMPETENCE.includes(o.op) || !isObj(o.skill)) return;
-      o.spec = 'bagarre';
-      pose = true;
-    });
-    expect(pose).toBe(true);
-    const echecs = echecsDeRefDeCompetence(specFrere);
-    expect(echecs).toHaveLength(1);
-    expect(echecs[0]).toContain('« spec » FRÈRE');
+  it('CONTRÔLE POSITIF — le filet MORD sur les trois graphies fautives (corpus EN MÉMOIRE)', () => {
+    const op = (x: Record<string, unknown>) => [{ op: 'grantReverseToken', ...x }];
+    expect(echecsDeRefDeCompetence(op({ skill: { id: 'calme' } }))).toEqual([]);
+    expect(echecsDeRefDeCompetence(op({ skill: 'calme' }))[0]).toContain('sans réf emboîtée');
+    expect(echecsDeRefDeCompetence(op({ skill: { id: 'calme' }, spec: 'bagarre' }))[0]).toContain('« spec » FRÈRE');
+    expect(echecsDeRefDeCompetence(op({ skill: { id: 'id-fantome' } }))[0]).toContain('ne résout pas');
   });
 
   it('ops grantCareerTalent (→ carrière) = réf par id qui résout (jamais un libellé)', () => {
@@ -457,16 +423,14 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   });
 
   // ── Spine des Tests : aucune compétence résolue par LIBELLÉ (multilangue) ──
-  // Un Test déclenché authoré est désormais un nœud de STRUCTURE Flow (`{kind:'test', test:FlowTest}`) ;
-  // ses Compétences (côté défenseur `test.skill`, côté attaquant OPPOSÉ `test.opposed.attackerSkill`)
-  // sont des skillId stables. L'op `test` SUBSISTE pour les tables d'Imparfaites/Colère (miscast, code).
-  // Les ops `test`/`skillMod`/`skillDRBonus` portent aussi un skillId. Tous doivent RÉSOUDRE.
-  it('FlowTest.skill / FlowTest.opposed.attackerSkill / ops test·skillMod·skillDRBonus → skillId qui résout (jamais un libellé)', () => {
+  // Un Test déclenché authoré est un nœud de STRUCTURE Flow (`{kind:'test', test:FlowTest}`) ; ses
+  // Compétences (côté défenseur `test.skill`, côté attaquant OPPOSÉ `test.opposed.attackerSkill`) sont
+  // des skillId stables. Tous doivent RÉSOUDRE.
+  it('FlowTest.skill / FlowTest.opposed.attackerSkill → skillId qui résout (jamais un libellé)', () => {
     const skillCarrying = [...spells, ...traits, ...maneuvers, ...qualities, ...creatures, ...stars];
     walk(skillCarrying, (o) => {
-      // RÉFÉRENCES emboîtées `{ id, spec? }` (le slot `skill` d'un conteneur de Test ou d'une op)…
+      // RÉFÉRENCES emboîtées `{ id, spec? }` (le slot `skill` d'un conteneur de Test)…
       const refs: unknown[] = [];
-      if ((o.op === 'test' || o.op === 'skillMod' || o.op === 'skillDRBonus') && o.skill != null) refs.push(o.skill);
       // …et l'id NU que reste `opposed.attackerSkill` (slot d'id, pas de référence — lot L3).
       const ids: unknown[] = [];
       if (o.kind === 'test' && isObj(o.test)) {
@@ -665,10 +629,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       if (Array.isArray(node)) { node.forEach((x) => walk(x, where)); return; }
       if (!isObj(node)) return;
       const idLike = (node.id ?? node.skillId ?? node.talentId ?? node.skill) as string | undefined;
-      if (typeof idLike === 'string') {
-        if (isObj(node.spec)) { for (const [k, v] of Object.entries(node.spec)) checkSpec(k, v, `${where}.spec{${k}}`); }
-        else checkSpec(idLike, node.spec, where);
-      }
+      if (typeof idLike === 'string') checkSpec(idLike, node.spec, where);
       const wcId = (node.wildcard as { id?: string } | undefined)?.id;
       if (wcId && Array.isArray(node.specOptions)) for (const so of node.specOptions as unknown[]) checkSpec(wcId, so, `${where}.wildcard{${wcId}}.specOptions`);
       for (const v of Object.values(node)) walk(v, where);

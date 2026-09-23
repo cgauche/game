@@ -4,15 +4,11 @@
  * quotidien (table 4 aspects), modificateur saisonnier, catalogues d'aspect (Précipitations /
  * Température / Visibilité / Vents), rose des vents, effet du vent (standard + Clinfoc), Affaler les
  * voiles, Encalminé.
- *
- * `precipitations[].skillMods[].spec` (ex. `{ "projectiles": "poudre-noire" }`) gate le mod sur la
- * spécialisation d'arme quand le `skillId` seul est ambigu (Projectiles (Poudre noire) uniquement,
- * pas Projectiles (Arc)) — lu par `precipitationSkillMod(precip, skillId, spec)` dans
- * `src/engine/seaWeather.ts` (#162).
  */
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
 import { difficultySchema, enumNomme, plageSchema, sourceRefSchema } from '../grammaire/valeurs';
+import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'sea-weather.json';
 export const famille = 'config';
@@ -63,9 +59,8 @@ const champs = {
       skillMods: z
         .array(
           z.strictObject({
-            skills: z.array(z.string()),
-            /** Spécialisation requise par `skillId` (ex. `{ projectiles: 'poudre-noire' }`) — cf. tête de fichier. */
-            spec: z.record(z.string(), z.string()).optional(),
+            /** MDG 13 l.187-201. */
+            skills: z.array(refOuSpec('skill')),
             mod: z.number(),
           }),
         )

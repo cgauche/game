@@ -278,11 +278,15 @@ describe('formes re-tapées et portes étendues — stock nominatif daté, DÉCR
       .map(({ f, t }) => `${f.rel}:${t.symbole}${t.champ ? '.' + t.champ : ''}|${t.detail}`)
       .sort();
     expect(dansLaGrammaire).toEqual([
+      'src/data/schemas/grammaire/mecanique.ts:OP_DEFS.castPenalty|skill',
       'src/data/schemas/grammaire/mecanique.ts:OP_DEFS.corruptionExposure|skill',
       // `domeWard` est une op TYPÉE (`OP_DEFS`, #1508 T3 G0) : le Trait que le dôme octroie se nomme par
       // la graphie CANONIQUE d'un octroi (`traitId`), la même que `removeTrait` — d'où la ligne ici.
       'src/data/schemas/grammaire/mecanique.ts:OP_DEFS.domeWard|traitId',
+      'src/data/schemas/grammaire/mecanique.ts:OP_DEFS.grantCareerSkill|skill',
       'src/data/schemas/grammaire/mecanique.ts:OP_DEFS.removeTrait|traitId',
+      'src/data/schemas/grammaire/mecanique.ts:OP_DEFS.skillDRBonus|skill',
+      'src/data/schemas/grammaire/mecanique.ts:OP_DEFS.skillMod|skill',
       'src/data/schemas/grammaire/mecanique.ts:conditionSchema|trappingId',
       'src/data/schemas/grammaire/mecanique.ts:extendedTestSchema|skill',
       'src/data/schemas/grammaire/mecanique.ts:flowTestSchema|skill',

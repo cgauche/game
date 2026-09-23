@@ -1027,7 +1027,9 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // #1473 R1 : 397 → 385 — DOUZE lignes `char+…`/`act+…` sortent sans un octet de donnée changé :
       // `char` et `act` sont des littéraux d'enum DÉCLARÉS, que `choixDeclares` atteint depuis que sa
       // descente n'est plus bornée.
-      'L3 #1463': 385,
+      // #1473 R1-bis : 385 → 384 — `sea-weather.json › spec` (record `{ projectiles: 'poudre-noire' }`)
+      // meurt : la spécialisation vit DANS la référence de `skills[]` (`refOuSpec('skill')`).
+      'L3 #1463': 384,
       // L4 #1463 : 220 → 219 (commit 3b) — les deux formes de `activities.json › skills` fusionnent en
       // une seule dès que la référence sort de leur signature.
       // … puis 219 → 221 (#674) : le Test quotidien de la Pneumonie compte DEUX fois — sa forme en

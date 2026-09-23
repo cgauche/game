@@ -109,8 +109,6 @@ import { dataLabel } from '../data';
 // au Codex — la scène d'abordage est compilée, elle n'authore pas son sol.
 import { defautsDeCompilation } from '../data';
 import { t, t as tr } from '../i18n'; // `tr` : alias pour les portées où `t` est un identifiant local (résultat de jet)
-import { libelleDeValeur } from '../data/schemas/grammaire/meta';
-import { windAspectSchema } from '../data/schemas/defs/sea-weather';
 
 import { stepPrecision, idDansLaSequence } from './rollSeam';
 import { actorIn } from './combatants';
@@ -422,7 +420,7 @@ export function spoilVesselCargoOnLeak(get: Get, set: Set): string[] {
 /** M de VOYAGE du jour (ch.13/15) : M du gréement + Lissage (`navalMoveMod`) + Salissures + événement,
  *  puis EFFET DU VENT (%, Clinfoc — ch.13 l.274/ch.12 l.254). `null` = les voiles n'avancent pas
  *  (Encalminé / Affaler) — Propulsion à vapeur : M 4 constant, insensible au vent (ch.12 l.311). */
-function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: PropulsionKind | null; label: string; affaler: boolean } {
+function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: PropulsionKind | null; affaler: boolean } {
   const plan = get().travelPlan!;
   const sea = plan.sea!;
   const hull = plan.vehicle!;
@@ -430,7 +428,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
   const traits = hullNavalTraits(hull);
   const vessel = get().vessel;
   if (shipHasNavalTrait(traits, 'propulsion-a-vapeur')) {
-    return { m: 4, sail: false, mode: null, label: t('sv.steamMode'), affaler: false }; // MDG 12 l.311
+    return { m: 4, sail: false, mode: null, affaler: false }; // MDG 12 l.311
   }
   const propulsion = vesselPropulsion(vd);
   const sail = propulsion?.mode === 'voile';
@@ -450,8 +448,7 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
   const cell = windEffect(sea.weather.vent, aspect, rigging);
   const m = windAdjustedM(Math.max(0, baseM), cell, sail);
   const affaler = !!(cell.affaler && sail);
-  const label = cell.encalmine && sail ? t('sv.becalmed') : affaler ? t('sv.strikeSails') : libelleDeValeur(windAspectSchema, aspect);
-  return { m, sail, mode: propulsion?.mode ?? null, label, affaler };
+  return { m, sail, mode: propulsion?.mode ?? null, affaler };
 }
 
 // ── Test d'équipage de VOYAGE (hors combat — l'équipage = les PJ) ────────────────────────────────

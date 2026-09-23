@@ -582,6 +582,7 @@ export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/sea-weather.json', ref: 'lateral | pctSail', occurrence: 1 },
   { fichier: 'src/data/sea-weather.json', ref: 'lateral | pctSail,virement', occurrence: 1 },
   { fichier: 'src/data/sea-weather.json', ref: 'legere-brise | arriere,face,lateral', occurrence: 1 },
+  { fichier: 'src/data/sea-weather.json', ref: 'skillMods | mod,skills', occurrence: 1 },
   { fichier: 'src/data/sea-weather.json', ref: 'vent-modere | arriere,face,lateral', occurrence: 1 },
   { fichier: 'src/data/sea-weather.json', ref: 'vent-violent | arriere,face,lateral', occurrence: 1 },
   { fichier: 'src/data/sea-weather.json', ref: 'violente-tempete | arriere,face,lateral', occurrence: 1 },

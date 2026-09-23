@@ -16,6 +16,10 @@ import { idDe, ref, refs, refOuSpec } from './ref';
 /** `PerSL` (`src/engine/ops.ts:146`) — échelle « par +N DR » d'un payload d'op. */
 export const perSLSchema = z.strictObject({ every: z.number(), amount: z.number(), onFailure: z.boolean().optional() });
 
+/** SENS engagé par un Test (`FlowTest.sense` — Perception : vue ou ouïe) ; le libellé est celui de la
+ *  phrase qui le montre au joueur (op `senseLoss` : « perd la vue »). */
+export const senseSchema = enumNomme({ vue: 'la vue', ouie: "l'ouïe" });
+
 /**
  * Payload STRICT par op (`src/engine/ops.ts`, union `GameOp`). Chaque entrée est un contrat POSITIF
  * vérifié sur toutes les occurrences réelles de l'op dans les 2 racines authorées.
@@ -100,6 +104,28 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     testDR: z.number().optional(),
     suffocates: z.boolean().optional(),
   }),
+  skillMod: z.strictObject({ op: z.literal('skillMod'), skill: refOuSpec('skill'), mod: z.number(), sense: senseSchema.optional() }),
+  /** `testType` : id de `crew-test-types.json`, document `config` dont les ids vivent sous `types[]` —
+   *  hors du registre `IDS_PAR_DATASET` (`scripts/gen-registry.mjs`, `idsDuDataset`) ; clé étrangère
+   *  tenue par `scripts/guards/lib/gameOpRefFk.mjs`. */
+  skillDRBonus: z.strictObject({
+    op: z.literal('skillDRBonus'),
+    skill: refOuSpec('skill').optional(),
+    bonus: formulaSchema,
+    testType: z.string().optional(),
+  }),
+  castPenalty: z.strictObject({
+    op: z.literal('castPenalty'),
+    skill: refOuSpec('skill').optional(),
+    mod: z.number().optional(),
+    blocked: z.boolean().optional(),
+    maxZeroDR: z.boolean().optional(),
+    rounds: formulaSchema.optional(),
+    minutes: formulaSchema.optional(),
+    hours: formulaSchema.optional(),
+    days: formulaSchema.optional(),
+  }),
+  grantCareerSkill: z.strictObject({ op: z.literal('grantCareerSkill'), skill: refOuSpec('skill') }),
 };
 
 /**
@@ -112,17 +138,17 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
  */
 export const OPS_NON_TYPEES: readonly string[] = [
   'actGate', 'ap', 'armourPierce', 'arrowWard', 'attackKeyword', 'attackWardFM', 'attrMod', 'augmentWeapon',
-  'beginPsych', 'breakBlade', 'castPenalty', 'castWard', 'chain', 'charDRBonus', 'charDamage', 'charMod',
+  'beginPsych', 'breakBlade', 'castWard', 'chain', 'charDRBonus', 'charDamage', 'charMod',
   'condition', 'contractDisease', 'crewTestMod', 'critOnRoll', 'critTwice', 'cureCriticalWound', 'cureDisease',
   'damageArmour', 'delayed', 'disarm', 'diseaseTestMod', 'endPsych', 'endTransform', 'exposeDisease',
-  'freeReroll', 'gainAdvantage', 'gainResource', 'giveTrapping', 'grantCareerSkill', 'grantCareerTalent',
+  'freeReroll', 'gainAdvantage', 'gainResource', 'giveTrapping', 'grantCareerTalent',
   'grantFreeAttack', 'grantNaturalWeapon', 'grantPsychTrait', 'grantReverseToken', 'grantTalent', 'grantTrait',
   'grantWeapon', 'handGate', 'ignoreAnimosity', 'ignoreStatePenalties', 'incomingAdvantage', 'incomingAttackMod',
   'incomingSpellDRMod', 'interruptFocus', 'intoxicate', 'lifeSteal', 'light', 'martyr', 'maxWeaponHands',
   'mitigateIncoming', 'moveMod', 'moveScale', 'narrative', 'perRound', 'polymorph',
   'preventInfection', 'push', 'reduceDiseaseDays', 'reduceToZero', 'removeCondition', 'removePsychTrait',
   'removeShipPoste', 'rollMutation', 'rollTable', 'rollThreshold', 'sbBonus', 'scheduleRespawn', 'senseLoss',
-  'sinMod', 'skillDRBonus', 'skillMod', 'spendAdvantage', 'statusMod', 'summon', 'suppressPsych',
+  'sinMod', 'spendAdvantage', 'statusMod', 'summon', 'suppressPsych',
   'suppressSymptom', 'teamCommander', 'teleport', 'testMod', 'transform', 'weaponDamageMod', 'weaponRollMod',
   'weatherWard', 'wounds', 'zone',
 ];
@@ -251,9 +277,6 @@ export const startleCauseSchema = enumNomme({ noise: 'Bruits forts', magic: 'Mag
 /** Nature de l'appartenance testée par la Condition `has`. */
 export const hasWhatSchema = enumNomme({ group: 'le Groupe', talent: 'le Talent', trait: 'le Trait', psych: 'l’état psy' });
 
-/** SENS engagé par un Test (`FlowTest.sense` — Perception : vue ou ouïe) ; le libellé est celui de la
- *  phrase qui le montre au joueur (op `senseLoss` : « perd la vue »). */
-export const senseSchema = enumNomme({ vue: 'la vue', ouie: "l'ouïe" });
 
 const charRefSchema = z.strictObject({ who: actorRefSchema, char: charKeySchema, bonus: z.boolean().optional() });
 const compareSubjectSchema = z.union([

@@ -1077,8 +1077,8 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 
 | Concept | Signature du lexique | Statut | Occurrences |
 |---|---|---|---|
-| reference | `id` | cible | 8987 |
-| reference | `id,spec` | cible | 1327 |
+| reference | `id` | cible | 9003 |
+| reference | `id,spec` | cible | 1330 |
 | reference | `choix,id` | cible | 278 |
 | reference | `id,type` | cible | 0 |
 | reference | `count,id,type` | cible | 0 |
@@ -1110,7 +1110,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `random` | historique | 21 |
 | reference | `text` | declaree | 577 |
 | reference | `id-nu` | historique | 2235 |
-| refs | `ids-nus` | cible | 630 |
+| refs | `ids-nus` | cible | 625 |
 | monnaie | `brass,gold,silver` | cible | 465 |
 | monnaie | `brass` | cible | 0 |
 | monnaie | `gold` | cible | 27 |
@@ -1154,8 +1154,8 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **869** (cible 404 · declaree 6 · historique 131 · divergente 328). Objets JSON parcourus : **49909**, dont **32310** portent une forme
-mesurée. Champs porteurs de référence MESURÉS : **87**.
+Lignes concept × dataset × champ × forme : **869** (cible 405 · declaree 6 · historique 131 · divergente 327). Objets JSON parcourus : **49925**, dont **32321** portent une forme
+mesurée. Champs porteurs de référence MESURÉS : **86**.
 
 Entrées de racine sans concept de valeur : **4140** sur **4227** —
 un document n’est ni orphelin ni hors strate : ce compte est le seul porteur de ce qu’aucun concept ne revendique.
@@ -1163,7 +1163,7 @@ Dont, NOMMÉES, celles qu’un concept de valeur revendiquerait sans la clause `
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-482 ligne(s), 24763 occurrence(s).
+483 ligne(s), 24779 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1479,7 +1479,8 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `captainOps` | `char+…` | divergente | `sea-shanties.json` | 1 | — | `characteristics.json` |  |
 | entité | `crewOps` | `char+…` | divergente | `sea-shanties.json` | 1 | — | `characteristics.json` |  |
 | entité | `skill` | `id` | cible | `sea-shanties.json` | 3 | — | `crew-test-types.json` `drunkenness.json` `river-navigation.json` `skills.json` |  |
-| config | `spec` | `projectiles` | divergente | `sea-weather.json` | 3 | — | `weaponGroups.json` |  |
+| config | `skills` | `id` | cible | `sea-weather.json` | 16 | — | `crew-test-types.json` `skills.json` |  |
+| config | `skills` | `id,spec` | cible | `sea-weather.json` | 3 | — | `skills.json` `weaponGroups.json` |  |
 | config | `reliefDefaults` | `cliff,deck,pilier,ramp` | divergente | `semences-de-scene.json` | 1 | — | `materials.json` `terrains.json` |  |
 | config | `roofDefaults` | `material+…` | divergente | `semences-de-scene.json` | 1 | — | `materials.json` |  |
 | config | `terrain` | `id-nu` | historique | `semences-de-scene.json` | 1 | — | `terrains.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
@@ -1653,7 +1654,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 
 ### 3.2 liste de références (ids nus) — `refs` (strate Référence)
 
-73 ligne(s), 630 occurrence(s).
+72 ligne(s), 625 occurrence(s).
 Reconnu par : tableau de chaînes dont au moins un élément résout
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1712,7 +1713,6 @@ Reconnu par : tableau de chaînes dont au moins un élément résout
 | entité | `options` | `ids-nus` | cible | `reglesOptionnelles.json` | 3 | `gods.json` `groups.json` `naval-progression.json` `sea-events.json` `skills.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | config | `stations` | `ids-nus` | cible | `river-criticals.json` | 3 | `naval-traits.json` `ship-stations.json` `spells.json` `vehicles.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | config | `skills` | `ids-nus` | cible | `sea-events.json` | 1 | `activities.json` `maladies.json` `skills.json` `talents.json` `water-exposure.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
-| config | `skills` | `ids-nus` | cible | `sea-weather.json` | 5 | `crew-test-types.json` `skills.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | config | `stations` | `ids-nus` | cible | `ship-criticals.json` | 11 | `naval-traits.json` `ship-stations.json` `spells.json` `vehicles.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `max` | `ids-nus` | cible | `skills.json` | 1 | `characteristics.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `grantGroups` | `ids-nus` | cible | `species.json` | 27 | `creatures.json` `groups.json` `names.json` `raceAppearance.json` `skills.json` `species.json` … | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
@@ -2519,14 +2519,14 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13604** objets sur **49909** ne sont portés par AUCUNE
+Au-delà des orphelines, **13609** objets sur **49925** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1196** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1197** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2803,6 +2803,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `naval-ports.json` | `demande` | `armes,cereales` | 5 |
 | `naval-traits.json` | `weightEnc` | `bands,per` | 5 |
 | `psychology.json` | `attackDR` | `amount,vs` | 5 |
+| `sea-weather.json` | `skillMods` | `mod,skills` | 5 |
 | `ship-construction.json` | `oars` | `crew,m` | 5 |
 | `ship-criticals.json` | `ops` | `hauteur,op` | 5 |
 | `ship-criticals.json` | `hauteur` | `table` | 5 |
@@ -3804,7 +3805,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `sea-perils.ts` | 32 | `freeTest` | test | divergente | `char,difficulty,skill+…` | — |
 | `sea-perils.ts` | 57 | `evasion` | test | divergente | `difficulty+…` | — |
 | `sea-perils.ts` | 68 | `tourbillonSwim` | test | divergente | `difficulty,skill+…` | — |
-| `sea-weather.ts` | 109 | `affaler` | test | divergente | `difficulty+…` | — |
+| `sea-weather.ts` | 104 | `affaler` | test | divergente | `difficulty+…` | — |
 | `spells.ts` | 29 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 30 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 38 | — | — | hors lexique | `kind` | `conditionSchema` |
@@ -4277,7 +4278,7 @@ dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **29892**, sur **132** paths de donnée.
+Slots déclarés : **30002**, sur **146** paths de donnée.
 
 ### 6.1 Registre des slots — une ligne par (document, path, type)
 
@@ -4338,6 +4339,7 @@ ces slots sont des cases (jointure par occurrence) — « — » quand ils n’e
 | `diligence-projet.json` | `scenes[].roofDefaults.material` | `material` | 2 | `diligence-projet.json \| roofDefaults` |
 | `domains.json` | `[].windModifiers[].cancelledBy.requiresSkill.id` | `skill` | 2 | `domains.json \| requiresSkill` |
 | `domains.json` | `[].windModifiers[].cancelledBy.test.skill.id` | `skill` | 2 | `domains.json \| skill` |
+| `drunkenness.json` | `entries[].ops[].skill.id` | `skill` | 1 | — |
 | `etats.json` | `[].effects[].flow.test.skill.id` | `skill` | 3 | `etats.json \| skill` |
 | `etats.json` | `[].recover.skill.id` | `skill` | 1 | `etats.json \| skill` |
 | `incidents-monture.json` | `entries[].mount.riderTest.skill.id` | `skill` | 2 | `incidents-monture.json \| skill` |
@@ -4364,6 +4366,8 @@ ces slots sont des cases (jointure par occurrence) — « — » quand ils n’e
 | `miscast.json` | `[].entries[].test.onFailHard.ops[].unlessCondition` | `etat` | 1 | `miscast.json \| ops` |
 | `miscast.json` | `[].entries[].test.skill.id` | `skill` | 13 | `miscast.json \| skill` |
 | `mutations.json` | `[].effects[].flow.effect.ops[].traitId` | `trait` | 1 | `mutations.json \| ops` |
+| `mutations.json` | `[].passive[].skill.id` | `skill` | 2 | `mutations.json \| skill` |
+| `naval-traits.json` | `[].passive[].skill.id` | `skill` | 3 | `naval-traits.json \| skill` |
 | `props.json` | `[].volume.primitives[].material` | `material` | 297 | `props.json \| primitives` |
 | `psychology.json` | `[].test.skill.id` | `skill` | 7 | `psychology.json \| skill` |
 | `qualities.json` | `[].effects[].flow.then.test.skill.id` | `skill` | 1 | `qualities.json \| skill` |
@@ -4374,6 +4378,8 @@ ces slots sont des cases (jointure par occurrence) — « — » quand ils n’e
 | `river-criticals.json` | `tables.superstructure[].crewHit.crewTarget.stations[]` | `shipStation` | 1 | `river-criticals.json \| stations` |
 | `sea-cargo.json` | `opportunite.test.skill.id` | `skill` | 1 | — |
 | `sea-perils.json` | `tourbillonSwim.skill.id` | `skill` | 1 | — |
+| `sea-shanties.json` | `[].crewOps[].skill.id` | `skill` | 3 | `sea-shanties.json \| skill` |
+| `sea-weather.json` | `precipitations[].skillMods[].skills[].id` | `skill` | 19 | `sea-weather.json \| skills` |
 | `semences-de-scene.json` | `reliefDefaults.cliff` | `material` | 1 | `semences-de-scene.json \| reliefDefaults` |
 | `semences-de-scene.json` | `reliefDefaults.deck` | `material` | 1 | `semences-de-scene.json \| reliefDefaults` |
 | `semences-de-scene.json` | `reliefDefaults.pilier` | `material` | 1 | `semences-de-scene.json \| reliefDefaults` |
@@ -4393,9 +4399,11 @@ ces slots sont des cases (jointure par occurrence) — « — » quand ils n’e
 | `species.json` | `[].skills[].id` | `skill` | 315 | `species.json \| skills` |
 | `species.json` | `[].talents[].id` | `talent` | 77 | `species.json \| talents` |
 | `species.json` | `[].talents[].of[].id` | `talent` | 78 | `species.json \| of` |
+| `spells.json` | `[].effects.steps[].effect.ops[].skill.id` | `skill` | 13 | `spells.json \| skill` |
 | `spells.json` | `[].effects.steps[].effect.ops[].traitId` | `trait` | 1 | `spells.json \| ops` |
 | `spells.json` | `[].effects.steps[].fail.steps[].test.skill.id` | `skill` | 1 | `spells.json \| skill` |
 | `spells.json` | `[].effects.steps[].test.skill.id` | `skill` | 26 | `spells.json \| skill` |
+| `spells.json` | `[].effects.steps[].then.effect.ops[].skill.id` | `skill` | 4 | `spells.json \| skill` |
 | `spells.json` | `[].effects.steps[].then.steps[].test.skill.id` | `skill` | 2 | `spells.json \| skill` |
 | `spells.json` | `[].effects.steps[].yes.test.skill.id` | `skill` | 1 | `spells.json \| skill` |
 | `spells.json` | `[].variants[].effects.steps[].test.skill.id` | `skill` | 1 | `spells.json \| skill` |
@@ -4403,8 +4411,10 @@ ces slots sont des cases (jointure par occurrence) — « — » quand ils n’e
 | `structures.json` | `[].traits[].id` | `trait` | 5 | `structures.json \| traits` |
 | `symptoms.json` | `[].onTick.test.test.skill.id` | `skill` | 2 | `symptoms.json \| skill` |
 | `tables.json` | `[].rows[].ops[].montant.brass.times.of.rule` | `regleOptionnelle` | 1 | `tables.json \| of` |
+| `tables.json` | `[].rows[].ops[].skill.id` | `skill` | 15 | `tables.json \| skill` |
 | `talents.json` | `[].combat.reverseFailed.skills[].id` | `skill` | 9 | `talents.json \| skills` |
 | `talents.json` | `[].effects[].flow.test.skill.id` | `skill` | 2 | `talents.json \| skill` |
+| `talents.json` | `[].passive[].skill.id` | `skill` | 5 | `talents.json \| skill` |
 | `talents.json` | `[].test.matches[].skill.id` | `skill` | 112 | `talents.json \| skill` |
 | `talents.json` | `[].variants[].test.matches[].skill.id` | `skill` | 4 | `talents.json \| skill` |
 | `tavernGames.json` | `[].options[].skill.id` | `skill` | 4 | `tavernGames.json \| skill` |
@@ -4412,16 +4422,21 @@ ces slots sont des cases (jointure par occurrence) — « — » quand ils n’e
 | `tavernGames.json` | `[].throwerPenalty.test.skill.id` | `skill` | 1 | `tavernGames.json \| skill` |
 | `terrains.json` | `[].matiere` | `material` | 1 | `terrains.json \| matiere` |
 | `terrains.json` | `[].overlayProp` | `prop` | 1 | `terrains.json \| overlayProp` |
+| `traits.json` | `[].aura.passive[].skill.id` | `skill` | 4 | `traits.json \| skill` |
 | `traits.json` | `[].effects[].flow.then.test.skill.id` | `skill` | 1 | `traits.json \| skill` |
+| `traits.json` | `[].passive[].skill.id` | `skill` | 13 | `traits.json \| skill` |
 | `traits.json` | `[].passive[].terrain` | `terrain` | 3 | `traits.json \| passive` |
-| `trappings.json` | `[].consumable.effect.ops[].skill.id` | `skill` | 2 | `trappings.json \| skill` |
+| `trappings.json` | `[].consumable.effect.ops[].skill.id` | `skill` | 4 | `trappings.json \| skill` |
+| `trappings.json` | `[].consumable.else.success.effect.ops[].skill.id` | `skill` | 1 | `trappings.json \| skill` |
 | `trappings.json` | `[].consumable.steps[].test.skill.id` | `skill` | 2 | `trappings.json \| skill` |
 | `trappings.json` | `[].consumable.test.skill.id` | `skill` | 6 | `trappings.json \| skill` |
 | `trappings.json` | `[].onHitEffects[].flow.then.test.skill.id` | `skill` | 2 | `trappings.json \| skill` |
+| `trappings.json` | `[].passive[].skill.id` | `skill` | 12 | `trappings.json \| skill` |
+| `traumas.json` | `[].ops[].skill.id` | `skill` | 13 | `traumas.json \| skill` |
 | `vehicles.json` | `[].ship.traits[].id` | `navalTrait` | 20 | `vehicles.json \| traits` |
 | `water-exposure.json` | `test.skill.id` | `skill` | 1 | — |
 
-Couples porteurs de réfs OBSERVÉES dont le déclaré ATTEINT toutes les occurrences : **67** — `activities.json | cible` `activities.json | factor` `activities.json | mod` `activities.json | skills` `arene-projet.json | material` `arene-projet.json | reliefDefaults` `arene-projet.json | roofDefaults` `arene-projet.json | skill` `arene-projet.json | tiles` `axes.json | skills` `barge-du-sel-projet.json | reliefDefaults` `barge-du-sel-projet.json | roofDefaults` `barge-du-sel-projet.json | skills` `barge-du-sel-projet.json | tiles` `buildings.json | features` `buildings.json | roofMaterial` `careerLevels.json | of` `careerLevels.json | skills` `careerLevels.json | talents` `creatures.json | skills` `crew-roles.json | skills` `criticals.json | skill` `defauts-de-compilation.json | cheminDeRonde` `defauts-de-compilation.json | masse` `defauts-de-compilation.json | pont` `diligence-projet.json | ref` `diligence-projet.json | reliefDefaults` `diligence-projet.json | roofDefaults` `diligence-projet.json | style` `diligence-projet.json | tiles` `domains.json | requiresSkill` `domains.json | skill` `etats.json | skill` `incidents-monture.json | skill` `loup-et-saumure-projet.json | port` `loup-et-saumure-projet.json | reliefDefaults` `loup-et-saumure-projet.json | roofDefaults` `loup-et-saumure-projet.json | skill` `loup-et-saumure-projet.json | skills` `loup-et-saumure-projet.json | tiles` `maladies.json | mutation` `maladies.json | ops` `maladies.json | otherwise` `maneuvers.json | skill` `merchants.json | curated` `miscast.json | skill` `props.json | primitives` `psychology.json | skill` `qualities.json | skill` `river-criticals.json | stations` `semences-de-scene.json | reliefDefaults` `semences-de-scene.json | roofDefaults` `semences-de-scene.json | terrain` `ship-criticals.json | skill` `ship-criticals.json | stations` `ship-stations.json | requiresTrait` `species.json | previewCareer` `species.json | skills` `steam-breakdown.json | skill` `structures.json | traits` `symptoms.json | skill` `tables.json | of` `talents.json | skills` `tavernGames.json | skill` `terrains.json | matiere` `terrains.json | overlayProp` `vehicles.json | traits`. Une jointure VIDE rendrait ce volet muet :
+Couples porteurs de réfs OBSERVÉES dont le déclaré ATTEINT toutes les occurrences : **75** — `activities.json | cible` `activities.json | factor` `activities.json | mod` `activities.json | skills` `arene-projet.json | material` `arene-projet.json | reliefDefaults` `arene-projet.json | roofDefaults` `arene-projet.json | skill` `arene-projet.json | tiles` `axes.json | skills` `barge-du-sel-projet.json | reliefDefaults` `barge-du-sel-projet.json | roofDefaults` `barge-du-sel-projet.json | skills` `barge-du-sel-projet.json | tiles` `buildings.json | features` `buildings.json | roofMaterial` `careerLevels.json | of` `careerLevels.json | skills` `careerLevels.json | talents` `creatures.json | skills` `crew-roles.json | skills` `criticals.json | skill` `defauts-de-compilation.json | cheminDeRonde` `defauts-de-compilation.json | masse` `defauts-de-compilation.json | pont` `diligence-projet.json | ref` `diligence-projet.json | reliefDefaults` `diligence-projet.json | roofDefaults` `diligence-projet.json | style` `diligence-projet.json | tiles` `domains.json | requiresSkill` `domains.json | skill` `etats.json | skill` `incidents-monture.json | skill` `loup-et-saumure-projet.json | port` `loup-et-saumure-projet.json | reliefDefaults` `loup-et-saumure-projet.json | roofDefaults` `loup-et-saumure-projet.json | skill` `loup-et-saumure-projet.json | skills` `loup-et-saumure-projet.json | tiles` `maladies.json | mutation` `maladies.json | ops` `maladies.json | otherwise` `maneuvers.json | skill` `merchants.json | curated` `miscast.json | skill` `mutations.json | skill` `naval-traits.json | skill` `props.json | primitives` `psychology.json | skill` `qualities.json | skill` `river-criticals.json | stations` `sea-shanties.json | skill` `sea-weather.json | skills` `semences-de-scene.json | reliefDefaults` `semences-de-scene.json | roofDefaults` `semences-de-scene.json | terrain` `ship-criticals.json | skill` `ship-criticals.json | stations` `ship-stations.json | requiresTrait` `species.json | previewCareer` `species.json | skills` `steam-breakdown.json | skill` `structures.json | traits` `symptoms.json | skill` `tables.json | of` `tables.json | skill` `talents.json | skill` `talents.json | skills` `tavernGames.json | skill` `terrains.json | matiere` `terrains.json | overlayProp` `traits.json | skill` `traumas.json | skill` `vehicles.json | traits`. Une jointure VIDE rendrait ce volet muet :
 la garde l’exige NON VIDE.
 
 ### 6.2 Couverture — réfs observées qu’AUCUN slot ne déclare
@@ -4431,7 +4446,7 @@ La dette d’ADOPTION du registre : un `(dataset, champ)` porteur de référence
 (`scripts/guards/lib/slotsStock.mjs`, garde `src/data/slots-contrat.test.ts`) — il se solde concept
 par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 
-**292** couples (dataset, champ) sans slot déclaré.
+**283** couples (dataset, champ) sans slot déclaré.
 
 | Dataset | Champ | Occurrences observées | Atteintes |
 |---|---|---|---|
@@ -4601,10 +4616,8 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `mutations.json` | `features` | 54 | 0 |
 | `mutations.json` | `ops` | 2 | 1 |
 | `mutations.json` | `passive` | 50 | 0 |
-| `mutations.json` | `skill` | 2 | 0 |
 | `naval-ports.json` | `production` | 38 | 0 |
 | `naval-traits.json` | `passive` | 2 | 0 |
-| `naval-traits.json` | `skill` | 3 | 0 |
 | `night-stakes.json` | `kind` | 9 | 0 |
 | `night-stakes.json` | `rule` | 15 | 0 |
 | `pregens.json` | `career` | 8 | 0 |
@@ -4635,9 +4648,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `sea-events.json` | `skills` | 1 | 0 |
 | `sea-shanties.json` | `captainOps` | 1 | 0 |
 | `sea-shanties.json` | `crewOps` | 1 | 0 |
-| `sea-shanties.json` | `skill` | 3 | 0 |
-| `sea-weather.json` | `skills` | 5 | 0 |
-| `sea-weather.json` | `spec` | 3 | 0 |
 | `ship-construction.json` | `constructionTraits` | 4 | 0 |
 | `ship-criticals.json` | `ops` | 11 | 0 |
 | `skills.json` | `altChar` | 2 | 0 |
@@ -4664,7 +4674,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `spells.json` | `ops` | 206 | 1 |
 | `spells.json` | `perRound` | 6 | 0 |
 | `spells.json` | `qualities` | 5 | 0 |
-| `spells.json` | `skill` | 50 | 31 |
+| `spells.json` | `skill` | 50 | 48 |
 | `spells.json` | `subject` | 1 | 0 |
 | `spells.json` | `when` | 18 | 0 |
 | `stars.json` | `ascendant` | 11 | 0 |
@@ -4674,13 +4684,11 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `symptoms.json` | `ops` | 8 | 0 |
 | `symptoms.json` | `passive` | 3 | 0 |
 | `tables.json` | `ops` | 79 | 0 |
-| `tables.json` | `skill` | 15 | 0 |
 | `talents.json` | `effects` | 1 | 0 |
 | `talents.json` | `gate` | 1 | 0 |
 | `talents.json` | `matches` | 1 | 0 |
 | `talents.json` | `ops` | 3 | 0 |
 | `talents.json` | `passive` | 1 | 0 |
-| `talents.json` | `skill` | 123 | 118 |
 | `talents.json` | `when` | 12 | 0 |
 | `tavernGames.json` | `attrition` | 1 | 0 |
 | `tavernGames.json` | `combined` | 1 | 0 |
@@ -4696,7 +4704,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `traits.json` | `of` | 2 | 0 |
 | `traits.json` | `ops` | 21 | 0 |
 | `traits.json` | `passive` | 28 | 3 |
-| `traits.json` | `skill` | 18 | 1 |
 | `traits.json` | `subject` | 6 | 0 |
 | `traits.json` | `suppressesCapabilities` | 1 | 0 |
 | `traits.json` | `value` | 2 | 0 |
@@ -4711,7 +4718,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `trappings.json` | `qualities` | 438 | 0 |
 | `trappings.json` | `shape` | 43 | 0 |
 | `trappings.json` | `siegeRig` | 18 | 0 |
-| `trappings.json` | `skill` | 29 | 12 |
+| `trappings.json` | `skill` | 29 | 27 |
 | `trappings.json` | `subType` | 441 | 0 |
 | `trappings.json` | `subject` | 2 | 0 |
 | `trappings.json` | `weaponGroup` | 22 | 0 |
@@ -4720,7 +4727,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `traumas.json` | `ops` | 16 | 0 |
 | `traumas.json` | `prosthesis` | 9 | 0 |
 | `traumas.json` | `rig` | 2 | 0 |
-| `traumas.json` | `skill` | 13 | 0 |
 | `vehicles.json` | `draft` | 1 | 0 |
 | `voyage-stakes.json` | `kind` | 15 | 0 |
 | `voyage-stakes.json` | `rule` | 32 | 0 |
@@ -4735,4 +4741,4 @@ Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`).
 - Une occurrence dont AUCUNE case ne porte de chaîne n’est jamais ATTEINTE, quel que soit le schéma : aucune n’est un slot, et son couple reste au stock `SLOTS_SANS_DECLARATION`. Mesuré le 2026-09-23 : 14 `{choice:[…]}` de `careerLevels.json | trappings` (les feuilles comptent sous `careerLevels.json | choice`), 19 `{random:N}` de `species.json | talents`, 2 `{random:N}` de `species.json | of`, et 1 occurrence de `creatures.json | spec` dont la seule case est une clé de `CLES_DE_SPECIALISATION`. Stock nominatif `SLOTS_INATTEIGNABLES`, qui ne fait que décroître.
 - Une référence portée par une CLÉ de record (`z.record(idDe(…), …)`) est un slot `{}` du §6.1, jamais une case du scan, qui n’observe que des valeurs : mesuré le 2026-09-23, 6 slots `ship-criticals.json › tablesDeChute[].bandes[].hauteurs{}` (`shipStation`), sans couple touché.
 
-<!-- sources-empreinte: b1b533b0ab27e137adb023acd54fcf6ce0b8ef1d (386 fichiers, 10 dossiers) corps: 993257c48d496fe8cb10f47cc9114ce80d79b55b -->
+<!-- sources-empreinte: 6a42101a88de3dbe778d693268fcd69361892657 (386 fichiers, 10 dossiers) corps: f7abbf73adeb6834cde427165c2fcbf40ad61512 -->
