@@ -4846,6 +4846,14 @@
           "page": 30,
           "note": "frenchy.bzh 13 l.128"
         },
+        "alsoIn": [
+          {
+            "book": "frenchy-bzh",
+            "page": 64,
+            "note": "frenchy.bzh 19 l.105",
+            "quote": "Étiquette (Militaires)"
+          }
+        ],
         "pool": false
       },
       {
@@ -4866,6 +4874,14 @@
           "page": 77,
           "note": "frenchy.bzh 22 l.163"
         },
+        "alsoIn": [
+          {
+            "book": "frenchy-bzh",
+            "page": 150,
+            "note": "frenchy.bzh 26 l.688",
+            "quote": "Étiquette (Religieux)"
+          }
+        ],
         "pool": false
       },
       {

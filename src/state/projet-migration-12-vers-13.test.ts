@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseProject, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS } from './worldMap';
 import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS } from './scene';
+import { depot, efface, joue, lireDans, rienTouche } from '../../scripts/migrations/lib/joue.mjs';
 
 /** Document schema 12 — FIGÉ. Ne pas dénuder `sorcier` : c'est le sujet de la mesure. */
 const PROJET_FORMAT_12 = {
@@ -76,5 +77,75 @@ describe('PROJECT_MIGRATIONS[12] — un projet format 12 se charge à travers la
     const mort = structuredClone(PROJET_FORMAT_12);
     mort.narratif.presetsPnj[0].profil.spells = [{ id: 'zzz-disparu' }];
     expect(() => parseProject(mort)).toThrow(/ref\('spell'\) : id « zzz-disparu » absent de spells\.json/);
+  });
+});
+
+/**
+ * PARITÉ des DEUX pendants du même bump : la MÊME fixture est jouée par le script de DÉPÔT
+ * (`scripts/migrations/2026-09-23-1897-projet-sorts-de-preset-ids-nus.mjs`, dans un dépôt jetable) et
+ * par le CHARGEMENT (`parseProject`, donc `PROJECT_MIGRATIONS[12]`). Une forme que le chargement
+ * dénude, le script la dénude À L'IDENTIQUE ; une forme que le chargement laisse à `parseProject`
+ * pour qu'il la refuse, le script la refuse (sortie 1) — jamais l'un qui avale ce que l'autre refuse.
+ */
+const SCRIPT_DEPOT = '2026-09-23-1897-projet-sorts-de-preset-ids-nus.mjs';
+const REL = `src/scenes/${PROJET_FORMAT_12.id}/${PROJET_FORMAT_12.id}-projet.json`;
+const canonique = (doc: unknown) => `${JSON.stringify(doc, null, 1)}\n`;
+
+/** Le document joué par le script de dépôt : `{ code, sortie, doc, touches }` — `doc` relu après la
+ *  sortie 0, `touches` les fautes du témoin d'écriture après un refus. */
+function parLeDepot(doc: unknown): { code: number | null; sortie: string; doc: unknown; touches: string[] } {
+  const d = depot({ [REL]: canonique(doc) });
+  try {
+    const r = joue(d.racine, SCRIPT_DEPOT);
+    return {
+      code: r.code,
+      sortie: r.sortie,
+      doc: r.code === 0 ? JSON.parse(lireDans(d.racine, REL)) : null,
+      touches: r.code === 0 ? [] : rienTouche(d.racine, d.avant),
+    };
+  } finally {
+    efface(d.racine);
+  }
+}
+
+/** Le document joué par le migrateur de chargement seul, `version` de travail retirée. */
+function parLeChargement(doc: unknown): unknown {
+  const { version: _travail, ...migre } = PROJECT_MIGRATIONS[12]!({ ...structuredClone(doc as object), version: 12 } as never) as Record<string, unknown>;
+  return migre;
+}
+
+describe('PARITÉ dépôt ⇄ chargement du bump 12 → 13 — une fixture, deux pendants (#1897)', () => {
+  it('forme SOURCE et forme CIBLE : le script écrit EXACTEMENT ce que le chargement rend, et `parseProject` l’accepte', () => {
+    const r = parLeDepot(PROJET_FORMAT_12);
+    expect(r.code, r.sortie).toBe(0);
+    expect(JSON.stringify(r.doc)).toBe(JSON.stringify(parLeChargement(PROJET_FORMAT_12)));
+    expect(() => parseProject(structuredClone(PROJET_FORMAT_12))).not.toThrow();
+  });
+
+  const refusees: [string, (doc: typeof PROJET_FORMAT_12) => unknown][] = [
+    ['(1) `{ id, spec }` — la `spec` ne tient pas dans un id nu', (doc) => {
+      doc.narratif.presetsPnj[0].profil.spells = [{ id: 'flechette', spec: 'x' } as never];
+      return doc;
+    }],
+    ['(2) `{ id: \'\' }` — un id VIDE', (doc) => {
+      doc.narratif.presetsPnj[0].profil.spells = [{ id: '' }];
+      return doc;
+    }],
+    ['(3) projet SANS `narratif` — exigé au format 12 (`narratif: narratifSchema`, `defs-scenes/projet.ts`)', (doc) => {
+      const { narratif: _retire, ...sans } = doc;
+      return sans;
+    }],
+  ];
+
+  it.each(refusees)('%s : le chargement la laisse INTACTE et `parseProject` la refuse ; le script la refuse, rien d’écrit', (_cas, fabrique) => {
+    const doc = fabrique(structuredClone(PROJET_FORMAT_12));
+    const charge = parLeChargement(doc) as { narratif?: { presetsPnj: { profil?: { spells?: unknown } }[] } };
+    const avant = (doc as { narratif?: { presetsPnj: { profil?: { spells?: unknown } }[] } }).narratif?.presetsPnj[0].profil?.spells;
+    expect(charge.narratif?.presetsPnj[0].profil?.spells).toEqual(avant);
+    expect(() => parseProject(structuredClone(doc))).toThrow();
+    const r = parLeDepot(doc);
+    expect(r.code, r.sortie).toBe(1);
+    expect(r.sortie).toMatch(/ARBITRAGE REQUIS/);
+    expect(r.touches).toEqual([]);
   });
 });

@@ -756,6 +756,12 @@ function migreActionsAuthorees(scenes: unknown): unknown {
   });
 }
 
+/** La forme SOURCE d'une référence de sort de preset au format 12 : objet de clé UNIQUE `id`, chaîne
+ *  non vide — le seul élément qui se dénude SANS PERTE (`{ id, spec }` perdrait `spec`). */
+const estSortSource = (s: unknown): s is { id: string } =>
+  !!s && typeof s === 'object' && !Array.isArray(s) && Object.keys(s).length === 1
+  && typeof (s as { id?: unknown }).id === 'string' && (s as { id: string }).id.length > 0;
+
 /** `{ id }` → id nu dans `presetsPnj[].profil.spells` (bump 12 → 13, #1897) ; le reste traverse intact. */
 function denudeSortsDePreset(narratif: unknown): unknown {
   const nb = narratif as { presetsPnj?: unknown } | null;
@@ -763,9 +769,7 @@ function denudeSortsDePreset(narratif: unknown): unknown {
   const presetsPnj = nb.presetsPnj.map((p) => {
     const profil = (p as { profil?: { spells?: unknown } } | null)?.profil;
     if (!profil || !Array.isArray(profil.spells)) return p;
-    const spells = profil.spells.map((s) =>
-      s && typeof s === 'object' && typeof (s as { id?: unknown }).id === 'string' ? (s as { id: string }).id : s,
-    );
+    const spells = profil.spells.map((s) => (estSortSource(s) ? s.id : s));
     return { ...(p as object), profil: { ...profil, spells } };
   });
   return { ...nb, presetsPnj };
@@ -967,10 +971,11 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
    * `12` DÉNUDE la référence de sort d'un preset de PNJ (#1897) : `narratif.presetsPnj[].profil` reprend
    * le def créature, dont `spells` adopte `refs('spell')` — `{ id }` devient l'id nu, À SA PLACE. Sans ce
    * passage, un projet de bibliothèque utilisateur serait REFUSÉ au parse sur son premier sort de preset.
-   * Un élément déjà nu traverse INTACT, et ce qui n'est pas une liste traverse tel quel
-   * (`parseProject` le refuse ensuite, en le nommant).
-   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-23-1897-projet-sorts-de-preset-ids-nus.mjs`
-   * (parité mesurée par `projet-migration-12-vers-13.test.ts`).
+   * Un élément déjà nu traverse INTACT ; ce qui ne se dénude pas SANS PERTE (`{ id, spec }`, `{ id: '' }`)
+   * et ce qui n'est pas une liste traversent tels quels (`parseProject` les refuse ensuite, en les nommant).
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-23-1897-projet-sorts-de-preset-ids-nus.mjs`,
+   * qui refuse les mêmes formes : parité mesurée par `projet-migration-12-vers-13.test.ts`, qui joue la
+   * MÊME fixture par les deux.
    */
   12: (doc) => ({
     ...doc,

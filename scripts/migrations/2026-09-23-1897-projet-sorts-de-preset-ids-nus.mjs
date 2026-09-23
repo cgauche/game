@@ -8,8 +8,9 @@
  * pas : seule l'ENVELOPPE `{ id }` tombe.
  *
  * Pendant de DÉPÔT du migrateur de chargement `PROJECT_MIGRATIONS[12]` (`src/state/worldMap.ts`), qui
- * rattrape les `.json` de bibliothèque utilisateur ; parité mesurée par
- * `src/state/projet-migration-12-vers-13.test.ts`.
+ * rattrape les `.json` de bibliothèque utilisateur : ce que le chargement dénude, ce script le dénude ;
+ * ce que le chargement laisse à `parseProject` pour qu'il le refuse, ce script le refuse. Parité
+ * mesurée par `src/state/projet-migration-12-vers-13.test.ts`, qui joue la MÊME fixture par les deux.
  *
  * ENTRÉES : les `src/scenes/<campagne>/<campagne>-projet.json`.
  * FORMATAGE PRÉSERVÉ : `JSON.stringify(doc, null, 1) + '\n'`, vérifié AVANT toute écriture — non

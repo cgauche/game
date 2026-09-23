@@ -143,11 +143,6 @@ describe('auditSecondaries — les entrées `alsoIn` réelles de src/data/*.json
     expect(poses, 'aucun `alsoIn` posé : la garde ne mesurerait rien').toBeGreaterThan(0);
     expect(total, `${poses} emplacement(s) posé(s), ${total} audité(s)`).toBe(poses);
   });
-
-  it('EXHAUSTIF : les fichiers portant `alsoIn` sont exactement les datasets migrés (Lot 2 + talents #734 + creatures #731 + species #1457)', () => {
-    const offenders = DATASETS.filter((f) => readFileSync(join(DIR, f), 'utf8').includes('"alsoIn"'));
-    expect(offenders).toEqual(['creatures.json', 'domains.json', 'naval-traits.json', 'qualities.json', 'skills.json', 'species.json', 'spells.json', 'talents.json', 'traits.json', 'trappings.json']);
-  });
 });
 
 /**

@@ -45,7 +45,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { ATTENDU_ROUGE } from '../replay.mjs';
-import { joue } from './joue.mjs';
+import { ANTIDATE, efface, joue } from './joue.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const MIGRATIONS = path.join(RACINE, 'scripts/migrations');
@@ -84,17 +84,6 @@ function depotJetable(fichier, transforme) {
   fs.writeFileSync(cible, avant, 'utf8');
   return { racine, cible, avant };
 }
-
-/** Le dépôt jetable, effacé : il ne porte que des COPIES, donc rien de l'arbre ne part avec. */
-const efface = (racine) => fs.rmSync(racine, { recursive: true, force: true });
-
-/**
- * TÉMOIN D'ÉCRITURE — l'horodatage seul ne suffit pas sous Windows (granularité de l'ordre de la
- * milliseconde : une réécriture identique s'y glisse parfois sans faire bouger `mtime`). La cible est
- * donc ANTIDATÉE avant le rejeu : toute écriture, même à contenu égal, remonte l'horodatage à
- * maintenant, et l'assertion devient déterministe. L'octet reste comparé en plus.
- */
-const ANTIDATE = new Date('2000-01-01T00:00:00Z');
 
 const estObjet = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
