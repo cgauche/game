@@ -4,7 +4,7 @@ import { BOTTE_CUIR } from '../botte-gabarit';
 export const tenue: TenueDef = {
   label: "Gladiateur",
   id: "gladiateur",
-  palette: {"cuirO":"#3d2a16","cuir":"#5a3f24","vet1O":"#9a8c6a","vet1H":"#e0d6bf","cuirH":"#b87a4a","metalO":"#2a3038","vet1":"#8a6e44","vet2":"#a82a22","vet2O":"#6a1812","vet2H":"#d24a3a"},
+  palette: {"metal":"#8b94a6","cuirO":"#3d2a16","cuir":"#5a3f24","vet1H":"#e0d6bf","cuirH":"#b87a4a","metalO":"#2a3038","vet1":"#8a6e44","vet2":"#a82a22","vet2O":"#6a1812","vet2H":"#d24a3a"},
   set: {
     pied: BOTTE_CUIR,
     torse: { front: `<!-- Gladiateur : torse nu musclé + baldric de cuir + ceinture large à trophées. Origine (0,0)=taille, épaules en -28 -->
@@ -74,7 +74,7 @@ export const tenue: TenueDef = {
 <path d="M-9 25 L-10 33 L-8 33 L-7.5 25 Z" fill="#5a3f24" stroke="#3d2a16" stroke-width="0.6"/>
 <path d="M8 25 L9 32 L11 31 L9.5 25 Z" fill="#5a3f24" stroke="#3d2a16" stroke-width="0.6"/>
 <!-- trophées (crâne / os) accrochés aux hanches, visibles depuis l'arrière sur les côtés -->
-<g stroke="#5a4a32" stroke-width="0.5"><path d="M9.5 25 L9.5 28" stroke="#3d2a16" stroke-width="0.8"/><path d="M7 29 Q7 33.5 10 33.5 Q13 33.5 13 29 Q13 26 10 26 Q7 26 7 29 Z" fill="#d8cdb4"/><path d="M8 27 Q8.5 31 10 33 M12 27 Q11.5 31 10 33" stroke="#9a8c6a" stroke-width="0.4" fill="none"/></g>
+<g stroke="#5a4a32" stroke-width="0.5"><path d="M9.5 25 L9.5 28" stroke="#3d2a16" stroke-width="0.8"/><path d="M7 29 Q7 33.5 10 33.5 Q13 33.5 13 29 Q13 26 10 26 Q7 26 7 29 Z" fill="#d8cdb4"/><path d="M8 27 Q8.5 31 10 33 M12 27 Q11.5 31 10 33" stroke="@vet1O" stroke-width="0.4" fill="none"/></g>
 <g stroke="#5a4a32" stroke-width="0.5"><path d="M-9 25 L-9 30" stroke="#3d2a16" stroke-width="0.7"/><path d="M-9 30 Q-10.5 30 -10.5 31.4 Q-10.5 32.6 -9 32.4 L-9 34.4 Q-10.4 34.2 -10.4 35.6 Q-10.4 37 -9 36.8 Q-7.6 37 -7.6 35.6 Q-7.6 34.2 -9 34.4 L-9 32.4 Q-7.6 32.6 -7.6 31.4 Q-7.6 30 -9 30 Z" fill="#e0d6bf"/></g>`, profile: `<!-- Gladiateur PROFIL (tourné à droite) : torse nu de côté, étroit (~moitié de largeur), une épaule/bras de profil, baldric sur l'épaule descendant le flanc, ceinture qui enveloppe. Origine (0,0)=taille -->
 <!-- chair du torse de profil : poitrine bombée à l'avant (droite), dos cambré à l'arrière (gauche), étroit -->
 <path d="M-7 -28 Q3 -31 8 -26 Q9 -18 7 -10 Q6 -4 6 2 Q6 18 4 32 Q0 37 -4 33 Q-6 20 -6 6 Q-7 -4 -7 -14 Q-8 -22 -7 -28 Z" fill="url(#g_flesh)" stroke="#7a4a28" stroke-width="0.8"/>
@@ -107,7 +107,7 @@ export const tenue: TenueDef = {
 <!-- lanière pendante (arrière) -->
 <path d="M-3 25 L-4 33 L-2 33 L-1.5 25 Z" fill="#5a3f24" stroke="#3d2a16" stroke-width="0.6"/>
 <!-- trophée crâne pendu au flanc avant, de profil (étroit) -->
-<g stroke="#5a4a32" stroke-width="0.5"><path d="M6 25 L6.5 28" stroke="#3d2a16" stroke-width="0.8"/><path d="M4.5 29 Q4.5 33.5 7 33.5 Q9.5 33.5 9.5 29 Q9.5 26 7 26 Q4.5 26 4.5 29 Z" fill="#d8cdb4"/><circle cx="6" cy="29" r="0.9" fill="#2a2018" stroke="none"/><path d="M7.3 30.5 L6.8 32 L7.8 32 Z" fill="#2a2018" stroke="none"/><path d="M5.6 32.4 L5.8 34 M7.4 32.6 L7.4 34" stroke="#9a8c6a"/></g>` },
+<g stroke="#5a4a32" stroke-width="0.5"><path d="M6 25 L6.5 28" stroke="#3d2a16" stroke-width="0.8"/><path d="M4.5 29 Q4.5 33.5 7 33.5 Q9.5 33.5 9.5 29 Q9.5 26 7 26 Q4.5 26 4.5 29 Z" fill="#d8cdb4"/><circle cx="6" cy="29" r="0.9" fill="#2a2018" stroke="none"/><path d="M7.3 30.5 L6.8 32 L7.8 32 Z" fill="#2a2018" stroke="none"/><path d="M5.6 32.4 L5.8 34 M7.4 32.6 L7.4 34" stroke="@vet1O"/></g>` },
     jambes: `<!-- Gladiateur : braie ample ocre, sangle de cuir à la cuisse, jambière enroulée, botte fourrée. Origine (0,0)=hanche, +y descend -->
 <!-- braie / pantalon de toile sale (haut de cuisse -> genou) -->
 <path d="M-5 0 Q0 -1.5 5 0 L5.5 12 Q5.6 20 4.4 26 L-4.4 26 Q-5.6 20 -5.5 12 Z" fill="@vet1H" stroke="@cuir" stroke-width="0.7"/>
@@ -207,10 +207,10 @@ export const tenue: TenueDef = {
 <g stroke="#3d2a16" stroke-width="0.5"><path d="M-1.6 -12 L1.6 -10.5 M1.6 -8 L-1.6 -6.5 M-1.6 -4.5 L1.6 -3"/></g>
 <!-- corne gauche (vue de dos, recourbée vers le haut/extérieur) -->
 <path d="M-7 -10 Q-13 -13 -15 -20 Q-15.5 -24 -13 -25 Q-13.5 -22 -12 -19 Q-10 -15 -6 -12 Z" fill="#d8cdb4" stroke="#7a6a48" stroke-width="0.7"/>
-<path d="M-8 -11 Q-12 -14 -13.6 -19" stroke="#9a8c6a" stroke-width="0.5" fill="none"/>
+<path d="M-8 -11 Q-12 -14 -13.6 -19" stroke="@vet1O" stroke-width="0.5" fill="none"/>
 <!-- corne droite (vue de dos) -->
 <path d="M7 -10 Q13 -13 15 -20 Q15.5 -24 13 -25 Q13.5 -22 12 -19 Q10 -15 6 -12 Z" fill="#d8cdb4" stroke="#7a6a48" stroke-width="0.7"/>
-<path d="M8 -11 Q12 -14 13.6 -19" stroke="#9a8c6a" stroke-width="0.5" fill="none"/>
+<path d="M8 -11 Q12 -14 13.6 -19" stroke="@vet1O" stroke-width="0.5" fill="none"/>
 <!-- attache des cornes (cuir noué) vue de dos -->
 <circle cx="-7" cy="-10" r="1.4" fill="#3d2a16"/><circle cx="7" cy="-10" r="1.4" fill="#3d2a16"/>
 <!-- plumet rouge planté au sommet (vu de dos, mêmes couleurs) -->
@@ -228,7 +228,7 @@ export const tenue: TenueDef = {
 <path d="M0 -15 Q2 -8 3 -2" stroke="#3d2a16" stroke-width="0.6" fill="none"/>
 <!-- corne AVANT (la plus visible, recourbée vers le haut/avant) -->
 <path d="M5 -10 Q11 -13 14 -19 Q15 -23 12.5 -24.5 Q13 -21 11.5 -18 Q9.5 -14 4 -12 Z" fill="#e0d6bf" stroke="#7a6a48" stroke-width="0.7"/>
-<path d="M6 -11 Q10 -14 12.4 -18" stroke="#9a8c6a" stroke-width="0.5" fill="none"/>
+<path d="M6 -11 Q10 -14 12.4 -18" stroke="@vet1O" stroke-width="0.5" fill="none"/>
 <!-- corne ARRIÈRE (partiellement masquée par la calotte, plus terne) -->
 <path d="M-2 -11 Q-7 -14 -9 -19 Q-9.5 -22 -7.5 -23 Q-7.5 -20 -6 -17 Q-4.5 -14 -1 -12.5 Z" fill="#c8bda4" stroke="#7a6a48" stroke-width="0.6"/>
 <!-- attache de corne (cuir noué) avant -->

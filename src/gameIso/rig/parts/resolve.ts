@@ -81,7 +81,7 @@ function resolveUpperLimb(
   if (armItem) {
     const mat = armourMaterial(armItem);
     matterArt = ARMOUR[mat]?.bras ?? '';                         // tokens @metal/@cuir… intacts
-    const map = buildTokenMap(ARMOUR_PALETTES[mat] ?? {}, armItem.skin as Record<string, string> | undefined);
+    const map = buildTokenMap([ARMOUR_PALETTES[mat] ?? {}], armItem.skin as Record<string, string> | undefined);
     matterResolve = (svg) => applyTokenMap(svg, map);
     brasEstPleineLongueur = true;
   } else {

@@ -577,7 +577,7 @@ if (creatureArg) {
       + (near.length ? `\nproches: ${near.join(', ')}` : ''));
   }
   const osMasque = (osArg ?? 'tronc').split(',').map((s) => s.trim()) as QuadBoneId[];
-  const tmap = buildTokenMap(props.stored, {});
+  const tmap = buildTokenMap([props.palette], {});
   const rapport = {
     reglages: {
       creature: creatureArg,
@@ -643,7 +643,7 @@ if (creatureArg) {
     }
   }
 } else if (allMode) {
-  const tenues = tenueIds.map((id) => ({ id, label: tenueLabelOf(id), tmap: buildTokenMap(TENUE_PALETTE_BY_ID[id] ?? {}, {}) }));
+  const tenues = tenueIds.map((id) => ({ id, label: tenueLabelOf(id), tmap: buildTokenMap([TENUE_PALETTE_BY_ID[id] ?? {}], {}) }));
   if (asJson) {
     const mesures: (ViewReport & { tenueId: string })[] = [];
     for (const t of tenues) for (const v of views) {
@@ -681,7 +681,7 @@ if (creatureArg) {
 } else {
   const tenueId = tenueArg;
   const tenueLabel = tenueLabelOf(tenueId);
-  const tmap = buildTokenMap(TENUE_PALETTE_BY_ID[tenueId] ?? {}, {});
+  const tmap = buildTokenMap([TENUE_PALETTE_BY_ID[tenueId] ?? {}], {});
   const rapport = { reglages: { tenueId, tenueLabel, ...reglagesCommun }, vues: views.map((v) => measure(tenueId, tmap, v)) };
 
   if (asJson) {

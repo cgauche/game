@@ -21,7 +21,7 @@ function rgb(hex: string): [number, number, number] {
 describe('palette non inversée : pour chaque famille, la LUMIÈRE (`…H`) est plus claire que la BASE (#638)', () => {
   for (const def of TENUE_DEFS) {
     if (!def.palette || Object.keys(def.palette).length === 0) continue;
-    const tmap = buildTokenMap(def.palette);
+    const tmap = buildTokenMap([def.palette]);
     const fams = [...new Set(Object.keys(def.palette).map((k) => k.replace(/(O|H)$/, '')))];
     for (const fam of fams) {
       const base = tmap[fam];

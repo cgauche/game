@@ -74,11 +74,11 @@ export function weaponFamily(w: Weapon): string {
  * lisibilité de l'audit aveugle sont déjà bakées dans chaque def). `epee` (forme générique, repli
  * du Groupe `base` via `ART_BY_GROUP` + défaut final de `weaponPart`) est une def comme les autres.
  */
-// Art des formes RÉSOLU @défaut (palette `stored` du def). `applyTokenMapArt` est un no-op tant
+// Art des formes RÉSOLU @défaut (palette déclarée du def). `applyTokenMapArt` est un no-op tant
 // que l'art ne contient pas de `@tokens` (armes non encore tokenisées) → sûr avant/après. Relevé sur
 // `PartArt` : préserve un art DIRECTIONNEL (front/dos/profil de l'épée) verbatim.
 const FORM_ART: Record<string, PartArt> = Object.fromEntries(
-  WEAPON_DEFS.map((d) => [d.slug, applyTokenMapArt(d.art, buildTokenMap(d.palette ?? {}))]),
+  WEAPON_DEFS.map((d) => [d.slug, applyTokenMapArt(d.art, buildTokenMap([d.palette ?? {}]))]),
 );
 const FORM_DEF = new Map(WEAPON_DEFS.map((d) => [d.slug, d]));
 const WEAPONS: Record<string, PartArt> = FORM_ART;
@@ -89,7 +89,7 @@ export function weaponPart(w: Weapon): PartArt {
   // SKIN d'objet légendaire : re-résout l'art du def contre SA palette + l'override d'instance
   // (≠ tenues qui suivent la palette du PORTEUR). Sans skin → art @défaut précalculé.
   const def = w.skin ? FORM_DEF.get(f) : undefined;
-  if (def) return applyTokenMapArt(def.art, buildTokenMap(def.palette ?? {}, w.skin));
+  if (def) return applyTokenMapArt(def.art, buildTokenMap([def.palette ?? {}], w.skin));
   return WEAPONS[f] ?? WEAPONS.epee;
 }
 
@@ -138,6 +138,6 @@ export function armourPart(item: ItemInstance, slot: Slot): PartArt | null {
   // Les 4 matériaux couvrent tete/torse/bras/jambes ; pour un slot qu'aucun def ne dessine (pied/main/cou),
   // art est absent → null, et la zone retombe sur son repli de chair (resolve.ts).
   return art
-    ? applyTokenMapArt(art, buildTokenMap(ARMOUR_PALETTES[mat] ?? {}, item.skin as Record<string, string> | undefined))
+    ? applyTokenMapArt(art, buildTokenMap([ARMOUR_PALETTES[mat] ?? {}], item.skin as Record<string, string> | undefined))
     : null;
 }

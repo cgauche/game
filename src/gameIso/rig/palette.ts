@@ -1,41 +1,21 @@
 /**
  * PALETTE SÉMANTIQUE du rig — personnalisation de couleur cohérente, applicable à tout.
  *
- * Les parts (tenues, visage/cheveux, parts monstrueuses) référencent des EMPLACEMENTS
- * nommés au lieu de couleurs en dur : `@peau`, `@cheveux`, `@vet1` (vêtement principal),
- * `@vet2` (secondaire), `@cuir`, `@metal`. Au moment de composer le rig, `resolveTokens`
- * remplace ces tokens par les couleurs de la palette du personnage. Les ombres/reflets
- * sont DÉRIVÉS automatiquement : `@peauO` = peau assombrie, `@peauH` = éclaircie → le
- * dégradé survit au recoloriage. Résolu en hex (pas de var() CSS) → marche en navigateur
- * ET en rendu headless (resvg).
+ * Les parts (tenues, visage/cheveux, parts monstrueuses) référencent des CLÉS DE PALETTE
+ * (`clesDePalette.ts`) au lieu de couleurs en dur : `@peau`, `@cheveux`, `@vet1` (vêtement principal),
+ * `@vet2` (secondaire), `@cuir`, `@metal`. Au moment de composer le rig, `buildTokenMap` +
+ * `applyTokenMap` remplacent ces jetons par les couleurs résolues. Chaque clé porte une GAMME : sa
+ * base, son ombre `<clé>O` et sa lumière `<clé>H`. Résolu en hex (pas de var() CSS) → marche en
+ * navigateur ET en rendu headless (resvg).
  */
 import type { PartArt } from './parts/types';
+import { SLOTS, type Slot } from '../../data/palette.types';
+import { CLES, COUCHE_DEFAUT, SUIVEUSES, defautDe, propagerSuiveuses } from './clesDePalette';
 
-/** Emplacements de couleur d'un personnage. Tout est optionnel (défauts sinon). */
-export interface Palette {
-  peau?: string;
-  cheveux?: string;
-  yeux?: string; // iris
-  vet1?: string; // vêtement principal
-  vet2?: string; // vêtement secondaire / doublure
-  cuir?: string;
-  metal?: string;
-  corps?: string; // robe/pelage/peau de corps des créatures (gabarits non-humains)
-  accent?: string; // détail vif (crête, langue, marque) — créatures
-}
+export { SLOTS, type Slot };
 
-/** Palette par défaut (paysan générique) — base avant overrides espèce/carrière/mutation. */
-export const DEFAULT_PALETTE: Required<Palette> = {
-  peau: '#e2b48c',
-  cheveux: '#5a4427',
-  yeux: '#5a3e28',
-  vet1: '#8a7048',
-  vet2: '#4c3a26',
-  cuir: '#5a3f24',
-  metal: '#8b94a6',
-  corps: '#6b4a2e',
-  accent: '#c8923a',
-};
+/** Surcharge du joueur, par clé recoloriable. Tout est optionnel. */
+export type Palette = { [K in Slot]?: string };
 
 /** Multiplie chaque canal RGB d'un hex par f (clamp 0..255) → assombrit (<1) / éclaircit (>1). */
 function scale(hex: string, f: number): string {
@@ -46,7 +26,7 @@ function scale(hex: string, f: number): string {
   return `#${to2(ch(m[1]))}${to2(ch(m[2]))}${to2(ch(m[3]))}`;
 }
 
-// Suffixes de teinte : base, Ombre (assombri), Highlight (éclairci).
+// Suffixes de gamme : base, Ombre (assombrie), lumière H (éclaircie).
 const SHADES: [suffix: string, factor: number][] = [['', 1], ['O', 0.78], ['H', 1.18]];
 
 /** Luminance Rec.709 ramenée sur 0..100 — l'échelle du contrat (jamais 0..255). */
@@ -54,51 +34,56 @@ export function lum(r: number, g: number, b: number): number {
   return ((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255) * 100;
 }
 
-import { SLOTS, type Slot } from '../../data/palette.types';
-
-export { SLOTS, type Slot };
-
 /**
- * Palette STOCKÉE d'une tenue/tête : peut contenir non seulement les bases (`vet1`,
- * `cuir`…) mais aussi les ombres/reflets EXACTS d'origine (`vet1O`, `vet1H`, `cuirO`…).
- * Sert de DÉFAUT par-carrière → rendu identique à l'art dessiné, sans perte.
+ * Palette DÉCLARÉE d'une couche (def de tenue, arme, armure, espèce…) : des bases (`vet1`, `cuir`…)
+ * et, le cas échéant, l'ombre et la lumière EXACTES de leur gamme (`vet1O`, `vet1H`…).
  */
-export type StoredPalette = Record<string, string>;
+export type PaletteDeclaree = Record<string, string>;
 
-function stripUndef(p: Palette): Palette {
-  const out: Palette = {};
-  for (const [k, v] of Object.entries(p)) if (v != null) (out as Record<string, string>)[k] = v;
+function stripUndef(p: Palette): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(p)) if (v != null) out[k] = v;
   return out;
 }
 
+/** Indice de la couche la plus haute qui donne la base `k`, -1 si aucune. */
+function coucheQuiDonne(pile: readonly Readonly<Record<string, string>>[], k: string): number {
+  let i = pile.length - 1;
+  while (i >= 0 && pile[i][k] == null) i--;
+  return i;
+}
+
 /**
- * Table finale token→hex. Règle par slot :
- *  - slot NON surchargé par l'utilisateur → on rend l'ombre/reflet EXACT stocké
- *    (`stored.vet1O`…) s'il existe → rendu par défaut identique à l'art ; sinon dérivé.
- *  - slot surchargé (`overrides.vet1`) → TOUTE la famille (base+O+H) est DÉRIVÉE de la
- *    couleur choisie → recoloriage cohérent (les ombres suivent).
+ * Table finale jeton→hex, par couches (#1903 D3) : défaut (`COUCHE_DEFAUT`) < `couches`, de la plus
+ * basse à la plus haute < `surcharge`. Chaque couche propage ses clés suiveuses (`propagerSuiveuses`).
+ * Pour chaque base (clés de la table ∪ bases déclarées) :
+ *  - sans surcharge, la base est celle de la couche la plus haute qui la donne ; son ombre/sa lumière
+ *    est celle de CETTE couche si elle y est déclarée, sinon dérivée de la base ;
+ *  - sous surcharge, toute la gamme est dérivée de la couleur choisie ; une suiveuse suit la surcharge
+ *    de sa clé suivie, sauf si la couche qui donne sa base la déclare elle-même.
  */
-export function buildTokenMap(stored: StoredPalette, overrides: Palette = {}): Record<string, string> {
-  const ov = stripUndef(overrides) as Record<string, string>;
+export function buildTokenMap(couches: readonly PaletteDeclaree[], surcharge: Palette = {}): Record<string, string> {
+  const declarees = [COUCHE_DEFAUT, ...couches];
+  const pile = declarees.map(propagerSuiveuses);
+  const ov = stripUndef(surcharge);
+  for (const [f, s] of SUIVEUSES) {
+    if (ov[s] == null || ov[f] != null) continue;
+    const i = coucheQuiDonne(pile, f);
+    if (i < 0 || declarees[i][f] == null) ov[f] = ov[s];
+  }
+  const bases = new Set<string>(CLES);
+  for (const c of pile) for (const k of Object.keys(c)) bases.add(k.replace(/(O|H)$/, ''));
   const out: Record<string, string> = {};
-  // Bases CUSTOM qu'un plan déclare AU-DELÀ des slots créature (ex. navire : `coque`/`voile`/`mat`) —
-  // adapté, pas tordu : on ne détourne plus `vet1`/`cuir`, chaque plan nomme ses propres jetons.
-  const slotSet = new Set<string>(SLOTS);
-  const customBases = [...new Set(
-    Object.keys(stored).map((k) => k.replace(/(O|H)$/, '')).filter((b) => !slotSet.has(b)),
-  )];
-  for (const slot of [...SLOTS, ...customBases]) {
-    const userBase = ov[slot];
-    const base = userBase ?? stored[slot] ?? (DEFAULT_PALETTE as Record<string, string>)[slot];
-    if (base == null) continue; // base custom non fournie → rien à dériver
-    for (const [suf, f] of SHADES) {
-      const token = slot + suf;
-      if (userBase != null) {
-        out[token] = f === 1 ? userBase : scale(userBase, f); // recolor → dérivé du choix
-      } else {
-        out[token] = stored[token] ?? (f === 1 ? base : scale(base, f)); // défaut → exact sinon dérivé
-      }
+  for (const k of bases) {
+    const choisie = ov[k];
+    if (choisie != null) {
+      for (const [suf, f] of SHADES) out[k + suf] = f === 1 ? choisie : scale(choisie, f);
+      continue;
     }
+    const i = coucheQuiDonne(pile, k);
+    if (i < 0) continue;
+    const couche = pile[i];
+    for (const [suf, f] of SHADES) out[k + suf] = couche[k + suf] ?? scale(couche[k], f);
   }
   return out;
 }
@@ -123,13 +108,6 @@ export function applyTokenMapArt(art: PartArt, map: Record<string, string>): Par
       };
 }
 
-/** Commodité : (overrides, stored?) → SVG résolu. Pour 1 fragment ; sinon préférer
- *  buildTokenMap + applyTokenMap (table réutilisée). */
-export function resolveTokens(svg: string, overrides: Palette, stored: StoredPalette = {}): string {
-  if (!svg.includes('@')) return svg;
-  return applyTokenMap(svg, buildTokenMap(stored, overrides));
-}
-
 /**
  * Chair DYNAMIQUE (#583 point 2) : `g_flesh` (`fxGradients.ts`) est un dégradé global FIXE
  * (peau claire), monté une seule fois au niveau du stage — il ne peut donc pas varier par
@@ -142,10 +120,10 @@ export function resolveTokens(svg: string, overrides: Palette, stored: StoredPal
 /** Stops H/O de la chair — DÉRIVÉS de `peau` via `scale`/`SHADES` (même dérivation que
  *  `buildTokenMap`) quand la map n'en porte pas déjà, jamais un dégradé PLAT (les deux stops
  *  identiques à `map.peau`) : le chemin réel (`composeRig.tsx`, `tmap = buildTokenMap(...)`)
- *  les porte toujours, mais tout appelant qui passerait une palette non résolue (`StoredPalette`
+ *  les porte toujours, mais tout appelant qui passerait une palette non résolue (`PaletteDeclaree`
  *  brute) doit recevoir un dégradé qui ombre quand même. */
 function fleshStops(map: Record<string, string>): { h: string; o: string } {
-  const peau = map.peau ?? DEFAULT_PALETTE.peau;
+  const peau = map.peau ?? defautDe('peau');
   const shadeOf = (suf: 'O' | 'H', f: number) => map[`peau${suf}`] ?? scale(peau, f);
   return { h: shadeOf('H', 1.18), o: shadeOf('O', 0.78) };
 }

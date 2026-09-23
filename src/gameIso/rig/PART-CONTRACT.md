@@ -126,12 +126,12 @@ la vue, jamais en allongeant la liste.**
   capuche, coiffe) qui ressemble à s'y méprendre à des cheveux, c'est le jeton qui est FAUX :
   renommer l'usage vers un jeton de vêtement dédié (ex. `Nonne.ts`, guimpe → `@voile*`), jamais
   laisser `@cheveux*` peindre du tissu.
-- **`TenueDef.palette` n'a PAS le droit de déclarer `peau`/`peauO`/`peauH`/`cheveux`/`cheveuxO`/
-  `cheveuxH`** — une TENUE n'a ni peau ni chevelure (gardé,
-  `parts/tenues/no-flesh-in-tenue-palette.test.ts`, #583, #599). Le piège vécu : l'ART peignait
+- **La `palette` d'une tenue, d'une arme ou d'une armure n'a PAS le droit de déclarer une clé porteur
+  (`PORTEUR` : `peau`, `cheveux`, `yeux` et leur gamme)** — seule l'espèce les donne (gardé,
+  `parts/no-porteur-in-palette.test.ts`, #583, #599). Le piège vécu : l'ART peignait
   correctement `@peau`/`@peauO` (règle ci-dessus respectée), mais la `palette` du def déclarait
   AUSSI ces clés avec une teinte figée — `tenuePaletteFor` prime sur l'espèce dans l'empilage
-  (`rigStoredPalette`), donc ce jeton se résolvait à la couleur de la TENUE, pas à celle du
+  (`couchesDuRig`), donc ce jeton se résolvait à la couleur de la TENUE, pas à celle du
   porteur (17 tenues sur 117 pour la chair, dont `Chansonnier` en commentaire « avant-bras nu
   (g_flesh) » — le nom trahissait déjà le défaut ; 5 tenues sur 117 pour les cheveux — la palette
   merge étant UNIQUE pour tout le rig, la fuite recolorait aussi le bone `cheveux` cosmétique
