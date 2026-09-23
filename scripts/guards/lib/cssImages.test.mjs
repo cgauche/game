@@ -25,3 +25,22 @@ test('coteCss : un composant présent sur le DISQUE mais absent de l’arbre jug
   assert.deepEqual([...coteCss(source([...IMPORTEURS, COMPOSANT]), { racine: RACINE }).reutilises], [COMPOSANT], 'témoin : dans l’arbre, il est réutilisé')
   assert.deepEqual([...coteCss(source(IMPORTEURS), { racine: RACINE }).reutilises], [])
 })
+
+test('coteCss : un import écrit sur PLUSIEURS lignes compte — le fichier est relu en ENTIER ; un littéral relatif ne compte pas', () => {
+  const multi = "import {\n  RollShell,\n} from\n  './RollShell'\n"
+  const sourceDe = (textes) => ({
+    lire: (rel) => (rel === CHEMIN_MANIFESTE ? JSON.stringify([PRIMITIVE]) : textes[rel] ?? null),
+    grep: (motif) => {
+      const re = new RegExp(motif)
+      return new Map(Object.entries(textes).flatMap(([f, t]) => {
+        const lignes = t.split('\n').filter((l) => re.test(l))
+        return lignes.length ? [[f, `${lignes.join('\n')}\n`]] : []
+      }))
+    },
+    lister: () => [...IMPORTEURS, COMPOSANT],
+  })
+  assert.deepEqual([...coteCss(sourceDe({ [IMPORTEURS[0]]: multi, [IMPORTEURS[1]]: multi }), { racine: RACINE }).reutilises], [COMPOSANT])
+  const litteral = "const p = './RollShell'\n"
+  assert.deepEqual([...coteCss(sourceDe({ [IMPORTEURS[0]]: multi, [IMPORTEURS[1]]: litteral }), { racine: RACINE }).reutilises], [],
+    'un seul importeur réel : le littéral ne compte pas')
+})

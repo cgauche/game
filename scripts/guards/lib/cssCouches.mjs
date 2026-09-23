@@ -235,31 +235,73 @@ const PREFIXES_DE_PLACEMENT = [
   'margin-', 'padding-', 'overflow-', 'overscroll-', 'scroll-',
 ];
 
+/** Les propriétés LOGIQUES de CSS (mdn-data 2.27.1, `css/properties.json`) et leur équivalent
+ *  PHYSIQUE en écriture horizontale : table FERMÉE, une paire par propriété. */
+const EQUIVALENT_PHYSIQUE = new Map([
+  ['block-size', 'height'], ['border-block', 'border-top'], ['border-block-color', 'border-top-color'],
+  ['border-block-end', 'border-bottom'], ['border-block-end-color', 'border-bottom-color'],
+  ['border-block-end-style', 'border-bottom-style'], ['border-block-end-width', 'border-bottom-width'],
+  ['border-block-start', 'border-top'], ['border-block-start-color', 'border-top-color'],
+  ['border-block-start-style', 'border-top-style'], ['border-block-start-width', 'border-top-width'],
+  ['border-block-style', 'border-top-style'], ['border-block-width', 'border-top-width'],
+  ['border-end-end-radius', 'border-bottom-right-radius'],
+  ['border-end-start-radius', 'border-bottom-left-radius'], ['border-inline', 'border-left'],
+  ['border-inline-color', 'border-left-color'], ['border-inline-end', 'border-right'],
+  ['border-inline-end-color', 'border-right-color'], ['border-inline-end-style', 'border-right-style'],
+  ['border-inline-end-width', 'border-right-width'], ['border-inline-start', 'border-left'],
+  ['border-inline-start-color', 'border-left-color'], ['border-inline-start-style', 'border-left-style'],
+  ['border-inline-start-width', 'border-left-width'], ['border-inline-style', 'border-left-style'],
+  ['border-inline-width', 'border-left-width'], ['border-start-end-radius', 'border-top-right-radius'],
+  ['border-start-start-radius', 'border-top-left-radius'],
+  ['contain-intrinsic-block-size', 'contain-intrinsic-height'],
+  ['contain-intrinsic-inline-size', 'contain-intrinsic-width'],
+  ['corner-block-end-shape', 'corner-bottom-shape'], ['corner-block-start-shape', 'corner-top-shape'],
+  ['corner-inline-end-shape', 'corner-right-shape'], ['corner-inline-start-shape', 'corner-left-shape'],
+  ['inline-size', 'width'], ['inset-block', 'top'], ['inset-block-end', 'bottom'],
+  ['inset-block-start', 'top'], ['inset-inline', 'left'], ['inset-inline-end', 'right'],
+  ['inset-inline-start', 'left'], ['margin-block', 'margin-top'], ['margin-block-end', 'margin-bottom'],
+  ['margin-block-start', 'margin-top'], ['margin-inline', 'margin-left'],
+  ['margin-inline-end', 'margin-right'], ['margin-inline-start', 'margin-left'],
+  ['max-block-size', 'max-height'], ['max-inline-size', 'max-width'], ['min-block-size', 'min-height'],
+  ['min-inline-size', 'min-width'], ['overflow-block', 'overflow-y'], ['overflow-inline', 'overflow-x'],
+  ['overscroll-behavior-block', 'overscroll-behavior-y'],
+  ['overscroll-behavior-inline', 'overscroll-behavior-x'], ['padding-block', 'padding-top'],
+  ['padding-block-end', 'padding-bottom'], ['padding-block-start', 'padding-top'],
+  ['padding-inline', 'padding-left'], ['padding-inline-end', 'padding-right'],
+  ['padding-inline-start', 'padding-left'], ['scroll-margin-block', 'scroll-margin-top'],
+  ['scroll-margin-block-end', 'scroll-margin-bottom'], ['scroll-margin-block-start', 'scroll-margin-top'],
+  ['scroll-margin-inline', 'scroll-margin-left'], ['scroll-margin-inline-end', 'scroll-margin-right'],
+  ['scroll-margin-inline-start', 'scroll-margin-left'], ['scroll-padding-block', 'scroll-padding-top'],
+  ['scroll-padding-block-end', 'scroll-padding-bottom'],
+  ['scroll-padding-block-start', 'scroll-padding-top'], ['scroll-padding-inline', 'scroll-padding-left'],
+  ['scroll-padding-inline-end', 'scroll-padding-right'],
+  ['scroll-padding-inline-start', 'scroll-padding-left'],
+]);
+
 /**
- * Le nom PHYSIQUE d'une propriété LOGIQUE (`block-size` → `height`, `margin-inline-start` →
- * `margin-left`, `inset-block-end` → `bottom`, `overflow-inline` → `overflow-x`, `border-inline-color`
- * → `border-left-color`) : une propriété logique se classe comme son équivalent physique. Une
- * propriété physique est rendue telle quelle.
+ * Le nom PHYSIQUE d'une propriété (`EQUIVALENT_PHYSIQUE`) : une propriété logique se classe comme son
+ * équivalent physique ; toute autre est rendue telle quelle.
  * @param {string} prop @returns {string}
  */
-export const physique = (prop) =>
-  prop
-    .replace(/^(overflow|overscroll-behavior)-block$/, '$1-y')
-    .replace(/^(overflow|overscroll-behavior)-inline$/, '$1-x')
-    .replace(/(^|-)block-size$/, '$1height')
-    .replace(/(^|-)inline-size$/, '$1width')
-    .replace(/-block-end(?=-|$)/, '-bottom')
-    .replace(/-block(-start)?(?=-|$)/, '-top')
-    .replace(/-inline-end(?=-|$)/, '-right')
-    .replace(/-inline(-start)?(?=-|$)/, '-left')
-    .replace(/^inset-(?=(top|right|bottom|left)$)/, '');
+export const physique = (prop) => EQUIVALENT_PHYSIQUE.get(prop) ?? prop;
 
-/** Vrai si la propriété PLACE, classée sous son nom physique (`physique`). Une variable CSS (`--x`)
- *  est un PARAMÈTRE de primitive (patron `.swatch`), jamais une matière — elle reste hors du stock
- *  d'identité. */
-export const estPlacement = (prop) => {
+/** Les RACCOURCIS de la liste nommée dont un membre PEINT, et le test qui dit si la VALEUR pose ce
+ *  membre : `list-style` porte `list-style-image` dès qu'elle cite une image. Les autres raccourcis
+ *  nommés (`flex`, `grid`, `inset`, `margin`, `padding`, `overflow`, `columns`, `container`, `gap`,
+ *  `white-space`) n'ont aucun membre qui peigne. */
+const RACCOURCIS_A_MEMBRE_PEINT = new Map([
+  ['list-style', (valeur) => /\b(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(/i.test(valeur)],
+]);
+
+/** Vrai si la déclaration PLACE : sa propriété, classée sous son nom physique (`physique`), est nommée
+ *  ou d'une famille à préfixe, et sa `valeur` ne pose aucun membre qui peint
+ *  (`RACCOURCIS_A_MEMBRE_PEINT`). Une variable CSS (`--x`) est un PARAMÈTRE de primitive (patron
+ *  `.swatch`), jamais une matière — elle reste hors du stock d'identité.
+ *  @param {string} prop @param {string} [valeur] */
+export const estPlacement = (prop, valeur = '') => {
   if (prop.startsWith('--')) return true;
   const p = physique(prop);
+  if (RACCOURCIS_A_MEMBRE_PEINT.get(p)?.(valeur)) return false;
   return PROPRIETES_DE_PLACEMENT.has(p) || PREFIXES_DE_PLACEMENT.some((x) => p.startsWith(x));
 };
 
@@ -341,8 +383,8 @@ export function sitesIdentiteEcran(fichiers) {
   for (const f of fichiers) {
     for (const { selecteurs, corps } of reglesCss(f.text)) {
       const sel = cleDeRegle(selecteurs);
-      for (const { prop } of declarations(corps)) {
-        if (!estPlacement(prop)) sites.push({ file: f.rel, ref: `${sel} :: ${prop}` });
+      for (const { prop, valeur } of declarations(corps)) {
+        if (!estPlacement(prop, valeur)) sites.push({ file: f.rel, ref: `${sel} :: ${prop}` });
       }
     }
   }

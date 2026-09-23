@@ -11,3 +11,5 @@ export function directImportsOf(
   contenu: string,
   options?: { racine?: string; existe?: (abs: string) => boolean },
 ): string[];
+/** Les alias de chemin du dépôt (`tsconfig.json` `paths`) : préfixe du spécificateur → dossier cible absolu. */
+export function aliasDuDepot(): { prefixe: string; vers: string }[];

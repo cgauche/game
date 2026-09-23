@@ -1883,6 +1883,8 @@ export function diffDuCommit(command, dir = process.cwd()) {
     renommages: () => renommagesDe(lire, [...rev(), ...borne]),
     deplaceLaFrontiereCss: (chemins) => deplaceLaFrontiere({
       chemins,
+      nesOuMorts: () => (lire(['diff', ...rev(), '--name-only', '--no-renames', '--diff-filter=AD', ...borne]) ?? '')
+        .split('\n').map((l) => l.trim()).filter(Boolean),
       diff: () => lire(['diff', ...rev(), '-U0', '--no-renames', ...(borne.length ? borne : ['--', RACINE_DES_SOURCES])]) ?? '',
       manifeste: () => manifesteDe(contreIndex() ? lire(['show', `:${CHEMIN_MANIFESTE}`]) : lire(['show', `HEAD:${CHEMIN_MANIFESTE}`])),
     }),

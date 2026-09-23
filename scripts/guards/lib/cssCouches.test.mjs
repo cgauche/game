@@ -79,6 +79,17 @@ test('estPlacement : les propriétés nommées et les familles à préfixe place
   }
 })
 
+test('estPlacement : un RACCOURCI dont un membre peint place tant que sa valeur ne pose pas ce membre', () => {
+  for (const v of ['none', 'disc inside', 'square outside', 'decimal']) assert.equal(estPlacement('list-style', v), true, `list-style: ${v}`)
+  for (const v of ['url(puce.svg)', 'disc url("x.png") inside', 'linear-gradient(red, blue)', 'image-set("a.png" 1x)']) {
+    assert.equal(estPlacement('list-style', v), false, `list-style: ${v} PEINT`)
+  }
+  assert.equal(estPlacement('list-style-image', 'none'), false, 'le membre qui peint reste de l’identité, valeur comprise')
+  for (const [p, v] of [['columns', '2 200px'], ['flex', '1 1 0'], ['grid', 'auto / 1fr 1fr'], ['overflow', 'hidden auto']]) {
+    assert.equal(estPlacement(p, v), true, `${p}: ${v} — aucun membre ne peint`)
+  }
+})
+
 test('physique : une propriété LOGIQUE se classe comme son équivalent physique', () => {
   const PAIRES = [
     ['block-size', 'height'], ['inline-size', 'width'], ['min-block-size', 'min-height'], ['max-inline-size', 'max-width'],
@@ -86,7 +97,7 @@ test('physique : une propriété LOGIQUE se classe comme son équivalent physiqu
     ['inset-block', 'top'], ['margin-inline', 'margin-left'], ['margin-block-end', 'margin-bottom'],
     ['padding-inline-end', 'padding-right'], ['scroll-padding-inline-start', 'scroll-padding-left'],
     ['overflow-inline', 'overflow-x'], ['overscroll-behavior-block', 'overscroll-behavior-y'], ['border-inline-start-color', 'border-left-color'], ['border-block', 'border-top'],
-    ['border-start-start-radius', 'border-start-start-radius'], ['width', 'width'],
+    ['border-start-start-radius', 'border-top-left-radius'], ['width', 'width'],
   ]
   for (const [logique, attendu] of PAIRES) assert.equal(physique(logique), attendu, logique)
   for (const [logique, equivalent] of PAIRES) {

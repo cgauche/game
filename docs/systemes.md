@@ -6,8 +6,8 @@
 > transitive des modules racines déclarés par système) — jamais périmée : re-générer après tout ajout.
 
 **Périmètre mesuré / angles morts** — la closure d'import est calculée par `closureOf` (`scripts/guards/lib/importGraph.mjs`) :
-parcours RÉGEX des specifiers `from '…'`/`import('…')`, RÉSOLUS SEULEMENT s'ils sont RELATIFS (`./`, `../`) — un
-import via alias tsconfig ou paquet npm n'est jamais suivi (`resolveImport` renvoie `null`), donc invisible ici sans
+parcours RÉGEX des specifiers `from '…'`/`import('…')`, RÉSOLUS s'ils sont RELATIFS (`./`, `../`) ou sous un alias
+de `tsconfig.json` (`@/…`) — un paquet npm n'est jamais suivi (`resolveImport` renvoie `null`), donc invisible ici sans
 que la primitive soit hors d'usage. L'inventaire « modules non rattachés » est lui-même borné : SURFACE de
 `src/state`/`src/engine` uniquement (`listerDossier` non récursif, `*.test.ts` exclus) — un fichier niché dans un
 sous-dossier, ou situé ailleurs (`src/ui`, `src/gameIso`, `src/data`…), n'y apparaît jamais, rattaché ou non.
@@ -207,4 +207,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: afb86d173706967180445f30b11dd39ca1e6f128 (1824 fichiers, 2 dossiers) corps: 821ac4427ade52af328902db61a066bf40af4c79 -->
+<!-- sources-empreinte: 07406a18a83bdfc3c8a8552c5c59ae43e5185056 (1825 fichiers, 2 dossiers) corps: ccf83c9d94582b87391e12288995c1079762b1d5 -->

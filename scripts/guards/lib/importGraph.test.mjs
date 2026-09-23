@@ -164,3 +164,11 @@ test('`typesEffaces` : la marche suit ce que le BUNDLER garde — tout arc effac
     rmSync(racine, { recursive: true, force: true })
   }
 })
+
+test('resolveImport : un spécificateur sous l’ALIAS de tsconfig.json (`@/…`) se résout sous sa cible ; un paquet npm reste hors graphe', () => {
+  const racine = fileURLToPath(new URL('../../..', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '')
+  const depuis = `${racine}/src/ui/Ailleurs.tsx`
+  assert.equal(resolveImport(depuis, '@/ui/RollShell'), `${racine}/src/ui/RollShell.tsx`)
+  assert.equal(resolveImport(depuis, '@/ui/RollShell'), resolveImport(depuis, './RollShell'), 'alias et relatif désignent le même fichier')
+  assert.equal(resolveImport(depuis, 'react'), null)
+})

@@ -48,22 +48,38 @@ export function sourceALExecution(fichier, texte) {
   return typescript().transpileModule(texte, { fileName: fichier, compilerOptions: optionsDuDepot() }).outputText;
 }
 
+/** Les ALIAS de chemin du dépôt (`compilerOptions.paths` de `tsconfig.json`, forme `<clé>/*` →
+ *  `<cible>/*`, cible résolue contre `baseUrl`), lus au premier spécificateur non relatif : la même
+ *  source que le compilateur et que `vite.config.ts` (`resolve.alias`). */
+let alias = null;
+export const aliasDuDepot = () => {
+  if (alias) return alias;
+  const { compilerOptions: { baseUrl = '.', paths = {} } = {} } = JSON.parse(readFileSync(TSCONFIG_URL, 'utf8'));
+  const base = resolve(dirname(fileURLToPath(TSCONFIG_URL)), baseUrl).split('\\').join('/');
+  alias = Object.entries(paths)
+    .filter(([cle, [cible] = []]) => cle.endsWith('/*') && cible?.endsWith('/*'))
+    .map(([cle, [cible]]) => ({ prefixe: cle.slice(0, -1), vers: `${resolve(base, cible.slice(0, -1)).split('\\').join('/')}/` }));
+  return alias;
+};
+
 /** Extensions qu'un spécificateur peut porter LUI-MÊME (le chemin désigne alors le fichier). */
 const EXTS_EXPLICITES = [...EXTS, '.json'];
 
 /**
  * Résout un spécificateur d'import RELATIF (`./foo`, `../bar`) vers un fichier source réel :
  * spécificateur portant DÉJÀ son extension (`./x.mjs`, `./data.json` — la forme des 109 imports de
- * `src/**` vers les libs de garde), sinon extension déduite d'`EXTS`, sinon repli `index.*`. Les
- * paquets npm / alias non-relatifs renvoient `null` (hors périmètre — pas résolus ici).
+ * `src/**` vers les libs de garde), sinon extension déduite d'`EXTS`, sinon repli `index.*`. Un
+ * spécificateur qui commence par un ALIAS du dépôt (`aliasDuDepot`, `@/…`) se résout sous sa cible ;
+ * un paquet npm rend `null` (hors périmètre).
  * `existe` (chemin absolu POSIX → présent ?) dit quel ARBRE fait foi : le disque par défaut, la liste
  * de fichiers d'une ref pour qui juge un autre arbre que l'arbre de travail (#1806).
  * @param {string} fromFile @param {string} spec @param {(abs: string) => boolean} [existe]
  * @returns {string|null}
  */
 export function resolveImport(fromFile, spec, existe = existsSync) {
-  if (!spec.startsWith('.')) return null;
-  const base = resolve(dirname(fromFile), spec).split('\\').join('/');
+  const a = spec.startsWith('.') ? null : aliasDuDepot().find(({ prefixe }) => spec.startsWith(prefixe));
+  if (!spec.startsWith('.') && !a) return null;
+  const base = a ? `${a.vers}${spec.slice(a.prefixe.length)}` : resolve(dirname(fromFile), spec).split('\\').join('/');
   if (EXTS_EXPLICITES.some((e) => spec.endsWith(e))) return existe(base) ? base : null;
   for (const ext of EXTS) if (existe(base + ext)) return base + ext;
   for (const ext of EXTS) if (existe(`${base}/index${ext}`)) return `${base}/index${ext}`;
@@ -155,7 +171,7 @@ export function directImportsOf(fromFile, contenu, { racine = '.', existe } = {}
   const found = new Set();
   for (const m of contenu.matchAll(IMPORT_RE)) {
     const resolved = resolveImport(resolve(root, fromFile), m[1] ?? m[2] ?? m[3], existe);
-    if (resolved && resolved.includes('/src/')) found.add(resolved.slice(root.length + 1));
+    if (resolved?.startsWith(`${root}/`) && resolved.includes('/src/')) found.add(resolved.slice(root.length + 1));
   }
   return [...found];
 }

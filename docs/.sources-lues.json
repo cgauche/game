@@ -12233,7 +12233,8 @@
       "src/ui/useRamenerEnVue.ts",
       "src/ui/useRollFrisson.ts",
       "src/ui/weaponStats.ts",
-      "src/ui/worldMapViewport.ts"
+      "src/ui/worldMapViewport.ts",
+      "tsconfig.json"
     ],
     "dossiers": [
       "src/engine",
@@ -19608,7 +19609,8 @@
       "src/vi-mock-isolate-guard.test.ts",
       "src/vite-env.d.ts",
       "src/weapon-load-owner-guard.test.ts",
-      "src/worktree-isolation-guard.test.ts"
+      "src/worktree-isolation-guard.test.ts",
+      "tsconfig.json"
     ],
     "dossiers": [
       "Source/WH - V4 - Aux Armes",

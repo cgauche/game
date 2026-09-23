@@ -7,6 +7,7 @@ import assert from 'node:assert/strict'
 import {
   deplaceLaFrontiere, ecartsDeReclassement, franchisDesCotes, raisonDeRefusDeReclassement, reclassementsNonDeclares,
 } from './reclassementCss.mjs'
+import { motifDImport } from './cssImages.mjs'
 
 const Q = 'src/ui/styles/ecran-q.css'
 const P = 'src/ui/styles/prim-p.css'
@@ -81,14 +82,16 @@ const MANIFESTE_CONSOLE = [{ id: 'a' }, { id: 'console', fichier: COMPOSANT_CONS
 const jamais = (quoi) => () => { throw new Error(`${quoi} lu alors que les chemins suffisent`) }
 const diffDEcran = (ligne) =>
   `diff --git a/src/ui/Ecran.tsx b/src/ui/Ecran.tsx\n--- a/src/ui/Ecran.tsx\n+++ b/src/ui/Ecran.tsx\n@@ -1,0 +1 @@\n${ligne}\n`
-const deplace = (chemins, diff) => deplaceLaFrontiere({ chemins, diff: () => diff, manifeste: () => MANIFESTE_CONSOLE })
+const deplace = (chemins, diff, nesOuMorts = []) =>
+  deplaceLaFrontiere({ chemins, nesOuMorts: () => nesOuMorts, diff: () => diff, manifeste: () => MANIFESTE_CONSOLE })
+const sansLecture = { nesOuMorts: jamais('nesOuMorts'), diff: jamais('diff'), manifeste: jamais('manifeste') }
 
-test('deplaceLaFrontiere : le MANIFESTE touché suffit, sans lire ni diff ni manifeste', () => {
-  assert.equal(deplaceLaFrontiere({ chemins: ['src/data/primitives.manifest.json'], diff: jamais('diff'), manifeste: jamais('manifeste') }), true)
+test('deplaceLaFrontiere : le MANIFESTE touché suffit, sans rien lire d’autre', () => {
+  assert.equal(deplaceLaFrontiere({ chemins: ['src/data/primitives.manifest.json'], ...sansLecture }), true)
 })
 
-test('deplaceLaFrontiere : `cssCouches.mjs` (FEUILLES_PARTAGEES) touché suffit, sans lire ni diff ni manifeste', () => {
-  assert.equal(deplaceLaFrontiere({ chemins: ['scripts/guards/lib/cssCouches.mjs'], diff: jamais('diff'), manifeste: jamais('manifeste') }), true)
+test('deplaceLaFrontiere : `cssCouches.mjs` (FEUILLES_PARTAGEES) touché suffit, sans rien lire d’autre', () => {
+  assert.equal(deplaceLaFrontiere({ chemins: ['scripts/guards/lib/cssCouches.mjs'], ...sansLecture }), true)
 })
 
 test('deplaceLaFrontiere : une ligne AJOUTÉE qui importe un `fichier` du manifeste', () => {
@@ -104,31 +107,49 @@ test('deplaceLaFrontiere : un diff `src/` sans import d’un `fichier` du manife
   assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+const onglet = 'Console'")), false, 'un littéral qui porte le nom n’est pas un import')
   assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+import { C } from 'Console'")), false, 'un spécificateur NU n’est pas relatif')
   assert.equal(deplace(['src/ui/Console.tsx'], diffDEcran('+export const Console = 2')), false, 'l’en-tête `+++ b/src/ui/Console.tsx` n’est pas une ligne')
-  assert.equal(deplaceLaFrontiere({ chemins: ['src/ui/Ecran.tsx'], diff: jamais('diff'), manifeste: () => [{ id: 'sans-fichier' }] }), false,
-    'un manifeste sans `fichier` n’a rien à importer : le diff n’est pas lu')
+  assert.equal(deplaceLaFrontiere({ chemins: ['src/ui/Ecran.tsx'], ...sansLecture, manifeste: () => [{ id: 'sans-fichier' }] }), false,
+    'un manifeste sans `fichier` n’a rien à importer : ni les chemins nés ou morts ni le diff ne sont lus')
 })
-
-/** Le diff `--no-renames -U0` d'un fichier AJOUTÉ (`ajoute`) ou SUPPRIMÉ. */
-const diffDeFichier = (chemin, { ajoute }) => [
-  `diff --git a/${chemin} b/${chemin}`,
-  ajoute ? 'new file mode 100644' : 'deleted file mode 100644',
-  ajoute ? '--- /dev/null' : `--- a/${chemin}`,
-  ajoute ? `+++ b/${chemin}` : '+++ /dev/null',
-  ajoute ? '@@ -0,0 +1 @@' : '@@ -1 +0,0 @@',
-  `${ajoute ? '+' : '-'}export const x = 1`,
-].join('\n')
 
 test('deplaceLaFrontiere : un importeur SUPPRIMÉ en entier relit la frontière', () => {
-  const suppr = diffDeFichier('src/ui/Ecran2.tsx', { ajoute: false }).replace('-export const x = 1', "-import { Console } from './Console'")
-  assert.equal(deplace(['src/ui/Ecran2.tsx'], suppr), true)
+  const suppr = [
+    'diff --git a/src/ui/Ecran2.tsx b/src/ui/Ecran2.tsx', 'deleted file mode 100644', '--- a/src/ui/Ecran2.tsx', '+++ /dev/null',
+    '@@ -1 +0,0 @@', "-import { Console } from './Console'",
+  ].join('\n')
+  assert.equal(deplace(['src/ui/Ecran2.tsx'], suppr, ['src/ui/Ecran2.tsx']), true)
 })
 
-test('deplaceLaFrontiere : un module HOMONYME ajouté ou supprimé relit la frontière — `./Console` peut changer de cible', () => {
-  assert.equal(deplace(['src/ui/Console.ts'], diffDeFichier('src/ui/Console.ts', { ajoute: true })), true, '`Console.ts` passe avant `Console.tsx`')
-  assert.equal(deplace(['src/ui/Console.ts'], diffDeFichier('src/ui/Console.ts', { ajoute: false })), true, 'le retirer rend `./Console` à `Console.tsx`')
-  assert.equal(deplace(['src/ui/Console/index.ts'], diffDeFichier('src/ui/Console/index.ts', { ajoute: true })), true, 'repli `index.*`')
-  assert.equal(deplace(['src/ui/console.css'], diffDeFichier('src/ui/Console.css', { ajoute: true })), false, 'une feuille n’est pas un module de code')
-  assert.equal(deplace(['src/ui/Autre.ts'], diffDeFichier('src/ui/Autre.ts', { ajoute: true })), false, 'témoin : un autre nom')
+test('deplaceLaFrontiere : un module HOMONYME ajouté ou supprimé relit la frontière, VIDE compris — `./Console` peut changer de cible', () => {
+  const vide = (mode) => `diff --git a/src/ui/Console.ts b/src/ui/Console.ts\n${mode} file mode 100644\nindex 0000000..e69de29\n`
+  assert.equal(deplace(['src/ui/Console.ts'], vide('new'), ['src/ui/Console.ts']), true, '`Console.ts` VIDE ajouté passe avant `Console.tsx`')
+  assert.equal(deplace(['src/ui/Console.ts'], vide('deleted'), ['src/ui/Console.ts']), true, 'le retirer, vide, rend `./Console` à `Console.tsx`')
+  assert.equal(deplace(['src/ui/Console/index.ts'], '', ['src/ui/Console/index.ts']), true, 'repli `index.*`')
+  assert.equal(deplace(['src/ui/Console.css'], '', ['src/ui/Console.css']), false, 'une feuille n’est pas un module de code')
+  assert.equal(deplace(['src/ui/Autre.ts'], '', ['src/ui/Autre.ts']), false, 'témoin : un autre nom')
+  assert.equal(deplace(['src/ui/Console.tsx'], diffDEcran('+export const Console = 2'), []), false,
+    'une simple MODIFICATION de l’homonyme ne change aucune résolution')
+})
+
+test('deplaceLaFrontiere : un import écrit sur PLUSIEURS lignes relit la frontière par sa ligne de spécificateur seul', () => {
+  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+  './Console'")), true)
+  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("-  '@/ui/Console';")), true)
+  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+const p = './Console'")), false, 'un littéral relatif hors import')
+})
+
+test('motifDImport : chaque forme que `IMPORT_RE` lit et que `resolveImport` résout, et rien d’autre', () => {
+  const importe = new RegExp(motifDImport(MANIFESTE_CONSOLE))
+  for (const l of [
+    "import { C } from './Console'", "import X from\t'./Console'", "export { C } from '../d/Console.tsx'",
+    "const L = lazy(() => import('./Console'))", "import './Console'", "import Z from './Console/index'",
+    "export { W } from '..'", "export * from '.'", "import { R } from '@/ui/Console'",
+  ]) assert.equal(importe.test(l), true, l)
+  for (const l of ["  './Console'", "\t'./Console';", "  '../ui/Console.tsx'", "  '@/ui/Console'", '  "./Console/index",']) {
+    assert.equal(importe.test(l), true, `spécificateur seul : ${l}`)
+  }
+  for (const l of ["const p = './Console'", "const k = 'Console'", "import { B } from './ConsoleBis'", "import { t } from 'Console'",
+    "  'Console'", "  './ConsoleBis'"]) {
+    assert.equal(importe.test(l), false, l)
+  }
 })
 
 test('le refus nomme chaque écart, le commit, et le geste `rebase -i` sur une plage', () => {

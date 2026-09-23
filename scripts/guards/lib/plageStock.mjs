@@ -149,6 +149,8 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
       },
       cotes: () => (deplaceLaFrontiere({
         chemins: cheminsDuDiff(diff),
+        nesOuMorts: () => (lire(['show', '--format=', '--name-only', '--no-renames', '--diff-filter=AD', sha]) ?? '')
+          .split('\n').map((l) => l.trim()).filter(Boolean),
         diff: () => diff,
         manifeste: () => manifesteDe(lire(['show', `${sha}^:${CHEMIN_MANIFESTE}`])),
       }) ? { parent: cote(`${sha}^`), commit: cote(sha) } : null),

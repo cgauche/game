@@ -7,7 +7,7 @@
 // régénérateur), le garde de solde au commit, la porte de plage au push.
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { directImportsOf } from './importGraph.mjs'
+import { aliasDuDepot, directImportsOf } from './importGraph.mjs'
 import { INDEX, TRAVAIL, grepDe, lireGit, listerImage, sortieOuNull } from './gitPorte.mjs'
 import { entreesEcrites } from './stock.mjs'
 import {
@@ -42,18 +42,31 @@ export function nomsDImport(manifeste) {
 
 /**
  * Le motif `-E` (`git grep` comme `RegExp`) des lignes qui IMPORTENT un `fichier` du manifeste, aux
- * seules formes que lit `IMPORT_RE` (`importGraph.mjs`) — `from '…'`, `import('…')`, `import '…'` —
- * sur un spécificateur RELATIF qui finit par son nom (`nomsDImport`). `null` = rien à chercher.
+ * seules formes que lit `IMPORT_RE` (`importGraph.mjs`) — `from '…'`, `import('…')`, `import '…'` —,
+ * sur un spécificateur que `resolveImport` résout : relatif (`./`, `../`) ou sous un alias du dépôt
+ * (`aliasDuDepot`), finissant par un nom du manifeste (`nomsDImport`), `/index` écrit ou non ; ou fait
+ * de points seuls (`'.'`, `'..'`), dont le `index.*` ne se lit pas dans le spécificateur. Une ligne
+ * faite du SEUL spécificateur (`SPECIFICATEUR_SEUL`) est candidate aussi : c'est la seconde ligne d'un
+ * import écrit sur plusieurs, que `coteCss` relit alors en entier. `null` = rien à chercher.
  * @param {readonly { fichier?: string }[]} manifeste @returns {string | null}
  */
 export function motifDImport(manifeste) {
   const noms = nomsDImport(manifeste)
   if (!noms.size) return null
-  return `(from|import)[ \t]*\\(?[ \t]*['"]\\.\\.?/([^'"]*/)?(${[...noms].map(echapper).join('|')})(\\.[cm]?[jt]sx?)?['"]`
+  const racines = ['\\.\\.?/', ...aliasDuDepot().map(({ prefixe }) => echapper(prefixe))].join('|')
+  const nomme = `(${racines})([^'"]*/)?(${[...noms].map(echapper).join('|')})(/index)?(\\.[cm]?[jt]sx?)?`
+  const specificateur = `['"](${nomme}|\\.\\.?(/\\.\\.)*/?)['"]`
+  return `(from|import)[ \t]*\\(?[ \t]*${specificateur}|^[ \t]*${specificateur}[ \t]*[,;)]*[ \t]*$`
 }
+
+/** Une ligne candidate qui commence par un guillemet : le SEUL spécificateur d'un import écrit sur
+ *  plusieurs lignes (`motifDImport`). */
+export const SPECIFICATEUR_SEUL = /^[ \t]*['"]/
 
 /**
  * Le CÔTÉ d'un arbre : manifeste, `FEUILLES_PARTAGEES`, `fichier`s RÉUTILISÉS et lecteur de texte.
+ * Un fichier candidat se résout sur ses lignes candidates, ou sur son contenu ENTIER dès qu'une d'elles
+ * est un spécificateur seul (`SPECIFICATEUR_SEUL`) : `IMPORT_RE` lit alors l'import sur ses lignes.
  * Les imports se résolvent contre les SEULS fichiers de cet arbre (`lister`) : le disque n'est pas
  * l'arbre jugé (#1806).
  * @param {{ lire: (rel: string) => string | null, grep: (motif: string) => Map<string, string>,
@@ -69,7 +82,11 @@ export function coteCss(source, { racine = '.' } = {}) {
   const arbre = motif ? new Set(source.lister(RACINE_DES_SOURCES).map((rel) => `${racineAbs}/${rel}`)) : new Set()
   const existe = (abs) => arbre.has(abs)
   const imports = motif
-    ? [...source.grep(motif)].map(([rel, lignes]) => [rel, directImportsOf(rel, lignes, { racine, existe })])
+    ? [...source.grep(motif)].map(([rel, lignes]) => {
+      const surPlusieursLignes = lignes.split('\n').some((l) => SPECIFICATEUR_SEUL.test(l))
+      const contenu = surPlusieursLignes ? source.lire(rel) ?? lignes : lignes
+      return [rel, directImportsOf(rel, contenu, { racine, existe })]
+    })
     : []
   return { manifeste, partagees, reutilises: fichiersReutilises(manifeste, imports), lire: source.lire }
 }

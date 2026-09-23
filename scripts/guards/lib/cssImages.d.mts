@@ -16,6 +16,7 @@ export interface CoteCss {
 export const RACINE_DES_SOURCES: string;
 export function nomDImport(chemin: string): string;
 export function nomsDImport(manifeste: readonly EntreeManifeste[]): Set<string>;
+export const SPECIFICATEUR_SEUL: RegExp;
 export function motifDImport(manifeste: readonly EntreeManifeste[]): string | null;
 export function coteCss(source: SourceCss, options?: { racine?: string }): CoteCss;
 export function imageCss(source: SourceCss, options?: { racine?: string }): ImageCss;
