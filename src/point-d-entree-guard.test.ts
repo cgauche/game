@@ -18,6 +18,9 @@ const ARGV = 'process' + '.argv';
 const URL_DU_MODULE = 'import.meta' + '.url';
 const FICHIER_DU_MODULE = 'import.meta' + '.filename';
 const PROCESS = "'node" + ":process'";
+const REQUIRE_PROCESS = `require(${PROCESS})`;
+const ARGV_GLOBAL = 'globalThis.' + ARGV;
+const MODULE_PARENT = 'module' + '.parent';
 
 const detecte = (source: string) => detectionsDePointDEntree(source).length > 0;
 
@@ -46,6 +49,16 @@ describe('garde de classe — le point d’entrée se lit à import.meta.main', 
       `console.log(\`usage : node \${basename(${ARGV}[1])} <x>\`)`,
       `'process.stdout.write(JSON.stringify({ entree: ' + ${ARGV}[1] + ' }))'`,
       `const cible = resolve(${ARGV}[1] === undefined ? '.' : 'x')`,
+      `if (${ARGV_GLOBAL}[1] === soi) main()`,
+      `if (global.${ARGV}.at(1) === soi) main()`,
+      `if (process['ar` + `gv'][1] === soi) main()`,
+      `if (process["ar` + `gv"]?.[1] === soi) main()`,
+      `if (${REQUIRE_PROCESS}.argv[1] === soi) main()`,
+      `if (resolve(${ARGV}.slice(1, 2)[0]) === soi) main()`,
+      `if (${ARGV}.slice(1).shift() === soi) main()`,
+      `const [lance] = ${ARGV}.slice(1)`,
+      `if (!${MODULE_PARENT}) main()`,
+      `module.exports = ${MODULE_PARENT} ? api : main()`,
     ];
     for (const v of variantes) expect(detecte(v), v).toBe(true);
   });
@@ -58,6 +71,12 @@ describe('garde de classe — le point d’entrée se lit à import.meta.main', 
       [`const { ${'ar' + 'gv'}: [, lance] } = process`, 'if (lance === soi) main()'],
       [`import proc from ${PROCESS}`, 'if (proc.argv[1] === soi) main()'],
       [`import * as proc from ${PROCESS}`, 'if (proc.argv.at(1) === soi) main()'],
+      [`const { ${'ar' + 'gv'} } = ${REQUIRE_PROCESS}`, 'if (argv[1] === soi) main()'],
+      [`const { ${'ar' + 'gv'}: [, lance] } = ${REQUIRE_PROCESS}`, 'if (lance === soi) main()'],
+      [`const a = ${ARGV}, b = 2`, 'if (a[1] === soi) main()'],
+      ['let a', `a = process['ar` + `gv']`, 'if (a[1] === soi) main()'],
+      [`const proc = ${REQUIRE_PROCESS}`, 'if (proc.argv[1] === soi) main()'],
+      ['const proc = globalThis' + '.process', 'if (proc.argv[1] === soi) main()'],
     ];
     for (const lignes of sources) {
       expect(detectionsDePointDEntree(lignes.join('\n')), lignes.join(' ⏎ ')).not.toEqual([]);
@@ -86,6 +105,14 @@ describe('garde de classe — le point d’entrée se lit à import.meta.main', 
       `const estFichier = ${URL_DU_MODULE}.startsWith('file:')`,
       `if (${URL_DU_MODULE}.includes('/node_modules/')) return`,
       `console.log(\`usage : node \${basename(${FICHIER_DU_MODULE})} <x>\`)`,
+      `const n = ${ARGV}.slice(1).length`,
+      `const [commande, ...reste] = ${ARGV}.slice(2)`,
+      `const args = ${ARGV_GLOBAL}.slice(2)`,
+      `const args = ${REQUIRE_PROCESS}.argv.slice(2)`,
+      `const a = ${ARGV}.slice(2)\nif (a[1] === soi) main()`,
+      `const { ${'ar' + 'gv'} } = ${REQUIRE_PROCESS}\nconst args = argv.slice(2)`,
+      'module.exports = { main }',
+      'const chemins = module.paths',
     ];
     for (const n of neutres) expect(detecte(n), n).toBe(false);
   });
