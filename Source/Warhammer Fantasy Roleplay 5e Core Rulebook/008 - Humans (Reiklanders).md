@@ -56,7 +56,7 @@ Take six Advances (+30) in the Language (Reikspiel) Skill
 
 #### **Starting Skills**
 
-II **Names** Add one Advance (+5) to any five of the following Skills: Animal Care, Charm, Cool, Evaluate, Gossip, Haggle, Language (Bretonnian), Language (Wastelander), Leadership, Lore (Reikland), Melee (Basic), Ranged (Bow)
+**Names** Add one Advance (+5) to any five of the following Skills: Animal Care, Charm, Cool, Evaluate, Gossip, Haggle, Language (Bretonnian), Language (Wastelander), Leadership, Lore (Reikland), Melee (Basic), Ranged (Bow)
 
 #### **Starting Talents**
 

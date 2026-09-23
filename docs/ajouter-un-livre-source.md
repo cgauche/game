@@ -67,6 +67,7 @@ LDB compris ; la garde imprime le compte de dossiers hors format à chaque exéc
 | Tables | chaque bloc a sa ligne de séparateur `\|---\|` | `table-sans-separateur` |
 | Numéro de chapitre | un **entier** ≥ 1, zéro-paddé à la largeur du **plus grand numéro du livre**, deux au minimum (`livre-de-base` : `21` ; un livre de 120 chapitres : `007`, `105`) — `largeurDeChapitre` / `graphieDeChapitre` (`src/data/source/decoupe.ts`) rendent cette graphie, et elle est la même pour tous les fichiers d'un dossier | `largeur-de-numero` |
 | GRAIN | un fichier porte **UNE section** du livre et **OUVRE** sur le titre que la LISTE DE DÉCOUPE lui donne (`ouverture`) | livre AVEC liste : rouge nommé, sans stock — livre SANS liste : `sans-decoupe` |
+| Mobilier de page | aucun chiffre d'**onglet** de chapitre ni **folio** mêlé au texte | livre dont la liste porte des `onglets` : `mobilier`, rouge nommé, sans stock |
 
 **Le GRAIN, et son régime.** Arbitrage utilisateur du 2026-09-21, verbatim : « Oui : un fichier par
 section majeure ». Le grain d'un livre est sa **LISTE DE DÉCOUPE** (§ 2,
@@ -87,6 +88,44 @@ gouttière (`# **POISONS** V`, `# • **CONSUMER GUIDE** •`) tombe sans jamais
 et `APPENDIX III` n'ouvre pas `APPENDIX I`. Ce qu'il ne voit **pas**, et c'est dit : un fichier sans
 aucune ligne de titre n'a d'ouverture à juger que si sa liste lui en déclare une.
 
+**Le MOBILIER DE PAGE, et son régime (#1739).** Le chiffre romain de l'onglet de chapitre et le folio
+ne sont pas du texte du livre : l'extraction les MÊLE au flux (`III` seul sur sa ligne,
+`# **POISONS** V`, `#### **Bounce** XII **Cold-blooded**`). Règle utilisateur du 2026-09-20,
+verbatim : « Il est interdit de réécrire le texte. On peut réparer le texte s'il est tronqué/mélangé
+car l'extraction n'est pas parfaite. » Le mobilier se RETIRE ; ne bouge que la FORME que son retrait
+rend fausse (titre soudé, bandeau lu comme table), jamais un mot. Un prédicat, trois consommateurs :
+
+- **Le prédicat** (`scripts/raw/lib/mobilier.mjs`). O, l'ensemble des chiffres d'onglet d'un fichier,
+  se tire de la donnée `onglets` de sa liste de découpe : les chiffres dont l'étendue rencontre les
+  pages `page..pageFin+1`. Il relève (a) une ligne réduite à un élément de O, ou à un nombre de
+  `[page, pageFin+1]` ; (b) un élément de O comme mot isolé hors gras. Dans une table, les cellules
+  d'en-tête d'une table de PROFIL (au moins 3 abréviations de Caractéristique de
+  `src/data/characteristics.json`) sont exclues.
+- **La sonde** : `node scripts/raw/sonde-mobilier.mjs <id>` rend les sites classés, en `NNN:ligne`,
+  et dit lesquels une exemption couvre.
+- **La réparation** : `node scripts/raw/reparer-mobilier.mjs <id>`, puis `--apply`. Une ligne réduite
+  au mobilier est SUPPRIMÉE, avec l'une des deux lignes vides qui l'encadraient ; un jeton dans une
+  ligne est retiré, les blancs du seul point de coupe normalisés ; dans une cellule de table, il
+  devient autant d'espaces, et les colonnes restent. Deux classes changent la forme :
+  - un jeton entre deux runs gras d'une ligne de titre (titre SOUDÉ) scinde la ligne en DEUX
+    titres, au niveau le plus porté par les titres frères du fichier ;
+  - une table que le retrait laisse SANS DONNÉE (une seule cellule non vide, dans son en-tête :
+    un bandeau lu comme table, `| EXAMPLE DIFFICULTIES OF COMMON SOCIAL ACTIONS | V |`) devient
+    UNE ligne de titre au texte verbatim de cette cellule, au niveau le plus porté par les titres de
+    LÉGENDE du fichier (un titre que suit une table ; à égalité, le moins profond).
+
+  Elle REFUSE d'écrire si le multi-ensemble des mots d'un fichier perd autre chose que les
+  jetons de ses sites, en gagne un, ou si une suppression collait deux lignes non vides. Ensuite, le
+  recalage du § 7, étape 2 : `reanchor.mjs --remap` puis `--apply`, et `recouper-source.mjs <id>
+  --suivre-diff`.
+- **La garde** : la famille `mobilier` de `raw:check-source-format`, pour tout livre dont la liste porte
+  des `onglets`. Un mot du livre qui tombe sous le prédicat (le pronom `I`, « Appendix I », une
+  colonne Caractéristique) s'exempte AU SITE dans `scripts/guards/lib/mobilierExemptions.mjs` :
+  `{ fichier, motif, jetons, raison }`, le motif tenant au TEXTE de la ligne, jamais à son numéro,
+  `jetons` au NOMBRE de sites qu'elle couvre sur cette ligne : un chiffre d'onglet de plus y reste
+  rouge, et une exemption qui couvre moins que ses `jetons` l'est aussi. Une exemption de plus se
+  déclare par `CLIQUET:`.
+
 **La garde et son stock.** `node scripts/raw/check-source-format.mjs` balaie les **dossiers FR
 suivis** — les livres à `dir` de `src/data/books.json` plus les dossiers antérieurs au pipeline,
 atteints par balayage des préfixes `Warhammer v4 - `, `WH - V4 - `, `WH4_FR_`, `Boite d'Initiation`,
@@ -94,7 +133,9 @@ atteints par balayage des préfixes `Warhammer v4 - `, `WH - V4 - `, `WH4_FR_`, 
 `scripts/raw/source-format-stock.json` : une entrée par (famille, dossier, détail). Les deux sens
 sont rouges — un écart hors du stock (rejouer la chaîne sur le livre, ou déclarer l'entrée au
 message par `CLIQUET:`), une entrée sans écart mesuré (la chaîne a été rejouée : l'entrée se
-retire). `--ecrire-stock` régénère le stock. Comme la `ref` d'une entrée porte un **compte**
+retire). `--ecrire-stock` régénère le stock ; une entrée NEUVE y exige son lot, `--lot <#N …>`, sans
+quoi rien n'est écrit (`ecrireStockSousLot`, `scripts/guards/lib/stock.mjs`), et les entrées
+existantes gardent le leur. Comme la `ref` d'une entrée porte un **compte**
 (« ×N »), **tout geste non canonique se voit** : corriger une occurrence sur N déplace la clé et
 rougit la garde — c'est voulu. **Comment le stock décroît** : un livre repassé par la chaîne en sort
 dans le train qui l'intègre — remplacement du dossier suivi, `node scripts/raw/reanchor.mjs --apply

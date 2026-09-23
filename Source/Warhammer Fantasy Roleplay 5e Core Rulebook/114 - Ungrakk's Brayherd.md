@@ -142,8 +142,6 @@ Channelling (*Ghur*) 50, Cool 50, Dodge 45, Intuition 50, Language (Magick) 45, 
 
 Axe, Light Armour, Staff
 
-355
-
 # **Guzgog - Ungor Skirmisher**
 
 Guzgog is a skilled skirmisher and a sharp shot with his shortbow. Though an adequate scout for the brayherd, he is not especially perceptive, and his failure to spot several goblin ambushes has left him distrusted. He is desperate not to make another mistake, knowing one more failure will earn him Ungrakk's murderous wrath.

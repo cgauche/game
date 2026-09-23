@@ -67,7 +67,7 @@ All the money remaining at the end of your 'Between Adventures' phase is lost be
 
 ### **Change Career**
 
-VI **Banking** Time spent on this Endeavour represents making the appropriate introductions, doling out bribes, acquiring permits and anything else needed to start a new Career. Work out the particulars with your GM — switching from Soldier to Sailor might be as simple as being press-ganged into the navy, while switching from a Rat Catcher to become a Noble is all but impossible. Additionally, not every Career is available to every Species. Assuming your GM agrees, you may pay 100 XP to change to a Career within your current Class, or 200 XP to change to a Career in another Class.
+**Banking** Time spent on this Endeavour represents making the appropriate introductions, doling out bribes, acquiring permits and anything else needed to start a new Career. Work out the particulars with your GM — switching from Soldier to Sailor might be as simple as being press-ganged into the navy, while switching from a Rat Catcher to become a Noble is all but impossible. Additionally, not every Career is available to every Species. Assuming your GM agrees, you may pay 100 XP to change to a Career within your current Class, or 200 XP to change to a Career in another Class.
 
 # **Combat Training**
 
@@ -154,7 +154,7 @@ Certain results on the **Events Tables** may directly affect your income. The mo
 
 #### **Invent!**
 
-VI **Income** The *Invent* Endeavour allows you to create entirely new Trappings by combining the properties of two or more existing ones. A pair of Pistols might become a Repeating Pistol, or Pigeons combined with Bombs might produce Pigeon Bombs. The exact effects of any invention are ultimately determined by the GM.
+**Income** The *Invent* Endeavour allows you to create entirely new Trappings by combining the properties of two or more existing ones. A pair of Pistols might become a Repeating Pistol, or Pigeons combined with Bombs might produce Pigeon Bombs. The exact effects of any invention are ultimately determined by the GM.
 
 Inventing is a two-stage process: Plan and Build.
 
@@ -209,7 +209,7 @@ Attempt a **Challenging (+0 SL) Perception** Test, though the difficulty may be 
 
 This Endeavour allows you to train a Skill or Characteristic outside your Career. In addition to the normal XP cost, you must also pay a tutor. Training in Basic Skills and Characteristics costs a number of pennies equal to the XP cost of the Advance. Advanced Skills cost twice that amount. For more on Advances, see page 191.
 
-VI **Study a Mark** You should be able to find a tutor for most skills, especially in a large city such as Altdorf. For some specialist Skills, however, you may first need to undertake *Consult an Expert* to locate a suitable teacher — those willing to teach Pick Lock, for example, rarely advertise their services.
+**Study a Mark** You should be able to find a tutor for most skills, especially in a large city such as Altdorf. For some specialist Skills, however, you may first need to undertake *Consult an Expert* to locate a suitable teacher — those willing to teach Pick Lock, for example, rarely advertise their services.
 
 > Some Skills, particularly certain Lore Skills, can only be learned at appropriate institutions, while others are outright forbidden in the Empire. Finding a tutor able (and willing) to teach proscribed subjects, such as Necromancy or those related to the Ruinous Powers, may itself become an adventure. Such tutors usually demand far more than the usual fee, often requiring a Significant Favour (see **Do Me a Favour!**, page 200).
 

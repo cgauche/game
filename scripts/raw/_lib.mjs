@@ -25,7 +25,8 @@ import domainesData from './domaines.json' with { type: 'json' }
 import { normalize, ELLIPSIS_SENTINEL } from '../../src/data/source/normalize.ts'
 // Le NUMÉRO DE CHAPITRE (prédicat, motif de nom, résolution) vit dans sa maison unique
 // `src/data/source/decoupe.ts` — module PUR, chargé tel quel par Node nu comme par vitest.
-import { fichierDuChapitre, numeroDuFichier } from '../../src/data/source/decoupe.ts'
+import { fichierDuChapitre, graphieDeChapitre, largeurDeChapitre, numeroDuFichier } from '../../src/data/source/decoupe.ts'
+import { nomAscii } from '../source/nom-ascii.mjs'
 // « Livre EXTRAIT » : définition UNIQUE app/outillage, `src/data/source/livre-extrait.ts` (#1739).
 import { estLivreExtrait } from '../../src/data/source/livre-extrait.ts'
 
@@ -220,6 +221,17 @@ export function decoupeDe(bookId, dir = DECOUPES_DIR) {
     throw new Error(`_lib: la liste de découpe de « ${bookId} » (${chemin}) ne porte aucun fichier`)
   return brut.fichiers
 }
+
+/** Les NOMS de fichier que la liste de découpe déclare, dans son ordre. PURE. */
+export const nomsDeLaListe = (liste) => {
+  const largeur = largeurDeChapitre(Math.max(1, liste.length))
+  return liste.map((e, i) => nomAscii(`${graphieDeChapitre(i + 1, largeur)} - ${e.titre}.md`))
+}
+
+/** Les ONGLETS DE CHAPITRE d'un livre, `[{ chiffre, pages: [a, b] }]`, ou `null` déclaré pour un livre
+ *  qui n'en imprime aucun — champ `onglets` de sa liste de découpe, lu ICI et nulle part ailleurs.
+ *  @param {string} bookId @param {string} [dir] @returns {{ chiffre: string, pages: [number, number] }[] | null} */
+export const ongletsDe = (bookId, dir = DECOUPES_DIR) => JSON.parse(readText(join(dir, `${bookId}.json`))).onglets
 
 // PDF d'un livre et sorties Marker — #1739 (2026-09-19, bloquant 3). Les PDF et `Source/_marker/` sont
 // gitignorés (`.gitignore`) : ils n'existent que dans l'ARBRE PRINCIPAL, jamais dans un worktree

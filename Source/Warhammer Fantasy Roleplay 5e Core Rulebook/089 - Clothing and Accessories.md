@@ -46,7 +46,7 @@ Clothing styles in the Empire vary considerably. As a general guideline, commone
 
 **Jewellery:** Prices vary by craftsmanship, metal type, and gem value. As a general guideline, common rings without any gemstones cost 10 coins equal to their metal type (i.e. brass, silver or gold) whereas necklaces cost 20 coins of the same
 
-**Sceptre:** The highest-ranking legal officials carry sceptres to XI indicate their status.
+**Sceptre:** The highest-ranking legal officials carry sceptres to indicate their status.
 
 **Signet Ring:** Gold rings with engraved stamps are worn by nobles and guild officials, who use them to imprint heraldry or insignia into sealing wax.
 

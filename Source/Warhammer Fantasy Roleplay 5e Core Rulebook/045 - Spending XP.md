@@ -1,6 +1,6 @@
 *Pages PDF 191*
 
-# **SPENDING XP** VI
+# **SPENDING XP**
 
 Between adventures, you may spend XP to advance your Characteristics and Skills, acquire new Talents, and advance your Career Level. Your Career Level determines what Characteristics, Skills, and Talents are available to you.
 

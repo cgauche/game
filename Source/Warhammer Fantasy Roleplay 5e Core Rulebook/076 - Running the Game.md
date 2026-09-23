@@ -10,8 +10,6 @@ This doesn't mean that games of **WFRP** should be exercises in unrelenting mise
 
 It is also worth remembering that your players' Characters are unusual by definition. They are the protagonists of the story and could be true heroes who put their lives on the line to defeat evils common folk could never stand against. Or, they might be just as corrupt and self-serving as the majority of people in the Old World. In **WFRP**, the choice is theirs.
 
-IX
-
 # **Magic and Witch Hunters**
 
 Magic in the Old World is deeply distrusted by the vast majority of people. Even licensed Wizards should be wary of using their powers in public, lest they cause a panic among the uneducated masses. Unlicensed magic users, such as Hedge Witches and Mystics, must be even more careful, as their very existence could be viewed as a crime punishable by burning at the stake.
@@ -57,8 +55,6 @@ You should also decide as a group how this disparate group of people know each o
 Humans and halflings are everywhere in the Empire and could find themselves thrown together for any number of reasons determined by their Classes, Careers, or back stories. Characters with Rogue Careers may have worked together on past jobs, Warriors might have fought together, and Riverfolk could develop friendships based on working the same stretch of the Reik. Perhaps the Watchman relies on the Thief as an informant, or the Artisan and the Engineer share a workshop. It could be as simple as the Characters all hailing from the same sleepy village or crowded Altdorf neighbourhood.
 
 Dwarfs are relatively common in the Empire, but tend to be insular within their communities. They may, however, form strong bonds with non-dwarfs over matters of honour. A human who saves a dwarf 's life or reputation may find themselves with a stalwart companion who insists on helping until they feel they have repaid their debt. Given the longer lifespans of dwarfs, the favour may even have been done by the human Character's parent or grandparent. Dwarfs also respect those of other species whom they view as particularly honourable or dedicated to their craft, and so may strike up friendships with those they share a Class or related Career with.
-
-IX
 
 Elves can be encountered in the Empire, but are a rare sight and very much hold themselves apart from other species. An elf abroad in the Empire might be tasked with gathering information for their homeland and attach themselves to a band of adventurers to further this goal. Their long lives and appreciation of art might see an elf spend years accompanying an Artisan, Entertainer, or similar to witness their talent. They may even align themselves with a band of scoundrels out of a sense of adventure, or simple curiosity.
 
@@ -124,8 +120,6 @@ Why are Extended Tests explained here rather than in the Rules chapter? Because 
 
 Extended Tests work best for short, tense situations: you have three Turns to pick this complicated lock before the guard arrives — go! They can also show how much of a larger task the Characters can complete before time runs out, such as repairing a fortress before the orc horde arrives. Avoid using them for adventure climaxes, or when a single Test can resolve the situation just as well.
 
-IX
-
 # **Awarding XP**
 
 The secret to awarding XP is to give enough for Characters to feel they are improving without making advancement seem too easy or too fast. Aim for a noticeable bump while leaving plenty of things for players to save towards.
@@ -176,8 +170,6 @@ River travel can be easy to secure, but dedicated passenger barges generally onl
 | 9   | Corpse: A body lies face down in the middle of the road, broken arrow shafts protruding from its back. It has been there for some time and tracks on either side show that travellers have passed it by, paying no heed.                               |  |
 | 0   | Pyre: A smouldering pyre stands by the side of the road, a burned body lashed to a stake at its centre. A hammer or twin-tailed comet has been roughly carved into the figure's forehead, the clean lines showing it happened after the burning.    |  |
 
-IX
-
 #### **Travel Times**
 
 As a rule of thumb, a traveller on foot or in a horse-drawn wagon can cover around 15 miles in a day, while a traveller mounted on a horse can manage around 30. Express coaches, which change horses along the route, can cover twice that distance, reaching around 60 miles in a day. A river barge travelling downstream can cover roughly 40 miles; while travelling upstream this distance is reduced to a maximum of 15 miles.
@@ -219,8 +211,6 @@ You may roll on the following tables to randomly determine what your Player Char
 | 8   | Dwarfs: Most likely travelling to sell either their wares or their skills. Unlikely to be particularly talkative unless one or more of the Characters is a dwarf, in which case they will be far more social – unless there is also an elf.                                                                            |
 | 9   | Elves: A small group of elegant high elves, likely merchants or with private business to which they are attending. Unless there is something particularly interesting about the Characters or their exploits, they will be politely dismissed. Wood elves will not be seen, unless they want to be for some reason. |
 | 0   | Travellers from Distant Lands: An Estalian diestro seeking a challenge worthy of his blade, a Bretonnian knight on a holy quest, a Norscan fascinated by the Empire, or a Kislevite that hopes to win a Hochland long rifle in an annual shooting contest.                                                          |
-
-IX
 
 #### **CITY LIFE**
 

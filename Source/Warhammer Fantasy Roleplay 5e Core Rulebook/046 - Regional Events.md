@@ -72,7 +72,7 @@ To the horror of the merchants, a run of counterfeit coins plagues the locale. C
 
 #### **69–73: Tax Collector**
 
-VI **40–42: Levy** An unexpected visit by the tax collector (with several soldiers in tow) sweeps through the settlement. Those with legal employment earn 50% less from any *Income* Endeavours due to harsh taxes, while Rogues and others who operate outside the law earn double the usual amount as opportunities for smuggling and dirty dealing abound.
+**40–42: Levy** An unexpected visit by the tax collector (with several soldiers in tow) sweeps through the settlement. Those with legal employment earn 50% less from any *Income* Endeavours due to harsh taxes, while Rogues and others who operate outside the law earn double the usual amount as opportunities for smuggling and dirty dealing abound.
 
 #### **74–81: Crime Crackdown**
 

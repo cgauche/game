@@ -89,5 +89,3 @@ At your command, bonds of aethyric fire coil from the earth, shrouding your targ
 **Duration:** Intelligence Bonus Rounds
 
 You channel fine strands of traitorous thoughts into your targets' minds, twisting their motivations and fanning fires of discontent. Targets gain *Animosity (Allies)*. Further, unless immune to that Psychology, they cannot transfer Advantage to their allies and, if they score a Critical when attacking, they must pass a **Hard (-2 SL) Cool** Test or target their nearest ally.
-
-IX

@@ -92,7 +92,7 @@ Makes people think favourably of you, your opinions, and actions you propose. Pe
 
 Your aptitude for befriending, quickly calming, or subjugating animals. A Charm Animal Test can convince a wild animal to back off, or a guard dog to devour a proffered scrap of meat rather than your arm.
 
-IV **Climb (S)** *basic* The ability to ascend steep or vertical surfaces, like a perilous mountainside or the rain-slick wall of a tumbledown townhouse. Climbing can sometimes be used in combat when facing especially monstrous foes — see page 162 for combat movement.
+**Climb (S)** *basic* The ability to ascend steep or vertical surfaces, like a perilous mountainside or the rain-slick wall of a tumbledown townhouse. Climbing can sometimes be used in combat when facing especially monstrous foes — see page 162 for combat movement.
 
 ### **Consume Alcohol (T)** *basic*
 
@@ -206,7 +206,7 @@ While there is some overlap between the Skills of Entertain, Perform, and Play, 
 
 You should choose carefully when determining whether your chosen Specialisation belongs to Entertain, Perform, or Play; consider how the Character will physically enact the Skill, and whether an untrained beginner could do so with any success. After all, someone without any musical training could feasibly sing beautifully, but hand them a set of bagpipes…
 
-IV **Pray (Fel)** *advanced* Invoke, appeal to, or otherwise commune with a deity. For more information on using the Pray Skill to seek divine intervention, see **Chapter 7: Religion and Belief**.
+**Pray (Fel)** *advanced* Invoke, appeal to, or otherwise commune with a deity. For more information on using the Pray Skill to seek divine intervention, see **Chapter 7: Religion and Belief**.
 
 ### **Ranged (BS)** *advanced, grouped*
 

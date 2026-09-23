@@ -20,8 +20,6 @@ Others believe magical energies are not so easily categorised. Many different ty
 
 There is much heated debate between experts on the nature of magic. The lecture halls of the Empire's most learned institutions often see ambitious scholars expound on their latest theories. Some liken magic to the backstage of a theatre, a mass of mechanisms, props, and hidden pulleys responsible for the drama viewed by the audience. Others resort to mathematical metaphors, complete with incomprehensible esoteric diagrams.
 
-VIII
-
 Although each treatise may end with an air of confident finality, it will only be met with polite coughs, raised hands, and a litany of objections and exceptions.
 
 # **The Languages of Magick**
@@ -48,8 +46,6 @@ and gold. The alchemists of the Gold Order have a reputation for being unusually
 
 Spells from the Lore of Metal often involve the transmutation or alteration of metal. On the battlefield, alchemists have been known to cause fine steel armour and weaponry to corrode or melt, to weigh their foes down with suddenly dense armour, or to enchant their allies' weaponry with uncanny power.
 
-231
-
 # **The Lore of Life**
 
 The Lore of Life relates to *Ghyran*, the Jade Wind. Free flowing *Ghyran* is associated with growth, fertility, and nourishment. To those with the Sight, *Ghyran* appears much like a
@@ -71,8 +67,6 @@ The Lore of Shadows relates to *Ulgu*, the Grey Wind. To the Sight, it appears a
 and tempests when conflict breaks out. Wizards of the Grey Order, known as grey guardians, are secretive in their ways and given to uncertain loyalties. Despite this, the Grey Order is renowned for its wisdom and skill in negotiations, and is often called upon for diplomatic missions.
 
 Spells from the Lore of Shadows can be used to mask or obfuscate, confusing and disorienting their foes. In battle, the shadowy, insubstantial tendrils of *Ulgu* they wield can pierce to the heart of their foes, eviscerating the most well-protected troops, yet leaving armour eerily intact.
-
-VIII
 
 #### **The Lore of Death**
 
@@ -97,8 +91,6 @@ The Lore of Beasts relates to *Ghur*, the Amber Wind, a cold, primal force assoc
 weakly in areas where the wilderness has been tamed and settlements constructed. This may explain why the shamans of the Amber Order often take up a hermitic existence and shun their fellow Men.
 
 The spells of the Lore of Beasts allow a shaman to communicate with animals, request their aid, and even summon them to battle. Shapeshifting magic may also be used by the wizard to adopt animal forms.
-
-233
 
 # **Elven Magic**
 
@@ -133,5 +125,3 @@ Practitioners of Hedgecraft generally live quiet lives on the fringes of smaller
 While the Lore of Witchcraft is not inherently malicious, or tied to the gods of Chaos, it has a justly earned reputation for evil and unpleasantness. Often self-taught, Witchcraft practitioners learn to reproduce many of the effects of miscast magic — typically nasty business, but frequently merely unusual or simply useful.
 
 It is not uncommon (but by no means universal) for witches to be seduced by the malefic temptation of *Dhar*. The combination of the corrosive effects of *Dhar* and being shunned by right-minded folk of the Empire often makes these witches bitter, spiteful souls, their hearts hard and flinty, their gaze baleful and ill-omened.
-
-VIII

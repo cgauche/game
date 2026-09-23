@@ -311,8 +311,6 @@ This selection of crafts may inspire a trade for your Artisan Character: Armoure
 
 **Trappings:** Guild, Quality Clothing
 
-III
-
 ## **ARTIST**
 
 **Courtier Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
@@ -572,8 +570,6 @@ Nose for Trouble
 (Riverways)
 
 **Trappings:** Barge and Crew, Hat
-
-III
 
 ## **BOUNTY HUNTER**
 
@@ -897,8 +893,6 @@ Engineers design, build, and maintain mechanical devices and structures such as 
 
 Most Engineers serve an apprenticeship at institutions such as the Imperial Engineers School in Altdorf or the College of Engineering in Nuln. Dwarfs learn from masters of the Dwarf Engineers Guild, whose conservative influence spreads wherever the Dawi dwell. Self-taught prodigies are not unknown, tinkering away in private before unveiling their fantastical inventions on a village green or in a town square.
 
-58
-
 Many are drawn to adventure in search of patrons who appreciate, rather than fear, their inventions and are willing to fund new projects. Others seek inspiration in distant lands, especially the ancient dwarf holds, where the engineering marvels of ages past still await rediscovery.
 
 Engineers tend to be eccentric, and playing one allows you to bring a spark of wild ingenuity to your party. You can solve problems through invention, ingenuity, and — when all else fails — liberal application of blackpowder.
@@ -944,8 +938,6 @@ Sniper, Super Numerate
 **Trappings:** Library (Engineering), Quality Trade Tools
 
 (Engineer), Large Workshop (Engineer)
-
-III
 
 ## **ENTERTAINER**
 
@@ -1068,8 +1060,6 @@ Savant (Politics)
 **Trappings:** Best Quality Courtly Clothes, Herald, Staff of
 
 Diplomats
-
-III
 
 ## **FENCE**
 
@@ -1659,8 +1649,6 @@ Armour, Sword
 
 **Skills:** Lore (Any One), Secret Signs (Knightly Order) **Talents:** Inspiring, Iron Will, Read/Write, Strike to Injure **Trappings:** Large Unit of Knights or Several Small Units of Knights, Plumed Great Helm, Squire
 
-III
-
 ## **LAWYER**
 
 **Academic Class:** Dwarf, Halfling, High Elf, Human
@@ -2156,8 +2144,6 @@ Playing an Outlaw lets you thrive beyond the reach of civilisation. You know peo
 **Talents:** Frightening, Inspiring, Iron Will, Unshakeable
 
 **Trappings:** 'Fiefdom' of Outlaw Chiefs, Lair
-
-III
 
 ## **PEDLAR**
 
@@ -2697,8 +2683,6 @@ minded
 
 **Trappings:** Assistant, Sack of Poisoned Bait
 
-III
-
 ## **RIVERWARDEN**
 
 **Riverfolk Class:** Dwarf, Halfling, Human
@@ -2970,8 +2954,6 @@ Charts, Spyglass
 **Skills:** Charm, Navigation
 
 **Talents:** Orientation, Pilot, Public Speaker, Savvy **Trappings:** Sailing Ship and Crew, Sextant, Shipping
-
-III
 
 ## **SCHOLAR**
 
@@ -3341,8 +3323,6 @@ Warrior Born
 
 **Trappings:** Letter of Commission, Light Warhorse, Map, Orders, Quality Uniform, Symbol of Rank, Regiment of Soldiers
 
-III
-
 ## **SPY**
 
 **Courtier Class:** Dwarf, Halfling, High Elf, Human, Wood Elf
@@ -3599,8 +3579,6 @@ Playing a Townsman lets you navigate the bustle of urban life with confidence. Y
 
 **Talents:** Briber, Public Speaker, Schemer, Wealthy **Trappings:** Chains of Office, Coach and Footman, Large Townhouse with Gardens and Servants, Quality Clothing
 
-III
-
 ## **VILLAGER**
 
 **Peasant Class:** Dwarf, Halfling, Human
@@ -3730,8 +3708,6 @@ Read/Write
 Wealthy
 
 **Trappings:** Aide, Governor's Residence, Servant
-
-III
 
 ## **WARRIOR PRIEST**
 
@@ -3977,8 +3953,6 @@ Soul
 
 Hunters
 
-III
-
 ### **WIZARD**
 
 **Academic Class:** High Elf, Human, Wood Elf
@@ -4112,5 +4086,3 @@ Hook and Rope
 **Trappings:** Barge and Wrecker Crew, Keg of Ale,
 
 Manacles
-
-IV

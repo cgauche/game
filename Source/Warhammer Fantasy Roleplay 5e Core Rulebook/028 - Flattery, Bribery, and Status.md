@@ -38,8 +38,7 @@ The number after your Status is your Standing, your social position relative to 
 | Spread a Nasty Rumour                   | A Gossip Test, with a difficulty depending on how hard the rumour is to believe and what evidence you might have to support it.                                                                                                                                                     |
 | Negotiate a Discount                       | A Haggle Test to convince the merchant to offer you a better rate.                                                                                                                                                                                                                        |
 
-| EXAMPLE DIFFICULTIES OF COMMON SOCIAL ACTIONS | V |
-|-----------------------------------------------|---|
+### **EXAMPLE DIFFICULTIES OF COMMON SOCIAL ACTIONS**
 
 | Difficulty             | Action                                                                                                                                                                                                                                                       |
 |------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -134,8 +133,6 @@ Building a useful relationship usually happens naturally through roleplay, as ch
 **Impressive Failure (-3 to -4 SL):** The merchant laughs, draws a weapon, and orders you out into the street while calling loudly for the guards.
 
 **Astounding Failure (-5 SL):** Your half-hearted threats are seen as rank weakness, and the merchant laughs in your face, or offers to duel you right now and settle the matter outright.
-
-V
 
 #### **SUCCESS AND CONSEQUENCE**
 
@@ -245,7 +242,7 @@ These effects last for two hours after you cease drinking, at which time they en
 
 # **Public Speaking**
 
-V **STINKING DRUNK** Whether stirring up an audience or persuading an angry mob not to hand you over to a Witch Hunter, public speaking can be a powerful tool.
+**STINKING DRUNK** Whether stirring up an audience or persuading an angry mob not to hand you over to a Witch Hunter, public speaking can be a powerful tool.
 
 > Use Entertain (Acting) to garner the attention of a crowd, while Charm can persuade them to act. Crowds respond best to simple, direct messages, such as *'Burn down the tavern!'* or *'Do not trust the false prophet!'* The *Public Speaking* Talent lets you convey more complex ideas and use other appropriate Skills, such as Lore (Theology), instead of Charm. Gossip (page 112) can achieve similar results, though more slowly and with less control.
 

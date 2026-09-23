@@ -90,7 +90,7 @@ needed, see page 357 for details
 
 Necromancers can raise and command the undead, but they are, themselves, living mortals (albeit creepily morbid ones obsessed with conquering mortality). Use the Human profile on page 319 and add the Spellcaster or Spellcaster Lord template from page 354 to create a Necromancer.
 
-**Skeleton** XII *'I raised the heavy lid expecting to find the glorious golden death mask of Khetanken. But we had been misinformed. A bony hand flew out and grabbed my neck. Startled, I dropped the lid, and the hand and lower arm were severed, trapping the undead creature within the sarcophagus. But it held on tightly, squeezing my neck so I could hardly breathe! I thought I was going to die. But Sister Celestine threw some of her sacred water over the thing, and it became lifeless once more. I use it as a back scratcher now.'*
+**Skeleton** *'I raised the heavy lid expecting to find the glorious golden death mask of Khetanken. But we had been misinformed. A bony hand flew out and grabbed my neck. Startled, I dropped the lid, and the hand and lower arm were severed, trapping the undead creature within the sarcophagus. But it held on tightly, squeezing my neck so I could hardly breathe! I thought I was going to die. But Sister Celestine threw some of her sacred water over the thing, and it became lifeless once more. I use it as a back scratcher now.'*
 
 — Professor Vonnig Tramblehoff, Tomb Robber
 
@@ -320,7 +320,7 @@ Dodge 40, Melee (Basic) 45
 
 *Fly 20, Frenzy, Territorial*
 
-**Vampire** XII Vampires see themselves as the rulers of the night. Newly-turned vampires begin as formidable adversaries and only become more powerful with age. Many can pass as human, some even functioning for long periods amongst the living. Despite their outwardly human appearance, no heart beats beneath their pale skin, and in lieu of mortal hungers, they possess an abiding thirst for blood. All vampires of the Old World are ultimately descended from ancient bloodlines that originated millennia ago far to the south. The vampires of different bloodlines are often bitter rivals, proud of their heritage and the traits and traditions that set them apart from others, but they come together when necessary to face greater foes.
+**Vampire** Vampires see themselves as the rulers of the night. Newly-turned vampires begin as formidable adversaries and only become more powerful with age. Many can pass as human, some even functioning for long periods amongst the living. Despite their outwardly human appearance, no heart beats beneath their pale skin, and in lieu of mortal hungers, they possess an abiding thirst for blood. All vampires of the Old World are ultimately descended from ancient bloodlines that originated millennia ago far to the south. The vampires of different bloodlines are often bitter rivals, proud of their heritage and the traits and traditions that set them apart from others, but they come together when necessary to face greater foes.
 
 #### **VAMPIRE**
 

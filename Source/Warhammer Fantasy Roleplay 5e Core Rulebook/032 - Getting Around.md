@@ -32,8 +32,6 @@ Difficulty is determined by the Character's Movement, with values 3 or below inc
 | Hard (-2 SL)           | Ride (Demigryph): Spur your beast to gallop headfirst into a wall of glittering spears.<br>Drive: Bring your damaged cart to a halt before plunging headfirst into the ditch.<br>Row: Paddle your way out of the jaws of a hungry stirpike. |
 | Very Hard (-3 SL)      | Ride (Horse): Leap across a broken bridge to safety.<br>Climb: Ascend the smooth granite face of a lofty mountain in the rain.<br>Swim: Plunge over a waterfall and dive into the water below without injury.                               |
 
-V
-
 ### **HOW FAR, THOUGH?**
 
 Generally speaking, you will only need to know if your Character made a particular jump or not. With a decent run-up and a successful Athletics Test, most Characters can leap around their Movement Characteristic in yards. Additional SL after the first can increase this by up to twice that distance, but very few save the most athletic individuals can manage further than that.
@@ -99,7 +97,7 @@ It is far easier to escape a dogged pursuer in the midst of a crowded town marke
 
 Each Character involved in a Pursuit will encounter an Obstacle. How many Characters must successfully overcome their Obstacle to succeed in the Pursuit depends on the number of Pursuit Factors in their favour.
 
-V **No Positive Factors**: The enemy has the upper hand! Every member of the party must successfully evade their Obstacle.
+**No Positive Factors**: The enemy has the upper hand! Every member of the party must successfully evade their Obstacle.
 
 - **1-2 Positive Factors**: Half the party, rounded up, must navigate their Obstacle.
 - **3+ Positive Factors:** Only one party member needs to overcome their Obstacle.

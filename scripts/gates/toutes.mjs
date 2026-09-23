@@ -364,7 +364,11 @@ export const ECRIT_LU = {
       'Source/**/*.md':
         '`recouper-source.test.mjs` IMPORTE le re-coupeur des `.md` en service ; ses `writeFileSync` et ' +
         '`rmSync` vivent dans `main()`, sous sa porte `estMain` (scripts/raw/recouper-source.mjs:397), ' +
-        'et le banc n’appelle que son cœur PUR sur un livre FORGÉ en mémoire',
+        'et le banc n’appelle que son cœur PUR sur un livre FORGÉ en mémoire ; `reparer-mobilier.test.mjs` ' +
+        'IMPORTE la réparation du mobilier de page (#1739), dont l’unique `writeFileSync` vit dans `main()`, ' +
+        'derrière sa porte `isMain` ET `--apply` (scripts/raw/reparer-mobilier.mjs:186) — le banc n’appelle ' +
+        'que ses fonctions PURES (`reparer`, `infidelite`, `motsDe`, `niveauDesFreres`, `niveauDeLegende`, ' +
+        '`texteDeBandeau`) sur des textes en mémoire',
       'scripts/raw/*-stock.json':
         'même porte, même module : le recalage des stocks nominatifs (`recalerStock`) rend un TEXTE, ' +
         'que le seul `main()` écrit derrière `estMain` (scripts/raw/recouper-source.mjs:397)',

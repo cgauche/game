@@ -12,7 +12,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { DECOUPES_DIR, decoupeDe, estLivreExtrait, livresDecoupes, REGISTRE_LIVRES } from './_lib.mjs'
+import { DECOUPES_DIR, decoupeDe, estLivreExtrait, livresDecoupes, ongletsDe, REGISTRE_LIVRES } from './_lib.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
 import { titreDuFichier } from '../../src/data/source/decoupe.ts'
 
@@ -133,7 +133,6 @@ test('#1739 : tout titre de fichier survit à `nomAscii` sans changer', () => {
 // livre sans onglet imprimé, son absence ne dit rien.
 // Même motif que `scripts/raw/onglets.py` (sonde Python qui écrit la donnée) : deux langages, une définition.
 const ROMAIN = /^(?=[IVXLC])C{0,3}(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/
-const ongletsDe = (id) => JSON.parse(readFileSync(join(DECOUPES_DIR, `${id}.json`), 'utf8')).onglets
 
 test('#1739 : `onglets` est déclaré — un tableau non vide, ou `null`', () => {
   const fautes = IDS.filter((id) => {

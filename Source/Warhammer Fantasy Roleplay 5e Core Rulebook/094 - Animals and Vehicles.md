@@ -28,7 +28,7 @@ Animals are used at all levels of society in the Empire. See **Chapter 12: Besti
 | Wagon              | 75 GC  | –   | 30      | Common       |
 | Worms (6)          | 1d     | 0   | –       | Common       |
 
-**Cart:** One driver and one draft animal required XI
+**Cart:** One driver and one draft animal required
 
 **Coach:** Two drivers and four horses are standard.
 
