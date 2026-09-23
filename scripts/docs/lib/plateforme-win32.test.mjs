@@ -89,6 +89,11 @@ for (const cas of CAS) {
     const win32 = verifier(['--tout', '--plateforme', 'win32', '--only', cas.script], cas.mutation)
     assert.equal(win32.status, 1, win32.sortie)
     assert.ok(win32.sortie.includes(ROUGE_ATTENDU(cas.script)), win32.sortie)
+    // Sans `--tout`, la fraîcheur (sources et corps inchangés sur disque) ne saute rien : la
+    // plateforme demandée est rendue.
+    const sansTout = verifier(['--plateforme', 'win32', '--only', cas.script], cas.mutation)
+    assert.equal(sansTout.status, 1, sansTout.sortie)
+    assert.ok(sansTout.sortie.includes(ROUGE_ATTENDU(cas.script)), sansTout.sortie)
     if (HOTE === 'win32') {
       t.diagnostic('hôte win32 : le rendu natif EST le rendu sous win32, la mutation rougit aussi en natif')
       assert.equal(natif.status, 1, natif.sortie)
@@ -155,6 +160,6 @@ test('rendu sous win32 : sur l’arbre réel, tsx (node_modules) trouve son `jsx
 
 test('`--plateforme` inconnue : refus nommé, rien de rendu', () => {
   const r = verifier(['--plateforme', 'amiga'])
-  assert.equal(r.status, 2, r.sortie)
+  assert.equal(r.status, 1, r.sortie)
   assert.match(r.sortie, /--plateforme « amiga » inconnue/)
 })

@@ -1,7 +1,7 @@
 // Rendu d'un générateur SOUS win32 (#1801) — module `node --import`, composé par `run()` de
 // `scripts/docs/build-all.mjs` dans `NODE_OPTIONS` (`--plateforme win32`, et chaque générateur de
-// `--check --tout`). Il se pose APRÈS l'enregistreur de lectures, qui reçoit donc des chemins POSIX,
-// et AVANT `tsx/esm`.
+// `--check --tout`), seul : ce rendu se vérifie et ne se mesure pas, l'enregistreur de lectures n'y
+// est pas. Il se pose AVANT `tsx/esm`.
 //
 // Ce que voit le code du dépôt : `node:path` = `path.win32` et `fileURLToPath` en graphie Windows
 // (`plateforme-win32-hooks.mjs`), `process.cwd()` sous le lecteur `C:`. Le code de `node_modules`,

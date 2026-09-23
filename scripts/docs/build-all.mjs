@@ -156,8 +156,8 @@ export function ciblesSurDisque(cibles, cwd) {
 }
 
 /**
- * Argv et env d'un générateur. Ordre des `--import` : l'enregistreur, puis la plateforme (elle
- * l'enveloppe, la mesure reçoit donc des chemins POSIX), puis `tsx/esm` (argv, joué après
+ * Argv et env d'un générateur. Un seul `--import` en `NODE_OPTIONS` : l'enregistreur (rendu de l'hôte,
+ * mesuré) ou la plateforme (rendu vérifié, jamais mesuré), puis `tsx/esm` (argv, joué après
  * `NODE_OPTIONS`). `plateforme` : `null` = l'hôte.
  */
 function commandeDe({ runner, script }, { cwd, check, tsxEsm, lectures, cibles, plateforme }) {
@@ -167,8 +167,8 @@ function commandeDe({ runner, script }, { cwd, check, tsxEsm, lectures, cibles, 
     ...(check ? ['--check'] : []),
   ]
   const env = envIsole(process.env, binLocal(cwd))
-  const imports = [...(lectures ? [ENREGISTREUR] : []), ...(plateforme ? [PLATEFORMES[plateforme]] : [])]
-  if (imports.length) env.NODE_OPTIONS = [env.NODE_OPTIONS ?? '', ...imports.map((m) => `--import ${m}`)].join(' ').trim()
+  const module = lectures ? ENREGISTREUR : plateforme ? PLATEFORMES[plateforme] : null
+  if (module) env.NODE_OPTIONS = `${env.NODE_OPTIONS ?? ''} --import ${module}`.trim()
   if (plateforme) env.WFRP_PLATEFORME_RACINE = cwd
   if (lectures) {
     env.WFRP_LECTURES_RACINE = cwd
@@ -591,14 +591,14 @@ export async function executer({
   const [demandee = null] = argumentsDe(argv, '--plateforme') ?? []
   if (demandee !== null && demandee !== hote && !PLATEFORMES[demandee]) {
     process.stderr.write(`docs:build — --plateforme « ${demandee} » inconnue : ${[hote, ...Object.keys(PLATEFORMES)].join(', ')}.\n`)
-    return 2
+    return 1
   }
   // Le rendu de l'HÔTE est le seul écrit et le seul mesuré. Les plateformes rendues EN PLUS, en
   // parallèle, sont vérifiées : `--plateforme <nom>`, ou toutes celles de `PLATEFORMES` sous `--tout`.
   const enPlus = (demandee !== null ? [demandee] : check && tout ? Object.keys(PLATEFORMES) : []).filter((p) => p !== hote)
   if (enPlus.length && !check) {
     process.stderr.write(`docs:build — --plateforme ${demandee} : un rendu sous une autre plateforme se VÉRIFIE (--check), docs/ porte le rendu de l'hôte.\n`)
-    return 2
+    return 1
   }
   if (demandee !== null || (check && tout)) {
     console.log(
@@ -626,11 +626,11 @@ export async function executer({
   // Pour le cliquet, c'est équivalent : il ne lit que des fichiers que l'enregistreur de lectures
   // MESURE (son stock, les fiches docs/raw, Source/), et des sources inchangées rendent le même
   // verdict. Pour le corps, c'est un raccourci AVEUGLE à la plateforme qui l'a rendu : un corps rendu
-  // ailleurs puis re-signé y passe pour frais. Seul `--tout` rejoue chaque générateur, et la CI joue
-  // `--tout` (#1801).
+  // ailleurs puis re-signé y passe pour frais. `--tout` et `--plateforme` rejouent donc chaque
+  // générateur, et la CI joue `--tout` (#1801).
   const frais = new Map()
   const blobs = check ? indexGit(cwd) : null
-  if (check && !tout) {
+  if (check && !tout && !enPlus.length) {
     let surDisque
     try { surDisque = readFileSync(path.join(cwd, SOURCES_LUES), 'utf8') } catch { surDisque = null }
     const complet = motifRejeuComplet(auCommit(cwd, SOURCES_LUES), surDisque)
