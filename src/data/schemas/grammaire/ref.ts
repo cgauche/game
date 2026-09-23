@@ -12,9 +12,9 @@
  */
 import { z } from 'zod';
 import './locale-fr';
-import { IDS_PAR_DATASET, IDS_PAR_DISCRIMINANT, SPECS_PAR_DATASET } from '../_ids.generated';
+import { IDS_PAR_DATASET, IDS_PAR_DISCRIMINANT, IDS_PAR_MARQUEUR, SPECS_PAR_DATASET } from '../_ids.generated';
 import { marque } from './slots';
-import { idsVivants, idsVivantsDuDiscriminant } from './idsVivants';
+import { idsVivants, idsVivantsDuDiscriminant, idsVivantsDuMarqueur } from './idsVivants';
 
 declare const marqueDeType: unique symbol;
 /** Id BRANDÉ par son type — frappé à la porte zod, jamais par un `as` d'appelant. */
@@ -87,12 +87,22 @@ export function cibleDe(type: TypeEntite): string {
   return TYPES[type].dataset;
 }
 
-function idsDe(type: TypeEntite): readonly string[] {
+/** Liste FIGÉE du registre généré, en `Set` construit une fois par liste. */
+const figes = new Map<readonly string[], ReadonlySet<string>>();
+const VIDE: readonly string[] = [];
+function fige(liste: readonly string[] | undefined): ReadonlySet<string> {
+  const l = liste ?? VIDE;
+  let ids = figes.get(l);
+  if (!ids) figes.set(l, (ids = new Set(l)));
+  return ids;
+}
+
+function idsDe(type: TypeEntite): ReadonlySet<string> {
   const dataset = cibleDe(type);
   // La MÉMOIRE d'abord (`idsVivants`, second régime déclaré par `_ids.generated.ts`) : une entité
   // créée ou renommée à l'atelier est référençable IMMÉDIATEMENT. Hors application (scripts, gardes,
   // `npm run gen`), aucune source n'est posée et le fichier généré fait foi.
-  return idsVivants(dataset) ?? IDS_PAR_DATASET[dataset] ?? [];
+  return idsVivants(dataset) ?? fige(IDS_PAR_DATASET[dataset]);
 }
 
 /**
@@ -102,7 +112,7 @@ function idsDe(type: TypeEntite): readonly string[] {
  * FAIL-FAST à la CONSTRUCTION du schéma : un type non discriminé, ou une valeur qu'aucune entrée ne
  * porte, ferait un nœud qui refuse TOUT en silence.
  */
-function idsSousListe(type: TypeEntite, valeur: string): readonly string[] {
+function idsSousListe(type: TypeEntite, valeur: string): ReadonlySet<string> {
   const dataset = cibleDe(type);
   const table = IDS_PAR_DISCRIMINANT[dataset];
   if (!table) {
@@ -118,7 +128,27 @@ function idsSousListe(type: TypeEntite, valeur: string): readonly string[] {
       `idDe('${type}', '${valeur}') : « ${valeur} » n'est aucune des valeurs discriminantes de ${dataset} (${Object.keys(table).join(', ')}).`,
     );
   }
-  return idsVivantsDuDiscriminant(dataset, valeur) ?? table[valeur];
+  return idsVivantsDuDiscriminant(dataset, valeur) ?? fige(table[valeur]);
+}
+
+/**
+ * Appartenance à la SOUS-LISTE MARQUÉE du dataset d'un type : les entrées qui PORTENT le champ
+ * `marqueur` (le def le déclare : `export const marqueurs`, cf. `defs/props.ts`). Lue en MÉMOIRE quand
+ * une source vivante est posée, sinon au registre généré `IDS_PAR_MARQUEUR`. SŒUR d'`idDe` et non
+ * `idDe` lui-même : `idDe` REFUSE un id hors liste, alors qu'une entrée sans marqueur est une référence
+ * valide — l'appartenance CONDITIONNE une autre règle (`defs-scenes/scene.ts`, cap d'un décor), elle
+ * ne valide rien. FAIL-FAST à la CONSTRUCTION : un marqueur non déclaré ferait un prédicat toujours faux.
+ */
+export function porteLeMarqueur(type: TypeEntite, marqueur: string): (id: string) => boolean {
+  const dataset = cibleDe(type);
+  const table = IDS_PAR_MARQUEUR[dataset];
+  if (!table?.[marqueur]) {
+    throw new Error(
+      `porteLeMarqueur('${type}', '${marqueur}') : ${dataset} ne déclare pas le marqueur « ${marqueur} » — l'ajouter à \`export const marqueurs\` de son def.`,
+    );
+  }
+  const figee = fige(table[marqueur]);
+  return (id) => (idsVivantsDuMarqueur(dataset, marqueur) ?? figee).has(id);
 }
 
 /** Catalogue de spécialisations d'UNE entrée (vide = l'entrée n'en déclare aucune). */
@@ -158,13 +188,13 @@ function refMorte(type: TypeEntite, id: string): string {
 export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<Id<T>, string> {
   const dataset = cibleDe(type);
   if (valeur !== undefined) idsSousListe(type, valeur);
-  const admis = (): readonly string[] => (valeur === undefined ? idsDe(type) : idsSousListe(type, valeur));
+  const admis = (): ReadonlySet<string> => (valeur === undefined ? idsDe(type) : idsSousListe(type, valeur));
   const site = valeur === undefined ? `idDe('${type}')` : `idDe('${type}', '${valeur}')`;
   return marque(
     z
       .string()
       .superRefine((v, ctx) => {
-        if (admis().includes(v)) return;
+        if (admis().has(v)) return;
         ctx.addIssue({
           code: 'custom',
           message:
@@ -204,7 +234,7 @@ export function typedRef(types: readonly TypeEntite[] = Object.keys(TYPES) as Ty
   return z
     .strictObject({ type: z.enum(types as [TypeEntite, ...TypeEntite[]]), id: z.string() })
     .superRefine((v, ctx) => {
-      if (idsDe(v.type).includes(v.id)) return;
+      if (idsDe(v.type).has(v.id)) return;
       ctx.addIssue({
         code: 'custom',
         path: ['id'],
@@ -241,7 +271,10 @@ function noeudASpecialisation<T extends TypeEntite>(
   exigeUnRegime: boolean,
 ): z.ZodType<RefASpecialisation> {
   const dataset = cibleDe(type);
+  const catalogue = TYPES[type].catalogue;
   const ouvert = TYPES[type].specsOpen;
+  const unRegime = (id: unknown): string =>
+    `« ${String(id)} » : une spécialisation se désigne par « spec » OU par « choix », exactement un des deux (catalogue des ${catalogue}).`;
   return z
     .strictObject({
       id: idDe(type),
@@ -254,24 +287,18 @@ function noeudASpecialisation<T extends TypeEntite>(
       const aChoix = v.choix != null;
       if (!aSpec && !aChoix) {
         if (!exigeUnRegime) return;
-        ctx.addIssue({
-          code: 'custom',
-          message: `ref('${type}') à spécialisation : « spec » OU « choix », exactement un des deux (id « ${String(v.id)} »).`,
-        });
+        ctx.addIssue({ code: 'custom', message: unRegime(v.id) });
         return;
       }
       if (!estSpecialisable(type, String(v.id))) {
         ctx.addIssue({
           code: 'custom',
-          message: `ref('${type}') : « ${String(v.id)} » ne déclare aucune spécialisation dans ${dataset} — « spec »/« choix » ne s'y applique pas (catalogue vide au registre « SPECS_PAR_DATASET »).`,
+          message: `« ${String(v.id)} » ne déclare aucune spécialisation au catalogue des ${catalogue} (${dataset}) — « spec » et « choix » ne s'y appliquent pas.`,
         });
         return;
       }
       if (aSpec && aChoix) {
-        ctx.addIssue({
-          code: 'custom',
-          message: `ref('${type}') à spécialisation : « spec » OU « choix », exactement un des deux (id « ${String(v.id)} »).`,
-        });
+        ctx.addIssue({ code: 'custom', message: unRegime(v.id) });
         return;
       }
       const candidats = aSpec ? [v.spec as string] : Array.isArray(v.choix) ? (v.choix as string[]) : [];
@@ -282,7 +309,7 @@ function noeudASpecialisation<T extends TypeEntite>(
         ctx.addIssue({
           code: 'custom',
           path: [aSpec ? 'spec' : 'choix'],
-          message: `ref('${type}') : « ${c} » n'est pas une spécialisation mais un EMPLACEMENT non désigné (${dataset}, « ${String(v.id)} ») — s'écrit « choix » (LDB 09 l.40).`,
+          message: `« ${c} » n'est pas une spécialisation mais un EMPLACEMENT non désigné de « ${String(v.id)} » (catalogue des ${catalogue}, ${dataset}) — s'écrit « choix » (LDB 09 l.40).`,
         });
       }
       if (sentinelle) return;
@@ -293,7 +320,7 @@ function noeudASpecialisation<T extends TypeEntite>(
         ctx.addIssue({
           code: 'custom',
           path: [aSpec ? 'spec' : 'choix'],
-          message: `ref('${type}') : spécialisation « ${c} » absente du pool de « ${String(v.id)} » dans ${dataset} (pool fermé).`,
+          message: `« ${c} » est absente des spécialisations de « ${String(v.id)} » au catalogue des ${catalogue} (${dataset}).`,
         });
       }
     });

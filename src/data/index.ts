@@ -8,7 +8,7 @@ import type { PlayerText } from '../i18n/playerText';
 import { t } from '../i18n';
 import type { RigSpeciesId } from '../gameIso/rig/appearance';
 import type { SourceRef, SecondaryRef, RaceKey, RefCareerId, DescRef } from './schemas/grammaire/valeurs';
-import type { TypeEntite } from './schemas/grammaire/ref';
+import { porteLeMarqueur, type TypeEntite } from './schemas/grammaire/ref';
 import { symptomSeveritySchema } from './schemas/grammaire/valeurs';
 import { libelleDeValeur } from './schemas/grammaire/meta';
 import type { MerchantArchetypeDef } from '../state/merchants/types';
@@ -2800,11 +2800,12 @@ export const props = propsJson as PropData[];
 /** Type de décor par id — `undefined` en entrée rend `undefined` : une entité qui ne NOMME aucun type
  *  n'en résout aucun, exactement comme une ref hors registre (#877). */
 export const findPropById = indexParId('props', props);
-/** Un type de décor rend-il en VOLUME (recette authorée) plutôt qu'en billboard ? RÈGLE UNIQUE, propriété
- *  du CATALOGUE : l'émetteur de décor (`gameIso/builders/props.ts`) comme le validateur de scène
- *  (`state/validateScene.ts`) la lisent ici — aucun site ne la redevine. `ref` absente = aucun type
- *  résolu, donc aucun volume : la même absence qu'une ref hors registre (#877). */
-export const refEstVolumique = (ref: string | undefined): boolean => !!findPropById(ref)?.volume;
+/** Un type de décor rend-il en VOLUME (recette authorée) plutôt qu'en billboard ? La sous-liste du
+ *  marqueur `volume` (`defs/props.ts`), la MÊME que lit le schéma de scène (`defs-scenes/scene.ts`) :
+ *  l'émetteur de décor (`gameIso/builders/props.ts`) et l'inspecteur la lisent ici. `ref` absente =
+ *  aucun type résolu, donc aucun volume : la même absence qu'une ref hors registre (#877). */
+const decorVolumique = porteLeMarqueur('prop', 'volume');
+export const refEstVolumique = (ref: string | undefined): boolean => ref !== undefined && decorVolumique(ref);
 /** Matière de rendu d'une recette volumique de décor, par id — lecture VIVE du document (`matieresDe`),
  *  jamais un index cuit au chargement. Unicité des ids sur tout le périmètre des matières :
  *  `data/materials-identite.test.ts` (#1686). */
@@ -3458,6 +3459,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'maladies': return findDiseaseById(id) ? { label: findDiseaseById(id)!.label } : undefined;
     case 'shipStations': return findShipStation(id);
     case 'crewRoles': return findCrewRoleById(id);
+    case 'creatures': return findCreatureById(id);
     case 'navalTraits': return findNavalTrait(id);
     default: return undefined;
   }
@@ -3490,7 +3492,7 @@ export const SPEC_SOURCES: Record<SpecsSource, { pool(): string[]; label(id: str
 };
 /** POOL d'une def (Compétence/Talent) — ce qu'un choix joueur PROPOSE d'office (`LDB 09 l.40`) :
  *  pool DÉRIVÉ du registre partagé si `specsSource` (SSOT `SPEC_SOURCES`), sinon les entrées `specs[]`
- *  inline SANS `pool: false`. Consommé par `wildcardSpecs` (créateur, avancement, Entraînement).
+ *  inline SANS `pool: false`. Consommé par `wildcardSpecs` (créateur), l'avancement et l'Entraînement.
  *  Ne JAMAIS l'utiliser pour juger de la VALIDITÉ d'une spec (cf. `specResolves`). */
 export function specPoolOf(def: { specsSource?: SpecsSource; specs?: SpecEntry[] }): string[] {
   return def.specsSource

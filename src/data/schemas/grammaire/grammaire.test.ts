@@ -1065,7 +1065,7 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
 
   /**
    * DEUX RÉGIMES, UN SEUL NŒUD (`_ids.generated.ts`) : le fichier généré figé au commit, et les ids
-   * VIVANTS que `ref.ts` lit d'abord (`idsVivants(dataset) ?? IDS_PAR_DATASET[dataset]`, `ref.ts:77`),
+   * VIVANTS que `ref.ts` lit d'abord (`idsDe` : `idsVivants(dataset)`, sinon `IDS_PAR_DATASET[dataset]`),
    * posés par la couche donnée. Un schéma se construit une fois au chargement du module, la donnée se
    * valide après ; la liste admise doit donc se lire à la VALIDATION. Sans quoi une entité créée au
    * Compendium rendrait rouge toute donnée qui la référence.
@@ -1079,6 +1079,7 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
     const precedente = poserSourceDIdsVivants({
       entrees: (f) =>
         f === 'etats.json' ? [...avant.map((id) => ({ id })), { id: 'etat-cree-au-compendium' }] : precedente?.entrees(f),
+      version: (f) => precedente?.version(f) ?? 0,
       discriminantDe: (f) => precedente?.discriminantDe(f),
     });
     try {

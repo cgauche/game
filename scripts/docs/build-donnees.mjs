@@ -99,10 +99,10 @@ function expositionOf(jsonFile) {
   const codex = 'exempt' in expo.codex
     ? `exempt (${expo.codex.exempt.kind}${expo.codex.exempt.ticket ? `, ${expo.codex.exempt.ticket}` : ''})`
     : expo.codex.keys.map((k) => `\`${k}\``).join(' · ')
-  const edit = 'dataset' in expo.edit ? `dataset \`${expo.edit.dataset}\``
+  const edit = 'none' in expo.edit ? `aucune (${expo.edit.none})${expo.edit.dataset ? ` — dataset \`${expo.edit.dataset}\`` : ''}`
+    : 'dataset' in expo.edit ? `dataset \`${expo.edit.dataset}\``
     : 'object' in expo.edit ? `objet ${expo.edit.object}`
-    : 'niche' in expo.edit ? `niché (${expo.edit.niche.categories.map((c) => `\`${c}\``).join(' · ')})`
-    : `aucune (${expo.edit.none})`
+    : `niché (${expo.edit.niche.categories.map((c) => `\`${c}\``).join(' · ')})`
   return `${codex} — ${edit}`
 }
 

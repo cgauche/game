@@ -43,7 +43,7 @@ import {
   specLabel,
   talents as talentTable,
 } from '../data';
-import { splitTopLevelOu, splitLabel, concreteLabel, refKey, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
+import { splitTopLevelOu, splitLabel, concreteLabel, refKey, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, inCareerStatus, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
 import { resolveTrappingChoices } from './trappingChoices';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from './talentEffects';
 import { applyStarOps } from './creation';
@@ -77,8 +77,8 @@ function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: strin
 }
 
 /**
- * Identité STABLE d'un talent à spécialisation depuis un libellé CONCRET d'authoring
- * (« Sens aiguisé (Vue) ») → `refKey(talentId, specId)` — couture label→id du bord AUTHORING
+ * Identité STABLE d'un talent à spécialisation depuis un libellé CONCRET
+ * (« Sens aiguisé (Vue) ») → `refKey(talentId, specId)`, via `talentRefOfLabel`
  * (mêmes résolveurs que `addTalent` : `findTalent` pour le nom, `resolveSpecId` pour la spec, qui
  * ramène un libellé de spec issu d'un round-trip à son id de `specs[]`/`specsSource`, et laisse
  * verbatim une spec libre — domaine `specsOpen`, où la valeur saisie EST l'identité persistée).
@@ -94,8 +94,8 @@ export function talentRefKeyOf(label: string): string {
  *  de carrière. */
 export type TalentChoisi = Pick<TalentInstance, 'talentId' | 'spec'>;
 
-/** Libellé CONCRET d'authoring (« Béni (Sigmar) ») → `{ talentId, spec }` en ids — mêmes résolveurs
- *  que `talentRefKeyOf`, couture label→id du bord AUTHORING. */
+/** Libellé CONCRET (« Béni (Sigmar) ») → `{ talentId, spec }` en ids : `talentIdByLabel` pour le nom,
+ *  `resolveSpecId` pour la spec. */
 export function talentRefOfLabel(label: string): TalentChoisi {
   const { name, spec } = splitLabel(label);
   const talentId = talentIdByLabel(name);
@@ -319,7 +319,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     chars[k] += n; // l'Augmentation s'ajoute à la valeur initiale (LDB 05 l.463)
   }
 
-  // 4a) Talents : 1 Talent de carrière (libellé concret) + Talents d'espèce. Le talent de
+  // 4a) Talents : 1 Talent de carrière (`TalentChoisi`, ids) + Talents d'espèce. Le talent de
   // carrière peut être un talent d'espèce → times 2 (l.502), Maxi respecté.
   const speciesTalents = opts.speciesTalentsResolved
     ?? resolveSpeciesTalents(sp, { rng, choices: opts.speciesTalentChoices });
@@ -457,7 +457,8 @@ export function createHero(opts: CreateHeroOptions): Combatant {
 
   // Désignations des emplacements de carrière utilisés à la création (cf. careerSlots) :
   // compétences « (Au choix) » ayant reçu des augmentations + talent de carrière à choix.
-  // Résolution (nom → id) FAITE ICI, au bord authoring — careerSlots ne reçoit que du (id, spec).
+  // Les compétences arrivent en libellés concrets, résolus en (id, spec) par `skillIdByLabel` avant
+  // `designateSlot`, qui ne reçoit que des ids.
   const sSlots = skillSlots(levels, 1);
   const tSlots = talentSlots(levels, 1);
   for (const { raw, label } of advancedEntries) {
@@ -470,8 +471,19 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   }
   if (chosenTalent) {
     const { talentId, spec } = chosenTalent;
-    const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerId), talentId, spec);
-    if (slot) designateSlot(hero, opts.careerId, slot, talentId, spec, [...sSlots, ...tSlots]);
+    const all = [...sSlots, ...tSlots];
+    const designations = designationsFor(hero, opts.careerId);
+    const status = inCareerStatus(tSlots, designations, talentId, spec, all);
+    if (status === 'free') designateSlot(hero, opts.careerId, freeSlotFor(tSlots, designations, talentId, spec)!, talentId, spec, all);
+    else if (status !== 'explicit') {
+      const quoi = `Talent de carrière « ${refKey(talentId, spec)} »`;
+      const options = tSlots.flatMap((s) => s.options).filter((o) => o.optionId === talentId);
+      if (!options.length) throw new Error(`${quoi} : absent du Niveau 1 de « ${opts.careerId} » (LDB 05 l.535).`);
+      if (spec == null && options.every((o) => o.wildcard)) {
+        throw new Error(`${quoi} : l'emplacement « (Au choix) » du Niveau 1 de « ${opts.careerId} » exige une spécialisation (LDB 09 l.40).`);
+      }
+      throw new Error(`${quoi} : aucun emplacement libre du Niveau 1 de « ${opts.careerId} » ne couvre cette spécialisation (LDB 09 l.40).`);
+    }
   }
 
   recomputeLoadout(hero); // dérive weapons/armure/encombrement ; auto-génère le loadout par défaut (Mêlée/Distance)

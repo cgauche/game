@@ -57,4 +57,10 @@ export interface SchemaDef {
    * l'UNION des clés de toutes les autres.
    */
   chargeParDiscriminant?: Readonly<Record<string, readonly string[]>>;
+  /**
+   * Champs MARQUEURS du document : chacun définit la SOUS-LISTE des entrées qui le PORTENT (`volume`
+   * pour `props.json`, #1897). OPTIONNEL, porté par les seuls defs qui exportent `marqueurs`. Émis par
+   * `scripts/gen-registry.mjs` depuis ce MÊME export, qui alimente la table `IDS_PAR_MARQUEUR`.
+   */
+  marqueurs?: readonly string[];
 }

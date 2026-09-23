@@ -25,8 +25,7 @@ import { conditionSchema, flowTestSchema, gameOpSchema } from '../grammaire/meca
 import { refIndiceSchema } from '../grammaire/reference';
 import { customStatblockSchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
 import { sceneFlowSchema } from './effets';
-import { PROPS_VOLUMIQUES } from '../_ids.generated';
-import { idDe, refs } from '../grammaire/ref';
+import { idDe, porteLeMarqueur, refs } from '../grammaire/ref';
 import { capDecorAdmis } from '../../props.types';
 import { PARTS_RELIEF, type PartRelief } from '../../materials.types';
 import type { AuthoredShipPoste } from '../../../engine/types';
@@ -60,13 +59,14 @@ export const seatOccupantSchema = z.discriminatedUnion('kind', [
  *  l'interaction (dialogueId) ne distinguaient pas. */
 export const entityKindSchema = enumNomme({ heroStart: 'Départ héros', personnage: 'Personnage', prop: 'Décor' });
 
-const VOLUMIQUES = new Set(PROPS_VOLUMIQUES);
-
 /** Porte de registre d'une ref de DÉCOR (#877) : le même `idDe('prop')` que `terrains › overlayProp`,
  *  appliqué depuis le `superRefine` de l'entité — `SceneEntity.ref` est un champ PARTAGÉ avec le
- *  personnage, que seul le `kind` départage. La liste admise se relit à chaque validation
- *  (`grammaire/ref.ts`), un décor créé au Compendium est donc référençable aussitôt. */
+ *  personnage, que seul le `kind` départage. La liste admise se relit à chaque validation, au régime
+ *  vif (`grammaire/idsVivants.ts`) : un décor posé à la palette est référençable aussitôt. */
 const refDeDecor = idDe('prop');
+
+/** Sous-liste des décors à recette VOLUMIQUE : le marqueur `volume` de `defs/props.ts`. */
+const estVolumique = porteLeMarqueur('prop', 'volume');
 
 /** Une ACTION AUTHORÉE sur une instance de décor (#1687) — le vocabulaire OUVERT des gestes qu'un
  *  auteur pose. `id` : identité STABLE et non vide, unique sur l'entité (l'unicité est gardée par le
@@ -85,7 +85,7 @@ export const actionAuthoreeSchema = z.strictObject({
 
 /** `SceneEntity` (`state/scene.ts:41`). `id` = identité STABLE partagée avec le `Combatant` au spawn.
  *  Le `superRefine` en pied porte le seul invariant CROSS-CHAMP de l'entité : le cap d'un décor
- *  volumique (cf. `PROPS_VOLUMIQUES`). */
+ *  volumique (`estVolumique`). */
 export const sceneEntitySchema = z.strictObject({
   id: z.string(),
   kind: entityKindSchema,
@@ -167,8 +167,7 @@ export const sceneEntitySchema = z.strictObject({
   // CAP D'UN DÉCOR VOLUMIQUE — verrou AU PARSE (#1680 ligne 3) : un décor dont le TYPE porte une
   // recette ne prend qu'un cap CARDINAL. Sa recette tourne (`rotatePropLocal`) là où son empreinte
   // solide ne tourne pas (#1509) : une diagonale poserait son corps en travers de cases restées
-  // traversables. La couche schémas ne lit pas le catalogue au runtime (`src/data/index.ts` importe
-  // les schemas) : elle lit le registre GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
+  // traversables. La sous-liste se lit au régime vif, sinon au registre généré (`porteLeMarqueur`).
   if (ent.kind !== 'prop') return;
   // REF DE DÉCOR — verrou AU PARSE (#877) : le type est REQUIS et résolu au registre `props.json`. Une
   // ref absente comme une ref morte se DISENT ici, en nommant l'entité ; aucune n'est remplacée.
@@ -184,7 +183,7 @@ export const sceneEntitySchema = z.strictObject({
       for (const souci of verdict.error.issues)
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['ref'], message: `décor « ${ent.id} » : ${souci.message}` });
   }
-  if (capDecorAdmis(ent.ref !== undefined && VOLUMIQUES.has(ent.ref), ent.facing)) return;
+  if (capDecorAdmis(ent.ref !== undefined && estVolumique(ent.ref), ent.facing)) return;
   ctx.addIssue({
     code: z.ZodIssueCode.custom,
     path: ['facing'],

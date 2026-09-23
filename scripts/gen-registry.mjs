@@ -332,7 +332,7 @@ export const REGISTRIES = [
     type: 'SchemaDef',
     typeFrom: './types',
     fields: ['file', 'schema', 'famille', 'exposition'],
-    optionalFields: ['meta', 'discriminant', 'chargeParDiscriminant'],
+    optionalFields: ['meta', 'discriminant', 'chargeParDiscriminant', 'marqueurs'],
     constFields: { root: "'src/data'" },
   },
   {
@@ -542,6 +542,43 @@ export function discriminantsDeclares(dir = 'src/data/schemas/defs') {
 }
 
 /**
+ * Champs MARQUEURS déclarés par un def (`export const marqueurs = ['<champ>', …];`), dataset par
+ * dataset — même lecture TEXTUELLE que `discriminant` : le def possède ses marqueurs, aucun dataset
+ * n'est nommé ici. Un marqueur définit une SOUS-LISTE : les entrées qui PORTENT ce champ.
+ */
+export function marqueursDeclares(dir = 'src/data/schemas/defs') {
+  const parDataset = new Map();
+  for (const f of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts'))) {
+    const src = readFileSync(join(dir, f), 'utf8');
+    const dataset = src.match(/^export const file = '([^']+)';$/m)?.[1];
+    const liste = src.match(/^export const marqueurs = \[([^\]]*)\];$/m)?.[1];
+    if (dataset && liste !== undefined) parDataset.set(dataset, [...liste.matchAll(/'([^']+)'/g)].map((m) => m[1]));
+  }
+  return parDataset;
+}
+
+/**
+ * Ids d'un dataset qui PORTENT chacun de ses champs marqueurs — la sous-liste que lit
+ * `porteLeMarqueur(type, champ)` (`grammaire/ref.ts`). FAIL-FAST nominatif : un marqueur qu'aucune
+ * entrée ne porte (renommé, mal orthographié) rendrait une sous-liste toujours vide.
+ * @param {unknown} racine racine JSON du dataset
+ * @param {string[]} champs champs marqueurs déclarés
+ * @param {string} dataset nom du fichier, pour le message
+ * @returns {Record<string, string[]>} champ → ids triés
+ */
+export function idsParMarqueur(racine, champs, dataset) {
+  if (!Array.isArray(racine))
+    throw new Error(`gen-registry: ${dataset} déclare des marqueurs mais sa racine n'est pas une LISTE d'entrées.`);
+  const parChamp = {};
+  for (const champ of [...champs].sort()) {
+    const ids = racine.filter((e) => e && typeof e === 'object' && typeof e.id === 'string' && e[champ] !== undefined).map((e) => e.id);
+    if (!ids.length) throw new Error(`gen-registry: ${dataset} déclare le marqueur « ${champ} » mais aucune entrée ne le porte.`);
+    parChamp[champ] = [...new Set(ids)].sort();
+  }
+  return parChamp;
+}
+
+/**
  * Ids d'un dataset GROUPÉS par la valeur de son champ discriminant — la sous-liste contre laquelle
  * `idDe(type, valeur)` refine. FAIL-FAST nominatif : un def qui déclare un discriminant absent des
  * entrées (renommé, mal orthographié) rendrait une table VIDE, donc une référence toujours refusée.
@@ -616,7 +653,9 @@ function genIds() {
   };
   const familles = famillesDeclarees();
   const discriminants = discriminantsDeclares();
+  const marqueurs = marqueursDeclares();
   const sousListes = [];
+  const sousListesMarquees = [];
   for (const f of readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
     let racine;
     try { racine = JSON.parse(readFileSync(join(dir, f), 'utf8')); } catch { continue; }
@@ -625,6 +664,8 @@ function genIds() {
     ids.push([f, idsDuFichier]);
     const champ = discriminants.get(f);
     if (champ) sousListes.push([f, idsParDiscriminant(racine, champ, f)]);
+    const champsMarqueurs = marqueurs.get(f);
+    if (champsMarqueurs) sousListesMarquees.push([f, idsParMarqueur(racine, champsMarqueurs, f)]);
     if (!Array.isArray(racine)) continue;
     const entrees = racine.filter((e) => e && typeof e === 'object' && typeof e.id === 'string');
     const catalogueDe = (e) => {
@@ -642,14 +683,6 @@ function genIds() {
     if (parEntree.length) specs.push([f, parEntree]);
   }
   verifieExhaustiviteDesIds(new Set(ids.map(([f]) => f)));
-  // Ids des décors À RECETTE volumique : dérivé de `props.json` (`volume.primitives`), pas une liste
-  // à la main. La couche SCHÉMAS ne peut pas lire le catalogue au runtime (`src/data/index.ts`
-  // importe les schemas) ; c'est par ce registre qu'elle sait, AU PARSE, si le `ref` d'une entité
-  // désigne un volume — et qu'elle refuse alors un `facing` diagonal (#1680 ligne 3).
-  const volumiques = litJson('props.json')
-    .filter((p) => p && typeof p.id === 'string' && p.volume && Array.isArray(p.volume.primitives) && p.volume.primitives.length)
-    .map((p) => p.id)
-    .sort();
   const lit = (v) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
   const body =
     `// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.\n` +
@@ -678,14 +711,6 @@ function genIds() {
       .join('') +
     `};\n\n` +
     `/**\n` +
-    ` * Ids des décors dont le TYPE porte une recette VOLUMIQUE (\`props.json\`, \`volume.primitives\`) —\n` +
-    ` * ce que la couche schémas doit savoir d'un \`ref\` de décor sans pouvoir lire le catalogue au\n` +
-    ` * runtime. Un tel décor ne prend qu'un cap CARDINAL : sa recette tourne là où son empreinte solide\n` +
-    ` * ne tourne pas (#1509), et une diagonale poserait son corps en travers de cases restées\n` +
-    ` * traversables. Refusé AU PARSE par \`sceneEntitySchema\` (\`defs-scenes/scene.ts\`).\n` +
-    ` */\n` +
-    `export const PROPS_VOLUMIQUES: readonly string[] = [${volumiques.map(lit).join(', ')}];\n\n` +
-    `/**\n` +
     ` * SOUS-LISTES d'ids d'un dataset DISCRIMINÉ, par valeur de son champ discriminant (le def le\n` +
     ` * déclare : \`export const discriminant\`, cf. \`defs/materials.ts\`) — la cible du refine de\n` +
     ` * \`idDe(type, valeur)\` (\`grammaire/ref.ts\`). MÉCANISME GÉNÉRIQUE : un autre dataset discriminé\n` +
@@ -695,6 +720,18 @@ function genIds() {
     sousListes
       .map(([f, parValeur]) =>
         `  ${lit(f)}: {\n${Object.entries(parValeur).map(([v, l]) => `    ${lit(v)}: [${l.map(lit).join(', ')}],\n`).join('')}  },\n`)
+      .join('') +
+    `};\n\n` +
+    `/**\n` +
+    ` * SOUS-LISTES d'ids d'un dataset MARQUÉ, par champ marqueur : les entrées qui PORTENT ce champ (le\n` +
+    ` * def le déclare : \`export const marqueurs\`, cf. \`defs/props.ts\`) — la cible de\n` +
+    ` * \`porteLeMarqueur(type, champ)\` (\`grammaire/ref.ts\`). MÉCANISME GÉNÉRIQUE : une sous-liste de plus\n` +
+    ` * coûte un nom de champ au def, aucune liste n'est récitée ici.\n` +
+    ` */\n` +
+    `export const IDS_PAR_MARQUEUR: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {\n` +
+    sousListesMarquees
+      .map(([f, parChamp]) =>
+        `  ${lit(f)}: {\n${Object.entries(parChamp).map(([c, l]) => `    ${lit(c)}: [${l.map(lit).join(', ')}],\n`).join('')}  },\n`)
       .join('') +
     `};\n`;
   let prev = '';

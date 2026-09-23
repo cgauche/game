@@ -44,7 +44,7 @@ import { careerSkillAdditions } from '../../engine/talentEffects';
 import { spells, advancementLabel, stars, celestialHouses, species as allSpecies, careersForSpecies } from '../../data';
 
 // Page blanche : `newDraft` ne pré-tire plus race/carrière — les tests posent explicitement les
-// mêmes défauts dérivés qu'avant (1ʳᵉ espèce du LDB, sa 1ʳᵉ carrière accessible = Reiklander / Soldat).
+// mêmes défauts dérivés qu'avant (1ʳᵉ espèce du LDB, sa 1ʳᵉ carrière accessible).
 const DEFAULT_SPECIES = allSpecies.find((s) => s.source.book === 'livre-de-base')!;
 const DEFAULT_CAREER = careersForSpecies(DEFAULT_SPECIES.refCareer)[0]!;
 const draft = () => withCareer(withSpecies(newDraft(1234), DEFAULT_SPECIES.id), DEFAULT_CAREER.id);
@@ -55,7 +55,7 @@ function readyDraft() {
   const sp = draftSpecies(d)!;
   const level = draftLevel(d)!;
   // Résolution des entrées « (Au choix) » / « (A ou B) » qui reçoivent des augmentations
-  // (Soldat : « Musicien (Tambour ou Fifre) », « Corps à corps (Base) »…).
+  // de la carrière par défaut.
   const specChoices: Record<string, string> = {};
   for (const ref of level.skills) {
     const raw = advancementLabel('skills', ref);
@@ -65,21 +65,21 @@ function readyDraft() {
     ...d,
     charsRolled: true, // gestes « Tirer aux dés » posés (#393 agentivité : exigés par la validation)
     talentsRolled: true,
-    charAdvancesAlloc: { 'capacite-de-combat': 5 }, // Soldat : CC est de carrière
+    charAdvancesAlloc: { [level.characteristics[0]]: 5 }, // une Caractéristique du Niveau 1 de la carrière
     fateSplit: { fate: Math.ceil(sp.fate.extra / 2), resilience: Math.floor(sp.fate.extra / 2) },
     speciesPlus5: sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a)),
     speciesPlus3: sp.skills.slice(3, 6).map((a) => advancementLabel('skills', a)),
     skillAdvances: Object.fromEntries(level.skills.map((a) => [advancementLabel('skills', a), 5])),
     speciesTalentChoices: { 'Perspicace ou Affable': 'Affable' },
     specChoices,
-    careerTalent: 'Infatigable',
+    careerTalent: advancementLabel('talents', level.talents[0]), // un Talent du Niveau 1 de la carrière (LDB 05 l.535)
     label: 'Testeur',
   };
 }
 
 describe('B3 — Répartition simple des Compétences de carrière (étape 5)', () => {
   it('produit des LIBELLÉS (jamais "[object Object]") totalisant 40, lus par la grille/validation', () => {
-    const d = draft(); // Soldat (Recrue) : 8 Compétences de Niveau 1
+    const d = draft(); // 8 Compétences de Niveau 1 (LDB 05 l.535)
     const alloc = evenCareerSkillAdvances(d);
     expect(Object.keys(alloc)).not.toContain('[object Object]');
     // Toutes les clés sont des entrées RECONNUES de la grille (careerSkillEntries) → lisibles.
@@ -281,8 +281,7 @@ describe('buildHero — bout en bout', () => {
   });
   it('careerSkillEntries : les ajouts de talents (Maître artisan…) apparaissent', () => {
     const d = readyDraft();
-    // Force un talent d'espèce résolu addSkill via careerTalent (Maître artisan n'est pas Soldat,
-    // on vérifie juste que les 8 entrées du Niveau sont présentes).
+    // Les 8 entrées du Niveau sont présentes.
     expect(careerSkillEntries(d).length).toBeGreaterThanOrEqual(8);
   });
   it.each(['Maître artisan', 'Artiste'])('clé de grille d’un ajout à emplacement `choix` (%s) = celle qu’indexe le moteur', (careerTalent) => {

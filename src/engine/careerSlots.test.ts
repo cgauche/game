@@ -9,6 +9,7 @@ import {
   talentSlots,
   availableChars,
   inCareerStatus,
+  slotCovers,
   designateSlot,
   designationsFor,
   freeSlotFor,
@@ -196,6 +197,22 @@ describe('désignation d\'un emplacement de Groupe d\'arme par specId (données 
     expect(inCareerStatus(sSlots, designationsFor(h, 'gladiateur'), 'corps-a-corps', 'deux-mains')).toBe('designated');
     // L'affichage résout l'id de Groupe d'arme en libellé FR (jamais l'id brut à l'écran).
     expect(specLabel('skills', 'corps-a-corps', 'deux-mains')).toBe('Deux-mains');
+  });
+});
+
+describe('un emplacement « (Au choix) » se désigne par une spécialisation (LDB 09 l.40)', () => {
+  const tSlots = talentSlots(levelsForCareer('pretre'), 1);
+  const beni = tSlots.find((s) => s.options.some((o) => o.optionId === 'beni' && o.wildcard))!;
+  it('Béni (Au choix) du Prêtre : couvert par une spécialisation, jamais nu', () => {
+    expect(beni, 'Prêtre N1 porte « Béni (Au choix) »').toBeDefined();
+    expect(slotCovers(beni, 'beni', undefined)).toBe(false);
+    expect(slotCovers(beni, 'beni', 'sigmar')).toBe(true);
+  });
+  it('freeSlotFor / designateSlot refusent Béni nu', () => {
+    expect(freeSlotFor(tSlots, {}, 'beni', undefined)).toBeUndefined();
+    const h = hero({ career: 'pretre' });
+    expect(designateSlot(h, 'pretre', beni, 'beni', undefined, tSlots).ok).toBe(false);
+    expect(designationsFor(h, 'pretre')).toEqual({});
   });
 });
 

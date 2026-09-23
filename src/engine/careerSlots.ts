@@ -208,13 +208,13 @@ export function availableChars(levels: CareerLevelData[], level: number): CharKe
 }
 
 /** Une (id, spec) concrète est-elle couverte par CE slot (désignations ignorées) ? Compare par
- *  `optionId` STABLE — jamais par libellé (i18n-safe). */
+ *  `optionId` STABLE — jamais par libellé (i18n-safe). Un joker exige une spec : `LDB 09 l.40`. */
 export function slotCovers(slot: CareerSlot, optionId: string, spec?: string): boolean {
   return slot.options.some((o) => {
     if (o.optionId !== optionId) return false;
     if (!o.wildcard) return (o.spec ?? '') === (spec ?? '');
-    if (o.specOptions) return spec != null && o.specOptions.includes(spec);
-    return true; // joker plein : toute spec du groupe (y compris sans spec)
+    if (spec == null) return false;
+    return o.specOptions ? o.specOptions.includes(spec) : true;
   });
 }
 

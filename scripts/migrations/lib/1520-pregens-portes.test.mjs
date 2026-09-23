@@ -3,7 +3,8 @@
  * pré-tiré passent du LIBELLÉ à l'id (`pettySpells` → ids de sort, `careerTalent` → `{ id, spec? }`).
  *
  * Joué sur un dépôt JETABLE (`./joue.mjs`), une fois par scénario : migration réelle, idempotence,
- * fail-fast sur 0 et 2+ candidats (sort, talent, spécialisation), `specsSource` non lue, forme
+ * fail-fast sur 0 et 2+ candidats (sort, talent, spécialisation), `specsSource` non lue, talent sans
+ * catalogue de spécialisations, forme
  * étrangère, formatage. Les rouges d'avant-écriture exigent sortie 1, message NOMINATIF et ZÉRO
  * fichier touché. FIXTURES FABRIQUÉES (pré-tirés ET catalogues), état d'arrivée écrit à la main.
  *
@@ -94,6 +95,11 @@ test('(f) FAIL-FAST spécialisation à 0 candidat dans le catalogue de culte →
 test('(g) FAIL-FAST `specsSource` que la migration ne lit pas → NOMMÉE, rien d’écrit', () => {
   refuse(MIGRATION, fichiers(avec('soldat', { careerTalent: 'Chanson de marin (Refrain)' })),
     'pré-tiré « soldat » careerTalent : « chanson-de-marin » tire ses spécialisations de `seaShanties`, que cette migration ne lit pas');
+});
+
+test('(g2) FAIL-FAST libellé à parenthèses sur un talent SANS catalogue de spécialisations → NOMMÉ, rien d’écrit', () => {
+  refuse(MIGRATION, fichiers(avec('sorciere', { careerTalent: 'Magie mineure (Feu)' })),
+    'pré-tiré « sorciere » careerTalent : « magie-mineure » ne déclare aucune spécialisation (ni `specs` ni `specsSource`), « Feu » n\'en désigne donc aucune');
 });
 
 test('(h) PORTE DE FORME : `pettySpells` non-tableau, élément non-chaîne, `careerTalent` ni libellé ni objet', () => {

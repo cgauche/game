@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { validateScene, type Warning } from './validateScene';
 import { emptyScene, type Scene, type WallSeg } from './scene';
 import { spawnEnemy } from './spawn';
+import { flowFromEffects } from './flow';
 import { creatures, siegeEngines, spells, vehicles } from '../data';
 import { resetData, setDataset } from '../data/overrides';
 import type { MapPlace, WorldMap } from './worldMap';
@@ -262,5 +263,18 @@ describe('le SCHÉMA de scène se joue sur une scène VIVANTE (#877, #1897)', ()
       resetData();
     }
     expect(erreurs(s)).toHaveLength(1);
+  });
+});
+
+describe('une réf que le SCHÉMA d’un effet prouve se dit UNE fois — aucun hook `refs` ne la redouble', () => {
+  it('`castSpell` au sort mort : une seule erreur, celle du schéma', () => {
+    const s = scene();
+    s.triggers.push({
+      id: 't-sort', rect: { x: 0, y: 0, w: 1, h: 1 },
+      flow: flowFromEffects([{ type: 'castSpell', casterId: 'start', spellId: 'sort-mort', mode: 'jet' }]),
+    });
+    const fautes = validateScene([s]).filter((w) => w.message.includes('sort-mort'));
+    expect(fautes.map((w) => w.message)).toHaveLength(1);
+    expect(fautes[0].message).toContain('absent du catalogue des sorts');
   });
 });

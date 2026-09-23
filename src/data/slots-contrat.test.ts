@@ -195,9 +195,14 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
 // Ce qui laisse ces deux lignes est la PROJECTION sur le dernier segment (`cliff`, `material`), face
 // au champ PORTEUR que le scan observe : les 8 lignes jumelles des quatre projets de scène sont au
 // stock depuis #1691/#1715, et les dix meurent ensemble avec le dériveur d'un niveau (L3 #1473).
-// Cliquet DESCENDU 348 → 337 au réel (#1520, 2026-09-23) : `pregens.json | career` et `| species`
-// (8 + 8) meurent de l'ADOPTION (`idDe('career')`, `idDe('species')`) ; `pregens.json | careerTalent`
-// (2) NAÎT sous l'exception nommée (`refOuSpec('talent')` adoptée, `[].careerTalent.id` → `id`).
+// Cliquet DESCENDU 348 → 337 au réel (#1520, 2026-09-23). Il compte des LIGNES de stock (`ecarts.taille`
+// = clés `dataset | champ` distinctes), jamais des occurrences. Mou absorbé 348 → 338, MESURÉ au stock
+// `slotsStock.mjs` : −4 à `63a7ede96` (`<projet>.json | ref` ×4), −2 à `fc2876825` (`arene-projet.json`
+// et `creatures.json | spells`), −4 à `e67b5a9da` (`arcane-phenomena.json | spellIds`, `gods.json |
+// blessings`/`chaosSpells`/`miracles`), sans cran du cliquet. Puis 338 → 337 : les lignes
+// `pregens.json | career` et `| species` meurent de l'ADOPTION (`idDe('career')`, `idDe('species')`) ;
+// `pregens.json | careerTalent` NAÎT sous l'exception nommée (`refOuSpec('talent')` adoptée,
+// `[].careerTalent.id` → `id`).
 const DETTE_ADOPTION_MAX = 337;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {

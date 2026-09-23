@@ -313,7 +313,7 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
   /**
    * CAPS MESURÉS : les QUATRE cardinaux, pour TOUTE recette. Les diagonales n'ont pas à être mesurées —
    * elles sont refusées À LA DONNÉE par le schéma de scène (`src/data/schemas/defs-scenes/scene.ts`,
-   * `superRefine` de `sceneEntitySchema` sur `PROPS_VOLUMIQUES`), et le chargement d'un projet en
+   * `superRefine` de `sceneEntitySchema`, marqueur `volume` de `defs/props.ts`), et le chargement d'un projet en
    * meurt (`parseProject`).
    *
    * Ce que cette mesure suit, c'est la POSE dans le monde : le corps cuit part de l'ANCRE de

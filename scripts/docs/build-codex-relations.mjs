@@ -50,10 +50,10 @@ const EXPOSITION = JSON.parse(
 /** Route d'édition d'un def, dans le vocabulaire de `document()` — jamais un libellé inventé. */
 function routeEdition(edit) {
   if (!edit) return '—'
+  if ('none' in edit) return 'aucune'
   if (edit.dataset) return `dataset \`${edit.dataset}\``
   if (edit.object) return `objet \`${edit.object}\``
   if (edit.niche) return `niché (${edit.niche.categories.length} catégorie(s))`
-  if ('none' in edit) return 'aucune'
   abandon(`route d'édition inconnue : ${JSON.stringify(edit)}`)
 }
 

@@ -73,7 +73,8 @@ function unique(index, label, ou, quoi) {
 function specDe(t, label, ou) {
   if (Array.isArray(t.specs)) return unique(indexParLabel(t.specs), label, ou, `spécialisation de « ${t.id} »`);
   if (SOURCES_DE_CULTE.has(t.specsSource)) return unique(indexParLabel(dieux), label, ou, `dieu (${t.specsSource})`);
-  echecs.push(`${ou} : « ${t.id} » tire ses spécialisations de \`${t.specsSource}\`, que cette migration ne lit pas`);
+  if (t.specsSource === undefined) echecs.push(`${ou} : « ${t.id} » ne déclare aucune spécialisation (ni \`specs\` ni \`specsSource\`), « ${label} » n'en désigne donc aucune`);
+  else echecs.push(`${ou} : « ${t.id} » tire ses spécialisations de \`${t.specsSource}\`, que cette migration ne lit pas`);
   return null;
 }
 

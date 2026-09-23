@@ -118,6 +118,9 @@ export type ExpositionCodex =
  * Ce que l'ÉDITEUR édite : le dataset-liste dont ce document est une entrée, l'OBJET de configuration
  * qu'il forme à lui seul (`single`) ou dont il est une valeur (`record`), les TABLEAUX NICHÉS qu'il
  * porte (`niche`), ou rien (`none`, raison exigée — vraie lecture seule, aucune route d'édition).
+ * Un document `none` dont les entrées SONT un dataset-liste de la mémoire (`src/data/overrides.ts`
+ * `ARRAYS`) le nomme par `dataset` : sans route d'édition, il garde son fichier — c'est la liste
+ * d'entrées que lit le régime vif des ids (`schemas/grammaire/idsVivants.ts`).
  *
  * `niche.categories` nomme les clés de catégorie Codex de CE document qui sont routées comme datasets
  * (`CodexEdit.CATEGORY_DATASET`) : chacune édite UN champ tableau du document, jamais le document
@@ -128,7 +131,7 @@ export type ExpositionEdit =
   | { readonly dataset: string }
   | { readonly object: 'single' | 'record' }
   | { readonly niche: { readonly categories: readonly string[] } }
-  | { readonly none: string };
+  | { readonly none: string; readonly dataset?: string };
 
 /** EXPOSITION d'un document : où il se lit (Codex) et où il s'édite. */
 export interface Exposition {

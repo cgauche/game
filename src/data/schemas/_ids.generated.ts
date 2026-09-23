@@ -161,15 +161,6 @@ export const SPECS_PAR_DATASET: Readonly<Record<string, Readonly<Record<string, 
 };
 
 /**
- * Ids des décors dont le TYPE porte une recette VOLUMIQUE (`props.json`, `volume.primitives`) —
- * ce que la couche schémas doit savoir d'un `ref` de décor sans pouvoir lire le catalogue au
- * runtime. Un tel décor ne prend qu'un cap CARDINAL : sa recette tourne là où son empreinte solide
- * ne tourne pas (#1509), et une diagonale poserait son corps en travers de cases restées
- * traversables. Refusé AU PARSE par `sceneEntitySchema` (`defs-scenes/scene.ts`).
- */
-export const PROPS_VOLUMIQUES: readonly string[] = ['applique-murale', 'armoire', 'banc', 'bureau', 'bureau-2x1', 'caisse', 'canape', 'chaise', 'cheminee', 'cheminee-interieure', 'clocheton', 'coffre', 'coiffeuse', 'comptoir-angle', 'comptoir-droit', 'decor-flat', 'enseigne', 'etabli', 'etabli-2x1', 'etagere', 'etal-marche', 'fauteuil-loge', 'miroir', 'paravent', 'portant-costumes', 'pupitre-chef', 'rack-armes', 'rangee-sieges', 'rideau-scene', 'scie-chevalet', 'siege', 'table', 'table-2x1', 'table-murale-2-tabourets', 'table-ronde-4-tabourets', 'tabouret', 'tonneau', 'tonneaux-pile', 'urne'];
-
-/**
  * SOUS-LISTES d'ids d'un dataset DISCRIMINÉ, par valeur de son champ discriminant (le def le
  * déclare : `export const discriminant`, cf. `defs/materials.ts`) — la cible du refine de
  * `idDe(type, valeur)` (`grammaire/ref.ts`). MÉCANISME GÉNÉRIQUE : un autre dataset discriminé
@@ -187,5 +178,17 @@ export const IDS_PAR_DISCRIMINANT: Readonly<Record<string, Readonly<Record<strin
     'chaos': ['allure-demoniaque', 'aspect-sublime', 'aura-doree-de-tzeentch', 'avantage-de-tzeentch', 'consentement', 'decharge-de-corruption', 'dechirer-l-aethyr', 'eclair-du-changement', 'esclave-des-tenebres', 'explosion-de-corruption', 'feu-bleu-de-tzeentch', 'feu-rose-de-tzeentch', 'feu-spirituel', 'flammes-vacillantes-du-capricieux-destin', 'flot-de-corruption', 'la-main-pourpre', 'maitre-du-destin', 'malediction-de-tzeentch', 'obsession', 'odieux-messager', 'parole-de-tzeentch', 'percevoir-l-echeveau', 'pouvoir-du-chaos', 'tempete-de-feu-de-tzeentch', 'trahison-de-tzeentch', 'transformation-de-tzeentch'],
     'invocation': ['abondance-de-rhya', 'abri-de-rhya', 'amere-catharsis', 'aneantir-les-morts-vivants', 'apaisement', 'apaiser-les-eaux', 'appel-a-la-fureur', 'arriere-sorciere', 'aux-innocents-les-mains-pleines', 'baratin', 'baume-pour-un-esprit-blesse', 'benedicite-de-taal', 'benediction-de-l-albatros', 'benediction-du-marinier', 'blizzard', 'bon-baiser-d-la-fosse-noire', 'bon-debarras', 'bondissant-comme-un-cerf', 'bouclier-de-myrmidia', 'caresse-de-rhya', 'catharsis', 'chaleur-de-la-fourrure', 'comete-a-deux-queues', 'commander-la-legion', 'condamne', 'connais-ton-ennemi', 'contre-courants', 'courage-du-loup', 'dent-et-griffe', 'devotion-de-la-vierge-guerriere', 'dressage-de-rhya', 'en-bon-ordre', 'en-terrain-dangereux', 'encalmine', 'enchevetrement-2', 'endurance-de-l-anachorete', 'enfants-de-rhya', 'entraves-a-la-verite', 'epee-de-justice', 'faire-fi-de-l-humeur-de-manann', 'fers-de', 'feu-de-l-ame', 'flairer-le-sang', 'flambeau-de-vertu', 'frappe-rapide', 'frisson-du-givre', 'fureur-d-ulric', 'fureur-vengeresse', 'generosite-de-manann', 'grace-de-ranald', 'haine-du-faible', 'hurlement-du-loup', 'innocence-immaculee', 'inspirant', 'instinct-animal', 'instincts-animaux', 'invitation', 'jugement-du-roi-de-la-neige', 'justice-aveugle', 'la-verite-eclatera', 'la-verite-finit-toujours-par-sortir', 'lame-de-fond', 'lance-de-myrmidia', 'larmes-de-shallya', 'les-voies-de-la-nature', 'main-de-morr', 'main-de-rhya', 'mal-de-mer', 'malediction-de-la-maitresse-cruelle', 'malediction-de-la-mer', 'marcher-sur-les-eaux', 'marteau-ardent-de-sigmar', 'marteau-de-justice', 'martyr', 'masque-mortuaire', 'mer-dechainee', 'modele-de-vertu', 'morsure-d-hiver', 'morsure-de-l-hiver', 'n-ecoutez-point-la-sorciere', 'navigation-benie', 'nuee-d-escampette', 'oeil-de-l-aigle', 'oeil-de-lynx', 'peau-de-loup-d-hiver', 'piste-froide', 'prouesses-martiales', 'que-la-chance-persiste', 'recolte-de-rhya', 'repousser-une-creature-marine', 'resistance-du-penitent', 'respiration-aquatique', 'riche-pauvre-mendiant-voleur', 'rites-funeraires', 'roi-de-la-nature', 'sacrifice-a-stromfels', 'sagesse-de-la-chouette', 'sagesse-du-hibou', 'sanctuaire', 'saut-de-cabri', 'secours-de-rhya', 'seigneur-de-la-chasse', 'seuil-du-portail', 'soleil-flamboyant', 'sus-a-l-ennemi', 'terrifier-l-ennemi', 'toile-surprise', 'treve-de-taal-dsfl', 'union-de-rhya', 'vaincre-les-impies', 'vents-de-tempete', 'vents-favorables', 'verena-est-mon-temoin', 'verena-m-est-temoin', 'visage-de-l-homme-noye', 'vous-ne-m-avez-pas-vu-n-est-ce-pas', 'yeux-de-chat'],
     'mineure': ['alarme', 'alerte', 'amitie-animale', 'bruit', 'bruits', 'brume-mystique', 'choc', 'chuchotis', 'conservation', 'conserve', 'coup-de-vent', 'courant-d-air', 'creer-un-petit-animal', 'drain', 'eau-pure', 'eblouissant', 'eclat', 'en-catimini', 'espionnage', 'fatigue', 'faveur-du-rat-cornu', 'feu-follet', 'feux-follets', 'flamme', 'flamme-magique', 'flechette', 'langue-des-gors', 'langue-des-pestigors', 'langue-des-slaangors', 'langue-des-tzaangors', 'lumiere', 'marque-du-rat-cornu', 'murmures', 'ouverture', 'pas-leger', 'pied-leger', 'position', 'pourriture', 'projectile-mineur', 'protection-contre-la-pluie', 'purification-de-l-eau', 'putrefaction', 'regard-lubrique', 'reperes', 'saccade', 'secousse', 'serrure-ouverte', 'sommeil', 'source', 'tendre-l-oreille'],
+  },
+};
+
+/**
+ * SOUS-LISTES d'ids d'un dataset MARQUÉ, par champ marqueur : les entrées qui PORTENT ce champ (le
+ * def le déclare : `export const marqueurs`, cf. `defs/props.ts`) — la cible de
+ * `porteLeMarqueur(type, champ)` (`grammaire/ref.ts`). MÉCANISME GÉNÉRIQUE : une sous-liste de plus
+ * coûte un nom de champ au def, aucune liste n'est récitée ici.
+ */
+export const IDS_PAR_MARQUEUR: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {
+  'props.json': {
+    'volume': ['applique-murale', 'armoire', 'banc', 'bureau', 'bureau-2x1', 'caisse', 'canape', 'chaise', 'cheminee', 'cheminee-interieure', 'clocheton', 'coffre', 'coiffeuse', 'comptoir-angle', 'comptoir-droit', 'decor-flat', 'enseigne', 'etabli', 'etabli-2x1', 'etagere', 'etal-marche', 'fauteuil-loge', 'miroir', 'paravent', 'portant-costumes', 'pupitre-chef', 'rack-armes', 'rangee-sieges', 'rideau-scene', 'scie-chevalet', 'siege', 'table', 'table-2x1', 'table-murale-2-tabourets', 'table-ronde-4-tabourets', 'tabouret', 'tonneau', 'tonneaux-pile', 'urne'],
   },
 };

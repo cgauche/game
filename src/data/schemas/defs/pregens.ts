@@ -1,8 +1,8 @@
 /**
  * Schéma de `pregens.json` — dérivé du contenu RÉEL (8 entrées, script d'inventaire) et de
  * `PregenDef` (`src/data/pregens.ts`). Personnages pré-tirés APP-OWNED (flavor : motivation,
- * ambitions LDB 05 l.730-736) ; la fabrique (`src/data/pregens.ts`, #421) route par le MÊME
- * pipeline que le créateur joueur (`CreatorDraft` → `buildHero`) — `species`/`career`, `careerTalent` et
+ * ambitions LDB 05 l.730-736) ; la fabrique (`src/data/pregens.ts`, #421) construit par `createHero`,
+ * le moteur de création du créateur joueur — `species`/`career`, `careerTalent` et
  * `pettySpells` (ids stables) sont les seuls choix AUTHORÉS, le reste suit la recette RAW seedée.
  */
 import { z } from 'zod';

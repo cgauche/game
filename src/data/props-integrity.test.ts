@@ -3,7 +3,6 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { schema as propsSchema } from './schemas/defs/props';
-import { PROPS_VOLUMIQUES } from './schemas/_ids.generated';
 import { props, matieresDe, findPropMaterialById, findPropById } from './index';
 import { aretesNonAppariees, CAP_IDENTITE_PROP, empreinteDeriveeDuProp, placesLocalesDuProp, polygonesDePrimitive, sommetLocal, validatePropCatalog, type PropData, type PropPrimitive } from './props.types';
 import { sceneMetresPerTile } from '../state/scene';
@@ -440,30 +439,6 @@ describe('FERMETURE — une primitive est une COQUILLE CLOSE', () => {
       .toEqual(['x: cylindre à 12 côtés (admis : 8 ou 16)']);
     const huit: PropPrimitive = { ...(douze as { kind: 'cylinder' } & PropPrimitive), sides: 8 };
     expect(validatePropCatalog([propFixture({ volume: { capIdentite: 'S', primitives: [huit] } })], MPT)).toEqual([]);
-  });
-});
-
-/**
- * REGISTRE GÉNÉRÉ des décors À RECETTE (`PROPS_VOLUMIQUES`, `schemas/_ids.generated.ts`) — le seul
- * canal par lequel la couche SCHÉMAS sait, au parse, qu'un `ref` désigne un volume (elle ne peut pas
- * lire le catalogue au runtime : `src/data/index.ts` importe les schémas). Ce contrat le tient ÉGAL à
- * la mesure sur `props.json` : une recette ajoutée sans `npm run gen` est rouge ici, et le verrou de
- * cap du schéma ne peut donc pas se périmer en silence.
- */
-describe('PROPS_VOLUMIQUES — le registre généré == la mesure sur props.json', () => {
-  it('exactement les ids qui portent des primitives, triés', () => {
-    const mesure = props
-      .filter((p) => (p.volume?.primitives.length ?? 0) > 0)
-      .map((p) => p.id)
-      .sort();
-    expect(mesure.length, 'aucune recette : ce contrat mesurerait du néant').toBeGreaterThan(10);
-    expect([...PROPS_VOLUMIQUES]).toEqual(mesure);
-  });
-
-  it('un décor SANS recette n’y figure pas (le registre n’est pas la liste des props)', () => {
-    const billboards = props.filter((p) => !p.volume?.primitives.length).map((p) => p.id);
-    expect(billboards.length).toBeGreaterThan(10);
-    expect(billboards.filter((id) => PROPS_VOLUMIQUES.includes(id))).toEqual([]);
   });
 });
 

@@ -69,9 +69,6 @@ export interface PregenDef {
  *  engine) — APPEND uniquement : les Bénédictions du Talent Béni, déjà octroyées par
  *  `applyTalentAcquisition` dans `createHero`, ne sont JAMAIS écrasées. */
 function buildPregenHero(d: PregenDef): Combatant {
-  if (d.careerTalent?.choix) {
-    throw new Error(`Pré-tiré « ${d.id} » : \`careerTalent\` porte un « choix » — un pré-tiré désigne sa spécialisation (\`spec\`).`);
-  }
   const authoredIds = d.pettySpells ?? [];
   const hero = createHero({
     speciesId: d.species,

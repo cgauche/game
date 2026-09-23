@@ -28,11 +28,10 @@ import {
   refKey,
   parseRefKey,
   talentMaxReached,
-  wildcardSpecs,
 } from '../engine/careerSlots';
 import { careerSkillAdditions, careerTalentAdditions, baseWithTalents, type SkillTalentRef } from '../engine/talentEffects';
 import { rule } from '../engine/policy';
-import { levelsForCareer, byId, findCareerById, refLabel, specLabel, displayLabelForSex } from '../data';
+import { levelsForCareer, byId, findCareerById, findTalentById, specPoolOf, refLabel, specLabel, displayLabelForSex } from '../data';
 
 export interface CharAdvanceRow {
   key: CharKey;
@@ -178,7 +177,8 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     if (!slot.needsChoice || designations[slot.key]) continue;
     const o = slot.options[0];
     if (!o.optionId) continue; // garde défensive (un joker a toujours un optionId en pratique)
-    const specPool = o.specOptions ?? wildcardSpecs(o.label);
+    const def = byId('skill', o.optionId);
+    const specPool = o.specOptions ?? (def ? specPoolOf(def) : []);
     const options = specPool
       .filter((spec) => !taken.has(refKey(o.optionId!, spec)))
       .map((spec) => ({
@@ -210,8 +210,9 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     const options: { refKey: string; display: string; owned: boolean }[] = [];
     for (const o of slot.options) {
       if (!o.optionId) continue;
-      const specs = o.specOptions ?? wildcardSpecs(o.label);
-      const pool: (string | undefined)[] = o.wildcard ? (specs.length ? specs : [undefined]) : [o.spec];
+      const def = findTalentById(o.optionId);
+      const specs = o.specOptions ?? (def ? specPoolOf(def) : []);
+      const pool: (string | undefined)[] = o.wildcard ? specs : [o.spec];
       for (const spec of pool) {
         const rk = refKey(o.optionId, spec);
         if (taken.has(rk)) continue;
