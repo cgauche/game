@@ -914,7 +914,7 @@ describe('spec de Talent d’un livre EXTRAIT — résout au catalogue, stock no
   });
 });
 
-// ── CONTRAT POSITIF — Corps à corps / Projectiles sont des Compétences GROUPÉES (LDB 62 l.138) : la
+// ── CONTRAT POSITIF — Corps à corps / Projectiles sont des Compétences GROUPÉES (LDB 62 l.139) : la
 // seule `spec` admissible est un id de `weaponGroups.json`. L'armement naturel d'une créature est porté
 // par son TRAIT (LDB 85 l.33), pas par un descripteur posé en `spec`. Contrat SANS liste d'exception :
 // une nouvelle entrée de bestiaire qui réintroduirait « Griffes » y échoue.

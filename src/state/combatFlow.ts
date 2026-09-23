@@ -1614,7 +1614,7 @@ export function finalizeHeroDeath(_get: Get, set: SetFn, hero: Combatant, source
 }
 
 /** Émet le déclencheur `onSlain` UNE seule fois pour un combattant mis HORS DE COMBAT — effets de DONNÉE
- *  « à la mort » (Démoniaque banni, LDB 85 p.339 ; futur explose/se dédouble). Atteignable par plusieurs
+ *  « à la mort » (Démoniaque banni, LDB 85 l.98 ; futur explose/se dédouble). Atteignable par plusieurs
  *  chemins de mort (0 PB, Critique létal, mort-auto, mort lente) → garde d'unicité `slainNotified`.
  *  Renvoie les lignes de journal de l'effet (tissées par l'appelant à sa position). */
 export function notifySlain(get: Get, set: SetFn, c: Combatant): string[] {
@@ -1726,7 +1726,7 @@ export function applyCriticalToTarget(
   },
 ): boolean {
   const { ctx, prerolled, suppressReveal, get } = opts;
-  // Structure de siège (AA 10 p.121) : modèle de Critique DISTINCT du personnage — table propre (pas de Trauma
+  // Structure de siège (AA 10 l.114) : modèle de Critique DISTINCT du personnage — table propre (pas de Trauma
   // humain) et pas de « Mort » de personnage. Filet de sécurité pour TOUT appelant (opposé/magie) ; le chemin
   // d'attaque normal passe déjà par `applyStructureCriticalToTarget` (cf. `applyAttackResult`).
   if (target.bodyShape === 'structure') {
@@ -1878,7 +1878,7 @@ export function applyHullCriticalToTarget(
   return false;
 }
 
-/** Table d'étape du Critique de Structure (AA 10 p.120) — la DONNÉE `structure-criticals.json` porte les
+/** Table d'étape du Critique de Structure (AA 10 l.116-127) — la DONNÉE `structure-criticals.json` porte les
  *  fourchettes et les ids ; le TIRAGE passe par le résolveur unique `rollTableStep`, le FORMATAGE des
  *  lignes reste au moteur (`rollStructureCritical`, appelé avec le dé déjà tiré : aucun dé consommé). */
 export const STRUCTURE_CRIT_TABLE = 'structure-criticals';
@@ -1891,7 +1891,7 @@ registerTableStep(STRUCTURE_CRIT_TABLE, {
 });
 
 /**
- * Critique de Structure (AA 10 p.120-121) — calqué sur `applyHullCriticalToTarget`. Le dé passe par
+ * Critique de Structure (AA 10 l.112-127) — calqué sur `applyHullCriticalToTarget`. Le dé passe par
  * l'étape à TABLE (`rollTableStep`, #942 L2 — site UNIQUE du tirage, `forcedRoll` = l'injection) ; le
  * moteur (`rollStructureCritical`) reste la source du LOOKUP mécanique sur CE dé : Blessures
  * supplémentaires (langue `GameOp`, ignore BE/PA) et, sur un Effondrement (96+), Structure à 0 Blessure
@@ -1939,7 +1939,7 @@ export function applyStructureCriticalToTarget(
   return outcome;
 }
 
-/** Effondrement d'une STRUCTURE de siège tombée à 0 Blessure (AA 10 p.121) → BRÈCHE franchissable : pose le flag
+/** Effondrement d'une STRUCTURE de siège tombée à 0 Blessure (AA 10 l.114/127) → BRÈCHE franchissable : pose le flag
  *  `structureDown` sur l'arête (`structureEdge`), RETIRE le Combattant inerte de la bataille et re-render
  *  (SCENE_DIRTY). Appelée à la CLÔTURE de la résolution (APRÈS le `set` qui réécrit `battle` depuis sa capture)
  *  → pas de clobber. No-op (réf inchangée pour la scène) si la cible n'a pas d'arête (structure hors scène). */
@@ -2482,7 +2482,7 @@ export function applyAttackResult(
     critLog.push(tr('cf.grappleInit', { name: attacker.label, foe: target.label }));
   }
   if (res.hit && res.woundsLost && isStructure(target)) {
-    // STRUCTURE de siège (AA 10 p.121) : modèle DISTINCT du personnage — pas de Localisation, d'À Terre, de
+    // STRUCTURE de siège (AA 10 l.105/114) : modèle DISTINCT du personnage — pas de Localisation, d'À Terre, de
     // Déviation d'armure ni de Trauma humain. Les Blessures sont déjà mitigées par `woundsFromHit` (Siège
     // ×2 / Résistant-Impénétrable-Bélier → 0). Un double qui retire AUSSI ≥25 % des Blessures RESTANTES
     // déclenche un Critique de Structure ; la chute à 0 Blessure devient une BRÈCHE (posée par
@@ -2578,7 +2578,7 @@ export function applyAttackResult(
       applyOpposedCritical(get, set, target, ad.roll, { attackerId: attacker.id, weapon: weapon?.label, weaponObj: weapon }, critLog);
     }
     // (b) Défenseur : Critique sur sa défense → l'attaquant subit un Critique sec — UNIQUEMENT en PARADE
-    // (« Test de Corps à corps », LDB 13 l.184) ; l'Esquive est un Test d'AGILITÉ → ne génère PAS de Critique.
+    // (« Test de Corps à corps », LDB 13 l.183) ; l'Esquive est un Test d'AGILITÉ → ne génère PAS de Critique.
     // `res.parryWeapon` n'est posé qu'en Parade (finishMelee). Un HÉROS qui PARE avec une arme Piège-lame face
     // à une lame peut choisir de PIÉGER à la place (LDB 62 l.278) → étape de séquence.
     if (dd.success && isDoubleRoll(dd.roll) && !isOutOfAction(attacker) && res.parryWeapon) {
@@ -2629,7 +2629,7 @@ export function applyAttackResult(
   // Exposition aux Maladies (Infecté/Rongeur/Maladie (Type) ; munition Infecté) MIGRÉE en données :
   // `effects: onHit → if woundsDealt>0 → exposeDisease(<id>)` sur les traits/qualité de l'ATTAQUANT,
   // dispatchés par le `fireTriggers('onHit')` ci-dessous. Op GÉNÉRIQUE unique, paramétrée par l'id de maladie.
-  // Le bilan reste héros-only : exposer un non-héros est inerte. (LDB 20 l.25/51 ; LDB 85 p.340.)
+  // Le bilan reste héros-only : exposer un non-héros est inerte. (LDB 20 l.25/51 ; LDB 85 l.187/225.)
   // Nausée (LDB 20 l.170) : un Test de DÉPLACEMENT raté (Esquive) fait vomir → État Sonné.
   if (res.defenderDetail?.mode === 'esquive' && !res.defenderDetail.success
       && hasActiveCapability(target, 'nausea') && !hasCondition(target, COND.sonne)) {
@@ -2696,7 +2696,7 @@ export function applyAttackResult(
     if (!groupAdvantage()) attacker.advantage = 0; // l'attaquant a échoué au Test opposé (LDB ; pas de perte per-combattant en mode groupe)
   }
   if (res.hit && res.woundsLost && !groupAdvantage()) target.advantage = 0; // perdre une Blessure → perte de tout Avantage (LDB ; inerte en mode groupe)
-  // Porte-Bouclier (LDB 10 p.144, VERBATIM) : « vous gagnez [niveau] Avantages SI VOUS PERDEZ le Test opposé »
+  // Porte-Bouclier (LDB 10 l.972, VERBATIM) : « vous gagnez [niveau] Avantages SI VOUS PERDEZ le Test opposé »
   // en vous défendant au Bouclier — consolation d'une « situation désespérée », APRÈS la perte d'Avantage due
   // à la Blessure / au Test perdu. Défense PERDUE = l'attaquant a gagné (`advantageTo === 'attacker'`) et le
   // défenseur a paré au Bouclier (`res.parryWeapon`). Variante groupe AA → `shieldAdvantageLevel` = 0.
@@ -2726,7 +2726,7 @@ export function applyAttackResult(
     log.push(ev(evKind, tr('cf.scatter', { name: attacker.label }), attacker.id, target.id));
   }
   log.push(...evLines(critLog, 'crit', attacker.id, target.id));
-  // Nerveux (LDB 85 p.340) : « facilement effrayée par […] les bruits forts » — un coup d'arme à
+  // Nerveux (LDB 85 l.249) : « facilement effrayée par […] les bruits forts » — un coup d'arme à
   // feu (Poudre noire/Explosion) terrifie les créatures Nerveuses présentes : +3 État Brisé.
   if (weapon.type === 'ranged' && isFirearmQuality(weapon)) {
     for (const c of battle.combatants) {
@@ -3859,7 +3859,7 @@ export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: Creatu
   return suspended;
 }
 
-/** Entraînement de la Langue préhensile (LDB 85 p.340) — conséquence POST-TOUCHE injectée dans
+/** Entraînement de la Langue préhensile (LDB 85 l.213) — conséquence POST-TOUCHE injectée dans
  *  `applyManeuverEffects` (hook `maneuverPostHit`) : sur une TOUCHE (un pion *Empêtré* posé ce tour) d'une
  *  proie plus PETITE, elle est tirée vers la créature (pathing impur : `pullToward` + traversées de zone).
  *  Joué à l'IDENTIQUE pour la voie silencieuse (non-héros/Surpris) ET la voie cascade (héros influençable). */
@@ -4083,7 +4083,7 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
   if (!battle || battle.over) { enemy.pendingFreeAttacks = undefined; return false; }
   if (enemy.pendingFreeAttacks === undefined) {
     const atks = creatureAttacks(enemy.traits ?? []);
-    // Empoignade tenue par un Tentacule (LDB 85 p.343) UNIQUEMENT : « vous pouvez utiliser une Action d'Attaque
+    // Empoignade tenue par un Tentacule (LDB 85 l.405) UNIQUEMENT : « vous pouvez utiliser une Action d'Attaque
     // GRATUITE pour résoudre l'Empoignade AU LIEU de l'Action de la créature » — le tentacule tient pendant que
     // le corps agit. Pour CHAQUE adversaire encore Empoigné et en vie : Test opposé de Force GRATUIT (résolveur
     // PARTAGÉ `resolveGrappleOpposed`), instantané. La créature N'EST PAS verrouillée (ai.ts saute le verrou
@@ -4230,7 +4230,7 @@ for (const table of MISCAST_TABLES) {
 
 /** DÉCLARATION du tirage d'une Imparfaite/Colère : la table de la sévérité EN VIGUEUR (LDB ou VDM),
  *  d100, et — pour la COLÈRE SEULE — le +10 par Point de Péché, déclaré en modificateur VIVANT
- *  (`modPerActor`, résolu au moment du jet par `liveTableDecl`) : LDB 40 l.53, « Lorsque vous
+ *  (`modPerActor`, résolu au moment du jet par `liveTableDecl`) : LDB 40 l.46, « Lorsque vous
  *  effectuez un lancer sur le tableau de la Colère des dieux, ajoutez-y +10 pour chaque Point de
  *  Péché que vous avez déjà accumulé ». Hors Colère AUCUN modificateur n'est déclaré — c'est
  *  exactement ce que le moteur fait (`rollMiscast` n'ajoute les Péchés qu'à la Colère) ; en déclarer
@@ -4537,7 +4537,7 @@ export function castSpell(
     castRefused(get, set, caster, tr('cf.grimoireRefused', { name: caster.label, spell: label }));
     return;
   }
-  // Sort « Souffle » (LDB 47 p.244) : délégué à l'attaque de ZONE du Trait — la portée suit le
+  // Sort « Souffle » (LDB 47 l.509) : délégué à l'attaque de ZONE du Trait — la portée suit le
   // TRAIT (BE+20 m, LDB 85), pas le champ Portée du sort ; résolu comme zone, pas comme Projectile.
   const breathSpell = !!spell.breathAttack;
   const horsAtteinte = castTargetBlock(get, caster, spell, target);
@@ -4959,7 +4959,7 @@ export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'pendingSiegeAi
       rangeTiles: spell && caster ? spellRangeTiles(spell.range, caster) : null,
     };
   }
-  // Pilonnage INDIRECT (« viser une case », AA 10 p.122-123) : pièce indirecte servie en attente du point
+  // Pilonnage INDIRECT (« viser une case », AA 10 l.169/171) : pièce indirecte servie en attente du point
   // d'impact — MÊME gabarit/curseur/clic que les sorts de zone (l'ancre = le servant, `casterId`).
   const sa = s.pendingSiegeAim;
   if (sa) return { source: 'siege', label: 'Pilonnage', casterId: sa.gunnerId, radius: sa.radius, rangeTiles: sa.rangeTiles };
@@ -5095,7 +5095,7 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
   const blocked = occupied(battle, geom);
   const cavalryCharge = !!enemy.mountId && !isEngaged(enemy); // cavalier non Engagé : portée de Course (2×)
   let movement = Math.floor(effectiveMovement(geom) * (cavalryCharge ? 2 * runMultiplier(geom.traits) : 1));
-  const flyM = flyMeters(enemy.traits); // Vol (Indice) (LDB 85 p.343) : remplace la Marche s'il porte plus loin
+  const flyM = flyMeters(enemy.traits); // Vol (Indice) (LDB 85 l.433) : remplace la Marche s'il porte plus loin
   if (flyM != null) movement = Math.max(movement, Math.floor(flyM / 2));
   const perceived = perceivedTiles(
     { scene, battle, party: get().party, partyPos: get().partyPos, gameTime: get().gameTime, lightLevel: get().lightLevel },
@@ -5855,7 +5855,7 @@ export function applyCast(
         // engine/polymorph, auto-restitués à l'expiration). Plus de site dédié.
       }
       // POUSSÉE (Jalon 2.6 — « Toutes les créatures à BFM mètres sont repoussées de BFM
-      // mètres », LDB 47 p.244) : recul en ligne (direction lanceur→cible) jusqu'à
+      // mètres », LDB 47 l.479) : recul en ligne (direction lanceur→cible) jusqu'à
       // l'obstacle ; la collision est journalisée (Dégâts = distance restante, MJ).
       for (const op of spellOps(spell.effects, 'caster')) {
         if (op.op !== 'push' || !battle || !caster.pos) continue;
@@ -5873,7 +5873,7 @@ export function applyCast(
           if (r.collided) logLines.push(tr('cf.collided', { name: t.label }));
         }
       }
-      // Sort « Souffle » (LDB 47 p.244) : « comme si vous aviez dépensé 2 Avantages pour activer
+      // Sort « Souffle » (LDB 47 l.509) : « comme si vous aviez dépensé 2 Avantages pour activer
       // le Trait Souffle » — délégué à l'attaque de ZONE du Trait, centrée sur la CIBLE du sort,
       // Dégâts = Bonus d'Endurance du lanceur, Type mappé du Domaine. Sans coût d'Avantage (le
       // sort EST l'activation). Hors combat : pas de grille → journalisé.
@@ -5897,7 +5897,7 @@ export function applyCast(
       // Zone persistante d'un sort de soutien/zone (Mur de feu : « Quiconque traverse… »).
       if (res.cast) placeSpellZone(get, caster, target, spell, spec, slFor(target), durationMult, durationBonusRounds, logLines);
       // TÉLÉPORTATION (Jalon 2.6 — « vous vous téléportez de BFM mètres (+BFM par +2 DR) »,
-      // LDB 47 p.245) : le choix de la case d'arrivée suit l'Appliquer (mode 'teleport',
+      // LDB 47 l.517-519) : le choix de la case d'arrivée suit l'Appliquer (mode 'teleport',
       // cases = survol des obstacles, atterrissage libre — battleClickTile).
       const tpOp = spellOps(spell.effects, 'caster').find((o): o is Extract<GameOp, { op: 'teleport' }> => o.op === 'teleport');
       if (tpOp && res.cast) {
@@ -6097,7 +6097,7 @@ function scheduleRespawnFromOp(
   return [tr('cf.sourceRebuilds', { name: actor.label, days, s: days > 1 ? 's' : '' })];
 }
 
-/** Type de Souffle « correspondant le mieux » au Domaine du lanceur (sort Souffle, LDB 47 p.244 :
+/** Type de Souffle « correspondant le mieux » au Domaine du lanceur (sort Souffle, LDB 47 l.509 :
  *  « Le MJ détermine quel type d'attaque de Souffle correspond le mieux à votre Talent Magie des
  *  Arcanes ») — jeu sans MJ : seuls les Domaines au Type canonique évident sont mappés
  *  (Feu→Feu, Cieux→Électricité, Métal→Corrosif, Ombres→Fumée) ; les autres soufflent des Dégâts purs. */
@@ -6229,7 +6229,7 @@ function decideCombatEndHeroTests(
   }
   c.tookCriticalThisFight = false; // consommé (idempotent)
   c.woundDressed = false;
-  // Exposition aux Maladies (LDB 20 l.25/51 ; LDB 85 p.340) — SOURCE UNIQUE `diseaseExposure` (Infecté/
+  // Exposition aux Maladies (LDB 20 l.25/51 ; LDB 85 l.187/225) — SOURCE UNIQUE `diseaseExposure` (Infecté/
   // Rongeur/Maladie/munition/Contagieux exposent via l'op `exposeDisease`). Difficulté = celle de la
   // maladie (`def.contractDifficulty`), décalée des crans de l'exposition (Contagieux, EDO App.2
   // l.228-230 : « 2 niveaux plus difficile » → shift −2 ; « incubation “Instantanée” » → `instant`).
@@ -6250,7 +6250,7 @@ function decideCombatEndHeroTests(
   return { diseases, corruption: c.dead ? null : worstCorruption };
 }
 
-/** Pire Degré d'EXPOSITION à la Corruption des créatures affrontées (LDB 85 p.338 → LDB 19) — `null`
+/** Pire Degré d'EXPOSITION à la Corruption des créatures affrontées (LDB 85 l.87 → LDB 19) — `null`
  *  si aucune créature corrompue. Le niveau s'applique à TOUS les héros survivants (avoir affronté). */
 function worstCorruptionExposure(battle: BattleState): { level: import('../engine/corruption').ExposureLevel; label: string } | null {
   const degrees = battle.combatants
@@ -7733,7 +7733,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // SUPPRIME la diffusion data ICI (l'`onTurnStart` DATA est diffusé par `fireTurnStartTriggers`, non
   // dupliqué) → STRICTEMENT équivalent à l'ancien `runCombatHooks('onTurnStart', …)`.
   emitCombatEvent('onTurnStart', { get, set, battle: get().battle!, self: enemy, audience: [], sink: (line, c) => { get().battle!.log.push(ev('detail', line, c?.id)); } });
-  // Stupide (LDB 85 p.341) : sans allié non-Stupide à ses côtés (adjacent), Test d'Intelligence Facile
+  // Stupide (LDB 85 l.335) : sans allié non-Stupide à ses côtés (adjacent), Test d'Intelligence Facile
   // (+40) au début du Round ; sur un échec, elle perd son Mouvement ET son Action. RESTE INLINE (pas un
   // hook) : c'est un CONTRÔLE DE FLUX (`return advanceTurn` saute le tour) — un hook `run(ctx):void` ne
   // peut pas exprimer « sauter le tour ». Il s'exécute APRÈS le dispatch `turnStart`, avant l'action IA.

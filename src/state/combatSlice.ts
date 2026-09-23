@@ -1187,7 +1187,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Arme une attaque pour le clic-ennemi (mode neutre : `action===null`). Re-sélectionner revient à l'Arme.
       const next = battle.selectedAttack === id ? 'arme' : id;
       set({ battle: { ...battle, action: null, selectedAttack: next, selectedSpellId: null, preview: null }, pendingSiegeAim: null });
-      // Pièce INDIRECTE servie (mortier/catapulte, AA 10 p.122-123) : ARMER l'option « Servir … » ouvre le PLACEUR
+      // Pièce INDIRECTE servie (mortier/catapulte, AA 10 l.169/171) : ARMER l'option « Servir … » ouvre le PLACEUR
       // DE CASE (le tir vise un point au sol, pas un combattant) ; le désarmer (retour à 'arme') le referme.
       if (next === id) {
         const opt = availableAttacks(active, battle).find((o) => o.id === id);
@@ -2490,8 +2490,8 @@ export function createCombatSlice(get: Get, set: Set) {
           if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack') get().cascadeNext();
           return;
         }
-        // PILONNAGE INDIRECT (« viser une case », AA 10 p.122-123) : la touche DÉTONE sur la CASE choisie
-        // (`pa.center`). L'Atout Explosion/Tir de zone frappe UNIFORMÉMENT le rayon (RAW LDB 62 p.298) — AUCUNE
+        // PILONNAGE INDIRECT (« viser une case », AA 10 l.169/171) : la touche DÉTONE sur la CASE choisie
+        // (`pa.center`). L'Atout Explosion/Tir de zone frappe UNIFORMÉMENT le rayon (RAW LDB 62 l.254) — AUCUNE
         // touche directe « primaire » ni Critique par victime (l'aire ne re-teste pas) ; `target` (l'ennemi le
         // plus proche de l'impact) n'a servi qu'à la BANDE DE PORTÉE/au DR. Réutilise le résolveur d'aire UNIQUE.
         if (pa.siege && pa.center) {
@@ -2597,7 +2597,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     // `attackCancel` (« Annuler » / défaire-charge) est désormais GÉNÉRÉ par la fabrique
     // (`FLOWS.attack.onCancel`, cf. la liste de verbes ci-dessus) — plus d'action bespoke ici.
-    // PILONNAGE INDIRECT (« viser une case », AA 10 p.122-123) : la case d'impact est déposée par le placeur
+    // PILONNAGE INDIRECT (« viser une case », AA 10 l.169/171) : la case d'impact est déposée par le placeur
     // ('siege', commitPlacedZone). Ouvre la modale de tir de la pièce indirecte servie (`pendingAttack` siège) :
     // le JET de tir (DR) reste l'attaque NORMALE (Chance/Résilience par la cascade), mais la touche DÉTONE sur
     // la case — l'Explosion frappe tout le rayon (résolution dans attackConfirm). Cible-repère = ennemi le plus
@@ -2845,7 +2845,7 @@ export function createCombatSlice(get: Get, set: Set) {
           presetCreature: preset?.creature,
           appearance: preset?.apparence ?? ent.appearance, weapon: ent.weapon,
           optionals: ent.combat?.optionals, spells: ent.combat?.spells, randomChars: ent.combat?.randomChars, // LDB 76/78
-          skills: ent.combat?.skills, // compétences d'auteur (servant de pièce : Projectiles du Groupe de l'engin, AA p.122-124)
+          skills: ent.combat?.skills, // compétences d'auteur (servant de pièce : Projectiles du Groupe de l'engin, AA 10 l.142-146)
           crewIds: ent.crewIds, // navire → équipage exposé (MDG 14)
           postes: ent.postes, // navire → pièces d'artillerie montées (MDG 12-13)
           upgrades: ent.upgrades, // navire → Améliorations d'instance (MDG 12 : Blindage, Lissage…)
@@ -2877,7 +2877,7 @@ export function createCombatSlice(get: Get, set: Set) {
         mount.mountable = true;
         mountUp(enemies[i], mount); // partage la position/empreinte de la monture (LDB 14 l.179)
       });
-      // Structures destructibles de siège (AA 10 p.120-121) : chaque arête portant une `structure` INTACTE devient
+      // Structures destructibles de siège (AA 10 l.94-127) : chaque arête portant une `structure` INTACTE devient
       // un Combattant inerte à PV (kind 'npc' → ne fausse pas la fin de combat, cf. checkBattleOver qui ne
       // compte que les 'enemy'). Son `structureEdge` mémorise l'arête à ABATTRE (BRÈCHE) à sa destruction ;
       // une structure déjà abattue n'est pas ré-instanciée. Source = WallSeg (≠ SceneEntity) → enrôlée ICI.

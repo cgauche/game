@@ -1833,7 +1833,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Afflictions', label: 'Exposition hydrique (eau souillée — MSRC 16)', icon: 'travel/wave',
     make: () => ({ type: 'waterExposure', mode: 'ingestion', target: 'hero' }),
     apply: (e, env) => {
-      // « Maladies transmises par l'eau » (MSRC 16 p.91) : UN Test de Résistance Intermédiaire (+0) modifié
+      // « Maladies transmises par l'eau » (MSRC 16 l.13) : UN Test de Résistance Intermédiaire (+0) modifié
       // PAR HÉROS exposé — étape de cascade influençable (jamais de jet silencieux). Modificateurs
       // cumulés : tableau 1 « Source d'eau » (choix d'auteur `e.source`, ingestion ET immersion) +
       // tableau 2 « Blessures et États » (DÉRIVÉ du héros, immersion seule). La conséquence (d100
@@ -2187,7 +2187,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   },
 };
 
-/** Étape de cascade `waterExposure` (MSRC 16 p.91) : Test raté → d100 « avec un modificateur de +10
+/** Étape de cascade `waterExposure` (MSRC 16 l.49) : Test raté → d100 « avec un modificateur de +10
  *  pour chaque DR négatif » → maladie CONTRACTÉE directement (`applyContraction`, incubation normale —
  *  le Test d'exposition EST le test, jamais un second Test de Contraction). « Relancez si le Personnage
  *  n'est pas blessé » honoré par `drawWaterDisease`. Déjà porteur → rien de neuf (dédoublonnée). */

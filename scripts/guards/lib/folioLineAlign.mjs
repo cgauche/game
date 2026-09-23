@@ -12,7 +12,9 @@
 // entre elles. Elle mord donc les datasets sans `desc` (`flow-stakes`, `combat-stakes`,
 // `voyage-stakes`, `reglesOptionnelles`…), invisibles de la voie A/B/C.
 //
-// Module ESM pur (`node` nu), consommé par `src/data/folio-line-align.test.ts` (cliquet).
+// Module ESM pur (`node` nu), consommé par `folioLineAlignAudit.ts` (qui nourrit le cliquet
+// `src/data/folio-line-align.test.ts`), `src/data/criticals-folio.test.ts`, et prouvé par
+// `scripts/guards/lib/folioLineAlign.test.mjs`.
 import { readFileSync } from 'node:fs'
 import { listerDossier } from './lister.mjs'
 import { livreDuSigle, sigleDe } from '../../raw/_lib.mjs'

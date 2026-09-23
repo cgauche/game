@@ -115,3 +115,16 @@ test('MIXTE — un homonyme NON cité et un nom à UN cœur cité à plat : sort
   stocks.delete(abs);
   intacts(stocks);
 });
+
+test('un stock SOLDÉ, ABSENT du disque : sortie 0, RIEN À FAIRE, le stock n’est pas recréé', (t) => {
+  const [a] = deuxCoeurs();
+  const { racine, stocks } = depot(t, [`${a}/y.md`], { entrees: [] });
+  const abs = path.join(racine, STOCK);
+  fs.rmSync(abs);
+  stocks.delete(abs);
+  const r = joue(racine, MIGRATION);
+  assert.equal(r.code, 0, r.sortie);
+  assert.match(r.stdout, /RIEN À FAIRE/u);
+  assert.equal(fs.existsSync(abs), false, `${STOCK} recréé`);
+  intacts(stocks);
+});

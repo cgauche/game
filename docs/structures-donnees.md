@@ -1131,8 +1131,8 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | formule | `sum` | cible | 13 |
 | formule | `sinPoints` | cible | 10 |
 | formule | `minimum,of` | cible | 2 |
-| source | `book,page` | cible | 3354 |
-| source | `book,note,page` | cible | 1175 |
+| source | `book,page` | cible | 3274 |
+| source | `book,note,page` | cible | 1255 |
 | source | `book,chapter` | historique | 0 |
 | source | `book,chapter,page` | historique | 0 |
 | bornes | `max,min+…` | cible | 29 |
@@ -1157,7 +1157,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **881** (cible 404 · declaree 6 · historique 131 · divergente 340). Objets JSON parcourus : **49908**, dont **32461** portent une forme
+Lignes concept × dataset × champ × forme : **880** (cible 403 · declaree 6 · historique 131 · divergente 340). Objets JSON parcourus : **49908**, dont **32461** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **90**.
 
 Entrées de racine sans concept de valeur : **4139** sur **4226** —
@@ -1844,7 +1844,7 @@ Reconnu par : son noyau `sum` `sinPoints` `minimum` (≥ 1)
 
 ### 3.9 référence de source (livre/folio) — `source` (strate Valeur)
 
-120 ligne(s), 4709 occurrence(s).
+119 ligne(s), 4709 occurrence(s).
 Reconnu par : son noyau `book`
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1874,8 +1874,7 @@ Reconnu par : son noyau `book`
 | config | `source` | `book,note,page` | cible | `crew-morale.json` | 33 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | entité | `source` | `book,page` | cible | `crew-roles.json` | 4 | — |  |
 | config | `source` | `book,note,page` | cible | `crew-test-types.json` | 10 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
-| entité | `source` | `book,note,page` | cible | `criticals.json` | 88 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
-| entité | `source` | `book,page` | cible | `criticals.json` | 80 | — |  |
+| entité | `source` | `book,note,page` | cible | `criticals.json` | 168 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | config | `source` | `book,note,page` | cible | `diligence-projet.json` | 2 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | config | `source` | `book,note,page` | cible | `disponibilite.json` | 6 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | entité | `alsoIn` | `book,page+…` | divergente | `domains.json` | 6 | — |  |
@@ -3771,8 +3770,8 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 |---|---|---|---|---|---|---|
 | `activities.ts` | 127 | — | test | divergente | `char,difficulty+…` | — |
 | `arcane-phenomena.ts` | 177 | `controlFlux` | test | divergente | `difficulty+…` | — |
-| `criticals.ts` | 90 | — | test | divergente | `difficulty+…` | — |
-| `criticals.ts` | 100 | `loss` | test | divergente | `difficulty+…` | — |
+| `criticals.ts` | 92 | — | test | divergente | `difficulty+…` | — |
+| `criticals.ts` | 102 | `loss` | test | divergente | `difficulty+…` | — |
 | `etats.ts` | 25 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
 | `land-cargo.ts` | 107 | `gossip` | test | divergente | `difficulty+…` | — |
 | `miscast.ts` | 34 | — | — | hors lexique | `bonusOf` | `formulaSchema` |
@@ -5030,4 +5029,4 @@ pèse **2990** slots sur 3368.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: d66c476a67d38723058628014fa2efe7f5c01299 (386 fichiers, 10 dossiers) corps: 6bc7b2bc977908687790104f59c4dafdb707bbdb -->
+<!-- sources-empreinte: 665939b98075322bfa241ca7a8079ff8252d45c3 (386 fichiers, 10 dossiers) corps: 7a1c3146c5ddd8b9e567fb35ff5f3384aee10e27 -->

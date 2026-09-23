@@ -134,7 +134,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.66/84)', () => {
     expect(after.conditions.find((c) => c.id === 'empetre')?.value).toBe(2); // 1 → 2 (aggravation)
   });
 
-  it('Immobilisante GÉNÉRIQUE (fouet/lasso, LDB p.298) : échec = rien (pas d’entangleOnFail en donnée)', () => {
+  it('Immobilisante GÉNÉRIQUE (fouet/lasso, LDB 62 l.256-258) : échec = rien (pas d’entangleOnFail en donnée)', () => {
     const h = hero({ id: 'h', conditions: [{ id: 'empetre', value: 1, escapeStrength: 47 }] });
     setBattle([h], 'h');
     useGame.getState().battleRecoverState('empetre');

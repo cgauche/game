@@ -121,7 +121,7 @@ export interface EnemyTurnInput {
    *  des candidats `cast`/`castArea`/`focus` scorés par `spellActionValue`. Vide = aucun sort → aucun
    *  candidat de sort (comportement strictement inchangé pour les fixtures sans sort). */
   spells: CastableSpell[];
-  /** Vol (LDB 85 p.343) : le déplacement ignore terrains/obstacles/personnages traversés. */
+  /** Vol (LDB 85 l.433) : le déplacement ignore terrains/obstacles/personnages traversés. */
   flying?: boolean;
   /** Grimpant (LDB 85 l.160-162), patron de `flying` : capacité de traversée dérivée par l'appelant
    *  (`climbTraverseFor`, ai.ts est pur) — arêtes `WallSeg.climb` franchies au pas normal. ABSENT/undefined
@@ -605,7 +605,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const engagedNoFire = isEngaged(enemy) && !!rangedW && !canFireWhileEngaged(rangedW);
   const canShoot = !frenzied && hasRanged && !reloadNeeded && !engagedNoFire && !(adjacentFoes.length > 0 && hasMeleeWeapon) && shootPool.length > 0;
 
-  // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 p.343) :
+  // Cases atteignables ce tour (inclut la case de départ à distance 0). Vol (LDB 85 l.433) :
   // ligne directe, seules les cases d'atterrissage doivent être praticables et libres.
   const reach = (flying ? flyReachable : reachable)(scene, pos, movement, { blocked, foot: footprintN(enemy), noStop: input.noStop, traverse });
 
@@ -673,7 +673,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     if (spend) return forced(spend);
     if (!isEngaged(enemy)) return forced(fleeMove(true)); // fuir hors de vue (cachette prioritaire)
   }
-  // Bestial (LDB 85 p.338) : « Si elle perd plus de la moitié de ses Blessures, elle tente de fuir »
+  // Bestial (LDB 85 l.59) : « Si elle perd plus de la moitié de ses Blessures, elle tente de fuir »
   // — sauf Territorial (combat jusqu'à la mort) ou acculée/Engagée (elle reste — Frénésie gérée par
   // le drapeau frenzied de l'appelant).
   if (isBestial(enemy.traits) && !isTerritorial(enemy.traits) && !isFrenzied(enemy)
@@ -820,7 +820,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // gratuit) n'est BÉNÉFIQUE qu'à un tireur/lanceur (il veut sa distance) : un mêleeur GAGNE à rester Empoigné
   // (Dégâts BF+DR ignorant les PA + il fixe l'adversaire au sol). La décision break/test est PURE ; le
   // résolveur impur (`runEnemyAI`) exécute « break » par re-décision (comme `spendResource`) ou le Test opposé.
-  // EXCEPTION Tentacules (LDB 85 p.343) UNIQUEMENT : « Si un tentacule est en Empoignade, vous pouvez utiliser
+  // EXCEPTION Tentacules (LDB 85 l.405) UNIQUEMENT : « Si un tentacule est en Empoignade, vous pouvez utiliser
   // une Action d'Attaque GRATUITE pour résoudre l'Empoignade AU LIEU de l'Action de la créature » — le tentacule
   // tient pendant que le CORPS garde son Action normale (résolution gratuite dans aiCreatureFreeAttacks). La
   // Langue préhensile (p.340) n'a PAS cette dérogation : « le démarrage d'une Empoignade (voir page 163) » → règle

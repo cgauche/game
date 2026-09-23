@@ -409,8 +409,8 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
     raison:
-      'aucune écriture dans les scripts atteints ; LIT Source/ et son stock ' +
-      'scripts/raw/empty-line-code-refs-stock.json',
+      'aucune écriture dans les scripts atteints ; LIT Source/, les stocks scripts/raw/dead-code-refs-stock.json et ' +
+      'scripts/raw/empty-line-code-refs-stock.json, ABSENTS en régime nominal, et scripts/raw/graphy-stock.json (sites différés)',
   },
   'raw:check-ancres': {
     ecrit: [],
@@ -494,7 +494,7 @@ export const ECRIT_LU = {
     ],
     raison:
       'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT le registre ' +
-      'de livres, le normaliseur de références et son stock scripts/raw/reanchor-low-stock.json',
+      'de livres, le normaliseur de références et son stock scripts/raw/reanchor-low-stock.json, ABSENT en régime nominal',
   },
   'server:typecheck': {
     ecrit: [],

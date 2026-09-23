@@ -1594,7 +1594,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       sections: sections({
         title: 'Symptômes', layout: 'list',
         rows: m.symptoms.map((s) => ({
-          // `spec` = localisation/précision imprimée de l'instance (« Gonflement (Visage et tête) », EDO 11 p.145).
+          // `spec` = localisation/précision imprimée de l'instance (« Gonflement (Visage et tête) », EDO 11 l.119).
           t: 'kv', k: `${symptomLabel(s.symptomId)}${s.spec ? ` (${s.spec})` : ''}`,
           v: [s.severity ? libelleDeValeur(symptomSeveritySchema, s.severity) : null, s.difficulty ? `Test ${DIFFICULTY_LABELS[s.difficulty]}` : null].filter(Boolean).join(' · ') || '—',
         } as CodexRow)),

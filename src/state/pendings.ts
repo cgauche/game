@@ -399,8 +399,8 @@ export interface PendingAttack {
    *  qu'un héros active : mutation/polymorphie) : ne consomme pas l'Action ; effets onHit propres à la
    *  manœuvre appliqués à la confirmation (cf. attackConfirm). `tentacules` = limiteur 1/tour (mutation). */
   freeKind?: AttackKind;
-  /** PILONNAGE INDIRECT (« viser une case », AA 10 p.122-123) : POINT D'IMPACT choisi au sol. Présent → la
-   *  touche DÉTONE sur cette case (Explosion/Tir de zone uniforme sur le rayon, RAW LDB 62 p.298), AUCUNE touche
+  /** PILONNAGE INDIRECT (« viser une case », AA 10 l.169/171) : POINT D'IMPACT choisi au sol. Présent → la
+   *  touche DÉTONE sur cette case (Explosion/Tir de zone uniforme sur le rayon, RAW LDB 62 l.254), AUCUNE touche
    *  directe « primaire » ni Critique par victime ; `targetId` n'est que la cible-REPÈRE de la bande de
    *  portée/du DR (l'ennemi le plus proche de l'impact). Absent → tir direct (STRICTEMENT inchangé). */
   center?: Pt;
@@ -435,7 +435,7 @@ export interface PendingHandGate {
   title: string;
   icon: string;
 }
-/** Pilonnage INDIRECT EN COURS (« viser une case », AA 10 p.122-123) : une pièce indirecte SERVIE attend le
+/** Pilonnage INDIRECT EN COURS (« viser une case », AA 10 l.169/171) : une pièce indirecte SERVIE attend le
  *  POINT D'IMPACT au sol — placeur de zone PARTAGÉ (`placingZoneOf` source 'siege', même gabarit que les
  *  sorts de zone). Le clic-case → `siegeAimCommit` ouvre la modale de tir (`pendingAttack` siège). */
 export interface PendingSiegeAim {
@@ -1493,7 +1493,7 @@ export interface CascadeStepMeta {
   /** CONTEXTE de la feuille d'ops différée, part GELÉE (`engine/ops.gelerOpsCtx` — partition TOTALE
    *  `OPS_CTX_GELES`). Ce qui n'est pas gelable voyage à côté (`casterId`/`hullId`/`opsDeCrewIds`) ou se
    *  rebâtit (rng, hook de Corruption, dés). Sans lui, une reprise appliquait la feuille avec un
-   *  contexte AMPUTÉ — `{woundsDealt}` (EDO 11 p.147) y tombait à 0. */
+   *  contexte AMPUTÉ — `{woundsDealt}` (EDO 11 l.222) y tombait à 0. */
   opsDeCtx?: OpsCtxGele;
   /** ÉQUIPAGE (`OpsCtx.crew`) d'une feuille différée, en ids — résolus par `actorIn` à la reprise. */
   opsDeCrewIds?: string[];
@@ -1685,7 +1685,7 @@ export interface BatchParticipant extends RollParticipant {
 
 /** COMPTEUR de l'acteur lisible comme modificateur vivant d'un tirage — d'un dé NU comme d'un lancer
  *  sur TABLEAU (`modPerActor`) — union FERMÉE de champs numériques de `Combatant` : ajouter un
- *  compteur = une entrée ici, jamais un branchement. Aujourd'hui : les Points de Péché (LDB 40 l.53). */
+ *  compteur = une entrée ici, jamais un branchement. Aujourd'hui : les Points de Péché (LDB 40 l.46). */
 export type CascadeActorCounter = 'sinPoints';
 
 /**
