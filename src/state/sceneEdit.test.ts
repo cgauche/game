@@ -12,6 +12,7 @@ import {
   localCrossSpans,
   maxCrossSpan,
   editEntity,
+  TypeNonNomme,
   moveEntityTo,
   normaliseAssises,
   paintCrenellated,
@@ -934,5 +935,47 @@ describe('putLayer — une couche posée porte EXACTEMENT `w×h` entrées', () =
       const retrecie = resizeGrid(avant, 1, 1);
       expect(retrecie.layers[0].crenellated, 'un merlon hors grille survit au rétrécissement').toBeUndefined();
     });
+  });
+});
+
+describe('editEntity — un patch ne retire jamais le dernier porteur du type (#877, #1882)', () => {
+  const sb = { type: 'statblock' as const, label: 'Brigand', char: { B: 10 } };
+  const avec = (...entities: Scene['entities']): Scene => ({ ...emptyScene(4, 4), entities });
+
+  it('retirer la SEULE fiche d’un personnage est refusé, en nommant l’entité', () => {
+    const s = avec({ id: 'pnj', kind: 'personnage', pos: { x: 0, y: 0 }, ref: 'humain' });
+    expect(() => editEntity(s, 'pnj', { ref: undefined })).toThrow(TypeNonNomme);
+    expect(() => editEntity(s, 'pnj', { ref: undefined })).toThrow(/personnage « pnj » : « ref », « statblock », « presetId » absents/);
+  });
+
+  it('retirer un porteur quand un autre DEMEURE passe', () => {
+    const s = avec({ id: 'pnj', kind: 'personnage', pos: { x: 0, y: 0 }, ref: 'humain', statblock: sb });
+    const out = editEntity(s, 'pnj', { statblock: undefined });
+    expect(out.entities[0]).toMatchObject({ ref: 'humain' });
+    expect(out.entities[0].statblock).toBeUndefined();
+  });
+
+  it('remplacer la fiche dans le MÊME patch passe', () => {
+    const s = avec({ id: 'pnj', kind: 'personnage', pos: { x: 0, y: 0 }, statblock: sb });
+    expect(editEntity(s, 'pnj', { statblock: undefined, ref: 'gobelin' }).entities[0]).toMatchObject({ ref: 'gobelin' });
+  });
+
+  it('la même porte vaut pour le décor : retirer son type est refusé', () => {
+    const s = avec({ id: 'tonneau-1', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau' });
+    expect(() => editEntity(s, 'tonneau-1', { ref: undefined })).toThrow(/décor « tonneau-1 » : « ref » absente/);
+  });
+
+  it('un patch sans rapport avec la fiche passe', () => {
+    const s = avec({ id: 'pnj', kind: 'personnage', pos: { x: 0, y: 0 }, ref: 'humain' });
+    expect(editEntity(s, 'pnj', { label: 'Aubergiste' }).entities[0]).toMatchObject({ ref: 'humain', label: 'Aubergiste' });
+  });
+});
+
+describe('editEntity — la TRANSITION est jugée, pas l’état (#1882)', () => {
+  it('un patch sans rapport sur une entité DÉJÀ sans type passe ; `validateScene` la nomme', () => {
+    const s: Scene = { ...emptyScene(4, 4), entities: [{ id: 'badaud', kind: 'personnage', pos: { x: 0, y: 0 } }] };
+    const out = editEntity(s, 'badaud', { facing: 'E', label: 'Badaud' });
+    expect(out.entities[0]).toMatchObject({ facing: 'E', label: 'Badaud' });
+    expect(validateScene([out]).filter((w) => w.level === 'error').map((w) => w.refId)).toContain('badaud');
   });
 });

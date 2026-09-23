@@ -217,7 +217,7 @@ describe('parseSave — la version DOIT être la courante', () => {
     const scene = emptyScene(12, 12);
     scene.entities = [
       { id: 'table-1', kind: 'prop', ref: 'table-ronde-4-tabourets', pos: { x: 5, y: 5 }, usable: { assise: true } },
-      { id: 'pnj-1', kind: 'personnage', pos: { x: 5, y: 6 } },
+      { id: 'pnj-1', kind: 'personnage', ref: 'humain', pos: { x: 5, y: 6 } },
     ] as typeof scene.entities;
     const ancien = { 'table-1': { 'place-nord': { kind: 'entity' as const, entityId: 'pnj-1' } } };
     expect(pruneSeatAssignments({ ...scene, seatAssignments: ancien }, 4), 'l’élagage est MUET').toEqual({});

@@ -1067,6 +1067,15 @@ function refusDeMigration(raison: RaisonDeRefus, schema: unknown, detail?: strin
   return refusDeForme(cause, chemin, faute(JSON.stringify(schema), detail));
 }
 
+/** UNE scène d'un document au `schema` donné, portée au schéma courant par la chaîne CANONIQUE
+ *  (`migrateDoc` + `PROJECT_MIGRATIONS`, celle de `parseProject`) puis normalisée (`normalizeScene`).
+ *  Refus nommé (`ProjetRefuse`, `REFUS_DE_MIGRATION`) si la chaîne ne sait pas la lire. */
+export function sceneAuSchemaCourant(scene: unknown, schema: unknown): Scene {
+  const issue = migrateDoc({ version: schema, schema, scenes: [scene] }, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS);
+  if (!issue.ok) throw refusDeMigration(issue.raison, issue.version, issue.detail);
+  return normalizeScene((issue.doc.scenes as Scene[])[0]);
+}
+
 /** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (`ProjetRefuse`,
  *  jamais un throw sec sans espoir de migration), dont la cause se LIT : la raison d'un refus de
  *  migration est celle que `migrateDoc` nomme (`REFUS_DE_MIGRATION`) ; puis forme finale invalide

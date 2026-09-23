@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildEncounter, buildEncounters } from './encounterAuthoring';
+import { buildEncounter, buildEncounters, type AuthoredEnemy } from './encounterAuthoring';
 import { flowFromEffects } from './flow';
 
 describe('buildEncounter — authoring terse → entités + members canoniques', () => {
@@ -90,5 +90,28 @@ describe('buildEncounter — authoring terse → entités + members canoniques',
     ]);
     expect(entities.map((e) => e.id)).toEqual(['enemy-a-0', 'enemy-b-0', 'enemy-b-1']);
     expect(encounters.map((e) => e.id)).toEqual(['a', 'b']);
+  });
+});
+
+describe('#1882 — un ennemi authoré NOMME sa fiche', () => {
+  it('l’absence de tout porteur de fiche est irreprésentable au type', () => {
+    // @ts-expect-error — `AuMoinsUnPorteurDeFiche` n'a aucune variante sans porteur (#1882).
+    const sansFiche: AuthoredEnemy = { pos: { x: 0, y: 0 }, label: 'Badaud' };
+    expect(sansFiche.pos).toEqual({ x: 0, y: 0 });
+  });
+
+  it('chaque porteur SEUL suffit, et se retrouve sur l’entité générée', () => {
+    const sb = { type: 'statblock' as const, label: 'Brigand', char: { B: 10 } };
+    const porteurs: AuthoredEnemy[] = [
+      { ref: 'humain', pos: { x: 0, y: 0 } },
+      { statblock: sb, pos: { x: 1, y: 0 } },
+      { presetId: 'baron', pos: { x: 2, y: 0 } },
+    ];
+    const { entities } = buildEncounter({ id: 'p', enemies: porteurs });
+    expect(entities.map((e) => [e.ref, e.statblock, e.presetId])).toEqual([
+      ['humain', undefined, undefined],
+      [undefined, sb, undefined],
+      [undefined, undefined, 'baron'],
+    ]);
   });
 });

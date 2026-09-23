@@ -31,7 +31,6 @@ const armure = (p: EnemyRigProfile | null) => (p?.equip.armour ?? []).map((i) =>
 
 describe('#1882 T1 — tirage individuel : même règle en exploration, en combat et au portrait', () => {
   it('poser la ref du profil standard (`humain`) garde le tirage individuel du PNJ', () => {
-    expect(palette(entityRigProfileFor(entity()))).toEqual(SEEDED);
     expect(palette(entityRigProfileFor(entity({ ref: 'humain' })))).toEqual(SEEDED);
   });
 

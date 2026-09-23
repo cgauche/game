@@ -109,8 +109,7 @@ describe('PROJECT_MIGRATIONS[12] — un projet format 12 se charge à travers la
   it('au SPAWN : libellé et Blessures inchangés sans profil standard, la forme du corps suit l’espèce ; le profil standard donne sa fiche', () => {
     const AVANT_1882 = { label: 'Ennemi', blessures: 10, corps: 'humanoide', fiche: undefined };
     const apres = (species: string) => {
-      const ent = { id: `p-${species}`, kind: 'personnage' as const, pos: { x: 0, y: 0 }, appearance: { species } };
-      const doc = { schema: 12, version: 12, scenes: [{ entities: [structuredClone(ent)] }] };
+      const doc = { schema: 12, version: 12, scenes: [{ entities: [{ id: `p-${species}`, kind: 'personnage', pos: { x: 0, y: 0 }, appearance: { species } }] }] };
       const migree = (PROJECT_MIGRATIONS[12]!(doc as never) as { scenes: { entities: SceneEntity[] }[] }).scenes[0].entities[0];
       const c = ficheDEntite(migree);
       return { label: c.label, blessures: c.wounds.max, corps: c.bodyShape, fiche: c.creatureId };

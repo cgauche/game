@@ -3030,6 +3030,11 @@ const especeParId = indexParId('species', species);
 export function findSpeciesById(id: string | undefined): SpeciesData | undefined {
   return especeParId(id);
 }
+/** Les profils standard (`LDB 77 l.7`) : les fiches que `species.json` désigne par `profilStandard`,
+ *  sans doublon, dans l'ordre du dataset. */
+export function profilsStandard(): string[] {
+  return [...new Set(species.flatMap((s) => (s.profilStandard ? [s.profilStandard.id] : [])))];
+}
 /** Taille CONFÉRÉE par les talents d'espèce FIXES (une référence ARRÊTÉE, jamais un `{pick}`, un
  *  `{random}` ni un `choix` résiduels — chip décoratif du créateur avant résolution complète, #572).
  *  Même vocabulaire que `sizeFromTalents` (engine/character.ts) : la plus grande catégorie parmi

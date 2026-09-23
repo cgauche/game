@@ -35,7 +35,7 @@ import type {
   architectureStoreySchema, buildingMassSchema, dialogueChoiceSchema, dialogueNodeSchema,
   dialogueSchema, encounterDefSchema, encounterMemberSchema, entityKindSchema, facadeFeatureSchema,
   facadeSectionSchema, layerSchema, reliefDefaultsSchema, roofDefaultsSchema, sceneRoofDefaultsSchema, sceneStationAnchorSchema, triggerSchema,
-  victoryConditionSchema, wallClimbSchema, wallSegSchema, zoneAreaSchema,
+  victoryConditionSchema, wallClimbSchema, wallSegSchema, zoneAreaSchema, PORTEURS_DU_TYPE,
 } from '../data/schemas/defs-scenes/scene';
 import type { wallSideSchema } from '../data/schemas/defs-scenes/communs';
 // Seul import runtime de ce module vers `src/data` : l'opacité d'une arête est une propriété de sa
@@ -187,6 +187,13 @@ export interface SceneEntity {
     hiddenUntilCombat?: boolean;
   };
 }
+
+/** Un porteur de fiche d'entité PRÉSENT au moins — dérivé de `PORTEURS_DU_TYPE.personnage` (#1882),
+ *  patron de `PorteurDeFiche` (`engine/statblock.ts`) : l'absence de tous est irreprésentable. */
+type PorteurDEntite = (typeof PORTEURS_DU_TYPE)['personnage']['porteurs'][number];
+export type AuMoinsUnPorteurDeFiche = {
+  [K in PorteurDEntite]: Required<Pick<SceneEntity, K>> & Partial<Pick<SceneEntity, Exclude<PorteurDEntite, K>>>;
+}[PorteurDEntite];
 
 export type ArchitectureRect = z.infer<typeof architectureRectSchema>;
 export type ArchitectureEdgeRef = z.infer<typeof architectureEdgeRefSchema>;

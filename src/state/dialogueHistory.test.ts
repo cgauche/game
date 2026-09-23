@@ -26,8 +26,8 @@ function makeDialogue(): Dialogue {
 }
 
 const entities: SceneEntity[] = [
-  { id: 'pnj-1', kind: 'personnage', pos: { x: 0, y: 0 }, label: 'Aubergiste' },
-  { id: 'pnj-2', kind: 'personnage', pos: { x: 1, y: 0 }, label: 'Garde' },
+  { id: 'pnj-1', kind: 'personnage', ref: 'humain', pos: { x: 0, y: 0 }, label: 'Aubergiste' },
+  { id: 'pnj-2', kind: 'personnage', ref: 'humain', pos: { x: 1, y: 0 }, label: 'Garde' },
 ];
 
 describe('recordTurn (helper pur)', () => {
