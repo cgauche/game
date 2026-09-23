@@ -309,7 +309,7 @@ test('couperAuxTitres : un titre présent HORS de sa fenêtre de page reste intr
 })
 
 test('commandeRestitution : page 1-based → `--page_range` 0-based et dossier `restitutions/<k>`', () => {
-  assert.equal(commandeRestitution('Source/_marker/wfrp5.pdf', 'Source/_marker/full/wfrp5/slices', 17),
-    'marker_single "Source/_marker/wfrp5.pdf" --output_format markdown --config_json scripts/raw/marker-paginate.json'
-    + ' --disable_ocr --disable_image_extraction --force_layout_block Text --page_range 16 --output_dir "Source/_marker/full/wfrp5/slices/restitutions/16"')
+  assert.equal(commandeRestitution('Source/_marker/core-rulebook-5e.pdf', 'Source/_marker/full/core-rulebook-5e/slices', 17),
+    'marker_single "Source/_marker/core-rulebook-5e.pdf" --output_format markdown --config_json scripts/raw/marker-paginate.json'
+    + ' --disable_ocr --disable_image_extraction --force_layout_block Text --page_range 16 --output_dir "Source/_marker/full/core-rulebook-5e/slices/restitutions/16"')
 })

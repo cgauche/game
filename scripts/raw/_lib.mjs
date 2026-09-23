@@ -10,7 +10,8 @@
 // (hors-règle, catalogues), sa LISTE DE DÉCOUPE dans `scripts/raw/decoupes/<id>.json`, et ce qu'on
 // sait des DOMAINES d'un cœur dans `scripts/raw/domaines.json` : registres d'OUTILLAGE dont ce
 // fichier est le LECTEUR UNIQUE. Zéro ligne de code pour aucun d'eux.
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
+import { arbrePrincipal } from '../guards/lib/gitPorte.mjs'
 import { listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -36,12 +37,19 @@ import { fichierDuChapitre, numeroDuFichier } from '../../src/data/source/decoup
 // N'affecte pas JSON.parse (deja tolerant aux fins de ligne) ni les fichiers deja en LF (no-op).
 export const readText = (path) => readFileSync(path, 'utf8').replace(/\r\n|\r/g, '\n')
 
+// Un livre est-il EXTRAIT (donc adressable par l'outillage Atlas) ? Prédicat de l'OUTILLAGE : tout
+// `scripts/` en juge par lui (`booksDe`, `livreExtraitDe`, `livreDuSigle`, `sigleDe`…) — une entrée de
+// `books.json` sans `dir` (livre autorisé mais jamais converti en `.md`) n'a ni chapitre à lire ni
+// fiche à intégrer. L'app en porte la MÊME définition (`abbr` ET `dir`) dans sa propre maison,
+// `src/data/schemas/grammaire/livres-extraits.ts`, verrouillée par `src/data/prose-inline-contrat.test.ts` (d).
+export function estLivreExtrait(b) { return Boolean(b && b.abbr && b.dir) }
+
 // ABRÉV → dossier Source, DÉRIVÉ de `books.json` (SOURCE UNIQUE des acronymes ET de l'ordre,
 // ref #585, #1825) : les entrées porteuses d'un `dir` (les livres couverts par l'Atlas RAW), dans
 // l'ORDRE DU FICHIER — le même que l'app sert au joueur (`src/data/index.ts` `books`,
-// `src/ui/compendium/DescRefField.tsx` filtre `!!b.dir`). C'est aussi l'ordre d'affichage des
+// `src/ui/compendium/DescRefField.tsx` par `estExtrait` de `src/data/schemas/grammaire/livres-extraits.ts`). C'est aussi l'ordre d'affichage des
 // rapports : un livre de plus est UNE entrée de `books.json`, zéro ligne ici.
-export const booksDe = (registre) => registre.filter((b) => b.dir).map((b) => [b.abbr, b.dir])
+export const booksDe = (registre) => registre.filter(estLivreExtrait).map((b) => [b.abbr, b.dir])
 // Registre BRUT des livres, tel que `books.json` le porte — la lecture du fichier vit ICI et nulle
 // part ailleurs, pour que tout consommateur puisse recevoir un registre FIXTURE par injection.
 export const REGISTRE_LIVRES = booksData
@@ -49,9 +57,21 @@ export const BOOKS = booksDe(booksData)
 /** L'entrée du registre d'un livre EXTRAIT (porteur d'un `dir`), par son id STABLE — ou `null`.
  *  SEULE résolution id → livre de l'outillage : un outil reçoit un id, il ne compare rien lui-même. */
 export const livreExtraitDe = (id, registre = REGISTRE_LIVRES) =>
-  registre.find((b) => b.id === id && b.dir) ?? null
-
-const BOOK_DIR = new Map(BOOKS)
+  registre.find((b) => b.id === id && estLivreExtrait(b)) ?? null
+/** L'entrée du registre d'un livre EXTRAIT par son SIGLE — ou `null`. SEULE résolution sigle → livre
+ *  de l'outillage, pour les outils qui reçoivent un sigle (ligne de commande, réf `<ABRÉV> <ch>`). */
+export const livreDuSigle = (abbr, registre = REGISTRE_LIVRES) =>
+  registre.find((b) => b.abbr === abbr && estLivreExtrait(b)) ?? null
+/** L'entrée du registre d'un livre EXTRAIT par son DOSSIER `Source/…` (séparateurs `\` ou `/`, barre
+ *  finale indifférente) — ou `null`. SEULE résolution dossier → livre de l'outillage. */
+export function livreDuDossier(dir, registre = REGISTRE_LIVRES) {
+  const posix = (d) => String(d).split('\\').join('/').replace(/\/$/, '')
+  const cible = posix(dir)
+  return registre.find((b) => estLivreExtrait(b) && posix(b.dir) === cible) ?? null
+}
+/** Le SIGLE d'un livre EXTRAIT par son id STABLE — ou `null`. SEULE traduction id → sigle de
+ *  l'outillage : le sigle est de l'affichage (dossiers, réfs `<ABRÉV> <ch>`). */
+export const sigleDe = (id, registre = REGISTRE_LIVRES) => livreExtraitDe(id, registre)?.abbr ?? null
 
 // CŒUR de règles d'un livre (`books.json`, champ `coeur`) : le corps de règles dont ce livre est le
 // livre de base, ou `null` pour un supplément. C'est LUI qui porte le régime de réconciliation
@@ -100,19 +120,16 @@ export const niveauDeSectionDe = (abbr, niveaux = NIVEAUX_DE_SECTION) => niveaux
 // Ce qu'on sait des CHAPITRES d'un livre vit dans le registre d'OUTILLAGE `scripts/raw/chapitres.json`,
 // là où son entrée de `books.json` dit ce qu'on sait du LIVRE : ils ne servent qu'à la chaîne Atlas
 // et personne ne les édite en jeu. Ses entrées désignent leur livre par son `id`
-// STABLE ; la traduction id → sigle se fait ICI, UNE fois, par le registre des livres — le sigle est
-// de l'affichage.
+// STABLE ; la traduction id → sigle se fait par `sigleDe`, UNE fois — le sigle est de l'affichage.
 export const REGISTRE_CHAPITRES = chapitresData
-const siglesParId = (registre) => new Map(registre.filter((b) => b.abbr).map((b) => [b.id, b.abbr]))
 
 // Chapitres HORS-RÈGLE (`chapitres.json`, `horsRegle`) : sigle → (numéro de chapitre → MOTIF de son
 // exclusion du dénominateur de couverture). Le motif est de la DONNÉE — c'est lui que
 // `chapitres.test.mjs` exige non vide et sans réf citable.
 export const horsRegleDe = (chapitres, registre = booksData) => {
-  const sigles = siglesParId(registre)
   const parSigle = new Map()
   for (const { book, ch, motif } of chapitres.horsRegle ?? []) {
-    const ab = sigles.get(book)
+    const ab = sigleDe(book, registre)
     if (!ab) continue
     if (!parSigle.has(ab)) parSigle.set(ab, new Map())
     parSigle.get(ab).set(ch, motif)
@@ -129,10 +146,9 @@ export const estHorsRegle = (abbr, ch, table = HORS_REGLE) => motifHorsRegle(abb
 // aucun tri à la lecture). `build-catalogs.mjs` ne garde que ce qui appartient au CATALOGUE (fichier,
 // titre, fiche de règles), jamais une liste de livres.
 export const cataloguesDe = (chapitres, registre = booksData) => {
-  const sigles = siglesParId(registre)
   const parCatalogue = new Map()
   for (const { book, catalogue, ...spec } of chapitres.enCatalogue ?? []) {
-    const ab = sigles.get(book)
+    const ab = sigleDe(book, registre)
     if (!ab) continue
     if (!parCatalogue.has(catalogue)) parCatalogue.set(catalogue, new Map())
     const parLivre = parCatalogue.get(catalogue)
@@ -205,6 +221,93 @@ export function decoupeDe(bookId, dir = DECOUPES_DIR) {
   return brut.fichiers
 }
 
+// PDF d'un livre et sorties Marker — #1739 (2026-09-19, bloquant 3). Les PDF et `Source/_marker/` sont
+// gitignorés (`.gitignore`) : ils n'existent que dans l'ARBRE PRINCIPAL, jamais dans un worktree
+// lié. `Source/` s'y résout par `arbrePrincipal` (`scripts/guards/lib/gitPorte.mjs`) : l'IMPORT de
+// `gitPorte` est statique et sans effet de bord, l'APPEL est paresseux — au premier besoin d'un
+// chemin, jamais au chargement, car ce module est importé par des gardes CI qui n'ont aucun PDF —
+// et part du dossier de ce fichier, jamais de `process.cwd()`. SEULE construction d'un chemin de PDF
+// de livre de l'outillage : la garde `scripts/guards/lib/pdfHorsCouture.mjs` refuse toute autre ;
+// Python et shell l'obtiennent par la CLI `scripts/raw/pdf-de.mjs`.
+let sourcePrincipale = null
+/** `Source/` de l'arbre principal, chemin absolu. LÈVE en nommant la cause si git ne le résout pas. */
+function sourceDeLArbrePrincipal() {
+  if (sourcePrincipale) return sourcePrincipale
+  const vu = arbrePrincipal(ICI_RAW)
+  if (!vu.disponible) throw new Error(`_lib: Source/ de l'arbre principal non résolu — ${vu.raison}`)
+  sourcePrincipale = join(vu.valeur, 'Source')
+  return sourcePrincipale
+}
+
+/**
+ * Chemin ABSOLU du PDF officiel d'un livre extrait : `Source/<pdf>` de l'arbre principal, `pdf` étant
+ * le champ du registre (`src/data/books.json`). `null` si le livre n'en déclare aucun.
+ * LÈVE, nommée, sur un id inconnu du registre et sur un `pdf` déclaré dont le fichier manque.
+ * @param {string} id id STABLE du livre
+ * @param {{ registre?: object[], source?: () => string }} [options] injectables (fixture)
+ * @returns {string | null}
+ */
+export function pdfDe(id, { registre = REGISTRE_LIVRES, source = sourceDeLArbrePrincipal } = {}) {
+  const livre = livreExtraitDe(id, registre)
+  if (!livre) throw new Error(`_lib: aucun livre extrait d'id « ${id} » au registre src/data/books.json`)
+  if (!livre.pdf) return null
+  const racine = source()
+  const chemin = join(racine, livre.pdf)
+  if (!existsSync(chemin)) {
+    throw new Error(`_lib: PDF du livre « ${id} » introuvable — chemin tenté : ${chemin} (Source/ de l'arbre principal : ${racine})`)
+  }
+  return chemin
+}
+
+/** Le PDF REQUIS d'un outil : `pdfDe`, qui LÈVE en outre, nommée, sur un livre qui ne déclare aucun
+ *  PDF. @param {string} id @param {{ registre?: object[], source?: () => string }} [options]
+ *  @returns {string} */
+export function pdfRequisDe(id, options = {}) {
+  const chemin = pdfDe(id, options)
+  if (!chemin) throw new Error(`_lib: le livre « ${id} » ne déclare aucun PDF (src/data/books.json, champ \`pdf\`)`)
+  return chemin
+}
+
+/** `pdfRequisDe` pour un outil qui reçoit un SIGLE en ligne de commande (`anchor-fill`,
+ *  `folio-bootstrap`, `lib/empty-folios-stock`) ; LÈVE, nommée, sur un sigle sans livre extrait. */
+export function pdfDuSigle(abbr, options = {}) {
+  const livre = livreDuSigle(abbr, options.registre)
+  if (!livre) throw new Error(`_lib: aucun livre extrait de sigle « ${abbr} » au registre src/data/books.json`)
+  return pdfRequisDe(livre.id, options)
+}
+
+/** Chemin ABSOLU sous `Source/_marker/` de l'arbre principal (sorties et copies de travail Marker).
+ *  @param {string} relatif @param {{ source?: () => string }} [options] */
+export const markerDe = (relatif, { source = sourceDeLArbrePrincipal } = {}) => join(source(), '_marker', relatif)
+
+/**
+ * Dossier de SORTIE Marker d'un livre, `Source/_marker/full/<id>` de l'arbre principal — SEUL nom de
+ * sortie de l'outillage. `exiger` (défaut) : un LECTEUR lève, nommé, si le dossier manque, en citant
+ * les dossiers de `full/` qui ne portent l'id d'aucun livre (sorties historiques à renommer).
+ * @param {string} id @param {{ exiger?: boolean, registre?: object[], source?: () => string }} [options]
+ * @returns {string}
+ */
+export function sortieMarkerDe(id, { exiger = true, registre = REGISTRE_LIVRES, source } = {}) {
+  if (!livreExtraitDe(id, registre)) throw new Error(`_lib: aucun livre extrait d'id « ${id} » au registre src/data/books.json`)
+  const sortie = markerDe(join('full', id), { source })
+  if (!exiger || existsSync(sortie)) return sortie
+  const ids = new Set(registre.map((b) => b.id))
+  const historiques = listerDossier(dirname(sortie), { absent: 'vide' }).filter((d) => !ids.has(d))
+  throw new Error(`_lib: sortie Marker du livre « ${id} » introuvable : ${sortie}` +
+    (historiques.length ? ` — dossiers de sortie hors registre à renommer en « ${id} » si l'un est la sienne : ${historiques.join(', ')}` : ' — aucune sortie Marker de ce livre'))
+}
+
+/**
+ * COPIE DE TRAVAIL du PDF d'un livre pour Marker, `Source/_marker/<id>` + extension : le nom officiel dépasse
+ * MAX_PATH dans l'arborescence de sortie de Marker (docs/ajouter-un-livre-source.md, « Découpage en
+ * tranches »). Chemin SEUL : ce module n'écrit rien ; la copie se pose par la CLI
+ * `node scripts/raw/pdf-de.mjs --copie-marker <id>`.
+ * @param {string} id @param {{ source?: () => string }} [options] @returns {string}
+ */
+export function copieMarkerDe(id, options = {}) {
+  return markerDe(`${id}.pdf`, options)
+}
+
 // Échappe une chaîne pour l'insérer littéralement dans une RegExp.
 export const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -225,11 +328,6 @@ export const allAbbrAlternation = () => ABBR_ALT
 // Une SEULE alternation existe dans le dépôt : celle que rend `alternationDe`, ici paramétrée.
 const ABBR_ALT_REGISTRE = alternationDe(booksData.filter((b) => b.abbr).map((b) => [b.abbr]))
 export const alternationDuRegistre = () => ABBR_ALT_REGISTRE
-
-// Un livre est-il EXTRAIT (donc adressable par l'outillage Atlas) ? Prédicat UNIQUE : `booksDe`,
-// `perimetreDeCoeur` et `apply-livre` en jugent tous par lui — une entrée de `books.json` sans `dir`
-// (livre autorisé mais jamais converti en `.md`) n'a ni chapitre à lire ni fiche à intégrer.
-export const estLivreExtrait = (b) => Boolean(b && b.abbr && b.dir)
 
 // MARQUEUR de BLOC PRÉSERVÉ d'un livre — `<!-- <ABRÉV>-INTEGRATION -->` : un correctif MANUEL posé
 // dans une fiche ou un catalogue de l'Atlas, que `build-catalogs.mjs` re-préserve à chaque
@@ -311,7 +409,7 @@ export function chapterFile(abbr, nn, range) {
   if (_chapterCache.has(key)) {
     res = _chapterCache.get(key)
   } else {
-    const dir = BOOK_DIR.get(abbr)
+    const dir = livreDuSigle(abbr)?.dir
     res = null
     if (dir) {
       const f = fichierDuChapitre(listerDossier(dir, { absent: 'vide' }), nn)
@@ -369,7 +467,7 @@ export function folioRangeIn(map, folio) {
 const _folioCache = new Map() // abbr -> Map(folio -> [{ ch, lo, hi }])
 export function folioIndexOf(abbr) {
   if (_folioCache.has(abbr)) return _folioCache.get(abbr)
-  const dir = BOOK_DIR.get(abbr)
+  const dir = livreDuSigle(abbr)?.dir
   const chapters = []
   if (dir) {
     for (const file of listerDossier(dir, { absent: 'vide' })) {

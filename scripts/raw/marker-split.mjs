@@ -9,11 +9,12 @@
 // CONTRAT du parseur partagé : la lib LÈVE sur du texte avant le premier séparateur de page et sur
 // une page extraite deux fois (l'ancien parseur local ignorait le premier et concaténait le second) ;
 // et une page VIDE chez Marker mais PLEINE chez pypdf (page perdue) arrête le découpage.
-// Usage : node scripts/raw/marker-split.mjs "<ancien-book-dir>" "<marker-paginé.md | dossier de tranches>" "<out-dir>" [--pdf <chemin.pdf>]
+// Usage : node scripts/raw/marker-split.mjs <id du livre> "<marker-paginé.md | dossier de tranches>" "<out-dir>" [--pdf <chemin.pdf>]
+// Les anciens `.md` sont ceux du `dir` du livre (`src/data/books.json`).
 import { existsSync, writeFileSync, mkdirSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
-import { basename, join } from 'node:path'
-import { readText } from './_lib.mjs'
+import { join } from 'node:path'
+import { copieMarkerDe, livreExtraitDe, pdfRequisDe, readText } from './_lib.mjs'
 import { graphieDuFichier, ligne1DePlage, numeroDuFichier, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { mdsDeMarker, mdsDeRestitutions, pagesDeMarker, verifierExtraction, commandeRestitution } from './lib/marker-pages.mjs'
 import { deballerSup } from './lib/titres.mjs'
@@ -22,12 +23,16 @@ import { nomAscii } from '../source/nom-ascii.mjs'
 const argv = process.argv.slice(2)
 const iPdf = argv.indexOf('--pdf')
 const pdfArg = iPdf >= 0 ? argv[iPdf + 1] : null
-const [bookDir, markerMd, outDirArg] = iPdf >= 0 ? argv.filter((_, i) => i !== iPdf && i !== iPdf + 1) : argv
-if (!bookDir || !markerMd || !outDirArg) { console.error('args: <book-dir> <marker.md | dossier de tranches> <out-dir> [--pdf <chemin.pdf>]'); process.exit(1) }
+const [idLivre, markerMd, outDirArg] = iPdf >= 0 ? argv.filter((_, i) => i !== iPdf && i !== iPdf + 1) : argv
+if (!idLivre || !markerMd || !outDirArg) { console.error('args: <id du livre> <marker.md | dossier de tranches> <out-dir> [--pdf <chemin.pdf>]'); process.exit(1) }
+const livre = livreExtraitDe(idLivre)
+if (!livre) { console.error(`LIVRE INCONNU AU REGISTRE : ${idLivre}`); process.exit(1) }
+const bookDir = livre.dir
 // Le PDF est la référence des VÉRIFICATIONS d'extraction (couche texte pypdf des pages vides) :
-// `--pdf` explicite, sinon le PDF homonyme du dossier du livre — jamais de vérification muette.
-const pdfPath = pdfArg || `Source/${basename(bookDir)}.pdf`
-if (!existsSync(pdfPath)) { console.error(`PDF INTROUVABLE « ${pdfPath} » — passer --pdf <chemin.pdf> (les pages perdues se mesurent contre la couche texte du PDF)`); process.exit(1) }
+// `--pdf` le SURCHARGE, sinon celui que le registre déclare (`pdfRequisDe`) — jamais de vérification muette.
+let pdfPath
+try { pdfPath = pdfArg || pdfRequisDe(idLivre) } catch (e) { console.error(`${e.message} — passer --pdf <chemin>`); process.exit(1) }
+if (!existsSync(pdfPath)) { console.error(`PDF INTROUVABLE « ${pdfPath} »`); process.exit(1) }
 // Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
 const outDir = nomAscii(outDirArg)
 
@@ -60,9 +65,12 @@ try {
 for (const pg of verif.manquantes) console.warn(`page ${pg} absente de l'extraction (page sans texte ?)`)
 if (verif.perdues.length) {
   console.error(`PAGES PERDUES : ${verif.perdues.length} page(s) vide(s) chez Marker alors que le PDF en porte du texte — ré-extraire CHACUNE avant de découper :`)
+  // Marker lit la COPIE DE TRAVAIL (`copieMarkerDe`, posée par la CLI de la couture), sauf `--pdf` explicite.
+  const pourMarker = pdfArg || copieMarkerDe(idLivre)
+  if (!pdfArg) console.error(`  (copie de travail : node scripts/raw/pdf-de.mjs --copie-marker ${idLivre})`)
   for (const { page, pypdf } of verif.perdues) {
     console.error(`  page ${page} (pypdf : ${pypdf} caractères)`)
-    console.error(`    ${commandeRestitution(pdfPath, markerMd, page)}`)
+    console.error(`    ${commandeRestitution(pourMarker, markerMd, page)}`)
   }
   process.exit(1)
 }

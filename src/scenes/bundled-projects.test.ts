@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
+import { livreExtraitDe } from '../../scripts/guards/lib/rawRefIntegrity.mjs';
 import { parseProject, ProjetRefuse, type ProjectDoc } from '../state/worldMap';
 import { validateScene } from '../state/validateScene';
 import { emptyScene } from '../state/scene';
@@ -403,7 +404,7 @@ const texteParLivre = new Map<string, string>();
 function texteDuLivre(bookId: string): string {
   const cache = texteParLivre.get(bookId);
   if (cache != null) return cache;
-  const dir = books.find((b) => b.id === bookId)?.dir;
+  const dir = livreExtraitDe(bookId)?.dir;
   if (!dir) throw new Error(`livre « ${bookId} » : aucun dossier Source déclaré dans books.json`);
   const texte = fichiersMd(join(REPO_ROOT, dir)).map((f) => readFileSync(f, 'utf8')).join('\n');
   texteParLivre.set(bookId, texte);

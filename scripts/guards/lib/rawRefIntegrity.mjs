@@ -18,7 +18,10 @@
 // `bookOf`/`chapterFile`/`readText`. Périmètre src/ aligné sur `check-code-refs.mjs`.
 import { readFileSync } from 'node:fs'
 import { listerArbre } from './lister.mjs'
-import { refRe, span, refNums, isRangeSuffix, chapterFile, bookOf, readText, alternationDuRegistre, REGISTRE_LIVRES } from '../../raw/_lib.mjs'
+import {
+  refRe, span, refNums, isRangeSuffix, chapterFile, bookOf, readText, alternationDuRegistre, REGISTRE_LIVRES,
+  estLivreExtrait, livreExtraitDe, sigleDe,
+} from '../../raw/_lib.mjs'
 import { ecartDuVolet } from './stock.mjs'
 import { readStock } from '../../raw/stockNominatif.mjs'
 
@@ -26,7 +29,10 @@ import { readStock } from '../../raw/stockNominatif.mjs'
 // `scripts/guards/lib/stock.mjs` et du lecteur de stock `readStock` de `scripts/raw/stockNominatif.mjs`
 // dont les consommateurs TypeScript ont besoin : une seule couture typée
 // (`rawRefIntegrity.d.mts`) au lieu d'un `.d.mts` par module de `scripts/raw/`.
-export { chapterFile, readText, ecartDuVolet, readStock, alternationDuRegistre, REGISTRE_LIVRES }
+export {
+  chapterFile, readText, ecartDuVolet, readStock, alternationDuRegistre, REGISTRE_LIVRES, estLivreExtrait, livreExtraitDe,
+  sigleDe,
+}
 
 export const SRC_DIR = 'src'
 export const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de couverture (cf. check-code-refs)

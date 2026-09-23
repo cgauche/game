@@ -10,16 +10,16 @@
 //      exigé, sinon skip rapporté), aucune ancre nue ;
 //   4. il régénère `00 - Index.md` en TOC à folios (`— folio N`, format des livres déjà bakés).
 //
-// Entrée  : <ABBR> de `books.json` (dossier `Source/…` associé) + le PDF du livre — `--pdf <chemin>`
-//           quand le nom du PDF diffère de `<dir>.pdf`.
+// Entrée  : <ABBR> de `books.json` (dossier `Source/…` associé) ; le PDF du livre vient de
+//           `pdfDuSigle` (`_lib.mjs`, champ `pdf`), `--pdf <chemin>` le SURCHARGE explicitement.
 // Sortie  : table des folios lus (K → folio, en runs) + rapport de pose d'`anchor-fill` ; `--apply`
 //           écrit les `.md` et l'index, sinon rapport seul.
-// Usage   : node scripts/raw/folio-bootstrap.mjs VDM --pdf "Source/les Vents de Magie.pdf" [--apply]
+// Usage   : node scripts/raw/folio-bootstrap.mjs <ABBR> [--pdf <chemin>] [--apply]
 import { writeFileSync, existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, resolve, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS, readText } from './_lib.mjs'
+import { livreDuSigle, pdfDuSigle, readText } from './_lib.mjs'
 import { numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { extractPages, runBook } from './anchor-fill.mjs'
 
@@ -116,9 +116,10 @@ function main() {
     process.exitCode = 1
     return
   }
-  const dir = new Map(BOOKS).get(abbr)
+  const dir = livreDuSigle(abbr)?.dir
   if (!dir) { console.log(`abréviation inconnue de books.json : ${abbr}`); process.exitCode = 1; return }
-  const pdfPath = pdfIdx >= 0 ? args[pdfIdx + 1] : `${dir}.pdf`
+  let pdfPath
+  try { pdfPath = pdfIdx >= 0 ? args[pdfIdx + 1] : pdfDuSigle(abbr) } catch (e) { console.log(e.message); process.exitCode = 1; return }
   if (!existsSync(pdfPath)) { console.log(`PDF introuvable : ${pdfPath}`); process.exitCode = 1; return }
 
   const corpus = corpusRange(dir)

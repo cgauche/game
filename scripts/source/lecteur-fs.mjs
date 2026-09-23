@@ -3,29 +3,22 @@
 // que résoudre `bookId → dossier → fichier de chapitre`, lire le texte (CRLF-robuste, `readText`) et
 // mémoriser le chapitre parsé.
 import { listerDossier } from '../guards/lib/lister.mjs'
-import { BOOKS, chapterFile, readText } from '../raw/_lib.mjs'
+import { chapterFile, livreExtraitDe, readText, sigleDe } from '../raw/_lib.mjs'
 import { parseChapitre, prefixesDeChapitres } from '../../src/data/source/decoupe.ts'
-import booksData from '../../src/data/books.json' with { type: 'json' }
 
-/** `books.json.id` → sigle Atlas, restreint aux livres porteurs d'un `dir` (extraction FR présente). */
-export const ABBR_BY_BOOK_ID = Object.fromEntries(
-  booksData.filter((b) => b.dir).map((b) => [b.id, b.abbr]),
-)
-
-const DIR_BY_ABBR = new Map(BOOKS)
 const _cache = new Map()
 
 /** Numéros de chapitre d'un livre, dans leur GRAPHIE de fichier, triés par ENTIER — l'index n'en est
  *  pas un (`prefixesDeChapitres`). @param {string} bookId @returns {string[]} */
 export function chapitresDe(bookId) {
-  const dir = DIR_BY_ABBR.get(ABBR_BY_BOOK_ID[bookId])
+  const dir = livreExtraitDe(bookId)?.dir
   if (!dir) return []
   return prefixesDeChapitres(listerDossier(dir, { absent: 'vide' }))
 }
 
 /** Nom du fichier d'un chapitre, ou `null`. @param {string} bookId @param {string|number} ch */
 export function fichierChapitre(bookId, ch) {
-  const abbr = ABBR_BY_BOOK_ID[bookId]
+  const abbr = sigleDe(bookId)
   return (abbr ? chapterFile(abbr, ch) : null)?.file ?? null
 }
 
@@ -37,7 +30,7 @@ export function fichierChapitre(bookId, ch) {
 export function lireChapitre(bookId, ch) {
   const key = `${bookId}|${ch}`
   if (_cache.has(key)) return _cache.get(key)
-  const abbr = ABBR_BY_BOOK_ID[bookId]
+  const abbr = sigleDe(bookId)
   const res = abbr ? chapterFile(abbr, ch) : null
   const out = res ? parseChapitre(readText(res.path)) : null
   _cache.set(key, out)

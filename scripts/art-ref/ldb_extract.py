@@ -11,8 +11,8 @@ position verticale du heading). Toujours lancer `ldb_extract.py` avant `ldb_map.
 
 Prérequis : Python 3 + PyMuPDF (`pip install pymupdf`, module `fitz`).
 
-Usage (chemins par défaut = livre de base + art-ref/ldb, override possible) :
-    python scripts/art-ref/ldb_extract.py [--pdf PATH] [--out PATH]
+Usage (le PDF vient de la CLI de la couture `pdfDe`, scripts/raw/pdf-de.mjs ; sortie par défaut art-ref/ldb) :
+    python scripts/art-ref/ldb_extract.py --pdf "$(node scripts/raw/pdf-de.mjs livre-de-base)" [--out PATH]
 
 Strategy
 --------
@@ -37,7 +37,6 @@ from pathlib import Path
 import fitz
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PDF = ROOT / "Source" / "Warhammer v4 - Livre de base version corrigee.pdf"
 DEFAULT_OUT = ROOT / "art-ref" / "ldb"
 
 MIN_SIDE = 200   # px: illustration threshold (>=200 on at least one side)
@@ -60,7 +59,7 @@ def norm(s):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--pdf", default=str(DEFAULT_PDF))
+    ap.add_argument("--pdf", required=True)
     ap.add_argument("--out", default=str(DEFAULT_OUT))
     args = ap.parse_args()
     pdf_path, out_dir = Path(args.pdf), Path(args.out)

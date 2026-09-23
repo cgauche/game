@@ -3,11 +3,16 @@
 // `*Pages PDF X*` en tête, retire les séparateurs de page `{N}----`. Usage : node scripts/raw/split-vdm.mjs
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { readText } from './_lib.mjs'
+import { readText, sortieMarkerDe } from './_lib.mjs'
+import { mdsDeMarker } from './lib/marker-pages.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
 import { graphieDeChapitre, largeurDeChapitre, ligne1DePlage, plageEnTexte } from '../../src/data/source/decoupe.ts'
 
-const SRC = 'Source/_marker/full/les Vents de Magie/les Vents de Magie/les Vents de Magie.md'
+/** Id du livre que ce découpeur sert (`src/data/books.json`). */
+const LIVRE = 'vents-de-la-magie'
+// Sortie Marker d'un tenant (`<sortie>/<pdf>/<pdf>.md`), lue par `mdsDeMarker`.
+let SRC
+try { [SRC] = mdsDeMarker(sortieMarkerDe(LIVRE)) } catch (e) { console.error(e.message); process.exit(1) }
 // Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
 const OUT = nomAscii('Source/Warhammer v4 - Les Vents de Magie')
 

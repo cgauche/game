@@ -58,22 +58,11 @@ import { readFileSync } from 'node:fs'
 import { parUnitesDeCode, listerDossier } from './lister.mjs'
 import { join, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS } from '../../raw/_lib.mjs'
+import { livreDuSigle, sigleDe } from '../../raw/_lib.mjs'
 import { resoudreProse } from '../../source/resoudre.mjs'
-import booksData from '../../../src/data/books.json' with { type: 'json' }
 
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
-
-/** Pont `books.json.id` → `abbr` (SOURCE UNIQUE des acronymes, ref #585) — DÉRIVÉ de `books.json`,
- *  filtré aux entrées porteuses d'un `dir` (extraction FR exploitable par l'Atlas RAW). Un livre
- *  absent de cette table n'a pas d'extraction FR exploitable : ses entrées sont `livre-hors-atlas`
- *  (irréfutables), jamais en échec. */
-export const BOOK_ABBR_BY_ID = Object.fromEntries(
-  booksData.filter((b) => b.dir).map((b) => [b.id, b.abbr]),
-)
-
-const DIR_BY_ABBR = new Map(BOOKS)
 
 /** Longueur normalisée minimale d'une `desc` pour servir de localisateur : sous ce seuil, une
  *  chaîne courte se retrouve un peu partout dans un livre et l'encadrement ne prouve rien. */
@@ -119,7 +108,7 @@ const CACHE = new Map()
 export function bookDocs(abbr) {
   const hit = CACHE.get(abbr)
   if (hit) return hit
-  const rel = DIR_BY_ABBR.get(abbr)
+  const rel = livreDuSigle(abbr)?.dir
   const docs = []
   if (rel) {
     const dir = join(ROOT, rel)
@@ -162,7 +151,7 @@ export function bookMaxFolio(abbr) {
   if (hit !== undefined) return hit
   let max = 0
   for (const doc of bookDocs(abbr)) for (const [, f] of doc.folios) if (f > max) max = f
-  const rel = DIR_BY_ABBR.get(abbr)
+  const rel = livreDuSigle(abbr)?.dir
   if (rel) {
     try {
       const t = readFileSync(join(ROOT, rel, '00 - Index.md'), 'utf8')
@@ -210,7 +199,7 @@ export function folioRange(folios, a, b) {
  * @returns {{ verdict: 'folio-ok'|'folio-ment'|'folio-impossible'|'desc-introuvable'|'livre-hors-atlas'|'desc-trop-courte'|'sans-marqueur', ranges?: {lo:number,hi:number|null,file:string}[], max?: number }}
  */
 export function auditFolio({ book, page, desc }) {
-  const abbr = BOOK_ABBR_BY_ID[book]
+  const abbr = sigleDe(book)
   if (!abbr) return { verdict: 'livre-hors-atlas' }
   const docs = bookDocs(abbr)
   if (docs.length === 0) return { verdict: 'livre-hors-atlas' }
@@ -360,7 +349,7 @@ export function pageSlices(abbr, page) {
  * @returns {string | null} `<chapitre> folio N` si attesté, `null` sinon
  */
 export function labelSurLaPage(book, page, label) {
-  const abbr = BOOK_ABBR_BY_ID[book]
+  const abbr = sigleDe(book)
   if (!abbr) return null
   const nl = typeof label === 'string' ? normHeading(label) : ''
   if (nl.length < MIN_TITLE) return null
@@ -383,7 +372,7 @@ export function labelSurLaPage(book, page, label) {
  * @returns {{ verdict: 'titre-ok'|'titre-ment'|'titre-page-attestee'|'titre-homonyme-lointain'|'titre-introuvable'|'titre-sans-marqueur'|'titre-trop-court'|'livre-hors-atlas', ranges?: {lo:number,hi:number|null,file:string}[], ecart?: number, proche?: {lo:number,hi:number|null,file:string}, atteste?: string }}
  */
 export function auditFolioByTitle({ book, page, label }) {
-  const abbr = BOOK_ABBR_BY_ID[book]
+  const abbr = sigleDe(book)
   if (!abbr) return { verdict: 'livre-hors-atlas' }
   const docs = bookDocs(abbr)
   if (docs.length === 0) return { verdict: 'livre-hors-atlas' }
@@ -522,7 +511,7 @@ export function secondaryEntriesOf(data) {
  * @returns {{ verdict: 'attesté'|'non-attesté'|'folio-impossible'|'livre-hors-atlas', via?: 'label'|'quote', max?: number }}
  */
 export function auditSecondaryRef({ book, page, label, quote }) {
-  const abbr = BOOK_ABBR_BY_ID[book]
+  const abbr = sigleDe(book)
   if (!abbr) return { verdict: 'livre-hors-atlas' }
   const docs = bookDocs(abbr)
   if (docs.length === 0) return { verdict: 'livre-hors-atlas' }

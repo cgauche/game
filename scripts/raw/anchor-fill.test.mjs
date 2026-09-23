@@ -3,7 +3,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { join } from 'node:path'
-import { BOOKS, readText } from './_lib.mjs'
+import { livreDuSigle, readText } from './_lib.mjs'
 import {
   buildCompactIndex, compactAnchor, extractContentHeads,
   existingFolioLines, folioBounds, planChapter, nakedAnchorLines,
@@ -166,7 +166,7 @@ const NADJ_PAGE_HEADS = {
 const NADJ_FILE = '06 - Une journee au tribunal.md'
 
 test('NADJ 06 (cas réel #833) : les folios encadrés par des ancres EXISTANTES sont posés, le filigrane est refusé', () => {
-  const dir = new Map(BOOKS).get('NADJ')
+  const dir = livreDuSigle('NADJ').dir
   const text = readText(join(dir, NADJ_FILE))
   const known = existingFolioLines(text)
   const plan = planChapter(NADJ_FILE, text, 1, (K) => NADJ_PAGE_HEADS[K])

@@ -3,13 +3,13 @@
   "type": "progression-schemas.derived",
   "label": "Schémas de progression (relevé dérivé)",
   "livres": [
-    "livre-de-base",
-    "vents-de-la-magie",
-    "aux-armes",
-    "mer-des-griffes",
     "archives-de-l-empire-1",
     "archives-de-l-empire-2",
-    "middenheim"
+    "aux-armes",
+    "livre-de-base",
+    "mer-des-griffes",
+    "middenheim",
+    "vents-de-la-magie"
   ],
   "schemas": [
     {

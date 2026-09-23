@@ -49,7 +49,7 @@ import { ecartDuVolet, sitesEnEntrees, survieDeLecheance } from '../guards/lib/s
 import { readStock } from './stockNominatif.mjs'
 import { graphieDeChapitre, graphieDuFichier, largeurDeChapitre, ligne1DePlage, numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { estLigneDeTitre, ouvreSur } from './lib/titres.mjs'
-import { decoupeDe, livresDecoupes, REGISTRE_LIVRES } from './_lib.mjs'
+import { decoupeDe, livreDuDossier, livresDecoupes, REGISTRE_LIVRES } from './_lib.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-format-stock.json')
@@ -370,9 +370,8 @@ export function lireDossier(dir) {
  * @param {string} dir @returns {object[] | null}
  */
 export function listeDuDossier(dir, registre = REGISTRE_LIVRES, avecListe = livresDecoupes()) {
-  const p = cheminDe(dir)
-  const livre = registre.find((b) => b.dir && cheminDe(b.dir) === p && avecListe.includes(b.id))
-  return livre ? decoupeDe(livre.id) : null
+  const livre = livreDuDossier(dir, registre)
+  return livre && avecListe.includes(livre.id) ? decoupeDe(livre.id) : null
 }
 
 /** Balaie UN dossier de livre → ses sites d'écart de FORME (les familles à stock). */

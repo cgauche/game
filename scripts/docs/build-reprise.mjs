@@ -309,7 +309,7 @@ const NON_VERSIONNES = [
     quoi: `PDFs de \`Source/*.pdf\` (\`${motif('*.pdf')}\`)`,
     pourquoi: 'droits Cubicle 7, taille (limite GitHub 100 Mo/fichier)',
     acces:
-      'conservés LOCALEMENT ; ré-extraction via `bash scripts/raw/reextract-all.sh` (Marker, staging `Source/_marker/split/`, **ne promeut pas** — revue manuelle avant d\'écraser `Source/`)',
+      'conservés LOCALEMENT ; ré-extraction via `bash scripts/raw/reextract-all.sh <id>…` (Marker, staging `Source/_marker/split/`, **ne promeut pas** — revue manuelle avant d\'écraser `Source/`)',
   },
   {
     quoi: `Staging Marker (\`${motif('Source/_marker/')}\`)`,

@@ -108,6 +108,7 @@ export const ECRIT_LU = {
     lit: [
       '.claude/', '.codex/', '.github/workflows/', 'docs/', 'public/', 'scripts/', 'server/', 'src/', 'Source/',
       'CLAUDE.md', 'eslint.config.js', 'knip.json', 'package.json', 'package-lock.json', 'tsconfig.json',
+      'kill-pid.mjs', 'knip-exports-baseline.json', 'vite.config.ts',
     ],
     raison:
       'le registre d’écrans que `new-src-file-guard.test.mjs` éprouve est INJECTABLE (`WFRP_REGISTRE_ECRANS`, ' +
@@ -137,11 +138,14 @@ export const ECRIT_LU = {
       '`migrations/lib/1825-stocks-atlas-chemins-par-coeur.test.mjs` forge son dépôt sous `mkdtempSync` de ' +
       'os.tmpdir() (`rmSync` en `t.after`) et y joue la migration par `migrations/lib/joue.mjs`, qui COPIE la ' +
       'migration dans ce dépôt (`copyFileSync`) — sonde `git status --porcelain` avant/après identique, et ' +
-      'aucun résidu dans os.tmpdir()',
+      'aucun résidu dans os.tmpdir() ; +1 lecture le 2026-09-23 (#1739) : la garde du dépôt ' +
+      '`guards/lib/pdfHorsCouture.test.mjs` LIT tout fichier de code et tout JSON de configuration, suivi ou ' +
+      'non indexé — son banc exige que chaque racine de `racinesBalayees` soit couverte par ce `lit` ' +
+      '(kill-pid.mjs, knip-exports-baseline.json, vite.config.ts)',
   },
   'test:ops': {
     ecrit: [],
-    lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', 'scripts/hooks/', '.claude/workflows/', '.github/workflows/', 'knip.json', 'knip-exports-baseline.json'],
+    lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', 'scripts/raw/', 'scripts/port-dev.mjs', 'scripts/hooks/', '.claude/workflows/', '.github/workflows/', 'knip.json', 'knip-exports-baseline.json'],
     raison:
       'six modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
       '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.url === argv[1]`, l.121 ; seul `--sync` ' +
@@ -176,7 +180,7 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: [
       'docs/', 'src/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
-      'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs', 'CLAUDE.md',
+      'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs', 'scripts/port-dev.mjs', 'CLAUDE.md',
     ],
     raison:
       'fixtures sous os.tmpdir() ; lit les docs et la mémoire RÉELS (les gardes de liens et de références les ' +
@@ -284,7 +288,7 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: [
       'docs/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
-      'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs',
+      'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs', 'scripts/port-dev.mjs',
     ],
     raison:
       '`--empreinte` sort avant toute génération (build-all.mjs, branche `--empreinte` de `main`) : les 9 ' +
@@ -302,7 +306,7 @@ export const ECRIT_LU = {
         'lanceur, un rapport à jour n’est pas réécrit. S’il est périmé au commit, il est réécrit UNE fois et ' +
         '`photoArbre` avant/après fait REFUSER le run — jamais un vert de course',
     },
-    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
+    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
     raison:
       'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT Source/ ' +
       'et son propre code',
@@ -312,7 +316,7 @@ export const ECRIT_LU = {
     ecritFerme: {
       'docs/raw/reconciliation.md': 'scripts/raw/reconcile.mjs:411, même seam `ecrireDoc` et même porte que raw:coverage',
     },
-    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/docs/lib/empreinte-sources.mjs'],
+    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs', 'scripts/docs/lib/empreinte-sources.mjs'],
     raison:
       'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT Source/, ' +
       'son stock `scripts/raw/reconciliation-stock.json` et son propre code',
@@ -371,7 +375,7 @@ export const ECRIT_LU = {
         'le banc ne la passe que sur un Atlas JETABLE d’os.tmpdir() (`avecAtlasFixture`) dont il donne le ' +
         '`rawDir` — les pages du dépôt ne sont jamais écrites',
     },
-    lit: ['docs/raw/', 'scripts/raw/', 'scripts/guards/lib/', 'Source/', 'src/', '.claude/agents/'],
+    lit: ['docs/raw/', 'scripts/raw/', 'scripts/source/', 'scripts/guards/lib/', 'scripts/port-dev.mjs', 'Source/', 'src/', '.claude/agents/'],
     raison:
       'harnais de l’Atlas : il lit les fiches que les trois rapports écrivent ; éprouvant les scripts ' +
       'eux-mêmes, il LIT ce qu’ils lisent — Source/ et src/ ; ses deux bancs ' +
@@ -386,25 +390,27 @@ export const ECRIT_LU = {
       '`main()`, sous sa porte `isMain` ; +1 lecture le 2026-09-22 (#1873) : ' +
       '`atlas-domain.workflow.test.mjs` lit les fiches d’agent de .claude/agents/ (frontmatter `tools:`) ' +
       'pour tenir la liste des types SANS outil d’écriture (scripts/raw/atlas-domain.workflow.test.mjs:312) — ' +
-      'la gate n’est plus sautable : un push qui donne `Edit` à `lecteur` doit la jouer',
+      'la gate n’est plus sautable : un push qui donne `Edit` à `lecteur` doit la jouer ; +1 écrivain le ' +
+      '2026-09-23 (#1739) : `pdf-de.test.mjs`, même régime os.tmpdir() (`avecSource`) — son PDF et ses dossiers de sortie Marker ' +
+      'factices ne naissent que sous la racine `source` INJECTÉE dans la couture (scripts/raw/_lib.mjs)',
   },
   'raw:check-refs': {
     ecrit: [],
-    lit: ['docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
+    lit: ['docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
     raison:
       'aucune écriture dans les scripts atteints ; LIT le registre de livres et le normaliseur de références ' +
       '(src/data/books.json, src/data/source/normalize.ts) et son stock scripts/raw/dead-refs-stock.json, ABSENT en régime nominal',
   },
   'raw:check-code-refs': {
     ecrit: [],
-    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
+    lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
     raison:
       'aucune écriture dans les scripts atteints ; LIT Source/ et son stock ' +
       'scripts/raw/empty-line-code-refs-stock.json',
   },
   'raw:check-ancres': {
     ecrit: [],
-    lit: ['docs/raw/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/'],
+    lit: ['docs/raw/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
     raison:
       'aucune écriture, et AUCUN stock : l’ancre d’un titre se CALCULE (scripts/raw/lib/ancres.mjs), '
       + 'donc un renvoi mort est un renvoi faux, jamais un héritage à geler. LIT les pages de l’Atlas, '
@@ -420,7 +426,7 @@ export const ECRIT_LU = {
         'commande de .github/workflows/ci.yml ne passe pas ; sans elle la gate COMPARE le stock à sa ' +
         'mesure et ne touche à rien',
     },
-    lit: ['docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/lister.mjs'],
+    lit: ['docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
     raison:
       'LIT le registre de livres, le normaliseur de références, ' +
       'le stock NOMINATIF des sauts de folio (scripts/raw/folio-gaps-stock.json) et les deux stocks des ancres ' +
@@ -436,7 +442,7 @@ export const ECRIT_LU = {
         '(scripts/raw/check-source-tables.mjs:194), option que la commande de .github/workflows/ci.yml ' +
         'ne passe pas ; sans elle la gate COMPARE le stock à sa mesure et ne touche à rien',
     },
-    lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/'],
+    lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
     raison:
       'LIT le registre de livres, le parseur de tables (src/data/source/decoupe.ts), les dossiers à `dir` de ' +
       'Source/ et son stock nominatif scripts/raw/source-tables-stock.json ; le seul module écrivain ' +
@@ -450,7 +456,7 @@ export const ECRIT_LU = {
         '(scripts/raw/check-source-puces.mjs:159), option que la commande de .github/workflows/ci.yml ' +
         'ne passe pas ; sans elle la gate COMPARE le stock à sa mesure et ne touche à rien',
     },
-    lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/'],
+    lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
     raison:
       'LIT le registre de livres, le normaliseur de citations (src/data/source/decoupe.ts), les dossiers ' +
       'à `dir` de Source/ et son stock nominatif scripts/raw/source-puces-stock.json ; le seul module ' +
@@ -464,7 +470,7 @@ export const ECRIT_LU = {
         '(scripts/raw/check-source-format.mjs:396), option que la commande de .github/workflows/ci.yml ' +
         'ne passe pas ; sans elle la gate COMPARE le stock à sa mesure et ne touche à rien',
     },
-    lit: ['Source/', 'src/data/books.json', 'scripts/raw/', 'scripts/guards/lib/'],
+    lit: ['Source/', 'src/data/books.json', 'scripts/raw/', 'scripts/source/nom-ascii.mjs', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
     raison:
       'LIT le registre de livres et les dossiers FR de Source/ (ceux à `dir` plus les ' +
       'pré-pipeline atteints par balayage), ainsi que son stock nominatif ' +
@@ -480,7 +486,7 @@ export const ECRIT_LU = {
     },
     lit: [
       'docs/raw/', 'Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/',
-      'scripts/guards/lib/lister.mjs', 'scripts/docs/lib/empreinte-sources.mjs',
+      'scripts/guards/lib/', 'scripts/port-dev.mjs', 'scripts/docs/lib/empreinte-sources.mjs',
     ],
     raison:
       'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT le registre ' +

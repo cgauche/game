@@ -12,10 +12,11 @@
  *
  *   node scripts/docs/build-sources-vf.mjs
  */
-import { readFileSync } from 'node:fs'
 import { emitOrCheck } from './lib/jsdocUnion.mjs'
+import { REGISTRE_LIVRES as BOOKS, estLivreExtrait, livreExtraitDe } from '../raw/_lib.mjs'
 
-const BOOKS = JSON.parse(readFileSync('src/data/books.json', 'utf8'))
+// TOUT livre du registre, EXTRAIT ou non (`label`, `extractionDir` du livre fan) : `livreExtraitDe`
+// ne rend que les extraits — `dir` ci-dessous passe par lui.
 const byId = new Map(BOOKS.map((b) => [b.id, b]))
 
 function book(id) {
@@ -30,8 +31,8 @@ function book(id) {
 /** Chemin `Source/…/` d'un livre EXTRAIT (fail-fast si `dir` absent — ce script ne devine jamais). */
 function dir(id) {
   const b = book(id)
-  if (!b.dir) {
-    console.error(`build-sources-vf — livre "${id}" (${b.label}) n'a pas de champ "dir" dans books.json (pas encore extrait)`)
+  if (!livreExtraitDe(id)) {
+    console.error(`build-sources-vf — livre "${id}" (${b.label}) n'est pas EXTRAIT dans books.json (\`abbr\` et \`dir\`)`)
     process.exit(1)
   }
   return `${b.dir}/`
@@ -49,7 +50,7 @@ function dirExtraction(id) {
 }
 
 const abbr = (id) => book(id).abbr
-const extractedCount = BOOKS.filter((b) => b.dir).length
+const extractedCount = BOOKS.filter(estLivreExtrait).length
 
 const out = `# Sources VF — détail des livres autorisés
 
@@ -200,7 +201,7 @@ AUTORISÉ (\`CLAUDE.md\` § *Sources VF*). Au moindre doute, **lire le \`.md\` e
 // `Source/` mais absent de cette page est un périmètre que personne ne peut lire. Le gabarit est
 // ÉDITORIAL (il cite livre par livre) : rien ne l'oblige à suivre le registre, sauf cette garde. Elle
 // LÈVE à la GÉNÉRATION comme `book`/`dir`, donc aussi sous `--check` (`npm run docs:check`).
-const absents = BOOKS.filter((b) => b.dir && !out.includes(b.dir))
+const absents = BOOKS.filter((b) => estLivreExtrait(b) && !out.includes(b.dir))
 if (absents.length) {
   console.error('build-sources-vf — livre(s) EXTRAIT(s) absent(s) de la page (ajouter leur entrée dans ce script) :')
   for (const b of absents) console.error(`  ${b.id} (${b.abbr}) — ${b.dir}`)

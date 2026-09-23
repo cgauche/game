@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { parUnitesDeCode, listerArbre } from '../guards/lib/lister.mjs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { refRe, span, bookOf, BOOKS, esc, folioRange, allAbbrAlternation, pagesDeLAtlas, readText } from './_lib.mjs'
+import { refRe, span, bookOf, BOOKS, estLivreExtrait, esc, folioRange, allAbbrAlternation, pagesDeLAtlas, readText } from './_lib.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 
 export const RAWDIR = 'docs/raw'
@@ -92,7 +92,7 @@ export function buildAbbrMap(books) {
   for (const b of books) {
     if (!b || typeof b.id !== 'string') continue
     knownIds.add(b.id)
-    if (!b.dir) continue // seuls les livres EXTRAITS (avec dossier Source) portent le pont folio
+    if (!estLivreExtrait(b)) continue
     if (!BOOK_ABBRS.has(b.abbr)) throw new Error(`books.json: abbr inconnue de BOOKS pour "${b.id}" → "${b.abbr}"`)
     bySlug.set(b.id, b.abbr)
   }

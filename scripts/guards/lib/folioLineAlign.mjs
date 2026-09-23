@@ -15,6 +15,7 @@
 // Module ESM pur (`node` nu), consommé par `src/data/folio-line-align.test.ts` (cliquet).
 import { readFileSync } from 'node:fs'
 import { listerDossier } from './lister.mjs'
+import { livreDuSigle, sigleDe } from '../../raw/_lib.mjs'
 // Le NUMÉRO DE CHAPITRE (prédicat, motif, résolution) vient de sa maison PURE, jamais de la couche
 // `scripts/raw` — `guards/lib` n'en dépend pas.
 import { fichierDuChapitre } from '../../../src/data/source/decoupe.ts'
@@ -190,12 +191,11 @@ export function auditAlignment(entries, abbrOf, chapterLines) {
 
 /** Lecture disque des chapitres d'un livre (cache par (abbr, chapitre)). */
 export function makeChapterReader(books) {
-  const dirs = new Map(books.filter((b) => b.dir).map((b) => [b.abbr, b.dir]))
   const cache = new Map()
   return (abbr, ch) => {
     const key = `${abbr}|${ch}`
     if (cache.has(key)) return cache.get(key)
-    const dir = dirs.get(abbr)
+    const dir = livreDuSigle(abbr, books)?.dir
     let res = null
     if (dir) {
       const f = fichierDuChapitre(listerDossier(dir, { absent: 'vide' }), ch)
@@ -209,7 +209,6 @@ export function makeChapterReader(books) {
 /** Audit complet de `src/data/*.json` depuis le disque. @param {string} dataDir */
 export function auditDataDir(dataDir) {
   const books = JSON.parse(readFileSync(join(dataDir, 'books.json'), 'utf8'))
-  const abbrById = new Map(books.map((b) => [b.id, b.abbr]))
   const chapterLines = makeChapterReader(books)
   const entries = []
   for (const f of listerDossier(dataDir).filter((x) => x.endsWith('.json'))) {
@@ -217,5 +216,5 @@ export function auditDataDir(dataDir) {
     try { data = JSON.parse(readFileSync(join(dataDir, f), 'utf8')) } catch { continue }
     entries.push(...citedEntries(data, f))
   }
-  return auditAlignment(entries, (id) => abbrById.get(id), chapterLines)
+  return auditAlignment(entries, (id) => sigleDe(id, books), chapterLines)
 }

@@ -359,6 +359,11 @@ const ATTENDU = {
     // son banc — son `writeFileSync` vit derrière la porte `--apply` de `reparer`, que le banc ne
     // passe que sur un Atlas JETABLE d'os.tmpdir() (`avecAtlasFixture`) ; l'arbre n'est jamais écrit.
     'scripts/raw/reparer-ancres.mjs',
+    // +1 le 2026-09-23 (#1739) : le banc de la couture du PDF d'un livre pose son `Source/` FACTICE
+    // (un PDF, des dossiers de sortie Marker) sous `mkdtempSync` de os.tmpdir(), `rmSync` en finally,
+    // et le passe à la couture par son `source` INJECTÉ ; la couture (`_lib.mjs`) n'écrit rien — le
+    // seul écrivain, la CLI `pdf-de.mjs`, n'est pas importé (le banc la LANCE, sans argument).
+    'scripts/raw/pdf-de.test.mjs',
   ],
   'raw:check-refs': [],
   // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE

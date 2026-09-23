@@ -31,8 +31,8 @@ committé :
 - `marker-pdf` (CPU), config `scripts/raw/marker-paginate.json` (`paginate_output: true`, inchangée
   depuis `09b30a7b8`) : le markdown de sortie porte des séparateurs `{N}----`, N = page PDF
   **0-indexée**.
-- Une passe **PLEINE** par livre (§1), ou le driver `scripts/raw/reextract-all.sh` qui boucle les 13
-  suppléments vers le staging `Source/_marker/split/<dir>/` sans jamais écraser `Source/`.
+- Une passe **PLEINE** par livre (§1), ou le driver `scripts/raw/reextract-all.sh <id>…` qui boucle
+  les livres passés en argument vers le staging `Source/_marker/split/<id>/` sans jamais écraser `Source/`.
 - Découpe par `scripts/raw/marker-split.mjs` : il pose lui-même la ligne 1 `*Pages PDF …*` et passe
   chaque nom de fichier par `nomAscii`. Il s'**aligne sur la structure `Source/` préexistante** —
   il lit les anciens `NN - X.md` et leur marqueur `Pages PDF` pour retrouver les frontières. Un
@@ -104,13 +104,22 @@ MÊME commit. L'ordre de ré-extraction vit sur le ticket #1739. Le stock ne rem
 
 ## 1. Extraction Marker (PDF → markdown paginé)
 
-Le PDF est gitignoré ; l'extraction passe par `marker-pdf` (CPU), avec la couche texte exacte
-**désactivant l'OCR** — plus fidèle que l'ancien pymupdf4llm sur les tables :
+Le PDF est gitignoré, donc présent dans l'arbre PRINCIPAL seulement : son nom se DÉCLARE au registre
+(champ `pdf` de `src/data/books.json`, § 3) et son chemin ne se construit que par la couture `pdfDe`
+(`scripts/raw/_lib.mjs`) — depuis le shell ou Python, par sa CLI `scripts/raw/pdf-de.mjs`, qui résout
+aussi `Source/_marker/` et la COPIE DE TRAVAIL `Source/_marker/<id>.pdf` que Marker lit (MAX_PATH,
+ci-dessus). Les sorties Marker se nomment par l'**id de livre** du registre (`<id>` de
+`src/data/books.json`, jamais son sigle ni le nom de son PDF) : copie de travail
+`Source/_marker/<id>.pdf`, sortie `Source/_marker/full/<id>/` (`copieMarkerDe`, `sortieMarkerDe`) ; un
+lecteur de sortie LÈVE en listant les dossiers de `full/` qu'aucun id ne nomme.
+
+L'extraction passe par `marker-pdf` (CPU), avec la couche texte exacte **désactivant l'OCR** —
+plus fidèle que l'ancien pymupdf4llm sur les tables :
 
 ```bash
-marker_single "Source/<Nom du livre>.pdf" --output_format markdown \
+marker_single "$(node scripts/raw/pdf-de.mjs --copie-marker <id>)" --output_format markdown \
   --config_json scripts/raw/marker-paginate.json --disable_ocr \
-  --output_dir "Source/_marker/full/<Nom du livre>" --disable_image_extraction
+  --output_dir "$(node scripts/raw/pdf-de.mjs --sortie-marker <id>)" --disable_image_extraction
 ```
 
 Long (~45 min pour un livre dense) — lancer en arrière-plan. `--config_json marker-paginate.json`
@@ -123,9 +132,9 @@ saturé d'illustrations en zones « figure » peut perdre une grosse part du tex
 Vérifier après coup que le `.md` produit fait une taille plausible (comparer au nombre de pages du
 PDF) avant de découper ; si la perte est massive, relancer **sans** `--disable_ocr`.
 
-Pour ré-extraire en lot les 13 suppléments existants (hors LDB déjà fait), le driver
-`scripts/raw/reextract-all.sh` (bash) boucle la commande ci-dessus + l'étape 2 vers un **staging**
-(`Source/_marker/split/<dir>/`) sans jamais écraser `Source/` — la promotion reste une étape
+Pour ré-extraire en lot, le driver `scripts/raw/reextract-all.sh <id>…` (bash) boucle la commande
+ci-dessus + l'étape 2 sur les livres passés en argument, vers un **staging**
+(`Source/_marker/split/<id>/`) sans jamais écraser `Source/` — la promotion reste une étape
 manuelle après revue.
 
 ## 2. Découpe en fichiers `Source/<Livre>/NNN - Titre.md`
@@ -198,10 +207,10 @@ faites aux `.md` : le rejouer sur un livre EN SERVICE les écraserait. Le geste 
 servi est `recouper-source.mjs` (ci-dessus). Selon que le livre a ou non une structure `Source/`
 **préexistante** à réaligner :
 
-- **Livre déjà présent sous `Source/`** (ré-extraction) : `marker-split.mjs "<ancien-dossier>"
-  "<marker-paginé.md>" "<dossier-sortie>" [--pdf <chemin.pdf>]` — `--pdf` (par défaut
-  `Source/<nom du dossier du livre>.pdf`) est la référence des vérifications de pages perdues
-  (ci-dessous) ; le 2ᵉ argument accepte un `.md` d'un tenant **ou un
+- **Livre déjà présent sous `Source/`** (ré-extraction) : `marker-split.mjs <id du livre>
+  "<marker-paginé.md>" "<dossier-sortie>" [--pdf <chemin.pdf>]` — les anciens `.md` sont ceux du
+  `dir` du livre ; son PDF (`pdfDe`, que `--pdf` SURCHARGE) est la référence des vérifications de
+  pages perdues (ci-dessous) ; le 2ᵉ argument accepte un `.md` d'un tenant **ou un
   dossier de tranches `--page_range`** (`slices/<a>-<b>/<pdf>/<pdf>.md`, union des tranches par la lib
   `scripts/raw/lib/marker-pages.mjs`, parseur `{N}----` UNIQUE du dépôt). Aligne les nouveaux chapitres sur les noms de fichiers
   et pages de début des anciens `.md` (marqueur `Pages PDF X` en tête de chaque ancien chapitre),
@@ -251,8 +260,10 @@ puis committer le dossier `Source/<Livre>/` (le PDF et `Source/_marker/` restent
 Trois points d'enregistrement, dans cet ordre :
 
 1. **`src/data/books.json`** (SOURCE UNIQUE des acronymes, #585) — l'entrée du livre porte
-   `abbr: '<ABRÉV>'`, `dir: 'Source/<dossier du livre>'` et `language` : la langue DU LIVRE (`'VF'`,
-   ou `'VO'` pour un livre VO autorisé) — un livre déjà présent en placeholder VO sans `dir` se
+   `abbr: '<ABRÉV>'`, `dir: 'Source/<dossier du livre>'`, `pdf: '<nom du PDF officiel sous Source/>'`
+   (lu par la couture `pdfDe` de `scripts/raw/_lib.mjs` ; aucun script ne construit ni ne code en dur
+   un chemin de PDF de livre, garde `scripts/guards/lib/pdfHorsCouture.mjs`) et `language` : la langue DU LIVRE
+   (`'VF'`, ou `'VO'` pour un livre VO autorisé) — un livre déjà présent en placeholder VO sans `dir` se
    COMPLÈTE, jamais un doublon. **Aucun script ne porte la LISTE des livres** : `BOOKS`
    (`scripts/raw/_lib.mjs`, source unique partagée par `coverage.mjs`/`reconcile.mjs`/`reanchor.mjs`)
    DÉRIVE de `books.json` — les entrées porteuses d'un `dir`, dans l'ORDRE DU FICHIER. (Les réglages
@@ -568,8 +579,8 @@ stock et rougit la garde — c'est ainsi qu'un geste non canonique se voit.
    montage, c'est le verdict le plus coûteux qui gouverne : un fragment `PERDUE` rend l'adresse
    entière `PERDUE`, même si un autre fragment n'était qu'`AMBIGUË`. **`--apply` n'écrit que les
    `RECALÉE`** ; les trois autres se règlent à la main, au PDF.
-5. `node scripts/raw/anchor-fill.mjs <ABBR> --ch NN --pdf <chemin> --apply` s'il reste des blocs sans
-   folio : il pose des ancres `data-folio` **ciblées**, et saute tout candidat absent, multiple ou
+5. `node scripts/raw/anchor-fill.mjs <ABBR> --ch NN --apply` s'il reste des blocs sans folio (PDF du
+   registre, `--pdf <chemin>` le SURCHARGE) : il pose des ancres `data-folio` **ciblées**, et saute tout candidat absent, multiple ou
    hors bornes. Une page qui porte déjà une ancre nue Marker `<span id="page-K-0"></span>` est sautée
    avec sa raison : poser la sienne ferait deux ancres de même `id`.
 6. `npm run gates && git commit` — tout dans le même commit.

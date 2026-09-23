@@ -26,9 +26,9 @@
 // chapitre, et `DescRefField` le dit en toutes lettres au lieu d'accuser l'adresse.
 // Garde : `src/data/source/prose-source.test.ts` « un build de production n'émet aucun asset `source/**` ».
 import { basename } from 'node:path'
-import { ABBR_BY_BOOK_ID, chapitresDe, lireChapitre, oublierChapitre } from './lecteur-fs.mjs'
+import { chapitresDe, lireChapitre, oublierChapitre } from './lecteur-fs.mjs'
 import { cheminChapitre, materialiser } from './resoudre.mjs'
-import { BOOKS, readText } from '../raw/_lib.mjs'
+import { BOOKS, REGISTRE_LIVRES, estLivreExtrait, readText, sigleDe } from '../raw/_lib.mjs'
 
 /** Documents de catalogue, et eux seuls : `src/data/<nom>.json` à plat (les projets de `src/scenes`
  *  entrent au périmètre quand leur schéma compose la prose adressable). */
@@ -88,8 +88,8 @@ const CORPUS_DISQUE = {
   chemin: cheminChapitre,
   lire: lireChapitre,
   oublier: oublierChapitre,
-  livres: () => Object.keys(ABBR_BY_BOOK_ID),
-  abbr: (bookId) => ABBR_BY_BOOK_ID[bookId],
+  livres: () => REGISTRE_LIVRES.filter(estLivreExtrait).map((b) => b.id),
+  abbr: (bookId) => sigleDe(bookId),
   chapitres: (bookId) => chapitresDe(bookId),
 }
 

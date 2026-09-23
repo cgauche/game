@@ -4,8 +4,8 @@
 // EXISTANTE, jamais de nouvelle ligne).
 //
 // Principe :
-//   1. Livre → dossier `Source/<dir>/` (BOOKS de `_lib.mjs`) → PDF sibling `Source/<dir>.pdf`
-//      (dérivé, PAS recopié de `reextract-all.sh` ; un PDF nommé autrement se passe par `--pdf`).
+//   1. Livre → dossier `Source/<dir>/` (`livreDuSigle` de `_lib.mjs`) → PDF du livre par `pdfDuSigle`
+//      (`_lib.mjs`, champ `pdf` de `books.json`) ; `--pdf` le SURCHARGE explicitement.
 //   2. Offset id↔folio PAR LIVRE : chaque ancre existante `id="page-K-0" data-folio="F"` donne
 //      `offset = K - F` (K = index pypdf 0-based, identique au numéro d'id Marker). Vérifié CONSTANT
 //      sur TOUTES les ancres du livre (tous chapitres confondus) — s'il varie, le livre est SKIPPÉ
@@ -35,7 +35,7 @@
 // Usage :
 //   node scripts/raw/anchor-fill.mjs <ABBR> [--ch NN] [--pdf <chemin>] [--offset N] [--dry|--apply]
 //   --dry (défaut) : rapport seul. --apply : réécrit les .md.
-//   --pdf : PDF dont le nom diffère de `<dir>.pdf`. --offset : offset K−folio fourni par
+//   --pdf : surcharge du PDF que le registre déclare. --offset : offset K−folio fourni par
 //   l'appelant (livre VIERGE, aucune ancre à dériver — cf. `folio-bootstrap.mjs`).
 import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
@@ -43,7 +43,7 @@ import { join, resolve, dirname } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
-import { BOOKS, normalize, readText } from './_lib.mjs'
+import { livreDuSigle, normalize, pdfDuSigle, readText } from './_lib.mjs'
 import { numeroDuFichier, plageDeLigne1 } from '../../src/data/source/decoupe.ts'
 import { offsetToLine, headAnchor } from './reanchor.mjs'
 
@@ -321,11 +321,12 @@ export function applyEdits(text, edits) {
 // l'appelant fournit alors l'offset qu'il a LU au pied/en-tête des pages du PDF
 // (`folio-bootstrap.mjs`). Absent → offset dérivé des ancres existantes, comme d'habitude.
 export function runBook(abbr, { chapter = null, apply = false, dir: dirOverride, pdfPath: pdfOverride, offset: offsetOverride = null } = {}) {
-  const dir = dirOverride ?? new Map(BOOKS).get(abbr)
-  if (!dir) return { abbr, ok: false, reason: `abréviation inconnue de BOOKS : ${abbr}` }
+  const dir = dirOverride ?? livreDuSigle(abbr)?.dir
+  if (!dir) return { abbr, ok: false, reason: `sigle sans livre extrait au registre : ${abbr}` }
   const off = offsetOverride == null ? resolveBookOffset(dir) : { ok: true, offset: offsetOverride }
   if (!off.ok) return { abbr, ok: false, reason: off.reason }
-  const pdfPath = pdfOverride ?? `${dir}.pdf`
+  let pdfPath
+  try { pdfPath = pdfOverride ?? pdfDuSigle(abbr) } catch (e) { return { abbr, ok: false, reason: e.message } }
   if (!existsSync(pdfPath)) return { abbr, ok: false, reason: `PDF introuvable : ${pdfPath}` }
 
   if (!existsSync(dir)) return { abbr, ok: false, reason: 'dossier introuvable' }

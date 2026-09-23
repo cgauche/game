@@ -24,7 +24,7 @@ import { CLASSES as CLASSES_ENTITE } from './check-entity-in-chapter.mjs'
 import { CLASSES as CLASSES_CATALOGS } from './build-catalogs.mjs'
 import { CLASSES as CLASSES_INDEX } from './build-atlas-index.mjs'
 import { CLASSES as CLASSES_CROISSANCE } from '../migrations/lib/croissance.mjs'
-import { refRe, refFolioRe, allAbbrAlternation, span, refNums, isRangeSuffix, bookOf, chapterFile, BOOKS, booksDe, cataloguesDe, classeDePage, CLASSES_DE_PAGE, coeursDe, coeurDe, coeursDuRegistre, estHorsRegle, horsRegleDe, livreExtraitDe, livresDeCatalogue, livresDeCoeur, motifHorsRegle, niveauDeSectionDe, niveauxDeSectionDe, pagesDeLAtlas, RAWDOC_AUTHOR_META, RAWDOC_META_GENERATED, siglesDeCoeur, teneurDe, teneursDe } from './_lib.mjs'
+import { refRe, refFolioRe, allAbbrAlternation, span, refNums, isRangeSuffix, bookOf, chapterFile, BOOKS, booksDe, cataloguesDe, classeDePage, CLASSES_DE_PAGE, coeursDe, coeurDe, coeursDuRegistre, estHorsRegle, horsRegleDe, livreDuDossier, livreDuSigle, livreExtraitDe, livresDeCatalogue, livresDeCoeur, motifHorsRegle, niveauDeSectionDe, niveauxDeSectionDe, pagesDeLAtlas, RAWDOC_AUTHOR_META, RAWDOC_META_GENERATED, sigleDe, siglesDeCoeur, teneurDe, teneursDe } from './_lib.mjs'
 import booksData from '../../src/data/books.json' with { type: 'json' }
 
 // Des sigles RÉELS, pris au registre par leur RÉGIME (livre de cœur) — jamais recopiés : le test dit
@@ -631,4 +631,29 @@ test('livreExtraitDe : un livre se résout par son id STABLE, et seulement s’i
   assert.equal(livreExtraitDe('M', registre), null, 'le sigle n’est pas l’id')
   assert.equal(livreExtraitDe('sans-dossier', registre), null, 'un livre sans `dir` n’est pas extrait')
   assert.equal(livreExtraitDe('inconnu', registre), null)
+})
+
+test('livreDuSigle : un livre se résout par son SIGLE, sur le MÊME prédicat d’extraction que livreExtraitDe', () => {
+  const registre = [...REGISTRE_PROPRIETES, { id: 'sans-dossier', abbr: 'S' }, { id: 'sans-sigle', dir: 'Source/X' }]
+  assert.equal(livreDuSigle('M', registre)?.id, 'm')
+  assert.equal(livreDuSigle('m', registre), null, 'l’id n’est pas le sigle')
+  assert.equal(livreDuSigle('S', registre), null, 'un livre sans `dir` n’est pas extrait')
+  assert.equal(livreExtraitDe('sans-sigle', registre), null, 'un livre sans sigle n’est pas extrait non plus')
+  assert.equal(livreDuSigle('Z', registre), null)
+})
+
+test('livreDuDossier : un livre EXTRAIT par son dossier, séparateurs et barre finale indifférents', () => {
+  const registre = [{ id: 'a', abbr: 'A', dir: 'Source/Livre A' }, { id: 'sans-sigle', dir: 'Source/Livre B' }]
+  assert.equal(livreDuDossier('Source/Livre A', registre)?.id, 'a')
+  assert.equal(livreDuDossier('Source\\Livre A\\', registre)?.id, 'a')
+  assert.equal(livreDuDossier('Source/Livre B', registre), null, 'un livre sans sigle n’est pas extrait')
+  assert.equal(livreDuDossier('Source/Autre', registre), null)
+})
+
+test('sigleDe : le sigle d’un livre EXTRAIT par son id — `null` hors du prédicat d’extraction', () => {
+  const registre = [...REGISTRE_PROPRIETES, { id: 'sans-dossier', abbr: 'S' }, { id: 'sans-sigle', dir: 'Source/X' }]
+  assert.equal(sigleDe('m', registre), 'M')
+  assert.equal(sigleDe('M', registre), null, 'le sigle n’est pas l’id')
+  assert.equal(sigleDe('sans-dossier', registre), null, 'un livre sans `dir` n’est pas extrait')
+  assert.equal(sigleDe('inconnu', registre), null)
 })

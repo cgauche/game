@@ -11,7 +11,7 @@
  * ENTRÉES :
  *   - `src/data/psychology.json`  (le SEUL document écrit — périmètre du pilote)
  *   - `Source/**`                 (les chapitres du livre cité, lus par `scripts/source/lecteur-fs.mjs`)
- *   - `src/data/books.json`       (id de livre → dossier d'extraction, via `ABBR_BY_BOOK_ID`)
+ *   - `src/data/books.json`       (id de livre → dossier d'extraction, via `sigleDe`)
  *
  * RÉSOLUTION : par le `Source/` LUI-MÊME, jamais par une table figée ici — `judge`
  * (`scripts/source/derive-decoupes.mjs`), SEULE définition du verdict d'adressabilité du dépôt, qui
@@ -38,7 +38,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ABBR_BY_BOOK_ID } from '../source/lecteur-fs.mjs';
+import { sigleDe } from '../raw/_lib.mjs';
 import { resoudreProse } from '../source/resoudre.mjs';
 import { judge } from '../source/derive-decoupes.mjs';
 import { jsonIndente, remplacerAncre } from '../source/reecriture-ancree.mjs';
@@ -86,7 +86,7 @@ for (const [i, entree] of data.entries()) {
     continue;
   }
   const livre = entree?.source?.book;
-  if (typeof livre !== 'string' || !ABBR_BY_BOOK_ID[livre]) {
+  if (typeof livre !== 'string' || !sigleDe(livre)) {
     sautees.push(`${ou} : ${livre ? `livre sans extraction FR (${livre})` : 'sans `source.book`'}`);
     continue;
   }

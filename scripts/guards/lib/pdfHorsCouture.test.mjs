@@ -1,0 +1,65 @@
+// Banc de la GARDE `pdfHorsCouture.mjs` (#1739) : chaque forme refusée est vue, puis le balayage du
+// dépôt entier — fichiers suivis ET non encore indexés.
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { REGISTRE_LIVRES } from '../../raw/_lib.mjs'
+import { ECRIT_LU } from '../../gates/toutes.mjs'
+import { EXEMPTIONS, EXT, estShell, fichiersBalayes, litterauxDe, nomPdf, racinesBalayees, sitesFautifs } from './pdfHorsCouture.mjs'
+
+const RACINE = fileURLToPath(new URL('../../..', import.meta.url))
+
+test('sitesFautifs : chaque forme refusée est VUE, chacune seule', () => {
+  const lits = litterauxDe([{ id: 'x', abbr: 'X', dir: 'Source/Mon Livre', pdf: nomPdf('Autre nom') }])
+  const cas = [
+    ['litteral-fini', "open('Source/x.§')"],
+    ['litteral-fini', 'const p = `${dir}.§`'],
+    ['litteral-fini', 'python f"{d}.§"'],
+    ['litteral-fini', 'p = "Source/%s.§" % x'],
+    ['litteral-fini', "globSync('Source/*.§')"],
+    ['extension-seule', "const p = dir + '.§'"],
+    ['extension-seule', "x.concat('.§')"],
+    ['extension-seule', "[x, '§'].join('.')"],
+    ['extension-seule', "path.format({ name: x, ext: '.§' })"],
+    ['extension-seule', 'p = x + os.extsep + "§"'],
+    ['extension-seule', "f.endsWith('.§')"],
+    ['extension-seule', 'Path(x).with_suffix(".§")'],
+    ['gabarit-ouvert', 'const c = `marker ${x}.§ --out`'],
+    ['filtre-regex', 'const re = /\\.§$/'],
+    ['litteral-coupe', "const p = 'Source/x.p' + 'df'"],
+    ['litteral-coupe', "const e = 'p' + 'df'"],
+  ]
+  for (const [forme, gabarit] of cas) {
+    const ligne = gabarit.replaceAll('§', EXT)
+    assert.deepEqual(sitesFautifs(ligne, lits).map((s) => s.forme), [forme], ligne)
+  }
+  assert.deepEqual(sitesFautifs('marker_single Source/$dir.§ --x'.replaceAll('§', EXT), lits, { shell: true }).map((s) => s.forme), ['mot-shell'])
+  assert.deepEqual(sitesFautifs(`p = Source/${nomPdf('Mon Livre')}`, lits).map((s) => s.forme), ['litteral-du-registre'])
+  assert.deepEqual(sitesFautifs("b.pdf != null && pdfDe(id)\nconst x = 'Source/*.md'", lits), [])
+})
+
+test('GARDE : aucun fichier de code ni JSON de configuration ne construit ni ne code en dur un chemin de PDF hors de la couture', () => {
+  const litteraux = litterauxDe(REGISTRE_LIVRES)
+  const fichiers = fichiersBalayes()
+  assert.ok(fichiers.length > 1000, `balayage suspect : ${fichiers.length} fichier(s)`)
+  const vues = new Set()
+  const fautes = []
+  for (const f of fichiers) {
+    const texte = readFileSync(join(RACINE, f), 'utf8').replace(/\r\n?/g, '\n')
+    for (const s of sitesFautifs(texte, litteraux, { shell: estShell(f) })) {
+      const ex = EXEMPTIONS.find((e) => e.fichier === f && e.motif.test(s.texte))
+      if (ex) { vues.add(ex); continue }
+      fautes.push(`${f}:${s.ligne} (${s.forme}) ${s.texte}`)
+    }
+  }
+  assert.deepEqual(fautes, [], 'chemin de PDF hors de `pdfDe` (scripts/raw/_lib.mjs) — passer par la couture ou sa CLI scripts/raw/pdf-de.mjs, ou exempter AU SITE (scripts/guards/lib/pdfHorsCouture.mjs)')
+  assert.deepEqual(EXEMPTIONS.filter((e) => !vues.has(e)).map((e) => `${e.fichier} ${e.motif}`), [], 'exemption sans site : à retirer')
+})
+
+test('LIT déclaré : chaque racine que la garde balaie est couverte par `ECRIT_LU[\'test:hooks\'].lit`', () => {
+  const lit = ECRIT_LU['test:hooks'].lit
+  const manquantes = racinesBalayees().filter((r) => !lit.some((l) => r === l || r.startsWith(l)))
+  assert.deepEqual(manquantes, [], `racine(s) balayée(s) absente(s) du \`lit\` de test:hooks (scripts/gates/toutes.mjs) : ${manquantes.join(', ')}`)
+})

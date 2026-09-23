@@ -8,7 +8,7 @@ Usage :
     python scripts/art-ref/probe.py --pdf <chemin PDF>
 
 Exemple :
-    python scripts/art-ref/probe.py --pdf "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre.pdf"
+    python scripts/art-ref/probe.py --pdf "$(node scripts/raw/pdf-de.mjs ennemi-dans-l-ombre)"
 """
 import argparse
 from pathlib import Path

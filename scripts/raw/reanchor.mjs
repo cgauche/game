@@ -26,7 +26,7 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
-import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT, pagesDeLAtlas, readText } from './_lib.mjs'
+import { BOOKS, esc, chapterFile, livreDuSigle, normalize, ELLIPSIS_SENTINEL as SENT, pagesDeLAtlas, readText } from './_lib.mjs'
 import { graphieDuFichier } from '../../src/data/source/decoupe.ts'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
@@ -169,9 +169,8 @@ function extractQuote(preceding) {
 }
 
 // ---------- recherche cross-chapitre (suggestion manuelle sur LOW, jamais auto) ----------
-const BOOK_DIR = new Map(BOOKS)
 function crossChapter(abbr, head, excludeCh) {
-  const dir = BOOK_DIR.get(abbr); if (!dir) return null
+  const dir = livreDuSigle(abbr)?.dir; if (!dir) return null
   const files = listerDossier(dir, { absent: 'vide' })
   const hits = []
   for (const f of files) {

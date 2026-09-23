@@ -10,14 +10,14 @@
  * finale, la suite (première ligne non vide après le marqueur) doit se retrouver dans la `desc`.
  */
 import { describe, it, expect } from 'vitest';
-import { chapterFile, readText } from '../../scripts/guards/lib/rawRefIntegrity.mjs';
-import { regles, books } from './index';
+import { chapterFile, readText, sigleDe } from '../../scripts/guards/lib/rawRefIntegrity.mjs';
+import { regles } from './index';
 
 const chapCache = new Map<string, string[] | null>();
 function chapitre(bookId: string, ch: string): string[] | null {
   const key = `${bookId}#${ch}`;
   if (!chapCache.has(key)) {
-    const abbr = books.find((b) => b.id === bookId)?.abbr;
+    const abbr = sigleDe(bookId);
     const f = abbr ? chapterFile(abbr, ch) : null;
     chapCache.set(key, f ? readText(f.path).split('\n') : null);
   }

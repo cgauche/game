@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { chapterFile } from '../../../scripts/guards/lib/rawRefIntegrity.mjs';
+import { REGISTRE_LIVRES, chapterFile, estLivreExtrait, sigleDe } from '../../../scripts/guards/lib/rawRefIntegrity.mjs';
 import { listerDossier } from '../../../scripts/guards/lib/lister.mjs';
 import {
   type ChapitreParse, type Fragment, type FragmentBlocs, type FragmentCellule, type Resolu,
@@ -21,9 +21,6 @@ import {
 } from './decoupe.ts';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
-const LIVRES: { id: string; abbr?: string; dir?: string }[] = JSON.parse(
-  readFileSync(join(RACINE, 'src/data/books.json'), 'utf8'),
-);
 const LDB = 'livre-de-base';
 const EDO = 'ennemi-dans-l-ombre';
 
@@ -31,7 +28,7 @@ const _cache = new Map<string, ChapitreParse>();
 
 /** Chemin du fichier de chapitre `NN` d'un livre. */
 function cheminChapitre(bookId: string, ch: string): string {
-  const abbr = LIVRES.find((b) => b.id === bookId)?.abbr;
+  const abbr = sigleDe(bookId);
   const f = abbr ? chapterFile(abbr, ch) : null;
   if (!f) throw new Error(`chapitre introuvable : ${bookId} ch.${ch}`);
   return join(RACINE, f.path);
@@ -39,7 +36,7 @@ function cheminChapitre(bookId: string, ch: string): string {
 
 /** Chaque chapitre de chaque livre extrait : `{ bookId, graphie }`. */
 function chapitresDuCorpus(): { bookId: string; graphie: string }[] {
-  return LIVRES.filter((b) => b.dir).flatMap((livre) => listerDossier(join(RACINE, livre.dir!))
+  return REGISTRE_LIVRES.filter(estLivreExtrait).flatMap((livre) => listerDossier(join(RACINE, livre.dir!))
     .map((f) => graphieDuFichier(f))
     .filter((g): g is string => g != null)
     .map((graphie) => ({ bookId: livre.id, graphie })));

@@ -5,21 +5,23 @@
 // Le livre n'est pas nommé ici (#1825) : son sigle ENTRE en argument, son libellé se lit au
 // registre `src/data/books.json`.
 import { readFileSync, writeFileSync } from 'node:fs'
-import { estLivreExtrait, marqueurIntegration, readText, REGISTRE_LIVRES } from './_lib.mjs'
+import { BOOKS, livreDuSigle, marqueurIntegration, readText, REGISTRE_LIVRES } from './_lib.mjs'
 
 const USAGE = 'usage: node scripts/raw/apply-livre.mjs <ABRÉV> <workflow-output.json>'
 const [, , ABBR, OUTFILE] = process.argv
 if (!ABBR || !OUTFILE) { console.error(USAGE); process.exit(1) }
 
-const livre = REGISTRE_LIVRES.find((b) => b.abbr === ABBR)
+// Même prédicat d'extraction que le périmètre du workflow (`livreDuSigle` → `estLivreExtrait`) : un
+// livre sans `dir` n'a aucun chapitre à citer, donc rien à intégrer — l'intégrer poserait des réfs
+// invalidables.
+const livre = livreDuSigle(ABBR)
 if (!livre) {
-  console.error(`apply-livre: sigle « ${ABBR} » absent de src/data/books.json — sigles du registre : ${REGISTRE_LIVRES.filter((b) => b.abbr).map((b) => b.abbr).join(', ')}`)
-  process.exit(1)
-}
-// Même prédicat d'extraction que le périmètre du workflow (`estLivreExtrait`) : un livre sans `dir`
-// n'a aucun chapitre à citer, donc rien à intégrer — l'intégrer poserait des réfs invalidables.
-if (!estLivreExtrait(livre)) {
-  console.error(`apply-livre: le livre « ${ABBR} » n'a pas de \`dir\` dans src/data/books.json — aucune extraction sous Source/, donc aucune intégration à appliquer`)
+  // Registre BRUT, hors `livreDuSigle` qui ne rend que les extraits : seule façon de distinguer
+  // « sigle inconnu » de « livre connu mais non extrait » dans le message.
+  const connu = REGISTRE_LIVRES.some((b) => b.abbr === ABBR)
+  console.error(connu
+    ? `apply-livre: le livre « ${ABBR} » n'a pas de \`dir\` dans src/data/books.json — aucune extraction sous Source/, donc aucune intégration à appliquer`
+    : `apply-livre: sigle « ${ABBR} » absent de src/data/books.json — sigles des livres extraits : ${BOOKS.map(([ab]) => ab).join(', ')}`)
   process.exit(1)
 }
 

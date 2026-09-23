@@ -15,7 +15,7 @@ import {
 import { cleDeSite, ecartDuVolet, refusDeCroissance } from '../guards/lib/stock.mjs'
 import { stocksEnTexte, trier } from './lib/empty-folios-stock.mjs'
 import { lireStockJson, readStock, texteDeStock } from './stockNominatif.mjs'
-import { BOOKS } from './_lib.mjs'
+import { BOOKS, livreDuSigle } from './_lib.mjs'
 import { parUnitesDeCode } from '../guards/lib/lister.mjs'
 
 /** Un dossier de livre en chemin POSIX — la graphie que le stock et la porte de plage partagent. */
@@ -357,7 +357,7 @@ test('assertEmptyFoliosAgainstStock : entrée sans `pdfChars` → INAUDITABLE, d
 const STOCK = lireStocksAncresVides()
 
 test('stock : le folio 88 du LDB (carrière de Juriste) est RESTITUÉ — porteur au corpus, absent de la mesure comme du stock', () => {
-  const dir = new Map(BOOKS).get('LDB')
+  const dir = livreDuSigle('LDB').dir
   const cle = cleDeSite({ fichier: `${posixDe(dir)}/08 - Statut.md`, ref: 'LDB 8 folio 88', occurrence: 1 })
   const md = readFileSync(join(dir, '08 - Statut.md'), 'utf8')
   const page = md.split('data-folio="88"')[1].split('data-folio="89"')[0]
@@ -435,7 +435,7 @@ test('couverture : la DERNIÈRE ancre de chaque LIVRE est hors mesure — aucun 
 // ---------- MORSURE sur le CAS D'OR réel : la page 88 du LDB, re-vidée EN MÉMOIRE (#1457, grief G4) ----------
 
 test('détecteur : re-vider le folio 88 du VRAI `08 - Statut.md` le fait ressortir, et le stock le dénonce comme INCONNU', () => {
-  const dir = new Map(BOOKS).get('LDB')
+  const dir = livreDuSigle('LDB').dir
   const md = readFileSync(join(dir, '08 - Statut.md'), 'utf8')
   const finAncre88 = md.indexOf('</span>', md.indexOf('data-folio="88"')) + '</span>'.length
   const debutAncre89 = md.lastIndexOf('<span', md.indexOf('data-folio="89"'))

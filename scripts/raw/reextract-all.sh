@@ -1,36 +1,23 @@
 #!/usr/bin/env bash
-# Ré-extrait les 13 suppléments à Marker (--disable_ocr, paginé) puis découpe en chapitres NN-Titre.md
-# vers un STAGING (Source/_marker/split/<dir>/). NE promeut PAS (revue manuelle avant d'écraser Source/).
-# Le LDB est déjà fait. Lancer en arrière-plan : bash scripts/raw/reextract-all.sh
+# Ré-extrait à Marker (--disable_ocr, paginé) les livres dont l'id (`src/data/books.json`) est passé en
+# argument, puis découpe en chapitres NN-Titre.md vers un STAGING (Source/_marker/split/<id>/ de l'arbre
+# principal). NE promeut PAS (revue manuelle avant d'écraser Source/). Chemins : CLI
+# `scripts/raw/pdf-de.mjs` (#1739). Lancer en arrière-plan : bash scripts/raw/reextract-all.sh <id>...
 cd "$(dirname "$0")/../.." || exit 1
 CFG="scripts/raw/marker-paginate.json"
-PDFS=(
-"WH - V4 - Aux Armes.pdf"
-"WH - V4 - Le zoo imperial.pdf"
-"Warhammer v4 - Les archives de l'Empire volume 1.pdf"
-"Warhammer v4 - Les archives de l'Empire volume 2.pdf"
-"Warhammer v4 - Middenheim la cite du Loup Blanc.pdf"
-"Warhammer v4 - 1.0 L'ennemi dans l'Ombre.pdf"
-"Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon.pdf"
-"Warhammer v4 - 2.0 Mort sur le Reik.pdf"
-"Warhammer v4 - 2.0 Mort sur le Reik Compagnon.pdf"
-"Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone.pdf"
-"Warhammer v4 - Aldorf la Couronne de l'Empire.pdf"
-"Warhammer v4 - Aventures a Ubersreik.pdf"
-"Warhammer v4 - Nuits agitees & dures journees.pdf"
-)
+if [ "$#" -eq 0 ]; then echo "usage : bash scripts/raw/reextract-all.sh <id du livre>..."; exit 1; fi
 i=0
-for pdf in "${PDFS[@]}"; do
+for id in "$@"; do
   i=$((i+1))
-  dir="${pdf%.pdf}"
-  echo "######## [$i/13] $dir ########"
-  if [ ! -d "Source/$dir" ]; then echo "DIR MANQUANT: Source/$dir"; continue; fi
-  out="Source/_marker/full/$dir"
+  echo "######## [$i/$#] $id ########"
+  pdf=$(node scripts/raw/pdf-de.mjs --copie-marker "$id") || { echo "PDF INDISPONIBLE: $id"; continue; }
+  out=$(node scripts/raw/pdf-de.mjs --sortie-marker "$id") || exit 1
+  split=$(node scripts/raw/pdf-de.mjs --marker "split/$id") || exit 1
   rm -rf "$out"
-  marker_single "Source/$pdf" --output_format markdown --config_json "$CFG" --disable_ocr --output_dir "$out" --disable_image_extraction 2>&1 | tail -1
+  marker_single "$pdf" --output_format markdown --config_json "$CFG" --disable_ocr --output_dir "$out" --disable_image_extraction 2>&1 | tail -1
   md=$(find "$out" -name "*.md" | head -1)
-  if [ -z "$md" ]; then echo "ÉCHEC EXTRACTION: $dir"; continue; fi
-  node scripts/raw/marker-split.mjs "Source/$dir" "$md" "Source/_marker/split/$dir" 2>&1 | tail -3
-  echo "OK $dir"
+  if [ -z "$md" ]; then echo "ÉCHEC EXTRACTION: $id"; continue; fi
+  node scripts/raw/marker-split.mjs "$id" "$md" "$split" 2>&1 | tail -3
+  echo "OK $id"
 done
 echo "######## DRIVER TERMINÉ ########"

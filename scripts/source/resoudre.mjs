@@ -4,8 +4,8 @@
 // texte approchant ni un silence. `desc` et `descRef` sont EXCLUSIFS : les deux ensemble = adresse
 // et copie en concurrence, donc levée.
 import { resoudreAdresse } from '../../src/data/source/decoupe.ts'
-import { ABBR_BY_BOOK_ID, lireChapitre } from './lecteur-fs.mjs'
-import { chapterFile } from '../raw/_lib.mjs'
+import { lireChapitre } from './lecteur-fs.mjs'
+import { chapterFile, sigleDe } from '../raw/_lib.mjs'
 
 /**
  * Prose d'une entrée.
@@ -39,7 +39,7 @@ export function resoudreProse(entree, lecteur = lireChapitre) {
  * @param {string} bookId @param {string|number} ch @returns {string|null}
  */
 export function cheminChapitre(bookId, ch) {
-  const abbr = ABBR_BY_BOOK_ID[bookId]
+  const abbr = sigleDe(bookId)
   return (abbr ? chapterFile(abbr, ch) : null)?.path ?? null
 }
 

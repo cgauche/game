@@ -104,7 +104,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (124 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 133 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 135 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
@@ -122,7 +122,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 
 | Non-versionné | Pourquoi (`.gitignore`) | Régénération / accès |
 |---|---|---|
-| PDFs de `Source/*.pdf` (`*.pdf`) | droits Cubicle 7, taille (limite GitHub 100 Mo/fichier) | conservés LOCALEMENT ; ré-extraction via `bash scripts/raw/reextract-all.sh` (Marker, staging `Source/_marker/split/`, **ne promeut pas** — revue manuelle avant d'écraser `Source/`) |
+| PDFs de `Source/*.pdf` (`*.pdf`) | droits Cubicle 7, taille (limite GitHub 100 Mo/fichier) | conservés LOCALEMENT ; ré-extraction via `bash scripts/raw/reextract-all.sh <id>…` (Marker, staging `Source/_marker/split/`, **ne promeut pas** — revue manuelle avant d'écraser `Source/`) |
 | Staging Marker (`Source/_marker/`) | intermédiaire de pipeline ; seuls les chapitres curés `Source/<Livre>/NN - *.md` sont committés | régénéré par le pipeline `scripts/raw/marker-*` |
 | Images extraites des PDF (`/art-ref/`) | droits Cubicle 7, ce sont des sorties ; le pipeline lui-même reste tracké sous `scripts/art-ref/` | régénérables via `scripts/art-ref/extract.py`, `scripts/art-ref/ldb_extract.py`, `scripts/art-ref/ldb_map.py`, `scripts/art-ref/probe.py` + les PDFs locaux |
 | Sorties de QC (`public/qc/*`) | planches de revue régénérables — pas du source | régénérables par les scripts `scripts/qc/` ; deux exceptions restent VERSIONNÉES : `!public/qc/baseline-affine/` (baseline affine, #1176 C3) et `!public/qc/soldes/` (les captures que cite le champ `capture:` d'un solde — la porte `verifierCapture` de `scripts/hooks/solde-ticket-guard.mjs` refuse une capture ignorée par git) |
@@ -243,4 +243,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: d30348882e727ca498da6aeb0b65c8ebe9954b69 (25 fichiers, 8 dossiers) corps: 175864012063360cbc3e3ffe9c895b6e289e18c6 -->
+<!-- sources-empreinte: e7f4c2b5f4342b7c8d56bce2a49bcc9c5707831d (25 fichiers, 8 dossiers) corps: cdeb0932bdccf83d91c87aa00a6086fbe5f261ce -->

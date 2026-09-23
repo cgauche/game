@@ -45,7 +45,7 @@ test('marqueur : le tag capturé est le sigle, et un sigle HORS registre n’ouv
 })
 
 test('estLivreExtrait : un livre sans `dir` est refusé par le même prédicat que le périmètre', () => {
-  const sansDir = REGISTRE_LIVRES.filter((b) => b.abbr && !b.dir)
+  const sansDir = REGISTRE_LIVRES.filter((b) => b.abbr && !estLivreExtrait(b))
   assert.ok(sansDir.length > 0, 'le registre ne porte aucun livre sans extraction — le cas n’est pas mesuré')
   assert.deepEqual(sansDir.filter(estLivreExtrait), [])
 })

@@ -21,7 +21,8 @@ import { fileURLToPath } from 'node:url'
 import {
   cellRefFor, estErreur, findCells, findRuns, joinNorm, normText, resoudreAdresse,
 } from '../../src/data/source/decoupe.ts'
-import { ABBR_BY_BOOK_ID, chapitresDe, lireChapitre } from './lecteur-fs.mjs'
+import { chapitresDe, lireChapitre } from './lecteur-fs.mjs'
+import { sigleDe } from '../raw/_lib.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -70,7 +71,7 @@ function verifier(chapitre, ref, D) {
  */
 export function judge(entry) {
   const book = entry?.source?.book
-  if (!book || !ABBR_BY_BOOK_ID[book]) {
+  if (!book || !sigleDe(book)) {
     return { verdict: 'SANS-SOURCE', reason: book ? `livre sans dir: ${book}` : 'source.book absent' }
   }
   const desc = typeof entry.desc === 'string' ? entry.desc : ''

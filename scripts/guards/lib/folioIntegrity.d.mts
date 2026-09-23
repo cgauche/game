@@ -67,7 +67,6 @@ export interface UnresolvedEntry {
   titreVerdict: string;
 }
 
-export const BOOK_ABBR_BY_ID: Record<string, string>;
 export const MIN_DESC: number;
 export const MIN_TITLE: number;
 export const MAX_ECART_TITRE: number;

@@ -16,6 +16,7 @@
  */
 import { useEffect, useId, useMemo, useState } from 'react';
 import { books } from '../../data';
+import { estExtrait } from '../../data/schemas/grammaire/livres-extraits';
 import { chargerChapitre, chargerManifeste, type ChapitreManifeste, type Manifeste } from '../../data/source/chapitres';
 import {
   blocsCouverts,
@@ -143,7 +144,7 @@ export function DescRefField({ label, value, onChange, chargeurs }: {
 }) {
   const { chapitre: lireChapitre, manifeste: lireManifeste } = chargeurs ?? CHARGEURS_REELS;
   const uid = useId();
-  const livres = useMemo(() => books.filter((b) => !!b.dir), []);
+  const livres = useMemo(() => books.filter((b) => estExtrait(b.id)), []);
   const [manifeste, setManifeste] = useState<Manifeste | null>(null);
   // Le chapitre chargé PORTE l'adresse pour laquelle il l'a été : sans cet appariement, un rendu qui
   // survient entre deux chargements lit les sections de l'ANCIEN chapitre (mesuré en recette : passer

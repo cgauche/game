@@ -15,7 +15,8 @@ Usage
     python scripts/art-ref/extract.py --pdf <chemin PDF> --out <dossier> [options]
 
 Options :
-    --pdf PATH            chemin du PDF (relatif à la racine du repo, ou absolu)
+    --pdf PATH            chemin du PDF ; celui d'un livre vient de la CLI de la couture
+                          `pdfDe` : "$(node scripts/raw/pdf-de.mjs <id du livre>)"
     --out PATH            dossier de sortie (relatif à la racine du repo, ou absolu)
     --mode {all,filter}   all = toute page rendue+extraite (défaut si ni --keywords
                           ni --targets) ; filter = ne traiter que les pages qui
@@ -41,25 +42,25 @@ Exemples par livre
 -------------------
   Zoo Impérial (créatures ciblées, ex. bestiaire en attente) :
     python scripts/art-ref/extract.py \
-      --pdf "Source/WH - V4 - Le zoo imperial.pdf" --out art-ref/zi \
+      --pdf "$(node scripts/raw/pdf-de.mjs zoo-imperial)" --out art-ref/zi \
       --targets-json art-ref/zi/targets.json
 
   Nuits agitées & dures journées (repérage de lieux, l'Opéra) :
     python scripts/art-ref/extract.py \
-      --pdf "Source/Warhammer v4 - Nuits agitees & dures journees.pdf" --out art-ref/opera \
+      --pdf "$(node scripts/raw/pdf-de.mjs nuits-agitees-et-dures-journees)" --out art-ref/opera \
       --keywords "staatsoper,loge royale,coursive,galerie,escaliers jumeaux,une nuit à l,auditorium,vestiaires,coulisses" \
       --min-px 200 --dpi 140 --prefix opera_p --sized-names
 
   L'Ennemi dans l'Ombre (scan investigatif + extraction intégrale) :
     python scripts/art-ref/extract.py \
-      --pdf "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre.pdf" --out art-ref \
+      --pdf "$(node scripts/raw/pdf-de.mjs ennemi-dans-l-ombre)" --out art-ref \
       --mode all \
       --keywords "mutant,cratinx,knud,diligence,hache,tête de chien,tete de chien,massacre,sosie,chaos,créature,creature,sang sur la route,embuscade,renvers" \
       --big-range 22-32
 
   Scan seul, sans extraction (repérage rapide) :
     python scripts/art-ref/extract.py \
-      --pdf "Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre.pdf" --out art-ref \
+      --pdf "$(node scripts/raw/pdf-de.mjs ennemi-dans-l-ombre)" --out art-ref \
       --keywords "mutant,cratinx,cratinks,diligence,embuscade,sang sur la route,hache,tete de chien,tête de chien" \
       --scan-only
 """

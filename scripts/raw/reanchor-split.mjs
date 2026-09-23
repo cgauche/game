@@ -9,7 +9,7 @@
 //   node scripts/raw/reanchor-split.mjs --apply     → réécrit en place docs/raw/*.md
 import { writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { BOOKS, esc, normalize, pagesDeLAtlas, readText } from './_lib.mjs'
+import { esc, livreDuSigle, normalize, pagesDeLAtlas, readText } from './_lib.mjs'
 import { graphieDuFichier, numeroDuFichier } from '../../src/data/source/decoupe.ts'
 import { RAWDIR, CLASSES } from './check-refs.mjs'
 
@@ -47,7 +47,7 @@ export function origLinesOf(source) {
 }
 
 export function buildBookIndex(abbr) {
-  const dir = new Map(BOOKS).get(abbr)
+  const dir = livreDuSigle(abbr)?.dir
   const files = listerDossier(dir).filter((f) => numeroDuFichier(f) != null)
   const index = {}
   for (const f of files) {

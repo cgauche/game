@@ -87,8 +87,8 @@ describe(`prose inline recopiée d’un livre extrait — stock à cible ZÉRO (
     // `livresExtraits()` (`scripts/guards/lib/proseInline.mjs`) porte le stock. Deux lectures de
     // `books.json` : un changement de forme du document (racine encapsulée, `dir` vide plutôt
     // qu'absent) les décorrellerait EN SILENCE — le stock compterait ce que le verrou ne voit plus.
-    // 3ᵉ dérivation, HORS de ce contrat : `BOOKS`/`BOOK_DIR` (`scripts/raw/_lib.mjs`), keyée par
-    // `abbr` — elle sert l'Atlas, pas la grammaire.
+    // `livresExtraits()` juge par `estLivreExtrait` (`scripts/raw/_lib.mjs`) : le prédicat de l'outillage
+    // est dans ce contrat.
     expect([...extraits()].sort()).toEqual([...livresExtraits()].sort());
   });
 

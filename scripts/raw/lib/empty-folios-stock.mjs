@@ -2,7 +2,7 @@
 // #1727 T2) — `scripts/raw/empty-folios-perdues-stock.json` et `…-benignes-stock.json`.
 // Le détecteur (`check-folio-continuity.mjs#scanAllEmptyFolios`) dit QUELLES pages n'ont aucun
 // contenu dans le `.md` ; il ne peut pas dire si la page en avait. Le TRI est fait ICI, au PDF du
-// dépôt (`Source/<dir>.pdf`, pypdf via `lib/pdf-extract.py`, offset K = folio + offset du livre) :
+// livre (`pdfDuSigle` de `_lib.mjs`, pypdf via `lib/pdf-extract.py`, offset K = folio + offset du livre) :
 //   - la page PDF porte du texte utile  → PERDUE (la vérité citable manque au corpus) ;
 //   - la page PDF n'en porte pas        → BÉNIGNE (pleine page d'illustration, page blanche).
 // Le tri est donc STRUCTUREL (mesuré), jamais une liste d'exceptions à la main.
@@ -16,10 +16,10 @@
 // fichier, le même geste est net 0 — invisible aux deux portes (sonde du 2026-09-14 : `[]` à un
 // fichier, `net 1` à deux).
 // Re-run : node scripts/raw/lib/empty-folios-stock.mjs [--seuil N] [--dry]
-import { existsSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS } from '../_lib.mjs'
+import { BOOKS, pdfDuSigle } from '../_lib.mjs'
 import { EMPTY_BENIGNES_PATH, EMPTY_PERDUES_PATH, SEUIL_UTILE, entreesDAncresVides, scanEmptyFoliosInBook } from '../check-folio-continuity.mjs'
 import { extractPages, resolveBookOffset, HAS_LOWER_RE } from '../anchor-fill.mjs'
 import { parUnitesDeCode } from '../../guards/lib/lister.mjs'
@@ -45,8 +45,8 @@ export function mesurerLivre(abbr, dir, { extract = extractPages } = {}) {
   if (!candidats.length) return { abbr, ok: true, mesures: [] }
   const off = resolveBookOffset(dir)
   if (!off.ok) return { abbr, ok: false, reason: off.reason, mesures: [] }
-  const pdfPath = `${dir}.pdf`
-  if (!existsSync(pdfPath)) return { abbr, ok: false, reason: `PDF introuvable : ${pdfPath}`, mesures: [] }
+  let pdfPath
+  try { pdfPath = pdfDuSigle(abbr) } catch (e) { return { abbr, ok: false, reason: e.message, mesures: [] } }
   const pages = extract(pdfPath, [...new Set(candidats.map((c) => c.folio + off.offset))])
   const mesures = candidats.map((c) => ({ ...c, pdfChars: caracteresUtiles(pages.get(c.folio + off.offset)) }))
   return { abbr, ok: true, offset: off.offset, mesures }

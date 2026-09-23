@@ -38,9 +38,12 @@ const doc = document(
   'books',
   famille,
   {
-    abbr: z.string(),
+    abbr: z.string().min(1),
     /** Chemin d'extraction `Source/…` — présent sur les livres couverts par l'Atlas RAW. */
     dir: z.string().nullable().optional(),
+    /** Nom du fichier PDF officiel du livre sous `Source/` — résolu dans l'arbre principal par
+     *  `scripts/raw/_lib.mjs#pdfDe`, seule construction d'un chemin de PDF de livre (#1739). */
+    pdf: z.string().endsWith('.pdf').nullable().optional(),
     /** Chemin d'extraction `Source/…` d'un livre HORS Atlas RAW (`scripts/raw/_lib.mjs#BOOKS`
      *  ne le porte pas, donc pas de pont folio ni de fiche RAW) dont les chapitres sont néanmoins
      *  sur disque et citables — `frenchy-bzh`. Lu par `skillSpecWalk.mjs#sourceDirOf`. */
@@ -66,6 +69,7 @@ const doc = document(
   {
     abbr: { label: 'Acronyme', hint: 'Acronyme d’affichage du livre (Compendium et Atlas RAW)' },
     dir: { label: 'Dossier d’extraction (Atlas)', hint: 'Chemin `Source/…` du livre, pour les livres couverts par l’Atlas RAW' },
+    pdf: { label: 'PDF du livre', hint: 'Nom du fichier PDF officiel sous `Source/`, extension comprise ; vide = aucun PDF déclaré' },
     extractionDir: { label: 'Dossier d’extraction (hors Atlas)', hint: 'Chemin `Source/…` d’un livre hors Atlas RAW mais citable' },
     language: { label: 'Langue', hint: 'Langue de l’édition (VF/VO)' },
     coeur: { label: 'Cœur de règles', hint: 'Corps de règles dont ce livre est le cœur ; vide pour un supplément' },

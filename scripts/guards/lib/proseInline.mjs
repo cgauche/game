@@ -19,6 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { listerArbre } from './lister.mjs';
+import { estLivreExtrait } from '../../raw/_lib.mjs';
 import { fileURLToPath } from 'node:url';
 
 /** Racine du dépôt, déduite de l'emplacement de ce module (`scripts/guards/lib`). */
@@ -36,11 +37,11 @@ export const RACINES_PROSE = Object.freeze([
   Object.freeze({ dossier: 'src/scenes', suffixe: '-projet.json', recursif: true }),
 ]);
 
-/** Ids des livres dont l'extraction FR est sur disque (`dir` non vide) — les seuls adressables. */
+/** Ids des livres EXTRAITS (`estLivreExtrait`) du registre de `root` — les seuls adressables. */
 export function livresExtraits(root = RACINE_DEPOT) {
   const books = JSON.parse(fs.readFileSync(path.join(root, 'src/data/books.json'), 'utf8'));
   const liste = Array.isArray(books) ? books : books.entries;
-  return new Set(liste.filter((b) => typeof b.dir === 'string' && b.dir.length > 0).map((b) => b.id));
+  return new Set(liste.filter(estLivreExtrait).map((b) => b.id));
 }
 
 function fichiersDe(dir, suffixe, recursif) {

@@ -47,6 +47,10 @@ export function chapterFile(abbr: string, nn: string, range?: { from: string; to
 export function readText(path: string): string;
 export function alternationDuRegistre(): string;
 export const REGISTRE_LIVRES: { id: string; abbr?: string; dir?: string; language?: string }[];
+type LivreDuRegistre = (typeof REGISTRE_LIVRES)[number];
+export function estLivreExtrait(b: LivreDuRegistre | null | undefined): boolean;
+export function livreExtraitDe(id: string, registre?: LivreDuRegistre[]): (LivreDuRegistre & { abbr: string; dir: string }) | null;
+export function sigleDe(id: string, registre?: LivreDuRegistre[]): string | null;
 
 export function significantWords(text: string, minLen?: number): Set<string>;
 export function sharesSignificantWord(a: string, b: string, minLen?: number): boolean;

@@ -8,7 +8,7 @@
 // de réf citable ; aucun doublon ; et l'ORDRE du fichier est celui du rendu.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { chapterFile, refRe, REGISTRE_CHAPITRES, REGISTRE_LIVRES } from './_lib.mjs'
+import { chapterFile, estLivreExtrait, refRe, REGISTRE_CHAPITRES, REGISTRE_LIVRES } from './_lib.mjs'
 import { idsDeCatalogue } from './build-catalogs.mjs'
 
 const { horsRegle, enCatalogue } = REGISTRE_CHAPITRES
@@ -17,7 +17,7 @@ const TOUTES = [
   ...enCatalogue.map((e) => ({ ...e, ou: `enCatalogue (${e.catalogue})` })),
 ]
 /** Les livres COUVERTS par l'Atlas : ceux dont le `dir` porte des chapitres sur disque. */
-const LIVRES_COUVERTS = new Map(REGISTRE_LIVRES.filter((b) => b.dir && b.abbr).map((b) => [b.id, b]))
+const LIVRES_COUVERTS = new Map(REGISTRE_LIVRES.filter(estLivreExtrait).map((b) => [b.id, b]))
 
 test('#1825 : tout `book` est l’id d’un livre du registre COUVERT par l’Atlas (porteur d’un `dir`)', () => {
   const inconnus = TOUTES.filter((e) => !LIVRES_COUVERTS.has(e.book)).map((e) => `${e.book} ${e.ch} (${e.ou})`)

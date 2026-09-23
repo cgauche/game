@@ -12,11 +12,11 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { DECOUPES_DIR, decoupeDe, livresDecoupes, REGISTRE_LIVRES } from './_lib.mjs'
+import { DECOUPES_DIR, decoupeDe, estLivreExtrait, livresDecoupes, REGISTRE_LIVRES } from './_lib.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
 import { titreDuFichier } from '../../src/data/source/decoupe.ts'
 
-const LIVRES_COUVERTS = new Map(REGISTRE_LIVRES.filter((b) => b.dir && b.abbr).map((b) => [b.id, b]))
+const LIVRES_COUVERTS = new Map(REGISTRE_LIVRES.filter(estLivreExtrait).map((b) => [b.id, b]))
 const IDS = livresDecoupes()
 
 test('#1739 : au moins une liste de découpe existe — un dossier vide rendrait ce banc VERT À VIDE', () => {

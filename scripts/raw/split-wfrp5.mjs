@@ -22,7 +22,7 @@ import {
 } from './lib/marker-pages.mjs'
 import { deballerSup } from './lib/titres.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
-import { decoupeDe, livreExtraitDe } from './_lib.mjs'
+import { copieMarkerDe, decoupeDe, livreExtraitDe, pdfRequisDe, sortieMarkerDe } from './_lib.mjs'
 import { indexDe, spanDe } from './recouper-source.mjs'
 import { graphieDeChapitre, largeurDeChapitre, ligne1DePlage } from '../../src/data/source/decoupe.ts'
 
@@ -31,18 +31,16 @@ const DRY = process.argv.slice(2).includes('--dry')
 /** Id du livre que ce découpeur sert (`src/data/books.json`). */
 const LIVRE = 'core-rulebook-5e'
 // Extraction par TRANCHES de pages (`--page_range a-b`, une sous-arborescence `slices/<a>-<b>/` par
-// tranche) : l'extraction d'un tenant est tuée par le harnais faute de mémoire, et le nom long du
-// PDF officiel dépasse MAX_PATH sous Windows — le PDF est copié en `Source/_marker/wfrp5.pdf`.
-// `Source/_marker/` n'est pas suivi par git, et son chemin est ÉCRIT ICI faute de champ `pdf` au
-// registre des livres : ce découpeur ne se joue que depuis l'arbre PRINCIPAL (#1739, 2026-09-19,
-// bloquant 3 — couture `pdfDe(abbr)` à venir dans son lot).
-const MARKER_DIR = 'Source/_marker/full/wfrp5/slices'
-// PDF de référence des VÉRIFICATIONS (`verifierExtraction` : couche texte pypdf des pages que Marker
-// a rendues vides) et des commandes de restitution imprimées.
-const PDF = 'Source/_marker/wfrp5.pdf'
-
+// tranche) : l'extraction d'un tenant est tuée par le harnais faute de mémoire. `Source/_marker/` et
+// les PDF vivent dans l'arbre PRINCIPAL, résolus par la couture de `_lib.mjs` (#1739).
 const livre = livreExtraitDe(LIVRE)
 if (!livre) { console.error(`LIVRE INCONNU AU REGISTRE : ${LIVRE}`); process.exit(1) }
+let MARKER_DIR
+try { MARKER_DIR = join(sortieMarkerDe(LIVRE), 'slices') } catch (e) { console.error(e.message); process.exit(1) }
+// PDF de référence des VÉRIFICATIONS (`verifierExtraction` : couche texte pypdf des pages que Marker
+// a rendues vides).
+let PDF
+try { PDF = pdfRequisDe(LIVRE) } catch (e) { console.error(e.message); process.exit(1) }
 // Tout nom ÉCRIT sous `Source/` passe par `nomAscii` (#1699) : un chemin non ASCII ne naît pas ici.
 const OUT = nomAscii(String(livre.dir).split('\\').join('/'))
 const LISTE = decoupeDe(LIVRE)
@@ -69,9 +67,12 @@ const lastPage = Math.max(...pageText.keys())
 for (const pg of verif.manquantes) console.warn(`page ${pg} absente de l'extraction (page sans texte ?)`)
 if (verif.perdues.length) {
   console.error(`PAGES PERDUES : ${verif.perdues.length} page(s) vide(s) chez Marker alors que le PDF en porte du texte — ré-extraire CHACUNE avant de découper :`)
+  // Marker lit la COPIE DE TRAVAIL (`copieMarkerDe`), posée par la CLI de la couture.
+  const copie = copieMarkerDe(LIVRE)
+  console.error(`  (copie de travail : node scripts/raw/pdf-de.mjs --copie-marker ${LIVRE})`)
   for (const { page, pypdf } of verif.perdues) {
     console.error(`  page ${page} (pypdf : ${pypdf} caractères)`)
-    console.error(`    ${commandeRestitution(PDF, MARKER_DIR, page)}`)
+    console.error(`    ${commandeRestitution(copie, MARKER_DIR, page)}`)
   }
   process.exit(1)
 }

@@ -2270,6 +2270,8 @@ export interface BookData {
   label: string;
   abbr: string;
   dir?: string | null;
+  /** Nom du PDF officiel sous `Source/` — résolu par `scripts/raw/_lib.mjs#pdfDe`. */
+  pdf?: string | null;
   extractionDir?: string | null;
   language: string | null;
   /** Corps de règles dont ce livre est le CŒUR (`4e`, `5e`) — absent (ou vidé à l'atelier) d'un supplément. */

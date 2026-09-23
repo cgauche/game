@@ -34,6 +34,7 @@ import argparse
 import io
 import json
 import os
+import subprocess
 import sys
 
 from pdfminer.high_level import extract_pages
@@ -57,16 +58,22 @@ CHAR_KEY = {
     "Soc": "sociabilite",
 }
 
-# Livres FR de `Source/` portant des Carrières (mesuré sur `src/data/careers.json`).
-BOOKS = [
-    {"id": "livre-de-base", "pdf": "Source/Warhammer v4 - Livre de base version corrigee.pdf"},
-    {"id": "vents-de-la-magie", "pdf": "Source/les Vents de Magie.pdf"},
-    {"id": "aux-armes", "pdf": "Source/WH - V4 - Aux Armes.pdf"},
-    {"id": "mer-des-griffes", "pdf": "Source/WH - V4 - La Mer de Griffe.pdf"},
-    {"id": "archives-de-l-empire-1", "pdf": "Source/Warhammer v4 - Les archives de l'Empire volume 1.pdf"},
-    {"id": "archives-de-l-empire-2", "pdf": "Source/Warhammer v4 - Les archives de l'Empire volume 2.pdf"},
-    {"id": "middenheim", "pdf": "Source/Warhammer v4 - Middenheim la cite du Loup Blanc.pdf"},
-]
+CAREERS = os.path.join(ROOT, "src", "data", "careers.json")
+PDF_DE = os.path.join(ROOT, "scripts", "raw", "pdf-de.mjs")
+
+
+def livres_porteurs():
+    """Ids STABLES des livres qui portent une Carrière (`source.book` de `src/data/careers.json`), triés."""
+    with open(CAREERS, encoding="utf-8") as f:
+        return sorted({c["source"]["book"] for c in json.load(f) if (c.get("source") or {}).get("book")})
+
+
+def pdfs_de(ids):
+    """Chemins absolus des PDF de `ids`, dans l'ordre ; lève avec le refus de la CLI."""
+    vu = subprocess.run(["node", PDF_DE, *ids], capture_output=True, text=True, encoding="utf-8")
+    if vu.returncode != 0:
+        raise SystemExit(f"pdf-de : {vu.stderr.strip()}")
+    return vu.stdout.splitlines()
 
 
 def walk(o):
@@ -343,20 +350,16 @@ def main():
         a, b = args.pages.split("-")
         pages = list(range(int(a) - 1, int(b)))
 
-    books = [b for b in BOOKS if not args.book or b["id"] in args.book]
+    books = [b for b in livres_porteurs() if not args.book or b in args.book]
     if not books:
         print("aucun livre sélectionné", file=sys.stderr)
         return 2
 
     errors = []
     schemas = []
-    for b in books:
-        path = os.path.join(ROOT, b["pdf"])
-        if not os.path.exists(path):
-            errors.append(f"{b['id']} : PDF introuvable ({b['pdf']})")
-            continue
-        got = read_book(b["id"], path, pages, errors)
-        print(f"{b['id']} : {len(got)} schémas", file=sys.stderr)
+    for b, path in zip(books, pdfs_de(books)):
+        got = read_book(b, path, pages, errors)
+        print(f"{b} : {len(got)} schémas", file=sys.stderr)
         schemas.extend(got)
 
     schemas.sort(key=lambda s: (s["book"], s["page"], -s["y"]))
@@ -382,7 +385,7 @@ def main():
         "id": "progression-schemas-derived",
         "type": "progression-schemas.derived",
         "label": "Schémas de progression (relevé dérivé)",
-        "livres": [b["id"] for b in books],
+        "livres": books,
         "schemas": schemas,
     }
     # Forme canonique des datasets app-owned : `serializeDataset` (`src/data/serialize.ts`) =

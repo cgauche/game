@@ -397,7 +397,7 @@ test('buildAbbrMap : abbr → slug ; abbr inconnue de BOOKS → fail-fast ; entr
   // Aucune identité de livre n'est recopiée ici — un livre de plus ne touche pas ce banc (#1825).
   const extraits = REGISTRE_LIVRES.filter(estLivreExtrait).slice(0, 2)
   assert.equal(extraits.length, 2, 'le registre doit porter au moins DEUX livres extraits (à `abbr` ET `dir`) : sans eux ce banc n’éprouve rien')
-  const sansDir = REGISTRE_LIVRES.find((b) => b.abbr && !b.dir)
+  const sansDir = REGISTRE_LIVRES.find((b) => b.abbr && !estLivreExtrait(b))
   assert.ok(sansDir, 'le registre doit porter au moins UN livre à `abbr` SANS `dir` : c’est le cas que ce banc éprouve (hors Atlas → hors map)')
   const { abbrOf, knownIds } = buildAbbrMap([...extraits, sansDir])
   for (const b of extraits) assert.equal(abbrOf.get(b.id), b.abbr)
