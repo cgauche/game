@@ -14,8 +14,7 @@
  *  - la classification `spellSupport` : ses issues lues au type de retour de `src/engine/spellspec.ts`.
  * La part ÉDITORIALE (ordre de la curation, pièges de vocabulaire, doctrine verbatim) vit ICI.
  *
- * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  *   node scripts/docs/build-sort.mjs
  */

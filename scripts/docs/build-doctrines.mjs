@@ -15,8 +15,8 @@
  * La cible est un doc GÉNÉRÉ écrit EN ENTIER (`targets` dans `GENERATORS`, famille
  * `merge=docs-generes`) : `CLAUDE.md` ne porte que la LIGNE DE ROUTAGE qui y mène.
  *
- * Mode --check (chaîné dans `npm run docs:check` et au pre-commit dès qu'une fiche `user-*` ou
- * `docs/doctrines.md` est stagé) : régénère en mémoire, compare au fichier committé, corps périmé déclaré (`ecrireOuVerifier`) si divergence.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`
+ * et au pre-commit dès qu'une fiche `user-*` ou `docs/doctrines.md` est stagé.
  *
  *   node scripts/docs/build-doctrines.mjs [--check]
  */

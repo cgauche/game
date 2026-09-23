@@ -292,11 +292,12 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: [
       'docs/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
-      'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs', 'scripts/port-dev.mjs',
+      'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs', 'scripts/gen-registry.mjs',
+      'scripts/raw/motif-catalogues.mjs',
     ],
     raison:
-      '`--empreinte` sort avant toute génération (build-all.mjs, branche `--empreinte` de `main`) : les 9 ' +
-      'lectures mesurées sont `docs/.sources-lues.json` et son propre code — les BLOBS qu’il compare sortent ' +
+      '`--empreinte` sort avant toute génération (build-all.mjs, branche `--empreinte` de `executer`) : les ' +
+      '12 lectures mesurées le 2026-09-23 sont `docs/.sources-lues.json` et son propre code — les BLOBS qu’il compare sortent ' +
       'de l’INDEX (`indexGit`, `git ls-files -s`, empreinte-sources.mjs), jamais du disque : angle mort ' +
       'de la sonde (sous-processus git), d’où `.claude/memory/` déclaré par LECTURE — les fiches `user-*.md` ' +
       'sont des sources de `docs/doctrines.md` (docs/.sources-lues.json) et leur blob entre dans le verdict (#1738)',

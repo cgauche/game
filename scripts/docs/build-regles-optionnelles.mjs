@@ -16,8 +16,7 @@
  *  - la clé de persistance `localStorage`, lue dans `src/state/houseRules.ts`.
  * La part ÉDITORIALE (comment activer, quoi faire avant de rapporter une absence) vit ICI, en dur.
  *
- * Mode --check (chaîné dans npm run docs:check via scripts/docs/build-all.mjs) : régénère en
- * mémoire, compare au .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  *   node scripts/docs/build-regles-optionnelles.mjs
  */

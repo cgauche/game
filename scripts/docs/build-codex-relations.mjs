@@ -12,8 +12,7 @@
  * Patron retenu : « éditorial EN DUR dans le générateur » (scripts/docs/build-sources-vf.mjs),
  * avec la passerelle TS de `scripts/docs/build-donnees.mjs` pour l'exposition.
  *
- * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  *   node scripts/docs/build-codex-relations.mjs
  */

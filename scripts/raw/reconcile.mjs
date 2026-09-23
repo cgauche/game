@@ -541,7 +541,9 @@ function main() {
   for (const e of data.b2)
     console.log(`Sens B2 ${e.book} (cœur ${e.coeur}) : ${e.avant.length} → ${e.horsCode.length} chapitre(s) Atlas hors-code (${e.credites.length} crédité(s) par folio, ${e.sousDette.length} sous dette de fiche)`)
 
-  if (data.etrangers.length) {
+  if (data.fichesJugees === 0) {
+    console.log("AUCUNE FICHE BALAYÉE — la garde de cœur étranger ne mesure rien : vérifier le balayage des fiches de l'Atlas.")
+  } else if (data.etrangers.length) {
     console.log(`CŒUR ÉTRANGER — ${data.etrangers.length} fiche(s) sur ${data.fichesJugees} citent le livre de cœur d'un AUTRE cœur que le leur :`)
     for (const m of data.etrangers)
       console.log(`  ${m.fiche} : ${m.coeurs.map((c) => `cœur ${c.coeur} (${c.livres.join(', ')})`).join(' ET ')}`)
@@ -567,7 +569,7 @@ function main() {
     console.log(`STOCK À DÉCROÎTRE — ${perimees.length} entrée(s) de \`scripts/raw/reconciliation-stock.json\` sans trou mesuré : retirer l'entrée.`)
     for (const p of perimees) console.log(`  ${p}`)
   }
-  if (neuves.length || perimees.length || coeur.length || data.etrangers.length) process.exitCode = 1
+  if (neuves.length || perimees.length || coeur.length || data.etrangers.length || data.fichesJugees === 0) process.exitCode = 1
   else console.log(`Cliquet des trous durs : ${entrees.length} trou(s) dur(s), tous au stock (${Object.keys(stock).length} entrée(s)) — aucun neuf, aucun périmé, aucun livre de cœur.`)
   const rapport = join(RAWDIR, 'reconciliation.md')
   ecrireOuVerifier({

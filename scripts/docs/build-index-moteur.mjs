@@ -1,7 +1,7 @@
 // Index du MOTEUR — GÉNÉRÉ depuis les exports publics de `src/engine` (AST TypeScript, jamais une
 // recopie à la main). Sortie : docs/index-moteur.md. Re-run : node scripts/docs/build-index-moteur.mjs
-// (npm run docs:index-moteur). Mode --check (chaîné dans npm run docs:check) : régénère en mémoire,
-// compare au .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en --check.
+// (npm run docs:index-moteur).
+// Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
 //
 // Incident fondateur (#903bis) : `rollCareer` (src/engine/creation.ts:73) porte depuis 2026-06-18 un
 // JSDoc en français qui explique que plusieurs Carrières peuvent partager une borne de tirage — deux

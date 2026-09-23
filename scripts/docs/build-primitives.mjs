@@ -3,8 +3,7 @@
 // `scripts/docs/build-systemes.mjs` : une primitive se déclare à UN endroit, les deux docs en
 // dérivent.
 // Re-run : node scripts/docs/build-primitives.mjs (npm run docs:primitives).
-// Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
-// corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
+// Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
 import { readFileSync, existsSync } from 'node:fs'
 import { FEUILLES_PARTAGEES, RACINE_DES_MODULES, moduleHorsCouche } from '../guards/lib/cssCouches.mjs'
 import { parUnitesDeCode } from '../guards/lib/lister.mjs'

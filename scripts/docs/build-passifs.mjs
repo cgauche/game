@@ -14,8 +14,7 @@
  *    d'entrées qui l'exercent RÉELLEMENT dans le `.json`.
  * La part ÉDITORIALE (frontières, doctrine « un seul format », recettes) vit ICI, en dur.
  *
- * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  *   node scripts/docs/build-passifs.mjs
  */

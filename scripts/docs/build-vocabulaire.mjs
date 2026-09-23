@@ -2,8 +2,8 @@
 //   `GameOp`                                            → src/engine/ops.ts
 //   `Condition` / `Flow` / `EffectTrigger` / `EffectTargeting` → src/engine/flowCore.ts
 // Sortie : docs/vocabulaire-mecanique.md. Re-run : node scripts/docs/build-vocabulaire.mjs
-// (npm run docs:vocabulaire). Mode --check (chaîné dans npm run docs:check) : régénère en mémoire,
-// compare au .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en --check.
+// (npm run docs:vocabulaire).
+// Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
 // Même socle AST/JSDoc que build-effects.mjs : scripts/docs/lib/jsdocUnion.mjs.
 //
 // Trois colonnes MESURÉES (jamais recopiées à la main) :

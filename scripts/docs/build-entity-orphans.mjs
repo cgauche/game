@@ -1,7 +1,7 @@
 // Rapport des ENTITÉS DE DONNÉES sans consommateur — GÉNÉRÉ. Sortie : docs/orphelines-donnees.md.
-// Re-run : node scripts/docs/build-entity-orphans.mjs (npm run docs:orphelines). Mode --check
-// (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff —
-// jamais d'écriture en mode --check. Corpus/détection PARTAGÉS avec la garde cliquet
+// Re-run : node scripts/docs/build-entity-orphans.mjs (npm run docs:orphelines).
+// Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
+// Corpus/détection PARTAGÉS avec la garde cliquet
 // `src/data/entity-orphans.test.ts` : scripts/guards/lib/entityConsumers.mjs.
 //
 // Objet : la mesure INVERSE des gardes RAW du dépôt (`check-doc-refs.mjs`, `check-refs.mjs`…), qui

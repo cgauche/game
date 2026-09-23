@@ -6,9 +6,7 @@
  * dérivable de la donnée — elle vit ICI, en dur, comme les préambules de
  * `scripts/docs/build-systemes.mjs` / `scripts/gen-sorts-doc.mts`.
  *
- * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
- * Composé via `ecrireOuVerifier` de scripts/docs/lib/empreinte-sources.mjs.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  *   node scripts/docs/build-sources-vf.mjs
  */

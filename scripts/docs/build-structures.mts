@@ -4,8 +4,8 @@
 //   déclaré  → scripts/docs/lib/zod-introspect.mts (les 120 schémas du registre)
 //   lexique  → scripts/docs/lib/structures-lexique.mts (concepts FERMÉS, une entrée = un concept)
 // Sortie : docs/structures-donnees.md. Re-run : npx tsx scripts/docs/build-structures.mts
-// (npm run docs:structures). Mode --check (chaîné dans npm run docs:check) : régénère en mémoire,
-// compare au .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en --check.
+// (npm run docs:structures).
+// Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
 //
 // Le doc est la carte de PILOTAGE du chantier #1463 : le stock nominatif décroissant qu'il
 // alimente vit dans scripts/guards/lib/structuresStock.mjs (garde src/data/structures-contrat.test.ts).

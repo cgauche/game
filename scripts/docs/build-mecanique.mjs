@@ -17,8 +17,7 @@
  *  - le site de `registerCombatHook`, la primitive d'enregistrement de la machinerie.
  * La part ÉDITORIALE (critère de décision, frontière donnée/machinerie, recettes) vit ICI.
  *
- * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  *   node scripts/docs/build-mecanique.mjs
  */

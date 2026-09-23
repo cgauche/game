@@ -14,8 +14,7 @@
  * La part ÉDITORIALE (check-first, zéro invention, ordre des étapes) vit ICI, en dur — patron
  * « éditorial EN DUR dans le générateur » de `scripts/docs/build-sources-vf.mjs`.
  *
- * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  *   node scripts/docs/build-ajouter-donnee.mjs
  */

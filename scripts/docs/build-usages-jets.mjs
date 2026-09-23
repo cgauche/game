@@ -1,7 +1,7 @@
 // USAGES du système de jet — GÉNÉRÉ depuis le code des consommateurs (`scripts/docs/lib/rollShellUsage.mjs`,
 // scan AST). Sortie : docs/usages-jets.md. Re-run : node scripts/docs/build-usages-jets.mjs
-// (npm run docs:usages-jets). Mode --check (chaîné dans npm run docs:check) : régénère en mémoire,
-// compare au .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff.
+// (npm run docs:usages-jets).
+// Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
 //
 // Pourquoi ce fichier (#1078) : `docs/registre-jets.md` répond à « par où PART ce jet ? » (les
 // producteurs). Il manquait le pendant CÔTÉ AFFICHAGE : « comment chacun UTILISE la coquille de

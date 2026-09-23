@@ -14,8 +14,7 @@
  *  - la population des CATALOGUES de matériaux.
  * La part ÉDITORIALE (contrat de perf, doctrine, « où ajouter… ») vit ICI, en dur.
  *
- * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  *   node scripts/docs/build-rendu-pipeline.mjs
  */

@@ -1,7 +1,7 @@
 // REGISTRE des chemins de jet — GÉNÉRÉ depuis le module de gardes `scripts/guards/lib/rollSeam*.mjs`
 // (jamais une recopie à la main). Sortie : docs/registre-jets.md. Re-run :
-// node scripts/docs/build-registre-jets.mjs (npm run docs:registre-jets). Mode --check (chaîné dans
-// npm run docs:check) : régénère en mémoire, compare au .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff.
+// node scripts/docs/build-registre-jets.mjs (npm run docs:registre-jets).
+// Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
 //
 // SOURCE UNIQUE : les listes (familles canoniques, stocks + justifications) vivent dans
 // `rollSeamWhitelist.mjs` et sont VÉRIFIÉES par `src/state/roll-seam-exclusivity-guard.test.ts` ;

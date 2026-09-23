@@ -7,9 +7,7 @@
  * dans SpellData (spells.json) — plus de src/data/spellspecs/. La colonne « Curé »
  * lit s.curated directement depuis la donnée JSON.
  *
- * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au
- * .md committé, corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en --check.
- * Composé via `ecrireOuVerifier` de scripts/docs/lib/empreinte-sources.mjs.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  *   npx tsx scripts/gen-sorts-doc.mts
  */

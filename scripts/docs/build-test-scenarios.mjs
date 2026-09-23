@@ -1,9 +1,7 @@
 /**
  * Génère `docs/test-scenarios.md` — catalogue des scénarios de test navigateur.
  * Re-run : `node scripts/docs/build-test-scenarios.mjs` (`npm run docs:test-scenarios`).
- * Mode --check (chaîné dans `npm run docs:check`) : régénère en mémoire, compare au .md committé,
- * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check. Composé via `ecrireOuVerifier` de
- * `scripts/docs/lib/empreinte-sources.mjs`.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  * Objet (#903 suite) — la table « Catalogue actuel » recopiait à la main un sous-ensemble du
  * registre réel (`_registry.generated.ts`, 34 scénarios) : mesuré 9 scénarios ABSENTS du .md

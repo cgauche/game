@@ -10,8 +10,7 @@
  * aucun manifeste d'iconographie n'existe, et la charte de dessin est DÉJÀ écrite en tête de
  * `src/ui/icons/defs/action.ts` : elle se cite depuis là, elle ne se recopie pas.
  *
- * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
- * corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
+ * Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
  *
  *   node scripts/docs/build-icones.mjs
  */

@@ -1,8 +1,6 @@
 // Génère src/engine/qualities/qualityId.generated.ts depuis src/data/qualities.json — GÉNÉRÉ par
 // `node scripts/gen-quality-ids.mjs` (`npm run gen:quality-ids`), NE PAS ÉDITER À LA MAIN.
-// Mode --check (joué par `npm run docs:check`, ligne de `GENERATORS` dans scripts/docs/build-all.mjs) :
-// régénère en mémoire, compare au fichier committé, corps périmé déclaré (`ecrireOuVerifier`) si
-// diff — jamais d'écriture en mode --check.
+// Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
 //
 // Union de LITTÉRAUX seulement (aucun export runtime) : un id retiré de `qualities.json` fait
 // échouer la compilation aux sites d'appel qui le citaient, jamais un objet exhaustif qui

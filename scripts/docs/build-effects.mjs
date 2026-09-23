@@ -4,8 +4,7 @@
 // les noms par `z.infer`. La feuille `type:'ops'` est le schéma de la grammaire, indexé lui aussi.
 // Sortie : docs/campagne-effects.md.
 // Re-run : node scripts/docs/build-effects.mjs (npm run docs:effects).
-// Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au .md committé,
-// corps périmé déclaré (`ecrireOuVerifier`) si diff — jamais d'écriture en mode --check.
+// Mode `--check` : `ecrireOuVerifier` (scripts/docs/lib/empreinte-sources.mjs), rejoué par `build-all.mjs`.
 // Lecture d'union / extraction JSDoc / écriture-vérification : scripts/docs/lib/jsdocUnion.mjs
 // (socle PARTAGÉ avec build-vocabulaire.mjs).
 import { indexerConstantes, readZodUnionMembers, renderFields } from './lib/jsdocUnion.mjs'
