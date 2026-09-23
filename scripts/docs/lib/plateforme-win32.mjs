@@ -4,9 +4,10 @@
 // et AVANT `tsx/esm`.
 //
 // Ce que voit le code du dépôt : `node:path` = `path.win32` et `fileURLToPath` en graphie Windows
-// (`plateforme-win32-hooks.mjs`), `process.cwd()` sous le lecteur `C:`. Le code de `node_modules` et
-// node lui-même voient l'hôte, `process.cwd()` compris : son `path` est celui de l'hôte, et un cwd en
-// `C:\` le rendrait incohérent (tsx ne trouvait plus `tsconfig.json`, donc plus son `jsx`). Aucune
+// (`plateforme-win32-hooks.mjs`), `process.cwd()` sous le lecteur `C:`. Le code de `node_modules`,
+// node lui-même et les enveloppes de ce module voient l'hôte, `process.cwd()` compris : leur `path`
+// est celui de l'hôte, et un cwd en `C:\` le rendrait incohérent (tsx ne trouvait plus
+// `tsconfig.json`, donc plus son `jsx` ; `realpathSync('.')` visait `C:\…`). Aucune
 // source ne lit le chemin du script dans `argv` (garde `src/point-d-entree-guard.test.ts`).
 // Ce qu'il touche : le disque POSIX — toute ENTRÉE de `fs` (chemins en argument) et de
 // `child_process` (exécutable, argv absolus, `cwd`) est ramenée en POSIX. La racine du dépôt rendu :
@@ -81,15 +82,17 @@ const racine = process.env.WFRP_PLATEFORME_RACINE
 if (!racine) throw new Error('plateforme-win32 : WFRP_PLATEFORME_RACINE absent — ce module se compose par run() de scripts/docs/build-all.mjs')
 const depot = urlDuDepot(racine)
 
-/** Adresse `file:` du module qui appelle : premier cadre de pile hors de ce fichier et de node. */
-function moduleAppelant() {
+/** Adresse `file:` du module qui a appelé `fonction` : premier cadre de pile hors de node. */
+function moduleAppelant(fonction) {
   const { prepareStackTrace, stackTraceLimit } = Error
   Error.stackTraceLimit = 32
   Error.prepareStackTrace = (_, cadres) => cadres
   try {
-    for (const cadre of new Error().stack) {
+    const trace = {}
+    Error.captureStackTrace(trace, fonction)
+    for (const cadre of trace.stack) {
       const fichier = cadre.getFileName()
-      if (!fichier || fichier.startsWith('node:') || fichier === import.meta.url) continue
+      if (!fichier || fichier.startsWith('node:')) continue
       return fichier.startsWith('/') ? pathToFileURL(fichier).href : fichier
     }
     return null
@@ -101,7 +104,10 @@ function moduleAppelant() {
 
 const cwdHote = process.cwd.bind(process)
 const chdirHote = process.chdir.bind(process)
-process.cwd = () => (estModuleDuDepot(moduleAppelant(), depot) ? versWindows(cwdHote()) : cwdHote())
+function cwdSimule() {
+  return estModuleDuDepot(moduleAppelant(cwdSimule), depot) ? versWindows(cwdHote()) : cwdHote()
+}
+process.cwd = cwdSimule
 process.chdir = (dossier) => chdirHote(versPosix(dossier))
 
 register(new URL('plateforme-win32-hooks.mjs', import.meta.url).href, { data: { racine } })

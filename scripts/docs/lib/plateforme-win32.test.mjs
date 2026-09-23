@@ -141,9 +141,16 @@ test('rendu sous win32 : `process.cwd()` est en `C:\\` pour le code du dépôt, 
   }
 })
 
-test('rendu sous win32 : tsx (node_modules) trouve `tsconfig.json` et son `jsx` sur l’arbre réel', () => {
-  const source = "import { getTsconfig } from 'get-tsconfig'\nconsole.log(getTsconfig()?.config.compilerOptions.jsx)\n"
-  assert.equal(sousWin32(RACINE, ['--input-type=module', '--eval', source]), 'react-jsx')
+// Sur l'arbre réel, les deux modules de la simulation sont SOUS la racine : leurs enveloppes de `fs`
+// passent des chemins POSIX à l'hôte, qui résout le relatif par le cwd de l'hôte.
+test('rendu sous win32 : sur l’arbre réel, tsx (node_modules) trouve son `jsx` et `fs` résout le relatif sur le disque', () => {
+  const source = [
+    "import { getTsconfig } from 'get-tsconfig'",
+    "import { realpathSync } from 'node:fs'",
+    "console.log(JSON.stringify([getTsconfig()?.config.compilerOptions.jsx, realpathSync('.')]))",
+  ].join('\n')
+  const vu = JSON.parse(sousWin32(RACINE, ['--input-type=module', '--eval', source]))
+  assert.deepEqual(vu, ['react-jsx', realpathSync(RACINE)])
 })
 
 test('`--plateforme` inconnue : refus nommé, rien de rendu', () => {

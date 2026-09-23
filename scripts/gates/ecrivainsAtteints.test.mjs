@@ -235,6 +235,10 @@ const ATTENDU = {
     // sous os.tmpdir().
     'scripts/docs/lib/enregistreur-lectures.mjs',
     'scripts/docs/lib/enregistreur-lectures.test.mjs',
+    // +1 le 2026-09-23 (#1801) : le banc de la simulation win32 forge un dépôt JETABLE (`mkdtempSync`
+    // + `mkdirSync`/`writeFileSync` sous `os.tmpdir()`, `rmSync` en finally) — ce que voit un module
+    // selon son LIEU exige de vrais fichiers à charger ; l'arbre n'est jamais écrit.
+    'scripts/docs/lib/plateforme-win32.test.mjs',
     // +1 le 2026-09-07 (#1709 B1) : `build-all-check.test.mjs` et `check-plans-anchors.test.mjs`
     // prennent leurs dépôts jetables à la fixture partagée, qui n'écrit que sous `os.tmpdir()`.
     'scripts/guards/lib/depotGabarit.mjs',

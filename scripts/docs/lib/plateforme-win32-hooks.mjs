@@ -29,9 +29,12 @@ export const versPosix = (chemin) => {
 /** URL `file:` du dossier racine du dépôt rendu, barre finale comprise. */
 export const urlDuDepot = (racine) => url.pathToFileURL(path.join(racine, '/')).href
 
-/** `true` si l'adresse (URL `file:`) est celle d'un module du dépôt, hors `node_modules`. */
+/** Les deux modules de la simulation : sous la racine, ils rendent à l'hôte des chemins POSIX. */
+const SIMULATION = new Set(['plateforme-win32.mjs', 'plateforme-win32-hooks.mjs'].map((f) => new URL(f, import.meta.url).href))
+
+/** `true` si l'adresse (URL `file:`) est celle d'un module du dépôt, hors `node_modules` et hors simulation. */
 export const estModuleDuDepot = (adresse, depot) =>
-  typeof adresse === 'string' && adresse.startsWith(depot) && !adresse.includes('/node_modules/')
+  typeof adresse === 'string' && adresse.startsWith(depot) && !adresse.includes('/node_modules/') && !SIMULATION.has(adresse)
 
 let depot = null
 
