@@ -39,6 +39,7 @@ const SCRIPT_1715 = '2026-09-09-1715-roof-defaults-scenes.mjs';
 const SCRIPT_1687 = '2026-09-10-1687-usable-sieges.mjs';
 const SCRIPT_1687_ACTIONS = '2026-09-11-1687-actions-authorees.mjs';
 const SCRIPT_877 = '2026-09-21-877-ref-de-decor-nommee.mjs';
+const SCRIPT_1897 = '2026-09-23-1897-projet-sorts-de-preset-ids-nus.mjs';
 
 /** La CHAÎNE du format projet, DÉRIVÉE du dossier : tout script daté qui lit le `schema` d'un
  *  `<campagne>-projet.json`, dans l'ordre lexical du rejeu (`scripts/migrations/replay.mjs`). */
@@ -139,7 +140,7 @@ describe(`${SCRIPT_13} — le bump de forme 4 → 5 (aplatissement de la poche \
   it('t6. RATTRAPAGE : un `schema` FUTUR, avalé par TOUTES les amont, est REFUSÉ par la DERNIÈRE de la chaîne', () => {
     // La DÉRIVATION couvre la chaîne connue : un script qui perdrait sa marque sortirait du banc en
     // silence, et la « dernière » dérivée mentirait.
-    expect(CHAINE).toEqual(expect.arrayContaining([SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552, SCRIPT_1691, SCRIPT_1715, SCRIPT_1687, SCRIPT_1687_ACTIONS, SCRIPT_877]));
+    expect(CHAINE).toEqual(expect.arrayContaining([SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552, SCRIPT_1691, SCRIPT_1715, SCRIPT_1687, SCRIPT_1687_ACTIONS, SCRIPT_877, SCRIPT_1897]));
     const schemaFutur = SCHEMA_PROJET + 1;
     // Un TYPE de décor à places, LU au catalogue : sans entité à places, `SCRIPT_1687` s'arrête sur
     // un périmètre vide au lieu de mesurer sa borne.

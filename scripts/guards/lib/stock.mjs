@@ -156,6 +156,10 @@ export function ecartDuVolet({ sites, stock, famille, ou }) {
   });
 }
 
+/** Une ligne de remède de `ecartDuVolet` NOMME-t-elle cette clé ? (le remède décore la clé d'une phrase)
+ *  @param {readonly string[]} lignes @param {string} cle @returns {boolean} */
+export const remedeNomme = (lignes, cle) => lignes.some((l) => l.includes(cle))
+
 /**
  * REFUS d'un RÉGÉNÉRATEUR de stock : la phrase à afficher quand la MESURE porte un site que le stock
  * en place ne couvre pas, `null` quand elle n'en porte aucun. C'est la BARRIÈRE

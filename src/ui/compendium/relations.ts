@@ -195,9 +195,9 @@ const graph = versionCached<ReverseGraph>(() => {
   // 12) Dieux/Cultes → bénédictions + miracles.
   for (const g of gods) {
     const by: Referrer = { category: 'gods', id: g.id, label: g.label };
-    for (const b of g.blessings) addReverse('spells', b.id, { ...by, detail: 'Bénédiction' }, 'Cultes (Bénédictions / Miracles)');
-    for (const mi of g.miracles) addReverse('spells', mi.id, { ...by, detail: 'Miracle' }, 'Cultes (Bénédictions / Miracles)');
-    for (const cs of g.chaosSpells ?? []) addReverse('spells', cs.id, { ...by, detail: 'Sort du Chaos' }, 'Cultes (Bénédictions / Miracles)');
+    for (const b of g.blessings) addReverse('spells', b, { ...by, detail: 'Bénédiction' }, 'Cultes (Bénédictions / Miracles)');
+    for (const mi of g.miracles) addReverse('spells', mi, { ...by, detail: 'Miracle' }, 'Cultes (Bénédictions / Miracles)');
+    for (const cs of g.chaosSpells ?? []) addReverse('spells', cs, { ...by, detail: 'Sort du Chaos' }, 'Cultes (Bénédictions / Miracles)');
   }
 
   // 13) États INFLIGÉS — ops `condition` des effets (Sort = Flow ; Trait/Qualité/Talent/Domaine = TriggeredEffect[].flow).

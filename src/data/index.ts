@@ -2902,7 +2902,7 @@ export function bookAbr(id: string | null | undefined): string {
   return livreParId(id)?.abbr ?? id;
 }
 /** Culte/Dieu (LDB 41) : `id` = slug STABLE (« sigmar »), `label` = nom affiché (« Sigmar »), Bénédictions/
- *  Miracles en `Ref[]` (sorts par id), desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace
+ *  Miracles en ids de sort, desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace
  *  les `cults/defs/*.ts` (codegen retiré). */
 export interface GodData {
   id: string;
@@ -2912,12 +2912,12 @@ export interface GodData {
    *  `grantSpecGroups` et dont le `spec` nomme ce dieu (`groupsFor`). Absent = aucun Groupe. */
   grantGroups?: string[];
   title?: string;
-  blessings: Ref[];
-  miracles: Ref[];
+  blessings: string[];
+  miracles: string[];
   /** Sorts du Chaos accordés par ce Dieu Sombre (LDB 10 « Magie du Chaos » : « Domaine du Chaos » de
    *  Nurgle/Slaanesh/Tzeentch), IDS de sort — l'analogue de `blessings`/`miracles` pour la 3e famille de
    *  lanceur. SOURCE d'identité (le grimoire compare par id) ; le `subType` du sort ne sert qu'à l'affichage. */
-  chaosSpells?: Ref[];
+  chaosSpells?: string[];
   desc?: string;
   source?: SourceRef;
   /** VERROU de Péché du culte (MDG 11 l.148, Stromfels : « retire à un suivant la capacité d'utiliser le
@@ -3386,15 +3386,15 @@ export const cultIds = memoParVersion('gods', (): string[] => gods.filter((g) =>
 /** Les six Bénédictions d'un culte, IDS de sort (le runtime/grimoire compare par id ; l'UI résout en
  *  libellé). Culte inconnu → []. */
 export function blessingsOf(cult: string): string[] {
-  return (findGodById(cult)?.blessings ?? []).map((r) => r.id);
+  return findGodById(cult)?.blessings ?? [];
 }
 /** Les Miracles d'un culte, IDS de sort. Culte inconnu → []. */
 export function miraclesOf(cult: string): string[] {
-  return (findGodById(cult)?.miracles ?? []).map((r) => r.id);
+  return findGodById(cult)?.miracles ?? [];
 }
 /** Les Sorts du Chaos accordés par un Dieu Sombre, IDS de sort (le grimoire compare par id). Dieu inconnu → []. */
 export function chaosSpellsOf(god: string): string[] {
-  return (findGodById(god)?.chaosSpells ?? []).map((r) => r.id);
+  return findGodById(god)?.chaosSpells ?? [];
 }
 
 /** Référence à une Qualité d'objet (`Ref` + Indice éventuel : « Solide 3 » → value 3). */

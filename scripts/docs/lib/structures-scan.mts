@@ -227,7 +227,7 @@ const candidatsStructurels = (o: Record<string, unknown>, dansTableau: boolean):
 const statutDe = (c: Concept, sig: string, site?: { dataset: string; champ: string }): Classement => {
   const candidates = c.signatures.filter((s) => s.sig === sig);
   const hit =
-    (site && candidates.find((s) => s.site?.datasets.includes(site.dataset) && s.site.champs.includes(site.champ)))
+    (site && candidates.find((s) => s.site && (s.site.datasets?.includes(site.dataset) ?? true) && s.site.champs.includes(site.champ)))
     ?? candidates.find((s) => !s.site);
   return { concept: c.id, strate: c.strate, statut: hit?.statut ?? 'divergente', note: hit?.note ?? '', signature: sig };
 };

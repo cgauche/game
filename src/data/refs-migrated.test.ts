@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
   traits, stars, talents, maneuvers, skills, domains, crewRoles, groups, raceAppearance,
-  byId, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
+  byId, findTalentById, findTrappingById, findQualityById, findSeaShantyById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
   findCreatureById, findVehicleById, findGroupById, findPsychologyById, findTraitById, findCrewTestTypeById, findLightToneById,
   mutationTables,
@@ -40,7 +40,9 @@ import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import {
   GAMEOP_FIELD_TARGETS, auditFieldCoverage, collectJsonFiles, scanGameOpRefs, formatOffender,
 } from '../../scripts/guards/lib/gameOpRefFk.mjs';
-import { extractedBooks, frenchSourceDirs, isSentinel, sourceDirOf, walkSkillRefs } from '../../scripts/data/lib/skillSpecWalk.mjs';
+import { extractedBooks, frenchSourceDirs, isSentinel, walkSkillRefs } from '../../scripts/data/lib/skillSpecWalk.mjs';
+// @ts-expect-error - bibliothèque RAW ESM JS (pas de types) — même convention que `vite.config.ts`
+import { sourceDirOf } from '../../scripts/raw/_lib.mjs';
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x != null;
 
@@ -120,10 +122,6 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
         else if ('id' in tr) expect(itemFromTrappingById(tr.id as string)).toBeTruthy();
       }
     }
-  });
-
-  it('gods.blessings/miracles = Ref[] {id} de sort qui résout', () => {
-    for (const g of gods) for (const r of [...g.blessings, ...g.miracles]) expect(findSpellById(r.id)).toBeTruthy();
   });
 
   it('species/careerLevels skills+talents = AdvancementRef[] structuré ; characteristics = CharKey', () => {

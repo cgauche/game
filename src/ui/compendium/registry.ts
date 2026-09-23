@@ -1725,9 +1725,9 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => gods.map((c) => depuisEnveloppe(c, {
       sub: c.title,
       sections: sections(
-        chips('Bénédictions', 'spells', c.blessings.map((b) => refLabel('spells', b))),
-        chips('Miracles', 'spells', c.miracles.map((m) => refLabel('spells', m))),
-        chips('Sorts du Chaos', 'spells', (c.chaosSpells ?? []).map((s) => refLabel('spells', s))),
+        chips('Bénédictions', 'spells', c.blessings.map((id) => refLabel('spells', { id }))),
+        chips('Miracles', 'spells', c.miracles.map((id) => refLabel('spells', { id }))),
+        chips('Sorts du Chaos', 'spells', (c.chaosSpells ?? []).map((id) => refLabel('spells', { id }))),
       ),
     })),
   },

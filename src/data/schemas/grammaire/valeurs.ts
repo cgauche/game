@@ -6,7 +6,7 @@
  */
 import { z } from 'zod';
 import { AVAILABILITIES, COUVERT_DIFFICULTES, STAKE_FORMS } from '../../../engine/types';
-import { refOuSpec, idDe } from './ref';
+import { refOuSpec, idDe, refs } from './ref';
 import { estGraphieDeChapitre } from '../../source/decoupe';
 
 /**
@@ -618,7 +618,7 @@ export const castingNumberModSchema = z
         domains: z.array(z.string()).min(1).optional(),
         domainsExcept: z.array(z.string()).min(1).optional(),
         chaosMagic: z.boolean().optional(),
-        spellIds: z.array(z.string()).min(1).optional(),
+        spellIds: refs('spell', { min: 1 }).optional(),
         kinds: z.array(z.enum(['sort', 'rituel'])).min(1).optional(),
       })
       .optional(),

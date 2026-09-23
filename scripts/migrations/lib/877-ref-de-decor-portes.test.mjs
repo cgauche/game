@@ -3,8 +3,8 @@
  *
  *  - `2026-09-21-877-ref-de-decor-nommee.mjs` (racine `src/scenes`) : pose `ref` en QUEUE de toute
  *    entité `kind:'prop'` qui n'en porte pas, et porte le document au `schema` 12. Sa borne haute
- *    est CLOSE (`schema` ∈ {11, 12}) : DERNIÈRE de la chaîne dans l'ordre lexical, elle NOMME un
- *    `schema` futur.
+ *    est OUVERTE (`schema` ∈ {11, ≥ 12}) depuis le bump 12 → 13 (#1897) : un `schema` futur la
+ *    traverse sans être RABAISSÉ, la sentinelle est la DERNIÈRE de la chaîne.
  *
  * Une déclaration n'est pas une porte tant qu'on ne l'a pas vue MORDRE : ce banc joue la migration
  * sur un dépôt JETABLE (`os.tmpdir()`), une fois par scénario, et exige la sortie attendue, un
@@ -27,7 +27,7 @@ import { joue } from './joue.mjs';
 
 const MIGRATION = '2026-09-21-877-ref-de-decor-nommee.mjs';
 
-/** Forme d'entrée et CIBLE du bump porté par cette migration — borne haute CLOSE. */
+/** Forme d'entrée et CIBLE du bump porté par cette migration — borne haute OUVERTE. */
 const SCHEMA_AVANT = 11;
 const SCHEMA_APRES = 12;
 /** La ref que `src/state/projet-migration-11-vers-12.test.ts` exige du migrateur de chargement. */
@@ -65,9 +65,9 @@ const alpha = (schema = SCHEMA_AVANT) => ({
 
 /** L'ÉTAT D'ARRIVÉE d'`alpha`, écrit à la main : `ref` en QUEUE du seul décor nu, `schema` à sa
  *  place, tout le reste identique. */
-const alphaApres = () => ({
+const alphaApres = (schema = SCHEMA_APRES) => ({
   type: 'projet',
-  schema: SCHEMA_APRES,
+  schema,
   id: 'alpha',
   label: 'Alpha',
   scenes: [
@@ -172,19 +172,25 @@ test('(b) IDEMPOTENT : rejouée sur l’état final, sortie 0 et rien d’écrit
   assert.deepEqual(rienTouche(d.racine, d.avant), [], 'le rejeu a écrit');
 });
 
-test('(c) BORNE HAUTE CLOSE : un `schema` FUTUR est refusé et NOMMÉ, rien d’écrit — pas même le projet sain', () => {
-  const futur = SCHEMA_APRES + 1;
-  refuse(
-    { [ALPHA]: serialise(alpha(futur)), [BETA]: serialise(beta()) },
-    `${ALPHA} : \`schema\` inattendu ${futur} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`,
+test('(c) BORNE HAUTE OUVERTE : un `schema` FUTUR traverse en NO-OP nommé — aucun RABAISSEMENT', (t) => {
+  const futur = SCHEMA_APRES + 7;
+  const d = depot({ [ALPHA]: serialise(alphaApres(futur)) });
+  t.after(() => efface(d.racine));
+
+  const { code, sortie } = joue(d.racine, MIGRATION);
+  assert.equal(code, 0, `sortie ${code} — un schema futur doit TRAVERSER : ${sortie.slice(0, 1200)}`);
+  assert.ok(
+    sortie.includes(`${ALPHA} — schema ${futur} → ${futur} — DÉJÀ MIGRÉ au-delà de ${SCHEMA_APRES}`),
+    `le passage d'un schema futur ne se DIT pas : ${sortie.slice(0, 1200)}`,
   );
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'un schema futur a été réécrit');
 });
 
 test('(d) BORNE BASSE : un `schema` antérieur à la chaîne est refusé et NOMMÉ, rien d’écrit', () => {
   const ancien = SCHEMA_AVANT - 1;
   refuse(
     { [ALPHA]: serialise(alpha(ancien)), [BETA]: serialise(beta()) },
-    `${ALPHA} : \`schema\` inattendu ${ancien} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`,
+    `${ALPHA} : \`schema\` inattendu ${ancien} (${SCHEMA_AVANT} ou plus récent attendu)`,
   );
 });
 
@@ -192,14 +198,14 @@ test('(e) FAIL-FAST `schema` ABSENT → sortie 1 NOMINATIVE, rien d’écrit', (
   const { schema: _retire, ...sansSchema } = alpha();
   refuse(
     { [ALPHA]: serialise(sansSchema), [BETA]: serialise(beta()) },
-    `${ALPHA} : \`schema\` inattendu undefined (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`,
+    `${ALPHA} : \`schema\` inattendu undefined (${SCHEMA_AVANT} ou plus récent attendu)`,
   );
 });
 
 test('(f) FAIL-FAST `schema` NON NUMÉRIQUE (la chaîne "11") → sortie 1 NOMINATIVE, rien d’écrit', () => {
   refuse(
     { [ALPHA]: serialise(alpha(String(SCHEMA_AVANT))), [BETA]: serialise(beta()) },
-    `${ALPHA} : \`schema\` inattendu "${SCHEMA_AVANT}" (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`,
+    `${ALPHA} : \`schema\` inattendu "${SCHEMA_AVANT}" (${SCHEMA_AVANT} ou plus récent attendu)`,
   );
 });
 

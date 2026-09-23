@@ -460,7 +460,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // entrées « Choc au bras » (AA 07 l.113, LDB 18 l.88) que le moteur portait au site d'appel.
       // Elle ne blanchit AUCUN étalement : la graphie naît avec le terme, et `minimum` ne nomme que
       // lui (`atLeast`, lui, est déjà le seuil d'un palier et d'une Condition — il n'entre pas au noyau).
-      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 40],
+      // Cliquet REMONTÉ 40 → 42 (#1897) : `source | book,page,quote` et `source | book,note,page,quote`,
+      // CIBLES au seul site `alsoIn` — l'emplacement secondaire et sa preuve (`secondarySourceRefSchema`).
+      // 10 lignes `source | alsoIn` (69 occurrences) sortent de `STRUCTURES_FORMES` ; aucune donnée
+      // n'est réécrite.
+      ['STRUCTURES_CIBLES', STRUCTURES_CIBLES.length, 42],
       // Cliquet DESCENDU 671 → 670 (#1467 L1b V-P7) : le statbloc à `size` d'`arene-projet.json` quitte
       // ce stock — le profil embarqué s'ANNONCE (`type: 'statblock'`) et sa forme est déclarée champ par
       // champ (`defs-scenes/communs.ts`), donc sa signature n'est plus lue comme une référence non
@@ -909,7 +913,7 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // … puis 55 → 53 (#1686 lot 2) : les TROIS lignes « `source` absente » des catalogues de matières
       // (`propMaterials`/`roofMaterials`/`reliefMaterials`) n'en font plus qu'UNE — les trois documents
       // fusionnent en `materials.json`, mêmes 16 entrées, un seul porteur de la divergence.
-      'L1d #1469': 53 /* 56→55 : la ligne d'enveloppe « `source` absente » de `props.json` meurt (#1680 ligne 5). PORTÉE EXACTE, à ne pas surestimer : elle s'éteint par `satisfaitAutrement = parCle.has(def.alternative)` (`scripts/docs/lib/structures-scan.mts:1081`) — la divergence est relevée PAR DOCUMENT, et la présence de la clé alternative `maison` sur AU MOINS UNE entrée suffit à l'éteindre pour tout le document. Ce ne sont donc PAS les 123 entrées qui deviennent sourcées : 41 portent `maison` (celles qui portent une RÈGLE — `light`/`cover`/`opaque` — que `affinerEntree` exige désormais), 82 restent muettes et le demeurent légitimement (leur contenu est de l'art). Le +2 antérieur (alsoIn creatures/species posés par e89a836d3 SANS leur ligne de stock, sillage C1 #1457) reste à SOLDER par la vague L1d (#1469) */,
+      'L1d #1469': 43 /* 53→43 (#1897) : les 10 lignes `source | alsoIn` sortent, l'emplacement secondaire et sa preuve `quote` étant CIBLES au site `alsoIn` (`SITE_EMPLACEMENT_SECONDAIRE`) — le +2 ci-dessous (creatures/species) est soldé avec elles. 56→55 : la ligne d'enveloppe « `source` absente » de `props.json` meurt (#1680 ligne 5). PORTÉE EXACTE, à ne pas surestimer : elle s'éteint par `satisfaitAutrement = parCle.has(def.alternative)` (`scripts/docs/lib/structures-scan.mts:1081`) — la divergence est relevée PAR DOCUMENT, et la présence de la clé alternative `maison` sur AU MOINS UNE entrée suffit à l'éteindre pour tout le document. Ce ne sont donc PAS les 123 entrées qui deviennent sourcées : 41 portent `maison` (celles qui portent une RÈGLE — `light`/`cover`/`opaque` — que `affinerEntree` exige désormais), 82 restent muettes et le demeurent légitimement (leur contenu est de l'art). Le +2 antérieur (alsoIn creatures/species posés par e89a836d3 SANS leur ligne de stock, sillage C1 #1457) reste à SOLDER par la vague L1d (#1469) */,
       // L2 #1463 : 57 → 48 (commit 3b) — les 9 lignes de référence de Compétence à graphie `skillId`
       // (donnée + defs) meurent ; ce qui reste du lot est la référence PLATE `skill: "<id>"` des ops.
       // … puis 48 → 18 (commit 3c) : cette référence PLATE MEURT à SON TOUR — 30 lignes s'éteignent avec

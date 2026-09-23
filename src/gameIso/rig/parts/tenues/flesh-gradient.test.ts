@@ -19,7 +19,7 @@ import { describe, it, expect } from 'vitest';
 import { auditFleshGradient } from '../../../../../scripts/guards/lib/fleshGradientAudit';
 import type { Site } from '../../../../../scripts/guards/lib/stock.mjs';
 import { FLESH_GRADIENT_RATCHET } from '../../../../../scripts/guards/lib/fleshGradientStock.mjs';
-import { ecartDuVolet, type EntreeNominative } from '../../../../../scripts/guards/lib/stock.mjs';
+import { ecartDuVolet, remedeNomme, type EntreeNominative } from '../../../../../scripts/guards/lib/stock.mjs';
 import { TENUE_DEFS } from './_registry.generated';
 
 const STOCK = 'scripts/guards/lib/fleshGradientStock.mjs';
@@ -30,9 +30,6 @@ const STOCK = 'scripts/guards/lib/fleshGradientStock.mjs';
  *  `{ fichier, ref, occurrence }` — qui NOMME le def à ouvrir — que la porte de plage voit à l'append. */
 const ratchet = (sites: readonly Site[], stock: Iterable<EntreeNominative>) =>
   ecartDuVolet({ sites, stock, ou: STOCK });
-
-/** Une ligne de remède CONTIENT-elle cette clé ? (le remède décore la clé d'une phrase) */
-const porte = (lignes: readonly string[], cle: string) => lignes.some((l) => l.includes(cle));
 
 describe('chair gravée : aucune tenue neuve ne peint un @peau* en g_flesh (cliquet #583)', () => {
   it('aucune occurrence NEUVE de g_flesh, et le stock ne peut que DÉCROÎTRE', () => {
@@ -79,8 +76,8 @@ describe('morsure : une chair neuve gravée rougit (#583)', () => {
       target.def.set[target.slot] = `<path d="M0 0 L1 1" fill="url(#g_flesh)" stroke="@peauO"/>${front}`;
       const found = auditFleshGradient();
       const { neuves } = ratchet(found, FLESH_GRADIENT_RATCHET);
-      expect(porte(neuves, ` :: ${target.id}:${target.slot}:front :: 1`)).toBe(true);
-      expect(porte(neuves, 'src/gameIso/rig/parts/tenues/defs/')).toBe(true);
+      expect(remedeNomme(neuves, ` :: ${target.id}:${target.slot}:front :: 1`)).toBe(true);
+      expect(remedeNomme(neuves, 'src/gameIso/rig/parts/tenues/defs/')).toBe(true);
     } finally {
       target.def.set[target.slot] = saved;
     }
@@ -99,7 +96,7 @@ describe('morsure : une chair neuve gravée rougit (#583)', () => {
       fichier: 'src/gameIso/rig/parts/tenues/defs/TenueQuiNExistePas.ts', ref: 'gonflement:bras:front', occurrence: 1,
     }];
     const { perimees } = ratchet(auditFleshGradient(), gonfle);
-    expect(porte(perimees, ' :: gonflement:bras:front :: 1')).toBe(true);
-    expect(porte(perimees, 'entrée SOLDÉE')).toBe(true);
+    expect(remedeNomme(perimees, ' :: gonflement:bras:front :: 1')).toBe(true);
+    expect(remedeNomme(perimees, 'entrée SOLDÉE')).toBe(true);
   });
 });

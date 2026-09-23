@@ -4,6 +4,7 @@ import { validateScene } from '../../state/validateScene';
 import { spawnEnemy } from '../../state/spawn';
 import { enemyRigProfile } from '../../gameIso/rig/enemyProfile';
 import { terrainEntree } from '../../state/terrain';
+import { findSpellById } from '../../data';
 
 describe('Batterie de scénarios de test', () => {
   it('couvre au moins 6 scénarios', () => {
@@ -33,6 +34,20 @@ describe('Batterie de scénarios de test', () => {
         for (const t of new Set(l.tiles))
           if (!terrainEntree(t)) morts.push(`${s.id} z=${l.z} : « ${t} »`);
     expect([...new Set(morts)], `sol(s) absent(s) du dataset : ${morts.join(' | ')}`).toEqual([]);
+  });
+
+  /**
+   * FILET des sorts d'AUTEUR des scènes TS (#1897) — même trou que le terrain ci-dessus : le schéma
+   * prouve `combat.spells` et `statblock.spells` au parse (`refs('spell')`), le spawn les pose tels
+   * quels, et les scénarios construits EN CODE ne passent par aucun parse. DÉRIVÉE.
+   */
+  it('tout id de SORT d’auteur posé par une scène TS existe dans `spells.json`', () => {
+    const morts: string[] = [];
+    for (const s of testScenarios)
+      for (const e of s.scene.entities)
+        for (const id of [...(e.combat?.spells ?? []), ...(e.statblock?.spells ?? [])])
+          if (!findSpellById(id)) morts.push(`${s.id} ${e.id} : « ${id} »`);
+    expect(morts, `sort(s) absent(s) du dataset : ${morts.join(' | ')}`).toEqual([]);
   });
 
   it('contient les piliers Embuscade et Magie', () => {

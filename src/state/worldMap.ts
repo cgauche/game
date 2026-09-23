@@ -756,6 +756,21 @@ function migreActionsAuthorees(scenes: unknown): unknown {
   });
 }
 
+/** `{ id }` → id nu dans `presetsPnj[].profil.spells` (bump 12 → 13, #1897) ; le reste traverse intact. */
+function denudeSortsDePreset(narratif: unknown): unknown {
+  const nb = narratif as { presetsPnj?: unknown } | null;
+  if (!nb || typeof nb !== 'object' || !Array.isArray(nb.presetsPnj)) return narratif;
+  const presetsPnj = nb.presetsPnj.map((p) => {
+    const profil = (p as { profil?: { spells?: unknown } } | null)?.profil;
+    if (!profil || !Array.isArray(profil.spells)) return p;
+    const spells = profil.spells.map((s) =>
+      s && typeof s === 'object' && typeof (s as { id?: unknown }).id === 'string' ? (s as { id: string }).id : s,
+    );
+    return { ...(p as object), profil: { ...profil, spells } };
+  });
+  return { ...nb, presetsPnj };
+}
+
 /** Migrations SÉQUENTIELLES de ProjectDoc : la clé N met à niveau un schema N → N+1. `2` injecte le
  *  bloc `narratif` vide (#765 — un projet schema 2 est un paquet SANS narratif). `3` porte les
  *  RÔLES DE PROSE du lot #1467 L1b V-P2 : c'est la MÊME transformation que les migrations de dépôt
@@ -947,6 +962,21 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
       : {}),
     version: 12,
     schema: 12,
+  }),
+  /**
+   * `12` DÉNUDE la référence de sort d'un preset de PNJ (#1897) : `narratif.presetsPnj[].profil` reprend
+   * le def créature, dont `spells` adopte `refs('spell')` — `{ id }` devient l'id nu, À SA PLACE. Sans ce
+   * passage, un projet de bibliothèque utilisateur serait REFUSÉ au parse sur son premier sort de preset.
+   * Un élément déjà nu traverse INTACT, et ce qui n'est pas une liste traverse tel quel
+   * (`parseProject` le refuse ensuite, en le nommant).
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-23-1897-projet-sorts-de-preset-ids-nus.mjs`
+   * (parité mesurée par `projet-migration-12-vers-13.test.ts`).
+   */
+  12: (doc) => ({
+    ...doc,
+    ...(doc.narratif !== undefined ? { narratif: denudeSortsDePreset(doc.narratif) } : {}),
+    version: 13,
+    schema: 13,
   }),
 };
 

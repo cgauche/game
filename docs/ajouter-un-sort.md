@@ -145,13 +145,14 @@ Rituel (`ritual`) — 17 entrées aujourd'hui :
 | `sacrifices` | Rubrique **Sacrifices** (`l.389`) VERBATIM. |
 | `consequences` | Rubrique **Conséquences** (`l.391`) VERBATIM. |
 
-## 5. Classification mécanique — `spellSupport`
+## 5. Classification mécanique — `spellSupportOf`
 
-`spellSupport(ops, spell, missile)` (`src/engine/spellspec.ts:36`) rend l'une des
-3 issues `mecanique` / `partiel` / `narratif`. Elle alimente le tableau de bord et le
-badge affiché en jeu. `ops` est l'union des feuilles du Flow pour la cible ET pour le lanceur : un
+`spellSupportOf(spell)` (`src/engine/spellspec.ts:54`) est le point d'entrée : il rend l'une des
+3 issues `mecanique` / `partiel` / `narratif` d'un sort de la donnée. Elle alimente le tableau de
+bord et le badge affiché en jeu. Il compose `spellSupport(ops, spell, missile)` (`src/engine/spellspec.ts:36`) :
+`ops` est l'union des feuilles du Flow pour la cible ET pour le lanceur (`spellEffectOps`) — un
 effet de lanceur (téléportation, poussée, chaîne, invocation, zone, vol de vie) compte autant qu'un
-effet de cible.
+effet de cible —, `missile` vient d'`isMagicMissile`.
 
 ## 6. Curer un sort narratif → mécanique
 
@@ -182,4 +183,4 @@ effet de cible.
 
 `npm run typecheck` en plus : les unions de portée/cible/durée et `Formula` sont strictement
 typées — une valeur mal formée casse la compilation avant le runtime.
-<!-- sources-empreinte: 6f4b0e2438a1e9163fd479efa8b866e01323b953 (16 fichiers, 0 dossiers) corps: 14dc05a7b66b5e8e0f9ea05a85e02a9c7e41e68a -->
+<!-- sources-empreinte: b25bd957b7135aa311b0b50b4bb52200980602eb (16 fichiers, 0 dossiers) corps: 479b0e2c2f32290c1fd0872463b1c1ec16ca2c5d -->

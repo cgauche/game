@@ -206,6 +206,12 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // (`flowTestSchema.skill`), qui n'est pas un champ de DEF. La référence « Canon détaché »
       // (`athletisme`, MDG 13 l.763) reste VALIDÉE, par la marche de la grammaire.
       ...Array.from({ length: 35 }, () => "idDe('skill')"),
+      // +8 sites ADOPTÉS (#1897, 2026-09-23) — la référence de SORT : `defs/creatures.ts › spells`,
+      // `defs-scenes/scene.ts › combat.spells`, `defs-scenes/communs.ts › customStatblockSchema.spells`,
+      // `defs/gods.ts › blessings`/`miracles`/`chaosSpells` (`refs('spell')`), `defs-scenes/effets.ts ›
+      // sortSchema` (`learnSpell.spell` et `castSpell.spellId`, UN nœud partagé) et
+      // `grammaire/valeurs.ts › castingNumberModSchema.scope.spellIds`.
+      ...Array.from({ length: 8 }, () => "idDe('spell')"),
       ...Array.from({ length: 4 }, () => "idDe('table')"),
       ...Array.from({ length: 6 }, () => "idDe('talent')"),
       // +1 site ADOPTÉ (#1690) : `defs-scenes/scene.ts › layerSchema.tiles` résout CHAQUE case de la

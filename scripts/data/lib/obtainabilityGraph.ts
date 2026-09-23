@@ -126,7 +126,7 @@ export function computeObtainability(root: string): ObtainabilityResult {
   // Chaos). La famille est déjà tranchée par le `castingKind` du Talent au site d'appel — le pool
   // AUTHORÉ du dieu suffit ensuite à dire l'appartenance, sans table champ↔famille à tenir à jour.
   const godSpellIds = new Map(gods.map((g) => [
-    g.id, new Set([...g.miracles, ...g.blessings, ...(g.chaosSpells ?? [])].map((r) => r.id)),
+    g.id, new Set([...g.miracles, ...g.blessings, ...(g.chaosSpells ?? [])]),
   ]));
 
   const spellVerdicts: SpellVerdict[] = [];

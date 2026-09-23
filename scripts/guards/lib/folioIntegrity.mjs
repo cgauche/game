@@ -58,8 +58,7 @@ import { readFileSync } from 'node:fs'
 import { parUnitesDeCode, listerDossier } from './lister.mjs'
 import { join, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { REGISTRE_LIVRES, sigleDe } from '../../raw/_lib.mjs'
-import { sourceDirOf } from '../../data/lib/skillSpecWalk.mjs'
+import { REGISTRE_LIVRES, estLivreCitable, livreDuSigle, sigleDe, sourceDirOf } from '../../raw/_lib.mjs'
 import { resoudreProse } from '../../source/resoudre.mjs'
 
 
@@ -101,38 +100,37 @@ export function normMap(s) {
   return { text: out.join(''), idx }
 }
 
-/**
- * Le livre du registre (`src/data/books.json`) dont un champ vaut `valeur`, s'il porte une extraction
- * — `dir` d'un livre de l'Atlas ou `extractionDir` d'un livre hors Atlas (`sourceDirOf`) —, sinon `null`.
- * @param {'id'|'abbr'} champ @param {string} valeur @returns {{ abbr: string, dir: string } | null}
- */
-function livreAvecExtraction(champ, valeur) {
-  const livre = REGISTRE_LIVRES.find((b) => b[champ] === valeur)
-  const dir = sourceDirOf(livre)
-  return dir ? { abbr: livre.abbr, dir } : null
-}
-
 /** Pied de page IMPRIMÉ `N sur M` — seule graphie de folio de l'extraction `frenchy-bzh`, rendue aussi
  *  `sur N M` (`frenchy.bzh 16 l.185`) ; aucune extraction de l'Atlas n'en porte (mesuré le 2026-09-23). */
-const PIED_DE_PAGE = /^[ \t]*(?:(\d+)[ \t]+sur|sur[ \t]+(\d+))[ \t]+\d+[ \t]*$/gm
+const PIED_DE_PAGE = /^[ \t]*(?:(\d+)[ \t]+sur|sur[ \t]+(\d+))[ \t]+(\d+)[ \t]*$/gm
+/** Pied FUSIONNÉ à la dernière ligne d'une note (`frenchy.bzh 84` l.10 : « … tiltent… 620 sur  630 ») :
+ *  admis seulement si son total `M` est celui d'un pied SEUL du même chapitre — une prose « 3 sur 10 »
+ *  en fin de ligne n'est pas un folio. */
+const PIED_FUSIONNE = /\S[ \t]+(\d+)[ \t]+sur[ \t]+(\d+)[ \t]*$/gm
 
 /**
  * Marqueurs de DÉBUT de folio `[offset, folio]` d'un chapitre brut, triés par offset. Deux graphies :
- * `<span data-folio="N">` (Marker) OUVRE la page N ; un pied de page `N sur M` la CLÔT — le texte qui
- * le précède est en folio N, celui qui le suit en N+1. Un pied manquant laisse l'encadrement ouvert
- * sur deux folios, jamais un folio faux.
+ * `<span data-folio="N">` (Marker) OUVRE la page N ; un pied de page `N sur M` (seul ou fusionné) la
+ * CLÔT — le texte qui le précède est en folio N, celui qui le suit en N+1. Le DERNIER pied ferme sa page
+ * (marqueur de même folio N à sa fin quand rien ne le suit) et la fin du chapitre ferme la page N+1
+ * (marqueur de même folio à la fin du texte) : aucune plage n'est ouverte sur les folios suivants. Un
+ * pied manquant laisse l'encadrement ouvert sur deux folios.
  * @param {string} raw @returns {[number, number][]}
  */
 function marqueursDeFolio(raw) {
   /** @type {[number, number][]} */
   const folios = []
   for (const m of raw.matchAll(/data-folio="(\d+)"/g)) folios.push([m.index ?? 0, Number(m[1])])
-  const pieds = [...raw.matchAll(PIED_DE_PAGE)]
-  if (pieds.length > 0) folios.push([0, Number(pieds[0][1] ?? pieds[0][2])])
-  for (const m of pieds) {
-    const fin = (m.index ?? 0) + m[0].length
-    if (raw.slice(fin).trim()) folios.push([fin, Number(m[1] ?? m[2]) + 1])
-  }
+  const seuls = [...raw.matchAll(PIED_DE_PAGE)].map((m) => ({ fin: (m.index ?? 0) + m[0].length, n: Number(m[1] ?? m[2]), total: m[3] }))
+  const totaux = new Set(seuls.map((p) => p.total))
+  const fusionnes = [...raw.matchAll(PIED_FUSIONNE)]
+    .filter((m) => totaux.has(m[2]))
+    .map((m) => ({ fin: (m.index ?? 0) + m[0].length, n: Number(m[1]) }))
+  const pieds = [...seuls, ...fusionnes].sort((a, b) => a.fin - b.fin)
+  if (pieds.length > 0) folios.push([0, pieds[0].n])
+  for (const p of pieds) folios.push([p.fin, raw.slice(p.fin).trim() ? p.n + 1 : p.n])
+  const dernier = pieds[pieds.length - 1]
+  if (dernier && raw.slice(dernier.fin).trim()) folios.push([raw.length, dernier.n + 1])
   return folios.sort((a, b) => a[0] - b[0])
 }
 
@@ -144,7 +142,7 @@ const CACHE = new Map()
 export function bookDocs(abbr) {
   const hit = CACHE.get(abbr)
   if (hit) return hit
-  const rel = livreAvecExtraction('abbr', abbr)?.dir
+  const rel = sourceDirOf(livreDuSigle(abbr, REGISTRE_LIVRES, estLivreCitable))
   const docs = []
   if (rel) {
     const dir = join(ROOT, rel)
@@ -185,7 +183,7 @@ export function bookMaxFolio(abbr) {
   if (hit !== undefined) return hit
   let max = 0
   for (const doc of bookDocs(abbr)) for (const [, f] of doc.folios) if (f > max) max = f
-  const rel = livreAvecExtraction('abbr', abbr)?.dir
+  const rel = sourceDirOf(livreDuSigle(abbr, REGISTRE_LIVRES, estLivreCitable))
   if (rel) {
     try {
       const t = readFileSync(join(ROOT, rel, '00 - Index.md'), 'utf8')
@@ -545,7 +543,7 @@ export function secondaryEntriesOf(data) {
  * @returns {{ verdict: 'attesté'|'non-attesté'|'folio-impossible'|'livre-hors-atlas', via?: 'label'|'quote', max?: number }}
  */
 export function auditSecondaryRef({ book, page, label, quote }) {
-  const abbr = livreAvecExtraction('id', book)?.abbr
+  const abbr = sigleDe(book, REGISTRE_LIVRES, estLivreCitable)
   if (!abbr) return { verdict: 'livre-hors-atlas' }
   const docs = bookDocs(abbr)
   if (docs.length === 0) return { verdict: 'livre-hors-atlas' }

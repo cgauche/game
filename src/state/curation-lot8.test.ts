@@ -9,11 +9,10 @@ import { useGame } from './store';
 import { applyCast } from './combatFlow';
 import { pregen, pregenParty, PREGEN } from '../data/pregens';
 import { spells, findSpell, findSpellById } from '../data';
-import { spellSupport } from '../engine/spellspec';
-import { spellEffectOps } from './flow';
+import { spellSupportOf } from '../engine/spellspec';
 import { woundsFromHit } from '../engine/combat';
 import { effectiveArmourAt } from '../engine/characteristics';
-import { isMagicMissile, type CastResult, type MissileResult } from '../engine/magic';
+import type { CastResult, MissileResult } from '../engine/magic';
 import type { Combatant, Weapon } from '../engine/types';
 
 const ok = (sl: number): CastResult => ({ cast: true, roll: 21, target: 70, sl, isCritical: false, isFumble: false, log: 'lancé' });
@@ -42,24 +41,21 @@ describe('couverture de curation', () => {
     expect(taalSpell.curated).toBe(true);
   });
 
-  it('spellSupport : classification mécanique / partiel / narratif', () => {
-    // Les EFFETS (ops) vivent sur `spell.effects` (Flow) → on les extrait (target + caster) par `spellEffectOps`.
-    // `spellSupport` reçoit désormais `spell` directement (SpellData — données JSON).
-    const sup = (s: typeof spells[number], missile: boolean) => spellSupport(spellEffectOps(s.effects), s, missile);
+  it('spellSupportOf : classification mécanique / partiel / narratif', () => {
     const choc = findSpellById('choc')!; // Magie mineure
-    expect(sup(choc, isMagicMissile(choc))).toBe('mecanique');
+    expect(spellSupportOf(choc)).toBe('mecanique');
     const lumiere = findSpell('Lumière')!;
     // Lumière émet désormais une VRAIE lumière (op `light` → brouillard de guerre) : volet mécanique +
     // la narration de modulation bougie↔lanterne (Test de Focalisation, non modélisé, arbitrage MJ) → partiel.
-    expect(sup(lumiere, false)).toBe('partiel');
+    expect(spellSupportOf(lumiere)).toBe('partiel');
     // Cautériser : mécanique (heal/removeCondition/preventInfection/Inconscient sur −6 DR) + un volet
     // « arbitrage MJ » (le hurlement de douleur). Le Test interne a migré en nœud Flow `test` (Lot 4b) :
     // sa narration vit dans la branche `fail`, visible par `spellEffectOps` → la classification reflète
     // ce volet → « partiel ».
     const cauteriser = findSpell('Cautériser')!;
-    expect(sup(cauteriser, false)).toBe('partiel');
+    expect(spellSupportOf(cauteriser)).toBe('partiel');
     const couronne = findSpell('Couronne de Flammes')!;
-    expect(sup(couronne, false)).toBe('partiel');
+    expect(spellSupportOf(couronne)).toBe('partiel');
   });
 });
 

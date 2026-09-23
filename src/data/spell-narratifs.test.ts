@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { sitesNarratifs, FICHIER_DES_SORTS } from '../../scripts/data/lib/sortsNarratifs';
 import { SPELL_NARRATIF_STOCK } from '../../scripts/guards/lib/spellNarratifStock.mjs';
-import { ecartDuVolet } from '../../scripts/guards/lib/stock.mjs';
+import { ecartDuVolet, remedeNomme } from '../../scripts/guards/lib/stock.mjs';
 
 /**
  * Cliquet décroissant des sorts NARRATIFS (DoD de #838) : l'écart NOMINATIF au stock
@@ -9,9 +9,6 @@ import { ecartDuVolet } from '../../scripts/guards/lib/stock.mjs';
  * en assertion : le compte s'imprime en diagnostic.
  */
 const STOCK = 'scripts/guards/lib/spellNarratifStock.mjs';
-
-/** Une ligne de remède CONTIENT-elle cette clé ? (le remède décore la clé d'une phrase) */
-const porte = (lignes: readonly string[], cle: string) => lignes.some((l) => l.includes(cle));
 
 describe('cliquet — tout sort NARRATIF est au stock, toute entrée du stock est narrative', () => {
   const sites = sitesNarratifs();
@@ -41,7 +38,7 @@ describe('cliquet — tout sort NARRATIF est au stock, toute entrée du stock es
     expect(substitue, 'la forge doit rester à taille CONSTANTE, sinon elle ne prouve rien')
       .toHaveLength(SPELL_NARRATIF_STOCK.length);
     const ecart = ecartDuVolet({ sites, stock: substitue, ou: STOCK });
-    expect(porte(ecart.neuves, ` :: ${SPELL_NARRATIF_STOCK[0].ref} :: `), 'la découverte doit ressortir NEUVE').toBe(true);
-    expect(porte(ecart.perimees, ' :: sort-qui-n-existe-pas :: 1'), "l'entrée bidon doit ressortir SOLDÉE").toBe(true);
+    expect(remedeNomme(ecart.neuves, ` :: ${SPELL_NARRATIF_STOCK[0].ref} :: `), 'la découverte doit ressortir NEUVE').toBe(true);
+    expect(remedeNomme(ecart.perimees, ' :: sort-qui-n-existe-pas :: 1'), "l'entrée bidon doit ressortir SOLDÉE").toBe(true);
   });
 });

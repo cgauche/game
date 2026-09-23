@@ -126,6 +126,11 @@ export const STRUCTURES_CIBLES = [
   { concept: "formule", signature: "minimum,of", date: "2026-09-18" },
   { concept: "source", signature: "book,page", date: "2026-08-23" },
   { concept: "source", signature: "book,note,page", date: "2026-08-23" },
+  // #1897 : l'emplacement SECONDAIRE (`alsoIn`) est la référence de source plus sa preuve `quote`
+  // (`secondarySourceRefSchema`, `grammaire/valeurs.ts`), cible au SEUL site `alsoIn`
+  // (`SITE_EMPLACEMENT_SECONDAIRE` du lexique). Aucune donnée n'est réécrite.
+  { concept: "source", signature: "book,page,quote", date: "2026-09-23" },
+  { concept: "source", signature: "book,note,page,quote", date: "2026-09-23" },
   { concept: "plage", signature: "max,min", date: "2026-08-23" },
   // #1463 L4 P2 (2026-08-31) — la FOURCHETTE d'une rangée de table sort du dénominateur. Ce n'est pas
   // un mot du lexique qui la sort : la cible est TRANCHÉE (forme PLATE `{min, max}` + `findTableEntry`,
@@ -654,17 +659,7 @@ export const STRUCTURES_FORMES = [
   { concept: "reference", dataset: "voyage-stakes.json", champ: "kind", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 15, lot: "L3 #1463", date: "2026-08-30", motif: "GENRE d’enjeu de voyage" },
   { concept: "reference", dataset: "voyage-stakes.json", champ: "rule", signature: "id-nu", statut: "historique", strate: "Référence", occurrences: 32, lot: "L3 #1463", date: "2026-08-30", motif: "référence de RÈGLE" },
   { concept: "reference", dataset: "water-exposure.json", champ: "auto", signature: "condition+…", statut: "divergente", strate: "Référence", occurrences: 4, lot: "L3 #1463", date: "2026-08-23" },
-  { concept: "source", dataset: "creatures.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L1d #1469", date: "2026-08-23" }, // +2 : alsoIn posés par e89a836d3 (C1 #1457, folios ZI) sans leur ligne de stock — sillage relevé 2026-09-01
-  { concept: "source", dataset: "domains.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 6, lot: "L1d #1469", date: "2026-08-23" },
-  { concept: "source", dataset: "naval-traits.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "source", dataset: "progression-schemas.derived.json", champ: "schemas", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 111, lot: "L1d #1469", date: "2026-09-01" }, // le folio inventait son nom : la bande dit `page` comme toute réf de source (#1463 L-gram-4)
-  { concept: "source", dataset: "qualities.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { concept: "source", dataset: "skills.json", champ: "alsoIn", signature: "book,note,page+…", statut: "divergente", strate: "Valeur", occurrences: 2, lot: "L1d #1469", date: "2026-08-23" },
-  { concept: "source", dataset: "species.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" }, // +1 : idem e89a836d3 (species norses)
-  { concept: "source", dataset: "spells.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 46, lot: "L1d #1469", date: "2026-08-23" },
-  { concept: "source", dataset: "talents.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { concept: "source", dataset: "traits.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L1d #1469", date: "2026-08-23" },
-  { concept: "source", dataset: "trappings.json", champ: "alsoIn", signature: "book,page+…", statut: "divergente", strate: "Valeur", occurrences: 8, lot: "L1d #1469", date: "2026-08-23" },
   { concept: "test", dataset: "arcane-phenomena.json", champ: "controlFlux", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 1, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "arene-projet.json", champ: "test", signature: "difficulty,skill+…", statut: "divergente", strate: "Valeur", occurrences: 9, lot: "L4 #1463", date: "2026-08-23" },
   { concept: "test", dataset: "criticals.json", champ: "amputation", signature: "difficulty+…", statut: "divergente", strate: "Valeur", occurrences: 26, lot: "L4 #1463", date: "2026-08-23" },
