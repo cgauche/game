@@ -54,7 +54,7 @@ You have a natural talent for art. You may always advance the Art Skill, even if
 
 Whether it is your piercing eyes or the flash of your perfect teeth, you know how to make the best use of what the gods gave you. When you successfully use Charm to influence those attracted to you, you can choose to either use your rolled SL, or the number rolled on your units die.
 
-IV **Battle Rage** You are always on the edge of self-control, ready to slip into a violent *Frenzy* at any moment (see page 184). If another ability would allow you to enter a state of *Frenzy*, you may do so without making a Test. Furthermore, when you exit the *Frenzy*  state, you do not incur a *Fatigued* Condition.
+**Battle Rage** You are always on the edge of self-control, ready to slip into a violent *Frenzy* at any moment (see page 184). If another ability would allow you to enter a state of *Frenzy*, you may do so without making a Test. Furthermore, when you exit the *Frenzy*  state, you do not incur a *Fatigued* Condition.
 
 ### **Beat Blade**
 
@@ -156,7 +156,7 @@ Gain +5 Willpower. This does not count toward Advances.
 
 You know how to get the most out of your animals. Assuming you have the Drive Skill, you can direct your vehicle's animals to take an Action, as well as a Move, without a Test. When a Drive Test is required, make it with Advantage. When driving a vehicle in a Pursuit, add +1 to the animals' Movement Attributes.
 
-IV **Craftsman (Trade)** You are a true creative talent, sufficiently skilled in a craft to have the potential to elevate it to an art form. Choose a Trade Specialisation. You gain Advantage on Tests of this skill, and may Advance it even if it is not part of your current Career. You may purchase this Talent more than once, choosing a new Trade Specialisation each time you do.
+**Craftsman (Trade)** You are a true creative talent, sufficiently skilled in a craft to have the potential to elevate it to an art form. Choose a Trade Specialisation. You gain Advantage on Tests of this skill, and may Advance it even if it is not part of your current Career. You may purchase this Talent more than once, choosing a new Trade Specialisation each time you do.
 
 ### **Criminal**
 
@@ -175,8 +175,6 @@ You are a skilled businessman who knows how to close a deal. You gain Advantage 
 ### **Detect Artefact**
 
 You are able to sense when magic lies within an artefact. You can automatically tell if an item contains magical energy merely by touching it. If you also possess the *Second Sight* Talent, you may attempt an Intuition Test to determine the exact powers, means of activation, and number of charges the item possesses.
-
-117
 
 ### **Dicer**
 
@@ -245,7 +243,7 @@ You can move your hands with surprising dexterity. You can use Sleight of Hand t
 
 #### **Fast Shot**
 
-IV **Drilled** You can draw and fire a pistol with lightning speed, attacking before the Combat Initiative sequence begins. If you are not Engaged, you may make a single attack with a loaded weapon with the *Pistol* Trait before the first turn of the Round. This attack uses your Action for the Round. If multiple Characters use *Fast Shot*, resolve their attacks in Combat Initiative order. When your turn arrives, you act as normal, but cannot make another attack.
+**Drilled** You can draw and fire a pistol with lightning speed, attacking before the Combat Initiative sequence begins. If you are not Engaged, you may make a single attack with a loaded weapon with the *Pistol* Trait before the first turn of the Round. This attack uses your Action for the Round. If multiple Characters use *Fast Shot*, resolve their attacks in Combat Initiative order. When your turn arrives, you act as normal, but cannot make another attack.
 
 ### **Fearless (Enemy)**
 
@@ -419,7 +417,7 @@ You have an imposing presence, and most people know to steer clear of you. You g
 
 You have a good ear for accents and dialects and can reproduce them accurately. You gain Advantage on Entertain (Acting, Comedy) and Perform (Clowning) Tests. Additionally, you may replicate any accent you are exposed to for at least a day, which may help with dealing with locals in an area at the GM's discretion.
 
-IV If you are familiar with an accent, you know if another is attempting to fake it or hide it unless they also have *Mimic*.
+If you are familiar with an accent, you know if another is attempting to fake it or hide it unless they also have *Mimic*.
 
 #### **Night Vision**
 
@@ -559,7 +557,7 @@ You are an inquisitive soul who has travelled far and wide, and quickly pick up 
 
 #### **Second Sight**
 
-IV **Roughrider** You can perceive the shifting Winds of Magic that course from the Chaos Gates at the poles of the world. You now have the ability to percieve the Winds of Magic (see page 236).
+**Roughrider** You can perceive the shifting Winds of Magic that course from the Chaos Gates at the poles of the world. You now have the ability to percieve the Winds of Magic (see page 236).
 
 #### **Secret Identity**
 
@@ -651,7 +649,7 @@ You are the epitome of determination and resolve. Once per session, before takin
 
 You are an accomplished swimmer, able to fight a strong current and outpace other swimmers. You gain Advantage on Swim Tests, and receive a +2 SL Bonus to swimming Pursuits.
 
-IV **Sturdy** You have a brawny physique, or are very used to carrying things. When calculating the number of Encumbrance Points you can carry, count your Strength Bonus twice.
+**Sturdy** You have a brawny physique, or are very used to carrying things. When calculating the number of Encumbrance Points you can carry, count your Strength Bonus twice.
 
 #### **Suave**
 
@@ -738,5 +736,3 @@ You are used to anticipating the needs of others, and yourself. Once per session
 You have learned magic through trial and error. Gain one Spell of your choice from any Colour Lore or the Lore of Witchcraft, even if you lack the appropriate *Arcane Magic* Talent. Further, treat that Spell's Channelling Skill as a Basic Skill. You can memorise an additional such Spell (and treat its Channelling Skill as Basic) for 150 XP; further Spells cost 50 XP more each time.
 
 Possession of this Talent may attract the attention of witch hunters, and complicate matters should you wish to join an established magical tradition. You can spend 100 XP to lose this Talent and all associated Spells.
-
-V

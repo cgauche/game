@@ -1352,7 +1352,7 @@ function RestartTestField({ value, onChange }: { value: RestartTest[] | undefine
   );
 }
 
-/** Test de Résistance d'Exposition hydrique (`waterExposure.test`, MSRC 16 p.91, #157 suite) :
+/** Test de Résistance d'Exposition hydrique (`waterExposure.test`, MSRC 16 l.13, #157 suite) :
  *  Compétence + Difficulté — sorti du repli générique (le repli traiterait ce couple {skill,difficulty}
  *  en `recordText` renommable, ce qui autoriserait de corrompre les clés d'un objet à forme FIXE). */
 function WaterTestField({ value, onChange }: { value: WaterTest | undefined; onChange: (v: WaterTest) => void }) {
@@ -1360,7 +1360,7 @@ function WaterTestField({ value, onChange }: { value: WaterTest | undefined; onC
   const v = value ?? { skill: { id: '' }, difficulty: DIFFICULTIES[0] };
   return (
     <div className="ed-field">
-      <span>Test de Résistance (MSRC 16 p.91) — Compétence + Difficulté</span>
+      <span>Test de Résistance (MSRC 16 l.13) — Compétence + Difficulté</span>
       <div className="tf-row">
         <select value={v.skill.id} onChange={(e) => onChange({ ...v, skill: { ...v.skill, id: e.target.value } })}>
           {!v.skill.id && <option value="">— (choisir une compétence) —</option>}
@@ -1377,7 +1377,7 @@ function WaterTestField({ value, onChange }: { value: WaterTest | undefined; onC
 const WATER_APPLIES_TO_OPTS = optionsDuNoeud(waterAppliesToSchema) as [WaterExposureModifier['appliesTo'][number], string][];
 const WATER_TABLE_OPTS = optionsDuNoeud(waterTableSchema);
 
-/** Modificateurs du Test de Résistance d'Exposition hydrique (`waterExposure.modifiers`, MSRC 16 p.91) :
+/** Modificateurs du Test de Résistance d'Exposition hydrique (`waterExposure.modifiers`, MSRC 16 l.23-47) :
  *  id/libellé/valeur + contexte (Ingestion/Immersion, cumulables) + table d'origine. `auto` (dérivation
  *  automatique depuis le Combatant — PB restants/perdus, État) reste en JSON : union à 5 formes, rare
  *  (6/12 entrées), pas assez structurante pour justifier un 2ᵉ éditeur dédié. */
@@ -1390,7 +1390,7 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
   };
   return (
     <div className="ed-field">
-      <span>modificateurs du Test de Résistance (MSRC 16 p.91) — cumulables</span>
+      <span>modificateurs du Test de Résistance (MSRC 16 l.23-47) — cumulables</span>
       {list.map((m, i) => (
         <div className="ed-subfield" key={i}>
           <div className="tf-row">
@@ -1415,7 +1415,7 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
   );
 }
 
-/** Maladies contractées sur Exposition hydrique (`waterExposure.diseases`, MSRC 16 p.91) : plage d100
+/** Maladies contractées sur Exposition hydrique (`waterExposure.diseases`, MSRC 16 l.49-61) : plage d100
  *  (jet APRÈS échec du Test) → maladie référencée par ID (sélecteur, comme `SkillSpecListField`/
  *  `ProsthesisField`/`MutationTableField` — la donnée est un id, jamais un label). */
 function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['diseases'] | undefined; onChange: (v: WaterExposureData['diseases']) => void }) {
@@ -1424,7 +1424,7 @@ function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['dis
   const set = (i: number, patch: Partial<WaterExposureData['diseases'][number]>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   return (
     <div className="ed-field">
-      <span>maladies contractées — jet d100 après échec du Test de Résistance (MSRC 16 p.91)</span>
+      <span>maladies contractées — jet d100 après échec du Test de Résistance (MSRC 16 l.49-61)</span>
       {list.map((r, i) => (
         <div className="tf-row" key={i}>
           <label className="dr">d100&nbsp;<NumberField variant="nu" label="Plage d100 — borne basse" min={1} max={100} value={r.min} onChange={(min) => set(i, { min })} />–<NumberField variant="nu" label="Plage d100 — borne haute" min={1} max={100} value={r.max} onChange={(max) => set(i, { max })} /></label>

@@ -10,7 +10,7 @@ Corruption Points are gained through exposure to places, people, or objects tain
 
 You do not Test for Corruption every time you are exposed. Instead, at the end of the session, the GM determines your greatest degree of exposure and calls for a single Corruption Test.
 
-V **Surprised** Multiple exposures, or exposure to multiple sources, may increase the Test's Difficulty, change the Characteristic Tested, or increase the Corruption gained on a failure, at the GM's discretion. The stronger the Corrupting Influence, the more SL you must score to avoid gaining Corruption Points.
+**Surprised** Multiple exposures, or exposure to multiple sources, may increase the Test's Difficulty, change the Characteristic Tested, or increase the Corruption gained on a failure, at the GM's discretion. The stronger the Corrupting Influence, the more SL you must score to avoid gaining Corruption Points.
 
 > A Corruption Test is a **Challenging (+0 SL) Endurance or Cool** Test, as determined by the GM. Physical corruption is usually resisted with Endurance, while spiritual corruption is resisted with Cool. The stronger the Corrupting Influence, the more SL you must score to avoid gaining Corruption Points.
 
@@ -80,8 +80,6 @@ A soul can withstand only so much corruption before it finally gives way. If you
 |------|--------|----------|--------|--------|
 | Body | –      | 01–10    | 01–50  | 01–05  |
 | Mind | 01–100 | 11–100   | 51–100 | 06–100 |
-
-V
 
 # **PHYSICAL CORRUPTION TABLE**
 

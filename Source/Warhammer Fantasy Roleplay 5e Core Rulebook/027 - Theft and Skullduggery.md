@@ -44,8 +44,6 @@ A suitable distraction, such as a modest fire, a street brawl, or a blathering g
 | Bribe a guard | A Bribery Test to find someone open to being bribed, at a price set by their status. You might Haggle with them over the price. |
 | Learn a thing's value | An Evaluate Test to learn something's value, or a Difficult (-1 SL) Evaluate Test to quickly spot the most valuable thing in a room. |
 
-V
-
 ## **EXAMPLE DIFFICULTIES OF COMMON UNDERHANDED TASKS**
 
 | Difficulty          | Action                                                                                                                                                                                                             |
@@ -150,7 +148,7 @@ Picking a lock is an Extended Test (page 131), with one Test allowed each round.
 
 If time is not an issue and discovery is unlikely, a character with the Pick Lock Skill and suitable tools can simply open the lock without making a Test.
 
-# **SELECTION OF TRAPS** V
+# **SELECTION OF TRAPS**
 
 | Trap                                             | Setting Difficulty                                                                          | Setting Fumble                                 | If Triggered                                                                                                   |
 |--------------------------------------------------|---------------------------------------------------------------------------------------------|------------------------------------------------|----------------------------------------------------------------------------------------------------------------|

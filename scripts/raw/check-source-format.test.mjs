@@ -9,14 +9,16 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  sitesDuDossier, scanDossier, scanAll, dossiersFR, formeDeLigne1, estNomDeSignet, estSeparateur,
+  sitesDuDossier, scanDossier, scanAll, dossiersFR, formeDeLigne1, estNomDeSignet,
   comptesDeTables, balisesResiduelles, liensDIndex, entreesDe, stockDe, ecartDuStock, comptesParFamille,
-  ecartsAuGrain,
+  ecartsAuGrain, mobilierAll, rougesDuMobilier,
   FAMILLES, STOCK_PATH, PREFIXES_FR,
 } from './check-source-format.mjs'
 import { readStock } from './stockNominatif.mjs'
-import { BOOKS } from './_lib.mjs'
-import { ligne1DePlage, titreDuFichier } from '../../src/data/source/decoupe.ts'
+import { BOOKS, decoupeDe, livreExtraitDe, livresDecoupes, nomsDeLaListe, ongletsDe, readText } from './_lib.mjs'
+import { chiffresDes, fenetreDe, mobilierDuDossier } from './lib/mobilier.mjs'
+import { EXEMPTIONS_MOBILIER } from '../guards/lib/mobilierExemptions.mjs'
+import { estSeparateur, ligne1DePlage, titreDuFichier } from '../../src/data/source/decoupe.ts'
 
 const DIR = 'Source/Livre'
 const familles = (fichiers) => sitesDuDossier(DIR, fichiers).map((s) => s.famille).sort()
@@ -426,4 +428,56 @@ test('survie : une `preuve` posée à la main sur une entrée de format lui surv
   const sites = sitesDuDossier(DIR, [{ nom: '01 - X.md', texte: '*Folio 3+*\n\n<span id="page-5-0" data-folio="3"></span>x\n' }])
   const ancien = entreesDe(sites, { lot: '#1739 H-0', date: '2026-09-14' }).map((e) => ({ ...e, preuve: 'PDF p.9 : lu.' }))
   assert.deepEqual(entreesDe(sites, { lot: '#9999 Z', date: '2030-01-01', ancien }), ancien)
+})
+
+// --- MOBILIER DE PAGE (#1739) : la famille `mobilier`, rouge nommé sans stock ---
+
+/** Les sites de mobilier d'un livre à onglets, chaque texte passé par `retouche(nom, texte)`. */
+const mobilierAvec = (id, retouche = (_, t) => t, exemptions = EXEMPTIONS_MOBILIER) => {
+  const dir = livreExtraitDe(id).dir.split('\\').join('/')
+  return mobilierDuDossier(dir, (nom) => retouche(nom, readText(`${dir}/${nom}`)), decoupeDe(id), ongletsDe(id), { exemptions })
+}
+const LIVRES_A_ONGLETS = livresDecoupes().filter((id) => ongletsDe(id) != null)
+
+test('mobilier : l’arbre est VERT — aucun site hors exemption, toute exemption couvre ses `jetons` sites', () => {
+  assert.ok(LIVRES_A_ONGLETS.length, 'aucun livre à onglets : la famille serait muette')
+  assert.deepEqual(mobilierAll(), [])
+})
+
+test('mobilier : un chiffre d’onglet RÉINJECTÉ en ligne seule ou dans une ligne ROUGIT, nommé à sa ligne', () => {
+  for (const id of LIVRES_A_ONGLETS) {
+    const liste = decoupeDe(id)
+    const i = liste.findIndex((e) => chiffresDes(ongletsDe(id), fenetreDe(e)).size)
+    const x = [...chiffresDes(ongletsDe(id), fenetreDe(liste[i]))][0]
+    const cible = nomsDeLaListe(liste)[i]
+    const sites = mobilierAvec(id, (nom, t) => (nom === cible ? [t, '', x, '', `fin de paragraphe ${x}`].join('\n') : t))
+    const rouges = rougesDuMobilier(sites)
+    assert.equal(rouges.length, 2, `${id} : ${JSON.stringify(rouges)}`)
+    assert.ok(rouges.every((r) => r.file.endsWith(`/${cible}`) && r.ref.includes(`« ${x} »`)))
+    assert.deepEqual(rouges.map((r) => r.ref.split(' ')[1]), ['romain-seul', 'mot'])
+  }
+})
+
+test('mobilier : le pronom « I » EXEMPTÉ ne rougit pas ; sans son exemption il rougirait, et une exemption qui ne couvre rien rougit', () => {
+  for (const id of LIVRES_A_ONGLETS) {
+    const exemptes = mobilierAvec(id).filter((s) => s.exemption)
+    assert.ok(exemptes.length, `${id} : aucun site exempté mesuré`)
+    assert.deepEqual(rougesDuMobilier(mobilierAvec(id)), [])
+    const sans = mobilierAvec(id, undefined, [])
+    assert.equal(rougesDuMobilier(sans, []).length, exemptes.length)
+    const morte = { fichier: exemptes[0].fichier, motif: /^aucune ligne ne porte ce texte$/, jetons: 1, raison: 'banc' }
+    const avecMorte = [...EXEMPTIONS_MOBILIER, morte]
+    assert.deepEqual(rougesDuMobilier(mobilierAvec(id, undefined, avecMorte), avecMorte).map((r) => r.ref), [`exemption qui couvre 0 site(s) pour 1 déclaré(s) : ${morte.motif}`])
+  }
+})
+
+test('mobilier : un chiffre d’onglet AJOUTÉ à une ligne EXEMPTÉE rougit — l’exemption couvre ses `jetons`, pas la ligne', () => {
+  for (const id of LIVRES_A_ONGLETS) {
+    const [cible] = mobilierAvec(id).filter((s) => s.exemption)
+    const nom = cible.fichier.slice(cible.fichier.lastIndexOf('/') + 1)
+    const retouche = (n, t) => (n !== nom ? t : t.split('\n').map((l, j) => (j === cible.ligne - 1 ? `${l} ${cible.jeton}` : l)).join('\n'))
+    const rouges = rougesDuMobilier(mobilierAvec(id, retouche))
+    assert.equal(rouges.length, 1, `${id} : ${JSON.stringify(rouges)}`)
+    assert.ok(rouges[0].file === cible.fichier && rouges[0].ref.startsWith(`l.${cible.ligne} mot « ${cible.jeton} »`))
+  }
 })

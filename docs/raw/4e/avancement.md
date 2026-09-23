@@ -24,8 +24,8 @@ Ce fichier couvre tout ce qui concerne **l'acquisition et la dépense de Points 
 
 ## Vue d'ensemble
 
-> « Votre Carrière va influer sur son gain en expérience. Chaque Carrière propose trois formes d'Augmentation : Augmentation de Caractéristique, Augmentation de Compétence et Augmentation de Talent — chacune d'entre elles étant acquise avec des Points d'Expérience (PX). Vous pouvez également utiliser des PX pour Changer de Carrière. Votre Niveau de Carrière détermine quels sont les Caractéristiques, Compétences et Talents disponibles pour vous. »
-> — LDB 07 l.43
+> « La Carrière de votre Personnage va influer sur son gain en expérience. Chaque Carrière propose trois formes d'Augmentation : *Augmentation de Caractéristique, Augmentation de Compétence* et *Augmentation de Talent* – chacune d'entre elles étant acquise avec des Points d'Expérience (PX). Vous pouvez également utiliser des PX pour Changer de Carrière. Votre Niveau de Carrière détermine quels sont les Caractéristiques, Compétences et Talents disponibles pour vous. »
+> — LDB 07 l.37
 
 Les trois formes d'Augmentation partagent le même principe : chaque Augmentation ajoute +1 et coûte un nombre de PX qui dépend du nombre d'Augmentations déjà achetées pour cet élément précis. Les coûts de Caractéristique et de Compétence sont dans le même tableau (à des colonnes différentes) ; les Talents suivent une formule linéaire séparée.
 
@@ -112,7 +112,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 
 **Disponibilité** : les Compétences de tous les Niveaux de Carrière **jusqu'au courant inclus** sont accessibles. Un personnage au Niveau 3 peut augmenter les Compétences des Niveaux 1, 2 et 3 (`LDB 07 l.76`). Chaque Spécialisation est une Compétence distincte (LDB 09 l.44).
 
-> **Note** : une des Compétences du 1er Niveau de Carrière est écrite en italique — c'est la Compétence de Carrière pour « Gagner de l'argent » (`LDB 07 l.84`).
+> **Note** : une des Compétences du 1er Niveau de Carrière est écrite en italique — c'est la Compétence de Carrière « que vous utiliserez pour Gagner de l'argent » (`LDB 07 l.82`).
 
 **Sources RAW** : `LDB 07 l.75-84`
 

@@ -370,15 +370,25 @@ const NAMED_ARTIFACT_TOMBSTONE_RX = new RegExp(
   'i',
 );
 
-// L'ORIGINE d'un module ne se lit plus : le fichier dont il fut extrait a changé de nom, de forme ou
-// n'existe plus — git porte cette histoire, le lecteur a besoin du contrat COURANT.
+// L'ORIGINE d'un module ne se lit plus : le fichier dont il fut extrait (ou migré) a changé de nom, de
+// forme ou n'existe plus — git porte cette histoire, le lecteur a besoin du contrat COURANT.
+// Prépositions : « de », « d' », « du », « des », « depuis ».
 // La CIBLE doit être un MODULE ou un SYMBOLE de module : back-ticks portant une majuscule interne ou
-// un suffixe de fichier, identifiant chameau nu, ou nom de fichier nu. Deux classes en sont donc
-// exclues par construction — la citation de SOURCE (« extrait du chapitre LDB 13 », « extrait d'ADE
-// II » : sigles sans minuscule interne) et la DÉRIVATION vivante (« arêtes extraites de `walled` » :
+// un suffixe de fichier, identifiant chameau nu, ou nom de fichier nu (glob compris). Deux classes en
+// sont donc exclues par construction — la citation de SOURCE (« extrait du chapitre LDB 13 », « extrait
+// d'ADE II » : sigles sans minuscule interne) et la DÉRIVATION vivante (« arêtes extraites de `walled` » :
 // un mot local en back-ticks décrit ce que le code FAIT, pas d'où il vient).
+// Une MIGRATION n'est jamais vivante : elle se dit aussi par sa DESTINATION (« vers », « dans »), son
+// origine peut porter l'article « l'ancien(ne) », et sa cible s'étend au chemin back-tické qui porte un
+// « / » et à la constante de module back-tickée (SCREAMING_SNAKE). La donnée migrée d'une FORME à une
+// autre (« migré du CODE en donnée ») reste hors cible.
+const DEPUIS = `d(?:e\\s+|epuis\\s+|es\\s+|u\\s+|${APOS})`;
+const MIGRE_OU = `(?:${DEPUIS}|vers\\s+|dans\\s+)(?:l${APOS}ancienn?e?\\s+)?`;
+const MODULE_CIBLE =
+  `${BT}[\\w/-]*(?:[a-zà-ÿ][A-Z]|\\.tsx?)[\\w/.-]*${BT}|[A-Z][a-zà-ÿ]+[A-Z][\\w]*|[\\w/*-]+\\.tsx?\\b`;
+const MIGRATION_CIBLE = `${BT}[\\w.-]*/[\\w/.*-]*${BT}|${BT}[A-Z][A-Z0-9]*_[A-Z0-9_]+${BT}`;
 const EXTRACTED_FROM_RX = new RegExp(
-  `\\b[Ee]xtraite?s?\\s+d(?:e\\s+|${APOS})(?:${BT}[\\w/-]*(?:[a-zà-ÿ][A-Z]|\\.tsx?)[\\w/.-]*${BT}|[A-Z][a-zà-ÿ]+[A-Z][\\w]*|[\\w-]+\\.tsx?\\b)`,
+  `\\b(?:[Ee]xtraite?s?\\s+${DEPUIS}(?:${MODULE_CIBLE})|[Mm]igrée?s?\\s+${MIGRE_OU}(?:${MODULE_CIBLE}|${MIGRATION_CIBLE}))`,
 );
 
 /** @type {{ rx: RegExp, label: string }[]} */
@@ -435,7 +445,7 @@ export const TOMBSTONE_FAMILIES = [
   // du code — back-ticks, identifiant chameau (`IsoStage`, `GameStage3D`) ou nom de fichier `.ts(x)`.
   // Les citations de source RAW en sont exclues par construction (leurs sigles — LDB, ADE, EDOC — ne
   // portent aucune minuscule interne), comme l'extrait de texte au sens courant (minuscules).
-  { rx: EXTRACTED_FROM_RX, label: 'extrait de X (origine révolue du module)' },
+  { rx: EXTRACTED_FROM_RX, label: 'extrait/migré de X (origine révolue du module)' },
   { rx: NO_MORE_ARTIFACT_RX, label: 'négation temporelle + artefact de code (état révolu)' },
   { rx: OF_YORE_RX, label: 'passé nostalgique (état révolu)' },
   { rx: NO_MORE_CODE_RX, label: 'n’est plus du code (nature révolue du site)' },

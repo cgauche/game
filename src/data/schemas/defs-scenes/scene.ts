@@ -493,7 +493,7 @@ export const threatTierSchema = z.enum(['dangereuse', 'tresDangereuse', 'extreme
 /** OBJECTIF de victoire d'une rencontre (#197) — AUTHORABLE en donnée, lu par `checkBattleOver`.
  *  Absent = `allEnemiesDead` (comportement HISTORIQUE, tous les scénarios existants inchangés).
  *  `destroyStructure` référence l'arête par son identifiant STABLE (x/y/side/z), le même couple que
- *  `structureIsDown`/`Combatant.structureEdge` (bélier-porte, `AA 10 p.120-121`) — la victoire se déclenche
+ *  `structureIsDown`/`Combatant.structureEdge` (bélier-porte, `AA 10 l.94-102`) — la victoire se déclenche
  *  à la BRÈCHE, indépendamment du sort des combattants. `surviveRounds` : victoire posée au début du
  *  Round `rounds + 1` (le groupe a tenu N Rounds complets). `reachZone` réutilise le rectangle de zone
  *  des `Trigger`/`SceneEffectZone` (`inRect`, `combatGeometry.ts`) — aucun 2e mécanisme de zone.

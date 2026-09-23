@@ -52,7 +52,7 @@ Hand Weapon is used to describe any of a number of basic weapons that, though di
 
 Swords are a special hand weapon, being slightly deadlier than the other hand weapons and required skilled forging. They also bring a certain prestige to the wielder as they are the weapon of choice of the gentlefolk.
 
-# **MELEE WEAPONS** XI
+# **MELEE WEAPONS**
 
 | Weapon               | Price    | Enc    | Availability | Reach      | Damage  | Qualities and Flaws                           |
 |----------------------|----------|--------|--------------|------------|---------|-----------------------------------------------|
@@ -157,7 +157,7 @@ Blunderbusses are the only weapons listed that use the Small Shot or Improvised 
 | Lead Bullet (12)            | 4d    | 0   | Common       | –           | +1     | Pummel              |
 | Stone Bullet (12)           | 1d    | 0   | Common       | As weapon   | –      | Pummel              |
 
-# **RANGED WEAPONS** XI
+# **RANGED WEAPONS**
 
 | Weapon                  | Price  | Enc | Availability | Range  | Damage  | Qualities and Flaws                                       |  |  |  |
 |-------------------------|--------|-----|--------------|--------|---------|-----------------------------------------------------------|--|--|--|
@@ -278,8 +278,6 @@ The weapon is exquisitely well-made or constructed from an especially strong mat
 #### **Wrap**
 
 *Wrap* weapons typically have long chains with weights at the end, making it very difficult to parry them effectively. Melee Tests Opposing an attack from a *Wrap* weapon suffer a penalty of –1 SL, as parried strikes wrap over the top of shields, or around blades.
-
-XI
 
 # **Weapon Flaws**
 

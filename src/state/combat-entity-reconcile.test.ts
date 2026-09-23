@@ -116,7 +116,7 @@ describe('Identité unifiée SceneEntity ↔ Combatant (fix embuscade)', () => {
   });
 });
 
-describe('checkBattleOver — un engin INERTE ne compte ni pour la victoire ni pour la défaite (AA p.122-123)', () => {
+describe('checkBattleOver — un engin INERTE ne compte ni pour la victoire ni pour la défaite (AA 10 l.136-193)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 

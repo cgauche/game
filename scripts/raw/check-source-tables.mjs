@@ -25,14 +25,14 @@
 // (corriger, ou déclarer par `CLIQUET:`), une entrée SANS site mesuré (défaut réparé : la retirer).
 //
 // Re-run    : node scripts/raw/check-source-tables.mjs
-// Régénérer : node scripts/raw/check-source-tables.mjs --ecrire-stock
+// Régénérer : node scripts/raw/check-source-tables.mjs --ecrire-stock [--lot <#N …>] — le lot est REQUIS dès qu'une entrée NEUVE naît (`ecrireStockSousLot`, scripts/guards/lib/stock.mjs)
 import { writeFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
 import { estNomDExtraction } from '../../src/data/source/decoupe.ts'
-import { ecartDuVolet, sitesEnEntrees, cleDeSite, survieDeLecheance } from '../guards/lib/stock.mjs'
+import { ecartDuVolet, sitesEnEntrees, cleDeSite, ecrireStockSousLot, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { parCleDeSite, readStock } from './stockNominatif.mjs'
 import { parseChapitre, tablesOf, normText, estCleDePlage, plageDeLigne1 } from '../../src/data/source/decoupe.ts'
 
@@ -362,10 +362,14 @@ function main() {
   const stock = readStock(STOCK_PATH)
 
   if (args.includes('--ecrire-stock')) {
-    const lot = '#1384 B2'
-    const date = new Date().toISOString().slice(0, 10)
-    writeFileSync(STOCK_PATH, stockDe(sites, { lot, date, ancien: stock }))
-    console.log(`stock écrit : ${STOCK_PATH} — ${entreesDe(sites, { lot, date, ancien: stock }).length} entrée(s)`)
+    const r = ecrireStockSousLot(
+      args,
+      (lot, date) => ({ entrees: entreesDe(sites, { lot, date, ancien: stock }), texte: stockDe(sites, { lot, date, ancien: stock }) }),
+      (texte) => writeFileSync(STOCK_PATH, texte),
+      STOCK_PATH,
+    )
+    ;(r.code ? console.error : console.log)(r.message)
+    process.exitCode = r.code
     return
   }
 

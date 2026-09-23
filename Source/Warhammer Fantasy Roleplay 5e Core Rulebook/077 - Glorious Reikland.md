@@ -13,5 +13,3 @@ Truly, to be born a Reiklander is to be born blessed by the Gods Themselves. Giv
 — The words of Holy Mother Halma Habermann of Sigmar — Recorded faithfully by the humble scribe Melistius of the Order of the Anvil in 2510 IC
 
 Standing proud in the heart of the Old World, Reikland is the richest and most powerful of the Empire's grand provinces. Known for its engineers, wizards, and merchants, and for being the birthplace of the Cult of Sigmar, it is a realm of soaring mountains, snaking rivers, dark forests, and powerful trading centres. From his throne in the city of high-spired Altdorf, Emperor Karl Franz rules not only the Reikland, but all the Empire that lies beyond.
-
-X

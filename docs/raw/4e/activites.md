@@ -582,7 +582,7 @@ Les Activités de voyage durent toute une Étape de voyage et restent **fatigant
 | Activité | Test | Effet |
 |----------|------|-------|
 | **Plein Air** | Survie en extérieur Intermédiaire (+0), −10/degré de météo défavorable | Succès → le groupe n'a pas à tester l'Exposition due à la météo pendant cette Étape |
-| **Approvisionnement** | Survie en extérieur (voir LDB 9 p.131) | Se réapprovisionner en nourriture/eau |
+| **Approvisionnement** | Survie en extérieur (voir LDB 9 l.558-565) | Se réapprovisionner en nourriture/eau |
 | **Recueillir des Informations** | Ragot Intermédiaire (+0) | DR questions auxquelles le MJ répond sincèrement selon les habitants |
 | **Rester aux Aguets** | Perception Intermédiaire (+0) | Succès → groupe non surpris pendant cette Étape |
 | **Établir des Cartes** | Test étendu : Métier (Cartographe) **ou** Art (Dessin) — DR requis = 2 × nombre d'Étapes | Carte terminée → Savoir/Orientation lors d'un voyage futur Accessible (+20) au lieu de (+0) |

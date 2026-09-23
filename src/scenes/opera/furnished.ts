@@ -2,7 +2,7 @@ import { parterreSeatCells, puitsRim } from './floorplan';
 import type { SceneEntity } from '../../state/scene';
 
 /**
- * Meublage FIDÈLE du Théâtre Staatsoper d'après le plan officiel (NADJ 8 p.40 rez / p.41 étage) — la
+ * Meublage FIDÈLE du Théâtre Staatsoper d'après le plan officiel (NADJ 08 folio 38 rez / folio 39 étage, images) — la
  * géométrie vit dans `opera/floorplan.ts`, ce module ne porte que le MOBILIER posé pièce par pièce.
  * Consommateurs du jour : le scénario de recette `test-scenarios/opera-plan.ts` (rendu EN JEU de ce
  * meublage), `scripts/qc/opera-furniture-check.mts` (placement contre la géométrie) et les deux gardes

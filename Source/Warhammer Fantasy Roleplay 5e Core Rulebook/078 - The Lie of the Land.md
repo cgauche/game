@@ -54,8 +54,6 @@ When the Knights of the Fiery Heart announce a new effort to exterminate the gob
 
 The rocky Skaag Hills lie to the west of the River Bögen and run along the southern bank of the Reik before falling beneath the trees of the Duchy of Gorland. In the heart of the range, the forest recedes from the stony crags to reveal layers of stratified rock rising to the scree-laden highlands of the Prie Ridge. A single road crosses the gentler slopes of the Skaag Hills to the south, starting at Trosreut in the shadow of Castle Grauenberg and wending its way through to Holthausen, but many minor tracks and trails also cross the region, leading to abandoned mines and settlements which once produced silver and iron before the seams ran out. Today, outlaws, hunters, and mutants make use of the buildings that remain.
 
-X
-
 ### **The Vorbergland**
 
 The Vorbergland is a hilly region extending the length of the Reikland between the Grey Mountains and the edge of the province's forests. It is known for its fertile valleys, rolling grasslands, and windswept plains. The most heavily cultivated regions of the Reikland are the southeastern Vorbergland provinces around Böhrn, Ubersreik, Stimmigen, and Dunkelberg. Flourishing towns, villages, farms, and vineyards pepper the verdant valleys and pastures.
@@ -128,8 +126,6 @@ The Reik is the mightiest river in the Old World, rising in the Black Mountains 
 
 North of Nuln, the Reik carves a broad valley through the Reikland, with increasing numbers of riverside settlements as it flows towards the Wasteland. Its span is so broad that it cannot be bridged downstream from Nuln until it reaches Altdorf, where it joins the Talabec and divides into a complex tracework of channels. These spread to form the Altdorf Flats, as the main channel flows through Altdorf, still wide, but narrow enough for the city's five Reik bridges. The capital's preeminence as a trade centre is due, in part, to the fact it is the only place for hundreds of miles where land traffic can cross the Reik.
 
-X
-
 Downstream of Altdorf, the channels reconverge to form the deepest stretch of the Reik, broadening until the opposite bank disappears into the mists drifting across the water. Ocean-going vessels sail these waters, including the First Fleet of the Imperial Navy, whose warships travel to and from the deepwater harbour at Altdorf 's Reiksport.
 
 The westernmost Reik is replete with rocky islands. Some are crowned with ancient fortresses, now overrun by river pirates, while others have been abandoned entirely, home to little more than a handful of old smugglers' coves.
@@ -195,5 +191,3 @@ The Westerfluss river is the natural border between the Wasteland and the Reikla
 # **THE CROWSTONES**
 
 At the heart of a black bog is a circle called the Crowstones, which have a particularly foul reputation. Locals warn never to travel to the stones near the festival days of Geheimnistag or Hexenstag, for they claim crows gather in impossible numbers and unspeakable things rise from the bog to wreak terror upon the living.
-
-X

@@ -46,7 +46,7 @@ const mkEnemy = (id: string, x: number, y: number, E = 30, wounds = 40): Combata
  *  porteur (≠ coque) pour que `shipOfCrew(chef)` rate et que l'arc retombe sur l'orientation du chef. */
 const mkEmplacement = (poste: ShipPoste, pos = { x: 5, y: 7 }): Combatant =>
   ({ id: 'emplacement', name: 'Affût de baliste', kind: 'enemy', pos, conditions: [], weapons: [],
-    inert: true, wounds: { current: 0, max: 0 }, advantage: 0, postes: [poste] }) as unknown as Combatant; // affût RAW-pur (AA p.122-123) : 0 Blessure, immune
+    inert: true, wounds: { current: 0, max: 0 }, advantage: 0, postes: [poste] }) as unknown as Combatant; // affût RAW-pur (AA 10 l.175-193) : 0 Blessure, immune
 
 const mkPoste = (engineId: string, crewIds: string[], side?: FireArc): ShipPoste =>
   ({ item: itemFromTrappingById(engineId)!, crewIds, ...(side ? { side } : {}) });

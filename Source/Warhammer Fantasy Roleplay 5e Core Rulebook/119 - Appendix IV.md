@@ -62,7 +62,7 @@ How much rest is required to remove a *Fatigued* Condition depends on what cause
 
 You have been poisoned. While *Poisoned*, you suffer a -1 SL penalty to all Tests and lose 1 Wound at the end of each Round, ignoring Toughness Bonus and Armour Points. If you reach 0 Wounds, you cannot heal until all *Poisoned* Conditions are removed. If you fall *Unconscious* when *Poisoned*, make an Endurance Test every Toughness Bonus Rounds or die horribly.
 
-I At the end of each Round, you may attempt an Endurance Test. A success removes 1 *Poisoned* Condition, and one more for each SL after the first. A successful Heal Test made by you or another Character removes 1 *Poisoned* Condition, and one more for each SL after the first.
+At the end of each Round, you may attempt an Endurance Test. A success removes 1 *Poisoned* Condition, and one more for each SL after the first. A successful Heal Test made by you or another Character removes 1 *Poisoned* Condition, and one more for each SL after the first.
 
 ### **Prone (page 186)**
 

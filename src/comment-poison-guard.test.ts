@@ -303,11 +303,24 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
   });
 
   it('cas planté : l’ORIGINE révolue d’un module est une tombale (#1385)', () => {
-    const L = 'extrait de X (origine révolue du module)';
+    const L = 'extrait/migré de X (origine révolue du module)';
     expect(tombstonesIn(" * Extrait d'IsoStage tel quel (rendu inchangé).")).toContain(L);
     expect(tombstonesIn('// FX de combat (extraits de GameStage3D) : flottants typés.')).toContain(L);
     expect(tombstonesIn(' * Marche visuelle (extraite de useWalkAnim.ts) : le token glisse.')).toContain(L);
     expect(tombstonesIn(' * extrait de `IsoStage` pour le garder navigable')).toContain(L);
+    // #1898 : la MIGRATION d'un module est la même origine révolue, et son chemin peut porter un dossier.
+    expect(tombstonesIn('  // Caractéristiques (LDB) — migré de engine/types.ts (CHAR_LABELS).')).toContain(L);
+    expect(tombstonesIn(' * libellés migrés de `combatFlow.ts` vers le catalogue')).toContain(L);
+    expect(tombstonesIn('// Migrée de RollShell pour être partagée')).toContain(L);
+    // Toutes les prépositions d'origine, et les cibles propres à la migration : dossier, glob, constante.
+    expect(tombstonesIn(' * FX (extraits du `IsoStage.tsx` d’origine)')).toContain(L);
+    expect(tombstonesIn('  /** Drapeaux de CAPACITÉ — migrés des `defs/` mécaniques, lus par id. */')).toContain(L);
+    expect(tombstonesIn('  // ── MÉTADONNÉES (migrées depuis src/data/spellspecs/*.ts — migration #5)')).toContain(L);
+    expect(tombstonesIn(' * enjeu de nuit, migré depuis `NIGHT_STAKES` en donnée app-owned')).toContain(L);
+    // La migration se dit aussi par sa DESTINATION, et son origine peut porter « l'ancien(ne) ».
+    expect(tombstonesIn(' * les métadonnées ont migré dans `SpellData` (spells.json)')).toContain(L);
+    expect(tombstonesIn('// La bande résumée a migré vers `FigTile.zoneBadges`')).toContain(L);
+    expect(tombstonesIn(" *  `SpellData` (les champs migrés de l'ancienne SpellSpec)")).toContain(L);
   });
 
   it('faux positifs écartés : l’extrait de SOURCE et le sens courant du mot (#1385)', () => {
@@ -317,6 +330,16 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
     expect(tombstonesIn('// un extrait de texte est affiché dans la fiche')).toEqual([]);
     expect(tombstonesIn("// l'extrait de la prose est tronqué à 80 signes")).toEqual([]);
     expect(tombstonesIn('// extraits de sang et de bile (composants alchimiques)')).toEqual([]);
+    // Une migration de DONNÉE nomme un format ou un lot, jamais un module.
+    expect(tombstonesIn("// les 6 véhicules migrés (achat) portent prix + dispo")).toEqual([]);
+    expect(tombstonesIn('// document migré de la version 3 du format de sauvegarde')).toEqual([]);
+    expect(tombstonesIn('// le barème, migré du CODE en donnée, est édité au Codex')).toEqual([]);
+    expect(tombstonesIn('// Sites migrés depuis un DÉ vers le jet opposé')).toEqual([]);
+    expect(tombstonesIn('// un catalogue en dur est l’exception, il migre en donnée')).toEqual([]);
+    expect(tombstonesIn('// les réglages migrés vers le catalogue restent éditables')).toEqual([]);
+    // Une EXTRACTION peut être vivante : constante ou dossier back-tické décrivent ce que le code FAIT.
+    expect(tombstonesIn('// ids extraits de `CHAR_KEYS` à chaque rendu')).toEqual([]);
+    expect(tombstonesIn('// arêtes extraites des `walls/` du niveau chargé')).toEqual([]);
   });
 
   it('cas planté : le passé nostalgique nomme un état révolu, quel que soit son sujet (2026-07-30)', () => {

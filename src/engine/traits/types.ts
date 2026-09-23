@@ -1,5 +1,5 @@
 /**
- * Type du registre des Traits de créature (LDB 85 p.338-343). Le registre `TRAITS` est DÉRIVÉ de la
+ * Type du registre des Traits de créature (LDB 85 l.3-446). Le registre `TRAITS` est DÉRIVÉ de la
  * DONNÉE (`src/data/traits.json`, via `data.traits`) dans `registry.ts` — il n'existe plus de `defs/`
  * mécaniques. Toute la mécanique (capacités, modificateurs de profil, effets déclenchés, manœuvres
  * octroyées) vit dans `traits.json` :

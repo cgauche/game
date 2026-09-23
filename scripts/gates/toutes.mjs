@@ -367,7 +367,11 @@ export const ECRIT_LU = {
       'Source/**/*.md':
         '`recouper-source.test.mjs` IMPORTE le re-coupeur des `.md` en service ; ses `writeFileSync` et ' +
         '`rmSync` vivent dans `main()`, sous sa porte `estMain` (scripts/raw/recouper-source.mjs:397), ' +
-        'et le banc n’appelle que son cœur PUR sur un livre FORGÉ en mémoire',
+        'et le banc n’appelle que son cœur PUR sur un livre FORGÉ en mémoire ; `reparer-mobilier.test.mjs` ' +
+        'IMPORTE la réparation du mobilier de page (#1739), dont l’unique `writeFileSync` vit dans `main()`, ' +
+        'derrière sa porte `isMain` ET `--apply` (scripts/raw/reparer-mobilier.mjs:186) — le banc n’appelle ' +
+        'que ses fonctions PURES (`reparer`, `infidelite`, `motsDe`, `niveauDesFreres`, `niveauDeLegende`, ' +
+        '`texteDeBandeau`) sur des textes en mémoire',
       'scripts/raw/*-stock.json':
         'même porte, même module : le recalage des stocks nominatifs (`recalerStock`) rend un TEXTE, ' +
         'que le seul `main()` écrit derrière `estMain` (scripts/raw/recouper-source.mjs:397)',
@@ -408,8 +412,8 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: ['docs/raw/', 'src/', 'Source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
     raison:
-      'aucune écriture dans les scripts atteints ; LIT Source/ et son stock ' +
-      'scripts/raw/empty-line-code-refs-stock.json',
+      'aucune écriture dans les scripts atteints ; LIT Source/, les stocks scripts/raw/dead-code-refs-stock.json et ' +
+      'scripts/raw/empty-line-code-refs-stock.json, ABSENTS en régime nominal, et scripts/raw/graphy-stock.json (sites différés)',
   },
   'raw:check-ancres': {
     ecrit: [],
@@ -493,7 +497,7 @@ export const ECRIT_LU = {
     ],
     raison:
       'la suite lit docs/raw/ : ce rapport et elle ne peuvent pas tourner sans cette porte ; LIT le registre ' +
-      'de livres, le normaliseur de références et son stock scripts/raw/reanchor-low-stock.json',
+      'de livres, le normaliseur de références et son stock scripts/raw/reanchor-low-stock.json, ABSENT en régime nominal',
   },
   'server:typecheck': {
     ecrit: [],

@@ -202,8 +202,6 @@ Animal Care 45, Charm 50, Charm Animal 40, Drive 45, Evaluate 50, Gossip 55, Hag
 
 Abacus, Canvas Tarpaulin, Cloak, Clothing, Dagger, Hat, Mule and Cart containing Wares, Pouch containing 3d10 Shillings, Sling Bag containing Lunch
 
-321
-
 # **Human Thug**
 
 Belligerent and mercenary, these NPCs represent the sort of petty criminals who thrive in the rookeries of the Empire's cities. They may be found propping up the bar in rough taverns or working as frighteners and leg breakers for crime lords.

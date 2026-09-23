@@ -7,7 +7,7 @@
 // sont tenus par `src/stock-primitive.test.ts` (vitest).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { cleDeSite, ecartDuVolet, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from './stock.mjs'
+import { cleDeSite, ecartDuVolet, ecrireStockSousLot, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from './stock.mjs'
 
 test('sitesEnEntrees : deux sites de la MÊME réf dans le MÊME fichier se distinguent par leur OCCURRENCE', () => {
   const entrees = sitesEnEntrees([
@@ -166,4 +166,38 @@ test('survie : la clé SEULE apparie — une réf qui bouge redate l’entrée',
   assert.deepEqual(rendu, [
     { famille: 'f', fichier: 'Source/L/01 - A.md', ref: 'r1', occurrence: 1, lot: '#9999 Z', date: '2030-01-01' },
   ])
+})
+
+// La RÉGÉNÉRATION SOUS LOT : `rendre` est la couture de chaque régénérateur (`entreesDe` + `stockDe`),
+// `ecrire` est INJECTÉ — le banc n'écrit rien, il compte les écritures.
+const ANCIEN = [{ famille: 'f', fichier: 'Source/L/01 - A.md', ref: 'a', occurrence: 1, lot: '#1 X', date: '2026-01-01' }]
+const CONNUE = { famille: 'f', fichier: 'Source/L/01 - A.md', ref: 'a', occurrence: 1 }
+const NEUVE = { famille: 'f', fichier: 'Source/L/01 - A.md', ref: 'b', occurrence: 1 }
+const regenerer = (args, mesurees) => {
+  const ecrits = []
+  const rendre = (lot, date) => {
+    const entrees = survieDeLecheance(mesurees, { lot, date, ancien: ANCIEN })
+    return { entrees, texte: JSON.stringify(entrees) }
+  }
+  const r = ecrireStockSousLot(args, rendre, (t) => ecrits.push(t), 'x-stock.json', '2026-09-23')
+  return { ...r, ecrits }
+}
+
+test('régénération sous lot : une entrée NEUVE sans `--lot` REFUSE l’écriture, nommée — rien n’est écrit', () => {
+  for (const args of [['--ecrire-stock'], ['--ecrire-stock', '--lot'], ['--lot', '--ecrire-stock']]) {
+    const r = regenerer(args, [CONNUE, NEUVE])
+    assert.equal(r.code, 1, JSON.stringify(args))
+    assert.match(r.message, /^x-stock\.json : 1 entrée\(s\) NEUVE\(s\) sans lot/)
+    assert.ok(r.message.includes(cleDeSite(NEUVE)))
+    assert.deepEqual(r.ecrits, [])
+  }
+})
+
+test('régénération sous lot : `--lot` étiquette la NEUVE, la CONNUE garde le sien ; sans neuve, aucun lot requis', () => {
+  const r = regenerer(['--ecrire-stock', '--lot', '#1739 3b-2b'], [CONNUE, NEUVE])
+  assert.equal(r.code, 0)
+  assert.deepEqual(JSON.parse(r.ecrits[0]).map((e) => e.lot), ['#1 X', '#1739 3b-2b'])
+  const sansNeuve = regenerer(['--ecrire-stock'], [CONNUE])
+  assert.equal(sansNeuve.code, 0)
+  assert.equal(sansNeuve.ecrits.length, 1)
 })

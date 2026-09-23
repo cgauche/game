@@ -1,6 +1,6 @@
 *Pages PDF 325-327*
 
-# **THE BEASTS OF THE REIKLAND** XII
+# **THE BEASTS OF THE REIKLAND**
 
 # **Boar**
 

@@ -52,8 +52,6 @@ Vassals of the grand prince rule the Reikland Estates. They can do as they will 
 
 > soldiers typically used in peacetime as watchmen, roadwardens, or guards. Most Reikland Estates are feudal, comprised of smaller fiefs ruled by vassals, many of whom hold hereditary titles that have existed for centuries.
 
-X
-
 #### **THE DUCHY OF WALLENSTEIN**
 
 The Duchy of Wallenstein is the ancient demesne of the von Wallenstein family. It is a hilly region, sloping down from the rolling hills of the Hägercrybs to the sodden loam of the Teufel, Ober, and Tranig river valleys.
@@ -107,8 +105,6 @@ Status heavily influences justice. Gold Status Characters often receive greater 
 Defending yourself in court usually requires an opposed Charm or Lore (Law) Test, with the Difficulty modified by the evidence, the circumstances, and the accused's Status.
 
 Minor punishments should rarely interrupt an adventure. For more serious crimes, the GM should usually provide an opportunity to escape, though habitual offenders can expect the Empire's justice to catch up with them eventually.
-
-X
 
 #### **The City of Altdorf**
 

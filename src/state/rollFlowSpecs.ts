@@ -1931,7 +1931,7 @@ export const FLOWS = {
         ? talentTestSLBonus(actor, { skill: p.skillId, char: p.char, spec: p.spec })
           + (p.skillId ? skillDRBonus(actor, p.skillId, p.spec) : 0)
           + charDRBonusOf(actor, p.char ?? (p.skillId ? effectiveSkillCharKey(actor, p.skillId, { spec: p.spec }) : undefined))
-          + offTerrainTestDR(actor) // hors de son terrain : −DR à TOUS les Tests (Créature marine, MDG p.140)
+          + offTerrainTestDR(actor) // hors de son terrain : −DR à TOUS les Tests (Créature marine, MDG 16 l.17)
         : 0;
       // Capricieux (MSRC 15 l.149-159) : delta de DR de la table du d10 de l'interlocuteur, tiré à
       // l'ouverture du Test (`openSkillTest`) et appliqué ICI, au DR du Test RÉSOLU.

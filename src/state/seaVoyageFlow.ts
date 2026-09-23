@@ -1197,7 +1197,7 @@ export function runSeaDay(get: Get, set: Set): void {
   startCascade(get, set, { title: t('sv.dayTitle'), icon: 'travel/wave', purpose: 'travelDay', steps });
 }
 
-// ── Seam de jet (#275 Ronde 1) — appliers des sites migrés vers `openRoll` ───────────────────────
+// ── Seam de jet (#275 Ronde 1) — appliers des sites de jet ouverts par `openRoll` ────────────────
 
 /** Forcer le rythme (MDG 13 l.95-107) : pose `paceToday`, le +M du jour se lit ensuite par
  *  `effectiveSeaM`. Étape du TRONC de la cascade du jour (`buildForcePaceStep`, avant Progression) —
@@ -2228,7 +2228,7 @@ function startSeaPursuit(get: Get, set: Set, info: { label: string; desc: string
 /** Interpellation de la Cogue pirate (A5.3 #327) : cascade AUTONOME (patron Ouragan `resolveSeaDayEvent`)
  *  d'une SEULE étape de CHOIX — fuir / combattre / se soumettre. L'applier `sea-pirate-hail` reprend
  *  `runSeaDay` à la fermeture. Le pillage (`piratePillagePct`) et le tribut à Stromfels sont RAW-mués
- *  (MDG 15 p.131 décrit l'extorsion sans la chiffrer) → paramètre maison + choix joueur. */
+ *  (MDG 15 l.171-173 décrit l'extorsion sans la chiffrer) → paramètre maison + choix joueur. */
 /** Descripteur d'abordage DÉRIVÉ d'un événement de navire hostile — `undefined` si l'événement ne nomme
  *  ni coque (`ship`) ni équipage type (`crewRef`) : la Némésis (bateau fétiche d'un boss) est authorée,
  *  pas simulable (retour `undefined` = repli honnête de `startChaseBoarding`). */
@@ -2532,7 +2532,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
       startSeaPursuit(get, set, event, 6);
       break;
     case 'navire-hostile':
-      // Cogue pirate (MDG 15 p.131) : les forbans exigent de fouiller la cale — CHOIX joueur
+      // Cogue pirate (MDG 15 l.171-173) : les forbans exigent de fouiller la cale — CHOIX joueur
       // fuir / combattre / se soumettre (A5.3 #327), en cascade interactive avant la journée.
       openPirateHail(get, set, event);
       break;

@@ -34,7 +34,7 @@ You can threaten a foe in the hopes of leaving them demoralised. As an Action ma
 
 Intimidating a group of foes raises the Difficulty of the Test to Hard (-2 SL). When fighting a well-led enemy, the Test is Opposed by the Leadership Skill of whoever is in charge.
 
-V When fighting a disorganised rabble, the Test is Opposed by the lowest Cool among the foe, as fear easily spreads among such groups.
+When fighting a disorganised rabble, the Test is Opposed by the lowest Cool among the foe, as fear easily spreads among such groups.
 
 # **Non-Combat Damage**
 

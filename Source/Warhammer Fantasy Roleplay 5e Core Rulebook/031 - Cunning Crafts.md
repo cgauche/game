@@ -1,6 +1,6 @@
 *Pages PDF 153-155*
 
-# **CUNNING CRAFTS** V
+# **CUNNING CRAFTS**
 
 Life may be cheap in the Empire, but the necessities of living are anything but. Most commoners are used to making what they can for themselves and purchasing only those essentials they can't get by without. Clothes, simple tools, and damp hovels of mud and stone are often made by their owners, while skilled artisans create more complicated and hard wearing goods.
 
@@ -81,7 +81,7 @@ When you make the Trade Test, refer to the following table for the results.
 | –1 to –5                   | The remedy has no effect.                                                                                                                                                 |
 | –6 or less, or Fumble   | Not only does the remedy fail to alleviate the Symptom, the patient must Test to see if they contract the Galloping Trots in addition to their current ailments. |
 
-# V **SELECTION OF POISONS**
+# **SELECTION OF POISONS**
 
 | Name                    | Source                                                                | Resistance Test                                                                                | Effect                                                                                                                                                                                                                          |
 |-------------------------|-----------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
