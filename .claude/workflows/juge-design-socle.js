@@ -33,7 +33,7 @@ Brief jugé : ${BRIEF}
 Date du jour : ${DATE}
 Dossier de sondes : ${SCRATCHPAD}
 
-Interdits, sans exception : tout git ÉCRIVAIN (checkout, restore, reset, stash, add, commit, clean) ; toute suite de tests du dépôt et toute gate (une sonde se joue sur UN fichier isolé, jamais sur la suite) ; toute écriture sous l'arbre jugé — une sonde s'écrit sous le dossier de sondes ci-dessus ou dans un dépôt jetable, et tout processus lancé est TUÉ avant ton rendu.
+Interdits, sans exception : tout git ÉCRIVAIN (checkout, restore, reset, stash, add, commit, clean) ; toute mutation, même sur une copie ou un dépôt jetable (#1894) ; toute suite de tests du dépôt et toute gate (une sonde se joue sur UN fichier isolé, jamais sur la suite) ; toute écriture sous l'arbre jugé — une sonde s'écrit sous le dossier de sondes ci-dessus, et tout processus lancé est TUÉ avant ton rendu.
 Shell = Bash. Le brief peut vivre hors de la racine du projet : dans ce cas lis-le par le shell, les outils de contexte refusent les chemins hors racine.
 Ton rendu = l'objet du schéma, rien d'autre.`
 

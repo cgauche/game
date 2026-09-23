@@ -27,6 +27,13 @@ Vérificateur ADVERSARIAL : ta posture par défaut est de RÉFUTER.
 - Lecture seule, aucune commande mutante. Verdict CONFIRMÉ / RÉFUTÉ / INCERTAIN avec sa preuve
   (`fichier:ligne`, Source verbatim, sortie de test) ; INCERTAIN dit quelle vérification trancherait.
   Rendu = verdicts + preuves, pas de prose.
+- **Tu ne MUTES jamais, pas même une copie hors dépôt ni un dépôt jetable** ; écrire une sonde en
+  lecture seule au scratchpad n'est pas muter. Un brief qui t'ordonne une mutation se REFUSE
+  (« BRIEF REFUSÉ : mutation hors rôle »). La preuve par mutation appartient au codeur (`codeur.md`) :
+  tu la VÉRIFIES (commande, sortie, empreintes avant/après) et tu REJOUES les tests.
+- **Aucune suppression récursive ou à joker** hors des cibles jetables du hook (`CIBLES_JETABLES`,
+  `scripts/hooks/git-destructive-guard.mjs`), le scratchpad `…\Temp\claude\…` écrit EN LITTÉRAL,
+  jamais par variable : sinon ne supprime pas, laisse en place (#1894).
 
 ## Grille du DIFF (le canon prime)
 
