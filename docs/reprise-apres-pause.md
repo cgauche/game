@@ -69,6 +69,7 @@ Le canari (`.github/workflows/canari.yml`, schedule + workflow_dispatch, cron
 18 portes :
 
 - `npm ci`
+- `npm run docs:check:tout`
 - `npm run agents:check`
 - `npm run test:agents`
 - `npm run test:hooks`
@@ -80,7 +81,6 @@ Le canari (`.github/workflows/canari.yml`, schedule + workflow_dispatch, cron
 - `npm run lint`
 - `npm test`
 - `npm run build`
-- `npm run docs:check:tout`
 - `npm run test:raw`
 - `npm run raw:check-refs`
 - `npm run raw:check-code-refs`
@@ -179,14 +179,14 @@ refaire `npm install`.
 | Fichier | Nom | Déclencheurs | État |
 |---|---|---|---|
 | `.github/workflows/canari.yml` | Canari | schedule, workflow_dispatch (cron `0 6 * * 1`) | **autosignale** — le step « Résumé du canari » (`if: ${{ !cancelled() }}`) poste son rapport dans l’issue survivante par `scripts/ops/signaler-rouge.mjs`, puis `exit 1` si une mesure est rouge |
-| `.github/workflows/ci.yml` | CI | push, pull_request | **porte** — la porte au push lit ses courses pour le sha poussé — scripts/git-hooks/pre-push.mjs:149 passe par scripts/guards/lib/coursesCi.mjs, dont le workflow par défaut EST PORTE — et le ruleset `main` en fait ses checks requis |
+| `.github/workflows/ci.yml` | CI | push, pull_request | **porte** — la porte au push lit ses courses pour le sha poussé — scripts/git-hooks/pre-push.mjs appelle `coursesCi` (scripts/guards/lib/coursesCi.mjs), dont le workflow par défaut EST PORTE — et le ruleset `main` en fait ses checks requis |
 | `.github/workflows/deploy.yml` | Déploiement prod | workflow_dispatch | **manuel** — `on: workflow_dispatch:` seul : lancé et regardé par une main humaine (CLAUDE.md § Pile et commandes, « prod — sur demande explicite SEULEMENT ») |
 | `.github/workflows/deps-report.yml` | Rapport de dépendances | schedule, workflow_dispatch (cron `0 6 1 * *`) | **autosignale** — le step « Se nommer en rougissant » (`if: ${{ !cancelled() }}`) nomme le run et son `job.status` par `scripts/ops/signaler-rouge.mjs` : un rouge AVANT `npm run deps:report` a son canal |
 
 La colonne « État » vient du registre `scripts/gates/workflowsDuDepot.mjs`, et chaque état y est
 MESURÉ sur le YAML (garde `scripts/gates/workflowsDuDepot.test.mjs`) :
 
-- **porte** — le workflow EST la porte : la porte au push consulte ses courses (scripts/git-hooks/pre-push.mjs:149 → coursesCi, dont le défaut est PORTE) et le ruleset `main` exige ses jobs
+- **porte** — le workflow EST la porte : la porte au push consulte ses courses (scripts/git-hooks/pre-push.mjs → `coursesCi`, dont le défaut est PORTE) et le ruleset `main` exige ses jobs
 - **autosignale** — le workflow se nomme lui-même en rougissant : un step qui joue MÊME sur rouge (`if` portant `always()`, `!cancelled()` ou `failure()` non nié, jamais sous `success()`) EXÉCUTE `scripts/ops/signaler-rouge.mjs`, qui commente ou ouvre l'issue survivante
 - **manuel** — le workflow est lancé à la main sur demande explicite et regardé par celui qui le lance : son bloc `on:` ne porte que `workflow_dispatch`
 
@@ -196,7 +196,7 @@ gates sur CHAQUE branche `chantier/**`, et c'est son verdict — jamais un artef
 autorise une tête à entrer dans `main`. Elle CLASSE d'abord le push
 (`scripts/gates/classerPush.mjs`) : un push dont tous les fichiers changés tombent sous
 `.claude/`, `.agents/`, `.codex/`, `AGENTS.md`, `CLAUDE.md` ne joue que les 9 gates qui LISENT un de
-ces chemins (`agents:check`, `test:agents`, `test:hooks`, `test:ops`, `test:docs`, `deps:unused`, `docs:check:tout`, `docs:empreinte`, `test:raw`) ; les 14 autres sont sautées.
+ces chemins (`docs:check:tout`, `agents:check`, `test:agents`, `test:hooks`, `test:ops`, `test:docs`, `deps:unused`, `docs:empreinte`, `test:raw`) ; les 14 autres sont sautées.
 
 `npm run ops:publier` joue le train : rebase, docs dérivés, push de la BRANCHE, attente du run CI de
 cette branche, fast-forward de `main`, pilotage. Il refuse à la première étape rouge en la nommant,
@@ -236,4 +236,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: d70670d19c793b24abb12958b88b475a117b30c4 (23 fichiers, 8 dossiers) corps: 3a061edce568816c6fe3f6ad5453e1c6687597bc -->
+<!-- sources-empreinte: 60f200127178f870e0d6e651a1addd76d42f9646 (23 fichiers, 8 dossiers) corps: 6a8c6700d3dd573bd6f1e11ca05e13226edce6fc -->

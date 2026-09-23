@@ -182,4 +182,4 @@ effet de cible.
 
 `npm run typecheck` en plus : les unions de portée/cible/durée et `Formula` sont strictement
 typées — une valeur mal formée casse la compilation avant le runtime.
-<!-- sources-empreinte: 5b5dc189c253a82ffd8e19f8c8c41e9dbc7459a0 (16 fichiers, 0 dossiers) corps: ec5d4966e3427246efee90217f496c2ee006fee4 -->
+<!-- sources-empreinte: 7191d6a1f618a42777d5bbcd42848ee51ca3ceb6 (16 fichiers, 0 dossiers) corps: ec5d4966e3427246efee90217f496c2ee006fee4 -->
