@@ -1007,7 +1007,7 @@ function BankPane({ hero, refus, bronzeBlocked, money, mecenat }: { hero: Combat
             ariaLabel="Mécénat"
             enabled={!refus && amountBrass <= purseBrass && amountBrass >= mecenatMinBrass}
             {...refusDuVolet('pane-bank', amountBrass > purseBrass ? banniereBourse : undefined,
-              refus ?? `Mise minimale ${formatMoney(fromBrass(mecenatMinBrass))} (« au moins 5 CO », ACE 12 l.49).`)}
+              refus ?? `Mise minimale ${formatMoney(fromBrass(mecenatMinBrass))}.`)}
             onClick={() => bankDeposit(hero.id, 'mecenat', amountBrass)}
             btnClassName="small"
           />
@@ -1275,8 +1275,9 @@ function BankList({ bank, party, interlude, canDrive }: {
               : 'Retirer ce dépôt exige une Activité — il n’en reste plus.'}
             descOfferte={b.kind === 'invest'
               ? `Retirer (1 Activité) : ${fmt(bankPayout('invest', b.brass, b.rate))} si la banque tient (faillite sur d100 ≤ ${b.rate})`
+              // ACE 12 l.49/57-65
               : b.kind === 'mecenat'
-                ? 'Retirer (1 Activité) : Test d’Évaluation Intermédiaire (+0) — rendu de 120 % à la perte totale (Mécénat, ACE 12 l.49-65)'
+                ? 'Retirer le mécénat (1 Activité) : Test d’Évaluation Intermédiaire (+0) — rendu de 120 % à la perte totale'
                 : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur d100 ≤ ${b.rate > 0 ? b.rate : 10}`}
             onClick={() => withdraw(i)}
             primary={false}

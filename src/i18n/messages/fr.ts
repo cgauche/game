@@ -894,7 +894,8 @@ export const fr = {
   'if.identifyConfusedWeek': '{name} confond {item} avec un objet similaire — la semaine est perdue.',
   'if.identifyConfusedType': "{name} confond {item} avec un objet d'un type similaire — il se méprend sur sa nature (Échec).",
   'if.identifyFailAware': "{name} n'identifie pas {item} cette semaine — il en est conscient (l'étude peut reprendre).",
-  'if.masterWeapon': '{name} a maîtrisé {item} (ACE 12 l.21).',
+  // ACE 12 l.21
+  'if.masterWeapon': '{name} a maîtrisé {item}.',
   'if.researchDeep': '{name} étudie {item} en profondeur : Particularités et dangers révélés.',
   'if.researchMain': '{name} cerne la fonction principale de {item} et son activation.',
   'if.combatTrainingKo': '{name} peine à retrouver ses réflexes de combat ({skill}) cette semaine — aucun bénéfice.',
@@ -915,11 +916,13 @@ export const fr = {
   'if.orderTooExpensive': 'Commande trop chère ({cost}).',
   'if.orderPlaced': '{name} passe commande : {label} ({cost}) — livraison après la prochaine aventure.',
   'if.bankTierKo': '{name} : « Vous devez être des échelons Or et Argent pour épargner dans une banque ».',
-  'if.mecenatMin': 'Mécénat : mise minimale {min} (« au moins 5 CO », ACE 12 l.49).',
+  // ACE 12 l.49
+  'if.mecenatMin': 'Mécénat : mise minimale {min}.',
   'if.depositPurseKo': 'La bourse de {name} ne couvre pas ce dépôt.',
   'if.eventBankPct': "Événement : {pct} % sur l'argent placé ({event}).",
   'if.bankInvest': "{name} investit {money} (Indice d'intérêts {rate} — {rate} % de gains, faillite sur ≤ {rate}).",
-  'if.bankMecenat': "{name} sponsorise un dramaturge prometteur : {money} (retrait par Test d'Évaluation Intermédiaire — Mécénat, ACE 12 l.49).",
+  // ACE 12 l.49
+  'if.bankMecenat': "{name} sponsorise un dramaturge prometteur : {money} (retrait par Test d'Évaluation Intermédiaire).",
   'if.bankStash': '{name} planque {money} (retrait libre — découverte sur ≤ 10).',
   'if.withdrawNeedsActivity': 'Retirer un investissement exige une Activité.',
   'if.bankLost': '{name} — {roll} ≤ {threshold} : {what} — {money} perdus !',
@@ -1825,7 +1828,8 @@ export const fr = {
   'sv.detailFuir': 'Course-poursuite : distancer la cogue (MDG 13 l.362-370).',
   'sv.detailCombattre': 'Refuser l’abordage et se défendre — abordage immédiat.',
   'sv.detailSoumettre': 'Laisser fouiller la cale ({pct} % de la cargaison pillée) puis livrer un tribut à Stromfels.',
-  'sv.pillaged': 'Les forbans fouillent la cale et emportent {enc} Enc de cargaison ({pct} %, MDG 15 l.171-173).',
+  // MDG 15 l.171-173
+  'sv.pillaged': 'Les forbans fouillent la cale et emportent {enc} Enc de cargaison ({pct} %).',
   'sv.pillagedEmpty': 'Les forbans fouillent une cale vide — rien à prendre.',
   'sv.detailLivrer': 'Un marin est emmené — perte réelle d’équipage, l’équipage est ébranlé.',
   'sv.detailRefuser': 'Les forbans passent à l’abordage.',

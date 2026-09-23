@@ -220,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: 4058972bb2c0f14a266f75ccd0a3e2ff571de0f3 (158 fichiers, 1 dossiers) corps: 46f0fdea83755a45a0d069ab5f5c787f2224813c -->
+<!-- sources-empreinte: 231662b54288c063e5483178a4c1fe9a0d017855 (158 fichiers, 1 dossiers) corps: 46f0fdea83755a45a0d069ab5f5c787f2224813c -->
