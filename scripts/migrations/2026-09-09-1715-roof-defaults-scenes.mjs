@@ -22,9 +22,9 @@
  * IDEMPOTENT : une Scène portant déjà `roofDefaults` est reconnue migrée ; rejouée sur l'état final,
  * la migration n'écrit rien et sort 0.
  * BORNE HAUTE OUVERTE (`schema` ∈ {8, ≥ 9}) : la DERNIÈRE migration de la chaîne dans l'ordre lexical
- * est la seule à nommer un `schema` futur ; ce rôle est passé à
- * `2026-09-10-1687-usable-sieges.mjs` (#1687), qui ferme sa borne à {9, 10}. Le document sort donc
- * d'ici en `schema` = max(le sien, 9) : une migration amont ne RABAISSE jamais une forme.
+ * est la seule à nommer un `schema` futur (`DERNIERE`, dérivée par
+ * `src/scenes/migrations-format-projet.test.ts`). Le document sort donc d'ici en `schema` =
+ * max(le sien, 9) : une migration amont ne RABAISSE jamais une forme.
  * FAIL-FAST : `roofDefaults` présent mais incomplet ou de forme inattendue, `schema` absent, non
  * numérique ou < 8 → rien n'est écrit, sortie 1.
  */

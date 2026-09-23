@@ -5,12 +5,15 @@
 //
 // Le compilateur est chargé À LA DEMANDE (`createRequire`) : cette lib est atteinte par le garde
 // PreToolUse, qui tourne à CHAQUE commande du canal — un `import` de tête ferait payer le
-// chargement de `typescript` à un `ls`.
+// chargement de `typescript` à un `ls` — et par des migrations datées, rejouées sur un export sans
+// `node_modules` (`scripts/migrations/replay-head.mjs`). `typescript()` est le SEUL chargeur du
+// compilateur des libs atteintes par ce garde ou par une migration datée.
 
 import { createRequire } from 'node:module'
 
 let compilateur = null
-const typescript = () => (compilateur ??= createRequire(import.meta.url)('typescript'))
+/** Le compilateur TypeScript du dépôt, chargé au PREMIER appel. */
+export const typescript = () => (compilateur ??= createRequire(import.meta.url)('typescript'))
 
 /** Extension → dialecte. Un `.mjs`/`.cjs` se lit en JS, une table `.json` en JSON. */
 const DIALECTE = { ts: 'TS', mts: 'TS', cts: 'TS', tsx: 'TSX', js: 'JS', mjs: 'JS', cjs: 'JS', jsx: 'JSX', json: 'JSON' }

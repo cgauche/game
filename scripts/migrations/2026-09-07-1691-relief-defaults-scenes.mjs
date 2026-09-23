@@ -24,9 +24,9 @@
  * IDEMPOTENT : une Scène portant déjà `reliefDefaults` est reconnue migrée ; rejouée sur l'état final,
  * la migration n'écrit rien et sort 0.
  * BORNE HAUTE OUVERTE (`schema` ∈ {7, ≥ 8}) : la DERNIÈRE migration de la chaîne dans l'ordre lexical
- * est la seule à nommer un `schema` futur ; ce rôle est passé à
- * `2026-09-09-1715-roof-defaults-scenes.mjs` (#1715), qui ferme sa borne à {8, 9}. Le document sort
- * donc d'ici en `schema` = max(le sien, 8) : une migration amont ne RABAISSE jamais une forme.
+ * est la seule à nommer un `schema` futur (`DERNIERE`, dérivée par
+ * `src/scenes/migrations-format-projet.test.ts`). Le document sort donc d'ici en `schema` =
+ * max(le sien, 8) : une migration amont ne RABAISSE jamais une forme.
  * FAIL-FAST : `reliefDefaults` présent mais incomplet ou de forme inattendue, `schema` absent, non
  * numérique ou < 7 → rien n'est écrit, sortie 1.
  */

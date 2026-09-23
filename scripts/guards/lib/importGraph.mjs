@@ -6,7 +6,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import ts from 'typescript';
+import { typescript } from './dialecte.mjs';
 
 // Extensions de MODULE que le dépôt écrit réellement : les libs de garde et les générateurs vivent en
 // `.mjs` (109 imports relatifs de `src/**` vers `scripts/**` mesurés le 2026-09-02), donc `.mjs`/`.cjs`
@@ -22,12 +22,15 @@ export const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)
 
 /** Options de compilation du DÉPÔT (`tsconfig.json`), converties par le compilateur lui-même : c'est
  *  d'elles (`isolatedModules`, `verbatimModuleSyntax`, `preserveValueImports`…) que dépend l'effacement
- *  d'un import. */
+ *  d'un import. Lues au PREMIER `sourceALExecution`, comme le compilateur (`typescript()`) : la
+ *  clôture sans `typesEffaces` ne charge aucun paquet npm. */
 const TSCONFIG_URL = new URL('../../../tsconfig.json', import.meta.url);
-const COMPILER_OPTIONS = ts.convertCompilerOptionsFromJson(
-  JSON.parse(readFileSync(TSCONFIG_URL, 'utf8')).compilerOptions,
-  dirname(fileURLToPath(TSCONFIG_URL)),
-).options;
+let compilerOptions = null;
+const optionsDuDepot = () =>
+  (compilerOptions ??= typescript().convertCompilerOptionsFromJson(
+    JSON.parse(readFileSync(TSCONFIG_URL, 'utf8')).compilerOptions,
+    dirname(fileURLToPath(TSCONFIG_URL)),
+  ).options);
 
 /**
  * Le source tel que la COMPILATION l'émet : `ts.transpileModule` (le compilateur DÉCLARÉ du dépôt,
@@ -42,7 +45,7 @@ const COMPILER_OPTIONS = ts.convertCompilerOptionsFromJson(
  */
 export function sourceALExecution(fichier, texte) {
   if (!/\.[cm]?tsx?$/.test(fichier)) return texte;
-  return ts.transpileModule(texte, { fileName: fichier, compilerOptions: COMPILER_OPTIONS }).outputText;
+  return typescript().transpileModule(texte, { fileName: fichier, compilerOptions: optionsDuDepot() }).outputText;
 }
 
 /** Extensions qu'un spécificateur peut porter LUI-MÊME (le chemin désigne alors le fichier). */

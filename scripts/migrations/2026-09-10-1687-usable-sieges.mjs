@@ -27,9 +27,9 @@
  * IDEMPOTENT : une entité portant déjà `usable` est reconnue activée et son enveloppe est laissée
  * telle quelle ; rejouée sur l'état final, la migration n'écrit rien et sort 0.
  * BORNE HAUTE OUVERTE (`schema` ∈ {9, ≥ 10}) : la DERNIÈRE migration de la chaîne dans l'ordre
- * lexical est la seule à nommer un `schema` futur ; ce rôle est passé à
- * `2026-09-11-1687-actions-authorees.mjs`, qui a fermé la sienne à {10, 11}. Un document déjà plus
- * récent traverse donc ici sans être RABAISSÉ : le document sort en `schema` = max(le sien, 10).
+ * lexical est la seule à nommer un `schema` futur (`DERNIERE`, dérivée par
+ * `src/scenes/migrations-format-projet.test.ts`). Un document déjà plus récent traverse donc ici
+ * sans être RABAISSÉ : le document sort en `schema` = max(le sien, 10).
  * FAIL-FAST : `usable` présent mais de forme inattendue, `schema` absent, non numérique ou < 9,
  * aucun type à places au catalogue → rien n'est écrit, sortie 1.
  */

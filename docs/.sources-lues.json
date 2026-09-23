@@ -10390,6 +10390,7 @@
       "scripts/docs/build-systemes.mjs",
       "scripts/docs/lib/empreinte-sources.mjs",
       "scripts/docs/lib/jsdocUnion.mjs",
+      "scripts/guards/lib/dialecte.mjs",
       "scripts/guards/lib/importGraph.mjs",
       "scripts/guards/lib/lister.mjs",
       "src/audio/_registry.generated.ts",
@@ -12207,8 +12208,7 @@
       "src/ui/useRamenerEnVue.ts",
       "src/ui/useRollFrisson.ts",
       "src/ui/weaponStats.ts",
-      "src/ui/worldMapViewport.ts",
-      "tsconfig.json"
+      "src/ui/worldMapViewport.ts"
     ],
     "dossiers": [
       "src/engine",
@@ -15755,6 +15755,7 @@
       "Source/Warhammer v4 - Nuits agitees & dures journees/14 - appendice I - Gnomes.md",
       "Source/Warhammer v4 - Nuits agitees & dures journees/15 - _GoBack.md",
       "Source/Warhammer v4 - Nuits agitees & dures journees/16 - JEUX DE TAVERNE.md",
+      "scripts/guards/lib/dialecte.mjs",
       "scripts/guards/lib/importGraph.mjs",
       "scripts/guards/lib/lister.mjs",
       "scripts/raw/_lib.mjs",
@@ -19563,8 +19564,7 @@
       "src/vi-mock-isolate-guard.test.ts",
       "src/vite-env.d.ts",
       "src/weapon-load-owner-guard.test.ts",
-      "src/worktree-isolation-guard.test.ts",
-      "tsconfig.json"
+      "src/worktree-isolation-guard.test.ts"
     ],
     "dossiers": [
       "Source/WH - V4 - Aux Armes",
@@ -20816,6 +20816,7 @@
       "docs/raw/5e/tests.md",
       "docs/raw/sources.md",
       "scripts/docs/lib/empreinte-sources.mjs",
+      "scripts/guards/lib/dialecte.mjs",
       "scripts/guards/lib/importGraph.mjs",
       "scripts/guards/lib/lister.mjs",
       "scripts/guards/lib/stock.mjs",
@@ -24631,8 +24632,7 @@
       "src/vi-mock-isolate-guard.test.ts",
       "src/vite-env.d.ts",
       "src/weapon-load-owner-guard.test.ts",
-      "src/worktree-isolation-guard.test.ts",
-      "tsconfig.json"
+      "src/worktree-isolation-guard.test.ts"
     ],
     "dossiers": [
       "Source/WH - V4 - Aux Armes",

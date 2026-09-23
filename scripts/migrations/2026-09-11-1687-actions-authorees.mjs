@@ -1,7 +1,7 @@
 /**
  * Migration #1687 — les ACTIONS AUTHORÉES d'un décor, volet `src/scenes`.
  *
- * DEUX gestes, un seul passage, et le document passe en `schema: 11` :
+ * DEUX gestes, un seul passage, et le document passe en `schema: 11` au moins :
  *  1. `interact: { flow, consume? }` → `usable.actions: [{ id: 'fouiller', flow, … }]` — la fouille
  *     n'est plus un CHAMP de l'entité, c'est une action du vocabulaire ouvert que l'auteur pose
  *     (`ActionAuthoree`, `src/state/scene.ts`) ; l'entité retirée après le geste garde `consume`, et
@@ -33,12 +33,13 @@
  * `src/state/projet-migration-10-vers-11.test.ts`.
  * IDEMPOTENT : rejouée sur l'état final, la migration n'écrit rien et sort 0 (plus aucun `interact`,
  * plus aucune enveloppe vide).
- * BORNE HAUTE CLOSE (`schema` ∈ {10, 11}, jamais « ≥ 10 ») : DERNIÈRE de la chaîne dans l'ordre
- * lexical, elle est la seule à savoir ce qui existe après elle et NOMME un `schema` futur, là où les
- * amont l'avalent par leur borne ouverte — celle de `2026-09-10-1687-usable-sieges.mjs` est ouverte
- * à « ≥ 10 », un document porté plus loin y traverse en NO-OP.
+ * BORNE HAUTE OUVERTE (`schema` ∈ {10, ≥ 11}) : la DERNIÈRE migration de la chaîne dans l'ordre
+ * lexical est la seule à nommer un `schema` futur (`DERNIERE`, dérivée par
+ * `src/scenes/migrations-format-projet.test.ts`). Un document déjà plus récent traverse donc ici
+ * sans être RABAISSÉ : le document sort en `schema` = max(le sien, 11), et ses Scènes sont comptées
+ * comme celles de tout document lu.
  * FAIL-FAST : `interact` de forme inattendue (clé hors `flow`/`consume`, `flow` absent), `usable` de
- * forme inattendue, `schema` absent, non numérique ou ∉ {10, 11} → rien n'est écrit, sortie 1.
+ * forme inattendue, `schema` absent, non numérique ou < 10 → rien n'est écrit, sortie 1.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -48,7 +49,7 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const NOM = '2026-09-11-1687-actions-authorees';
 const RACINE = path.join(ROOT, 'src/scenes');
 
-/** Forme du document AVANT et APRÈS ce bump — la borne haute est CLOSE (cf. en-tête). */
+/** Forme d'entrée et CIBLE de ce bump — la borne haute est OUVERTE (cf. en-tête). */
 const SCHEMA_AVANT = 10;
 const SCHEMA_APRES = 11;
 /** Id CANONIQUE de l'action née d'un ancien `interact` (`ACTION_FOUILLER`, `src/state/usable.ts`). */
@@ -126,8 +127,8 @@ for (const abs of cibles) {
   const doc = JSON.parse(brut);
 
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
-  if (doc.schema !== SCHEMA_AVANT && doc.schema !== SCHEMA_APRES) {
-    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`);
+  if (typeof doc.schema !== 'number' || !Number.isInteger(doc.schema) || doc.schema < SCHEMA_AVANT) {
+    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou plus récent attendu)`);
     continue;
   }
   if (!Array.isArray(doc.scenes)) { echecs.push(`${rel} : \`scenes\` absent ou non-tableau`); continue; }
@@ -167,8 +168,11 @@ if (echecs.length) {
 }
 
 for (const r of rapports) {
+  // Le document ne REDESCEND jamais : un projet déjà porté plus loin par un passage postérieur garde
+  // son numéro, ce passage-ci n'ayant à garantir que le plancher de SA cible.
+  const cible = Math.max(r.doc.schema, SCHEMA_APRES);
   const sortie = Object.fromEntries(
-    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, SCHEMA_APRES] : [k, v])),
+    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, cible] : [k, v])),
   );
   const out = canonique(sortie);
   if (out !== r.brut) fs.writeFileSync(r.abs, out, 'utf8');
@@ -179,11 +183,12 @@ for (const r of rapports) {
     .flatMap((s) => (Array.isArray(s.entities) ? s.entities : []))
     .filter((e) => 'interact' in e || (e.usable && Object.keys(e.usable).length === 0))
     .map((e) => e.id);
-  if (restes.length || apres.schema !== SCHEMA_APRES) {
+  if (restes.length || apres.schema < SCHEMA_APRES) {
     console.error(`[${NOM}] VÉRIFICATION POST-ÉCRITURE ROUGE — ${r.rel} : schema=${apres.schema}, ${restes.join(', ')}`);
     process.exit(1);
   }
-  console.log(`[${NOM}] ${r.rel} — schema ${r.doc.schema} → ${apres.schema}, actions authorées nées d'un \`interact\` : ${r.interacts}, enveloppes vides nommées \`assise\` : ${r.vides} (scènes : ${apres.scenes.length}) — fichier ${out !== r.brut ? 'réécrit' : 'INCHANGÉ'}`);
+  const deja = r.doc.schema > SCHEMA_APRES ? ` — DÉJÀ MIGRÉ au-delà de ${SCHEMA_APRES}` : '';
+  console.log(`[${NOM}] ${r.rel} — schema ${r.doc.schema} → ${apres.schema}${deja}, actions authorées nées d'un \`interact\` : ${r.interacts}, enveloppes vides nommées \`assise\` : ${r.vides} (scènes : ${apres.scenes.length}) — fichier ${out !== r.brut ? 'réécrit' : 'INCHANGÉ'}`);
 }
 
 console.log(`[${NOM}] TOTAL — ${cibles.length} projet(s), ${scenesVues} Scène(s), ${interactsVus} \`interact\` migré(s), ${videsVues} enveloppe(s) vide(s) nommée(s) ; populations : ${fouillesVues} fouille(s), ${assisesVues} assise(s)`);

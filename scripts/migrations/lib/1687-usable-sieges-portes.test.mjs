@@ -6,7 +6,7 @@
  *    porte le document au `schema` 10. Sa borne haute est OUVERTE (`schema` ∈ {9, ≥ 10}) : un
  *    document déjà porté plus loin par un passage postérieur y traverse en NO-OP nominatif, sans
  *    être RABAISSÉ — le rôle de sentinelle du `schema` futur appartient à la DERNIÈRE de la chaîne
- *    dans l'ordre lexical, `2026-09-11-1687-actions-authorees.mjs`.
+ *    dans l'ordre lexical (`DERNIERE`, dérivée par `src/scenes/migrations-format-projet.test.ts`).
  *
  * Une déclaration n'est pas une porte tant qu'on ne l'a pas vue MORDRE : ce banc joue la migration
  * sur un dépôt JETABLE (`os.tmpdir()`), une fois par scénario, et exige la sortie attendue, un
@@ -261,9 +261,9 @@ test('(e bis) CARDINAL DÉPLACÉ (un siège retiré) : le passage PASSE et pose 
 });
 
 test('(f) BORNE HAUTE OUVERTE : un `schema` FUTUR traverse en NO-OP nommé — aucun RABAISSEMENT', (t) => {
-  // Ce que les amont avalent, la DERNIÈRE de la chaîne le refuse : la sentinelle du `schema` futur
-  // vit chez `2026-09-11-1687-actions-authorees.mjs`, et l'invariant se déplace à chaque bump
-  // (cf. `src/scenes/migrations-format-projet.test.ts`). Ici, le document part comme il est venu :
+  // Ce que les amont avalent, la DERNIÈRE de la chaîne le refuse, et l'invariant se déplace à chaque
+  // bump (`DERNIERE`, dérivée par `src/scenes/migrations-format-projet.test.ts`). Ici, le document
+  // part comme il est venu :
   // c'est ce que le rejeu de la chaîne (`npm run migrations:replay`) exige de tout passage dépassé.
   const futur = SCHEMA_APRES + 7;
   const d = depotScenes((rel) => serialise({ ...JSON.parse(lire(rel)), schema: futur }));

@@ -104,10 +104,9 @@
 //   · les DIALECTES des porteurs de test ne sont pas énumérés ici : ils viennent du fragment
 //     `SUFFIXE_SUITE` (`fichierVitest.mjs`), qui les porte tous — une suite née en `.mts` ou en
 //     `.mjs` sous `src/` entre dans le périmètre sans qu'on revienne sur cette liste.
-import { createRequire } from 'node:module'
 import { SUFFIXE_SUITE } from './fichierVitest.mjs'
 import { parUnitesDeCode } from './lister.mjs'
-import { scriptKindDe } from './dialecte.mjs'
+import { scriptKindDe, typescript } from './dialecte.mjs'
 
 /** Fichiers susceptibles de porter un stock nominatif. Une BASELINE de COMPTE
  *  (`scripts/raw/*-baseline.json`, `scripts/guards/*.json`) n'y entre que pour ses CLÉS — limite
@@ -199,15 +198,6 @@ export function estEntreeDeStock(ligne) {
 }
 
 // ── Ce que porte une IMAGE de fichier, décidé par l'AST ──────────────────────────────────────────
-
-/** Le compilateur TypeScript du dépôt (devDependency, déjà le parseur des générateurs de `docs/`),
- *  chargé À LA DEMANDE : cette lib est importée par le garde PreToolUse, qui s'exécute à CHAQUE
- *  commande du canal — un `import` de tête ferait payer le chargement du compilateur à un `ls`. */
-let compilateur = null;
-function typescript() {
-  if (!compilateur) compilateur = createRequire(import.meta.url)('typescript');
-  return compilateur;
-}
 
 /** Image parsée d'un fichier, ou `null` si son extension n'a pas de dialecte (`dialecte.mjs`) :
  *  aucune image n'est alors lue, le REPLI de ligne juge seul. */
