@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
@@ -33,6 +33,7 @@ import {
   STYLE_INLINE_RATCHET,
 } from '../../scripts/guards/lib/cssCouchesStock.mjs';
 import { cleDeSite, ecartDuVolet } from '../../scripts/guards/lib/stock.mjs';
+import { FUITES_COUCHE_PARTAGEE } from '../../scripts/guards/lib/fuitesPartageesStock.mjs';
 
 /**
  * Cliquets d'hygiène UI (#236) — même patron que `combat-hardcode-guard`/`no-emoji-affordance` : une
@@ -301,10 +302,10 @@ const BARE_BUTTON_OPAQUE_BASELINE: Record<string, number> = {};
 //    catalogue de `docs/charte-ui.md` (contrat de couche atomique — inclut les primitives React qui posent
 //    leurs classes), soit UTILISÉE par ≥2 modules `.tsx` distincts (usage transversal réel). Une classe
 //    définie là, mono-consommateur ET non cataloguée = du DOMAINE déguisé → elle doit vivre dans un module
-//    de domaine (cliqueté par xii). BASELINE par fichier, GELÉE et DÉCROISSANTE : sortir une famille de
-//    domaine (ex. `.city-hub-*`/`.voyage-*` → leur module) ABAISSE la baseline ; en ajouter une la fait
-//    monter → échec. Mesure STRUCTURELLE (pas une liste de noms) — la baseline est un COMPTE, pas un
-//    allowlist nominatif. L'usage TSX se lit dans les valeurs `className` (littéraux, gabarits, ternaires).
+//    de domaine (cliqueté par xii). STOCK NOMINATIF `{ fichier, ref: '.<classe>' }`, DÉCROISSANT
+//    (`scripts/guards/lib/fuitesPartageesStock.mjs`, #1806) : sortir une famille de domaine retire ses
+//    entrées ; une classe neuve qui fuit est une entrée NEUVE → échec, et le stock qui grandit se déclare
+//    par `CLIQUET:`. L'usage TSX se lit dans les valeurs `className` (littéraux, gabarits, ternaires).
 // Couche PARTAGÉE gardée par xiii (chemins relatifs à `src/ui/`) : la couche atomique
 // (`base`/`components`), la primitive d'onglets `tabs`, et l'orchestrateur d'`@import` `styles.css`
 // (top-level) qui porte aussi les règles TRANSVERSES manette + le bandeau DEV du collecteur d'erreurs.
@@ -317,40 +318,6 @@ const SHARED_CSS_FILES = [
   'styles.css',
   '../gameIso/anim.css',
 ];
-const SHARED_LEAK_BASELINE: Record<string, number> = {
-  // #1372 : 16 → 15 — `.lazy-fallback` cesse d'être mono-consommateur (le voile d'entrée en scène du
-  // monde volumique le REPREND au lieu de définir sa propre classe, `stage/VolumetricWorld.tsx`).
-  // #1806 2c : 15 → 14 — `.codex-ref` (enveloppe du déclencheur de popover, `CodexRef`) entre au
-  // catalogue de `charte-ui.md` : c'est un contrat de couche, pas une fuite de domaine.
-  // #1847 : 14 → 13 — `.app` (`base.css`, un seul poseur, `App.tsx:73`) entre au catalogue de
-  // `charte-ui.md` : le conteneur d'écran borné à la fenêtre dont toute carte plein-champ tire son
-  // `100%` — un contrat de couche, pas une fuite de domaine.
-  'styles/base.css': 13, // #417 : `.hero-present-sec` reste croisée (PartyScreen+HeroPresentation) ; `.lore-chip`/
-  // `.hero-present-chips` repassent mono-consommateur — le détail candidat compose désormais `SkillChip`/
-  // `TalentChip`/`EntityRef` + `.skill-tags` (recalage utilisateur 2026-07-14, primitives de fiche vivante)
-  // #839 : INCHANGÉ à 11 — le partage de l'écran Options déplace deux fuites sans en retirer :
-  // `.game-menu-overlay` devient transversal (GameMenu + OptionsScreen, −1) mais le corps à onglets
-  // du sous-écran redevient mono-consommateur (un seul porteur, `OptionsScreen`, +1).
-  // #1318 V10 (2026-08-16) : 11 → 10 — DÉCROISSANCE mesurée après la migration des recopies de markup
-  // vers leurs primitives (garde `primitive-owners-guard`). Stock restant, mesuré : `alert`, `col-name`,
-  // `col-stat`, `col-emph`, `col-enc`, `col-price`, `col-buy`, `detail-row`, `group-row`, `rm-roll`.
-  // #1806 2c : 10 → 9 — `rm-roll` suit sa primitive `RollLine` (`roll-line.css`) ; la couche partagée
-  // ne déclare plus de ligne de jet.
-  'styles/components.css': 9,
-  'styles/tabs.css': 1,
-  // Couche LAYOUT (#1800) : TOLÉRANCE ZÉRO d'entrée — chacune de ses classes est cataloguée à la
-  // charte (`.stack`/`.row`/`.grid`/`.split`/`.screen`/`.screen-body`/`.screen-scroll`/
-  // `.master-detail-list`), aucune n'est mono-consommateur planqué.
-  'styles/layout.css': 0,
-  'styles.css': 6,
-  // Chrome du MONDE : les classes y sont mono-consommateur PAR NATURE (un peintre unique par marque —
-  // `TokenChromeMarks`, `PastilleEntite`, les animations de FX). Baseline posée à l'entrée au radar,
-  // GELÉE et DÉCROISSANTE comme les autres.
-  // #1806 2c : 26 → 22 — la feuille est celle de la primitive `GameStage` ; `.glow` et `.dmg-float`
-  // sont cataloguées à la charte avec `.iso-stage`, et les règles à ZÉRO poseur (`.bob`, `.gush`,
-  // `.crow` + `.crow .wing`) sont purgées (garde §5.2 de `primitive-owners-guard`).
-  '../gameIso/anim.css': 22,
-};
 
 /** Classes `.foo` citées entre backticks dans le catalogue de la charte (contrat de couche atomique). */
 function catalogueClasses(): Set<string> {
@@ -604,22 +571,22 @@ describe('#236 — cliquets d’hygiène UI', () => {
     assertRatchet(opaque, BARE_BUTTON_OPAQUE_BASELINE, '<button> className opaque — exposer un littéral btn/chip/seg ou passer par une primitive (feedback user 2026-07-12, #373)');
   });
 
-  it('(xiii) fuite de domaine en couche partagée : classe base/components mono-consommateur ET non cataloguée = gelée et décroissante (#371)', () => {
+  it('(xiii) fuite de domaine en couche partagée : classe mono-consommateur ET non cataloguée = stock nominatif, décroissant (#371, #1806)', () => {
     const catalogue = catalogueClasses();
     const usage = classUsageByModule();
-    const counts: Record<string, number> = {};
+    const sites: { file: string; ref: string }[] = [];
     for (const file of SHARED_CSS_FILES) {
       const f = join(UI, file);
       const defined = classNamesDefined(readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''));
-      let leaks = 0;
       for (const c of defined) {
-        if (catalogue.has(c)) continue; // documentée au catalogue = contrat de couche atomique
-        if ((usage.get(c)?.size ?? 0) >= 2) continue; // usage transversal réel (≥2 modules)
-        leaks++;
+        if (catalogue.has(c)) continue;
+        if ((usage.get(c)?.size ?? 0) >= 2) continue;
+        sites.push({ file: relative(join(UI, '..', '..'), f).replace(/\\/g, '/'), ref: `.${c}` });
       }
-      counts[file] = leaks; // clé = le chemin DÉCLARÉ (une feuille partagée peut vivre hors `src/ui`)
     }
-    assertRatchet(counts, SHARED_LEAK_BASELINE, 'classe de domaine planquée en couche partagée — la déplacer dans le module de sa primitive ou la documenter au catalogue de charte-ui.md (#371)');
+    const { neuves, perimees } = ecartDuVolet({ sites, stock: FUITES_COUCHE_PARTAGEE, ou: 'scripts/guards/lib/fuitesPartageesStock.mjs' });
+    expect(neuves, `Classe de domaine planquée en couche partagée — la déplacer dans le module de sa primitive ou la documenter au catalogue de charte-ui.md (#371) :\n${neuves.join('\n')}`).toEqual([]);
+    expect(perimees, `Entrée(s) SOLDÉE(s) — la retirer de fuitesPartageesStock.mjs :\n${perimees.join('\n')}`).toEqual([]);
   });
 
   // ── (xiv) EXHAUSTIVITÉ (#371, gap gauges.css ; recalée #1800) : une feuille de `src/ui/**` a un
@@ -1596,11 +1563,12 @@ describe('#1800 — trois couches CSS : un module d’écran ne pose que du PLAC
     ]))).toEqual(['.x :: font-size']);
   });
 
-  it('(xxi) preuve — le même texte en module de PRIMITIVE est VERT (la frontière vient du manifeste)', () => {
+  it('(xxi) preuve — le même texte en module d’une primitive RÉUTILISÉE est VERT, à un seul hôte il reste au stock (#1806 L1)', () => {
     const feuilles = [fixture('src/ui/styles/faux.css', '.x { color: red }')];
-    const manifeste = [{ id: 'fausse', css: 'src/ui/styles/faux.css' }];
-    expect(modulesDEcran({ fichiers: feuilles, manifeste, partagees: FEUILLES_PARTAGEES })).toEqual([]);
-    expect(modulesDEcran({ fichiers: feuilles, manifeste: [{ id: 'autre' }], partagees: FEUILLES_PARTAGEES })).toEqual(feuilles);
+    const manifeste = [{ id: 'fausse', fichier: 'src/ui/Fausse.tsx', css: 'src/ui/styles/faux.css' }];
+    const image = (reutilises: string[]) => ({ fichiers: feuilles, manifeste, partagees: FEUILLES_PARTAGEES, reutilises: new Set(reutilises) });
+    expect(modulesDEcran(image(['src/ui/Fausse.tsx']))).toEqual([]);
+    expect(modulesDEcran(image([]))).toEqual(feuilles);
   });
 
   it('(xxi) preuve — l’échelle : un littéral px est un site, un token n’en est pas un', () => {

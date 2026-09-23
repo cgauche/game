@@ -1,21 +1,22 @@
-// L'ÉVÉNEMENT DE FRONTIÈRE du stock CSS (#1806, grief 1 de la revue de palier du 2026-09-20) : une
-// revendication ARMÉE (`revendicationsArmees`, `cssCouches.mjs`) retire de
-// `CSS_IDENTITE_ECRAN_RATCHET` / `CSS_ESPACEMENT_RATCHET` tous les sites de son module sans toucher
-// une ligne de CSS (`41aa406d5` : `combat-console.css`, 255 sites). La baisse est légale — c'est la
-// frontière A1 —, mais elle se DIT : `RECLASSEMENT: <module> +N — <motif #ticket>`, au PRIX de
-// l'intervalle (`prixDuReclassement`, `cssCouches.mjs`) : les sites que la frontière a réellement fait
-// sortir du stock, jamais davantage. UNE ligne par module dans un message ; la somme des lignes égale
-// le prix, et chaque ligne reste sous le N de son module (`ecartDeReclassement`).
+// L'ÉVÉNEMENT DE FRONTIÈRE du stock CSS (#1806 D1″/D2″) : un module qui FRANCHIT la frontière du
+// parent au commit (`franchissements`, `cssCouches.mjs`) — revendiqué au manifeste par une primitive
+// réutilisée, second importeur gagné, ou ajouté à `FEUILLES_PARTAGEES` — sort ses sites de
+// `CSS_IDENTITE_ECRAN_RATCHET` / `CSS_ESPACEMENT_RATCHET` sans les guérir. Le message le DIT :
+// `RECLASSEMENT: <module> +N — <motif #ticket>`, UNE ligne par module franchi, N = son prix (`ventiler`,
+// `cssCouches.mjs`). Trois refus : un franchissement sans ligne, une ligne sans franchissement, un N
+// faux.
 //
-// Le discriminant est la FRONTIÈRE lue dans chaque image — manifeste (`css`) et `FEUILLES_PARTAGEES`
-// (texte de `cssCouches.mjs`) —, jamais le libellé `nature` qu'un commit écrit lui-même.
+// Le discriminant est la FRONTIÈRE lue dans chaque côté (`coteCss`, `cssImages.mjs`) — manifeste,
+// `FEUILLES_PARTAGEES`, `fichier`s réutilisés —, jamais le libellé `nature` qu'un commit écrit lui-même.
 //
 // FRONTIÈRE : cette lib CALCULE ; le VERDICT appartient aux appelants — le garde de solde au commit
-// (`scripts/hooks/solde-ticket-guard.mjs`), la porte de plage au push (`plageStock.mjs`).
+// (`scripts/hooks/solde-ticket-guard.mjs`), la porte de plage au push (`plageStock.mjs`), chaque
+// commit contre son parent (#1806 D3″).
 import {
-  CHEMIN_COUCHES, CHEMIN_MANIFESTE, feuillesPartageesDe, manifesteDe, prixDuReclassement,
+  CHEMIN_COUCHES, CHEMIN_MANIFESTE, RACINE_DES_MODULES, modulesDePrimitive, modulesExemptes, ventiler,
 } from './cssCouches.mjs'
-import { MOTIF_MIN, declarationsDuMessage } from './stocksNominatifs.mjs'
+import { motifDImport } from './cssImages.mjs'
+import { MOTIF_MIN, declarationsDuMessage, mesuresNonCouvertes } from './stocksNominatifs.mjs'
 
 /** Le mot-clé de la ligne de message. */
 const MOT_RECLASSEMENT = 'RECLASSEMENT'
@@ -23,21 +24,48 @@ const MOT_RECLASSEMENT = 'RECLASSEMENT'
 /** Un motif de reclassement nomme le ticket qui le porte. */
 const TICKET = /#\d+/
 
-/** Le côté d'une image de commit, lu par son lecteur : manifeste, feuilles partagées, texte. */
-const coteDuLecteur = (lire) => ({
-  manifeste: manifesteDe(lire(CHEMIN_MANIFESTE)),
-  partagees: feuillesPartageesDe(lire(CHEMIN_COUCHES)),
-  lire,
-})
+/**
+ * Les modules FRANCHIS d'un commit, avec leur prix par volet (`ventiler`), lus sur deux côtés
+ * `{ manifeste, partagees, reutilises, lire }` (`coteCss`). Seuls les candidats — exemptés au commit,
+ * pas au parent — sont lus : le prix d'un module ne dépend que de ses propres clés (fichier, réf).
+ * @param {{ manifeste: readonly { id: string, fichier?: string, css?: string }[], partagees: readonly string[], reutilises: ReadonlySet<string>, lire: (f: string) => string | null }} parent
+ * @param {typeof parent} commit
+ * @returns {{ module: string, identite: number, espacement: number, n: number }[]} `n > 0`, triés
+ */
+export function franchisDesCotes(parent, commit) {
+  const exP = modulesExemptes(parent)
+  const candidats = [...modulesExemptes(commit)].filter((m) => !exP.has(m))
+  const mesures = modulesDePrimitive(parent.manifeste)
+  const dansLImage = (m) => (m.startsWith(RACINE_DES_MODULES) && m.endsWith('.css')) || mesures.has(m)
+  const image = (cote, retenir) => ({
+    ...cote,
+    fichiers: candidats.filter(retenir).map((rel) => ({ rel, text: cote.lire(rel) })).filter((f) => f.text !== null),
+  })
+  return ventiler(image(parent, dansLImage), image(commit, () => true)).franchis.filter((f) => f.n > 0)
+}
 
 /**
- * Le PRIX d'un intervalle lu par ses deux lecteurs d'image (`prixDuReclassement`).
- * @param {{ lirePreImage: (f: string) => string | null, lirePostImage: (f: string) => string | null }} images
- * @param {Iterable<string>} touches les chemins que l'intervalle modifie
- * @throws {Error} manifeste ou `cssCouches.mjs` illisible à l'un des bouts.
+ * Un geste peut-il déplacer la frontière (#1806 E) ? Il touche le manifeste ou `FEUILLES_PARTAGEES`
+ * (`cssCouches.mjs`), ou une ligne `+`/`-` de son diff importe un `fichier` du manifeste
+ * (`motifDImport`) — seul chemin par lequel un importeur se gagne ou se perd. `diff` et `manifeste`
+ * (celui du parent) ne sont lus qu'à défaut des chemins : la frontière n'est relue que si elle peut
+ * avoir bougé.
+ * @param {{ chemins: Iterable<string>, diff: () => string,
+ *   manifeste: () => readonly { fichier?: string }[] }} p
+ * @returns {boolean}
  */
-export function prixDesImages(images, touches) {
-  return prixDuReclassement(coteDuLecteur(images.lirePreImage), coteDuLecteur(images.lirePostImage), touches)
+export function deplaceLaFrontiere({ chemins, diff, manifeste }) {
+  if ([...chemins].some((f) => f === CHEMIN_COUCHES || f === CHEMIN_MANIFESTE)) return true
+  const motif = motifDImport(manifeste())
+  if (!motif) return false
+  const importe = new RegExp(motif)
+  let entete = false
+  for (const l of diff().split('\n')) {
+    if (l.startsWith('diff --git ')) entete = true
+    else if (l.startsWith('@@')) entete = false
+    else if (!entete && (l.startsWith('+') || l.startsWith('-')) && importe.test(l)) return true
+  }
+  return false
 }
 
 /** Les lignes `RECLASSEMENT:` d'un message dont le motif porte son `#<ticket>`. */
@@ -45,61 +73,59 @@ export const lignesDeReclassement = (message) =>
   declarationsDuMessage(message, MOT_RECLASSEMENT).filter((d) => TICKET.test(d.motif))
 
 /**
- * L'ÉCART entre un prix et les lignes qui le déclarent, ou `null` s'il est couvert : la somme des
- * lignes des modules armés égale le prix, chaque module porte au plus UNE ligne, et chaque ligne
- * reste sous le N de son module. Un seul module armé : sa ligne porte donc exactement le prix.
- * @param {ReturnType<typeof prixDuReclassement>} prix @param {{ fichier: string, n: number }[]} lignes
- * @returns {{ prix: number, declare: number, modules: { module: string, n: number, declarees: number[] }[] } | null}
+ * Les ÉCARTS entre les franchissements d'un commit et les lignes de son message (vide = couvert) :
+ * un module franchi sans UNE ligne au N exact (`mesuresNonCouvertes`, juge unique avec `CLIQUET:`),
+ * et toute ligne qui nomme un module qui n'a pas franchi.
+ * @param {ReturnType<typeof franchisDesCotes>} franchis @param {{ fichier: string, n: number }[]} lignes
+ * @returns {{ module: string, n: number | null, declare: number | null, declarees?: number[] }[]}
+ *   `n` = le prix, `null` pour une ligne sans franchissement.
  */
-export function ecartDeReclassement(prix, lignes) {
-  if (!prix.revendications.length) return null
-  const modules = prix.revendications.map((r) => ({
-    module: r.module,
-    n: r.n,
-    declarees: lignes.filter((d) => d.fichier === r.module).map((d) => d.n),
-  }))
-  const declare = modules.reduce((s, m) => s + m.declarees.reduce((a, n) => a + n, 0), 0)
-  const couvert = declare === prix.n && modules.every((m) => m.declarees.length <= 1 && (m.declarees[0] ?? 0) <= m.n)
-  return couvert ? null : { prix: prix.n, declare, modules }
+export function ecartsDeReclassement(franchis, lignes) {
+  const nonCouverts = mesuresNonCouvertes(franchis.map((f) => ({ fichier: f.module, n: f.n })), lignes)
+    .map(({ fichier, n, declare, declarees }) => ({ module: fichier, n, declare, ...(declarees ? { declarees } : {}) }))
+  const franchi = new Set(franchis.map((f) => f.module))
+  const orphelines = lignes.filter((d) => !franchi.has(d.fichier)).map((d) => ({ module: d.fichier, n: null, declare: d.n }))
+  return [...nonCouverts, ...orphelines]
 }
 
 /**
- * L'écart d'un COMMIT, en liste (vide = couvert).
- * @param {{ message: string }} p @param {Parameters<typeof prixDesImages>[0]} images
- * @param {Iterable<string>} touches
+ * Les écarts d'un COMMIT jugé contre son parent.
+ * @param {{ message: string }} p
+ * @param {{ parent: Parameters<typeof franchisDesCotes>[0], commit: Parameters<typeof franchisDesCotes>[1] }} cotes
  */
-export function reclassementsNonDeclares({ message }, images, touches) {
-  const ecart = ecartDeReclassement(prixDesImages(images, touches), lignesDeReclassement(message))
-  return ecart ? [ecart] : []
+export function reclassementsNonDeclares({ message }, { parent, commit }) {
+  return ecartsDeReclassement(franchisDesCotes(parent, commit), lignesDeReclassement(message))
 }
 
-/** Ce qu'un module armé a reçu du message, en clair. */
-const ceQueDitLeModule = (m) => {
-  if (m.declarees.length === 0) return `${m.module} (N ${m.n}, aucune ligne)`
-  if (m.declarees.length > 1) return `${m.module} (N ${m.n}, ${m.declarees.length} lignes ${m.declarees.map((n) => `+${n}`).join(', ')} — une seule par module)`
-  return `${m.module} (N ${m.n}, +${m.declarees[0]})`
+/** Un écart, en clair. */
+const ceQueDitLeModule = (e) => {
+  if (e.n === null) return `${e.module} : ligne \`+${e.declare}\` sans franchissement`
+  if (e.declarees) return `${e.module} : franchi au prix ${e.n}, ${e.declarees.length} lignes (${e.declarees.map((n) => `+${n}`).join(', ')}) — une seule par module`
+  if (e.declare === null) return `${e.module} : franchi au prix ${e.n}, aucune ligne`
+  return `${e.module} : franchi au prix ${e.n}, la ligne annonce \`+${e.declare}\``
 }
 
 /**
- * Refus lisible : où (commit, plage, ou rien), le PRIX mesuré, la somme annoncée, ce que chaque module
- * armé a reçu, et le geste. Une image illisible (`illisible`) est dite par son commit.
- * @param {({ prix: number, declare: number, modules: { module: string, n: number, declarees: number[] }[], sha?: string, plage?: string } | { sha: string, illisible: string })[]} reclassements
+ * Refus lisible : où (commit ou rien), chaque écart, et le geste. Une image illisible (`illisible`)
+ * est dite par son commit.
+ * @param {({ sha?: string, ecarts: ReturnType<typeof ecartsDeReclassement> } | { sha: string, illisible: string })[]} refus
  */
-export function raisonDeRefusDeReclassement(reclassements) {
-  const lignes = reclassements.map((r) => {
-    const ou = r.plage ? `plage ${r.plage} ` : r.sha ? `${r.sha.slice(0, 9)} ` : ''
+export function raisonDeRefusDeReclassement(refus) {
+  const lignes = refus.map((r) => {
+    const ou = r.sha ? `${r.sha.slice(0, 9)} ` : ''
     if ('illisible' in r) return `${ou}injugeable : ${r.illisible}`
-    return `${ou}${r.prix} site(s) sortent du stock CSS, les lignes en annoncent ${r.declare} — ${r.modules.map(ceQueDitLeModule).join(', ')}`
+    return `${ou}${r.ecarts.map(ceQueDitLeModule).join(', ')}`
   })
-  const geste = reclassements.some((r) => r.sha || r.plage)
+  const geste = refus.some((r) => r.sha)
     ? '`git rebase -i` pour porter au message du commit fautif'
     : 'porter au message'
   return (
-    `⛔ RECLASSEMENT CSS non déclaré : ${lignes.join(' || ')}. Une revendication ARMÉE — module neuf au ` +
-    `manifeste (${CHEMIN_MANIFESTE}) ou à \`FEUILLES_PARTAGEES\` (${CHEMIN_COUCHES}), ou module exempté ` +
-    `à 0 site à la base (\`revendicationsArmees\`) — sort des sites du stock (xxi) : la frontière de sa ` +
-    `mesure se déplace. Si elle est délibérée, ${geste} \`RECLASSEMENT: <module> +N — <motif>\` (motif ` +
-    `d’au moins ${MOTIF_MIN} caractères, portant son \`#<ticket>\`), UNE ligne par module : la somme des ` +
-    '`+N` égale les sites sortis du stock, chacun au plus le N de son module.'
+    `⛔ RECLASSEMENT CSS : ${lignes.join(' || ')}. Un module FRANCHIT la frontière quand il devient ` +
+    `exempté au commit sans l'être au parent — revendiqué au manifeste (${CHEMIN_MANIFESTE}) par une ` +
+    `primitive réutilisée, second importeur gagné, ou ajouté à \`FEUILLES_PARTAGEES\` (${CHEMIN_COUCHES}) — ` +
+    `et ses sites quittent le stock (xxi) sans guérir. Geste : ${geste} ` +
+    `\`RECLASSEMENT: <module> +N — <motif>\` (motif d’au moins ${MOTIF_MIN} caractères, portant son ` +
+    '`#<ticket>`), UNE ligne par module franchi, N = ses sites sortis ; aucune ligne pour un module qui ' +
+    'n’a pas franchi.'
   )
 }

@@ -1,116 +1,117 @@
-// L'ÉVÉNEMENT de frontière du stock CSS (#1806, `reclassementCss.mjs`) : une revendication ARMÉE qui
-// sort des sites du stock exige `RECLASSEMENT: <module> +N — <motif #ticket>` au PRIX de l'intervalle
-// (`prixDuReclassement`). Aucun disque : les images sont des lecteurs en mémoire. Joué par
-// `npm run test:hooks`.
+// L'ÉVÉNEMENT de frontière du stock CSS (#1806 D1″/D2″, `reclassementCss.mjs`) : un module qui
+// FRANCHIT la frontière exige UNE ligne `RECLASSEMENT: <module> +N — <motif #ticket>` au N exact ; trois
+// refus — franchi sans ligne, ligne sans franchissement, N faux. Aucun disque : les côtés sont en
+// mémoire. Joué par `npm run test:hooks`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { CHEMIN_COUCHES, CHEMIN_MANIFESTE } from './cssCouches.mjs'
-import { ecartDeReclassement, raisonDeRefusDeReclassement, reclassementsNonDeclares } from './reclassementCss.mjs'
+import {
+  deplaceLaFrontiere, ecartsDeReclassement, franchisDesCotes, raisonDeRefusDeReclassement, reclassementsNonDeclares,
+} from './reclassementCss.mjs'
 
-const MODULE = 'src/ui/styles/console.css'
-const AUTRE = 'src/ui/styles/journal.css'
-const MANIFESTE_AVANT = JSON.stringify([{ id: 'a' }])
-const MANIFESTE_APRES = JSON.stringify([{ id: 'a' }, { id: 'console', css: MODULE }])
-const TROIS = '.c { color: red; border: 0; gap: 3px }'
+const Q = 'src/ui/styles/ecran-q.css'
+const P = 'src/ui/styles/prim-p.css'
+const CSS = '.e { color: red; border: 0; font-size: 3px; gap: 3px }'
 
-/** Un arbre en mémoire → son lecteur. */
-const lecteur = (arbre) => (f) => arbre[f] ?? null
-/** Images d'un commit qui REVENDIQUE `MODULE`, déjà peint au stock (`avant`) ; `css` = sa post-image. */
-const images = (css, apres = MANIFESTE_APRES, avant = TROIS) => ({
-  lirePreImage: lecteur({ [CHEMIN_MANIFESTE]: MANIFESTE_AVANT, [MODULE]: avant }),
-  lirePostImage: lecteur({ [CHEMIN_MANIFESTE]: apres, [MODULE]: css }),
+/** Un côté : `textes` = `{ chemin: texte }`, `reutilisees` = les modules d'une primitive réutilisée,
+ *  `declares` = les modules revendiqués au manifeste (réutilisés ou non). */
+const cote = (textes, reutilisees = [], declares = reutilisees) => ({
+  manifeste: [{ id: 'sans-css' }, ...declares.map((css) => ({ id: css, fichier: `${css}.tsx`, css }))],
+  partagees: [],
+  reutilises: new Set(reutilisees.map((css) => `${css}.tsx`)),
+  lire: (f) => textes[f] ?? null,
 })
-const TOUCHES = [CHEMIN_MANIFESTE, MODULE]
-const ligne = (n, motif = 'la console devient un organisme, refs #1806', module = MODULE) =>
-  `RECLASSEMENT: ${module} +${n} — ${motif}\n`
+const ligne = (module, n, motif = 'la console devient une primitive, refs #1806') => `RECLASSEMENT: ${module} +${n} — ${motif}\n`
 const message = (...lignes) => `refactor\n\n${lignes.join('')}`
 
-test('revendication d’un écran peint SANS ligne → refus qui dit le prix et le module', () => {
-  const refus = reclassementsNonDeclares({ message: 'refactor: console' }, images(TROIS), TOUCHES)
-  assert.deepEqual(refus, [{ prix: 3, declare: 0, modules: [{ module: MODULE, n: 3, declarees: [] }] }])
-  const raison = raisonDeRefusDeReclassement(refus)
-  assert.ok(raison.includes('3 site(s) sortent du stock CSS'), raison)
-  assert.ok(raison.includes(`${MODULE} (N 3, aucune ligne)`), raison)
-  assert.match(raison, /RECLASSEMENT: <module> \+N/)
+/** S1 : Q franchit (4 sites), aucun autre module ne bouge. */
+const S1 = { parent: cote({ [Q]: CSS }), commit: cote({ [Q]: CSS }, [Q]) }
+
+test('D2″ : un module franchi SANS ligne est refusé, avec son prix', () => {
+  assert.deepEqual(reclassementsNonDeclares({ message: 'refactor' }, S1), [{ module: Q, n: 4, declare: null }])
 })
 
-test('ligne au MAUVAIS compte → refus qui dit le compte annoncé', () => {
-  const refus = reclassementsNonDeclares({ message: message(ligne(2)) }, images(TROIS), TOUCHES)
-  assert.deepEqual(refus, [{ prix: 3, declare: 2, modules: [{ module: MODULE, n: 3, declarees: [2] }] }])
-  assert.match(raisonDeRefusDeReclassement(refus), /en annoncent 2/)
+test('D2″ : la ligne au N exact passe ; un N faux est refusé ; deux lignes pour un module sont refusées', () => {
+  assert.deepEqual(reclassementsNonDeclares({ message: message(ligne(Q, 4)) }, S1), [])
+  assert.deepEqual(reclassementsNonDeclares({ message: message(ligne(Q, 3)) }, S1), [{ module: Q, n: 4, declare: 3 }])
+  assert.deepEqual(
+    reclassementsNonDeclares({ message: message(ligne(Q, 999), ligne(Q, 4)) }, S1),
+    [{ module: Q, n: 4, declare: 999, declarees: [999, 4] }],
+  )
 })
 
-test('BON compte → passe ; sans `#ticket` ou motif de tampon → refus', () => {
-  assert.deepEqual(reclassementsNonDeclares({ message: message(ligne(3)) }, images(TROIS), TOUCHES), [])
-  assert.equal(reclassementsNonDeclares({ message: message(ligne(3, 'la console devient un organisme')) }, images(TROIS), TOUCHES).length, 1)
-  assert.equal(reclassementsNonDeclares({ message: message(ligne(3, '#1806')) }, images(TROIS), TOUCHES).length, 1)
+test('D2″ : une ligne SANS franchissement est refusée — la ligne fausse ne couvre pas le vrai franchi (S2)', () => {
+  const S2 = { parent: cote({ [Q]: CSS }), commit: cote({ [Q]: CSS, [P]: CSS }, [Q, P]) }
+  assert.deepEqual(reclassementsNonDeclares({ message: message(ligne(P, 4)) }, S2), [
+    { module: Q, n: 4, declare: null },
+    { module: P, n: null, declare: 4 },
+  ])
+  assert.deepEqual(reclassementsNonDeclares({ message: message(ligne(Q, 4)) }, S2), [], 'P naît exempté : il ne franchit pas')
 })
 
-test('revendication d’un module à N = 0 → passe sans ligne ; aucune revendication neuve → rien à dire', () => {
-  assert.deepEqual(reclassementsNonDeclares({ message: 'feat' }, images('.c { display: grid; gap: var(--sp-md) }'), TOUCHES), [])
-  assert.deepEqual(reclassementsNonDeclares({ message: 'feat' }, images(TROIS, MANIFESTE_AVANT), TOUCHES), [])
+test('D2″ : sans `#ticket` ou sous le motif minimal, la ligne n’est pas lue', () => {
+  assert.deepEqual(reclassementsNonDeclares({ message: message(ligne(Q, 4, 'la console devient une primitive')) }, S1), [{ module: Q, n: 4, declare: null }])
+  assert.deepEqual(reclassementsNonDeclares({ message: message(ligne(Q, 4, '#1806')) }, S1), [{ module: Q, n: 4, declare: null }])
 })
 
-test('primitive NEUVE livrée avec son CSS neuf : le stock ne baisse pas, le prix est 0 — rien à dire (juge 2026-09-23, écart 1)', () => {
-  const neuve = images(TROIS, MANIFESTE_APRES, null)
-  assert.deepEqual(reclassementsNonDeclares({ message: 'feat(ui): primitive neuve' }, neuve, TOUCHES), [])
-  const refus = reclassementsNonDeclares({ message: message(ligne(3)) }, neuve, TOUCHES)
-  assert.deepEqual(refus, [{ prix: 0, declare: 3, modules: [{ module: MODULE, n: 3, declarees: [3] }] }], 'une ligne sur un prix nul ment')
+test('D1″ : un SECOND importeur gagné fait franchir le module (S11) ; revendiquer à un seul hôte ne fait rien franchir', () => {
+  const S11 = { parent: cote({ [P]: CSS }, [], [P]), commit: cote({ [P]: CSS }, [P]) }
+  assert.deepEqual(franchisDesCotes(S11.parent, S11.commit), [{ module: P, identite: 3, espacement: 1, n: 4 }])
+  const monoHote = { parent: cote({ [Q]: CSS }), commit: cote({ [Q]: CSS }, [], [Q]) }
+  assert.deepEqual(franchisDesCotes(monoHote.parent, monoHote.commit), [])
 })
 
-test('le prix est la BAISSE du stock, pas N : écran de 1 site revendiqué, qui en porte 3 à la tête → +1', () => {
-  const partiel = images(TROIS, MANIFESTE_APRES, '.c { color: red }')
-  assert.deepEqual(reclassementsNonDeclares({ message: message(ligne(1)) }, partiel, TOUCHES), [])
-  assert.equal(reclassementsNonDeclares({ message: message(ligne(3)) }, partiel, TOUCHES)[0].prix, 1)
+test('D1″ : un module franchi à 0 site n’exige aucune ligne', () => {
+  const vide = { parent: cote({ [P]: '.p { gap: var(--sp-md) }' }), commit: cote({ [P]: '.p { gap: var(--sp-md) }' }, [P]) }
+  assert.deepEqual(reclassementsNonDeclares({ message: 'refactor' }, vide), [])
 })
 
-test('sur une plage, le refus porte le sha et le geste `rebase -i`', () => {
-  const raison = raisonDeRefusDeReclassement([{ sha: 'abcdef1234567', prix: 3, declare: 0, modules: [{ module: MODULE, n: 3, declarees: [] }] }])
-  assert.match(raison, /abcdef123 3 site\(s\) sortent/)
-  assert.match(raison, /rebase -i/)
+test('franchisDesCotes ne lit que les candidats — exemptés au commit, pas au parent', () => {
+  const lus = []
+  const espion = (c) => ({ ...c, lire: (f) => { lus.push(f); return c.lire(f) } })
+  const parent = cote({ [Q]: CSS, [P]: CSS }, [P])
+  const commit = cote({ [Q]: CSS, [P]: CSS }, [P, Q])
+  franchisDesCotes(espion(parent), espion(commit))
+  assert.deepEqual([...new Set(lus)], [Q])
 })
 
-test('deux lignes pour le MÊME module (`+999` puis `+3`) → refus nommé : une déclaration par module', () => {
-  const texte = message(ligne(999, 'motif assez long pour passer, refs #1806'), ligne(3, 'motif assez long pour passer, refs #1806'))
-  const refus = reclassementsNonDeclares({ message: texte }, images(TROIS), TOUCHES)
-  assert.deepEqual(refus, [{ prix: 3, declare: 1002, modules: [{ module: MODULE, n: 3, declarees: [999, 3] }] }])
-  assert.match(raisonDeRefusDeReclassement(refus), /2 lignes \+999, \+3 — une seule par module/)
+// ── deplaceLaFrontiere (#1806 E) : une branche, un test ─────────────────────────────────────────
+const COMPOSANT_CONSOLE = 'src/ui/Console.tsx'
+const MODULE_CONSOLE = 'src/ui/styles/console.css'
+const MANIFESTE_CONSOLE = [{ id: 'a' }, { id: 'console', fichier: COMPOSANT_CONSOLE, css: MODULE_CONSOLE }]
+const jamais = (quoi) => () => { throw new Error(`${quoi} lu alors que les chemins suffisent`) }
+const diffDEcran = (ligne) =>
+  `diff --git a/src/ui/Ecran.tsx b/src/ui/Ecran.tsx\n--- a/src/ui/Ecran.tsx\n+++ b/src/ui/Ecran.tsx\n@@ -1,0 +1 @@\n${ligne}\n`
+const deplace = (chemins, diff) => deplaceLaFrontiere({ chemins, diff: () => diff, manifeste: () => MANIFESTE_CONSOLE })
+
+test('deplaceLaFrontiere : le MANIFESTE touché suffit, sans lire ni diff ni manifeste', () => {
+  assert.equal(deplaceLaFrontiere({ chemins: ['src/data/primitives.manifest.json'], diff: jamais('diff'), manifeste: jamais('manifeste') }), true)
 })
 
-test('PLUSIEURS modules armés : la somme des lignes égale le prix, chacune au plus le N de son module', () => {
-  const prix = { n: 4, identite: 4, espacement: 0, deltaStock: { identite: -4, espacement: 0 },
-    revendications: [{ module: MODULE, identite: 3, espacement: 0, n: 3 }, { module: AUTRE, identite: 3, espacement: 0, n: 3 }] }
-  const lignes = (a, b) => [{ fichier: MODULE, n: a }, { fichier: AUTRE, n: b }]
-  assert.equal(ecartDeReclassement(prix, lignes(3, 1)), null)
-  assert.equal(ecartDeReclassement(prix, lignes(2, 2)), null)
-  assert.equal(ecartDeReclassement(prix, lignes(4, 0))?.declare, 4, 'une ligne au-delà du N de son module')
-  assert.equal(ecartDeReclassement(prix, lignes(3, 3))?.declare, 6, 'la somme excède le prix')
+test('deplaceLaFrontiere : `cssCouches.mjs` (FEUILLES_PARTAGEES) touché suffit, sans lire ni diff ni manifeste', () => {
+  assert.equal(deplaceLaFrontiere({ chemins: ['scripts/guards/lib/cssCouches.mjs'], diff: jamais('diff'), manifeste: jamais('manifeste') }), true)
 })
 
-test('manifeste ILLISIBLE → levée explicite, jamais un tableau vide qui tairait la revendication', () => {
-  const casse = { lirePreImage: lecteur({ [CHEMIN_MANIFESTE]: MANIFESTE_AVANT }), lirePostImage: lecteur({ [CHEMIN_MANIFESTE]: '[{"id":' }) }
-  assert.throws(() => reclassementsNonDeclares({ message: 'x' }, casse, TOUCHES), /primitives\.manifest\.json/)
+test('deplaceLaFrontiere : une ligne AJOUTÉE qui importe un `fichier` du manifeste', () => {
+  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+import { Console } from './Console'")), true)
 })
 
-test('feuille ENTRÉE en FEUILLES_PARTAGEES → même ligne `RECLASSEMENT:`, au prix de ses sites (T2)', () => {
-  const couchesAvant = "export const FEUILLES_PARTAGEES = [\n  'src/ui/styles/base.css',\n];\n"
-  const couchesApres = `export const FEUILLES_PARTAGEES = [\n  'src/ui/styles/base.css',\n  '${MODULE}',\n];\n`
-  const partage = {
-    lirePreImage: lecteur({ [CHEMIN_MANIFESTE]: MANIFESTE_AVANT, [CHEMIN_COUCHES]: couchesAvant, [MODULE]: TROIS }),
-    lirePostImage: lecteur({ [CHEMIN_MANIFESTE]: MANIFESTE_AVANT, [CHEMIN_COUCHES]: couchesApres, [MODULE]: TROIS }),
-  }
-  assert.deepEqual(reclassementsNonDeclares({ message: 'feat' }, partage, [CHEMIN_COUCHES]),
-    [{ prix: 3, declare: 0, modules: [{ module: MODULE, n: 3, declarees: [] }] }])
-  assert.deepEqual(reclassementsNonDeclares({ message: message(ligne(3)) }, partage, [CHEMIN_COUCHES]), [])
+test('deplaceLaFrontiere : une ligne RETIRÉE qui importait un `fichier` du manifeste', () => {
+  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("-import { Console } from './Console.tsx'")), true)
 })
 
-test('le refus dit « du stock (xxi) », le terme de la charte', () => {
-  const raison = raisonDeRefusDeReclassement([{ prix: 3, declare: 0, modules: [{ module: MODULE, n: 3, declarees: [] }] }])
-  assert.match(raison, /du stock \(xxi\)/)
-  assert.doesNotMatch(raison, /cliquet \(xxi\)/)
+test('deplaceLaFrontiere : un diff `src/` sans import d’un `fichier` du manifeste ne relit rien', () => {
+  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+import { Autre } from './ConsoleBis'")), false)
+  assert.equal(deplace(['src/ui/Console.tsx'], diffDEcran('+export const Console = 2')), false, 'l’en-tête `+++ b/src/ui/Console.tsx` n’est pas une ligne')
+  assert.equal(deplaceLaFrontiere({ chemins: ['src/ui/Ecran.tsx'], diff: jamais('diff'), manifeste: () => [{ id: 'sans-fichier' }] }), false,
+    'un manifeste sans `fichier` n’a rien à importer : le diff n’est pas lu')
 })
 
-test('une image ILLISIBLE sur une plage se dit par son commit', () => {
-  const raison = raisonDeRefusDeReclassement([{ sha: 'abcdef1234567', illisible: 'manifeste illisible' }])
-  assert.match(raison, /abcdef123 injugeable : manifeste illisible/)
+test('le refus nomme chaque écart, le commit, et le geste `rebase -i` sur une plage', () => {
+  const ecarts = ecartsDeReclassement([{ module: Q, identite: 3, espacement: 1, n: 4 }], [{ fichier: P, n: 2 }])
+  const raison = raisonDeRefusDeReclassement([{ sha: 'c1aaaaaaaaaa', ecarts }])
+  assert.match(raison, /c1aaaaaaa src\/ui\/styles\/ecran-q\.css : franchi au prix 4, aucune ligne, src\/ui\/styles\/prim-p\.css : ligne `\+2` sans franchissement/)
+  assert.match(raison, /git rebase -i/)
+  assert.match(raison, /quittent le stock \(xxi\)/)
+  assert.match(raisonDeRefusDeReclassement([{ sha: 'c2bbbbbbbbbb', illisible: 'manifeste illisible' }]), /c2bbbbbbb injugeable : manifeste illisible/)
+  assert.doesNotMatch(raisonDeRefusDeReclassement([{ ecarts }]), /rebase/)
 })

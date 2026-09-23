@@ -4,7 +4,7 @@
 // parseur d'imports. Module ESM pur (node nu).
 
 import { readFileSync, existsSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { typescript } from './dialecte.mjs';
 
@@ -56,15 +56,17 @@ const EXTS_EXPLICITES = [...EXTS, '.json'];
  * spécificateur portant DÉJÀ son extension (`./x.mjs`, `./data.json` — la forme des 109 imports de
  * `src/**` vers les libs de garde), sinon extension déduite d'`EXTS`, sinon repli `index.*`. Les
  * paquets npm / alias non-relatifs renvoient `null` (hors périmètre — pas résolus ici).
- * @param {string} fromFile @param {string} spec @returns {string|null}
+ * `existe` (chemin absolu POSIX → présent ?) dit quel ARBRE fait foi : le disque par défaut, la liste
+ * de fichiers d'une ref pour qui juge un autre arbre que l'arbre de travail (#1806).
+ * @param {string} fromFile @param {string} spec @param {(abs: string) => boolean} [existe]
+ * @returns {string|null}
  */
-export function resolveImport(fromFile, spec) {
+export function resolveImport(fromFile, spec, existe = existsSync) {
   if (!spec.startsWith('.')) return null;
-  const base = resolve(dirname(fromFile), spec);
-  if (EXTS_EXPLICITES.some((e) => spec.endsWith(e))) return existsSync(base) ? base.split('\\').join('/') : null;
-  for (const ext of EXTS) if (existsSync(base + ext)) return (base + ext).split('\\').join('/');
-  if (existsSync(base) && existsSync(join(base, 'index.ts'))) return join(base, 'index.ts').split('\\').join('/');
-  for (const ext of EXTS) if (existsSync(join(base, 'index' + ext))) return join(base, 'index' + ext).split('\\').join('/');
+  const base = resolve(dirname(fromFile), spec).split('\\').join('/');
+  if (EXTS_EXPLICITES.some((e) => spec.endsWith(e))) return existe(base) ? base : null;
+  for (const ext of EXTS) if (existe(base + ext)) return base + ext;
+  for (const ext of EXTS) if (existe(`${base}/index${ext}`)) return `${base}/index${ext}`;
   return null;
 }
 
@@ -141,14 +143,18 @@ export function closureOf(roots, cache = new Map()) {
 
 /**
  * Imports RELATIFS directs (non transitifs) d'un fichier — résolus vers des chemins POSIX
- * relatifs à la racine du repo, dédupliqués, `src/`-only.
- * @param {string} fromFile @param {string} contenu @returns {string[]}
+ * relatifs à la racine du repo, dédupliqués, `src/`-only. `racine` = le dépôt où `fromFile` (relatif)
+ * se résout, le répertoire courant par défaut : un hook s'exécute ailleurs que dans l'arbre jugé.
+ * `existe` : l'arbre contre lequel résoudre (`resolveImport`).
+ * @param {string} fromFile @param {string} contenu
+ * @param {{ racine?: string, existe?: (abs: string) => boolean }} [options]
+ * @returns {string[]}
  */
-export function directImportsOf(fromFile, contenu) {
-  const root = resolve('.').split('\\').join('/');
+export function directImportsOf(fromFile, contenu, { racine = '.', existe } = {}) {
+  const root = resolve(racine).split('\\').join('/');
   const found = new Set();
   for (const m of contenu.matchAll(IMPORT_RE)) {
-    const resolved = resolveImport(fromFile, m[1] ?? m[2] ?? m[3]);
+    const resolved = resolveImport(resolve(root, fromFile), m[1] ?? m[2] ?? m[3], existe);
     if (resolved && resolved.includes('/src/')) found.add(resolved.slice(root.length + 1));
   }
   return [...found];

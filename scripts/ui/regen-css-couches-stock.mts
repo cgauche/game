@@ -10,26 +10,27 @@
  * DÉCROISSANT-SEULEMENT — il REFUSE d'écrire dès qu'un site MESURÉ n'est pas déjà au stock, site par
  * site et jamais sur un total (`refusDeCroissance`, guards/lib/stock.mjs). `--amorce` saute cette
  * barrière : LÉGAL au seul commit qui CRÉE le stock (un stock vide face à ses ~2 400 sites est un
- * refus), tout usage ultérieur est un contournement visible au diff.
+ * refus), tout usage ultérieur est un contournement visible au diff. Seule croissance admise hors
+ * amorçage : le RETOURNÉ de la ventilation `HEAD` → arbre (`admisAuRetour`, #1806 C) — par fichier
+ * hors zone exempte, les sites que `HEAD` portait et que son stock ne comptait pas, jamais un site
+ * neuf. Le commit les déclare par une ligne `CLIQUET:` du porteur.
  *
  * `--ventiler <ref>` n'écrit rien : il rend, de `<ref>` à l'arbre de travail (ou à `--tete <ref>`,
- * lue sans disque), par volet, la part de la baisse ENTRÉE en zone exempte — RECLASSÉE par une
- * revendication armée, ou PRIMITIVISÉE — et la part DISPARUE (ou APPARUE), puis les revendications
- * armées avec les sites que chacune retire (`ventilerDecrue`, guards/lib/cssCouches.mjs).
+ * lue sans disque), par volet, SORTI = RECLASSÉ + PRIMITIVISÉ + DISPARU, APPARU et RETOURNÉ, puis
+ * les modules franchis avec leur prix (`ventilationDeGit`, guards/lib/cssImages.mjs, #1806 D6″).
  */
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import {
   composantsDuDisque,
-  imageCss,
   imageDuDisque,
   mesureCssCouches,
   MOTIF_ESPACEMENT,
   MOTIF_IDENTITE,
   MOTIF_INLINE,
-  sourceDeRef,
 } from '../guards/lib/cssCouchesAudit';
-import { ligneDeVentilation, ventilerDecrue } from '../guards/lib/cssCouches.mjs';
+import { admisAuRetour, ligneDeVentilation } from '../guards/lib/cssCouches.mjs';
+import { CHEMIN_STOCK_CSS, TRAVAIL, ventilationDeGit } from '../guards/lib/cssImages.mjs';
 import {
   CSS_ESPACEMENT_RATCHET,
   CSS_IDENTITE_ECRAN_RATCHET,
@@ -53,28 +54,33 @@ if (process.argv.includes('--ventiler')) {
     process.exit(2);
   }
   const tete = valeurDe('--tete');
-  const v = ventilerDecrue(imageCss(sourceDeRef(base, ROOT)), tete ? imageCss(sourceDeRef(tete, ROOT)) : imageDuDisque());
+  const v = ventilationDeGit({ cwd: ROOT, base, tete: tete ?? TRAVAIL });
   const lignes = [
     `ventilation ${base} → ${tete ?? 'arbre de travail'}`,
     ligneDeVentilation('identité', v.identite),
     ligneDeVentilation('espacement', v.espacement),
-    `revendications armées : ${v.revendications.length}`,
-    ...v.revendications.map((r) => `  ${r.module} +${r.n} (identité ${r.identite}, espacement ${r.espacement})`),
+    `modules franchis : ${v.franchis.length}`,
+    ...v.franchis.map((f) => `  RECLASSEMENT: ${f.module} +${f.n} (identité ${f.identite}, espacement ${f.espacement})`),
   ];
   process.stdout.write(`${lignes.join('\n')}\n`);
   process.exit(0);
 }
 
-const mesure = mesureCssCouches(imageDuDisque(), composantsDuDisque());
+const image = imageDuDisque();
+const mesure = mesureCssCouches(image, composantsDuDisque());
+/** Le RETOURNÉ de `HEAD` à l'arbre, borné au stock ÉCRIT à `HEAD` (#1806 C). */
+const retour = ventilationDeGit({ cwd: ROOT, base: 'HEAD' });
+const identite = sitesEnEntrees(mesure.identite);
+const espacement = sitesEnEntrees(mesure.espacement);
 
 process.exit(regenererStock({
-  chemin: resolve(ROOT, 'scripts/guards/lib/cssCouchesStock.mjs'),
+  chemin: resolve(ROOT, CHEMIN_STOCK_CSS),
   check: process.argv.includes('--check'),
   amorce: process.argv.includes('--amorce'),
   outil: 'npx tsx scripts/ui/regen-css-couches-stock.mts',
   collections: [
-    { nom: 'CSS_IDENTITE_ECRAN_RATCHET', mesurees: sitesEnEntrees(mesure.identite), stock: CSS_IDENTITE_ECRAN_RATCHET, motif: MOTIF_IDENTITE },
-    { nom: 'CSS_ESPACEMENT_RATCHET', mesurees: sitesEnEntrees(mesure.espacement), stock: CSS_ESPACEMENT_RATCHET, motif: MOTIF_ESPACEMENT },
+    { nom: 'CSS_IDENTITE_ECRAN_RATCHET', mesurees: identite, stock: [...CSS_IDENTITE_ECRAN_RATCHET, ...admisAuRetour(identite, retour.stockAvant.identite, retour.identite.retournes)], motif: MOTIF_IDENTITE },
+    { nom: 'CSS_ESPACEMENT_RATCHET', mesurees: espacement, stock: [...CSS_ESPACEMENT_RATCHET, ...admisAuRetour(espacement, retour.stockAvant.espacement, retour.espacement.retournes)], motif: MOTIF_ESPACEMENT },
     { nom: 'STYLE_INLINE_RATCHET', mesurees: sitesEnEntrees(mesure.inline), stock: STYLE_INLINE_RATCHET, motif: MOTIF_INLINE },
   ],
 }));

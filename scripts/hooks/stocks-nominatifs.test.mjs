@@ -13,7 +13,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
   croissanceDesStocks, croissancesNonCouvertes, cliquetsDuMessage, declarationsDuMessage, entreesDeStock,
-  estEntreeDeStock, estPorteurDeStock, raisonDeRefus,
+  estEntreeDeStock, estPorteurDeStock, fichierNommePar, raisonDeRefus,
 } from '../guards/lib/stocksNominatifs.mjs'
 import { croissancesDeLaPlage, raisonDeRefusDePlage, SHA_NUL } from '../guards/lib/plageStock.mjs'
 
@@ -483,9 +483,47 @@ test('croissance — un stock qui NAÎT est une croissance nette, avec ses exemp
   assert.deepEqual(c.exemples, [ENTREE_A.trim(), ENTREE_B.trim()])
 })
 
-test('croissance — un stock qui DÉCROÎT ou qui se déplace ne dit rien', () => {
-  assert.deepEqual(croissanceDesStocks(diffDe('scripts/guards/lib/domResiduStock.mjs', [], [ENTREE_A, ENTREE_B]), REPLI), [])
-  assert.deepEqual(croissanceDesStocks(diffDe('scripts/guards/lib/domResiduStock.mjs', [ENTREE_A], [ENTREE_B]), REPLI), [])
+test('croissance — un stock qui DÉCROÎT ne dit rien ; une clé neuve ne se cache pas derrière une clé qui baisse (#1806 D5″)', () => {
+  const porteur = 'scripts/guards/lib/domResiduStock.mjs'
+  assert.deepEqual(croissanceDesStocks(diffDe(porteur, [], [ENTREE_A, ENTREE_B]), REPLI), [])
+  assert.deepEqual(
+    croissanceDesStocks(diffDe(porteur, [ENTREE_A], [ENTREE_B]), REPLI).map((c) => [c.fichier, c.ajoutees, c.retirees, c.net, c.exemples]),
+    [[porteur, 1, 1, 1, [ENTREE_A.trim()]]],
+    'B sort, A entre : la dette de A est NEUVE',
+  )
+  const renommages = new Map([['src/ui/CampaignView.test.tsx', 'src/state/combatSlice.ts']])
+  assert.deepEqual(croissanceDesStocks(diffDe(porteur, [ENTREE_A], [ENTREE_B]), { ...REPLI, renommages }), [],
+    'le fichier nommé a été RENOMMÉ par le commit : la clé du parent se reporte, le renommage pur coûte 0')
+  assert.deepEqual(croissanceDesStocks(diffDe(porteur, [ENTREE_A, ENTREE_B], [ENTREE_B, ENTREE_A]), REPLI), [],
+    'une entrée qui change de place sous la même clé ne grandit rien')
+})
+
+test('croissance par CLÉ (#1806 D5″, sonde `j3-cliquet-net.mjs`) : X +3 derrière Q −3 dans le même porteur exige `CLIQUET: +3`', () => {
+  const F = 'scripts/guards/lib/cssCouchesStock.mjs'
+  const e = (f, r) => `  { fichier: '${f}', ref: '${r}', occurrence: 1 },`
+  const Q = 'src/ui/styles/ecran-q.css'
+  const X = 'src/ui/styles/ecran-x.css'
+  const refs = (sel) => [`${sel} :: color`, `${sel} :: border`, `${sel} :: font-size`]
+  const qs = refs('.e').map((r) => e(Q, r))
+  const xs = refs('.e').map((r) => e(X, r))
+  const xs2 = refs('.f').map((r) => e(X, r))
+  const tete = (lignes) => ['/** @type {import(\'./stock.mjs\').EntreeNominative[]} */', 'export const CSS_IDENTITE_ECRAN_RATCHET = [', ...lignes, '];', ''].join('\n')
+  const pre = tete([...qs, ...xs])
+  const images = (post) => ({ lirePreImage: (f) => (f === F ? pre : null), lirePostImage: (f) => (f === F ? post : null) })
+  const deplace = `diff --git a/${F} b/${F}\n--- a/${F}\n+++ b/${F}\n@@ -3,3 +2,0 @@\n${qs.map((l) => `-${l}`).join('\n')}\n@@ -8,0 +6,3 @@\n${xs2.map((l) => `+${l}`).join('\n')}\n`
+  assert.deepEqual(croissancesNonCouvertes({ diff: deplace, message: 'refactor' }, images(tete([...xs, ...xs2]))).map((c) => [c.fichier, c.net]), [[F, 3]])
+  const seul = `diff --git a/${F} b/${F}\n--- a/${F}\n+++ b/${F}\n@@ -8,0 +9,3 @@\n${xs2.map((l) => `+${l}`).join('\n')}\n`
+  assert.deepEqual(croissancesNonCouvertes({ diff: seul, message: 'refactor' }, images(tete([...qs, ...xs, ...xs2]))).map((c) => [c.fichier, c.net]), [[F, 3]],
+    'témoin positif : X +3 sans sortie de Q, même compte')
+})
+
+test('fichierNommePar : la clé d’une entrée est le fichier qu’elle nomme, sans `:ligne`, `:symbole` ni balise', () => {
+  assert.equal(fichierNommePar("  { fichier: 'src/ui/styles/x.css', ref: '.e :: color', occurrence: 1 },"), 'src/ui/styles/x.css')
+  assert.equal(fichierNommePar("  ['CritEscalation', 'onRepeat', 'src/x.ts:325'],"), 'src/x.ts')
+  assert.equal(fichierNommePar(ENTREE_B), 'src/ui/CampaignView.test.tsx')
+  assert.equal(fichierNommePar("  'criticals.json': 'raison',"), 'criticals.json')
+  assert.equal(fichierNommePar('  "Source/Warhammer v4 - Livre de base/08 - Statut.md",'), 'Source/Warhammer v4 - Livre de base/08 - Statut.md')
+  assert.equal(fichierNommePar('  { "chapitre": "LDB 8" },'), '  { "chapitre": "LDB 8" },', 'sans fichier nommé, le texte entier est la clé')
 })
 
 test('croissance — un diff qui n’est PAS une chaîne LÈVE, et un « 0 » ne peut plus mentir', () => {

@@ -442,31 +442,37 @@ TOUS ses poseurs sont des fenêtres de jet ; un seul poseur hors jet et elle se 
 `FateSaveModal`, `MountTargetModal`, `ForcedRollPicker`, les deux `jetProps`) — tous des fenêtres de
 jet : les deux gardent leur préfixe.
 
-**Organisme de domaine au manifeste** : une entrée qui n'existe au manifeste que pour le module CSS
-qu'elle POSSÈDE (panneau d'inspection, panneau d'équipement, plateau de jeu) porte `nature:
-"organisme"` ; elle assume ses imports de domaine et sort du corpus mesuré par la garde de généricité
-(`src/data/generic-domain-import-guard.test.ts`), au lieu d'y entrer comme dette chiffrée. La
-déclaration est BORNÉE, et la garde la mesure : un organisme porte obligatoirement `css`, et AUCUNE
-autre entrée du manifeste n'importe son `fichier` — une primitive que d'autres primitives COMPOSENT
-est générique, et le reste (le sens compte : c'est d'ÊTRE importé qui disqualifie ; un organisme, lui,
-compose librement des primitives).
+**Organisme de domaine au manifeste** : `nature: "organisme"` ne sert qu'à la garde de généricité
+(`src/data/generic-domain-import-guard.test.ts`) — l'entrée assume ses imports de domaine et sort du
+corpus qu'elle mesure, au lieu d'y entrer comme dette chiffrée. La déclaration est BORNÉE, et la garde
+la mesure : un organisme porte obligatoirement `css`, et AUCUNE autre entrée du manifeste n'importe son
+`fichier` — une primitive que d'autres primitives COMPOSENT est générique, et le reste (le sens compte :
+c'est d'ÊTRE importé qui disqualifie ; un organisme, lui, compose librement des primitives). La nature
+n'exempte AUCUN module CSS : l'exemption suit la réutilisation, ci-dessous.
 
-**Une revendication est un ÉVÉNEMENT de frontière, et elle se DIT** (#1806). La zone exempte d'un arbre
-est lue dans CET arbre : les modules revendiqués au manifeste (`css`) et les feuilles de
-`FEUILLES_PARTAGEES` (`scripts/guards/lib/cssCouches.mjs`) hors `layout.css`, mesuré comme un écran
-(identité et espacement). Une revendication est ARMÉE quand son module est NEUF dans la zone exempte, ou
-à 0 site à la base, et qu'il en porte N > 0 à la tête (`revendicationsArmees`). Son PRIX sur un
-intervalle est ce qu'elle a réellement fait sortir du stock (xxi), par volet : min(Σ N des modules
-armés, baisse du stock) — un intervalle dont le stock ne baisse pas ne coûte rien
-(`prixDuReclassement`, `scripts/guards/lib/cssCouches.mjs`). Le message porte `RECLASSEMENT: <module> +N
-— <motif #ticket>`, UNE ligne par module (deux sont refusées, comme pour `CLIQUET:`) : la somme des
-lignes égale le prix, chacune au plus le N de son module — un seul module armé porte donc exactement le
-prix. Le garde de solde le juge au commit ; la porte de plage au push le juge par commit ET sur la plage
-entière, où la somme des lignes de tous les messages égale le prix de la plage
-(`scripts/guards/lib/reclassementCss.mjs`, `plageStock.mjs`). Entre deux arbres,
-`npx tsx scripts/ui/regen-css-couches-stock.mts --ventiler <ref> [--tete <ref>]` rend, par volet, TROIS
-nombres : DISPARU (matière effacée ; APPARU si de la matière neuve est entrée en zone exempte), RECLASSÉ
-(= min(prix du volet, ENTRÉ)) et PRIMITIVISÉ (= ENTRÉ − RECLASSÉ), puis nomme les revendications armées.
+**La zone exempte suit la RÉUTILISATION, et son franchissement se DIT** (#1806). La zone exempte d'un
+arbre est lue dans CET arbre (`modulesExemptes`, `scripts/guards/lib/cssCouches.mjs`) : les feuilles de
+`FEUILLES_PARTAGEES` hors `layout.css`, et tout module `css` dont au moins un propriétaire est
+RÉUTILISÉ — son `fichier` importé directement par au moins deux fichiers de `src/` (hors suites et
+`src/ui/gallery/`), ou par le `fichier` d'une autre entrée du manifeste (`directImportsOf`,
+`scripts/guards/lib/importGraph.mjs`, lu par `scripts/guards/lib/cssImages.mjs`). Le module d'un
+composant à un seul hôte reste au stock (xxi), mesuré comme un écran. Un composant est une primitive OU
+un écran : aucun `fichier` du manifeste ne figure au registre `scripts/hooks/ecrans-ui.json`
+(`scripts/hooks/new-src-file-guard.test.mjs`). Un module FRANCHIT la frontière quand il est exempté au
+commit, pas au parent, et présent au parent — revendication au manifeste, second importeur gagné, ajout
+à `FEUILLES_PARTAGEES` : le message porte `RECLASSEMENT: <module> +N — <motif #ticket>`, UNE ligne par
+module franchi, N = ses clés (fichier, réf) sorties du stock et entrées en zone exempte. Trois refus :
+un franchissement sans ligne, une ligne sans franchissement, un N faux ; chaque commit est jugé contre
+son parent, au commit (`scripts/hooks/solde-ticket-guard.mjs`) comme au push
+(`scripts/guards/lib/plageStock.mjs`), par `scripts/guards/lib/reclassementCss.mjs`. La matière qui
+monte dans un module DÉJÀ exempté est PRIMITIVISÉE, sans ligne. Un module qui QUITTE la zone exempte
+ramène ses sites au stock, RETOURNÉS : le régénérateur n'admet, par fichier hors zone, que les sites que
+`HEAD` portait et que son stock ne comptait pas — jamais un site neuf (`admisAuRetour`) — et le commit
+les déclare par une ligne `CLIQUET:` du porteur. Entre deux arbres,
+`npx tsx scripts/ui/regen-css-couches-stock.mts --ventiler <ref> [--tete <ref>]` rend, par volet,
+SORTI = RECLASSÉ + PRIMITIVISÉ + DISPARU, APPARU (sites neufs) et RETOURNÉ, puis nomme les modules
+franchis ; le stock varie de APPARU + RETOURNÉ − SORTI, et Σ CLIQUET = APPARU + RETOURNÉ quand aucun
+fichier ne perd de site au même commit.
 Les modules d'ÉCRAN (`modulesDEcran`) sont le stock moins `layout.css` : ils dérivent de la même
 frontière (`modulesExemptes`).
 

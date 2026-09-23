@@ -49,28 +49,35 @@
 //   `evaluateArbrePrincipal`      `ask` sur un commit hors worktree ;
 //   `evaluateHunksEmportes`       `git commit -- <paths>` qui prendrait l'arbre au lieu de l'index ;
 //   `evaluateStocksQuiGrandissent` stock nominatif qui naît ou grandit sans `CLIQUET:` au message ;
-//   `evaluateReclassementsCss`    revendication ARMÉE (`reclassementCss.mjs`) qui sort des sites du
-//                                 stock CSS sans `RECLASSEMENT:` au message.
+//   `evaluateReclassementsCss`    module qui FRANCHIT la frontière CSS (`reclassementCss.mjs`) sans
+//                                 `RECLASSEMENT:` au message, ou ligne sans franchissement.
 //
 // COÛT, et pourquoi le `timeout: 10` de `.claude/settings.json` (et son miroir `.codex/hooks.json`)
 // reste à 10 s (mesuré 2026-09-04, worst case fabriqué : 49 fichiers / 23 520 insertions dont 12
 // PORTEURS de stock) : `git commit -a` 1,8 s, `git commit -- .` 2,2 s, le rejeu de `429b9a1a2`
 // (23 734 insertions, 5 porteurs) 1,1 s ; `git show <sha> -U0` sur ce commit 0,15 s ; le chargement
 // du compilateur `typescript` (portée de module, à la demande) 0,20 s et le parse de ses 5 porteurs
-// 0,06 s. La marge est d'un facteur 4 sur le pire cas mesuré — un hook expiré ne bloque pas, donc
-// ce chiffre se re-mesure quand la porte s'alourdit, il ne se gonfle pas par précaution.
+// 0,06 s. La porte `RECLASSEMENT:` (mesuré 2026-09-23, `.wt-1806`, 3 passes) : un commit qui ne
+// déplace pas la frontière (`deplaceLaFrontiere` faux) paie le `-U0` de `src/` et le manifeste de
+// HEAD, 26-64 ms ; un commit qui touche le manifeste ou `cssCouches.mjs` relit les deux côtés,
+// 0,9-2,0 s, soit 4,2 s cumulés au pire cas de 2,2 s. La marge est d'un facteur 2,4 sur ce pire cas
+// — un hook expiré ne bloque pas, donc ce chiffre se re-mesure quand la porte s'alourdit, il ne se
+// gonfle pas par précaution.
 import { Buffer } from 'node:buffer'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
-import { CHEMIN_COUCHES, CHEMIN_MANIFESTE } from '../guards/lib/cssCouches.mjs'
-import { raisonDeRefusDeReclassement, reclassementsNonDeclares } from '../guards/lib/reclassementCss.mjs'
+import {
+  deplaceLaFrontiere, lignesDeReclassement, raisonDeRefusDeReclassement, reclassementsNonDeclares,
+} from '../guards/lib/reclassementCss.mjs'
+import { CHEMIN_MANIFESTE, manifesteDe } from '../guards/lib/cssCouches.mjs'
+import { RACINE_DES_SOURCES, coteCss, renommagesDe, sourceGit } from '../guards/lib/cssImages.mjs'
 import {
   PORTEUR_DU_PLAFOND, estCheminDuBudget, importsDe, mesurerBudget, plafondDeLaSource, refusDeBudget,
 } from '../guards/budget-contexte.mjs'
-import { GitIndisponible, estDansHead, estRepertoire, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
+import { GitIndisponible, estDansHead, estRepertoire, grepDe, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
 import { hunksDe } from '../guards/lib/hunks.mjs'
 import { motifRattachement, numerosDeLaChaine, numerosFermes } from '../guards/lib/fermetures.mjs'
 import {
@@ -1870,6 +1877,31 @@ export function diffDuCommit(command, dir = process.cwd()) {
     fichier: (f) => lire(['diff', ...rev(), '-U0', '--', f]) ?? '',
     contenu,
     avant: (f) => (aHead() ? lire(['show', `HEAD:${f}`]) : null),
+    renommages: () => renommagesDe(lire, [...rev(), ...borne]),
+    deplaceLaFrontiereCss: (chemins) => deplaceLaFrontiere({
+      chemins,
+      diff: () => lire(['diff', ...rev(), '-U0', '--no-renames', ...(borne.length ? borne : ['--', RACINE_DES_SOURCES])]) ?? '',
+      manifeste: () => manifesteDe(contreIndex() ? lire(['show', `:${CHEMIN_MANIFESTE}`]) : lire(['show', `HEAD:${CHEMIN_MANIFESTE}`])),
+    }),
+    cotesCss: () => ({
+      parent: coteCss(sourceGit({ cwd: dir, arbre: 'HEAD', git: lire }), { racine: dir }),
+      commit: coteCss({
+        lire: contenu,
+        grep: (motif) => grepDuCommit(motif),
+        lister: (dossier) => (lire(['ls-files', '--cached', '--', dossier]) ?? '').split('\n').filter(Boolean),
+      }, { racine: dir }),
+    }),
+  }
+  /** Les lignes d'import du commit, lues comme `contenu` : index, arbre de travail, ou l'arbre de
+   *  travail des seuls chemins du pathspec et `HEAD` pour les autres. */
+  function grepDuCommit(motif) {
+    if (contreIndex()) return grepDe(lire, ['--cached'], motif, [RACINE_DES_SOURCES])
+    if (forme !== 'pathspec') return grepDe(lire, [], motif, [RACINE_DES_SOURCES])
+    const dans = (f) => pathspecs.some((ps) => pathMatchesPathspec(f, ps))
+    return new Map([
+      ...[...grepDe(lire, ['HEAD'], motif, [RACINE_DES_SOURCES])].filter(([f]) => !dans(f)),
+      ...[...grepDe(lire, [], motif, [RACINE_DES_SOURCES])].filter(([f]) => dans(f)),
+    ])
   }
 }
 
@@ -1888,11 +1920,7 @@ export function readChangedNames(dir = process.cwd(), { cached = false } = {}) {
 export function fichiersCitantTickets(numeros, dir = process.cwd()) {
   if (numeros.length === 0) return []
   const motif = `#(${numeros.join('|')})([^0-9]|$)`
-  try {
-    return execFileSync('git', ['grep', '--cached', '-l', '-E', motif, '--', ...DOSSIERS_DE_SUBSTANCE], {
-      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
-    }).split('\n').map((l) => l.trim()).filter(Boolean)
-  } catch { return [] } // aucun match : `git grep` sort en 1
+  return [...grepDe((args) => sortieOuNull(lireGit(args, { cwd: dir })), ['--cached'], motif, DOSSIERS_DE_SUBSTANCE).keys()]
 }
 
 /**
@@ -2219,21 +2247,24 @@ export function evaluateStocksQuiGrandissent({ command, diff, images }) {
 }
 
 /**
- * Décision « une revendication ARMÉE sort des sites du stock CSS sans que le message le dise »
- * (`RECLASSEMENT:`). Mêmes `images` que `evaluateStocksQuiGrandissent` ; ne se prononce que sur un
- * `git commit` qui EMPORTE la frontière (manifeste, `cssCouches.mjs`) ou une feuille `.css`.
+ * Décision « un module FRANCHIT la frontière CSS sans que le message le dise, ou le message déclare un
+ * franchissement qui n'a pas lieu » (`RECLASSEMENT:`, #1806 D2″). `cotes()` rend les côtés parent et
+ * commit (`coteCss`) ; ne se prononce que sur un `git commit` dont le message porte une ligne ou qui
+ * peut déplacer la frontière (`deplace()`, `deplaceLaFrontiere`). Une lecture qui lève est un refus
+ * NOMMÉ, jamais un passage muet.
+ * @param {{ command: string, deplace: () => boolean, cotes: () => { parent: object, commit: object } }} p
  * @returns {{ decision: 'deny', reason: string } | null}
  */
-export function evaluateReclassementsCss({ command, fichiersEmportes, images }) {
+export function evaluateReclassementsCss({ command, deplace, cotes }) {
   if (!command || !isGitCommitCommand(command)) return null
-  if (!fichiersEmportes.some((f) => f === CHEMIN_MANIFESTE || f === CHEMIN_COUCHES || f.endsWith('.css'))) return null
-  let restants
+  let ecarts
   try {
-    restants = reclassementsNonDeclares({ message: command }, images, fichiersEmportes)
+    if (!lignesDeReclassement(command).length && !deplace()) return null
+    ecarts = reclassementsNonDeclares({ message: command }, cotes())
   } catch (e) {
     return { decision: 'deny', reason: `⛔ RECLASSEMENT CSS injugeable : ${e.message}` }
   }
-  return restants.length ? { decision: 'deny', reason: raisonDeRefusDeReclassement(restants) } : null
+  return ecarts.length ? { decision: 'deny', reason: raisonDeRefusDeReclassement([{ ecarts }]) } : null
 }
 
 /**
@@ -2444,12 +2475,12 @@ if (isMain) {
   const stocks = evaluateStocksQuiGrandissent({
     command: text,
     diff: porteursDeStock.map((f) => commit.fichier(f)).join('\n'),
-    images: { lirePostImage: commit.contenu, lirePreImage: commit.avant },
+    images: { lirePostImage: commit.contenu, lirePreImage: commit.avant, renommages: porteursDeStock.length ? commit.renommages() : new Map() },
   })
   const reclassements = evaluateReclassementsCss({
     command: text,
-    fichiersEmportes: fichiers,
-    images: { lirePostImage: commit.contenu, lirePreImage: commit.avant },
+    deplace: () => commit.deplaceLaFrontiereCss(fichiers),
+    cotes: commit.cotesCss,
   })
   // BUDGET DU CONTEXTE PERMANENT : mesuré seulement si le commit touche un chemin du périmètre —
   // sinon aucune lecture n'est payée au-delà de l'image de `CLAUDE.md`, qui dit les fichiers IMPORTÉS

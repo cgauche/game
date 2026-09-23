@@ -55,6 +55,7 @@ import {
   gesteJuge,
   evaluateBudgetContexte,
   evaluateReclassementsCss,
+  fichiersCitantTickets,
   listeurDImage,
 } from './solde-ticket-guard.mjs'
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
@@ -2524,30 +2525,54 @@ test('le budget qui grandit sans CLIQUET est refusé, avec CLIQUET il passe, et 
 
 // ── RECLASSEMENT CSS (#1806) ────────────────────────────────────────────────────────────────────
 
-test('reclassement CSS : jugé sur un commit qui emporte le manifeste, `cssCouches.mjs` ou une feuille, au prix du commit', () => {
-  const manifeste = 'src/data/primitives.manifest.json'
+test('reclassement CSS (#1806 D2″) : jugé sur un commit qui touche la frontière ou porte une ligne, module par module', () => {
   const module = 'src/ui/styles/console.css'
-  const ecran = 'src/ui/styles/ecran.css'
   const css = '.c { color: red; gap: 3px }'
-  const images = {
-    lirePreImage: (f) => (f === manifeste ? '[]' : f === module ? css : null),
-    lirePostImage: (f) => (f === manifeste ? JSON.stringify([{ id: 'c', css: module }]) : f === module ? css : null),
-  }
-  const sans = evaluateReclassementsCss({ command: 'git commit -m "refactor: console"', fichiersEmportes: [manifeste], images })
+  const cote = (reutilisee) => ({
+    manifeste: [{ id: 'c', fichier: 'src/ui/Console.tsx', css: module }],
+    partagees: [],
+    reutilises: new Set(reutilisee ? ['src/ui/Console.tsx'] : []),
+    lire: (f) => (f === module ? css : null),
+  })
+  const franchit = () => ({ parent: cote(false), commit: cote(true) })
+  const sans = evaluateReclassementsCss({ command: 'git commit -m "feat: second écran"', deplace: () => true, cotes: franchit })
   assert.equal(sans.decision, 'deny')
-  assert.ok(sans.reason.includes('2 site(s) sortent du stock CSS') && sans.reason.includes(`${module} (N 2, aucune ligne)`), sans.reason)
-  const avec = `git commit -m "refactor: console\n\nRECLASSEMENT: ${module} +2 — la console devient un organisme, refs #1806"`
-  assert.equal(evaluateReclassementsCss({ command: avec, fichiersEmportes: [manifeste], images }), null)
-  assert.equal(evaluateReclassementsCss({ command: 'git commit -m "x"', fichiersEmportes: ['README.md'], images }), null)
-  const verse = {
-    lirePreImage: (f) => (f === manifeste ? JSON.stringify([{ id: 'c', css: module }]) : f === ecran ? css : null),
-    lirePostImage: (f) => (f === manifeste ? JSON.stringify([{ id: 'c', css: module }]) : f === module ? css : null),
-  }
-  const seul = evaluateReclassementsCss({ command: 'git commit -m "refactor: git mv"', fichiersEmportes: [ecran, module], images: verse })
-  assert.equal(seul?.decision, 'deny', 'module revendiqué VIDE à la base, versé par ce commit : armé sans toucher le manifeste')
-  assert.equal(evaluateReclassementsCss({ command: 'git status', fichiersEmportes: [manifeste], images }), null)
-  const casse = { lirePreImage: images.lirePreImage, lirePostImage: (f) => (f === manifeste ? '[{"id":' : null) }
-  const injugeable = evaluateReclassementsCss({ command: 'git commit -m "x"', fichiersEmportes: [manifeste], images: casse })
+  assert.ok(sans.reason.includes(`${module} : franchi au prix 2, aucune ligne`), sans.reason)
+  const ligne = `RECLASSEMENT: ${module} +2 — la console devient une primitive, refs #1806`
+  assert.equal(evaluateReclassementsCss({ command: `git commit -m "feat\n\n${ligne}"`, deplace: () => true, cotes: franchit }), null)
+  const jamaisLu = () => { throw new Error('côtés lus hors frontière') }
+  assert.equal(evaluateReclassementsCss({ command: 'git commit -m "x"', deplace: () => false, cotes: jamaisLu }), null)
+  const orpheline = evaluateReclassementsCss({
+    command: `git commit -m "docs\n\n${ligne}"`,
+    deplace: () => false,
+    cotes: () => ({ parent: cote(true), commit: cote(true) }),
+  })
+  assert.ok(orpheline?.reason.includes(`${module} : ligne \`+2\` sans franchissement`), 'une ligne sans franchissement est refusée, même hors frontière')
+  assert.equal(evaluateReclassementsCss({ command: 'git status', deplace: () => true, cotes: jamaisLu }), null)
+  const injugeable = evaluateReclassementsCss({
+    command: 'git commit -m "x"',
+    deplace: () => true,
+    cotes: () => { throw new Error('src/data/primitives.manifest.json illisible : x') },
+  })
   assert.equal(injugeable?.decision, 'deny', 'manifeste illisible : refus nommé, jamais un passage muet')
   assert.match(injugeable.reason, /injugeable : src\/data\/primitives\.manifest\.json illisible/)
+})
+
+test('fichiersCitantTickets : les fichiers de l’INDEX sous `src/` et `scripts/` qui citent le ticket, par l’unique `grepDe`', () => {
+  const { racine } = instanceDeDepot({
+    fichiers: {
+      'src/a.ts': '// #1806\nexport const a = 1\n',
+      'scripts/b.mjs': '// voir #18060 puis #1806.\n',
+      'notes/c.txt': '#1806\n',
+      'src/d.ts': '// #18061\n',
+    },
+    message: 'socle',
+  })
+  try {
+    assert.deepEqual(fichiersCitantTickets([1806], racine).sort(), ['scripts/b.mjs', 'src/a.ts'])
+    assert.deepEqual(fichiersCitantTickets([4242], racine), [], 'aucun match : `git grep` sort en 1, la liste est vide')
+    assert.deepEqual(fichiersCitantTickets([], racine), [])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
 })

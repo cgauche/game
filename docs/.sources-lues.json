@@ -6532,6 +6532,7 @@
       "scripts/docs/lib/empreinte-sources.mjs",
       "scripts/docs/lib/jsdocUnion.mjs",
       "scripts/guards/lib/cssCouches.mjs",
+      "scripts/guards/lib/fichierVitest.mjs",
       "scripts/guards/lib/lister.mjs",
       "src/data/primitives.manifest.json"
     ],

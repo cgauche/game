@@ -9,7 +9,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import { REF_PROTEGEE, jugerPush, refsAPousser, verdictDuSha } from './pre-push.mjs'
 import { reinitialiserStub } from '../guards/lib/coursesCi.mjs'
@@ -275,27 +275,32 @@ test('un STOCK nominatif qui grandit dans la plage sans `CLIQUET:` au commit est
   }
 })
 
-test('une revendication `css` NEUVE au manifeste sans `RECLASSEMENT:` au commit est refusée (#1806)', () => {
+test('un module qui FRANCHIT la frontière sans `RECLASSEMENT:` au commit est refusé (#1806 D2″)', () => {
   const racine = depot()
   try {
     const manifeste = 'src/data/primitives.manifest.json'
-    const commettre = (css, message) => {
-      mkdirSync(join(racine, 'src', 'data'), { recursive: true })
-      mkdirSync(join(racine, 'src', 'ui', 'styles'), { recursive: true })
-      writeFileSync(join(racine, 'src', 'ui', 'styles', 'console.css'), '.c { color: red }\n')
-      writeFileSync(join(racine, manifeste), JSON.stringify([{ id: 'console', ...css }]))
+    const ecrire = (rel, texte) => {
+      mkdirSync(join(racine, dirname(rel)), { recursive: true })
+      writeFileSync(join(racine, rel), texte)
+    }
+    const commettre = (message) => {
       git(racine)(['add', '-A'])
       git(racine)(['commit', '-m', message])
       return tete(racine)
     }
-    const base = commettre({}, 'chore: socle')
-    commettre({ css: 'src/ui/styles/console.css' }, 'refactor: la console devient un organisme')
+    ecrire('src/ui/styles/console.css', '.c { color: red }\n')
+    ecrire('src/ui/Console.tsx', 'export const Console = 1\n')
+    ecrire('src/ui/Ecran1.tsx', "import { Console } from './Console'\nexport const E1 = Console\n")
+    ecrire(manifeste, JSON.stringify([{ id: 'console', fichier: 'src/ui/Console.tsx', css: 'src/ui/styles/console.css' }]))
+    const base = commettre('chore: socle')
+    ecrire('src/ui/Ecran2.tsx', "import { Console } from './Console'\nexport const E2 = Console\n")
+    commettre('feat: second écran')
     const { refus } = jugerPush({
       cwd: racine,
       stdin: pousse(racine, { refDistante: 'refs/heads/chantier/x', base }),
       env: stubCi(racine, []),
     })
-    assert.match(refus.join('\n'), /RECLASSEMENT CSS non déclaré : [0-9a-f]{9} 1 site\(s\) sortent du stock CSS, les lignes en annoncent 0 — src\/ui\/styles\/console\.css \(N 1, aucune ligne\)/)
+    assert.match(refus.join('\n'), /RECLASSEMENT CSS : [0-9a-f]{9} src\/ui\/styles\/console\.css : franchi au prix 1, aucune ligne/)
   } finally {
     jeter(racine)
   }

@@ -185,6 +185,19 @@ const NOMME_FICHIER = new RegExp(String.raw`^(?:${CHEMIN_FICHIER}|${NOM_NU}|${CH
 const ENTREE_EN_TETE = new RegExp(String.raw`^\s*\[?\s*${JETON}\s*(?:[,:][^\n]*)?$`);
 const ENTREE_EN_QUEUE = new RegExp(String.raw`^\s*\[[^\n]*${JETON}\s*\][,;]?\s*(?:\/\/[^\n]*)?$`);
 
+/** Le premier fichier qu'une ligne d'entrée NOMME, entre quotes, sans son suffixe `:ligne`/`:symbole`. */
+const FICHIER_NOMME = new RegExp(String.raw`['"\`]((?:${CHEMIN}|${NOM_NU}|${CHEMIN_SOURCE})(?=${SUFFIXE_JETON}['"\`]))`);
+
+/**
+ * La CLÉ d'une entrée (#1806 D5″) : le fichier qu'elle nomme, ou son texte entier quand aucun
+ * littéral n'en nomme un.
+ * @param {string} texte @returns {string}
+ */
+export function fichierNommePar(texte) {
+  const m = FICHIER_NOMME.exec(texte);
+  return m ? m[1].replace(/:[\w.|:-]+$/, '') : texte;
+}
+
 /** Le fichier peut-il porter un stock ? */
 export function estPorteurDeStock(chemin) {
   const rel = String(chemin ?? '').replace(/\\/g, '/');
@@ -439,8 +452,12 @@ function texteDEntree(touchees, entrees) {
 }
 
 /**
- * Croissance NETTE des stocks nominatifs d'un diff unifié (`-U0` ou non : seuls les `+`/`-`
- * comptent). Un fichier n'est rendu que si ses entrées AJOUTÉES dépassent ses entrées RETIRÉES.
+ * Croissance des stocks nominatifs d'un diff unifié (`-U0` ou non : seuls les `+`/`-` comptent), PAR
+ * CLÉ (#1806 D5″) : la clé d'une entrée est le fichier qu'elle nomme (`fichierNommePar`), et la
+ * croissance d'un porteur est la somme des croissances nettes POSITIVES de ses clés — un retrait sous
+ * une clé ne paie pas un ajout sous une autre. Les clés RETIRÉES sont d'abord reportées par
+ * `images.renommages` (chemin au parent ↦ chemin au commit, la carte `-M`, FOURNIE par l'appelant) : un
+ * renommage pur coûte 0. Un porteur n'est rendu que si cette somme est positive.
  *
  * Une entrée DÉPLACÉE d'un porteur DISPARU vers un autre porteur ne compte nulle part
  * (`apparierLesDeplacements`, qui porte la borne et sa raison).
@@ -452,10 +469,11 @@ function texteDEntree(touchees, entrees) {
  * lecteurs sont fournis par l'appelant : la lib reste PURE.
  * @param {string} diffU0
  * @param {{ lirePostImage: (chemin: string) => string | null,
- *           lirePreImage?: (chemin: string) => string | null }} images
+ *           lirePreImage?: (chemin: string) => string | null,
+ *           renommages?: ReadonlyMap<string, string> }} images
  * @returns {{ fichier: string, ajoutees: number, retirees: number, net: number, exemples: string[] }[]}
- *   trié par fichier ; `exemples` = jusqu'à 3 entrées ajoutées, citées par leur ligne NOMMANTE
- *   (`texteDEntree`) telle qu'écrite.
+ *   trié par fichier ; `net` = la croissance par clé ; `exemples` = jusqu'à 3 entrées ajoutées sous
+ *   une clé qui croît, citées par leur ligne NOMMANTE (`texteDEntree`) telle qu'écrite.
  * @throws {TypeError} si le diff n'est pas une CHAÎNE : la signature est POSITIONNELLE, et un appel
  *   en objet (`croissanceDesStocks({ diff })`) stringifiait `[object Object]` — donc `[]` sur TOUS
  *   les commits, y compris sur des croissances réelles. Un juge a publié ce faux zéro le 2026-09-04
@@ -480,7 +498,7 @@ export function croissanceDesStocks(diffU0, images) {
       + 'de ligne juger.',
     );
   }
-  const { lirePostImage, lirePreImage = null } = images;
+  const { lirePostImage, lirePreImage = null, renommages = new Map() } = images;
   /** @type {Map<string, { ajoutees: { texte: string, ligne: number }[],
    *    retirees: { texte: string, ligne: number }[], disparu: boolean }>} */
   const parFichier = new Map();
@@ -563,13 +581,27 @@ export function croissanceDesStocks(diffU0, images) {
     .sort((a, b) => parUnitesDeCode(a.fichier, b.fichier));
   apparierLesDeplacements(lus);
   return lus
-    .map(({ fichier, retenues, perdues }) => ({
-      fichier,
-      ajoutees: retenues.length,
-      retirees: perdues.length,
-      net: retenues.length - perdues.length,
-      exemples: retenues.slice(0, 3),
-    }))
+    .map(({ fichier, retenues, perdues }) => {
+      /** @type {Map<string, number>} clé → croissance nette */
+      const parCle = new Map();
+      for (const t of retenues) {
+        const k = fichierNommePar(t);
+        parCle.set(k, (parCle.get(k) ?? 0) + 1);
+      }
+      for (const t of perdues) {
+        const k = fichierNommePar(t);
+        const reportee = renommages.get(k) ?? k;
+        parCle.set(reportee, (parCle.get(reportee) ?? 0) - 1);
+      }
+      const croit = (t) => (parCle.get(fichierNommePar(t)) ?? 0) > 0;
+      return {
+        fichier,
+        ajoutees: retenues.length,
+        retirees: perdues.length,
+        net: [...parCle.values()].reduce((s, n) => s + Math.max(0, n), 0),
+        exemples: retenues.filter(croit).slice(0, 3),
+      };
+    })
     .filter((c) => c.net > 0);
 }
 

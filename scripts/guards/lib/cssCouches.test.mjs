@@ -1,15 +1,24 @@
 // Le PARSEUR des trois couches CSS (#1800, `node --test` — joué par `npm run test:hooks`) : ce qu'il
-// rend, et ce qu'il refuse d'abriter ; puis la PARTITION stock / exempté et la VENTILATION d'une
-// décrue (#1806). Aucun disque : chaque cas est une fixture de texte. La MESURE sur le corpus réel se
-// prouve ailleurs (`src/ui/ui-ratchets.test.ts`, cliquets (xxi)/(xxii)).
+// rend, et ce qu'il refuse d'abriter ; puis la FRONTIÈRE (#1806 L1), le FRANCHISSEMENT (D1″), la
+// VENTILATION d'un commit contre son parent (D6″) et l'ADMISSION du régénérateur (C). Chaque cas est
+// une fixture de texte, sauf les trois commits cibles, lus dans l'HISTOIRE du dépôt par le vrai chemin
+// (`ventilationDeGit`) : la CI les porte (`fetch-depth: 0`, .github/workflows/ci.yml:26). La MESURE sur
+// le corpus réel se prouve ailleurs (`src/ui/ui-ratchets.test.ts`, cliquets (xxi)/(xxii)).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
-  CHEMIN_COUCHES, declarations, decoupeSelecteurs, estPlacement, FEUILLE_LAYOUT, FEUILLES_PARTAGEES,
-  feuillesPartageesDe, ligneDeVentilation, manifesteDe, moduleHorsCouche, partitionCss, reglesCss,
-  prixDuReclassement, revendicationsArmees, valeurHorsEchelle, ventilerDecrue,
+  admisAuRetour, CHEMIN_COUCHES, declarations, decoupeSelecteurs, estPlacement, FEUILLE_LAYOUT,
+  FEUILLES_PARTAGEES, feuillesPartageesDe, fichiersReutilises, ligneDeVentilation, manifesteDe,
+  moduleHorsCouche, modulesExemptes, partitionCss, reglesCss, valeurHorsEchelle, ventiler,
 } from './cssCouches.mjs'
+import { CHEMIN_STOCK_CSS, ventilationDeGit } from './cssImages.mjs'
+import { croissanceDesStocks } from './stocksNominatifs.mjs'
+import { ligneDEntree, refusDeCroissance, sitesEnEntrees } from './stock.mjs'
 
 test('reglesCss : règle de premier niveau — sélecteurs séparés, corps rendu, media nul', () => {
   assert.deepEqual(reglesCss('.a, .b > .c { color: red; gap: 4px }'), [
@@ -107,106 +116,199 @@ test('moduleHorsCouche : `src/ui/styles/`, ou la zone du `fichier` hors de `src/
 
 const ECRAN = 'src/ui/styles/ecran.css'
 const PRIMITIVE = 'src/ui/styles/prim.css'
-/** Image fixture : `feuilles` = `{ chemin: texte }`, `revendiques` = les chemins que le manifeste revendique. */
-const image = (feuilles, revendiques = [], partagees = FEUILLES_PARTAGEES) => ({
-  fichiers: Object.entries(feuilles).map(([rel, text]) => ({ rel, text })),
-  manifeste: [{ id: 'sans-css' }, ...revendiques.map((css, i) => ({ id: `p${i}`, css }))],
-  partagees,
-})
-/** Les nombres d'un volet, sans ses bornes. */
-const nombres = ({ deltaStock, deltaExempte, entre, disparu, reclasse, primitivise }) =>
-  ({ deltaStock, deltaExempte, entre, disparu, reclasse, primitivise })
 
-test('partition : écran et layout au stock (identité ET espacement), primitive et partagée exemptées', () => {
-  const p = partitionCss(image({
-    [ECRAN]: '.e { color: red; gap: 3px }',
-    [PRIMITIVE]: '.p { color: red; gap: 3px }',
-    'src/ui/styles/base.css': '.b { color: red }',
-    [FEUILLE_LAYOUT]: '.l { color: red; gap: 3px }',
-  }, [PRIMITIVE]))
+/** Image fixture : `feuilles` = `{ chemin: texte }` (`null` = absent), `exemptes` = les modules d'une
+ *  primitive RÉUTILISÉE. */
+const image = (feuilles, ...exemptes) => ({
+  fichiers: Object.entries(feuilles).filter(([, t]) => t != null).map(([rel, text]) => ({ rel, text })),
+  manifeste: [{ id: 'sans-css' }, ...exemptes.map((css) => ({ id: css, fichier: `${css}.tsx`, css }))],
+  partagees: [],
+  reutilises: new Set(exemptes.map((css) => `${css}.tsx`)),
+})
+
+test('partition : écran et layout au stock (identité ET espacement), primitive réutilisée et partagée exemptées', () => {
+  const p = partitionCss({
+    ...image({
+      [ECRAN]: '.e { color: red; gap: 3px }',
+      [PRIMITIVE]: '.p { color: red; gap: 3px }',
+      'src/ui/styles/base.css': '.b { color: red }',
+      [FEUILLE_LAYOUT]: '.l { color: red; gap: 3px }',
+    }, PRIMITIVE),
+    partagees: FEUILLES_PARTAGEES,
+  })
   assert.deepEqual(p.stock.identite.map((s) => s.file), [ECRAN, FEUILLE_LAYOUT])
   assert.deepEqual(p.stock.espacement.map((s) => s.file), [ECRAN, FEUILLE_LAYOUT])
   assert.deepEqual(p.exempte.identite.map((s) => s.file), [PRIMITIVE, 'src/ui/styles/base.css'])
   assert.deepEqual(p.exempte.espacement.map((s) => s.file), [PRIMITIVE])
 })
 
-test('ventilation : RECLASSEMENT pur — Δstock −k, Δexempté +k → entré k, disparu 0, revendication nommée au prix k', () => {
-  const css = '.e { color: red; border: 0; gap: 3px }'
-  const v = ventilerDecrue(image({ [ECRAN]: css }), image({ [ECRAN]: css }, [ECRAN]))
-  assert.deepEqual(nombres(v.identite), { deltaStock: -2, deltaExempte: 2, entre: 2, disparu: 0, reclasse: 2, primitivise: 0 })
-  assert.deepEqual(nombres(v.espacement), { deltaStock: -1, deltaExempte: 1, entre: 1, disparu: 0, reclasse: 1, primitivise: 0 })
-  assert.deepEqual(v.revendications, [{ module: ECRAN, identite: 2, espacement: 1, n: 3 }])
-})
-
-test('ventilation : SOLDE pur — la matière disparaît, rien n’entre en zone exempte', () => {
-  const v = ventilerDecrue(image({ [ECRAN]: '.e { color: red; border: 0; gap: 3px }' }), image({ [ECRAN]: '.e { gap: var(--sp-md) }' }))
-  assert.deepEqual(nombres(v.identite), { deltaStock: -2, deltaExempte: 0, entre: 0, disparu: 2, reclasse: 0, primitivise: 0 })
-  assert.deepEqual(nombres(v.espacement), { deltaStock: -1, deltaExempte: 0, entre: 0, disparu: 1, reclasse: 0, primitivise: 0 })
-  assert.deepEqual(v.revendications, [])
-})
-
-test('ventilation : PRIMITIVISATION — la déclaration passe au module déjà revendiqué et déjà peint, entrée sans reclassement', () => {
-  const v = ventilerDecrue(
-    image({ [ECRAN]: '.e { color: red }', [PRIMITIVE]: '.p { border: 0 }' }, [PRIMITIVE]),
-    image({ [ECRAN]: '.e { display: flex }', [PRIMITIVE]: '.p { border: 0; color: red }' }, [PRIMITIVE]),
+test('L1 : réutilisée = ≥ 2 importeurs de `src/` hors suites et galerie, ou le `fichier` d’une autre primitive', () => {
+  const manifeste = [
+    { id: 'a', fichier: 'src/ui/A.tsx', css: 'src/ui/styles/a.css' },
+    { id: 'b', fichier: 'src/ui/B.tsx', css: 'src/ui/styles/b.css' },
+    { id: 'c', fichier: 'src/ui/C.tsx', css: 'src/ui/styles/c.css' },
+    { id: 'd', fichier: 'src/ui/D.tsx', css: 'src/ui/styles/d.css' },
+  ]
+  const imports = [
+    ['src/ui/Ecran1.tsx', ['src/ui/A.tsx', 'src/ui/C.tsx']],
+    ['src/ui/Ecran2.tsx', ['src/ui/A.tsx']],
+    ['src/ui/A.tsx', ['src/ui/B.tsx']],
+    ['src/ui/C.test.tsx', ['src/ui/C.tsx']],
+    ['src/ui/gallery/Galerie.tsx', ['src/ui/C.tsx']],
+    ['src/ui/D.tsx', ['src/ui/D.tsx']],
+    ['scripts/outil.mjs', ['src/ui/D.tsx']],
+    ['src/ui/Ecran3.tsx', ['src/ui/D.tsx']],
+  ]
+  const reutilises = fichiersReutilises(manifeste, imports)
+  assert.deepEqual([...reutilises].sort(), ['src/ui/A.tsx', 'src/ui/B.tsx'])
+  assert.deepEqual(
+    [...modulesExemptes({ manifeste, partagees: FEUILLES_PARTAGEES, reutilises })].sort(),
+    ['src/ui/styles/a.css', 'src/ui/styles/b.css', 'src/ui/styles/base.css', 'src/ui/styles/components.css', 'src/ui/styles/tabs.css'],
+    'C : une suite et la galerie ne comptent pas ; D : ni lui-même, ni hors `src/`, un seul hôte ; layout reste au stock',
   )
-  assert.deepEqual(nombres(v.identite), { deltaStock: -1, deltaExempte: 1, entre: 1, disparu: 0, reclasse: 0, primitivise: 1 })
-  assert.deepEqual(v.revendications, [])
 })
 
-test('ventilation : RENOMMAGE de sélecteur et RÉÉCRITURE de valeur sont neutres', () => {
-  const avant = image({ [ECRAN]: '.x { color: red; gap: 3px }' })
-  for (const apres of ['.y { color: red; gap: 3px }', '.x { color: blue; gap: 5px }']) {
-    const v = ventilerDecrue(avant, image({ [ECRAN]: apres }))
-    assert.deepEqual(nombres(v.identite), { deltaStock: 0, deltaExempte: 0, entre: 0, disparu: 0, reclasse: 0, primitivise: 0 }, apres)
-    assert.deepEqual(nombres(v.espacement), { deltaStock: 0, deltaExempte: 0, entre: 0, disparu: 0, reclasse: 0, primitivise: 0 }, apres)
-  }
-})
-
-// ── Revendications ARMÉES, lecteurs d'image, trois nombres (#1806, juge de diff du 2026-09-23) ─────
-
-const STUB = 'src/ui/styles/stub.css'
-const PEINT = '.e { color: red; border: 0; font-size: 3px; gap: 3px }'
-/** Côté d'une image pour `revendicationsArmees` : manifeste, feuilles partagées, lecteur de texte. */
-const cote = (feuilles, revendiques = [], partagees = FEUILLES_PARTAGEES) => {
-  const img = image(feuilles, revendiques, partagees)
-  const textes = new Map(img.fichiers.map((f) => [f.rel, f.text]))
-  return { manifeste: img.manifeste, partagees, lire: (f) => textes.get(f) ?? null }
+/** Un volet ventilé, réduit à ses six nombres. */
+const six = ({ SORTI, RECLASSE, PRIMITIVISE, DISPARU, APPARU, RETOURNE }) => ({ SORTI, RECLASSE, PRIMITIVISE, DISPARU, APPARU, RETOURNE })
+/** Les deux invariants de D6″, sur un volet. */
+const invariants = (nom, v) => {
+  assert.equal(v.stock[1] - v.stock[0], v.APPARU + v.RETOURNE - v.SORTI, `${nom} : Δstock = APPARU + RETOURNÉ − SORTI`)
+  assert.equal(v.SORTI, v.RECLASSE + v.PRIMITIVISE + v.DISPARU, `${nom} : SORTI = RECLASSÉ + PRIMITIVISÉ + DISPARU`)
+  for (const [k, n] of Object.entries(six(v))) assert.ok(n >= 0, `${nom} : ${k} ≥ 0`)
 }
 
-test('armée : revendication NEUVE qui retire des sites — N par volet, mesuré à la tête', () => {
-  assert.deepEqual(revendicationsArmees(cote({ [ECRAN]: PEINT }), cote({ [ECRAN]: PEINT }, [ECRAN]), []),
-    [{ module: ECRAN, identite: 3, espacement: 1, n: 4 }])
+const Q = 'src/ui/styles/ecran-q.css'
+const X = 'src/ui/styles/ecran-x.css'
+const P = 'src/ui/styles/prim-p.css'
+const E = 'src/ui/styles/prim-e.css'
+const Y = 'src/ui/styles/ecran-y.css'
+const S = 'src/ui/styles/stub.css'
+const CSS = '.e { color: red; border: 0; font-size: 3px; gap: 3px }'
+const CSS2 = `${CSS}\n.f { color: blue; border: 1px; font-size: 4px; gap: 4px }`
+const REINDENTE = CSS2.split('\n').map((l) => `\t${l}`).join('\n')
+const STUB = '.s { color: blue }'
+
+/** S1-S12 (sonde `j6-final.mjs` du juge, 2026-09-23) : `[nom, parent, commit, franchis, identité, espacement]`,
+ *  un volet = `[SORTI, RECLASSÉ, PRIMITIVISÉ, DISPARU, APPARU, RETOURNÉ]`, RETOURNÉ nul s'il est omis. */
+const CAS = [
+  ['S1 Q franchit, X +4', image({ [Q]: CSS, [X]: CSS }), image({ [Q]: CSS, [X]: CSS2 }, Q), [[Q, 4]], [3, 3, 0, 0, 3], [1, 1, 0, 0, 1]],
+  ['S2 P fraîche + Q franchit', image({ [Q]: CSS }), image({ [Q]: CSS, [P]: CSS }, Q, P), [[Q, 4]], [3, 3, 0, 0, 0], [1, 1, 0, 0, 0]],
+  ['S3 cure Y→E établie + P fraîche', image({ [E]: CSS, [Y]: CSS }, E), image({ [E]: CSS2, [Y]: '', [P]: CSS }, E, P), [], [3, 0, 3, 0, 0], [1, 0, 1, 0, 0]],
+  ['S4 X +4 après un franchissement de Q', image({ [Q]: CSS, [X]: CSS }, Q), image({ [Q]: CSS, [X]: CSS2 }, Q), [], [0, 0, 0, 0, 3], [0, 0, 0, 0, 1]],
+  ['S5 E rendue exemptée', image({ [E]: CSS2, [Y]: '' }), image({ [E]: CSS2, [Y]: '' }, E), [[E, 8]], [6, 6, 0, 0, 0], [2, 2, 0, 0, 0]],
+  ['S6 souche MONO-hôte', image({ [Y]: CSS, [S]: STUB }), image({ [S]: `${STUB}\n${CSS}` }), [], [3, 0, 0, 3, 3], [1, 0, 0, 1, 1]],
+  ['S6 souche RÉUTILISÉE', image({ [Y]: CSS, [S]: STUB }, S), image({ [S]: `${STUB}\n${CSS}` }, S), [], [3, 0, 3, 0, 0], [1, 0, 1, 0, 0]],
+  ['S7 échange E↔Q', image({ [E]: CSS, [Q]: CSS }, E), image({ [E]: CSS, [Q]: CSS }, Q), [[Q, 4]], [3, 3, 0, 0, 0, 3], [1, 1, 0, 0, 0, 1]],
+  ['S8 mv Y→P retouché, P réutilisée', image({ [Y]: CSS2 }), image({ [P]: `${CSS}\n.g { gap: var(--sp-md) }` }, P), [], [6, 0, 3, 3, 0], [2, 0, 1, 1, 0]],
+  ['S9 franchit et cure au même commit', image({ [Q]: CSS2 }), image({ [Q]: `${CSS}\n.f { gap: var(--sp-md) }` }, Q), [[Q, 4]], [6, 3, 0, 3, 0], [2, 1, 0, 1, 0]],
+  ['S10 mv réindenté, P mono-hôte', image({ [Y]: CSS2 }), image({ [P]: REINDENTE }), [], [6, 0, 0, 6, 6], [2, 0, 0, 2, 2]],
+  ['S10 mv réindenté, P réutilisée', image({ [Y]: CSS2 }), image({ [P]: REINDENTE }, P), [], [6, 0, 6, 0, 0], [2, 0, 2, 0, 0]],
+  ['S11 composant gagne son 2e importeur', image({ [P]: CSS }), image({ [P]: CSS }, P), [[P, 4]], [3, 3, 0, 0, 0], [1, 1, 0, 0, 0]],
+  ['S12 composant perd son 2e importeur', image({ [P]: CSS }, P), image({ [P]: CSS }), [], [0, 0, 0, 0, 0, 3], [0, 0, 0, 0, 0, 1]],
+]
+const volet = ([SORTI, RECLASSE, PRIMITIVISE, DISPARU, APPARU, RETOURNE = 0]) => ({ SORTI, RECLASSE, PRIMITIVISE, DISPARU, APPARU, RETOURNE })
+
+for (const [nom, parent, commit, franchis, identite, espacement] of CAS) {
+  test(`D1″/D6″ ${nom}`, () => {
+    const v = ventiler(parent, commit)
+    assert.deepEqual(v.franchis.map((f) => [f.module, f.n]), franchis)
+    assert.deepEqual(six(v.identite), volet(identite))
+    assert.deepEqual(six(v.espacement), volet(espacement))
+    invariants('identité', v.identite)
+    invariants('espacement', v.espacement)
+  })
+}
+
+test('D1″ : un module ABSENT du parent ne franchit pas — il naît exempté, sa matière est APPARUE en zone exempte', () => {
+  const v = ventiler(image({}), image({ [P]: CSS }, P))
+  assert.deepEqual(v.franchis, [])
+  assert.deepEqual([six(v.identite), v.identite.ENTRE], [volet([0, 0, 0, 0, 0]), 3])
 })
 
-test('armée : revendication VIDE posée d’abord, module versé ensuite — le second geste arme (T1)', () => {
-  const t0 = cote({ [ECRAN]: PEINT })
-  const t1 = cote({ [ECRAN]: PEINT }, [STUB])
-  const t2 = cote({ [STUB]: PEINT }, [STUB])
-  assert.deepEqual(revendicationsArmees(t0, t1, []), [], 'commit 1 : N = 0, rien ne sort')
-  assert.deepEqual(revendicationsArmees(t1, t2, [ECRAN, STUB]), [{ module: STUB, identite: 3, espacement: 1, n: 4 }], 'commit 2 : 0 site à la base → armée')
-  assert.deepEqual(revendicationsArmees(t0, t2, [ECRAN, STUB]), [{ module: STUB, identite: 3, espacement: 1, n: 4 }], 'cumul : même fonction, même N')
+test('D5″ : un renommage entre deux modules AU STOCK reporte les clés du parent — rien ne sort, rien n’apparaît', () => {
+  const renommages = new Map([[Y, X]])
+  const v = ventiler(image({ [Y]: CSS2 }), image({ [X]: CSS2 }), { renommages })
+  assert.deepEqual([six(v.identite), six(v.espacement)], [volet([0, 0, 0, 0, 0]), volet([0, 0, 0, 0, 0])])
+  const sansCarte = ventiler(image({ [Y]: CSS2 }), image({ [X]: CSS2 }))
+  assert.deepEqual(six(sansCarte.identite), volet([6, 0, 0, 6, 6]), 'témoin : sans la carte, la dette change de fichier')
+  const versLaZone = ventiler(image({ [Y]: CSS2 }), image({ [P]: CSS2 }, P), { renommages: new Map([[Y, P]]) })
+  assert.deepEqual(versLaZone.franchis, [], 'un couple qui touche la zone exempte n’est pas reporté : P ne franchit pas')
+  assert.deepEqual(six(versLaZone.identite), volet([6, 0, 6, 0, 0]))
 })
 
-test('armée : un module DÉJÀ revendiqué et déjà peint à la base ne s’arme pas — la matière qui y entre est PRIMITIVISÉE', () => {
-  assert.deepEqual(revendicationsArmees(cote({ [PRIMITIVE]: '.p { color: red }' }, [PRIMITIVE]), cote({ [PRIMITIVE]: PEINT }, [PRIMITIVE]), [PRIMITIVE]), [])
+const RACINE = fileURLToPath(new URL('../../..', import.meta.url))
+/** Les chiffres signés du juge (commentaire #1806 5803399612, 2026-09-23) ; RETOURNÉ mesuré sur le
+ *  stock ÉCRIT au parent, que la règle de réutilisation (L1) rend en partie au stock. */
+const ATTENDU = {
+  '41aa406d5': [[19, 0, 0, 19, 3, 227], [0, 0, 0, 0, 0, 77]],
+  'd25652e73': [[21, 0, 0, 21, 0, 450], [3, 0, 0, 3, 0, 133]],
+  'c251f46af': [[352, 0, 158, 194, 111, 0], [122, 0, 48, 74, 38, 0]],
+}
+for (const [sha, [identite, espacement]] of Object.entries(ATTENDU)) {
+  test(`D6″ commit cible ${sha}, lu dans l'histoire : aucun franchissement, la ventilation signée`, () => {
+    const v = ventilationDeGit({ cwd: RACINE, base: `${sha}^`, tete: sha })
+    assert.deepEqual(v.franchis.filter((f) => f.n > 0), [])
+    assert.deepEqual(six(v.identite), volet(identite))
+    assert.deepEqual(six(v.espacement), volet(espacement))
+    invariants('identité', v.identite)
+    invariants('espacement', v.espacement)
+  })
+}
+
+/** Les entrées que compte le stock d'une image (ce que son régénérateur écrirait). */
+const stockDe = (img) => {
+  const { stock } = partitionCss(img)
+  return { identite: sitesEnEntrees(stock.identite), espacement: sitesEnEntrees(stock.espacement) }
+}
+/** Le texte d'un stock écrit (`ligneDEntree`), une collection par volet. */
+const texteDeStock = ({ identite, espacement }) =>
+  [['I', identite], ['E', espacement]].map(([nom, es]) => `export const ${nom} = [\n${es.map(ligneDEntree).join('\n')}\n]\n`).join('')
+
+test('D (#1806) : sur un changement de frontière, Σ CLIQUET du stock CSS = APPARU + RETOURNÉ', () => {
+  const parent = image({ [P]: CSS, [X]: CSS }, P)
+  const commit = image({ [P]: CSS, [X]: CSS2 })
+  const avant = stockDe(parent)
+  const apres = stockDe(commit)
+  const v = ventiler(parent, commit, { stockAvant: avant })
+  assert.deepEqual([v.identite.APPARU, v.identite.RETOURNE, v.espacement.APPARU, v.espacement.RETOURNE], [3, 3, 1, 1])
+  const dossier = mkdtempSync(join(tmpdir(), 'cliquet-css-'))
+  let diff
+  try {
+    writeFileSync(join(dossier, 'avant.mjs'), texteDeStock(avant))
+    writeFileSync(join(dossier, 'apres.mjs'), texteDeStock(apres))
+    const vu = spawnSync('git', ['diff', '--no-index', '-U0', 'avant.mjs', 'apres.mjs'], { cwd: dossier, encoding: 'utf8' })
+    diff = vu.stdout.replace(/a\/avant\.mjs|b\/apres\.mjs/g, (m) => `${m[0]}/${CHEMIN_STOCK_CSS}`)
+  } finally {
+    rmSync(dossier, { recursive: true, force: true })
+  }
+  const cliquet = croissanceDesStocks(diff, {
+    lirePostImage: () => texteDeStock(apres),
+    lirePreImage: () => texteDeStock(avant),
+  }).reduce((t, c) => t + c.net, 0)
+  assert.equal(cliquet, v.identite.APPARU + v.identite.RETOURNE + v.espacement.APPARU + v.espacement.RETOURNE)
 })
 
-test('armée : une feuille ENTRÉE en FEUILLES_PARTAGEES est une revendication comme une autre (T2) ; layout n’en est pas une', () => {
-  const avant = cote({ [ECRAN]: PEINT })
-  assert.deepEqual(revendicationsArmees(avant, cote({ [ECRAN]: PEINT }, [], [...FEUILLES_PARTAGEES, ECRAN]), [CHEMIN_COUCHES]),
-    [{ module: ECRAN, identite: 3, espacement: 1, n: 4 }])
-  const sansLayout = FEUILLES_PARTAGEES.filter((f) => f !== FEUILLE_LAYOUT)
-  assert.deepEqual(revendicationsArmees(cote({ [FEUILLE_LAYOUT]: PEINT }, [], sansLayout), cote({ [FEUILLE_LAYOUT]: PEINT }), [CHEMIN_COUCHES]), [])
+test('C (#1806) : l\'admission rend au stock les sites que HEAD portait, et refuse un site NEUF du module qui quitte la zone', () => {
+  const tete = image({ [P]: CSS, [X]: CSS }, P)
+  const stockDeTete = stockDe(tete)
+  const juge = (arbre) => {
+    const v = ventiler(tete, arbre, { stockAvant: stockDeTete })
+    const mesurees = stockDe(arbre).identite
+    const admis = admisAuRetour(mesurees, stockDeTete.identite, v.identite.retournes)
+    return refusDeCroissance(mesurees, [...stockDeTete.identite, ...admis], { nom: 'IDENTITE', motif: 'm' })
+  }
+  assert.equal(juge(image({ [P]: CSS, [X]: CSS })), null, 'témoin : P quitte la zone, ses sites de HEAD retournent')
+  const refus = juge(image({ [P]: CSS2, [X]: CSS }))
+  assert.ok(refus?.includes(`${P} :: .f :: color`), String(refus))
+  assert.ok(!refus.includes(`${P} :: .e :: color`), refus)
 })
 
-test('armée : `touches` restreint la lecture sans changer le verdict — un module intouché et déjà revendiqué ne s’arme jamais', () => {
-  const lus = []
-  const base = cote({ [PRIMITIVE]: '' }, [PRIMITIVE])
-  const tete = cote({ [PRIMITIVE]: '', [STUB]: PEINT }, [PRIMITIVE, STUB])
-  const espion = { ...tete, lire: (f) => { lus.push(f); return tete.lire(f) } }
-  assert.deepEqual(revendicationsArmees(base, espion, [STUB]), revendicationsArmees(base, tete, [PRIMITIVE, STUB]))
-  assert.deepEqual(lus, [STUB], 'la revendication neuve est lue, le module intouché ne l’est pas')
+test('ligneDeVentilation : SORTI décomposé, puis APPARU et RETOURNÉ', () => {
+  const v = ventiler(image({ [Q]: CSS, [X]: CSS }), image({ [Q]: CSS, [X]: CSS2 }, Q))
+  assert.equal(
+    ligneDeVentilation('identité', v.identite),
+    'identité   stock 6 → 6 · exempté 0 → 3 · SORTI 3 = RECLASSÉ 3 + PRIMITIVISÉ 0 + DISPARU 0 · APPARU 3 · RETOURNÉ 0',
+  )
 })
 
 test('feuillesPartageesDe : lit la liste dans le TEXTE de cssCouches.mjs ; absent → [] ; illisible → refus nommé', () => {
@@ -224,36 +326,3 @@ test('manifesteDe : UN lecteur — absent → [], JSON invalide ou non-tableau �
   assert.throws(() => manifesteDe('{"id":"a"}'), /primitives\.manifest\.json/)
 })
 
-test('ventilation : matière NEUVE en zone exempte → APPARU, jamais « DISPARU -2 » ; écran → layout reste au stock', () => {
-  const neuf = ventilerDecrue(image({ [PRIMITIVE]: '.p { border: 0 }' }, [PRIMITIVE]), image({ [PRIMITIVE]: '.p { border: 0; color: red; outline: 0 }' }, [PRIMITIVE]))
-  assert.equal(neuf.identite.disparu, -2)
-  assert.match(ligneDeVentilation('identité', neuf.identite), /APPARU 2/)
-  assert.doesNotMatch(ligneDeVentilation('identité', neuf.identite), /DISPARU/)
-  const versLayout = ventilerDecrue(image({ [ECRAN]: '.e { color: red; border: 0 }', [FEUILLE_LAYOUT]: '' }), image({ [ECRAN]: '', [FEUILLE_LAYOUT]: '.e { color: red; border: 0 }' }))
-  assert.deepEqual(nombres(versLayout.identite), { deltaStock: 0, deltaExempte: 0, entre: 0, disparu: 0, reclasse: 0, primitivise: 0 })
-})
-
-test('ventilation : TROIS nombres — RECLASSÉ = min(prix du volet, ENTRÉ), PRIMITIVISÉ = ENTRÉ − RECLASSÉ', () => {
-  const v = ventilerDecrue(
-    image({ [ECRAN]: PEINT, [PRIMITIVE]: '.p { border: 0 }', 'src/ui/styles/autre.css': '.a { color: red }' }, [PRIMITIVE]),
-    image({ [ECRAN]: PEINT, [PRIMITIVE]: '.p { border: 0; color: red }', 'src/ui/styles/autre.css': '' }, [PRIMITIVE, ECRAN]),
-  )
-  assert.deepEqual(nombres(v.identite), { deltaStock: -4, deltaExempte: 4, entre: 4, disparu: 0, reclasse: 3, primitivise: 1 })
-  const ligne = ligneDeVentilation('identité', v.identite)
-  assert.match(ligne, /DISPARU 0 · RECLASSÉ 3 · PRIMITIVISÉ 1/)
-})
-
-test('prix : min(Σ N des armés, baisse du stock) par volet — N ne se paie que s’il a quitté le stock (juge 2026-09-23)', () => {
-  const avant = cote({ [ECRAN]: '.e { color: red }' })
-  const tete = cote({ [ECRAN]: PEINT }, [ECRAN])
-  const prix = prixDuReclassement(avant, tete, [ECRAN])
-  assert.deepEqual({ identite: prix.identite, espacement: prix.espacement, n: prix.n }, { identite: 1, espacement: 0, n: 1 })
-  assert.deepEqual(prix.deltaStock, { identite: -1, espacement: 0 })
-  assert.equal(prixDuReclassement(cote({}), cote({ [ECRAN]: PEINT }, [ECRAN]), [ECRAN]).n, 0, 'module neuf avec son CSS neuf : le stock ne baisse pas')
-})
-
-test('ventilation : primitive NEUVE avec son CSS neuf → APPARU, RECLASSÉ 0, PRIMITIVISÉ 0 — aucun nombre négatif (juge 2026-09-23, écart 1)', () => {
-  const v = ventilerDecrue(image({}), image({ [PRIMITIVE]: '.p { color: red; border: 0 }' }, [PRIMITIVE]))
-  assert.deepEqual(nombres(v.identite), { deltaStock: 0, deltaExempte: 2, entre: 0, disparu: -2, reclasse: 0, primitivise: 0 })
-  assert.deepEqual(v.revendications, [{ module: PRIMITIVE, identite: 2, espacement: 0, n: 2 }])
-})

@@ -14,17 +14,21 @@
 // Donc : les croissances non couvertes se lèvent PAR COMMIT, et l'on n'en retient que les fichiers
 // dont la croissance CUMULÉE sur toute la plage reste positive.
 //
-// `RECLASSEMENT: <module> +N — <motif>` (`reclassementCss.mjs`) se juge aux DEUX échelles par la
-// même fonction de prix (`prixDesImages`) : PAR COMMIT, retenu si l'un de ses modules reste ARMÉ sur
-// la plage (une revendication posée puis retirée ne reclasse rien), et SUR LA PLAGE, où la somme des
-// lignes de tous ses messages doit égaler le prix de la plage — un module revendiqué quasi vide puis
-// rempli ne s'arme qu'au cumul.
+// Le filtre CUMULÉ se calcule par la MÊME fonction de croissance que le commit (`croissanceDesStocks`,
+// par clé et après report de la carte des renommages de la plage, #1806 D5″) : une dette neuve dans X
+// qu'une baisse dans Q du même porteur compenserait reste en croissance au cumul, et se refuse.
+//
+// `RECLASSEMENT: <module> +N — <motif>` (`reclassementCss.mjs`) se juge PAR COMMIT seulement, contre son
+// parent (#1806 D3″) : la ligne vit dans UN message et nomme le franchissement de CE commit.
 //
 // La lib CALCULE ; le VERDICT appartient à l'appelant (le pre-push refuse, la mesure a posteriori
-// échoue). Elle reste PURE dans son cœur (`refusDeLaPlage`) : les lectures git sont injectées.
+// échoue). Elle reste PURE dans son cœur (`refusDeLaPlage`, `reclassementsDeLaPlage`) : les lectures
+// git sont injectées.
 import { lireGit, sortieOuNull } from './gitPorte.mjs'
 import { croissanceDesStocks, croissancesNonCouvertes } from './stocksNominatifs.mjs'
-import { ecartDeReclassement, lignesDeReclassement, prixDesImages } from './reclassementCss.mjs'
+import { deplaceLaFrontiere, ecartsDeReclassement, franchisDesCotes, lignesDeReclassement } from './reclassementCss.mjs'
+import { coteCss, renommagesDe, sourceGit } from './cssImages.mjs'
+import { CHEMIN_MANIFESTE, manifesteDe } from './cssCouches.mjs'
 
 /** Le sha nul que git écrit sur stdin du pre-push pour une branche NEUVE. */
 export const SHA_NUL = '0'.repeat(40)
@@ -53,52 +57,27 @@ function cheminsDuDiff(diff) {
   return [...String(diff ?? '').matchAll(/^diff --git a\/(\S+) b\/(\S+)$/gm)].flatMap((m) => [m[1], m[2]])
 }
 
-/** Les lignes d'une plage, une par module : la somme de ses `+N` sur tous les messages. */
-function sommeParModule(lignes) {
-  const somme = new Map()
-  for (const d of lignes) somme.set(d.fichier, (somme.get(d.fichier) ?? 0) + d.n)
-  return [...somme].map(([fichier, n]) => ({ fichier, n }))
-}
-
 /**
- * Le prix d'un intervalle, ou son image ILLISIBLE nommée (`illisible` = le motif).
- * @returns {{ prix: ReturnType<typeof prixDesImages> } | { illisible: string }}
+ * Reclassements CSS non déclarés d'une plage, PUR : chaque commit contre son parent (#1806 D3″).
+ * `cotes()` rend `{ parent, commit }` (`coteCss`), ou `null` si le commit ne touche pas la frontière ;
+ * une image illisible est un refus NOMMÉ par son commit, jamais une levée.
+ * @param {{ commits?: { sha: string, message: string, cotes: () => ({ parent: object, commit: object } | null) }[] }} p
+ * @returns {({ sha: string, ecarts: ReturnType<typeof ecartsDeReclassement> } | { sha: string, illisible: string })[]}
  */
-function prixOuIllisible(images, diff) {
-  try {
-    return { prix: prixDesImages(images, cheminsDuDiff(diff)) }
-  } catch (e) {
-    return { illisible: e.message }
-  }
-}
-
-/**
- * Reclassements CSS non déclarés d'une plage, PUR, par la même fonction de prix aux deux échelles :
- * PAR COMMIT (la ligne vit dans UN message), retenus si l'un de leurs modules reste ARMÉ sur la plage
- * (`imagesCumul`, `cumule`) ; SUR LA PLAGE, la somme des lignes de tous les messages contre le prix de
- * la plage. Une image illisible est un refus NOMMÉ par son commit (ou la plage), jamais une levée.
- * @returns {({ sha?: string, plage?: string, prix: number, declare: number, modules: { module: string, n: number, declarees: number[] }[] } | { sha?: string, plage?: string, illisible: string })[]}
- */
-export function reclassementsDeLaPlage({ commits = [], cumule, imagesCumul, plage = 'poussée' } = {}) {
-  const auCumul = prixOuIllisible(imagesCumul, cumule)
-  const armes = new Set(auCumul.prix?.revendications.map((r) => r.module) ?? [])
+export function reclassementsDeLaPlage({ commits = [] } = {}) {
   const refus = []
-  const lignesDeLaPlage = []
-  for (const { sha, message, diff, images } of commits) {
-    const lignes = lignesDeReclassement(message)
-    lignesDeLaPlage.push(...lignes)
-    const lu = prixOuIllisible(images, diff)
-    if (lu.illisible !== undefined) {
-      refus.push({ sha, illisible: lu.illisible })
+  for (const { sha, message, cotes } of commits) {
+    let lus
+    try {
+      lus = cotes()
+    } catch (e) {
+      refus.push({ sha, illisible: e.message })
       continue
     }
-    const ecart = ecartDeReclassement(lu.prix, lignes)
-    if (ecart && ecart.modules.some((m) => armes.has(m.module))) refus.push({ sha, ...ecart })
-  }
-  if (auCumul.illisible !== undefined) refus.push({ plage, illisible: auCumul.illisible })
-  else {
-    const ecart = ecartDeReclassement(auCumul.prix, sommeParModule(lignesDeLaPlage))
-    if (ecart) refus.push({ plage, ...ecart })
+    const lignes = lignesDeReclassement(message)
+    if (!lus && !lignes.length) continue
+    const ecarts = ecartsDeReclassement(lus ? franchisDesCotes(lus.parent, lus.commit) : [], lignes)
+    if (ecarts.length) refus.push({ sha, ecarts })
   }
   return refus
 }
@@ -156,23 +135,34 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
     return { refus: [], reclassements: [], notes, plage, indisponible: pannes[0] ?? null }
   }
   const shas = liste.split('\n').map((l) => l.trim()).filter(Boolean)
-  const commits = shas.map((sha) => ({
-    sha,
-    message: lire(['show', '-s', '--format=%B', sha]) ?? '',
-    diff: lire(['show', '--format=', '-U0', '--no-renames', sha]) ?? '',
-    images: {
-      lirePostImage: (f) => lire(['show', `${sha}:${f}`]),
-      lirePreImage: (f) => lire(['show', `${sha}^:${f}`]),
-    },
-  }))
+  const commits = shas.map((sha) => {
+    const diff = lire(['show', '--format=', '-U0', '--no-renames', sha]) ?? ''
+    const cote = (arbre) => coteCss(sourceGit({ cwd, arbre, git: lire }), { racine: cwd })
+    return {
+      sha,
+      message: lire(['show', '-s', '--format=%B', sha]) ?? '',
+      diff,
+      images: {
+        lirePostImage: (f) => lire(['show', `${sha}:${f}`]),
+        lirePreImage: (f) => lire(['show', `${sha}^:${f}`]),
+        renommages: renommagesDe(lire, [`${sha}^`, sha]),
+      },
+      cotes: () => (deplaceLaFrontiere({
+        chemins: cheminsDuDiff(diff),
+        diff: () => diff,
+        manifeste: () => manifesteDe(lire(['show', `${sha}^:${CHEMIN_MANIFESTE}`])),
+      }) ? { parent: cote(`${sha}^`), commit: cote(sha) } : null),
+    }
+  })
   const cumule = lire(['diff', '-U0', '--no-renames', `${base}..${apres}`]) ?? ''
   const imagesCumul = {
     lirePostImage: (f) => lire(['show', `${apres}:${f}`]),
     lirePreImage: (f) => lire(['show', `${base}:${f}`]),
+    renommages: renommagesDe(lire, [base, apres]),
   }
   return {
     refus: refusDeLaPlage({ commits, cumule, imagesCumul }),
-    reclassements: reclassementsDeLaPlage({ commits, cumule, imagesCumul, plage }),
+    reclassements: reclassementsDeLaPlage({ commits }),
     notes,
     commits: shas.length,
     plage,

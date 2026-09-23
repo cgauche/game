@@ -1,11 +1,11 @@
 // PARSEUR et MESURE PURE des TROIS COUCHES CSS (#1800) — sans disque : il LIT du texte et rend des
 // règles, des déclarations, deux prédicats, et les sites d'IDENTITÉ et d'ESPACEMENT d'une IMAGE
-// `{ fichiers, manifeste, partagees }` — partitionnée en STOCK (modules d'écran et `layout.css`) et
-// zone EXEMPTE (feuilles partagées, modules de primitive), puis VENTILÉE entre deux images
-// (`ventilerDecrue`). Le VERDICT
-// appartient aux gardes (`src/ui/ui-ratchets.test.ts`, `reclassementCss.mjs`) ; la LECTURE des
-// images (disque, ref git) à `cssCouchesAudit.ts`. Pur `.mjs` parce que les hooks de commit et de
-// push le chargent sous `node` nu (#1806).
+// `{ fichiers, manifeste, partagees, reutilises }` — partitionnée en STOCK (modules d'écran et
+// `layout.css`) et zone EXEMPTE (`modulesExemptes`, #1806 L1), puis VENTILÉE d'un parent à son commit
+// (`ventiler`, #1806 D6″). Le VERDICT appartient aux gardes (`src/ui/ui-ratchets.test.ts`,
+// `reclassementCss.mjs`) ; la LECTURE des images (disque, ref git, index) et des imports qui fixent
+// `reutilises` à `cssImages.mjs`. Pur `.mjs` parce que les hooks de commit et de push le chargent sous
+// `node` nu (#1806).
 //
 // Pourquoi un LEXER et pas une regex : la regex plate `([^{}]+)\{([^{}]*)\}` ne voit pas les blocs
 // IMBRIQUÉS — elle rend le CONTENU d'un `@media` comme s'il vivait au premier niveau, et perd donc
@@ -16,6 +16,8 @@
 //
 // CONTRAT partagé avec le cliquet (xx) : `reglesCss` rend le MÊME `{ selecteurs, corps }` qu'avant
 // la réécriture, enrichi de `media`.
+
+import { SUFFIXE_SUITE } from './fichierVitest.mjs';
 
 /** Feuilles PARTAGÉES de `src/ui/styles/` : aucune primitive ne les possède, aucun module d'écran
  *  n'en fait partie. Source UNIQUE — `SHARED_CSS_FILES` (ui-ratchets), `CSS_PARTAGES`
@@ -346,14 +348,51 @@ export function modulesDePrimitive(manifeste) {
   return new Set(manifeste.map((e) => e.css).filter((c) => typeof c === 'string'));
 }
 
+/** Racine des importeurs comptés, et ce qui n'en est pas un : une suite de test, la galerie QC. */
+const RACINE_DES_IMPORTEURS = 'src/';
+const GALERIE = 'src/ui/gallery/';
+const SUITE = new RegExp(`${SUFFIXE_SUITE}$`);
+
+/** Un importeur compte-t-il pour la RÉUTILISATION d'une primitive ? */
+export const importeurCompte = (chemin) =>
+  chemin.startsWith(RACINE_DES_IMPORTEURS) && !chemin.startsWith(GALERIE) && !SUITE.test(chemin);
+
 /**
- * La zone EXEMPTE d'une image, source UNIQUE de sa frontière : les modules revendiqués au manifeste
- * et les feuilles partagées de SA liste, hors `FEUILLE_LAYOUT`. Tout le reste est au stock.
- * @param {{ manifeste: readonly { id: string, css?: string }[], partagees: readonly string[] }} image
+ * Les `fichier` du manifeste RÉUTILISÉS (#1806 L1) : importés directement par au moins 2 fichiers de
+ * `src/` (hors suites et `src/ui/gallery/`), ou par le `fichier` d'une autre entrée du manifeste.
+ * `imports` = les imports DIRECTS de chaque importeur, résolus par l'appelant (`directImportsOf`,
+ * `importGraph.mjs`) : la lib reste pure.
+ * @param {readonly { id: string, fichier?: string }[]} manifeste
+ * @param {Iterable<[string, readonly string[]]>} imports importeur → chemins importés
  * @returns {Set<string>}
  */
-export function modulesExemptes({ manifeste, partagees }) {
-  const out = modulesDePrimitive(manifeste);
+export function fichiersReutilises(manifeste, imports) {
+  const fichiers = new Set(manifeste.map((e) => e.fichier).filter((f) => typeof f === 'string'));
+  /** @type {Map<string, Set<string>>} */
+  const importeurs = new Map();
+  for (const [importeur, cibles] of imports) {
+    if (!importeurCompte(importeur)) continue;
+    for (const c of cibles) {
+      if (!fichiers.has(c) || c === importeur) continue;
+      if (!importeurs.has(c)) importeurs.set(c, new Set());
+      importeurs.get(c).add(importeur);
+    }
+  }
+  const out = new Set();
+  for (const [f, par] of importeurs) if (par.size >= 2 || [...par].some((i) => fichiers.has(i))) out.add(f);
+  return out;
+}
+
+/**
+ * La zone EXEMPTE d'une image, source UNIQUE de sa frontière (#1806 L1) : les feuilles partagées de
+ * SA liste hors `FEUILLE_LAYOUT`, et tout module `css` dont au moins un propriétaire est RÉUTILISÉ
+ * (`fichiersReutilises`). Tout le reste est au stock.
+ * @param {{ manifeste: readonly { id: string, fichier?: string, css?: string }[], partagees: readonly string[], reutilises: ReadonlySet<string> }} image
+ * @returns {Set<string>}
+ */
+export function modulesExemptes({ manifeste, partagees, reutilises }) {
+  const out = new Set();
+  for (const e of manifeste) if (typeof e.css === 'string' && reutilises.has(e.fichier)) out.add(e.css);
   for (const f of partagees) if (f !== FEUILLE_LAYOUT) out.add(f);
   return out;
 }
@@ -361,7 +400,7 @@ export function modulesExemptes({ manifeste, partagees }) {
 /**
  * Les modules d'ÉCRAN d'une image : son stock (`modulesExemptes` en est le complément) moins
  * `FEUILLE_LAYOUT`.
- * @param {{ fichiers: readonly { rel: string, text: string }[], manifeste: readonly { id: string, css?: string }[], partagees: readonly string[] }} image
+ * @param {{ fichiers: readonly { rel: string, text: string }[], manifeste: readonly { id: string, fichier?: string, css?: string }[], partagees: readonly string[], reutilises: ReadonlySet<string> }} image
  */
 export function modulesDEcran(image) {
   const exempts = modulesExemptes(image);
@@ -372,7 +411,7 @@ export function modulesDEcran(image) {
  * La MÊME mesure jouée sur les deux zones d'une image. `stock` : tout ce qui n'est pas exempté —
  * modules d'écran et `FEUILLE_LAYOUT` —, ce que jugent les cliquets (xxi)/(xxii). `exempte` :
  * `modulesExemptes`.
- * @param {{ fichiers: readonly { rel: string, text: string }[], manifeste: readonly { id: string, css?: string }[], partagees: readonly string[] }} image
+ * @param {Parameters<typeof modulesDEcran>[0]} image
  */
 export function partitionCss(image) {
   const exempts = modulesExemptes(image);
@@ -384,127 +423,179 @@ export function partitionCss(image) {
   };
 }
 
-/**
- * Sites qu'un module porterait s'il était un module d'ÉCRAN, PAR VOLET : le prix d'une revendication,
- * mesuré sur l'image où elle est posée. Texte absent → 0.
- * @param {string} module @param {string | null} texte
- * @returns {{ identite: number, espacement: number, n: number }} `n` = identité + espacement
- */
-export function sitesSiEcran(module, texte) {
-  if (texte == null) return { identite: 0, espacement: 0, n: 0 };
-  const f = [{ rel: module, text: texte }];
-  const identite = sitesIdentiteEcran(f).length;
-  const espacement = sitesEspacementHorsEchelle(f).length;
-  return { identite, espacement, n: identite + espacement };
-}
+/** Les deux volets d'une mesure CSS, et leur mesure. */
+const VOLETS = { identite: sitesIdentiteEcran, espacement: sitesEspacementHorsEchelle };
 
-/**
- * Les revendications ARMÉES entre deux côtés `{ manifeste, partagees, lire }` : un module exempté à la
- * tête, NEUF ou à 0 site à la base, qui en porte N > 0 à la tête (#1806, juge de
- * diff du 2026-09-23). `touches` = les chemins que le geste modifie : un module déjà exempté et
- * intouché a le même texte aux deux bouts, il ne s'arme donc pas — il n'est pas lu.
- * @param {{ manifeste: readonly { id: string, css?: string }[], partagees: readonly string[], lire: (f: string) => string | null }} base
- * @param {typeof base} tete @param {Iterable<string>} touches
- * @returns {{ module: string, identite: number, espacement: number, n: number }[]} triées
- */
-export function revendicationsArmees(base, tete, touches) {
-  const avant = modulesExemptes(base);
-  const touche = new Set(touches);
-  return [...modulesExemptes(tete)]
-    .filter((m) => !avant.has(m) || touche.has(m))
-    .sort()
-    .filter((m) => !avant.has(m) || sitesSiEcran(m, base.lire(m)).n === 0)
-    .map((module) => ({ module, ...sitesSiEcran(module, tete.lire(module)) }))
-    .filter((r) => r.n > 0);
-}
+/** Séparateur d'une clé (fichier, réf) : aucun des deux n'en porte. */
+const SEP = '\u0000';
 
-/** Les deux volets d'une mesure CSS. */
-const VOLETS = ['identite', 'espacement'];
-
-/** Sites qu'un chemin porte AU STOCK d'un côté : une feuille de `RACINE_DES_MODULES` non exemptée. */
-const sitesAuStock = (cote, exempts, f) =>
-  f.startsWith(RACINE_DES_MODULES) && f.endsWith('.css') && !exempts.has(f)
-    ? sitesSiEcran(f, cote.lire(f))
-    : { identite: 0, espacement: 0, n: 0 };
-
-/**
- * Le PRIX d'un intervalle `base → tete`, par volet : ce que les revendications ARMÉES
- * (`revendicationsArmees`) ont fait sortir du stock, soit `min(Σ N du volet, max(0, −Δstock du
- * volet))` — un intervalle dont le stock ne baisse pas ne coûte rien (juge de seconde passe du
- * 2026-09-23). La MÊME fonction sert le commit (parent, commit), la plage poussée (base, tête) et
- * `ventilerDecrue`. `Δstock` se lit sur les seuls chemins qui peuvent changer : `touches` et les
- * modules dont la frontière bouge.
- * @param {Parameters<typeof revendicationsArmees>[0]} base @param {typeof base} tete
- * @param {Iterable<string>} touches
- * @returns {{ revendications: ReturnType<typeof revendicationsArmees>, deltaStock: { identite: number, espacement: number }, identite: number, espacement: number, n: number }}
- */
-export function prixDuReclassement(base, tete, touches) {
-  const chemins = [...touches];
-  const revendications = revendicationsArmees(base, tete, chemins);
-  const deltaStock = { identite: 0, espacement: 0 };
-  const prix = { identite: 0, espacement: 0, n: 0 };
-  if (!revendications.length) return { revendications, deltaStock, ...prix };
-  const exBase = modulesExemptes(base);
-  const exTete = modulesExemptes(tete);
-  const frontiere = [...exBase, ...exTete].filter((m) => exBase.has(m) !== exTete.has(m));
-  for (const f of new Set([...chemins, ...frontiere])) {
-    const avant = sitesAuStock(base, exBase, f);
-    const apres = sitesAuStock(tete, exTete, f);
-    for (const v of VOLETS) deltaStock[v] += apres[v] - avant[v];
+/** Multiset (fichier, réf) des sites d'une zone. */
+const clesDe = (fichiers, mesure) => {
+  const m = new Map();
+  for (const s of mesure(fichiers)) {
+    const k = s.file + SEP + s.ref;
+    m.set(k, (m.get(k) ?? 0) + 1);
   }
-  for (const v of VOLETS) {
-    prix[v] = Math.min(revendications.reduce((s, r) => s + r[v], 0), Math.max(0, -deltaStock[v]));
-  }
-  prix.n = prix.identite + prix.espacement;
-  return { revendications, deltaStock, ...prix };
-}
+  return m;
+};
 
-/** Le côté `{ manifeste, partagees, lire }` d'une image mesurable. */
-const coteDe = (image) => {
-  const textes = new Map(image.fichiers.map((f) => [f.rel, f.text]));
-  return { manifeste: image.manifeste, partagees: image.partagees, lire: (f) => textes.get(f) ?? null };
+/** `a − b`, en multiset, parties positives seules. */
+const moins = (a, b) => {
+  const out = new Map();
+  for (const [k, n] of a) {
+    const d = n - (b.get(k) ?? 0);
+    if (d > 0) out.set(k, d);
+  }
+  return out;
+};
+
+const taille = (m) => [...m.values()].reduce((s, n) => s + n, 0);
+
+/** Multiset (fichier, réf) d'entrées de stock, chaque `fichier` passé par `report`. */
+const clesDEntrees = (entrees, report) => {
+  const m = new Map();
+  for (const e of entrees) {
+    const k = report(e.fichier) + SEP + e.ref;
+    m.set(k, (m.get(k) ?? 0) + 1);
+  }
+  return m;
 };
 
 /**
- * VENTILATION d'une décrue entre deux images, par volet : `deltaStock`, `deltaExempte`,
- * `entre = max(0, min(−deltaStock, deltaExempte))` (sites ENTRÉS en zone exempte),
- * `disparu = −(deltaStock + deltaExempte)` (négatif = matière APPARUE), `reclasse = min(prix du
- * volet, entre)` (`prixDuReclassement`), `primitivise = entre − reclasse`. Aucun appariement de
- * déclarations.
- * @param {{ fichiers: readonly { rel: string, text: string }[], manifeste: readonly { id: string, css?: string }[], partagees: readonly string[] }} base
- * @param {typeof base} tete
+ * Les modules qui FRANCHISSENT la frontière du parent au commit (#1806 D1″) : exemptés au commit,
+ * pas au parent, et présents dans l'image du parent.
+ * @param {Parameters<typeof modulesDEcran>[0]} parent @param {typeof parent} commit
+ * @returns {string[]} triés
  */
-export function ventilerDecrue(base, tete) {
-  const b = partitionCss(base);
-  const t = partitionCss(tete);
-  const chemins = [...base.fichiers, ...tete.fichiers].map((f) => f.rel);
-  const prix = prixDuReclassement(coteDe(base), coteDe(tete), chemins);
-  const volet = (v) => {
-    const deltaStock = t.stock[v].length - b.stock[v].length;
-    const deltaExempte = t.exempte[v].length - b.exempte[v].length;
-    const entre = Math.max(0, Math.min(-deltaStock, deltaExempte));
-    const reclasse = Math.min(prix[v], entre);
-    return {
-      stock: [b.stock[v].length, t.stock[v].length],
-      exempte: [b.exempte[v].length, t.exempte[v].length],
-      deltaStock,
-      deltaExempte,
-      entre,
-      disparu: 0 - (deltaStock + deltaExempte),
-      reclasse,
-      primitivise: entre - reclasse,
-    };
-  };
-  return { identite: volet('identite'), espacement: volet('espacement'), revendications: prix.revendications };
+export function franchissements(parent, commit) {
+  const exP = modulesExemptes(parent);
+  const presents = new Set(parent.fichiers.map((f) => f.rel));
+  return [...modulesExemptes(commit)].filter((m) => !exP.has(m) && presents.has(m)).sort();
 }
 
 /**
- * Ligne lisible d'un volet ventilé : bornes, `ENTRÉ`, `DISPARU` (ou `APPARU`), `RECLASSÉ`,
- * `PRIMITIVISÉ`.
- * @param {string} nom @param {ReturnType<typeof ventilerDecrue>['identite']} v @returns {string}
+ * VENTILATION d'un commit contre son parent, par volet (#1806 D6″), en multisets clés par
+ * (fichier, réf) : `SORTI` = Sb − Sh, `ENTRÉ` = Eh − Eb ; `RETOURNÉ` = la part de Sh − Sb que le
+ * parent portait HORS de son stock (Eb) — les sites qu'un module rend au stock en quittant la zone
+ * exempte, seuls admis par le régénérateur (#1806 C) ; `APPARU` = le reste de Sh − Sb, des sites
+ * NEUFS. `RECLASSÉ` = Σ prix(m) des modules franchis (`franchissements`), consommé à la clé ;
+ * `PRIMITIVISÉ` = le SORTI restant apparié à l'ENTRÉ restant par réf seule, chaque clé consommée une
+ * fois ; `DISPARU` = le SORTI restant. Lieu UNIQUE du prix : la ligne `RECLASSEMENT:`
+ * (`reclassementCss.mjs`) et `--ventiler` le lisent ici.
+ * Sb est ce que le parent COMPTAIT : `stockAvant` (les entrées de son fichier de stock) quand
+ * l'appelant le fournit, sinon sa mesure sous la règle en vigueur ; Eb est le reste de ses sites.
+ * `renommages` (chemin au parent ↦ chemin au commit, la carte `-M`) reporte d'abord les clés du
+ * parent, pour les seuls couples dont les deux chemins sont au stock (#1806 D5″).
+ * @param {Parameters<typeof modulesDEcran>[0]} image @param {typeof image} commit
+ * @param {{ renommages?: ReadonlyMap<string, string>,
+ *   stockAvant?: Record<'identite' | 'espacement', Iterable<{ fichier: string, ref: string }>> }} [options]
+ */
+export function ventiler(image, commit, { renommages = new Map(), stockAvant } = {}) {
+  const exAvant = modulesExemptes(image);
+  const exApres = modulesExemptes(commit);
+  const report = (rel) => {
+    const vers = renommages.get(rel);
+    return vers !== undefined && !exAvant.has(rel) && !exApres.has(vers) ? vers : rel;
+  };
+  const parent = { ...image, fichiers: image.fichiers.map((f) => ({ ...f, rel: report(f.rel) })) };
+  const franchis = franchissements(parent, commit);
+  const zones = (image) => {
+    const ex = modulesExemptes(image);
+    return {
+      stock: image.fichiers.filter((f) => !ex.has(f.rel)),
+      exempte: image.fichiers.filter((f) => ex.has(f.rel)),
+    };
+  };
+  const zP = zones(parent);
+  const zC = zones(commit);
+  /** @type {Map<string, { identite: number, espacement: number }>} */
+  const prix = new Map(franchis.map((m) => [m, { identite: 0, espacement: 0 }]));
+  const out = {};
+  for (const [v, mesure] of Object.entries(VOLETS)) {
+    const Sb = stockAvant ? clesDEntrees(stockAvant[v], report) : clesDe(zP.stock, mesure);
+    const Sh = clesDe(zC.stock, mesure);
+    const Eb = stockAvant ? moins(clesDe(parent.fichiers, mesure), Sb) : clesDe(zP.exempte, mesure);
+    const Eh = clesDe(zC.exempte, mesure);
+    const sorti = moins(Sb, Sh);
+    const SORTI = taille(sorti);
+    const accru = moins(Sh, Sb);
+    /** @type {{ fichier: string, ref: string, n: number }[]} */
+    const retournes = [];
+    for (const [k, n] of accru) {
+      const pris = Math.min(n, Eb.get(k) ?? 0);
+      if (pris) retournes.push({ fichier: k.slice(0, k.indexOf(SEP)), ref: k.slice(k.indexOf(SEP) + 1), n: pris });
+    }
+    const RETOURNE = retournes.reduce((t, r) => t + r.n, 0);
+    const APPARU = taille(accru) - RETOURNE;
+    const entre = moins(Eh, Eb);
+    const ENTRE = taille(entre);
+    let RECLASSE = 0;
+    for (const m of franchis) {
+      for (const [k, n] of sorti) {
+        if (!k.startsWith(m + SEP)) continue;
+        const pris = Math.min(n, entre.get(k) ?? 0);
+        if (!pris) continue;
+        prix.get(m)[v] += pris;
+        RECLASSE += pris;
+        sorti.set(k, n - pris);
+        entre.set(k, entre.get(k) - pris);
+      }
+    }
+    /** @type {Map<string, number>} réf → ENTRÉ restant, fichiers confondus. */
+    const libres = new Map();
+    for (const [k, n] of entre) {
+      const ref = k.slice(k.indexOf(SEP) + 1);
+      libres.set(ref, (libres.get(ref) ?? 0) + n);
+    }
+    let PRIMITIVISE = 0;
+    for (const k of [...sorti.keys()].sort()) {
+      const ref = k.slice(k.indexOf(SEP) + 1);
+      const pris = Math.min(sorti.get(k), libres.get(ref) ?? 0);
+      if (!pris) continue;
+      PRIMITIVISE += pris;
+      libres.set(ref, libres.get(ref) - pris);
+      sorti.set(k, sorti.get(k) - pris);
+    }
+    out[v] = {
+      stock: [taille(Sb), taille(Sh)],
+      exempte: [taille(Eb), taille(Eh)],
+      SORTI, APPARU, RETOURNE, ENTRE, RECLASSE, PRIMITIVISE, DISPARU: taille(sorti), retournes,
+    };
+  }
+  return {
+    identite: out.identite,
+    espacement: out.espacement,
+    franchis: franchis.map((module) => {
+      const p = prix.get(module);
+      return { module, identite: p.identite, espacement: p.espacement, n: p.identite + p.espacement };
+    }),
+  };
+}
+
+/**
+ * Ligne lisible d'un volet ventilé : bornes du stock et de la zone exempte, puis `SORTI` =
+ * `RECLASSÉ` + `PRIMITIVISÉ` + `DISPARU`, `APPARU` et `RETOURNÉ`.
+ * @param {string} nom @param {ReturnType<typeof ventiler>['identite']} v @returns {string}
  */
 export function ligneDeVentilation(nom, v) {
-  const signe = (n) => (n > 0 ? `+${n}` : String(n));
-  const solde = v.disparu < 0 ? `APPARU ${-v.disparu}` : `DISPARU ${v.disparu}`;
-  return `${nom.padEnd(10)} stock ${v.stock[0]} → ${v.stock[1]} (Δ ${signe(v.deltaStock)}) · exempté ${v.exempte[0]} → ${v.exempte[1]} (Δ ${signe(v.deltaExempte)}) · ENTRÉ ${v.entre} · ${solde} · RECLASSÉ ${v.reclasse} · PRIMITIVISÉ ${v.primitivise}`;
+  return `${nom.padEnd(10)} stock ${v.stock[0]} → ${v.stock[1]} · exempté ${v.exempte[0]} → ${v.exempte[1]} · SORTI ${v.SORTI} = RECLASSÉ ${v.RECLASSE} + PRIMITIVISÉ ${v.PRIMITIVISE} + DISPARU ${v.DISPARU} · APPARU ${v.APPARU} · RETOURNÉ ${v.RETOURNE}`;
+}
+
+/**
+ * L'ADMISSION du régénérateur (#1806 C) : parmi les entrées `mesurees`, celles que le stock de `HEAD`
+ * ne comptait pas et que `HEAD` portait déjà — les `retournes` d'une ventilation `HEAD` → arbre
+ * faite sur `stockDeTete`. Par clé (fichier, réf), les occurrences au-delà du compte de `stockDeTete`,
+ * dans la limite du retour : un site NEUF n'est jamais admis.
+ * @template {{ fichier: string, ref: string, occurrence: number }} E
+ * @param {readonly E[]} mesurees @param {Iterable<{ fichier: string, ref: string }>} stockDeTete
+ * @param {readonly { fichier: string, ref: string, n: number }[]} retournes @returns {E[]}
+ */
+export function admisAuRetour(mesurees, stockDeTete, retournes) {
+  const compte = clesDEntrees(stockDeTete, (f) => f);
+  const retour = new Map(retournes.map((r) => [r.fichier + SEP + r.ref, r.n]));
+  return mesurees.filter((e) => {
+    const k = e.fichier + SEP + e.ref;
+    const avant = compte.get(k) ?? 0;
+    return e.occurrence > avant && e.occurrence <= avant + (retour.get(k) ?? 0);
+  });
 }

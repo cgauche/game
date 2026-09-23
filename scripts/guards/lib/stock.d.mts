@@ -84,3 +84,6 @@ export function lignesMalQualifiees(
   stock: Iterable<readonly [string, { lot?: string; date?: string }]>,
   opts?: { lotsConnus?: Iterable<string> },
 ): string[];
+
+export function ligneDEntree(e: EntreeNominative): string;
+export function entreesEcrites(texte: string | null, nom: string): EntreeNominative[] | null;

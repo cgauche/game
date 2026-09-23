@@ -10,7 +10,7 @@
  * calcul d'écart à `stock.mjs`. Aucun plafond n'est touché — il n'y en a plus.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
-import { refusDeCroissance, type EntreeNominative } from './stock.mjs';
+import { ligneDEntree, refusDeCroissance, type EntreeNominative } from './stock.mjs';
 import { parUnitesDeCode } from './lister.mjs';
 
 export interface CollectionAReecrire {
@@ -31,13 +31,6 @@ export interface CollectionAReecrire {
 export const ordreDeStock = (entrees: readonly EntreeNominative[]): EntreeNominative[] =>
   [...entrees].sort((a, b) =>
     parUnitesDeCode(a.fichier, b.fichier) || parUnitesDeCode(a.ref, b.ref) || a.occurrence - b.occurrence);
-
-/** Une réf peut porter les guillemets de son propre langage — un sélecteur CSS d'attribut
- *  (`.grid[data-min='sm']`) casserait le littéral qui l'accueille. */
-const litteral = (v: string) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
-
-const ligne = (e: EntreeNominative) =>
-  `  { fichier: ${litteral(e.fichier)}, ref: ${litteral(e.ref)}, occurrence: ${e.occurrence} },`;
 
 /**
  * Refuse toute croissance, puis écrit (ou vérifie, sous `--check`) le fichier de stock.
@@ -70,7 +63,7 @@ export function regenererStock(p: {
     if (head < 0) throw new Error(`borne d'ouverture de ${c.nom} introuvable dans ${p.chemin}`);
     const tail = next.indexOf('\n]', head);
     if (tail < 0) throw new Error(`borne de fermeture de ${c.nom} introuvable dans ${p.chemin}`);
-    const corps = ordreDeStock(c.mesurees).map(ligne).join('\n');
+    const corps = ordreDeStock(c.mesurees).map(ligneDEntree).join('\n');
     next = next.slice(0, head + OPEN.length) + (corps ? `\n${corps}` : '') + next.slice(tail);
   }
 

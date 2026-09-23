@@ -100,6 +100,39 @@ export function sitesEnEntrees(sites, { famille } = {}) {
   });
 }
 
+/** Une réf peut porter les guillemets de son propre langage — un sélecteur CSS d'attribut
+ *  (`.grid[data-min='sm']`) casserait le littéral qui l'accueille. */
+const litteral = (v) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+
+/** La ligne ÉCRITE d'une entrée dans un fichier de stock `.mjs` (`regenStock.mts`), que relit
+ *  `entreesEcrites`. @param {{ fichier: string, ref: string, occurrence: number }} e @returns {string} */
+export const ligneDEntree = (e) =>
+  `  { fichier: ${litteral(e.fichier)}, ref: ${litteral(e.ref)}, occurrence: ${e.occurrence} },`;
+
+const LIGNE_ECRITE = /^ {2}\{ fichier: '((?:[^'\\]|\\.)*)', ref: '((?:[^'\\]|\\.)*)', occurrence: (\d+) \},$/;
+const delitteral = (v) => v.replace(/\\(.)/g, '$1');
+
+/**
+ * Les entrées de la collection `nom` (`export const <nom> = [ … ]`) dans le TEXTE d'un fichier de
+ * stock écrit par `ligneDEntree` — le stock d'un ARBRE lu par git, qu'aucun `import` n'atteint.
+ * `null` = texte absent ; une collection introuvable ou une ligne hors forme LÈVENT en se nommant.
+ * @param {string | null} texte @param {string} nom
+ * @returns {{ fichier: string, ref: string, occurrence: number }[] | null}
+ */
+export function entreesEcrites(texte, nom) {
+  if (texte === null) return null;
+  const ouvre = `export const ${nom} = [`;
+  const debut = texte.indexOf(ouvre);
+  if (debut < 0) throw new Error(`collection ${nom} introuvable dans le stock lu`);
+  const fin = texte.indexOf('\n]', debut);
+  const corps = texte.slice(debut + ouvre.length, fin < 0 ? undefined : fin).split('\n').filter((l) => l.trim());
+  return corps.map((l) => {
+    const m = LIGNE_ECRITE.exec(l);
+    if (!m) throw new Error(`ligne hors forme dans ${nom} : ${l.trim()}`);
+    return { fichier: delitteral(m[1]), ref: delitteral(m[2]), occurrence: Number(m[3]) };
+  });
+}
+
 /**
  * SURVIE d'une ÉCHÉANCE à une RÉGÉNÉRATION de stock — seule définition du dépôt (#1820), consommée
  * par les deux régénérateurs datés (`scripts/raw/check-source-tables.mjs`,

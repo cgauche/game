@@ -182,6 +182,28 @@ export const sortieOuNull = (union) =>
   union.disponible && !union.absent && union.valeur.status === 0 ? union.valeur.stdout : null
 
 /**
+ * Les lignes qui portent le motif `-E` `motif` sous `dossiers`, PAR FICHIER (texte des lignes, `\n`
+ * final) — l'unique lecture `git grep` des portes. `portee` : `[]` (arbre de travail suivi),
+ * `['--untracked']`, `['--cached']` (index) ou `[<ref>]`, dont git préfixe alors chaque chemin.
+ * `git` (args → sortie, `null` = rien) est le lecteur de l'appelant : aucun match (sortie 1) est vide.
+ * @param {(args: string[]) => string | null} git @param {string[]} portee @param {string} motif
+ * @param {readonly string[]} dossiers @returns {Map<string, string>}
+ */
+export function grepDe(git, portee, motif, dossiers) {
+  const prefixe = portee.length === 1 && !portee[0].startsWith('-') ? `${portee[0]}:` : ''
+  const sortie = git(['grep', '-z', '-E', '-e', motif, ...portee, '--', ...dossiers]) ?? ''
+  /** @type {Map<string, string>} */
+  const lignes = new Map()
+  for (const l of sortie.split('\n')) {
+    const at = l.indexOf('\0')
+    if (at < 0) continue
+    const rel = l.slice(0, at).slice(prefixe.length)
+    lignes.set(rel, `${lignes.get(rel) ?? ''}${l.slice(at + 1)}\n`)
+  }
+  return lignes
+}
+
+/**
  * `<ancetre>` est-il un ancêtre de `<descendant>` ? Le prédicat de git répond par son code de sortie ;
  * un sha INCONNU rend `absent` (l'appelant décide : « pas dans cette histoire » pour une porte).
  * @returns {{disponible:true, valeur:boolean}|{disponible:true,absent:true}|{disponible:false,raison:string}}

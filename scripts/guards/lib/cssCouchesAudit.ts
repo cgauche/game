@@ -17,33 +17,24 @@
  *      (arbitrage A2, 2026-09-18) : un littéral d'objet dont TOUTES les clés sont des variables
  *      CSS, consommées par une classe (patron `.swatch`).
  *
- * FRONTIÈRE module de PRIMITIVE / module d'ÉCRAN : elle dérive du CATALOGUE, jamais d'une liste
- * gravée ici — une primitive déclare au manifeste (`src/data/primitives.manifest.json`, champ
- * `css`) le module qu'elle POSSÈDE. Tout autre `src/ui/styles/*.css` hors feuilles partagées est un
- * module d'écran.
+ * FRONTIÈRE zone exempte / STOCK : elle dérive du CATALOGUE et du graphe d'imports, jamais d'une liste
+ * gravée ici — `modulesExemptes` (`cssCouches.mjs`, #1806 L1).
  *
  * DEUX ÉTAGES : la mesure des volets identité / espacement est PURE et vit dans `cssCouches.mjs`
  * (les hooks la chargent sous `node` nu) ; ce module-ci compose les trois volets
- * (`mesureCssCouches`, pur sur ce qu'il reçoit) et LIT les images — disque ou ref git — par une
- * `SourceCss` unique (`imageCss`).
+ * (`mesureCssCouches`, pur sur ce qu'il reçoit) et LIT les images — disque ou ref git — par le
+ * lecteur unique des hooks (`imageCss`, `cssImages.mjs`).
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from './sourceCorpus.mjs';
-import { lireGit, sortieOuNull } from './gitPorte.mjs';
+import { imageCss, sourceGit, TRAVAIL } from './cssImages.mjs';
 import {
-  CHEMIN_COUCHES,
-  CHEMIN_MANIFESTE,
   cleDeRegle,
   declarations,
   FEUILLES_PARTAGEES,
-  feuillesPartageesDe,
-  manifesteDe,
-  modulesDePrimitive,
   partitionCss,
-  RACINE_DES_MODULES,
   reglesCss,
-  type EntreeManifeste,
   type Fichier,
   type ImageCss,
   type Site,
@@ -51,51 +42,9 @@ import {
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 
-/** D'où une image se lit : la liste des `.css` d'un dossier, et le texte d'un chemin (`null` = absent). */
-type SourceCss = { lister: (dossier: string) => readonly string[]; lire: (rel: string) => string | null };
-
-/** L'arbre de travail. */
-const sourceDuDisque: SourceCss = {
-  lister: (dossier) => readCorpus([dossier], { exts: ['.css'] }).map((f) => f.rel),
-  lire: (rel) => (existsSync(`${RACINE}${rel}`) ? readFileSync(`${RACINE}${rel}`, 'utf8') : null),
-};
-
-/** Un commit, lu par l'hôte git des portes (`gitPorte.mjs`) — sans toucher l'arbre de travail. Une
- *  ref inconnue ou un git indisponible LÈVENT en se nommant : une image vide ventilerait sur rien. */
-export function sourceDeRef(ref: string, cwd: string = RACINE): SourceCss {
-  const lire = (args: string[]): string | null => {
-    const vu = lireGit(args, { cwd });
-    if (!vu.disponible) throw new Error(`git indisponible pour lire ${ref} : ${vu.raison}`);
-    return sortieOuNull(vu);
-  };
-  if (lire(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) === null) throw new Error(`ref inconnue : ${ref}`);
-  return {
-    lister: (dossier) =>
-      (lire(['ls-tree', '-r', '--name-only', ref, '--', dossier]) ?? '')
-        .split('\n')
-        .map((l) => l.trim())
-        .filter((l) => l.endsWith('.css')),
-    lire: (rel) => lire(['show', `${ref}:${rel}`]),
-  };
-}
-
-/** L'IMAGE d'une source : son manifeste, SA liste `FEUILLES_PARTAGEES`, et ses feuilles MESURÉES —
- *  `src/ui/styles/` ∪ les modules déclarés par le manifeste (champ `css`), où qu'ils vivent : une
- *  primitive qui n'habite pas `src/ui` (le plateau, `gameIso`) POSSÈDE quand même sa feuille (#1806 A3). */
-export function imageCss(source: SourceCss): ImageCss {
-  const manifeste: EntreeManifeste[] = manifesteDe(source.lire(CHEMIN_MANIFESTE));
-  const partagees = feuillesPartageesDe(source.lire(CHEMIN_COUCHES));
-  const dansStyles = source.lister(RACINE_DES_MODULES);
-  const dejaLues = new Set(dansStyles);
-  const ailleurs = [...modulesDePrimitive(manifeste)].filter((c) => !dejaLues.has(c));
-  const fichiers = [...dansStyles, ...ailleurs]
-    .map((rel) => ({ rel, text: source.lire(rel) }))
-    .filter((f): f is Fichier => f.text !== null);
-  return { fichiers, manifeste, partagees };
-}
-
-/** L'image de l'arbre de travail. */
-export const imageDuDisque = (): ImageCss => imageCss(sourceDuDisque);
+/** L'image de l'arbre de travail (fichiers non suivis compris), lue par `imageCss` (`cssImages.mjs`) ;
+ *  un git indisponible LÈVE en se nommant : une image vide mesurerait sur rien. */
+export const imageDuDisque = (): ImageCss => imageCss(sourceGit({ cwd: RACINE, arbre: TRAVAIL }), { racine: RACINE });
 
 /** Le corpus que juge le volet INLINE : les composants `.tsx` de `src/ui`. */
 export const composantsDuDisque = (): readonly Fichier[] => readCorpus(['src/ui'], { exts: ['.tsx'] });

@@ -1,0 +1,63 @@
+// STOCK NOMINATIF des FUITES DE DOMAINE en couche partagée — consommé par le cliquet (xiii) de
+// `src/ui/ui-ratchets.test.ts` (#371, forme nominative #1806).
+//
+// Une ENTRÉE par classe définie dans une feuille partagée (`FEUILLES_PARTAGEES`, `styles.css`,
+// `src/gameIso/anim.css`) qui n'est ni cataloguée à `docs/charte-ui.md` ni posée par au moins deux
+// modules `.tsx` : `{ fichier, ref: '.<classe>', occurrence }`, la forme de tout stock nominatif du
+// dépôt (`cleDeSite`, `stock.mjs`). DÉCROISSANT : une entrée se solde en déplaçant la classe dans le
+// module de sa primitive, ou en la cataloguant ; une entrée neuve se déclare par `CLIQUET:`.
+
+/** @type {import('./stock.mjs').EntreeNominative[]} */
+export const FUITES_COUCHE_PARTAGEE = [
+  { fichier: 'src/gameIso/anim.css', ref: '.breathe', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.chop', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.es-hors', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.es-koan', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.es-mort', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.es-rendu', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.f1', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.f2', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.f3', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.feed', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.fly', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.howl', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.kick', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.pastille-entite', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.pe-cost', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.proj', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.smoke', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.sway', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.token-endmark', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.warm', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.wrap', occurrence: 1 },
+  { fichier: 'src/gameIso/anim.css', ref: '.zde-ants', occurrence: 1 },
+  { fichier: 'src/ui/styles.css', ref: '.combat-cursor', occurrence: 1 },
+  { fichier: 'src/ui/styles.css', ref: '.error-collector-badge', occurrence: 1 },
+  { fichier: 'src/ui/styles.css', ref: '.error-collector-list', occurrence: 1 },
+  { fichier: 'src/ui/styles.css', ref: '.error-collector-meta', occurrence: 1 },
+  { fichier: 'src/ui/styles.css', ref: '.error-collector-msg', occurrence: 1 },
+  { fichier: 'src/ui/styles.css', ref: '.error-collector-stack', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.footnote', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.hero-present-actions', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.hero-present-amb', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.hero-present-aside', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.hero-present-body', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.hero-present-detail', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.hero-present-fig', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.hero-present-sub', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.lore-chip', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.menu-link', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.menu-tools', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.menu-tools-rule', occurrence: 1 },
+  { fichier: 'src/ui/styles/base.css', ref: '.no-scrollbar', occurrence: 1 },
+  { fichier: 'src/ui/styles/components.css', ref: '.alert', occurrence: 1 },
+  { fichier: 'src/ui/styles/components.css', ref: '.col-buy', occurrence: 1 },
+  { fichier: 'src/ui/styles/components.css', ref: '.col-emph', occurrence: 1 },
+  { fichier: 'src/ui/styles/components.css', ref: '.col-enc', occurrence: 1 },
+  { fichier: 'src/ui/styles/components.css', ref: '.col-name', occurrence: 1 },
+  { fichier: 'src/ui/styles/components.css', ref: '.col-price', occurrence: 1 },
+  { fichier: 'src/ui/styles/components.css', ref: '.col-stat', occurrence: 1 },
+  { fichier: 'src/ui/styles/components.css', ref: '.detail-row', occurrence: 1 },
+  { fichier: 'src/ui/styles/components.css', ref: '.group-row', occurrence: 1 },
+  { fichier: 'src/ui/styles/tabs.css', ref: '.tabs-trailing', occurrence: 1 },
+];

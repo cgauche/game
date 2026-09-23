@@ -7,7 +7,9 @@
 // sont tenus par `src/stock-primitive.test.ts` (vitest).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { cleDeSite, ecartDuVolet, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from './stock.mjs'
+import {
+  cleDeSite, ecartDuVolet, entreesEcrites, ligneDEntree, refusDeCroissance, sitesEnEntrees, survieDeLecheance,
+} from './stock.mjs'
 
 test('sitesEnEntrees : deux sites de la MÊME réf dans le MÊME fichier se distinguent par leur OCCURRENCE', () => {
   const entrees = sitesEnEntrees([
@@ -166,4 +168,17 @@ test('survie : la clé SEULE apparie — une réf qui bouge redate l’entrée',
   assert.deepEqual(rendu, [
     { famille: 'f', fichier: 'Source/L/01 - A.md', ref: 'r1', occurrence: 1, lot: '#9999 Z', date: '2030-01-01' },
   ])
+})
+
+test('entreesEcrites relit ce que `ligneDEntree` écrit — guillemet et barre oblique compris ; absent → null ; hors forme → refus nommé', () => {
+  const entrees = [
+    { fichier: 'src/ui/styles/a.css', ref: ".grid[data-min='sm'] :: color", occurrence: 1 },
+    { fichier: 'src/ui/styles/a.css', ref: '.b\\:hover :: gap :: 3px', occurrence: 2 },
+  ]
+  const texte = `// en-tête\nexport const AUTRE = [\n]\nexport const S = [\n${entrees.map(ligneDEntree).join('\n')}\n]\n`
+  assert.deepEqual(entreesEcrites(texte, 'S'), entrees)
+  assert.deepEqual(entreesEcrites(texte, 'AUTRE'), [])
+  assert.equal(entreesEcrites(null, 'S'), null)
+  assert.throws(() => entreesEcrites(texte, 'MANQUE'), /collection MANQUE introuvable/)
+  assert.throws(() => entreesEcrites('export const S = [\n  { fichier: 1 },\n]\n', 'S'), /ligne hors forme dans S/)
 })
