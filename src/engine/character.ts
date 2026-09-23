@@ -43,7 +43,7 @@ import {
   specLabel,
   talents as talentTable,
 } from '../data';
-import { splitTopLevelOu, splitLabel, concreteLabel, refKey, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, inCareerStatus, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
+import { splitTopLevelOu, splitLabel, parseOption, concreteLabel, refKey, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, statutOuRefus, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
 import { resolveTrappingChoices } from './trappingChoices';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from './talentEffects';
 import { applyStarOps } from './creation';
@@ -199,8 +199,9 @@ export function resolveSpeciesTalents(
     if (!isUnresolvedChoice(opt)) return opt;
     const chosen = opts.choices?.[entryKey];
     if (chosen && !isUnresolvedChoice(chosen)) return chosen;
-    const { name, spec } = splitLabel(opt);
-    const specOptions = /\sou\s/i.test(spec!) ? spec!.split(/\s+ou\s+/i).map((s) => s.trim()) : wildcardSpecs(name);
+    const joker = parseOption(opt);
+    const name = joker.label;
+    const specOptions = wildcardSpecs(joker);
     // Les options d'un joker RESTREINT sont des libellés de spec d'authoring, celles d'un joker plein
     // des ids (`wildcardSpecs`) : `talentRefKeyOf` normalise les deux vers l'identité stable.
     const free = specOptions.find((s) => !owned.has(talentRefKeyOf(concreteLabel(name, s)))) ?? specOptions[0];
@@ -288,14 +289,12 @@ export function rollCharacteristics(sp: SpeciesData, rng: RNG = defaultRNG): Cha
  *  liste restreinte « (A ou B) »). */
 function resolveEntry(raw: string, specChoices?: Record<string, string>): string {
   if (!isUnresolvedChoice(raw)) return raw;
-  const { name, spec } = splitLabel(raw);
+  const joker = parseOption(raw);
   const choice = specChoices?.[raw];
-  if (choice) return concreteLabel(name, choice);
-  const options = /\sou\s/i.test(spec!)
-    ? spec!.split(/\s+ou\s+/i).map((s) => s.trim())
-    : wildcardSpecs(name);
+  if (choice) return concreteLabel(joker.label, choice);
+  const options = wildcardSpecs(joker);
   const concrete = options.filter((o) => !/au choix/i.test(o));
-  return concrete.length ? concreteLabel(name, concrete[0]) : name;
+  return concrete.length ? concreteLabel(joker.label, concrete[0]) : joker.label;
 }
 
 export function createHero(opts: CreateHeroOptions): Combatant {
@@ -473,16 +472,14 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     const { talentId, spec } = chosenTalent;
     const all = [...sSlots, ...tSlots];
     const designations = designationsFor(hero, opts.careerId);
-    const status = inCareerStatus(tSlots, designations, talentId, spec, all);
-    if (status === 'free') designateSlot(hero, opts.careerId, freeSlotFor(tSlots, designations, talentId, spec)!, talentId, spec, all);
-    else if (status !== 'explicit') {
-      const quoi = `Talent de carrière « ${refKey(talentId, spec)} »`;
-      const options = tSlots.flatMap((s) => s.options).filter((o) => o.optionId === talentId);
-      if (!options.length) throw new Error(`${quoi} : absent du Niveau 1 de « ${opts.careerId} » (LDB 05 l.535).`);
-      if (spec == null && options.every((o) => o.wildcard)) {
-        throw new Error(`${quoi} : l'emplacement « (Au choix) » du Niveau 1 de « ${opts.careerId} » exige une spécialisation (LDB 09 l.40).`);
-      }
-      throw new Error(`${quoi} : aucun emplacement libre du Niveau 1 de « ${opts.careerId} » ne couvre cette spécialisation (LDB 09 l.40).`);
+    const statut = statutOuRefus(tSlots, designations, talentId, spec, all);
+    const quoi = `Talent de carrière « ${refKey(talentId, spec)} »`;
+    switch (statut) {
+      case 'free': designateSlot(hero, opts.careerId, freeSlotFor(tSlots, designations, talentId, spec)!, talentId, spec, all); break;
+      case 'explicit': case 'designated': break;
+      case 'absent': throw new Error(`${quoi} : absent du Niveau 1 de « ${opts.careerId} » (LDB 05 l.535).`);
+      case 'sansSpec': throw new Error(`${quoi} : l'emplacement « (Au choix) » du Niveau 1 de « ${opts.careerId} » exige une spécialisation (LDB 10 l.17).`);
+      case 'nonCouvert': throw new Error(`${quoi} : aucun emplacement libre du Niveau 1 de « ${opts.careerId} » ne couvre cette spécialisation.`);
     }
   }
 

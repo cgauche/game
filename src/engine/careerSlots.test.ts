@@ -200,13 +200,21 @@ describe('désignation d\'un emplacement de Groupe d\'arme par specId (données 
   });
 });
 
-describe('un emplacement « (Au choix) » se désigne par une spécialisation (LDB 09 l.40)', () => {
+describe('un emplacement « (Au choix) » se désigne par une spécialisation (LDB 10 l.17)', () => {
   const tSlots = talentSlots(levelsForCareer('pretre'), 1);
   const beni = tSlots.find((s) => s.options.some((o) => o.optionId === 'beni' && o.wildcard))!;
   it('Béni (Au choix) du Prêtre : couvert par une spécialisation, jamais nu', () => {
     expect(beni, 'Prêtre N1 porte « Béni (Au choix) »').toBeDefined();
     expect(slotCovers(beni, 'beni', undefined)).toBe(false);
     expect(slotCovers(beni, 'beni', 'sigmar')).toBe(true);
+  });
+  it('une désignation « beni » nue déjà persistée n\'est pas lue : l\'emplacement redevient à désigner', () => {
+    const h = hero({ career: 'pretre', careerSlotChoices: { pretre: { [beni.key]: 'beni' } } });
+    expect(designationsFor(h, 'pretre')).toEqual({});
+    expect(inCareerStatus(tSlots, designationsFor(h, 'pretre'), 'beni', undefined)).toBeNull();
+    expect(freeSlotFor(tSlots, designationsFor(h, 'pretre'), 'beni', 'sigmar')).toBe(beni);
+    expect(designateSlot(h, 'pretre', beni, 'beni', 'sigmar', tSlots).ok).toBe(true);
+    expect(h.careerSlotChoices?.pretre).toEqual({ [beni.key]: 'beni|sigmar' });
   });
   it('freeSlotFor / designateSlot refusent Béni nu', () => {
     expect(freeSlotFor(tSlots, {}, 'beni', undefined)).toBeUndefined();
@@ -216,23 +224,32 @@ describe('un emplacement « (Au choix) » se désigne par une spécialisation (L
   });
 });
 
-describe('wildcardSpecs — specs valides à joker (SOURCE UNIQUE créateur + avancement)', () => {
+describe('wildcardSpecs — pool d’un joker (SOURCE UNIQUE créateur + avancement)', () => {
   it('Béni → cultes du registre (ids ; dont les dieux gnomes NADJ)', () => {
-    const s = wildcardSpecs('Béni');
+    const s = wildcardSpecs({ label: 'Béni' });
     expect(s).toContain('sigmar');
     expect(s).toContain('evawn');
   });
   it('Magie des Arcanes → ids de domaine (specs id-based, data-driven)', () => {
-    expect(wildcardSpecs('Magie des Arcanes')).toEqual(expect.arrayContaining(['feu', 'ombres', 'metal']));
+    expect(wildcardSpecs({ label: 'Magie des Arcanes' })).toEqual(expect.arrayContaining(['feu', 'ombres', 'metal']));
   });
   it('Magie du Chaos → ids nurgle / slaanesh / tzeentch', () => {
-    expect(wildcardSpecs('Magie du Chaos').sort()).toEqual(['nurgle', 'slaanesh', 'tzeentch']);
+    expect(wildcardSpecs({ label: 'Magie du Chaos' }).sort()).toEqual(['nurgle', 'slaanesh', 'tzeentch']);
   });
   it('Invocation → cultes (ids)', () => {
-    expect(wildcardSpecs('Invocation')).toContain('sigmar');
+    expect(wildcardSpecs({ label: 'Invocation' })).toContain('sigmar');
   });
   it('libellé sans domaine/culte/specs → []', () => {
-    expect(wildcardSpecs('Inexistant-xyz')).toEqual([]);
+    expect(wildcardSpecs({ label: 'Inexistant-xyz' })).toEqual([]);
+  });
+  it('entrée par id (avancement) = entrée par libellé (créateur) : un seul pool', () => {
+    expect(wildcardSpecs({ label: 'Béni', optionId: 'beni', wildcard: true }, 'talent')).toEqual(wildcardSpecs({ label: 'Béni' }));
+    expect(wildcardSpecs({ label: 'Savoir', optionId: 'savoir', wildcard: true }, 'skill')).toEqual(wildcardSpecs({ label: 'Savoir' }));
+    expect(wildcardSpecs({ label: 'Béni', optionId: 'beni', wildcard: true }, 'talent').length).toBeGreaterThan(0);
+  });
+  it('liste restreinte « (A ou B) » : prime sur le pool de la def, par les deux entrées', () => {
+    expect(wildcardSpecs({ label: 'Béni', optionId: 'beni', wildcard: true, specOptions: ['sigmar'] }, 'talent')).toEqual(['sigmar']);
+    expect(wildcardSpecs({ label: 'Béni', specOptions: ['sigmar'] })).toEqual(['sigmar']);
   });
 });
 

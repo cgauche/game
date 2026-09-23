@@ -39,8 +39,8 @@ describe('#1342 L3 — spécialisation hors pool : valide partout, jamais propos
 
   it('POOL : ni `specPoolOf`, ni le joker « (Au choix) » du créateur/avancement ne la proposent', () => {
     expect(specPoolOf(savoir)).not.toContain(HORS_POOL.specId);
-    expect(wildcardSpecs(savoir.label)).not.toContain(HORS_POOL.specId);
-    expect(wildcardSpecs(savoir.label).length).toBeGreaterThan(0); // le pool existe, il est juste amputé de l'entrée
+    expect(wildcardSpecs({ label: savoir.label })).not.toContain(HORS_POOL.specId);
+    expect(wildcardSpecs({ label: savoir.label }).length).toBeGreaterThan(0); // le pool existe, il est juste amputé de l'entrée
   });
 
   it('`testValue` calcule la spécialisation hors pool comme n\'importe quelle autre', () => {
