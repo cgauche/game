@@ -727,8 +727,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 - **CRB 076** (Running the Game) :
   - ⬜ l.148-230 « Roads & Rivers » — candidat trou de règle, 0 réf
 - **CRB 078** (The Lie of the Land) :
-  - ⬜ l.15-56 « The Grey Mountains » — candidat trou de règle, 0 réf
-  - ⬜ l.57-194 « The Vorbergland » — candidat trou de règle, 0 réf
+  - ⬜ l.15-54 « The Grey Mountains » — candidat trou de règle, 0 réf
+  - ⬜ l.55-192 « The Vorbergland » — candidat trou de règle, 0 réf
 - **CRB 079** (The Powers That Be) :
   - ⬜ l.227-292 « 1053–1115 IC » — candidat trou de règle, 0 réf
   - ⬜ l.293-308 « 2135 IC » — candidat trou de règle, 0 réf
@@ -2120,4 +2120,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: 2f989ade83cc781df6c1f592bb0d5df74d855c93 (467 fichiers, 20 dossiers) corps: 2d08f4ed18469838200d14d356d66d2de8475178 -->
+<!-- sources-empreinte: 321c20d817c4b980b2bc9a7b0dacba975bb123e8 (467 fichiers, 20 dossiers) corps: 5be6504a4003e2798cc3072b25c6322d755736bd -->

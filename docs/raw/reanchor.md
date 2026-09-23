@@ -7,4 +7,4 @@
 **Bilan : ✅ 653 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 0 introuvables · ➖ 3562 synthèses** (⛔ 0 hors-fichier · ⚠️ 0 sans source) sur 4215 réfs · 653 citations · 29 fiches.
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
-<!-- sources-empreinte: 10bf4a378ceac873a9b5f451515c2af6d2632cb9 (203 fichiers, 18 dossiers) corps: d4412f8f0c0b5b91ab4d67da12eb2bae78519574 -->
+<!-- sources-empreinte: a19a7d81a771763bba2e91ddda099fede7bf9059 (203 fichiers, 18 dossiers) corps: d4412f8f0c0b5b91ab4d67da12eb2bae78519574 -->
