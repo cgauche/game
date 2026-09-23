@@ -2,8 +2,10 @@
 // Le corps est l'ancre : chaque titre se juge par la ligne qui précède la 1re ligne de SON corps.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import { classer, grasDeTete, plusLongueCroissante, sousLaRacine } from './sonde-titres.mjs'
+import { spawnSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { classer, grasDeTete, plusLongueCroissante } from './sonde-titres.mjs'
 import { gabaritTitreDe } from './_lib.mjs'
 
 const GABARIT = {
@@ -143,10 +145,12 @@ test('#1739 : grasDeTete distingue l’étiquette ; plusLongueCroissante garde l
   assert.deepEqual([...plusLongueCroissante([1, 2, 9, 3, 4])].sort(), [0, 1, 3, 4])
 })
 
-test('#1739 : `--json` refuse un chemin sous la racine du dépôt', () => {
-  assert.equal(sousLaRacine('C:/repo/x/sites.json', 'C:/repo'), true)
-  assert.equal(sousLaRacine('C:/tmp/sites.json', 'C:/repo'), false)
-  assert.equal(sousLaRacine('C:/repo-voisin/sites.json', 'C:/repo'), false)
+test('#1739 : `--json` sous la racine du dépôt est REFUSÉ avant toute lecture du PDF (exit 2, rien d’écrit)', () => {
+  const sortie = fileURLToPath(new URL('./sites-refuses.json', import.meta.url))
+  const r = spawnSync(process.execPath, [fileURLToPath(new URL('./sonde-titres.mjs', import.meta.url)), 'core-rulebook-5e', '--json', sortie], { encoding: 'utf8' })
+  assert.equal(r.status, 2, r.stderr)
+  assert.match(r.stderr, /sous le dépôt/)
+  assert.equal(existsSync(sortie), false)
 })
 
 test('#1739 : toute cible est le DÉBUT d’un bloc — une ligne de données de tableau sort en cible-invalide (CRB p.145, p.339)', () => {

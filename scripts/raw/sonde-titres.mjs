@@ -31,10 +31,11 @@
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve, sep } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { decoupeDe, gabaritTitreDe, livreExtraitDe, nomsDeLaListe, normalize, readText } from './_lib.mjs'
 import { lignes } from './lib/colonnes.mjs'
+import { canoniser, relatifSousRacine } from '../docs/lib/chemin-mesure.mjs'
 
 const PDF_LIGNES = join(dirname(fileURLToPath(import.meta.url)), 'lib', 'pdf-lignes.py')
 
@@ -363,12 +364,6 @@ const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'N', 'corps-introuvable', 'cible-invalide', 'doublon', 'numero-de-page']
 const FAMILLES = ['entree', 'encadre', 'tableau', 'capitales']
 
-/** `chemin` est-il sous `racine` ? PURE (comparaison de chemins résolus, casse ignorée). */
-export const sousLaRacine = (chemin, racine) => {
-  const c = resolve(chemin).toLowerCase()
-  const r = resolve(racine).toLowerCase()
-  return c === r || c.startsWith(r.endsWith(sep) ? r : r + sep)
-}
 
 function main() {
   const args = process.argv.slice(2)
@@ -383,7 +378,7 @@ function main() {
     return
   }
   const sortie = opt('--json')
-  if (sortie && sousLaRacine(sortie, RACINE)) {
+  if (sortie && relatifSousRacine(canoniser(RACINE), sortie) !== null) {
     console.error(`sonde-titres : --json ${sortie} est sous le dépôt — la sonde n'écrit rien sous le dépôt`)
     process.exitCode = 2
     return
