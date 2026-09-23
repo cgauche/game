@@ -56,7 +56,7 @@
 // Le contrat est BIDIRECTIONNEL : une forme observée absente d'ici = rouge (dérive neuve) ; une
 // ligne d'ici plus observée = rouge (ligne périmée) ; un compte d'occurrences, un LOT, un MOTIF ou
 // une DATE qui bougent = rouge (ils entrent dans la clé comparée).
-// RÉGIME DU STOCK (#1789, même geste qu'à `slotsStock.mjs:19`, `26628b417`) : une forme rendue
+// RÉGIME DU STOCK (#1789, `26628b417`) : une forme rendue
 // MESURABLE par la sortie d'un littéral de code vers une DONNÉE ENTRE au stock — elle y est nouvelle
 // à la mesure, pas au dépôt ; le stock DÉCROÎT quand une forme s'ÉTEINT, migrée vers la forme cible
 // du lexique. Une forme neuve qu'aucune sortie de code n'explique reste une DÉRIVE.

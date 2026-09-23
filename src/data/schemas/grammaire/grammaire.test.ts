@@ -19,7 +19,7 @@ import { descRefSchema, enumNomme, sourceRefSchema } from './valeurs';
 import { proseAdressable, versDisque } from './prose';
 import { PROSE_INLINE_TOLEREE } from './prose-inline';
 import type { DescRef as DescRefParseur } from '../../source/decoupe';
-import { ref, refs, specRef, pick, typedRef, idDe, cibleDe, estSpecialisable, TYPES, type Id } from './ref';
+import { ref, refs, specRef, pick, idDe, cibleDe, estSpecialisable, TYPES, type Id } from './ref';
 import { byId, type SkillData, type TypeResolu } from '../../index';
 import { avancement } from './avancement';
 import { slotsDe } from './slots';
@@ -1014,11 +1014,9 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
     expect(possede.safeParse({ id: UNE_COMPETENCE.id, advances: 3, value: 40 }).success).toBe(false);
   });
 
-  it('`refs()` valide chaque id de la liste, `typedRef()` résout selon le `type` porté', () => {
+  it('`refs()` valide chaque id de la liste', () => {
     expect(refs('skill').safeParse([UNE_COMPETENCE.id]).success).toBe(true);
     expect(refs('skill').safeParse([UNE_COMPETENCE.id, 'inconnu']).success).toBe(false);
-    expect(typedRef().safeParse({ type: 'skill', id: UNE_COMPETENCE.id }).success).toBe(true);
-    expect(typedRef().safeParse({ type: 'talent', id: UNE_COMPETENCE.id }).success).toBe(false);
   });
 
   it('`pick()` accepte « n parmi » et le tirage sur table, jamais les deux', () => {

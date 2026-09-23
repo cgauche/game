@@ -115,11 +115,12 @@ export function marquesPosées(): readonly { readonly noeud: object; readonly ma
  * La borne est BRUYANTE — atteindre la coupe LÈVE en nommant le path. La MARGE est verrouillée par
  * un test (`slots.test.ts`) qui mesure la profondeur RÉELLE des defs des deux racines (`profondeurDe`)
  * et l'exige STRICTEMENT sous la borne — le rouge arrive donc AVANT que `slotsDe` ne lève.
- * Mesure du 2026-08-26 : `src/scenes` descend à 25 (les 4 projets, chemin
- * `worldMap.routes[].perils[].effects[]|19.flow|3.test.difficultyBy[].cond|10.subject|2.bonus`),
- * `src/data` à 20 (`spells.json`). Ces chiffres se RE-MESURENT, ils ne se recopient pas.
+ * Mesure du 2026-09-23 (#1473 R1, `sceneEntitySchema` en union discriminée : +1 niveau) :
+ * `src/scenes` descend à 30 (`arene-projet.json`, chemin
+ * `scenes[].entities[]|0.usable.actions[].flow|1.effect|51.foes[].ref|1.custom.skills[].choix|1[]`),
+ * `src/data` à 23 (`criticals.json`). Ces chiffres se RE-MESURENT, ils ne se recopient pas.
  */
-export const PROFONDEUR_MAX = 30;
+export const PROFONDEUR_MAX = 32;
 
 /**
  * CAP DUR de la MESURE de profondeur — filet de sécurité de `profondeurDe`, sans rapport avec la

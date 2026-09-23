@@ -29,7 +29,7 @@ import { ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
 import { defDe, enfantsDe, PROFONDEUR_MAX } from './schemas/grammaire/slots';
 import * as valeurs from './schemas/grammaire/valeurs';
 import * as reference from './schemas/grammaire/reference';
-import { ref, specRef, pick, typedRef } from './schemas/grammaire/ref';
+import { ref, specRef, pick } from './schemas/grammaire/ref';
 import { qualityRefSchema } from './schemas/grammaire/reference';
 
 const GARDE = {
@@ -59,7 +59,7 @@ const GARDE = {
       'reste rendu sur les clés ÉCRITES.',
     'une VARIANTE de discriminée (un littéral portant un `z.literal(…)`) est hors du volet `redeclaration` : ' +
       'son `type`/`kind` nomme la variante, pas le type d’une entité — une référence re-tapée DANS une variante ' +
-      'reste vue par le volet `alias`, mais la forme `{id, type}` d’un effet n’est pas comptée comme `typedRef`.',
+      'reste vue par le volet `alias`.',
     'un schéma construit DYNAMIQUEMENT (fabrique qui reçoit sa `shape` en paramètre, `z.object(shape)` sans ' +
       'littéral) est invisible : le scan lit une FORME écrite, pas un objet calculé au chargement.',
     'le récepteur d’un `.extend` n’est reconnu que s’il est un IDENTIFIANT importé d’un module de grammaire ' +
@@ -134,7 +134,6 @@ function signaturesDeLaGrammaire(
     ['ref()', ref('skill')],
     ['specRef()', specRef('skill')],
     ['pick()', pick('skill')],
-    ['typedRef()', typedRef()],
   ];
   for (const [nom, v] of melanger(fabriques)) marcher(v, nom, new Set(), 0);
   return [...out.values()].map(({ noms, cles }) => ({ nom: [...noms].sort().join('|'), cles }));

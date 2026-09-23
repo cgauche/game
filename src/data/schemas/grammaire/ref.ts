@@ -73,6 +73,8 @@ export const TYPES = {
   lightLevel: { dataset: 'lightLevels.json', specsOpen: false },
   prop: { dataset: 'props.json', specsOpen: false },
   building: { dataset: 'buildings.json', specsOpen: false },
+  // AXE de forces/faiblesses (#409) : `activeAxes` d'un projet de scène résout AU PARSE (#1473 R1).
+  axe: { dataset: 'axes.json', specsOpen: false },
 } as const satisfies Record<string, CibleDeType>;
 
 export type TypeEntite = keyof typeof TYPES;
@@ -133,27 +135,47 @@ export function estSpecialisable(type: TypeEntite, id: string): boolean {
 }
 
 /**
+ * Clé du repère dans les `params` d'une issue : privée au module, donc infalsifiable par un autre
+ * émetteur. Le repère porte le type d'entité validé.
+ */
+const REPERE: unique symbol = Symbol('repère de parse de mesure');
+
+/** Vrai le temps SYNCHRONE d'un `reperesDuParse`, et jamais ailleurs : aucun export ne le lit ni ne l'écrit. */
+let parseDeMesure = false;
+
+/** Les feuilles construites par `idDe` — ce que la garde des unions reconnaît comme porteur de référence. */
+const FEUILLES_D_ID = new WeakSet<object>();
+
+/** Le nœud est-il une feuille construite par `idDe` ? */
+export const estFeuilleDId = (noeud: unknown): boolean =>
+  typeof noeud === 'object' && noeud !== null && FEUILLES_D_ID.has(noeud);
+
+/**
  * Schéma d'un id NU de `type` : refiné contre le registre, brandé `Id<type>` à la sortie. C'est la
- * FEUILLE porteuse de la référence — elle porte la marque que la marche des slots retrouve
- * (`slots.ts`), jamais l'enveloppe `ref()`/`specRef()` qui la compose.
+ * FEUILLE porteuse de la référence, et la SEULE vérification d'un id contre le registre sous
+ * `src/data/schemas` : au parse de mesure (`reperesDuParse`), chaque validation réussie y émet un
+ * REPÈRE, que le volet SLOTS de `docs/structures-donnees.md` lit comme le côté DÉCLARÉ.
  *
- * La liste admise se LIT À CHAQUE VALIDATION (patron de `defs-scenes/projet.ts › idsDAxes`), parce
- * que le registre a deux régimes déclarés (`_ids.generated.ts`) : le fichier généré figé au commit,
- * et le RECALCUL en mémoire de l'éditeur (`CodexEdit.save` → `validateDataset`), qui remplace
- * l'entrée du dataset. Les schémas, eux, se construisent UNE fois au chargement du module : une
- * lecture faite à la construction rendrait une entité créée au Compendium invalide pour toute donnée
- * qui la référence. La construction ne fait qu'un contrôle FAIL-FAST de la sous-liste demandée.
+ * La liste admise se LIT À CHAQUE VALIDATION, parce que le registre a deux régimes déclarés
+ * (`_ids.generated.ts`) : le fichier généré figé au commit, et le RECALCUL en mémoire de l'éditeur
+ * (`CodexEdit.save` → `validateDataset`), qui remplace l'entrée du dataset. Les schémas, eux, se
+ * construisent UNE fois au chargement du module : une lecture faite à la construction rendrait une
+ * entité créée au Compendium invalide pour toute donnée qui la référence. La construction ne fait
+ * qu'un contrôle FAIL-FAST de la sous-liste demandée.
  */
 export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<Id<T>, string> {
   const dataset = cibleDe(type);
   if (valeur !== undefined) idsSousListe(type, valeur);
   const admis = (): readonly string[] => (valeur === undefined ? idsDe(type) : idsSousListe(type, valeur));
   const site = valeur === undefined ? `idDe('${type}')` : `idDe('${type}', '${valeur}')`;
-  return marque(
+  const feuille = marque(
     z
       .string()
       .superRefine((v, ctx) => {
-        if (admis().includes(v)) return;
+        if (admis().includes(v)) {
+          if (parseDeMesure) ctx.addIssue({ code: 'custom', message: `repère de ${site}`, params: { [REPERE]: type }, continue: true });
+          return;
+        }
         ctx.addIssue({
           code: 'custom',
           message:
@@ -165,6 +187,75 @@ export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<
       .transform((v) => v as Id<T>),
     { espece: 'id', type, site },
   );
+  FEUILLES_D_ID.add(feuille);
+  return feuille;
+}
+
+/** Une référence validée par `idDe` au parse de mesure : son path de DONNÉE et son type. `parCle` :
+ *  la valeur validée est la CLÉ d'un record (dernier segment du path), pas la valeur qu'elle pose. */
+export interface RepereDeMesure {
+  readonly path: readonly PropertyKey[];
+  readonly type: TypeEntite;
+  readonly parCle: boolean;
+}
+
+/** Une issue zod telle que `reperesDuParse` la lit. */
+type IssueLue = {
+  readonly code: string;
+  readonly path: readonly PropertyKey[];
+  readonly message: string;
+  readonly params?: { readonly [REPERE]?: TypeEntite };
+  readonly errors?: readonly (readonly IssueLue[])[];
+  readonly issues?: readonly IssueLue[];
+};
+
+const typeDuRepere = (issue: IssueLue): TypeEntite | undefined => issue.params?.[REPERE];
+
+/** L'issue n'est-elle faite QUE de repères (union dont une branche l'est, clé/élément dont toutes les issues le sont) ? */
+const estPropre = (issue: IssueLue): boolean =>
+  typeDuRepere(issue) !== undefined ||
+  (issue.code === 'invalid_union' && (issue.errors ?? []).some((b) => b.length > 0 && b.every(estPropre))) ||
+  ((issue.code === 'invalid_key' || issue.code === 'invalid_element') && (issue.issues ?? []).length > 0 && issue.issues!.every(estPropre));
+
+function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[], parCle: boolean, out: RepereDeMesure[]): void {
+  for (const issue of issues) {
+    const path = [...prefixe, ...issue.path];
+    const type = typeDuRepere(issue);
+    if (type !== undefined) {
+      out.push({ path, type, parCle });
+      continue;
+    }
+    // La PREMIÈRE branche propre est celle que le parse normal choisit : la première sans issue.
+    const branche = issue.code === 'invalid_union' ? issue.errors?.find((b) => b.length > 0 && b.every(estPropre)) : undefined;
+    if (branche) recueillir(branche, path, parCle, out);
+    else if (issue.code === 'invalid_key' && estPropre(issue)) recueillir(issue.issues!, path, true, out);
+    else if (issue.code === 'invalid_element' && estPropre(issue)) recueillir(issue.issues!, path, parCle, out);
+    else
+      throw new Error(
+        `parse de mesure : issue « ${issue.code} » à « ${path.map(String).join('.') || '(racine)'} » (${issue.message}) — ni repère d'\`idDe\`, ni union, clé ou élément fait de repères : le document est invalide au parse normal, ou un nœud masque le repère (union à branche permissive, \`.catch\`).`,
+      );
+  }
+}
+
+/**
+ * PARSE DE MESURE d'une donnée par son schéma RÉEL : les références que `idDe` y valide, à leur path
+ * de DONNÉE. Le mode est borné par construction : `parseDeMesure` n'est vrai que pendant l'appel
+ * SYNCHRONE à `safeParse` (zod lève sur tout nœud async), et le `finally` le rend à sa valeur
+ * précédente, y compris quand le recueil lève. Les seuls parses exécutés dans cette fenêtre sont
+ * ceux que ce `safeParse` imbrique (payload d'une op, `grammaire/mecanique.ts › gameOpSchema`).
+ * Une issue qui n'est pas un repère LÈVE : la donnée doit être valide au parse normal.
+ */
+export function reperesDuParse(schema: z.ZodType, donnee: unknown): RepereDeMesure[] {
+  const precedent = parseDeMesure;
+  parseDeMesure = true;
+  try {
+    const resultat = schema.safeParse(donnee);
+    const out: RepereDeMesure[] = [];
+    if (!resultat.success) recueillir(resultat.error.issues as unknown as readonly IssueLue[], [], false, out);
+    return out;
+  } finally {
+    parseDeMesure = precedent;
+  }
 }
 
 /**
@@ -186,20 +277,6 @@ export function ref<T extends TypeEntite, E extends Record<string, z.ZodTypeAny>
   extra?: E,
 ): z.ZodType<unknown> {
   return z.strictObject({ id: idDe(type), ...((extra ?? {}) as Record<string, z.ZodTypeAny>) });
-}
-
-/** Slot POLYMORPHE `{ type, id }` — le type est porté par la donnée, l'id résolu contre son dataset. */
-export function typedRef(types: readonly TypeEntite[] = Object.keys(TYPES) as TypeEntite[]): z.ZodType<unknown> {
-  return z
-    .strictObject({ type: z.enum(types as [TypeEntite, ...TypeEntite[]]), id: z.string() })
-    .superRefine((v, ctx) => {
-      if (idsDe(v.type).includes(v.id)) return;
-      ctx.addIssue({
-        code: 'custom',
-        path: ['id'],
-        message: `ref('${v.type}') : id « ${v.id} » absent de ${cibleDe(v.type)} (registre _ids.generated.ts).`,
-      });
-    });
 }
 
 /**
@@ -305,7 +382,7 @@ export function specRef<T extends TypeEntite, E extends Record<string, z.ZodType
 /**
  * Référence dont la spécialisation est FACULTATIVE : `{ id }` (aucune spécialisation visée) OU
  * `{ id, spec }` / `{ id, choix }`. MÊME nœud que `specRef`, seul le régime obligatoire tombe — donc
- * UNE seule marque de slot par site (jamais une union, qui en poserait deux) : c'est la forme à
+ * UN seul nœud par site (jamais une union de deux graphies du même emplacement) : c'est la forme à
  * écrire dès qu'une donnée désigne une entrée « toute spécialisation comprise » aussi bien qu'une
  * spécialisation précise.
  */
@@ -323,8 +400,7 @@ export function refOuSpec<T extends TypeEntite, E extends Record<string, z.ZodTy
  * Une entrée de `of` est l'UNION des trois façons de désigner une option : référence nue `ref(type)`,
  * référence à spécialisation `specRef(type)` (`{id, spec}` XOR `{id, choix}`, validée contre le pool
  * de l'entrée À TRAVERS l'`of`), ou un `pick` IMBRIQUÉ (un « n parmi » dont une option est elle-même
- * un choix, y compris un tirage sur table). La récursion se referme sur le nœud LUI-MÊME (`noeud`),
- * que la marche des slots retrouve dans sa pile d'ancêtres et coupe là (`slots.ts`).
+ * un choix, y compris un tirage sur table). La récursion se referme sur le nœud LUI-MÊME (`noeud`).
  *
  * `optionsDuPorteur` ouvre l'`of` aux formes que le PORTEUR admet en plus des trois ci-dessus —
  * même composition FERMÉE que l'`extra` de `ref()`/`specRef()` : le porteur déclare ce qu'il

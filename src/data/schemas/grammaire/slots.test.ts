@@ -119,6 +119,8 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
     // `defs/structures.ts › traits` (`ref('trait')`). Le stock des sites ADOPTÉS ne peut que CROÎTRE.
     ).toEqual([
       'actorRefSchema',
+      // +1 site ADOPTÉ (#1473 R1, 2026-09-23) : `defs-scenes/projet.ts › activeAxes` compose `refs('axe')`.
+      "idDe('axe')",
       // +1 site ADOPTÉ (#1715, 2026-09-09) : `defs-scenes/scene.ts › typeDeBatimentSchema` — le TYPE
       // de bâtiment d'un corps architectural (`ArchitectureBody.style`) résout contre `buildings.json`,
       // le catalogue de bâtiments passé du code à la donnée. UNE instance de fabrique.
@@ -181,6 +183,8 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       // tuile d'un terrain (`props.json`).
       // +1 site ADOPTÉ (#1715) : `defs/buildings.ts › features[].id` désigne l'ORNEMENT d'identité posé
       // en billboard sur un bâtiment (clocheton, cheminée, enseigne, étal), composé par `ref('prop', …)`.
+      // +1 site ADOPTÉ (#1473 R1, 2026-09-23) : `defs-scenes/scene.ts › sceneEntitySchema`, branche `prop`.
+      "idDe('prop')",
       "idDe('prop')",
       "idDe('prop')",
       // +1 site ADOPTÉ (#1657 B3-2b-a) : `grammaire/mecanique.ts › crewTargetSchema.stations` désigne

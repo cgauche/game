@@ -4266,413 +4266,165 @@ union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, s
 
 ## 6. Slots DÉCLARÉS × réfs OBSERVÉES (registre des slots)
 
-Le côté DÉCLARÉ des références : un slot par référence RÉELLE, à son path exact, lu PAR MARCHE des
-schémas des deux racines (`slotsDe`, `src/data/schemas/grammaire/slots.ts`). Son enforcement vit
+Le côté DÉCLARÉ des références est ce que le PARSE valide : chaque document est parsé par son schéma
+réel au PARSE DE MESURE (`reperesDuParse`, `src/data/schemas/grammaire/ref.ts`), et chaque case
+`(porteur, clé)` dont la valeur est validée par `idDe` est un SLOT, avec son type. Son enforcement vit
 dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **3368** — espèce `id` **378**, espèce `acteur` **2990**.
+Slots déclarés : **29888**, sur **129** paths de donnée.
 
-### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)
+### 6.1 Registre des slots — une ligne par (document, path, type)
 
-Pour chacun, les valeurs POSÉES à ce path dans le document, et leur résolution contre le registre
-des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une ligne de stock.
-« Couples touchés » : les couples `(dataset, champ)` que le scan attribue aux occurrences dont ces
-valeurs TOUCHENT une case (jointure par occurrence) — « — » quand le slot n’en touche aucune.
+Le path est celui de la DONNÉE, indices normalisés en `[]` ; une référence portée par une CLÉ de
+record s’y écrit `{}`. « Valeurs » : les slots de la ligne, chacun validé contre le registre des ids au
+parse. « Couples touchés » : les couples `(dataset, champ)` que le scan attribue aux occurrences dont
+ces slots sont des cases (jointure par occurrence) — « — » quand ils n’en touchent aucune.
 
-| Dataset | Path déclaré | Couples touchés | Type | Cardinalité | Valeurs posées | Résolues |
-|---|---|---|---|---|---|---|
-| `activities.json` | `[].skills[].id` | `activities.json \| skills` | `skill` | liste | 64 | 64 / 64 |
-| `activities.json` | `[].testMods[].mod\|10.rule` | `activities.json \| mod` | `regleOptionnelle` | liste | 2 | 2 / 2 |
-| `activities.json` | `[].worldRolls[].cible\|10.rule` | `activities.json \| cible` | `regleOptionnelle` | liste | 1 | 1 / 1 |
-| `axes.json` | `[].skills[].id` | `axes.json \| skills` | `skill` | liste | 15 | 15 / 15 |
-| `buildings.json` | `[].roofMaterial` | `buildings.json \| roofMaterial` | `material` | liste | 7 | 7 / 7 |
-| `buildings.json` | `[].features[].id` | `buildings.json \| features` | `prop` | liste | 4 | 4 / 4 |
-| `careerLevels.json` | `[].skills[]\|0.id` | `careerLevels.json \| skills` | `skill` | liste | 2237 | 2237 / 2237 |
-| `careerLevels.json` | `[].skills[]\|1\|0.of[]\|0.id` | `careerLevels.json \| of` | `skill` | liste | 2 | 2 / 2 |
-| `careerLevels.json` | `[].skills[]\|1\|0.of[]\|1.id` | `careerLevels.json \| of` | `skill` | liste | 2 | 2 / 2 |
-| `careerLevels.json` | `[].skills[]\|1\|1.table.id` | — | `table` | liste | 0 | 0 / 0 |
-| `careerLevels.json` | `[].talents[]\|0.id` | `careerLevels.json \| talents` | `talent` | liste | 1724 | 1724 / 1724 |
-| `careerLevels.json` | `[].talents[]\|1\|0.of[]\|0.id` | `careerLevels.json \| of` | `talent` | liste | 9 | 9 / 9 |
-| `careerLevels.json` | `[].talents[]\|1\|0.of[]\|1.id` | `careerLevels.json \| of` | `talent` | liste | 9 | 9 / 9 |
-| `careerLevels.json` | `[].talents[]\|1\|1.table.id` | — | `table` | liste | 0 | 0 / 0 |
-| `creatures.json` | `[].optionals[]\|2.grant[]\|1.id` | — | `skill` | liste | 1 | 1 / 1 |
-| `creatures.json` | `[].skills[].id` | `creatures.json \| skills` | `skill` | liste | 5981 | 5981 / 5981 |
-| `crew-roles.json` | `[].skills[].id` | `crew-roles.json \| skills` | `skill` | liste | 10 | 10 / 10 |
-| `criticals.json` | `[].entries[].test.test.skill.id` | `criticals.json \| skill` | `skill` | liste | 38 | 38 / 38 |
-| `criticals.json` | `[].entries[].test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `criticals.json` | `[].entries[].test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `criticals.json` | `[].entries[].amputation.unites\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `criticals.json` | `[].entries[].escalation.apresDelai.jours\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `criticals.json` | `[].entries[].escalation.onNextCritWhileCondition.test.test.skill.id` | `criticals.json \| skill` | `skill` | liste | 1 | 1 / 1 |
-| `criticals.json` | `[].entries[].escalation.onNextCritWhileCondition.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `criticals.json` | `[].entries[].escalation.onNextCritWhileCondition.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `defauts-de-compilation.json` | `cheminDeRonde` | `defauts-de-compilation.json \| cheminDeRonde` | `terrain` | un | 1 | 1 / 1 |
-| `defauts-de-compilation.json` | `masse` | `defauts-de-compilation.json \| masse` | `terrain` | un | 1 | 1 / 1 |
-| `defauts-de-compilation.json` | `pont` | `defauts-de-compilation.json \| pont` | `terrain` | un | 1 | 1 / 1 |
-| `domains.json` | `[].effects[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `domains.json` | `[].windModifiers[].cancelledBy.requiresSkill.id` | `domains.json \| requiresSkill` | `skill` | liste | 2 | 2 / 2 |
-| `domains.json` | `[].windModifiers[].cancelledBy.test.skill.id` | `domains.json \| skill` | `skill` | liste | 2 | 2 / 2 |
-| `etats.json` | `[].effects[].flow\|3.test.skill.id` | `etats.json \| skill` | `skill` | liste | 3 | 3 / 3 |
-| `etats.json` | `[].recover.skill.id` | `etats.json \| skill` | `skill` | liste | 1 | 1 / 1 |
-| `incidents-monture.json` | `entries[].mount.riderTest.skill.id` | `incidents-monture.json \| skill` | `skill` | liste | 2 | 2 / 2 |
-| `maladies.json` | `[].dailyTest.test.test.skill.id` | — | `skill` | liste | 1 | 1 / 1 |
-| `maladies.json` | `[].dailyTest.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `maladies.json` | `[].dailyTest.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `maladies.json` | `[].mutation.into` | `maladies.json \| mutation` | `maladie` | liste | 1 | 1 / 1 |
-| `maneuvers.json` | `[].effects[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `merchants.json` | `[].curated[]` | `merchants.json \| curated` | `trapping` | liste | 19 | 19 / 19 |
-| `miscast.json` | `[].entries[].ops[].value\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].value\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].durationRounds\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].durationRounds\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].unlessCondition` | — | `etat` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].amount\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].amount\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].skill.id` | `miscast.json \| skill` | `skill` | liste | 13 | 13 / 13 |
-| `miscast.json` | `[].entries[].ops[].rounds\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].rounds\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].hours\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].hours\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].minutes\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].minutes\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].days\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].ops[].days\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.skill.id` | `miscast.json \| skill` | `skill` | liste | 13 | 13 / 13 |
-| `miscast.json` | `[].entries[].test.onFail[].value\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].value\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].durationRounds\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].durationRounds\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].unlessCondition` | — | `etat` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].amount\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].amount\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].rounds\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].rounds\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].hours\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].hours\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].minutes\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].minutes\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].days\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFail[].days\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].value\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].value\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].durationRounds\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].durationRounds\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].unlessCondition` | `miscast.json \| ops` | `etat` | liste | 1 | 1 / 1 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].amount\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].amount\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].rounds\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].rounds\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].hours\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].hours\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].minutes\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].minutes\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].days\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `miscast.json` | `[].entries[].test.onFailHard.ops[].days\|2.sum[]\|0\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `mutations.json` | `[].effects[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `problemes-vehicule.json` | `entries[].mount.riderTest.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `props.json` | `[].volume.primitives[]\|0.material` | `props.json \| primitives` | `material` | liste | 297 | 297 / 297 |
-| `props.json` | `[].volume.primitives[]\|1.material` | `props.json \| primitives` | `material` | liste | 297 | 297 / 297 |
-| `props.json` | `[].volume.primitives[]\|2.material` | `props.json \| primitives` | `material` | liste | 297 | 297 / 297 |
-| `psychology.json` | `[].effects[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `psychology.json` | `[].test.skill.id` | `psychology.json \| skill` | `skill` | liste | 7 | 7 / 7 |
-| `qualities.json` | `[].effects[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `rencontres-edoc.json` | `tables.positives[].mount.riderTest.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `rencontres-edoc.json` | `tables.fortuites[].mount.riderTest.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `rencontres-edoc.json` | `tables.dangereuses[].mount.riderTest.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.greement[].crewHit.crewTarget\|1.stations[]` | `river-criticals.json \| stations` | `shipStation` | liste | 1 | 1 / 1 |
-| `river-criticals.json` | `tables.greement[].crewHit.crewTarget\|2.role.id` | — | `crewRole` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.greement[].crewHit.test.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.greement[].crewHit.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.greement[].crewHit.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.avirons[].crewHit.crewTarget\|1.stations[]` | `river-criticals.json \| stations` | `shipStation` | liste | 1 | 1 / 1 |
-| `river-criticals.json` | `tables.avirons[].crewHit.crewTarget\|2.role.id` | — | `crewRole` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.avirons[].crewHit.test.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.avirons[].crewHit.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.avirons[].crewHit.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.gouvernail[].crewHit.crewTarget\|1.stations[]` | — | `shipStation` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.gouvernail[].crewHit.crewTarget\|2.role.id` | — | `crewRole` | liste | 1 | 1 / 1 |
-| `river-criticals.json` | `tables.gouvernail[].crewHit.test.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.gouvernail[].crewHit.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.gouvernail[].crewHit.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.coque[].crewHit.crewTarget\|1.stations[]` | — | `shipStation` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.coque[].crewHit.crewTarget\|2.role.id` | — | `crewRole` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.coque[].crewHit.test.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.coque[].crewHit.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.coque[].crewHit.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.superstructure[].crewHit.crewTarget\|1.stations[]` | `river-criticals.json \| stations` | `shipStation` | liste | 1 | 1 / 1 |
-| `river-criticals.json` | `tables.superstructure[].crewHit.crewTarget\|2.role.id` | — | `crewRole` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.superstructure[].crewHit.test.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.superstructure[].crewHit.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `river-criticals.json` | `tables.superstructure[].crewHit.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `sea-cargo.json` | `opportunite.test.skill.id` | — | `skill` | un | 1 | 1 / 1 |
-| `sea-perils.json` | `hazards[].freeTest.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `sea-perils.json` | `tourbillonSwim.skill.id` | — | `skill` | un | 1 | 1 / 1 |
-| `semences-de-scene.json` | `ambientLight` | — | `lightLevel` | un | 0 | 0 / 0 |
-| `semences-de-scene.json` | `terrain` | `semences-de-scene.json \| terrain` | `terrain` | un | 1 | 1 / 1 |
-| `semences-de-scene.json` | `reliefDefaults.cliff` | `semences-de-scene.json \| reliefDefaults` | `material` | un | 1 | 1 / 1 |
-| `semences-de-scene.json` | `reliefDefaults.ramp` | `semences-de-scene.json \| reliefDefaults` | `material` | un | 1 | 1 / 1 |
-| `semences-de-scene.json` | `reliefDefaults.deck` | `semences-de-scene.json \| reliefDefaults` | `material` | un | 1 | 1 / 1 |
-| `semences-de-scene.json` | `reliefDefaults.pilier` | `semences-de-scene.json \| reliefDefaults` | `material` | un | 1 | 1 / 1 |
-| `semences-de-scene.json` | `roofDefaults.material` | `semences-de-scene.json \| roofDefaults` | `material` | un | 1 | 1 / 1 |
-| `ship-criticals.json` | `tablesDeChute[].bandes[].hauteurs{}\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.cargaison[].crewHit.crewTarget\|1.stations[]` | — | `shipStation` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.cargaison[].crewHit.crewTarget\|2.role.id` | — | `crewRole` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.cargaison[].crewHit.test.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.cargaison[].crewHit.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.cargaison[].crewHit.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.greement[].crewHit.crewTarget\|1.stations[]` | `ship-criticals.json \| stations` | `shipStation` | liste | 10 | 10 / 10 |
-| `ship-criticals.json` | `tables.greement[].crewHit.crewTarget\|2.role.id` | — | `crewRole` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.greement[].crewHit.test.test.skill.id` | `ship-criticals.json \| skill` | `skill` | liste | 5 | 5 / 5 |
-| `ship-criticals.json` | `tables.greement[].crewHit.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.greement[].crewHit.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.coque[].crewHit.crewTarget\|1.stations[]` | `ship-criticals.json \| stations` | `shipStation` | liste | 4 | 4 / 4 |
-| `ship-criticals.json` | `tables.coque[].crewHit.crewTarget\|2.role.id` | — | `crewRole` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.coque[].crewHit.test.test.skill.id` | `ship-criticals.json \| skill` | `skill` | liste | 4 | 4 / 4 |
-| `ship-criticals.json` | `tables.coque[].crewHit.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.coque[].crewHit.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.avirons[].crewHit.crewTarget\|1.stations[]` | `ship-criticals.json \| stations` | `shipStation` | liste | 2 | 2 / 2 |
-| `ship-criticals.json` | `tables.avirons[].crewHit.crewTarget\|2.role.id` | — | `crewRole` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.avirons[].crewHit.test.test.skill.id` | `ship-criticals.json \| skill` | `skill` | liste | 2 | 2 / 2 |
-| `ship-criticals.json` | `tables.avirons[].crewHit.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.avirons[].crewHit.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.equipements[].crewHit.crewTarget\|1.stations[]` | — | `shipStation` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.equipements[].crewHit.crewTarget\|2.role.id` | — | `crewRole` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.equipements[].crewHit.test.test.skill.id` | `ship-criticals.json \| skill` | `skill` | liste | 1 | 1 / 1 |
-| `ship-criticals.json` | `tables.equipements[].crewHit.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-criticals.json` | `tables.equipements[].crewHit.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `ship-stations.json` | `[].requiresTrait.id` | `ship-stations.json \| requiresTrait` | `navalTrait` | liste | 2 | 2 / 2 |
-| `species.json` | `[].skills[]\|0.id` | `species.json \| skills` | `skill` | liste | 315 | 315 / 315 |
-| `species.json` | `[].skills[]\|1\|0.of[]\|0.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `species.json` | `[].skills[]\|1\|0.of[]\|1.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `species.json` | `[].skills[]\|1\|1.table.id` | — | `table` | liste | 0 | 0 / 0 |
-| `species.json` | `[].talents[]\|0.id` | `species.json \| talents` | `talent` | liste | 77 | 77 / 77 |
-| `species.json` | `[].talents[]\|1\|0.of[]\|0.id` | `species.json \| of` | `talent` | liste | 78 | 78 / 78 |
-| `species.json` | `[].talents[]\|1\|0.of[]\|1.id` | `species.json \| of` | `talent` | liste | 78 | 78 / 78 |
-| `species.json` | `[].talents[]\|1\|1.table.id` | — | `table` | liste | 0 | 0 / 0 |
-| `species.json` | `[].previewCareer.id` | `species.json \| previewCareer` | `career` | liste | 27 | 27 / 27 |
-| `spells.json` | `[].range\|2.value\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].target\|1.n\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].target\|2.meters\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].target\|3.lengthMeters\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].target\|3.widthMeters\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].duration\|1.value\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].duration\|2.value\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].opposed.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].effects\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].variants[].duration\|1.value\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].variants[].duration\|2.value\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `spells.json` | `[].variants[].effects\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `steam-breakdown.json` | `[].restart[].skill.id` | `steam-breakdown.json \| skill` | `skill` | liste | 4 | 4 / 4 |
-| `structures.json` | `[].traits[].id` | `structures.json \| traits` | `trait` | liste | 5 | 5 / 5 |
-| `symptoms.json` | `[].effects[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `symptoms.json` | `[].onTick.test.test.skill.id` | `symptoms.json \| skill` | `skill` | liste | 2 | 2 / 2 |
-| `symptoms.json` | `[].onTick.test.success\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `symptoms.json` | `[].onTick.test.fail\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `talents.json` | `[].test.matches[].skill.id` | `talents.json \| skill` | `skill` | liste | 112 | 112 / 112 |
-| `talents.json` | `[].effects[].flow\|3.test.skill.id` | `talents.json \| skill` | `skill` | liste | 2 | 2 / 2 |
-| `talents.json` | `[].combat.reverseFailed.skills[].id` | `talents.json \| skills` | `skill` | liste | 9 | 9 / 9 |
-| `talents.json` | `[].variants[].test.matches[].skill.id` | `talents.json \| skill` | `skill` | liste | 4 | 4 / 4 |
-| `talents.json` | `[].variants[].combat.reverseFailed.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `tavernGames.json` | `[].skill.id` | `tavernGames.json \| skill` | `skill` | liste | 9 | 9 / 9 |
-| `tavernGames.json` | `[].fastSkill.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `tavernGames.json` | `[].options[].skill.id` | `tavernGames.json \| skill` | `skill` | liste | 4 | 4 / 4 |
-| `tavernGames.json` | `[].combined.second.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `tavernGames.json` | `[].throwerPenalty.test.skill.id` | `tavernGames.json \| skill` | `skill` | liste | 1 | 1 / 1 |
-| `terrains.json` | `[].overlayProp` | `terrains.json \| overlayProp` | `prop` | liste | 1 | 1 / 1 |
-| `terrains.json` | `[].matiere` | `terrains.json \| matiere` | `material` | liste | 1 | 1 / 1 |
-| `traits.json` | `[].effects[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `trappings.json` | `[].onHitEffects[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `trappings.json` | `[].consumable\|3.test.skill.id` | `trappings.json \| skill` | `skill` | liste | 6 | 6 / 6 |
-| `trappings.json` | `[].consumableDuration.minutes\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `trappings.json` | `[].consumableDuration.hours\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `trappings.json` | `[].consumableDuration.days\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `traumas.json` | `[].cumul.unite\|10.rule` | — | `regleOptionnelle` | liste | 0 | 0 / 0 |
-| `vehicles.json` | `[].ship.traits[].id` | `vehicles.json \| traits` | `navalTrait` | liste | 20 | 20 / 20 |
-| `water-exposure.json` | `test.skill.id` | — | `skill` | un | 1 | 1 / 1 |
-| `arene-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].reliefDefaults.cliff` | `arene-projet.json \| reliefDefaults` | `material` | liste | 18 | 18 / 18 |
-| `arene-projet.json` | `scenes[].reliefDefaults.ramp` | `arene-projet.json \| reliefDefaults` | `material` | liste | 18 | 18 / 18 |
-| `arene-projet.json` | `scenes[].reliefDefaults.deck` | `arene-projet.json \| reliefDefaults` | `material` | liste | 18 | 18 / 18 |
-| `arene-projet.json` | `scenes[].reliefDefaults.pilier` | `arene-projet.json \| reliefDefaults` | `material` | liste | 18 | 18 / 18 |
-| `arene-projet.json` | `scenes[].roofDefaults.material` | `arene-projet.json \| roofDefaults` | `material` | liste | 18 | 18 / 18 |
-| `arene-projet.json` | `scenes[].layers[].tiles[]` | `arene-projet.json \| tiles` | `terrain` | liste | 13940 | 13940 / 13940 |
-| `arene-projet.json` | `scenes[].entities[].statblock.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `arene-projet.json \| skill` | `skill` | liste | 4 | 4 / 4 |
-| `arene-projet.json` | `scenes[].entities[].combat.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].architecture[].style` | — | `building` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].architecture[].masses[].material` | `arene-projet.json \| material` | `material` | liste | 9 | 9 / 9 |
-| `arene-projet.json` | `scenes[].architecture[].roofDefaults.material` | — | `material` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | `arene-projet.json \| skill` | `skill` | liste | 3 | 3 / 3 |
-| `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | `arene-projet.json \| skill` | `skill` | liste | 2 | 2 / 2 |
-| `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `worldMap.places[].port.ref` | — | `navalPort` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `narratif.presetsPnj[].base` | — | `creature` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `arene-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].reliefDefaults.cliff` | `barge-du-sel-projet.json \| reliefDefaults` | `material` | liste | 3 | 3 / 3 |
-| `barge-du-sel-projet.json` | `scenes[].reliefDefaults.ramp` | `barge-du-sel-projet.json \| reliefDefaults` | `material` | liste | 3 | 3 / 3 |
-| `barge-du-sel-projet.json` | `scenes[].reliefDefaults.deck` | `barge-du-sel-projet.json \| reliefDefaults` | `material` | liste | 3 | 3 / 3 |
-| `barge-du-sel-projet.json` | `scenes[].reliefDefaults.pilier` | `barge-du-sel-projet.json \| reliefDefaults` | `material` | liste | 3 | 3 / 3 |
-| `barge-du-sel-projet.json` | `scenes[].roofDefaults.material` | `barge-du-sel-projet.json \| roofDefaults` | `material` | liste | 3 | 3 / 3 |
-| `barge-du-sel-projet.json` | `scenes[].layers[].tiles[]` | `barge-du-sel-projet.json \| tiles` | `terrain` | liste | 504 | 504 / 504 |
-| `barge-du-sel-projet.json` | `scenes[].entities[].statblock.skills[].id` | `barge-du-sel-projet.json \| skills` | `skill` | liste | 6 | 6 / 6 |
-| `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].entities[].combat.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].architecture[].style` | — | `building` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].architecture[].masses[].material` | — | `material` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].architecture[].roofDefaults.material` | — | `material` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `worldMap.places[].port.ref` | — | `navalPort` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `narratif.presetsPnj[].base` | — | `creature` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `barge-du-sel-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].reliefDefaults.cliff` | `diligence-projet.json \| reliefDefaults` | `material` | liste | 2 | 2 / 2 |
-| `diligence-projet.json` | `scenes[].reliefDefaults.ramp` | `diligence-projet.json \| reliefDefaults` | `material` | liste | 2 | 2 / 2 |
-| `diligence-projet.json` | `scenes[].reliefDefaults.deck` | `diligence-projet.json \| reliefDefaults` | `material` | liste | 2 | 2 / 2 |
-| `diligence-projet.json` | `scenes[].reliefDefaults.pilier` | `diligence-projet.json \| reliefDefaults` | `material` | liste | 2 | 2 / 2 |
-| `diligence-projet.json` | `scenes[].roofDefaults.material` | `diligence-projet.json \| roofDefaults` | `material` | liste | 2 | 2 / 2 |
-| `diligence-projet.json` | `scenes[].layers[].tiles[]` | `diligence-projet.json \| tiles` | `terrain` | liste | 2624 | 2624 / 2624 |
-| `diligence-projet.json` | `scenes[].entities[].statblock.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].entities[].combat.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].architecture[].style` | `diligence-projet.json \| style` | `building` | liste | 1 | 1 / 1 |
-| `diligence-projet.json` | `scenes[].architecture[].masses[].material` | — | `material` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].architecture[].roofDefaults.material` | — | `material` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `worldMap.places[].port.ref` | — | `navalPort` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `narratif.presetsPnj[].base` | — | `creature` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `diligence-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.cliff` | `loup-et-saumure-projet.json \| reliefDefaults` | `material` | liste | 5 | 5 / 5 |
-| `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.ramp` | `loup-et-saumure-projet.json \| reliefDefaults` | `material` | liste | 5 | 5 / 5 |
-| `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.deck` | `loup-et-saumure-projet.json \| reliefDefaults` | `material` | liste | 5 | 5 / 5 |
-| `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.pilier` | `loup-et-saumure-projet.json \| reliefDefaults` | `material` | liste | 5 | 5 / 5 |
-| `loup-et-saumure-projet.json` | `scenes[].roofDefaults.material` | `loup-et-saumure-projet.json \| roofDefaults` | `material` | liste | 5 | 5 / 5 |
-| `loup-et-saumure-projet.json` | `scenes[].layers[].tiles[]` | `loup-et-saumure-projet.json \| tiles` | `terrain` | liste | 1086 | 1086 / 1086 |
-| `loup-et-saumure-projet.json` | `scenes[].entities[].statblock.skills[].id` | `loup-et-saumure-projet.json \| skills` | `skill` | liste | 12 | 12 / 12 |
-| `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].entities[].combat.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].architecture[].style` | — | `building` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].architecture[].masses[].material` | — | `material` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].architecture[].roofDefaults.material` | — | `material` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | `loup-et-saumure-projet.json \| skill` | `skill` | liste | 2 | 2 / 2 |
-| `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `worldMap.places[].port.ref` | `loup-et-saumure-projet.json \| port` | `navalPort` | liste | 2 | 2 / 2 |
-| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `narratif.presetsPnj[].base` | — | `creature` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | — | `skill` | liste | 0 | 0 / 0 |
-| `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | — | `skill` | liste | 0 | 0 / 0 |
+| Dataset | Path | Type | Valeurs | Couples touchés |
+|---|---|---|---|---|
+| `activities.json` | `[].outcomes[].ops[].montant.brass.times.factor.rule` | `regleOptionnelle` | 1 | `activities.json \| factor` |
+| `activities.json` | `[].skills[].id` | `skill` | 64 | `activities.json \| skills` |
+| `activities.json` | `[].testMods[].mod.rule` | `regleOptionnelle` | 2 | `activities.json \| mod` |
+| `activities.json` | `[].worldRolls[].cible.rule` | `regleOptionnelle` | 1 | `activities.json \| cible` |
+| `arene-projet.json` | `scenes[].architecture[].masses[].material` | `material` | 9 | `arene-projet.json \| material` |
+| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow.test.skill.id` | `skill` | 3 | `arene-projet.json \| skill` |
+| `arene-projet.json` | `scenes[].entities[].ref` | `prop` | 291 | `arene-projet.json \| ref` |
+| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow.test.skill.id` | `skill` | 4 | `arene-projet.json \| skill` |
+| `arene-projet.json` | `scenes[].layers[].tiles[]` | `terrain` | 13940 | `arene-projet.json \| tiles` |
+| `arene-projet.json` | `scenes[].reliefDefaults.cliff` | `material` | 18 | `arene-projet.json \| reliefDefaults` |
+| `arene-projet.json` | `scenes[].reliefDefaults.deck` | `material` | 18 | `arene-projet.json \| reliefDefaults` |
+| `arene-projet.json` | `scenes[].reliefDefaults.pilier` | `material` | 18 | `arene-projet.json \| reliefDefaults` |
+| `arene-projet.json` | `scenes[].reliefDefaults.ramp` | `material` | 18 | `arene-projet.json \| reliefDefaults` |
+| `arene-projet.json` | `scenes[].roofDefaults.material` | `material` | 18 | `arene-projet.json \| roofDefaults` |
+| `arene-projet.json` | `scenes[].triggers[].flow.test.skill.id` | `skill` | 2 | `arene-projet.json \| skill` |
+| `axes.json` | `[].skills[].id` | `skill` | 15 | `axes.json \| skills` |
+| `barge-du-sel-projet.json` | `scenes[].entities[].ref` | `prop` | 1 | `barge-du-sel-projet.json \| ref` |
+| `barge-du-sel-projet.json` | `scenes[].entities[].statblock.skills[].id` | `skill` | 6 | `barge-du-sel-projet.json \| skills` |
+| `barge-du-sel-projet.json` | `scenes[].layers[].tiles[]` | `terrain` | 504 | `barge-du-sel-projet.json \| tiles` |
+| `barge-du-sel-projet.json` | `scenes[].reliefDefaults.cliff` | `material` | 3 | `barge-du-sel-projet.json \| reliefDefaults` |
+| `barge-du-sel-projet.json` | `scenes[].reliefDefaults.deck` | `material` | 3 | `barge-du-sel-projet.json \| reliefDefaults` |
+| `barge-du-sel-projet.json` | `scenes[].reliefDefaults.pilier` | `material` | 3 | `barge-du-sel-projet.json \| reliefDefaults` |
+| `barge-du-sel-projet.json` | `scenes[].reliefDefaults.ramp` | `material` | 3 | `barge-du-sel-projet.json \| reliefDefaults` |
+| `barge-du-sel-projet.json` | `scenes[].roofDefaults.material` | `material` | 3 | `barge-du-sel-projet.json \| roofDefaults` |
+| `buildings.json` | `[].features[].id` | `prop` | 4 | `buildings.json \| features` |
+| `buildings.json` | `[].roofMaterial` | `material` | 7 | `buildings.json \| roofMaterial` |
+| `careerLevels.json` | `[].skills[].id` | `skill` | 2237 | `careerLevels.json \| skills` |
+| `careerLevels.json` | `[].skills[].of[].id` | `skill` | 2 | `careerLevels.json \| of` |
+| `careerLevels.json` | `[].talents[].id` | `talent` | 1724 | `careerLevels.json \| talents` |
+| `careerLevels.json` | `[].talents[].of[].id` | `talent` | 9 | `careerLevels.json \| of` |
+| `creatures.json` | `[].optionals[].grant[].id` | `skill` | 1 | — |
+| `creatures.json` | `[].skills[].id` | `skill` | 5981 | `creatures.json \| skills` |
+| `crew-roles.json` | `[].skills[].id` | `skill` | 10 | `crew-roles.json \| skills` |
+| `criticals.json` | `[].entries[].escalation.onNextCritWhileCondition.test.test.skill.id` | `skill` | 1 | `criticals.json \| skill` |
+| `criticals.json` | `[].entries[].test.test.skill.id` | `skill` | 38 | `criticals.json \| skill` |
+| `defauts-de-compilation.json` | `cheminDeRonde` | `terrain` | 1 | `defauts-de-compilation.json \| cheminDeRonde` |
+| `defauts-de-compilation.json` | `masse` | `terrain` | 1 | `defauts-de-compilation.json \| masse` |
+| `defauts-de-compilation.json` | `pont` | `terrain` | 1 | `defauts-de-compilation.json \| pont` |
+| `diligence-projet.json` | `scenes[].architecture[].style` | `building` | 1 | `diligence-projet.json \| style` |
+| `diligence-projet.json` | `scenes[].entities[].ref` | `prop` | 20 | `diligence-projet.json \| ref` |
+| `diligence-projet.json` | `scenes[].layers[].tiles[]` | `terrain` | 2624 | `diligence-projet.json \| tiles` |
+| `diligence-projet.json` | `scenes[].reliefDefaults.cliff` | `material` | 2 | `diligence-projet.json \| reliefDefaults` |
+| `diligence-projet.json` | `scenes[].reliefDefaults.deck` | `material` | 2 | `diligence-projet.json \| reliefDefaults` |
+| `diligence-projet.json` | `scenes[].reliefDefaults.pilier` | `material` | 2 | `diligence-projet.json \| reliefDefaults` |
+| `diligence-projet.json` | `scenes[].reliefDefaults.ramp` | `material` | 2 | `diligence-projet.json \| reliefDefaults` |
+| `diligence-projet.json` | `scenes[].roofDefaults.material` | `material` | 2 | `diligence-projet.json \| roofDefaults` |
+| `domains.json` | `[].windModifiers[].cancelledBy.requiresSkill.id` | `skill` | 2 | `domains.json \| requiresSkill` |
+| `domains.json` | `[].windModifiers[].cancelledBy.test.skill.id` | `skill` | 2 | `domains.json \| skill` |
+| `etats.json` | `[].effects[].flow.test.skill.id` | `skill` | 3 | `etats.json \| skill` |
+| `etats.json` | `[].recover.skill.id` | `skill` | 1 | `etats.json \| skill` |
+| `incidents-monture.json` | `entries[].mount.riderTest.skill.id` | `skill` | 2 | `incidents-monture.json \| skill` |
+| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow.steps[].effect.skill.id` | `skill` | 1 | `loup-et-saumure-projet.json \| skill` |
+| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow.test.skill.id` | `skill` | 2 | `loup-et-saumure-projet.json \| skill` |
+| `loup-et-saumure-projet.json` | `scenes[].entities[].ref` | `prop` | 2 | `loup-et-saumure-projet.json \| ref` |
+| `loup-et-saumure-projet.json` | `scenes[].entities[].statblock.skills[].id` | `skill` | 12 | `loup-et-saumure-projet.json \| skills` |
+| `loup-et-saumure-projet.json` | `scenes[].layers[].tiles[]` | `terrain` | 1086 | `loup-et-saumure-projet.json \| tiles` |
+| `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.cliff` | `material` | 5 | `loup-et-saumure-projet.json \| reliefDefaults` |
+| `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.deck` | `material` | 5 | `loup-et-saumure-projet.json \| reliefDefaults` |
+| `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.pilier` | `material` | 5 | `loup-et-saumure-projet.json \| reliefDefaults` |
+| `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.ramp` | `material` | 5 | `loup-et-saumure-projet.json \| reliefDefaults` |
+| `loup-et-saumure-projet.json` | `scenes[].roofDefaults.material` | `material` | 5 | `loup-et-saumure-projet.json \| roofDefaults` |
+| `loup-et-saumure-projet.json` | `worldMap.places[].port.ref` | `navalPort` | 2 | `loup-et-saumure-projet.json \| port` |
+| `maladies.json` | `[].dailyTest.test.fail.effect.ops[].disease` | `maladie` | 1 | `maladies.json \| ops` |
+| `maladies.json` | `[].dailyTest.test.fail.effect.ops[].otherwise[].disease` | `maladie` | 1 | `maladies.json \| otherwise` |
+| `maladies.json` | `[].dailyTest.test.fail.effect.ops[].otherwise[].symptomId` | `symptome` | 1 | `maladies.json \| otherwise` |
+| `maladies.json` | `[].dailyTest.test.fail.effect.ops[].symptomId` | `symptome` | 1 | `maladies.json \| ops` |
+| `maladies.json` | `[].dailyTest.test.test.skill.id` | `skill` | 1 | — |
+| `maladies.json` | `[].mutation.into` | `maladie` | 1 | `maladies.json \| mutation` |
+| `maneuvers.json` | `[].effects[].flow.steps[].test.skill.id` | `skill` | 2 | `maneuvers.json \| skill` |
+| `merchants.json` | `[].curated[]` | `trapping` | 19 | `merchants.json \| curated` |
+| `miscast.json` | `[].entries[].ops[].skill.id` | `skill` | 13 | `miscast.json \| skill` |
+| `miscast.json` | `[].entries[].test.onFailHard.ops[].unlessCondition` | `etat` | 1 | `miscast.json \| ops` |
+| `miscast.json` | `[].entries[].test.skill.id` | `skill` | 13 | `miscast.json \| skill` |
+| `mutations.json` | `[].effects[].flow.effect.ops[].traitId` | `trait` | 1 | `mutations.json \| ops` |
+| `props.json` | `[].volume.primitives[].material` | `material` | 297 | `props.json \| primitives` |
+| `psychology.json` | `[].test.skill.id` | `skill` | 7 | `psychology.json \| skill` |
+| `qualities.json` | `[].effects[].flow.then.test.skill.id` | `skill` | 1 | `qualities.json \| skill` |
+| `qualities.json` | `[].effects[].flow.yes.test.skill.id` | `skill` | 1 | `qualities.json \| skill` |
+| `river-criticals.json` | `tables.avirons[].crewHit.crewTarget.stations[]` | `shipStation` | 1 | `river-criticals.json \| stations` |
+| `river-criticals.json` | `tables.gouvernail[].crewHit.crewTarget.role.id` | `crewRole` | 1 | — |
+| `river-criticals.json` | `tables.greement[].crewHit.crewTarget.stations[]` | `shipStation` | 1 | `river-criticals.json \| stations` |
+| `river-criticals.json` | `tables.superstructure[].crewHit.crewTarget.stations[]` | `shipStation` | 1 | `river-criticals.json \| stations` |
+| `sea-cargo.json` | `opportunite.test.skill.id` | `skill` | 1 | — |
+| `sea-perils.json` | `tourbillonSwim.skill.id` | `skill` | 1 | — |
+| `semences-de-scene.json` | `reliefDefaults.cliff` | `material` | 1 | `semences-de-scene.json \| reliefDefaults` |
+| `semences-de-scene.json` | `reliefDefaults.deck` | `material` | 1 | `semences-de-scene.json \| reliefDefaults` |
+| `semences-de-scene.json` | `reliefDefaults.pilier` | `material` | 1 | `semences-de-scene.json \| reliefDefaults` |
+| `semences-de-scene.json` | `reliefDefaults.ramp` | `material` | 1 | `semences-de-scene.json \| reliefDefaults` |
+| `semences-de-scene.json` | `roofDefaults.material` | `material` | 1 | `semences-de-scene.json \| roofDefaults` |
+| `semences-de-scene.json` | `terrain` | `terrain` | 1 | `semences-de-scene.json \| terrain` |
+| `ship-criticals.json` | `tables.avirons[].crewHit.crewTarget.stations[]` | `shipStation` | 2 | `ship-criticals.json \| stations` |
+| `ship-criticals.json` | `tables.avirons[].crewHit.test.test.skill.id` | `skill` | 2 | `ship-criticals.json \| skill` |
+| `ship-criticals.json` | `tables.coque[].crewHit.crewTarget.stations[]` | `shipStation` | 4 | `ship-criticals.json \| stations` |
+| `ship-criticals.json` | `tables.coque[].crewHit.test.test.skill.id` | `skill` | 4 | `ship-criticals.json \| skill` |
+| `ship-criticals.json` | `tables.equipements[].crewHit.test.test.skill.id` | `skill` | 1 | `ship-criticals.json \| skill` |
+| `ship-criticals.json` | `tables.greement[].crewHit.crewTarget.stations[]` | `shipStation` | 10 | `ship-criticals.json \| stations` |
+| `ship-criticals.json` | `tables.greement[].crewHit.test.test.skill.id` | `skill` | 5 | `ship-criticals.json \| skill` |
+| `ship-criticals.json` | `tablesDeChute[].bandes[].hauteurs{}` | `shipStation` | 6 | — |
+| `ship-stations.json` | `[].requiresTrait.id` | `navalTrait` | 2 | `ship-stations.json \| requiresTrait` |
+| `species.json` | `[].previewCareer.id` | `career` | 27 | `species.json \| previewCareer` |
+| `species.json` | `[].skills[].id` | `skill` | 315 | `species.json \| skills` |
+| `species.json` | `[].talents[].id` | `talent` | 77 | `species.json \| talents` |
+| `species.json` | `[].talents[].of[].id` | `talent` | 78 | `species.json \| of` |
+| `spells.json` | `[].effects.steps[].effect.ops[].traitId` | `trait` | 1 | `spells.json \| ops` |
+| `spells.json` | `[].effects.steps[].fail.steps[].test.skill.id` | `skill` | 1 | `spells.json \| skill` |
+| `spells.json` | `[].effects.steps[].test.skill.id` | `skill` | 26 | `spells.json \| skill` |
+| `spells.json` | `[].effects.steps[].then.steps[].test.skill.id` | `skill` | 2 | `spells.json \| skill` |
+| `spells.json` | `[].effects.steps[].yes.test.skill.id` | `skill` | 1 | `spells.json \| skill` |
+| `spells.json` | `[].variants[].effects.steps[].test.skill.id` | `skill` | 1 | `spells.json \| skill` |
+| `steam-breakdown.json` | `[].restart[].skill.id` | `skill` | 4 | `steam-breakdown.json \| skill` |
+| `structures.json` | `[].traits[].id` | `trait` | 5 | `structures.json \| traits` |
+| `symptoms.json` | `[].onTick.test.test.skill.id` | `skill` | 2 | `symptoms.json \| skill` |
+| `tables.json` | `[].rows[].ops[].montant.brass.times.of.rule` | `regleOptionnelle` | 1 | `tables.json \| of` |
+| `talents.json` | `[].combat.reverseFailed.skills[].id` | `skill` | 9 | `talents.json \| skills` |
+| `talents.json` | `[].effects[].flow.test.skill.id` | `skill` | 2 | `talents.json \| skill` |
+| `talents.json` | `[].test.matches[].skill.id` | `skill` | 112 | `talents.json \| skill` |
+| `talents.json` | `[].variants[].test.matches[].skill.id` | `skill` | 4 | `talents.json \| skill` |
+| `tavernGames.json` | `[].options[].skill.id` | `skill` | 4 | `tavernGames.json \| skill` |
+| `tavernGames.json` | `[].skill.id` | `skill` | 9 | `tavernGames.json \| skill` |
+| `tavernGames.json` | `[].throwerPenalty.test.skill.id` | `skill` | 1 | `tavernGames.json \| skill` |
+| `terrains.json` | `[].matiere` | `material` | 1 | `terrains.json \| matiere` |
+| `terrains.json` | `[].overlayProp` | `prop` | 1 | `terrains.json \| overlayProp` |
+| `traits.json` | `[].effects[].flow.then.test.skill.id` | `skill` | 1 | `traits.json \| skill` |
+| `traits.json` | `[].passive[].terrain` | `terrain` | 3 | `traits.json \| passive` |
+| `trappings.json` | `[].consumable.steps[].test.skill.id` | `skill` | 2 | `trappings.json \| skill` |
+| `trappings.json` | `[].consumable.test.skill.id` | `skill` | 6 | `trappings.json \| skill` |
+| `trappings.json` | `[].onHitEffects[].flow.then.test.skill.id` | `skill` | 2 | `trappings.json \| skill` |
+| `vehicles.json` | `[].ship.traits[].id` | `navalTrait` | 20 | `vehicles.json \| traits` |
+| `water-exposure.json` | `test.skill.id` | `skill` | 1 | — |
 
-Couples porteurs de réfs OBSERVÉES dont le déclaré ATTEINT toutes les occurrences : **58** — `activities.json | cible` `activities.json | mod` `activities.json | skills` `arene-projet.json | material` `arene-projet.json | reliefDefaults` `arene-projet.json | roofDefaults` `arene-projet.json | tiles` `axes.json | skills` `barge-du-sel-projet.json | reliefDefaults` `barge-du-sel-projet.json | roofDefaults` `barge-du-sel-projet.json | skills` `barge-du-sel-projet.json | tiles` `buildings.json | features` `buildings.json | roofMaterial` `careerLevels.json | of` `careerLevels.json | skills` `careerLevels.json | talents` `creatures.json | skills` `crew-roles.json | skills` `criticals.json | skill` `defauts-de-compilation.json | cheminDeRonde` `defauts-de-compilation.json | masse` `defauts-de-compilation.json | pont` `diligence-projet.json | reliefDefaults` `diligence-projet.json | roofDefaults` `diligence-projet.json | style` `diligence-projet.json | tiles` `domains.json | requiresSkill` `domains.json | skill` `etats.json | skill` `incidents-monture.json | skill` `loup-et-saumure-projet.json | port` `loup-et-saumure-projet.json | reliefDefaults` `loup-et-saumure-projet.json | roofDefaults` `loup-et-saumure-projet.json | skills` `loup-et-saumure-projet.json | tiles` `maladies.json | mutation` `merchants.json | curated` `miscast.json | skill` `props.json | primitives` `psychology.json | skill` `river-criticals.json | stations` `semences-de-scene.json | reliefDefaults` `semences-de-scene.json | roofDefaults` `semences-de-scene.json | terrain` `ship-criticals.json | skill` `ship-criticals.json | stations` `ship-stations.json | requiresTrait` `species.json | previewCareer` `species.json | skills` `steam-breakdown.json | skill` `structures.json | traits` `symptoms.json | skill` `talents.json | skills` `tavernGames.json | skill` `terrains.json | matiere` `terrains.json | overlayProp` `vehicles.json | traits`. Une jointure VIDE rendrait ce volet muet :
+Couples porteurs de réfs OBSERVÉES dont le déclaré ATTEINT toutes les occurrences : **66** — `activities.json | cible` `activities.json | factor` `activities.json | mod` `activities.json | skills` `arene-projet.json | material` `arene-projet.json | reliefDefaults` `arene-projet.json | roofDefaults` `arene-projet.json | tiles` `axes.json | skills` `barge-du-sel-projet.json | reliefDefaults` `barge-du-sel-projet.json | roofDefaults` `barge-du-sel-projet.json | skills` `barge-du-sel-projet.json | tiles` `buildings.json | features` `buildings.json | roofMaterial` `careerLevels.json | of` `careerLevels.json | skills` `careerLevels.json | talents` `creatures.json | skills` `crew-roles.json | skills` `criticals.json | skill` `defauts-de-compilation.json | cheminDeRonde` `defauts-de-compilation.json | masse` `defauts-de-compilation.json | pont` `diligence-projet.json | ref` `diligence-projet.json | reliefDefaults` `diligence-projet.json | roofDefaults` `diligence-projet.json | style` `diligence-projet.json | tiles` `domains.json | requiresSkill` `domains.json | skill` `etats.json | skill` `incidents-monture.json | skill` `loup-et-saumure-projet.json | port` `loup-et-saumure-projet.json | reliefDefaults` `loup-et-saumure-projet.json | roofDefaults` `loup-et-saumure-projet.json | skill` `loup-et-saumure-projet.json | skills` `loup-et-saumure-projet.json | tiles` `maladies.json | mutation` `maladies.json | ops` `maladies.json | otherwise` `maneuvers.json | skill` `merchants.json | curated` `miscast.json | skill` `props.json | primitives` `psychology.json | skill` `qualities.json | skill` `river-criticals.json | stations` `semences-de-scene.json | reliefDefaults` `semences-de-scene.json | roofDefaults` `semences-de-scene.json | terrain` `ship-criticals.json | skill` `ship-criticals.json | stations` `ship-stations.json | requiresTrait` `species.json | previewCareer` `species.json | skills` `steam-breakdown.json | skill` `structures.json | traits` `symptoms.json | skill` `tables.json | of` `talents.json | skills` `tavernGames.json | skill` `terrains.json | matiere` `terrains.json | overlayProp` `vehicles.json | traits`. Une jointure VIDE rendrait ce volet muet :
 la garde l’exige NON VIDE.
 
 ### 6.2 Couverture — réfs observées qu’AUCUN slot ne déclare
 
 La dette d’ADOPTION du registre : un `(dataset, champ)` porteur de références mesurées (strate
-`Référence`) dont une occurrence au moins n’est pas ATTEINTE — une de ses cases ne reçoit aucune valeur déclarée. Stock `SLOTS_SANS_DECLARATION`
+`Référence`) dont une occurrence au moins n’est pas ATTEINTE — une de ses cases n’est pas un slot. Stock `SLOTS_SANS_DECLARATION`
 (`scripts/guards/lib/slotsStock.mjs`, garde `src/data/slots-contrat.test.ts`) — il se solde concept
 par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 
-**307** couples (dataset, champ) sans slot déclaré.
+**299** couples (dataset, champ) sans slot déclaré.
 
 | Dataset | Champ | Occurrences observées | Atteintes |
 |---|---|---|---|
@@ -4684,7 +4436,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `actions.json` | `rule` | 32 | 0 |
 | `activities.json` | `chains` | 4 | 0 |
 | `activities.json` | `classes` | 12 | 0 |
-| `activities.json` | `factor` | 1 | 0 |
 | `activities.json` | `ops` | 17 | 0 |
 | `activities.json` | `rule` | 1 | 0 |
 | `activities.json` | `where` | 5 | 0 |
@@ -4710,7 +4461,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `arene-projet.json` | `modes` | 1 | 0 |
 | `arene-projet.json` | `optionals` | 13 | 0 |
 | `arene-projet.json` | `qualities` | 2 | 0 |
-| `arene-projet.json` | `ref` | 406 | 0 |
+| `arene-projet.json` | `ref` | 406 | 291 |
 | `arene-projet.json` | `roomZoneIds` | 12 | 0 |
 | `arene-projet.json` | `scene` | 4 | 0 |
 | `arene-projet.json` | `skill` | 10 | 9 |
@@ -4731,7 +4482,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `barge-du-sel-projet.json` | `members` | 7 | 0 |
 | `barge-du-sel-projet.json` | `postes` | 6 | 0 |
 | `barge-du-sel-projet.json` | `qualities` | 15 | 0 |
-| `barge-du-sel-projet.json` | `ref` | 6 | 0 |
+| `barge-du-sel-projet.json` | `ref` | 6 | 1 |
 | `barge-du-sel-projet.json` | `scene` | 2 | 0 |
 | `barge-du-sel-projet.json` | `victoryCondition` | 1 | 0 |
 | `careerLevels.json` | `career` | 432 | 0 |
@@ -4773,7 +4524,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `diligence-projet.json` | `a` | 1 | 0 |
 | `diligence-projet.json` | `b` | 1 | 0 |
 | `diligence-projet.json` | `modes` | 1 | 0 |
-| `diligence-projet.json` | `ref` | 20 | 0 |
 | `diligence-projet.json` | `roomZoneIds` | 38 | 0 |
 | `diligence-projet.json` | `scene` | 2 | 0 |
 | `diligence-projet.json` | `walls` | 668 | 0 |
@@ -4826,21 +4576,17 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `loup-et-saumure-projet.json` | `merchant` | 3 | 0 |
 | `loup-et-saumure-projet.json` | `postes` | 12 | 0 |
 | `loup-et-saumure-projet.json` | `qualities` | 30 | 0 |
-| `loup-et-saumure-projet.json` | `ref` | 12 | 0 |
+| `loup-et-saumure-projet.json` | `ref` | 12 | 2 |
 | `loup-et-saumure-projet.json` | `scene` | 2 | 0 |
 | `loup-et-saumure-projet.json` | `serviceKind` | 8 | 0 |
 | `loup-et-saumure-projet.json` | `services` | 6 | 0 |
-| `loup-et-saumure-projet.json` | `skill` | 3 | 2 |
 | `loup-et-saumure-projet.json` | `start` | 8 | 0 |
 | `loup-et-saumure-projet.json` | `victoryCondition` | 2 | 0 |
 | `loup-et-saumure-projet.json` | `weapon` | 1 | 0 |
 | `maladies.json` | `dailyTest` | 1 | 0 |
-| `maladies.json` | `ops` | 1 | 0 |
-| `maladies.json` | `otherwise` | 1 | 0 |
 | `maladies.json` | `symptoms` | 62 | 0 |
 | `maneuvers.json` | `escapeStrength` | 2 | 0 |
 | `maneuvers.json` | `ops` | 22 | 0 |
-| `maneuvers.json` | `skill` | 2 | 0 |
 | `merchantFamilies.json` | `columns` | 1 | 0 |
 | `merchantFamilies.json` | `match` | 3 | 0 |
 | `merchants.json` | `categories` | 1 | 0 |
@@ -4850,7 +4596,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `montures.json` | `creatureIds` | 8 | 0 |
 | `mutations.json` | `eyes` | 1 | 0 |
 | `mutations.json` | `features` | 54 | 0 |
-| `mutations.json` | `ops` | 2 | 0 |
+| `mutations.json` | `ops` | 2 | 1 |
 | `mutations.json` | `passive` | 106 | 0 |
 | `mutations.json` | `skill` | 2 | 0 |
 | `naval-ports.json` | `production` | 38 | 0 |
@@ -4875,7 +4621,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `qualities.json` | `opposed` | 1 | 0 |
 | `qualities.json` | `ops` | 11 | 0 |
 | `qualities.json` | `passive` | 1 | 0 |
-| `qualities.json` | `skill` | 2 | 0 |
 | `raceAppearance.json` | `featureKeys` | 5 | 0 |
 | `raceAppearance.json` | `gabarit` | 6 | 0 |
 | `raceAppearance.json` | `head` | 7 | 0 |
@@ -4914,10 +4659,10 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `spells.json` | `of` | 8 | 0 |
 | `spells.json` | `onCross` | 4 | 0 |
 | `spells.json` | `onlyGroups` | 7 | 0 |
-| `spells.json` | `ops` | 206 | 0 |
+| `spells.json` | `ops` | 206 | 1 |
 | `spells.json` | `perRound` | 6 | 0 |
 | `spells.json` | `qualities` | 5 | 0 |
-| `spells.json` | `skill` | 50 | 0 |
+| `spells.json` | `skill` | 50 | 31 |
 | `spells.json` | `subject` | 1 | 0 |
 | `spells.json` | `when` | 18 | 0 |
 | `stars.json` | `ascendant` | 11 | 0 |
@@ -4928,7 +4673,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `symptoms.json` | `ops` | 12 | 0 |
 | `symptoms.json` | `passive` | 26 | 0 |
 | `symptoms.json` | `visiblePassive` | 1 | 0 |
-| `tables.json` | `of` | 1 | 0 |
 | `tables.json` | `ops` | 79 | 0 |
 | `tables.json` | `skill` | 15 | 0 |
 | `talents.json` | `effects` | 1 | 0 |
@@ -4951,8 +4695,8 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `traits.json` | `markMutations` | 1 | 0 |
 | `traits.json` | `of` | 2 | 0 |
 | `traits.json` | `ops` | 21 | 0 |
-| `traits.json` | `passive` | 49 | 0 |
-| `traits.json` | `skill` | 18 | 0 |
+| `traits.json` | `passive` | 49 | 3 |
+| `traits.json` | `skill` | 18 | 1 |
 | `traits.json` | `subject` | 6 | 0 |
 | `traits.json` | `suppressesCapabilities` | 1 | 0 |
 | `traits.json` | `value` | 2 | 0 |
@@ -4967,7 +4711,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `trappings.json` | `qualities` | 438 | 0 |
 | `trappings.json` | `shape` | 43 | 0 |
 | `trappings.json` | `siegeRig` | 18 | 0 |
-| `trappings.json` | `skill` | 29 | 6 |
+| `trappings.json` | `skill` | 29 | 10 |
 | `trappings.json` | `subType` | 441 | 0 |
 | `trappings.json` | `subject` | 2 | 0 |
 | `trappings.json` | `weaponGroup` | 22 | 0 |
@@ -4986,13 +4730,11 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 
 ### 6.3 Angles morts DÉCLARÉS de ce volet
 
-Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`) — l’espèce `acteur`
-pèse **2990** slots sur 3368.
+Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`).
 
 - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
-- Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).
-- Une référence que le parse valide HORS de la marche de `slotsDe` ne déclare aucun slot, et son couple reste au stock `SLOTS_SANS_DECLARATION` bien que la fabrique soit adoptée : le `ref` d’un décor est résolu par le `superRefine` par `kind` de `sceneEntitySchema` (`idDe('prop')`, #877) — mesuré le 2026-09-23, 314 des 444 `ref` d’entités des 4 paquets `*-projet.json` ; les 130 autres, de `kind` `personnage`, n’ont aucun schéma qui les résolve (dette réelle, #1473). Même cause pour le payload d’une op (`gameOpSchema`, `z.looseObject(…).superRefine`, `grammaire/mecanique.ts:200`) : aucun slot sous `ops[]` — `tables.json | of` et `activities.json | factor` y vivent (`defs/tables.ts:23`, `defs/activities.ts:115`) ; la récursion `z.lazy` de `formulaSchema` sous `times` n’y est que secondaire.
-- Une occurrence dont AUCUNE case ne porte de chaîne n’est jamais ATTEINTE, quel que soit le schéma : aucune valeur lue à un path déclaré ne peut y tomber, et son couple reste au stock `SLOTS_SANS_DECLARATION`. Mesuré le 2026-09-23 : 14 `{choice:[…]}` de `careerLevels.json | trappings` (les feuilles comptent sous `careerLevels.json | choice`), 19 `{random:N}` de `species.json | talents`, 2 `{random:N}` de `species.json | of`, et 1 occurrence de `creatures.json | spec` dont la seule case est une clé de `CLES_DE_SPECIALISATION`. Stock nominatif `SLOTS_INATTEIGNABLES`, qui ne fait que décroître.
-- `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches. La RÉSOLUTION (§6.1) y compte chaque valeur une fois par branche ; la jointure, qui compte des OCCURRENCES, n’en est pas affectée.
+- Un nœud marqué d’espèce `id` dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est validé par aucun `idDe` : ce n’est pas un slot. Stock FOSSILE `SLOTS_INTERNES` de la marche du schéma, vide ; un type entre au registre (`TYPES`, `grammaire/ref.ts`) avec le lot qui migre son concept (#1473).
+- Une occurrence dont AUCUNE case ne porte de chaîne n’est jamais ATTEINTE, quel que soit le schéma : aucune n’est un slot, et son couple reste au stock `SLOTS_SANS_DECLARATION`. Mesuré le 2026-09-23 : 14 `{choice:[…]}` de `careerLevels.json | trappings` (les feuilles comptent sous `careerLevels.json | choice`), 19 `{random:N}` de `species.json | talents`, 2 `{random:N}` de `species.json | of`, et 1 occurrence de `creatures.json | spec` dont la seule case est une clé de `CLES_DE_SPECIALISATION`. Stock nominatif `SLOTS_INATTEIGNABLES`, qui ne fait que décroître.
+- Une référence portée par une CLÉ de record (`z.record(idDe(…), …)`) est un slot `{}` du §6.1, jamais une case du scan, qui n’observe que des valeurs : mesuré le 2026-09-23, 6 slots `ship-criticals.json › tablesDeChute[].bandes[].hauteurs{}` (`shipStation`), sans couple touché.
 
-<!-- sources-empreinte: 03805e771e0242fc28ae2e5b824a4cbd8765ebd5 (386 fichiers, 10 dossiers) corps: 53b132efe6b203d2aace85c24e0323f86f14d37c -->
+<!-- sources-empreinte: 1bfd3bdc51783f1fdb609feb56cd538979195638 (386 fichiers, 10 dossiers) corps: 4189a493191f2d35baa033348b3800509e17a46e -->

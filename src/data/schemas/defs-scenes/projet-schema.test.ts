@@ -263,7 +263,7 @@ describe('sceneSchema — chaque tableau parallèle d’une couche porte EXACTEM
 describe('projetSchema — les quatre sémantiques du seam, chacune NOMMÉE', () => {
   it('(a) `activeAxes` référence un axe inconnu de axes.json → rouge nommant l\'index et l\'id', () => {
     expect(fautes(projet({ activeAxes: ['negoce', 'plongee-sous-marine'] }))).toEqual([
-      'activeAxes.1 :: activeAxes référence un axe inconnu de axes.json : « plongee-sous-marine ».',
+      'activeAxes.1 :: ref(\'axe\') : id « plongee-sous-marine » absent de axes.json (registre _ids.generated.ts).',
     ]);
   });
 
@@ -391,7 +391,7 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
     expect(ok({ ...reel(), activeAxes: [] }), 'liste vide = socle de base').toBe(true);
     expect(ok(sansCle('activeAxes')), 'absente = socle de base').toBe(true);
     expect(fautes({ ...reel(), activeAxes: ['axe-qui-nexiste-pas'] })).toEqual([
-      'activeAxes.0 :: activeAxes référence un axe inconnu de axes.json : « axe-qui-nexiste-pas ».',
+      'activeAxes.0 :: ref(\'axe\') : id « axe-qui-nexiste-pas » absent de axes.json (registre _ids.generated.ts).',
     ]);
     // Un id qui n'est pas un AXE (c'est une compétence) est refusé comme un id inventé : la FK vise
     // `axes.json`, pas « un id connu quelque part ».

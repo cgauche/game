@@ -141,10 +141,9 @@ export const MANDAT_SLOTS =
  */
 export const ANGLES_MORTS_SLOTS: readonly string[] = [
   'L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.',
-  'Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).',
-  'Une référence que le parse valide HORS de la marche de `slotsDe` ne déclare aucun slot, et son couple reste au stock `SLOTS_SANS_DECLARATION` bien que la fabrique soit adoptée : le `ref` d’un décor est résolu par le `superRefine` par `kind` de `sceneEntitySchema` (`idDe(\'prop\')`, #877) — mesuré le 2026-09-23, 314 des 444 `ref` d’entités des 4 paquets `*-projet.json` ; les 130 autres, de `kind` `personnage`, n’ont aucun schéma qui les résolve (dette réelle, #1473). Même cause pour le payload d’une op (`gameOpSchema`, `z.looseObject(…).superRefine`, `grammaire/mecanique.ts:200`) : aucun slot sous `ops[]` — `tables.json | of` et `activities.json | factor` y vivent (`defs/tables.ts:23`, `defs/activities.ts:115`) ; la récursion `z.lazy` de `formulaSchema` sous `times` n’y est que secondaire.',
-  'Une occurrence dont AUCUNE case ne porte de chaîne n’est jamais ATTEINTE, quel que soit le schéma : aucune valeur lue à un path déclaré ne peut y tomber, et son couple reste au stock `SLOTS_SANS_DECLARATION`. Mesuré le 2026-09-23 : 14 `{choice:[…]}` de `careerLevels.json | trappings` (les feuilles comptent sous `careerLevels.json | choice`), 19 `{random:N}` de `species.json | talents`, 2 `{random:N}` de `species.json | of`, et 1 occurrence de `creatures.json | spec` dont la seule case est une clé de `CLES_DE_SPECIALISATION`. Stock nominatif `SLOTS_INATTEIGNABLES`, qui ne fait que décroître.',
-  '`valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches. La RÉSOLUTION (§6.1) y compte chaque valeur une fois par branche ; la jointure, qui compte des OCCURRENCES, n’en est pas affectée.',
+  'Un nœud marqué d’espèce `id` dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est validé par aucun `idDe` : ce n’est pas un slot. Stock FOSSILE `SLOTS_INTERNES` de la marche du schéma, vide ; un type entre au registre (`TYPES`, `grammaire/ref.ts`) avec le lot qui migre son concept (#1473).',
+  'Une occurrence dont AUCUNE case ne porte de chaîne n’est jamais ATTEINTE, quel que soit le schéma : aucune n’est un slot, et son couple reste au stock `SLOTS_SANS_DECLARATION`. Mesuré le 2026-09-23 : 14 `{choice:[…]}` de `careerLevels.json | trappings` (les feuilles comptent sous `careerLevels.json | choice`), 19 `{random:N}` de `species.json | talents`, 2 `{random:N}` de `species.json | of`, et 1 occurrence de `creatures.json | spec` dont la seule case est une clé de `CLES_DE_SPECIALISATION`. Stock nominatif `SLOTS_INATTEIGNABLES`, qui ne fait que décroître.',
+  'Une référence portée par une CLÉ de record (`z.record(idDe(…), …)`) est un slot `{}` du §6.1, jamais une case du scan, qui n’observe que des valeurs : mesuré le 2026-09-23, 6 slots `ship-criticals.json › tablesDeChute[].bandes[].hauteurs{}` (`shipStation`), sans couple touché.',
 ];
 
 /**
@@ -231,7 +230,7 @@ export const CONCEPTS: readonly Concept[] = [
       { sig: 'id', statut: 'cible' },
       { sig: 'id,spec', statut: 'cible' },
       { sig: 'choix,id', statut: 'cible', note: 'choix borné / libre (DESIGN v2 S2)' },
-      { sig: 'id,type', statut: 'cible', note: 'slot de dotation polymorphe' },
+      { sig: 'id,type', statut: 'cible', note: 'référence de dotation polymorphe' },
       { sig: 'count,id,type', statut: 'cible' },
       { sig: 'of,pick', statut: 'cible', note: 'tirage parmi un ensemble borné' },
       { sig: 'pick,table', statut: 'cible', note: 'tirage sur une table nommée' },

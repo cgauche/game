@@ -7,30 +7,23 @@
 //
 // CE QUE MESURENT CES STOCKS :
 //   - `SLOTS_SANS_DECLARATION` — un couple (dataset, champ) qui porte des références OBSERVÉES
-//     (strate `Référence` du scan des deux racines) dont une occurrence au moins n'est ATTEINTE par
-//     aucun slot DÉCLARÉ. La jointure se fait par OCCURRENCE (#1473) : le scan attribue son couple à
-//     chaque occurrence qu'il range, et une valeur lue au path d'un slot atteint l'occurrence qui la
-//     porte. Le compte est celui des occurrences OBSERVÉES du couple ; la part atteinte se lit au doc
-//     §6.2. Une ligne se solde en faisant ADOPTER la fabrique de référence (`ref`/`refs`/`specRef`/
-//     `pick`) par le schéma du champ — concept par concept en L2/L3 (#1473) — et part dans le MÊME
-//     commit que l'adoption.
-//   - `SLOTS_INTERNES` — un slot d'espèce `id` dont le `type` est INCONNU du registre
-//     `_ids.generated` : il vise une entité INTERNE à une scène, que ce volet ne sait pas résoudre.
-//     Il se solde par `typedRef` en L2 (#1473).
+//     (strate `Référence` du scan des deux racines) dont une occurrence au moins n'est pas ATTEINTE.
+//     Le côté DÉCLARÉ est ce que le PARSE valide (#1473 R1) : une case `(porteur, clé)` dont la valeur
+//     est validée par `idDe` au parse de mesure est un SLOT ; une occurrence est ATTEINTE quand toutes
+//     ses cases en sont. Le compte est celui des occurrences OBSERVÉES du couple ; la part atteinte se
+//     lit au doc §6.2. Une ligne se solde en faisant ADOPTER la fabrique de référence (`ref`/`refs`/
+//     `specRef`/`pick`, toutes sur `idDe`) par le schéma du champ — concept par concept en L2/L3
+//     (#1473) — et part dans le MÊME commit que l'adoption.
+//   - `SLOTS_INTERNES` — FOSSILE (#1463, meurt au commit 2 de R1) : un nœud marqué d'espèce `id`,
+//     retrouvé par la marche du schéma, dont le `type` est INCONNU du registre `_ids.generated`.
 //   - `SLOTS_INATTEIGNABLES` — un couple dont des occurrences n'ont AUCUNE case qui porte une chaîne :
-//     aucune valeur déclarée ne peut les atteindre (angle mort `ANGLES_MORTS_SLOTS`). Compte = ces
-//     occurrences-là seules ; la ligne se solde quand la donnée ou le scan leur rend une case-chaîne.
-// Les trois ne font que DÉCROÎTRE, à UNE exception NOMMÉE : une ligne de `SLOTS_SANS_DECLARATION`
-// dont la référence est VALIDÉE par un site NOMMÉ hors de la marche de `slotsDe` ne déclare aucun
-// slot, et ne meurt qu'avec cet angle mort (`ANGLES_MORTS_SLOTS`). Sites validants aujourd'hui : le
-// `superRefine` par `kind` de `sceneEntitySchema` (`defs-scenes/scene.ts:89`) pour les `ref` de décor,
-// et le `superRefine` de `gameOpSchema` (`grammaire/mecanique.ts:200`) qui parse le payload STRICT
-// d'une op de `OP_DEFS`. Chaque ligne ainsi inscrite cite son site à son commentaire ; une ligne sans
-// site validant nommé est une DETTE réelle — une référence neuve s'ADOPTE, elle ne s'inscrit pas.
+//     aucune n'est un slot (angle mort `ANGLES_MORTS_SLOTS`). Compte = ces occurrences-là seules ; la
+//     ligne se solde quand la donnée ou le scan leur rend une case-chaîne.
+// Les trois ne font que DÉCROÎTRE : une référence neuve s'ADOPTE, elle ne s'inscrit pas.
 //
 // ANGLES MORTS : `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`), rendus au doc §6.3.
 
-/** Slots d'espèce `id` visant une entité INTERNE à une scène (type hors `_ids.generated`) :
+/** FOSSILE : nœuds marqués d'espèce `id` visant un type hors `_ids.generated` (marche du schéma) :
  *  listés, JAMAIS résolus par ce volet. VIDE aujourd'hui — la garde asserte l'ÉGALITÉ, donc toute
  *  apparition est un rouge NOMINATIF, pas un silence. */
 export const SLOTS_INTERNES = [];
@@ -53,7 +46,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "actions.json", champ: "rule", occurrences: 32, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "activities.json", champ: "chains", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "activities.json", champ: "classes", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "activities.json", champ: "factor", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-06" }, // #1612 : `[62].outcomes[0].ops[0].montant.brass.times.factor`, dans le payload d'une op (`ops: z.array(gameOpSchema)`, `defs/activities.ts:115`), validé par le `superRefine` de `gameOpSchema` (`grammaire/mecanique.ts:200`) sur `OP_DEFS.money` (`:80`) : aucun slot sous `ops[]`, mesuré le 2026-09-23 — angle mort `ANGLES_MORTS_SLOTS`. Même cause que `tables.json | of`
   { dataset: "activities.json", champ: "ops", occurrences: 17, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "activities.json", champ: "where", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "activities.json", champ: "rule", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R0 : `[60].rule`, `rule: z.string().optional()` (`defs/activities.ts:200`), aucune fabrique ; son départ au commit a6c963419 était une collision avec le slot `rule` de `formulaSchema`
@@ -73,7 +65,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arene-projet.json", champ: "b", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "choices", occurrences: 14, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "dialogueId", occurrences: 9, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "arene-projet.json", champ: "effect", occurrences: 72, lot: "L2/L3 #1473", date: "2026-09-11" }, // 76→72 (#1687 lot 3-I) : cette ligne dérive de `scan.formes` (`champsSansSlot`), et 4 objets `effect` d'`arene-projet.json` en sortent — non parce que leur donnée bouge (elle ne bouge pas, et ils vivent sous les flux de dialogue/déclencheur, jamais sous `interact`) mais parce que `choixDeclares` les ATTEINT désormais : `phase` et `lodging` sont déclarés à HEAD comme ici (`defs-scenes/effets.ts`), et c'est la marche de l'instrument — DFS mémoïsé borné à `PROFONDEUR_MEMO = 12` — qui change de chemin quand `interact` cède à `usable.actions[].flow` ; un littéral d'enum DÉCLARÉ n'est pas une clé étrangère (`structures-scan.mts:501`). Défaut d'instrument dit en tête de `horsStrateStock.mjs`, où ces 4 objets sont des entrées
+  { dataset: "arene-projet.json", champ: "effect", occurrences: 72, lot: "L2/L3 #1473", date: "2026-09-11" }, // 76→72 (#1687 lot 3-I) : cette ligne dérive de `scan.formes` (`champsSansSlot`), et 4 objets `effect` d'`arene-projet.json` en sortent — non parce que leur donnée bouge (elle ne bouge pas, et ils vivent sous les flux de dialogue/déclencheur, jamais sous `interact`) mais parce que `choixDeclares` les ATTEINT désormais : `phase` et `lodging` sont déclarés à HEAD comme ici (`defs-scenes/effets.ts`), et c'est la marche de l'instrument — DFS mémoïsé borné à `PROFONDEUR_MEMO = 12` — qui change de chemin quand `interact` cède à `usable.actions[].flow` ; un littéral d'enum DÉCLARÉ n'est pas une clé étrangère (`structures-scan.mts:519`). Défaut d'instrument dit en tête de `horsStrateStock.mjs`, où ces 4 objets sont des entrées
   { dataset: "arene-projet.json", champ: "members", occurrences: 116, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "merchant", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "modes", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -87,7 +79,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arene-projet.json", champ: "walls", occurrences: 235, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "weapon", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "skill", occurrences: 10, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "arene-projet.json", champ: "ref", occurrences: 406, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R0 : 291 `prop` (validés par le `superRefine` par `kind` de `sceneEntitySchema`, `defs-scenes/scene.ts:89`, hors marche de `slotsDe`) + 115 `personnage` (aucun slot : dette réelle)
+  { dataset: "arene-projet.json", champ: "ref", occurrences: 406, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R1 : 291 `prop` atteints (`idDe('prop')` de la branche `prop` de `sceneEntitySchema`, `defs-scenes/scene.ts:169`) + 115 `personnage` (`ref` en chaîne libre : dette réelle, #1882)
   { dataset: "axes.json", champ: "talents", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "a", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "ambush", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -102,7 +94,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "barge-du-sel-projet.json", champ: "qualities", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "victoryCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "barge-du-sel-projet.json", champ: "ref", occurrences: 6, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R0 : 1 `prop` (validés par le `superRefine` par `kind` de `sceneEntitySchema`, `defs-scenes/scene.ts:89`, hors marche de `slotsDe`) + 5 `personnage` (aucun slot : dette réelle)
+  { dataset: "barge-du-sel-projet.json", champ: "ref", occurrences: 6, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R1 : 1 `prop` atteints (`idDe('prop')` de la branche `prop` de `sceneEntitySchema`, `defs-scenes/scene.ts:169`) + 5 `personnage` (`ref` en chaîne libre : dette réelle, #1882)
   { dataset: "careerLevels.json", champ: "career", occurrences: 432, lot: "L2/L3 #1473", date: "2026-08-26" },
   // 27 → 29 (#1463 L-ref-1) : RAFRAÎCHISSEMENT DE COMPTE, pas un champ neuf — « Atelier (Ingénierie ou
   // Magie) » (alchimiste-4) devient l'emplacement `{choice:[{id,spec},{id,spec}]}` et pose 2 références
@@ -160,7 +152,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "diligence-projet.json", champ: "roomZoneIds", occurrences: 38, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "diligence-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "diligence-projet.json", champ: "walls", occurrences: 668, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "diligence-projet.json", champ: "ref", occurrences: 20, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R0 : 20 `prop` (validés par le `superRefine` par `kind` de `sceneEntitySchema`, `defs-scenes/scene.ts:89`, hors marche de `slotsDe`) + 0 `personnage` (aucun slot : dette réelle)
   { dataset: "domains.json", champ: "amount", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "domains.json", champ: "castBonus", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "domains.json", champ: "casterOps", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -216,15 +207,11 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "loup-et-saumure-projet.json", champ: "start", occurrences: 8, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "victoryCondition", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "loup-et-saumure-projet.json", champ: "weapon", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "loup-et-saumure-projet.json", champ: "skill", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "loup-et-saumure-projet.json", champ: "ref", occurrences: 12, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R0 : 2 `prop` (validés par le `superRefine` par `kind` de `sceneEntitySchema`, `defs-scenes/scene.ts:89`, hors marche de `slotsDe`) + 10 `personnage` (aucun slot : dette réelle)
-  { dataset: "maladies.json", champ: "ops", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // cycle quotidien de la Pneumonie, EDOC 08 l.104-108 (#674) — champ `onFail` → `ops` (#1657 B2b)
-  { dataset: "maladies.json", champ: "otherwise", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-31" }, // échelon Toxine du même cycle, EDOC 08 l.106-108 (#674)
+  { dataset: "loup-et-saumure-projet.json", champ: "ref", occurrences: 12, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R1 : 2 `prop` atteints (`idDe('prop')` de la branche `prop` de `sceneEntitySchema`, `defs-scenes/scene.ts:169`) + 10 `personnage` (`ref` en chaîne libre : dette réelle, #1882)
   { dataset: "maladies.json", champ: "dailyTest", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-01" }, // EDOC 08 l.104 (#674) — le Test quotidien DÉSIGNE son symptôme (#1657 geste A)
   { dataset: "maladies.json", champ: "symptoms", occurrences: 62, lot: "L2/L3 #1473", date: "2026-08-26" }, // +5 : Pneumonie (3) + Rhume commun (2), EDOC 08 folio 33 (#674) ; 54 → 62 : les 8 réfs à Difficulté PROPRE, jusque-là classées `test` (#1657 geste A)
   { dataset: "maneuvers.json", champ: "escapeStrength", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "maneuvers.json", champ: "ops", occurrences: 22, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "maneuvers.json", champ: "skill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "merchantFamilies.json", champ: "columns", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "merchantFamilies.json", champ: "match", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "merchants.json", champ: "subTypes", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -233,8 +220,8 @@ export const SLOTS_SANS_DECLARATION = [
   // 38 → 39 (#1653 train A, 2026-09-04) : la rangée 81-87 de la Colère des dieux gagne UNE op qui
   // désigne un État (la cause récurrente de « Purifier la chair », LDB 40 l.75). Mesuré le 2026-09-23,
   // 0 / 39 atteintes : 35 cases `id` d'op `condition`, posées en `id: z.string().optional()` nu
-  // (`src/data/schemas/defs/miscast.ts:54`) dans `jsonOpSchema`, `z.strictObject` que `slotsDe` marche
-  // — aucun slot, dette réelle ; l'une d'elles appartient à l'op dont la case `unlessCondition`
+  // (`src/data/schemas/defs/miscast.ts:54`) dans `jsonOpSchema`, sans `idDe` — aucun slot, dette
+  // réelle ; l'une d'elles appartient à l'op dont la case `unlessCondition`
   // (`idDe('etat')`) est touchée, ce qui ne suffit pas. 4 cases `op` d'op `corruption` : discriminant
   // d'op que le scan compte comme référence. Solde : #1902.
   { dataset: "miscast.json", champ: "ops", occurrences: 39, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -268,7 +255,6 @@ export const SLOTS_SANS_DECLARATION = [
   // #1661 : 10 → 11 — le 2ᵉ État Hémorragique offert par Taillade (`AA 08 l.87`) est une op de plus
   // dans le MÊME champ `ops` déjà stocké, pas un champ de référence neuf.
   { dataset: "qualities.json", champ: "ops", occurrences: 11, lot: "L2/L3 #1473", date: "2026-09-05" },
-  { dataset: "qualities.json", champ: "skill", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "raceAppearance.json", champ: "featureKeys", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "raceAppearance.json", champ: "gabarit", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "raceAppearance.json", champ: "head", occurrences: 7, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -309,9 +295,9 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "spells.json", champ: "onlyGroups", occurrences: 7, lot: "L2/L3 #1473", date: "2026-08-26" },
   // 205 -> 206 (#1508 T3, 2026-09-07) : le Dôme gagne l'op TYPÉE `domeWard` (`traitId` + `indice`,
   // graphie canonique d'un octroi) — le Trait qu'il octroie était un `6` en dur dans le moteur. La
-  // fabrique EST adoptée (`OP_DEFS.domeWard`, `idDe('trait')`, `grammaire/mecanique.ts:90`), validée
-  // par le `superRefine` de `gameOpSchema` (`grammaire/mecanique.ts:200`), hors marche de `slotsDe` :
-  // aucun slot `traitId` n'est déclaré, mesuré le 2026-09-23. Les autres occurrences sont dette réelle.
+  // fabrique EST adoptée (`OP_DEFS.domeWard`, `idDe('trait')`, `grammaire/mecanique.ts:90`) : son
+  // `traitId` est un slot, 1 / 206 atteintes au parse de mesure (#1473 R1, 2026-09-23). Les autres
+  // occurrences sont dette réelle.
   { dataset: "spells.json", champ: "ops", occurrences: 206, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "spells.json", champ: "perRound", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "spells.json", champ: "qualities", occurrences: 5, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -334,7 +320,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "symptoms.json", champ: "moderee", occurrences: 6, lot: "L1b #1467", date: "2026-09-05" },
   { dataset: "symptoms.json", champ: "grave", occurrences: 1, lot: "L1b #1467", date: "2026-09-05" },
   { dataset: "symptoms.json", champ: "visiblePassive", occurrences: 1, lot: "L1b #1467", date: "2026-08-28" },
-  { dataset: "tables.json", champ: "of", occurrences: 1, lot: "L2/L3 #1473", date: "2026-09-06" }, // #1612 : le terme `{rule}` de l'amende des gardes (`mendier-ennuis`), `[0].rows[0].ops[0].montant.brass.times.of`, dans le payload d'une op (`ops: z.array(gameOpSchema)`, `defs/tables.ts:23`), validé par le `superRefine` de `gameOpSchema` (`grammaire/mecanique.ts:200`) sur `OP_DEFS.money` (`:80`) : aucun slot sous `ops[]`, mesuré le 2026-09-23 — angle mort `ANGLES_MORTS_SLOTS`. Même cause que `activities.json | factor`.
   { dataset: "tables.json", champ: "ops", occurrences: 79, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "tables.json", champ: "skill", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "talents.json", champ: "effects", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

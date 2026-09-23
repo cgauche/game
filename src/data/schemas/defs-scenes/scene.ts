@@ -62,12 +62,6 @@ export const entityKindSchema = enumNomme({ heroStart: 'Départ héros', personn
 
 const VOLUMIQUES = new Set(PROPS_VOLUMIQUES);
 
-/** Porte de registre d'une ref de DÉCOR (#877) : le même `idDe('prop')` que `terrains › overlayProp`,
- *  appliqué depuis le `superRefine` de l'entité — `SceneEntity.ref` est un champ PARTAGÉ avec le
- *  personnage, que seul le `kind` départage. La liste admise se relit à chaque validation
- *  (`grammaire/ref.ts`), un décor créé au Compendium est donc référençable aussitôt. */
-const refDeDecor = idDe('prop');
-
 /** Une ACTION AUTHORÉE sur une instance de décor (#1687) — le vocabulaire OUVERT des gestes qu'un
  *  auteur pose. `id` : identité STABLE et non vide, unique sur l'entité (l'unicité est gardée par le
  *  `refine` de `usable`, qui seul voit la liste) ; `label` : surcharge d'AFFICHAGE, absent le libellé
@@ -83,21 +77,14 @@ export const actionAuthoreeSchema = z.strictObject({
   minutes: z.number().min(0).optional(),
 });
 
-/** `SceneEntity` (`state/scene.ts:41`). `id` = identité STABLE partagée avec le `Combatant` au spawn.
- *  Le `superRefine` en pied porte le seul invariant CROSS-CHAMP de l'entité : le cap d'un décor
- *  volumique (cf. `PROPS_VOLUMIQUES`). */
-export const sceneEntitySchema = z.strictObject({
+/** Champs PARTAGÉS par les trois `kind` d'une entité de scène — le `ref`, lui, est propre à chaque branche. */
+const baseDEntiteSchema = z.strictObject({
   id: z.string(),
-  kind: entityKindSchema,
   pos: z.strictObject({ x: z.number(), y: z.number() }),
   /** Couche d'empilement (cf. `layers`) : 0/absent = couche de base. */
   z: z.number().optional(),
   facing: dir8Schema.optional(),
   label: z.string().optional(),
-  /** Réf au bestiaire (personnage) ou au catalogue de décor (prop). REQUISE et résolue au registre
-   *  pour un décor (`superRefine` en pied) : un décor se DIT ou se REFUSE, jamais ne se remplace
-   *  (#877). */
-  ref: z.string().optional(),
   statblock: customStatblockSchema.optional(),
   /** Id d'un preset de `narratif.presetsPnj` — FK intra-document (vérifiée par `projetSchema`). */
   presetId: z.string().optional(),
@@ -163,34 +150,45 @@ export const sceneEntitySchema = z.strictObject({
       hiddenUntilCombat: z.boolean().optional(),
     })
     .optional(),
-}).superRefine((ent, ctx) => {
-  // CAP D'UN DÉCOR VOLUMIQUE — verrou AU PARSE (#1680 ligne 3) : un décor dont le TYPE porte une
-  // recette ne prend qu'un cap CARDINAL. Sa recette tourne (`rotatePropLocal`) là où son empreinte
-  // solide ne tourne pas (#1509) : une diagonale poserait son corps en travers de cases restées
-  // traversables. La couche schémas ne lit pas le catalogue au runtime (`src/data/index.ts` importe
-  // les schemas) : elle lit le registre GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
-  if (ent.kind !== 'prop') return;
-  // REF DE DÉCOR — verrou AU PARSE (#877) : le type est REQUIS et résolu au registre `props.json`. Une
-  // ref absente comme une ref morte se DISENT ici, en nommant l'entité ; aucune n'est remplacée.
-  if (ent.ref === undefined) {
+});
+
+/** Branche d'une entité de scène : les champs partagés, son `kind` et sa `ref`. Le littéral
+ *  DISCRIMINE la branche, `entityKindSchema` en NOMME la valeur (vocabulaire à libellés). */
+const brancheDEntite = <R extends z.ZodTypeAny>(kind: EntityKindId, ref: R) =>
+  z.strictObject({ ...baseDEntiteSchema.shape, kind: z.literal(kind).pipe(entityKindSchema), ref });
+
+type EntityKindId = z.infer<typeof entityKindSchema>;
+
+/** `SceneEntity` (`state/scene.ts:41`). `id` = identité STABLE partagée avec le `Combatant` au spawn.
+ *  Union DISCRIMINÉE par `kind` : la `ref` d'un DÉCOR résout au registre `props.json` (`idDe('prop')`,
+ *  #877) ; celle d'un personnage est une chaîne libre (#1882). Le `superRefine` de la branche `prop`
+ *  porte ses deux invariants CROSS-CHAMP : la `ref` présente, et le cap d'un décor volumique. */
+export const sceneEntitySchema = z.discriminatedUnion('kind', [
+  brancheDEntite('heroStart', z.string().optional()),
+  brancheDEntite('personnage', z.string().optional()),
+  brancheDEntite('prop', idDe('prop').optional()).superRefine((ent, ctx) => {
+    // REF DE DÉCOR — verrou AU PARSE (#877) : le type est REQUIS ; sa résolution au registre est celle
+    // de la feuille `idDe('prop')`. Une ref absente se DIT ici, en nommant l'entité.
+    if (ent.ref === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['ref'],
+        message: `décor « ${ent.id} » : « ref » absente — un décor NOMME son type au catalogue (props.json)`,
+      });
+    }
+    // CAP D'UN DÉCOR VOLUMIQUE — verrou AU PARSE (#1680 ligne 3) : un décor dont le TYPE porte une
+    // recette ne prend qu'un cap CARDINAL. Sa recette tourne (`rotatePropLocal`) là où son empreinte
+    // solide ne tourne pas (#1509) : une diagonale poserait son corps en travers de cases restées
+    // traversables. La couche schémas ne lit pas le catalogue au runtime (`src/data/index.ts` importe
+    // les schemas) : elle lit le registre GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
+    if (capDecorAdmis(ent.ref !== undefined && VOLUMIQUES.has(ent.ref), ent.facing)) return;
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ['ref'],
-      message: `décor « ${ent.id} » : « ref » absente — un décor NOMME son type au catalogue (props.json)`,
+      path: ['facing'],
+      message: `décor volumique « ${ent.ref} » au cap ${ent.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`,
     });
-  } else {
-    const verdict = refDeDecor.safeParse(ent.ref);
-    if (!verdict.success)
-      for (const souci of verdict.error.issues)
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['ref'], message: `décor « ${ent.id} » : ${souci.message}` });
-  }
-  if (capDecorAdmis(ent.ref !== undefined && VOLUMIQUES.has(ent.ref), ent.facing)) return;
-  ctx.addIssue({
-    code: z.ZodIssueCode.custom,
-    path: ['facing'],
-    message: `décor volumique « ${ent.ref} » au cap ${ent.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`,
-  });
-});
+  }),
+]);
 
 // ── Architecture ────────────────────────────────────────────────────────────────────────────────
 
