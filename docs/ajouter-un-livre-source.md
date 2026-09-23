@@ -97,15 +97,17 @@ rend fausse (titre soudé, bandeau lu comme table), jamais un mot. Un prédicat,
 
 - **Le prédicat** (`scripts/raw/lib/mobilier.mjs`). O, l'ensemble des chiffres d'onglet d'un fichier,
   se tire de la donnée `onglets` de sa liste de découpe : les chiffres dont l'étendue rencontre les
-  pages `page..pageFin+1`. Il relève (a) une ligne réduite à un élément de O, ou à un nombre de
-  `[page, pageFin+1]` ; (b) un élément de O comme mot isolé hors gras. Dans une table, les cellules
+  pages `page..pageFin+1`. Il relève (a) une ligne réduite à un élément de O ; (b) une tête de ligne
+  (après ses `#`) faite de 1 à 3 nombres, TOUS de `[page-1, pageFin+1]` — le folio seul, la paire
+  d'une double page, dont le folio de gauche précède la 1re page du fichier —, seule (`folio-nu`) ou
+  suivie de texte (`folio-tete`) ; (c) un élément de O comme mot isolé hors gras. Dans une table, les cellules
   d'en-tête d'une table de PROFIL (au moins 3 abréviations de Caractéristique de
   `src/data/characteristics.json`) sont exclues.
 - **La sonde** : `node scripts/raw/sonde-mobilier.mjs <id>` rend les sites classés, en `NNN:ligne`,
   et dit lesquels une exemption couvre.
 - **La réparation** : `node scripts/raw/reparer-mobilier.mjs <id>`, puis `--apply`. Une ligne réduite
-  au mobilier est SUPPRIMÉE, avec l'une des deux lignes vides qui l'encadraient ; un jeton dans une
-  ligne est retiré, les blancs du seul point de coupe normalisés ; dans une cellule de table, il
+  au mobilier est SUPPRIMÉE (`#` compris), avec l'une des deux lignes vides qui l'encadraient ; un
+  jeton dans une ligne (onglet mot, folio de tête) est retiré, les blancs du seul point de coupe normalisés ; dans une cellule de table, il
   devient autant d'espaces, et les colonnes restent. Deux classes changent la forme :
   - un jeton entre deux runs gras d'une ligne de titre (titre SOUDÉ) scinde la ligne en DEUX
     titres, au niveau le plus porté par les titres frères du fichier ;
@@ -231,9 +233,14 @@ réduites, `scripts/raw/lib/fixtures/pages-crb/`). Chaque titre imprimé s'appar
 la 1re ligne de SON corps dans le `.md`. Familles : entrée, encadré, tableau, capitales. Formes des
 entrées : S soudé, F fragment soudé à un corps étranger, M migré, S′ absent, B gras sans `#`, O hors
 d'ordre (à poser `devant` le titre qui la suit au PDF), N niveau, `corps-introuvable` avec sa cause ;
-des autres familles, S et F seuls. Débris devant un corps à sa place, toutes familles : `doublon`,
-`numero-de-page`. Toute cible est le DÉBUT d'un bloc Markdown (en tête de fichier, après une ligne
-vide ou un titre : d'un tableau, son en-tête) ; sinon le site sort en `cible-invalide`. Sites en `NNN:ligne`, avec la page, la position au PDF et la ligne CIBLE. Elle
+des autres familles, S et F seuls, plus le S′ de capitales par COMPTAGE (imprimé sur les pages de son
+fichier plus de fois que son `.md` ne le porte, une fois au moins ; restauré dans la forme de ses
+frères du `.md`). Débris devant un corps à sa place, toutes familles : `doublon` — les folios sont
+du mobilier de page, jamais un débris de titre. Toute cible est le DÉBUT d'un bloc Markdown (en tête
+de fichier, après une ligne vide ou un titre ; une ligne de tableau se remonte à l'en-tête de son
+bloc) ; sinon le site sort en `cible-invalide`. Les ancres `<span id="page-…">` ne comptent pas
+(`stripSpans`). Sites en `NNN:ligne`, avec `titreMd` (le texte EXACT du titre dans le `.md`), la
+page, la position au PDF et la ligne CIBLE. Elle
 n'écrit rien sous le dépôt (`--json` sous la racine est refusé) ; hors CI (pas de PDF).
 
 **Le critère à tenir** : mettre le livre N+1 au grain de ses sections coûte **UN fichier de donnée,

@@ -34,8 +34,6 @@ Karak Ziflin (Windswept Hold) lies to the north of Axe Bite Pass, closer to Bret
 
 The dwarfs of the Grey Mountains have not had to suffer the great losses endured by those who remained in the Worlds Edge Mountains, but they are in decline, and no longer have the numbers to maintain the tunnels and outposts they built long ago. Those places are now overrun with orcs and goblins, stone trolls, skaven, and worse. These ancient halls and byways attract the foolhardy and desperate, who delve into the depths in hope of lost dwarf riches.
 
-# 274 274 275
-
 # **The Hägercrybs**
 
 Dominating the interior of the Reikland, the mist-shrouded Hägercrybs extend from the Princedom of Altdorf in the north to the Duchy of Ubersreik in the south. Dense forest covers the hills and no road penetrates their heights from east to west.
@@ -70,7 +68,7 @@ Soaring high above central Vorbergland, the twisting peak of the Drachenberg is 
 
 The mountain has long been a favoured haunt of the dragons, as well as basilisks, wyverns, and manticores. The immense red dragon, Caledair, the 'Scythe of Fire', once made her lair in caves near the peak of the mountain, scouring the Vorbergland when rage or hunger brought her forth. She has not been seen for more than a century, though none can say for certain if she has migrated to parts unknown or sleeps within the mountain.
 
-274 275 Rumours of dragons' hoards draw treasure hunters to the Drachenberg, but most are thwarted by the mountain's treacherous slopes long before they ever encounter a dragon.
+Rumours of dragons' hoards draw treasure hunters to the Drachenberg, but most are thwarted by the mountain's treacherous slopes long before they ever encounter a dragon.
 
 # **The Grim, Dark Forests**
 

@@ -53,6 +53,13 @@ const PAGES = [
       L(1, 190, 'Trolls are big and hungry'),
       L(1, 150, 'Wolf', 'CaslonAntique-Bold-SC700', 18),
       L(1, 140, 'Wolves hunt in packs here'),
+      L(1, 120, 'Ogre', 'CaslonAntique-Bold-SC700', 18),
+      L(1, 110, 'Ogres are huge brutes here'),
+      L(1, 100, 'OGRE', 'CaslonAntique-Bold', 12),
+      L(1, 80, 'Career Path', 'CaslonAntique-Bold-SC700', 18),
+      L(1, 70, 'Career path body words go'),
+      T(1, 50, 'Rho'),
+      L(1, 40, 'Rho corps words sit here'),
     ],
   },
 ]
@@ -86,6 +93,11 @@ const MD = [
   '**Troll** Trolls are big and hungry',
   '## Wolf',
   'Wolves hunt in packs here',
+  'Ogres are huge brutes here',
+  '#### **OGRE**',
+  'Career path body words go',
+  '# <span id="page-10-0"></span>**Rho**',
+  'Rho corps words sit here',
 ]
 const FICHIERS = [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes: MD.flatMap((l, i) => (i ? ['', l] : [l])) }]
 
@@ -104,9 +116,27 @@ test('#1739 : famille « capitales » — le nom de créature SC700 est un titre
   assert.deepEqual([titre('Wolf')?.famille, titre('Wolf')?.forme], ['capitales', 'ok'])
 })
 
+test('#1739 : S′ de capitales par COMPTAGE — imprimé plus de fois que le `.md` ne le porte, restauré dans la forme de ses frères', () => {
+  const s = site("S'", 'Ogre')
+  assert.deepEqual([s?.famille, s?.cible, s?.verbatim, s?.comptage], ['capitales', '001:59', '## **Ogre**', { auPdf: 2, auMd: 1 }])
+  assert.equal(titre('Career Path').forme, "S'")
+  assert.equal(sites.some((x) => x.titre === 'Career Path'), false)
+})
+
+test('#1739 : une ancre `<span id="page-…">` devant un titre ne le cache pas', () => {
+  assert.equal(titre('Rho').forme, 'ok')
+})
+
 test('#1739 : S soudé à son corps ; F soudé au corps de son jumeau, cible devant son propre corps', () => {
   assert.equal(site('S', 'Gamma').site, '001:9')
   assert.deepEqual([site('F', 'Alpha').site, site('F', 'Alpha').cible], ['001:7', '001:3'])
+})
+
+test('#1739 : `titreMd` — le texte EXACT du titre dans le `.md`, que la réparation déplace', () => {
+  assert.deepEqual(
+    [site('S', 'Gamma'), site('F', 'Alpha'), site('M', 'Theta'), site('B', 'Iota'), site('O', 'Eps'), site('S', 'Troll')].map((x) => x.titreMd),
+    ['**Gamma**', '**Alpha**', '### **Theta**', '**Iota**', '### **Eps**', '**Troll**'],
+  )
 })
 
 test('#1739 : S′ — une étiquette `**X:**` est une MENTION, pas un fragment ; le verbatim est le texte imprimé', () => {
@@ -132,11 +162,12 @@ test('#1739 : encadré — seuls S et F se rendent : un titre isolé ailleurs n�
   assert.equal(sites.some((s) => s.titre === 'SIDEBAR'), false)
 })
 
-test('#1739 : débris devant un corps à sa place — doublon d’un texte imprimé une fois, numéros de page', () => {
+test('#1739 : débris devant un corps à sa place — doublon d’un texte imprimé une fois ; des nombres ne sont pas un débris de titre (mobilier)', () => {
   const d = site('doublon', 'Lambda')
   assert.deepEqual([d?.site, d?.auMd, d?.auPdf.length], ['001:41', ['001:37', '001:41'], 1])
-  assert.deepEqual([site('numero-de-page', 'Mu')?.site, site('numero-de-page', 'Mu')?.texte], ['001:45', '10 11'])
   assert.equal(titre('Lambda').forme, 'ok')
+  assert.equal(titre('Mu').forme, 'ok')
+  assert.equal(sites.some((x) => x.titre === 'Mu'), false)
 })
 
 test('#1739 : grasDeTete distingue l’étiquette ; plusLongueCroissante garde l’ordre majoritaire', () => {
@@ -153,16 +184,26 @@ test('#1739 : `--json` sous la racine du dépôt est REFUSÉ avant toute lecture
   assert.equal(existsSync(sortie), false)
 })
 
-test('#1739 : toute cible est le DÉBUT d’un bloc — une ligne de données de tableau sort en cible-invalide (CRB p.145, p.339)', () => {
+test('#1739 : toute cible est le DÉBUT d’un bloc — une ligne de tableau se remonte à l’EN-TÊTE de son bloc (CRB p.145, p.339)', () => {
   const { pages, fichiers } = JSON.parse(readFileSync(new URL('./lib/fixtures/cibles-crb.json', import.meta.url), 'utf8'))
   const reels = classer(pages, fichiers, gabaritTitreDe('core-rulebook-5e')).sites
   const bu = reels.find((x) => x.titre === 'STINKING DRUNK')
-  assert.deepEqual([bu.forme, bu.formeVisee, bu.champ], ['cible-invalide', 'F', 'cible'])
-  assert.match(bu.ligneCible, /^\| 1–2 +\| 'Marienburger's Courage!'/)
+  assert.deepEqual([bu.forme, bu.titreMd], ['F', '**STINKING DRUNK**'])
+  const [, lb] = bu.cible.split(':').map(Number)
+  const l028 = fichiers.find((x) => x.nom.startsWith('028')).lignes
+  assert.match(l028[lb - 1], /^\| 1d10 +\| Outcome/)
+  assert.equal(l028[lb - 2], '')
   const sq = reels.find((x) => x.titre === 'skeleTon')
   assert.equal(sq.forme, 'F')
   const [f, l] = sq.cible.split(':').map(Number)
   const lignes = fichiers.find((x) => x.nom.startsWith(String(f).padStart(3, '0'))).lignes
   assert.match(lignes[l - 1], /^Skeletons are the fleshless bones/)
   assert.equal(lignes[l - 2], '')
+})
+
+test('#1739 : une cible au milieu d’un paragraphe sort en cible-invalide, avec sa forme visée', () => {
+  const pages = [{ page: 10, lignes: [T(0, 700, 'Omega'), L(0, 690, 'Omega corps words go here')] }]
+  const lignes = ['Intro line here', 'Omega corps words go here', '', '**Omega** Autre corps étranger ici']
+  const [s] = classer(pages, [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes }], GABARIT).sites
+  assert.deepEqual([s.forme, s.formeVisee, s.champ, s.cible, s.ligneCible], ['cible-invalide', 'F', 'cible', '001:2', 'Omega corps words go here'])
 })

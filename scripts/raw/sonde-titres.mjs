@@ -17,12 +17,16 @@
 // `corps-introuvable`, avec sa cause (`sans-ligne` : suivi d'un autre titre ; `cle-courte` : aucune
 // ligne de corps de deux mots ; `hors-md` : corps absent des `.md` de sa page). Pour les encadrés, les
 // tableaux et les capitales, seules S et F sont rendues : leur place dans le `.md` suit la mise en page,
-// pas l'ordre du PDF.
+// pas l'ordre du PDF — et, des capitales, le S′ par COMPTAGE : un titre que les pages de son fichier
+// impriment PLUS de fois que son `.md` ne le porte (une fois au moins), restauré dans la forme de ses
+// frères du `.md` (niveau, gras, casse).
 // DÉBRIS devant un corps dont le titre est à sa place (toutes familles) : `doublon` (un titre imprimé
-// UNE fois au PDF, porté une seconde fois par le `.md` — preuve : les deux comptes), `numero-de-page`
-// (des nombres de la plage de pages du fichier).
-// Toute CIBLE (`cible`, `devant`) est le DÉBUT d'un bloc Markdown ; sinon le site sort en
-// `cible-invalide`, avec sa forme visée et la ligne visée.
+// UNE fois au PDF, porté une seconde fois par le `.md` — preuve : les deux comptes). Les folios sont
+// du mobilier de page (`lib/mobilier.mjs`), pas un débris de titre.
+// Toute CIBLE (`cible`, `devant`) est le DÉBUT d'un bloc Markdown ; une ligne de tableau se remonte à
+// l'en-tête de son bloc ; sinon le site sort en `cible-invalide`, avec sa forme visée et la ligne visée.
+// `titreMd` : le texte EXACT du titre dans le `.md` (S, F, M, B, O), ce que la réparation déplace.
+// Les ancres `<span id="page-…"></span>` ne comptent pas (`stripSpans`, `src/data/source/decoupe.ts`).
 //
 // Usage :
 //   node scripts/raw/sonde-titres.mjs <id> [--boites <boites.json>] [--json <sortie.json>]
@@ -35,6 +39,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { decoupeDe, gabaritTitreDe, livreExtraitDe, nomsDeLaListe, normalize, readText } from './_lib.mjs'
 import { lignes } from './lib/colonnes.mjs'
+import { stripSpans } from '../../src/data/source/decoupe.ts'
 import { canoniser, relatifSousRacine } from '../docs/lib/chemin-mesure.mjs'
 
 const PDF_LIGNES = join(dirname(fileURLToPath(import.meta.url)), 'lib', 'pdf-lignes.py')
@@ -43,7 +48,7 @@ const PDF_LIGNES = join(dirname(fileURLToPath(import.meta.url)), 'lib', 'pdf-lig
  *  remplacement que l'extraction PDF rend pour l'apostrophe, l'échappement Markdown, les préfixes de
  *  ligne (`#`, `>`, puce `-`) et les séparateurs de cellule de tableau (`|`). PURE. */
 export const cle = (s) =>
-  normalize(String(s).replace(/^(?:#{1,6}|>|-)\s+/, '').replace(/\\(.)/g, '$1').replace(/[\ufffd‘]/g, "'").replace(/\|/g, ' '))
+  normalize(stripSpans(String(s)).replace(/^(?:#{1,6}|>|-)\s+/, '').replace(/\\(.)/g, '$1').replace(/[\ufffd‘]/g, "'").replace(/\|/g, ' '))
 
 const cleDeTitre = (s) => cle(s).replace(/:$/, '')
 
@@ -98,23 +103,44 @@ export function clesDeCorps(suivantes) {
 
 /** Ligne de titre Markdown : `{ niveau, texte, groupes }` (groupes gras), ou null. PURE. */
 export function enTete(ligne) {
-  const m = /^(#{1,6})\s+(.*)$/.exec(ligne)
+  const m = /^(#{1,6})\s+(.*)$/.exec(stripSpans(ligne))
   if (!m) return null
   return { niveau: m[1].length, texte: cleDeTitre(m[2]), groupes: [...m[2].matchAll(/\*\*([^*]+)\*\*/g)].map((g) => cleDeTitre(g[1])) }
 }
 
 /** Ligne FAITE d'un seul groupe gras (titre sans `#`) : son texte, ou null. PURE. */
 export const grasSeul = (ligne) => {
-  const m = /^\*\*([^*]+)\*\*\s*$/.exec(ligne)
+  const m = /^\*\*([^*]+)\*\*\s*$/.exec(stripSpans(ligne))
   return m ? cleDeTitre(m[1]) : null
 }
 
 /** Groupe gras de TÊTE d'une ligne (après `#` éventuels) : `{ texte, reste, etiquette }` —
  *  `etiquette` : le groupe finit par `:` (étiquette en ligne, `**Combat Reflexes:** …`) —, ou null. PURE. */
 export const grasDeTete = (ligne) => {
-  const m = /^(?:#{1,6}\s+)?\*\*([^*]+)\*\*\s*(.*)$/.exec(ligne)
+  const m = /^(?:#{1,6}\s+)?\*\*([^*]+)\*\*\s*(.*)$/.exec(stripSpans(ligne))
   return m ? { texte: cleDeTitre(m[1]), reste: m[2], etiquette: /:\s*$/.test(m[1]) } : null
 }
+
+/** Le texte EXACT d'un titre de clé `k` dans sa ligne `.md` : le plus court préfixe (`#` compris)
+ *  de clé `k`, sinon le groupe gras de clé `k` (titre composite), sinon null. PURE. */
+export function texteExact(ligne, k) {
+  for (const m of ligne.matchAll(/\s|$/g)) {
+    const p = ligne.slice(0, m.index).trim()
+    if (p && cleDeTitre(p) === k) return p
+  }
+  return [...ligne.matchAll(/\*\*[^*]+\*\*/g)].find((g) => cleDeTitre(g[0]) === k)?.[0] ?? null
+}
+
+/** La casse d'un titre du `.md` : `titre` (chaque mot capitalisé), `majuscules`, ou `autre`. PURE. */
+export const casseDe = (texte) => {
+  const mots = texte.match(/\p{L}+/gu) ?? []
+  if (mots.length && mots.every((m) => m === m.toUpperCase()) && mots.some((m) => m.length > 1)) return 'majuscules'
+  return mots.length && mots.every((m) => m[0] === m[0].toUpperCase() && m.slice(1) === m.slice(1).toLowerCase()) ? 'titre' : 'autre'
+}
+
+/** Le texte `texte` dans la casse `casse` (`casseDe`), ou null pour `autre`. PURE. */
+export const enCasse = (texte, casse) =>
+  casse === 'majuscules' ? texte.toUpperCase() : casse === 'titre' ? texte.toLowerCase().replace(/(^|[\s(-])(\p{L})/gu, (_, a, b) => a + b.toUpperCase()) : null
 
 /** Indices de la plus longue sous-suite croissante de `vals` (ordre du PDF tenu par le `.md`). PURE. */
 export function plusLongueCroissante(vals) {
@@ -164,12 +190,10 @@ export function classer(pages, fichiers, gabarit) {
   }
   const tousTitres = new Set(titres.map((t) => cleDuPdf(t.texte)))
   const clesDuFlux = flux.map((l) => ({ page: l.page, cle: cleDuPdf(l.texte) }))
-  // DÉBRIS `k` devant un corps du fichier `f` : nombres de sa plage de pages (à une page près), ou texte
-  // imprimé au PDF sur ses pages et porté plus de fois par son `.md` (doublon). Un autre texte n'est pas
-  // un débris : la clé de corps a été trouvée plus loin dans sa ligne.
+  // DÉBRIS `k` devant un corps du fichier `f` : texte imprimé au PDF sur ses pages et porté plus de fois
+  // par son `.md` (doublon). Un autre texte n'est pas un débris : la clé de corps a été trouvée plus
+  // loin dans sa ligne.
   const debris = (k, f) => {
-    const nombres = k.split(' ')
-    if (nombres.every((x) => /^\d{1,4}$/.test(x) && fichiers[f].page - 1 <= +x && +x <= fichiers[f].pageFin + 1)) return { forme: 'numero-de-page', texte: k }
     const auPdf = clesDuFlux.filter((l) => fichiers[f].page <= l.page && l.page <= fichiers[f].pageFin && l.cle.startsWith(k))
     const auMd = cles[f].flatMap((c, j) => (c.startsWith(k) ? [adresse(f, j)] : []))
     if (auPdf.length && auMd.length > auPdf.length) return { forme: 'doublon', texte: k, auMd, auPdf: auPdf.map((l) => `p.${l.page} « ${l.cle} »`) }
@@ -243,6 +267,14 @@ export function classer(pages, fichiers, gabarit) {
   // livre). Ne vaut titre ou fragment qu'une ligne de titre isolée, un gras seul, un groupe d'un titre
   // composite avec son JUMEAU, ou un gras de TÊTE de ligne qui n'est pas une étiquette (`X:`) : soudé au
   // corps de son jumeau ou à un autre corps. Le reste est MENTION.
+  // Règle du DOUBLON inversée : les pages du fichier de son corps impriment le titre PLUS de fois que
+  // ce `.md` ne le porte, une fois au moins (le `.md` a gardé l'en-tête de profil, perdu le titre).
+  const comptage = (t) => {
+    const f = t.corps.f
+    const auPdf = clesDuFlux.filter((l) => fichiers[f].page <= l.page && l.page <= fichiers[f].pageFin && l.cle === t.cle).length
+    const auMd = cles[f].filter((c) => c === t.cle).length
+    return auMd && auPdf > auMd ? { auPdf, auMd } : null
+  }
   const jumeaux = (t) => titres.filter((u) => u !== t && u.page === t.page && Math.abs(u.y0 - t.y0) <= 2)
   const ordreDeRecherche = (p) => [...new Set([...fichiersDeLaPage(p), ...fichiers.keys()])]
   for (const t of titres.filter((x) => x.forme === 'absent')) {
@@ -272,6 +304,7 @@ export function classer(pages, fichiers, gabarit) {
     } else {
       t.forme = "S'"
       t.mentions = fichiers.flatMap((fx, fi) => fx.lignes.flatMap((x, li) => (cles[fi][li].includes(t.cle) ? [adresse(fi, li)] : [])))
+      if (t.famille === 'capitales' && t.corps) t.comptage = comptage(t)
     }
   }
 
@@ -296,38 +329,56 @@ export function classer(pages, fichiers, gabarit) {
   }
 
   // Toute CIBLE (`cible`, `devant`) est le DÉBUT d'un bloc Markdown : ligne non vide, en tête de fichier
-  // ou après une ligne vide ou un titre (d'un tableau, c'est donc son en-tête). Sinon le site sort en
-  // `cible-invalide`, avec la forme visée : poser un titre là casserait le bloc.
+  // ou après une ligne vide ou un titre. Une ligne de tableau se remonte d'abord au DÉBUT de son bloc
+  // contigu (l'en-tête). Sinon le site sort en `cible-invalide`, avec la forme visée : poser un titre là
+  // casserait le bloc.
   const debutDeBloc = ({ f, l }) => {
     const x = fichiers[f].lignes
-    return !!x[l]?.trim() && (l === 0 || !x[l - 1].trim() || !!enTete(x[l - 1]))
+    if (/^\s*\|/.test(x[l] ?? '')) while (l > 0 && /^\s*\|/.test(x[l - 1])) l--
+    return x[l]?.trim() && (l === 0 || !x[l - 1].trim() || enTete(x[l - 1])) ? { f, l } : null
   }
   const sites = []
   const emettre = (s, cibles) => {
-    const faux = Object.entries(cibles).find(([, v]) => v && !debutDeBloc(v))
-    if (!faux) return sites.push(s)
-    const [champ, v] = faux
-    sites.push({ ...s, forme: 'cible-invalide', formeVisee: s.forme, champ, [champ]: adresse(v.f, v.l), ligneCible: fichiers[v.f].lignes[v.l] })
+    const poses = {}
+    for (const [champ, v] of Object.entries(cibles)) {
+      if (!v) continue
+      const d = debutDeBloc(v)
+      if (!d) return sites.push({ ...s, forme: 'cible-invalide', formeVisee: s.forme, champ, [champ]: adresse(v.f, v.l), ligneCible: fichiers[v.f].lignes[v.l] })
+      poses[champ] = adresse(d.f, d.l)
+    }
+    sites.push({ ...s, ...poses })
   }
   const cible = (t) => (t.corps ? adresse(t.corps.f, t.corps.l) : null)
   const ouEst = (t) => t.titreMd ?? t.corps
+  const exact = (t) => (t.titreMd ? texteExact(fichiers[t.titreMd.f].lignes[t.titreMd.l], t.cle) : null)
+  // Forme des FRÈRES du `.md` d'un titre de capitales : niveau et casse les plus portés par les titres
+  // de sa famille à leur place dans le même fichier.
+  const formeDesFreres = (t) => {
+    const freres = titres.filter((u) => u.famille === t.famille && u.forme === 'ok' && u.titreMd.f === t.corps.f)
+    const plusPorte = (vals) => [...vals.reduce((m, v) => m.set(v, (m.get(v) ?? 0) + 1), new Map())].sort((a, b) => b[1] - a[1])[0]?.[0]
+    const niveau = plusPorte(freres.map((u) => u.titreMd.niveau))
+    const casse = plusPorte(freres.map((u) => casseDe(stripSpans(fichiers[u.titreMd.f].lignes[u.titreMd.l]).replace(/^#{1,6}\s+/, '').replace(/\*/g, ''))))
+    const texte = niveau && enCasse(t.texte, casse)
+    return texte ? `${'#'.repeat(niveau)} **${texte}**` : null
+  }
   titres.forEach((t, i) => {
     const base = { famille: t.famille, page: t.page, colonne: t.colonne, x0: t.x0, y0: t.y0, titre: t.texte }
     const site = t.titreMd ? adresse(t.titreMd.f, t.titreMd.l) : null
     if (t.debris) sites.push({ ...t.debris, site: cible(t), ...base })
     if (t.famille !== 'entree') {
-      if (t.forme === 'S') sites.push({ forme: 'S', site, ...base })
-      else if (t.forme === 'F') emettre({ forme: 'F', site, cible: cible(t), comment: t.comment, ...base }, { cible: t.corps })
+      if (t.forme === 'S') sites.push({ forme: 'S', site, titreMd: exact(t), ...base })
+      else if (t.forme === 'F') emettre({ forme: 'F', site, titreMd: exact(t), cible: cible(t), comment: t.comment, ...base }, { cible: t.corps })
+      else if (t.forme === "S'" && t.comptage) emettre({ forme: "S'", site: null, cible: cible(t), verbatim: formeDesFreres(t), mentions: t.mentions, comptage: t.comptage, ...base }, { cible: t.corps })
       return
     }
-    if (t.forme === 'S' || t.forme === 'B') sites.push({ forme: t.forme, site, ...base })
-    else if (t.forme === 'F' || t.forme === 'M') emettre({ forme: t.forme, site, cible: cible(t), comment: t.comment, ...base }, { cible: t.corps })
+    if (t.forme === 'S' || t.forme === 'B') sites.push({ forme: t.forme, site, titreMd: exact(t), ...base })
+    else if (t.forme === 'F' || t.forme === 'M') emettre({ forme: t.forme, site, titreMd: exact(t), cible: cible(t), comment: t.comment, ...base }, { cible: t.corps })
     else if (t.forme === "S'") emettre({ forme: "S'", site: null, cible: cible(t), verbatim: t.texte, mentions: t.mentions, ...base }, { cible: t.corps })
     else if (t.forme === 'corps-introuvable') sites.push({ forme: 'corps-introuvable', site: null, cause: t.cause, corpsPdf: t.corpsPdf, ...base })
     if (t.hors) {
       const suivant = titres.slice(i + 1).find((u) => u.famille === 'entree' && ouEst(u))
       const devant = suivant && ouEst(suivant)
-      emettre({ forme: 'O', site, corps: cible(t), devant: devant ? adresse(devant.f, devant.l) : null, titreSuivant: suivant?.texte ?? null, ...base }, { devant })
+      emettre({ forme: 'O', site, titreMd: exact(t), corps: cible(t), devant: devant ? adresse(devant.f, devant.l) : null, titreSuivant: suivant?.texte ?? null, ...base }, { devant })
     }
     if (t.niveauErratique) sites.push({ forme: 'N', site, ...t.niveauErratique, ...base })
   })
@@ -361,7 +412,7 @@ function boitesDuPdf(id) {
 }
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'N', 'corps-introuvable', 'cible-invalide', 'doublon', 'numero-de-page']
+const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'N', 'corps-introuvable', 'cible-invalide', 'doublon']
 const FAMILLES = ['entree', 'encadre', 'tableau', 'capitales']
 
 
@@ -407,7 +458,7 @@ function main() {
     for (const s of de) {
       const ou = `p.${s.page} col.${s.colonne} x=${s.x0.toFixed(1)} y=${s.y0.toFixed(1)}`
       const extra = s.devant ? ` -> devant ${s.devant} (« ${s.titreSuivant} »)` : s.cible ? ` -> devant ${s.cible}` : ''
-      const v = s.verbatim ? ` verbatim « ${s.verbatim} »${s.mentions.length ? ` mentions ${s.mentions.join(',')}` : ''}` : ''
+      const v = s.titreMd ? ` titreMd « ${s.titreMd} »` : s.verbatim ? ` verbatim « ${s.verbatim} »${s.comptage ? ` (PDF ${s.comptage.auPdf} / .md ${s.comptage.auMd})` : ''}${s.mentions.length ? ` mentions ${s.mentions.join(',')}` : ''}` : ''
       const nv = s.forme === 'N' ? ` niveau ${s.niveau} ≠ ${s.niveauFrere} de « ${s.frere} »` : ''
       const c = s.cause ? ` (${s.cause}) corps PDF « ${String(s.corpsPdf ?? '').slice(0, 50)} »` : ''
       const d = s.texte ? ` débris « ${s.texte} »${s.auMd ? ` .md ${s.auMd.join(',')} / PDF ${s.auPdf.join(',')}` : ''}` : ''
