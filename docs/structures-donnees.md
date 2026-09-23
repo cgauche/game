@@ -538,7 +538,7 @@ nombre d’entrées qui la portent.
 | `src/data/artillery-misfire.json` | object | pipe à la racine | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
 | `src/data/astrology.json` | array | liste | entité | 5 | `desc`:string(5) `id`:string(5) `label`:string(5) `rand`:number(5) `source`:object(5) `type`:string(5) |
 | `src/data/axes.json` | array | liste | entité | 9 | `core`:boolean(6) `desc`:string(9) `id`:string(9) `label`:string(9) `maison`:string(9) `skills`:array(9) `talents`:array(3) `type`:string(9) |
-| `src/data/books.json` | array | liste | entité | 30 | `abbr`:string(30) `coeur`:string(2) `desc`:string(18) `dir`:string(17) `extractionDir`:string(1) `folder`:string(30) `id`:string(30) `label`:string(30) `language`:string(30) `niveauDeSection`:number(12) `teneur`:string(6) `type`:string(30) |
+| `src/data/books.json` | array | liste | entité | 30 | `abbr`:string(30) `coeur`:string(2) `desc`:string(18) `dir`:string(17) `extractionDir`:string(1) `folder`:string(30) `id`:string(30) `label`:string(30) `language`:string(30) `niveauDeSection`:number(12) `pdf`:string(17) `teneur`:string(6) `type`:string(30) |
 | `src/data/breath-types.json` | array | liste | entité | 6 | `id`:string(6) `label`:string(6) `type`:string(6) |
 | `src/data/buildings.json` | array | liste | entité | 7 | `features`:array(4) `id`:string(7) `label`:string(7) `maison`:string(7) `roofMaterial`:string(7) `type`:string(7) |
 | `src/data/calendarIntercalary.json` | array | liste | entité | 6 | `afterMonth`:number(6) `id`:string(6) `label`:string(6) `source`:object(6) `type`:string(6) |
@@ -5029,4 +5029,4 @@ pèse **2990** slots sur 3368.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: 06520eedaec25be56222b44259257c3a7962f29c (384 fichiers, 10 dossiers) corps: 90dd7b20bca74225ab5b48432afd62b11032e901 -->
+<!-- sources-empreinte: 38b255a6ede8bf31de29d1f379e87db1ac628b11 (384 fichiers, 10 dossiers) corps: a043499b806d2bd655ccf80fc1bef06d471fc26c -->
