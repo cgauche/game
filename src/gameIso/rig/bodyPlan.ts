@@ -135,6 +135,8 @@ export interface RenderResolution {
   plan: BodyPlanId;
   species: string;
   scale: number;
+  /** `species` est la race par DÉFAUT d'une donnée sans espèce (ni explicite, ni record, ni affût, ni véhicule). */
+  repli?: true;
 }
 export function resolveRender(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, idOrName: string | undefined): RenderResolution {
   // Véhicule À COQUE → gabarit routé par la PROPULSION (`hull.propulsion`), DATA-DRIVEN. Prioritaire (un
@@ -192,5 +194,5 @@ export function resolveRender(species: string | undefined, traits: import('../..
   // DÉCLARÉE en donnée (`speciesRace.json`), visiblement fausse, jamais une espèce inventée en code.
   const sujet = idOrName ?? diagSubject(); // sans réf, le sujet est celui posé par l'appelant (scène/entité)
   if (import.meta.env?.DEV) diagOnce(`bodyPlan:espece:${sujet}`, () => console.error(`[bodyPlan] « ${sujet || '(sans réf)'} » : aucune espèce résolue (ni Espèce explicite, ni record de créature) — donnée à corriger.`));
-  return { kind: 'rig', plan: 'biped', species: DEFAULT_RACE_ID, scale: speciesScale(DEFAULT_RACE_ID) };
+  return { kind: 'rig', plan: 'biped', species: DEFAULT_RACE_ID, scale: speciesScale(DEFAULT_RACE_ID), repli: true };
 }

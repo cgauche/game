@@ -6,6 +6,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
+import { SLOTS } from '../../palette.types';
 
 export const file = 'raceAppearance.json';
 export const famille = 'entite';
@@ -23,6 +24,7 @@ const doc = document(
     armG: z.string().optional(),
     armD: z.string().optional(),
     dropHeadgear: z.boolean().optional(),
+    tirageIndividuel: z.partialRecord(z.enum(SLOTS), z.array(z.string()).min(1)).optional(),
     featureKeys: z.array(z.string()).optional(),
     pose: z.record(z.string(), z.number()).optional(),
     tenue: z.string().optional(),
@@ -49,6 +51,10 @@ const doc = document(
     armG: { label: 'Bras gauche monstrueux', hint: 'Pièce qui remplace l’épaule gauche' },
     armD: { label: 'Bras droit monstrueux', hint: 'Pièce qui remplace l’épaule droite (ex. griffe)' },
     dropHeadgear: { label: 'Sans couvre-chef', hint: 'La race ne porte jamais le couvre-chef d’une tenue (ex. Vampire)' },
+    tirageIndividuel: {
+      label: 'Teintes tirées par individu',
+      hint: 'Teintes (peau, cheveux…) parmi lesquelles chaque individu de la race reçoit la sienne ; ce qu’on fixe sur le personnage ou la créature l’emporte',
+    },
     featureKeys: { label: 'Traits de corps', hint: 'Traits anatomiques ajoutés au rig (ventre, barbe, queue, cornes…)' },
     pose: { label: 'Posture au repos', hint: 'Posture de face et de profil au repos' },
     tenue: { label: 'Tenue par défaut', hint: 'Tenue portée par défaut par cette race' },

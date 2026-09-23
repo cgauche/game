@@ -1,8 +1,9 @@
 /**
- * Aperçu RENDU d'une créature depuis sa donnée (nom + apparence) — face + profil. Rendu par le
- * MÊME chemin que le jeu (entityRigProfile/resolveRig pour les bipèdes, gabarit pour les non-bipèdes)
- * → l'aperçu reflète EXACTEMENT ce qu'affichera le jeu. Recomputé à chaque changement d'apparence :
- * dans l'éditeur, on voit en DIRECT le résultat de la modification.
+ * Aperçu RENDU d'une créature depuis sa donnée (id + apparence) — face + profil. Rendu par le MÊME
+ * chemin que le jeu (entityRigProfile/resolveRig pour les bipèdes, gabarit pour les non-bipèdes), pour
+ * UN individu : celui de la graine de l'apparence, sinon de l'id du record. En jeu, un profil générique
+ * tire ses teintes et sa coiffure par instance, donc diffère de cet individu. Recomputé à chaque
+ * changement d'apparence : dans l'éditeur, on voit en DIRECT le résultat de la modification.
  */
 import { useMemo } from 'react';
 import { entityRigProfile } from '../../gameIso/rig/enemyProfile';
@@ -20,12 +21,11 @@ import type { EntityAppearance } from '../../engine/authoringAppearance';
 // trait) : elle alimente l'argument `species` que `resolveRender` consulte en premier, et le fragment
 // se compose PAR-DESSUS par le canal habituel (`entityRigProfile`). Sans porteur, rien ne change.
 function rigSvg(name: string, a: EntityAppearance | undefined, view: View, porteur?: string): string {
-  const seed = a?.seed ?? hashSeed(name);
   const species = a?.species ?? porteur;
   const r = resolveRender(species, findCreatureById(name)?.traits, name);
   if (r.kind === 'rig') {
-    const p = entityRigProfile(name, seed, {
-      species, tenue: a?.tenue, monster: a?.monster, features: a?.features,
+    const p = entityRigProfile(name, hashSeed(name), {
+      seed: a?.seed, species, tenue: a?.tenue, monster: a?.monster, features: a?.features,
       colors: a?.colors, parts: a?.parts, sex: a?.sex, build: a?.build, eyes: a?.eyes,
     });
     return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, view, [])) : '';

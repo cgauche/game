@@ -86,15 +86,18 @@ describe('Codex — tout aperçu rig résout son rendu, jamais par diagnostic (#
     expect(inertes).toEqual([]);
   });
 
-  it("le porteur n'est pas un RENDU : le SVG des mutations est identique avec et sans porteur", () => {
-    // Le geste est diagnostic-only (`apercuPorteur.ts`) : déclarer le porteur éteint le cri de
-    // `bodyPlan` sans déplacer un os. Sonde du juge #1693 promue en garde.
-    const svg = (nom: string, a: NonNullable<CodexItem['appearance']>, porteur?: string): string => {
+  it("le porteur n'ajoute au rendu que le tirage individuel de sa race : le SVG des mutations, hors teintes tirées, est identique avec et sans porteur", () => {
+    // Déclarer le porteur éteint le cri de `bodyPlan` ; il ne déplace rien d'autre que ce que la race du
+    // porteur TIRE pour un individu (`raceAppearance.json` `tirageIndividuel`, #1882), que la race de REPLI ne tire
+    // pas. Sonde du juge #1693 promue en garde : le tirage est neutralisé par une palette posée.
+    const NEUTRE = { colors: { peau: '#000001', cheveux: '#000002' } };
+    const svg = (nom: string, a0: NonNullable<CodexItem['appearance']>, porteur?: string): string => {
+      const a = { ...a0, colors: { ...NEUTRE.colors, ...a0.colors } };
       const species = a.species ?? porteur;
       const r = resolveRender(species, findCreatureById(nom)?.traits, nom);
       if (r.kind !== 'rig') return `PLAN:${r.plan}`;
-      const p = entityRigProfile(nom, a.seed ?? hashSeed(nom), {
-        species, tenue: a.tenue, monster: a.monster, features: a.features, colors: a.colors,
+      const p = entityRigProfile(nom, hashSeed(nom), {
+        seed: a.seed, species, tenue: a.tenue, monster: a.monster, features: a.features, colors: a.colors,
         parts: a.parts, sex: a.sex, build: a.build, eyes: a.eyes,
       });
       return p ? bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, 'front', [])) : 'VIDE';

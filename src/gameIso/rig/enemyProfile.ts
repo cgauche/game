@@ -13,17 +13,17 @@ import { equipFromCombatant } from './parts/equipment';
 import { emptyArmour } from '../../engine/items';
 import { renderWeaponsFromTraits, armourFromTraits, weaponFromId } from '../../engine/creatureEquip';
 import type { TraitList } from '../../engine/statEntry';
-import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
+import { eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../../engine/dice';
 import type { SceneEntity } from '../../state/scene';
 import { bipedDef } from './creatures';
-import { resolveRender } from './bodyPlan';
-import { findCreatureById } from '../../data';
+import { resolveRender, type RenderResolution } from './bodyPlan';
+import { findCreatureById, isNamed, type CreatureData } from '../../data';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { raceById } from './races';
 import { baseSpeciesOf } from './skeletons';
-import { humanSeedColors, humanSeedHairIndex } from './parts/humanVariety';
+import { teintesTirees } from './parts/tirageIndividuel';
 import { diagOnce, diagSubject } from './devDiag';
 
 export interface EnemyRigProfile {
@@ -50,28 +50,16 @@ export function classifyBy(species: string | undefined, traits: import('../../en
 // par les éventuelles surcharges propres à la créature (`def.perso`, pour les espèces
 // non-canoniques repliées sur une race partagée : Fimir/Géant/Liche/Démonette).
 
-/** Override d'apparence d'AUTHORING → `Partial<Appearance>` : seuls les champs RÉELLEMENT fournis
- *  sortent (yeux clés→art). Les défauts (espèce/sexe/carrure/couleurs) restent au constructeur
- *  `rigAppearance`, qui les tient du record/race — un override muet n'écrase plus rien. */
-export interface RiggedOpts {
-  monster?: MonsterParts;
-  species?: string;
-  colors?: import('./palette').Palette;
-  parts?: Appearance['parts']; // coiffure/visage épinglés (idx)
-  hairstyle?: string; // coiffure IMPOSÉE par id stable (#637) — prime sur parts.cheveux/seed
-  sex?: 'M' | 'F'; // surcharge le sexe dérivé du seed
-  build?: number; // surcharge la carrure dérivée du seed
-  gabarit?: string; // carrure imposée (def créature : Rat ogre → brute-bras-longs)
-  /** yeux personnalisés (CLÉS du catalogue EYE_OPTIONS, donnée éditeur) → art résolu ici. */
-  eyes?: { G?: string; D?: string };
-  features?: string[]; // traits ADDITIFS (clés du catalogue d'éléments)
-}
-const eyeArt = (k?: string): string | undefined => (k ? EYE_OPTIONS[k]?.art : undefined);
-export function riggedAppearance(_name: string, seed: number, opts: RiggedOpts = {}): Partial<Appearance> {
-  const eyes = opts.eyes && (eyeArt(opts.eyes.G) || eyeArt(opts.eyes.D))
-    ? { ...(eyeArt(opts.eyes.G) ? { G: eyeArt(opts.eyes.G) } : {}), ...(eyeArt(opts.eyes.D) ? { D: eyeArt(opts.eyes.D) } : {}) }
-    : undefined;
-  return { species: opts.species === undefined ? undefined : asRigSpeciesId(opts.species), sex: opts.sex, build: opts.build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, hairstyle: opts.hairstyle, gabarit: opts.gabarit, eyes };
+/** Apparence d'AUTHORING (`EntityAppearance` : entité de scène, `Combatant.appearanceOverride`) →
+ *  `Partial<Appearance>`, UNE fois pour le combat et l'exploration : seuls les champs fournis sortent,
+ *  les yeux passent de clés à arts (`eyesArtFromKeys`). Les défauts restent au constructeur `rigAppearance`. */
+type ApparenceDAuteur = Pick<EntityAppearance, 'species' | 'sex' | 'build' | 'features' | 'colors' | 'parts' | 'hairstyle' | 'eyes'> & { monster?: MonsterParts };
+function apparenceDAuteur(a: ApparenceDAuteur | undefined): Partial<Appearance> | undefined {
+  if (!a) return undefined;
+  return {
+    species: a.species === undefined ? undefined : asRigSpeciesId(a.species), sex: a.sex, build: a.build, monster: a.monster,
+    features: a.features, colors: a.colors, parts: a.parts, hairstyle: a.hairstyle, eyes: eyesArtFromKeys(a.eyes),
+  };
 }
 
 /** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier) — UNIQUEMENT si
@@ -95,12 +83,14 @@ function synthArmour(ap: ArmourPoints, armurePortee: boolean | undefined): ItemI
 }
 
 /** Résolution PARTAGÉE (combat ET exploration, IDENTIQUE) : espèce → def bipède canonique + race
- *  (défauts d'apparence partagés) + perso (surcharges d'espèce non-canonique). `species` vient
- *  TOUJOURS de `resolveRender` (résolveur unique) — aucun repli d'espèce ici. */
-function bipedBase(species: string) {
-  const d = bipedDef(species);
-  return { species, d, race: raceById(d?.race ?? baseSpeciesOf(species)), perso: d?.perso };
+ *  (défauts d'apparence partagés) + perso (surcharges d'espèce non-canonique). L'espèce vient
+ *  TOUJOURS de `resolveRender` (résolveur unique), `repli` dit qu'elle est la race de REPLI d'une espèce
+ *  non résolue — aucun repli d'espèce ici. */
+function bipedBase(r: RenderResolution) {
+  const d = bipedDef(r.species);
+  return { species: r.species, repli: !!r.repli, d, race: raceById(d?.race ?? baseSpeciesOf(r.species)), perso: d?.perso };
 }
+type BipedBase = ReturnType<typeof bipedBase>;
 
 /** Garde-robe PARTAGÉE (id STABLE) : surcharge (carrière / opts) → record créature → perso/race → 'nu'
  *  (l'auteur l'habille). Toutes ces sources portent des IDS de garde-robe (tenue ∪ carrière), jamais un libellé. */
@@ -108,26 +98,52 @@ function bipedTenue(override: string | undefined, cd: EntityAppearance | undefin
   return override ?? cd?.tenue ?? perso?.tenue ?? race.tenue ?? 'nu';
 }
 
+/** Tirage INDIVIDUEL (#223), règle UNIQUE du combat, de l'exploration et du portrait : ce qu'un individu
+ *  tire de sa graine dans les plages `tirageIndividuel` de sa race (`raceAppearance.json`) — une teinte par
+ *  emplacement listé (la coiffure a UNE source : le resolver, par la même graine). Rien pour une race sans plages, ni pour la
+ *  race de REPLI d'une espèce non résolue. C'est la couche la plus BASSE de `rigAppearance`. */
+function tirageIndividuel(graine: number, base: BipedBase): Appearance['colors'] {
+  const plages = base.repli ? undefined : base.race.tirageIndividuel;
+  return plages ? teintesTirees(graine, plages) : undefined;
+}
+
+/** Graine UNIQUE d'un individu, d'où `rigAppearance` tire tout ce qui n'est pas posé (sexe, carrure,
+ *  teintes, coiffure, visage). Ce qu'on fixe l'emporte : la graine posée sur l'ENTITÉ (`posee`), puis,
+ *  pour un individu NOMMÉ (`isNamed`), celle de son RECORD (sinon son id) ; un profil générique varie
+ *  par instance (`instance`). */
+function graineDeTirage(posee: number | undefined, instance: number, rec: CreatureData | undefined): number {
+  return posee ?? (rec && isNamed(rec) ? rec.appearance?.seed ?? hashSeed(rec.id) : instance);
+}
+
+/** Champs TIRÉS recouverts, un par un, par les champs POSÉS par l'auteur (un champ absent ne recouvre rien). */
+function sousAuteur<T extends object>(tire: T | undefined, auteur: T | undefined): T | undefined {
+  if (!tire) return auteur;
+  const out: Record<string, unknown> = { ...(tire as Record<string, unknown>) };
+  for (const [k, v] of Object.entries(auteur ?? {})) if (v !== undefined) out[k] = v;
+  return out as T;
+}
+
 /** Carrure par défaut dérivée du seed (0.35..0.75) — formule UNIQUE. */
 const buildFromSeed = (seed: number): number => +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2);
 
 /**
  * CONSTRUCTEUR UNIQUE de l'apparence rig — combat ET exploration. Une seule précédence par champ :
- * override d'instance → record créature (`cd`) → perso/race → défaut-seed. `override` porte ses YEUX
- * DÉJÀ en art (combat : `c.appearanceOverride` figé au rendu par `riggedAppearance` ; exploration :
- * `opts` pré-résolus par l'appelant).
+ * override d'instance → record créature (`cd`) → perso/race → tirage par la `graine` de l'individu
+ * (`graineDeTirage`) ; les teintes posent en dessous le tirage individuel de la race, que chaque
+ * teinte posée par l'auteur recouvre (`sousAuteur`). `override` porte ses YEUX en art (`apparenceDAuteur`).
  */
-function rigAppearance(seed: number, base: ReturnType<typeof bipedBase>, cd: EntityAppearance | undefined, override?: Partial<Appearance>): Appearance {
+function rigAppearance(graine: number, base: BipedBase, cd: EntityAppearance | undefined, override: Partial<Appearance> | undefined): Appearance {
   const { species, d, race, perso } = base;
   const o = override ?? {};
+  const tirage = tirageIndividuel(graine, base);
   return {
     species: o.species ?? asRigSpeciesId(species),
-    sex: o.sex ?? cd?.sex ?? perso?.sex ?? race.sex ?? (seed % 7 < 2 ? 'F' : 'M'),
-    build: o.build ?? cd?.build ?? buildFromSeed(seed),
-    seed: o.seed ?? cd?.seed ?? seed,
+    sex: o.sex ?? cd?.sex ?? perso?.sex ?? race.sex ?? (graine % 7 < 2 ? 'F' : 'M'),
+    build: o.build ?? cd?.build ?? buildFromSeed(graine),
+    seed: graine,
     monster: o.monster ?? cd?.monster ?? perso?.monster,
     features: o.features ?? cd?.features,
-    colors: o.colors ?? cd?.colors ?? perso?.colors ?? race.colors,
+    colors: sousAuteur(tirage, o.colors ?? cd?.colors ?? perso?.colors ?? race.colors),
     parts: o.parts ?? cd?.parts ?? perso?.parts ?? race.parts,
     hairstyle: o.hairstyle ?? cd?.hairstyle,
     gabarit: o.gabarit ?? perso?.gabarit ?? d?.gabarit,
@@ -159,23 +175,13 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   if (r.kind === 'plan') return null;
 
   const seed = hashSeed(c.id);
-  const cd = findCreatureById(c.creatureId)?.appearance; // apparence par défaut UNIFIÉE du record créature (par id)
-  const bb = bipedBase(r.species); // résolution PARTAGÉE espèce→def/race/perso
-  // Override d'authoring (`c.appearanceOverride`) FIGÉ PARESSEUSEMENT ici (#187 : plus au spawn/state) :
-  // yeux clés→art. Déterministe (seed dérivé de l'id, `id === SceneEntity.id`), superposé aux défauts
-  // de race/record par `rigAppearance` — un champ non authoré n'est PAS porté par l'override.
+  const rec = findCreatureById(c.creatureId);
+  const cd = rec?.appearance; // apparence par défaut UNIFIÉE du record créature (par id)
+  const bb = bipedBase(r); // résolution PARTAGÉE espèce→def/race/perso
+  // Apparence d'authoring (`c.appearanceOverride`, #187) résolue au rendu par `apparenceDAuteur`, comme
+  // en exploration ; `id === SceneEntity.id` donne la même graine d'instance (`graineDeTirage`).
   const ov = c.appearanceOverride;
-  const eseed = ov?.seed ?? seed;
-  let override: Partial<Appearance> | undefined = ov
-    ? riggedAppearance(c.label, eseed, { species: ov.species, monster: ov.monster, features: ov.features, colors: ov.colors, parts: ov.parts, hairstyle: ov.hairstyle, sex: ov.sex, build: ov.build, eyes: ov.eyes })
-    : undefined;
-  // Variété seedée des humains GÉNÉRIQUES (#223) : hors bestiaire (pas de creatureId) et sans
-  // couleurs/coiffure authorées → teintes/coiffure dérivées du seed (parité explo↔combat). Un
-  // record de bestiaire (creatureId) garde son apparence figée → goldens intacts.
-  if (!c.creatureId && baseSpeciesOf(bb.species) === 'humain' && !override?.colors && !override?.parts) {
-    override = { ...(override ?? {}), colors: humanSeedColors(eseed), parts: { cheveux: humanSeedHairIndex(eseed) } };
-  }
-  const appearance = rigAppearance(eseed, bb, cd, override);
+  const appearance = rigAppearance(graineDeTirage(ov?.seed, seed, rec), bb, cd, apparenceDAuteur(ov));
   // Tenue DATA-DRIVEN : carrière du Combatant → record → défaut de la def (perso/race) → Nu (l'auteur l'habille).
   const tenue = bipedTenue(c.career, cd, bb.perso, bb.race);
 
@@ -200,20 +206,17 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
 export function entityRigProfile(
   name: string | undefined,
   seed: number,
-  opts?: { species?: string; tenue?: string; monster?: MonsterParts; features?: string[]; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; hairstyle?: string; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string };
+  opts?: { /** Graine POSÉE sur l'entité (`appearance.seed`) — l'emporte sur `seed` (instance) et sur le record. */
+    seed?: number; species?: string; tenue?: string; monster?: MonsterParts; features?: string[]; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; hairstyle?: string; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string };
     /** Profil de combat de l'entité (statbloc d'éditeur) → équipement affiché en explo, comme au combat. */
     traits?: TraitList; armour?: number;
     /** Armure de statblock VISIBLE/portée (#774) — override d'authoring (`ent.appearance.armurePortee`)
      *  pour une entité SANS record de bestiaire ; repli sur `cd?.armurePortee` (record) sinon. */
     armurePortee?: boolean;
-    /** L'entité est ENRÔLÉE dans une rencontre (membre d'un `EncounterDef`) → c'est un combattant : on
-     *  affiche son équipement par défaut DÉRIVÉ du record (parité avec le spawn `creatureToCombatant`),
-     *  même sans statbloc. Une entité d'AMBIANCE (non enrôlée, défaut `false`) reste mains libres, quitte
-     *  à ce que son record porte un trait « Arme » (un villageois ne dégaine pas pour décorer la scène). */
-    enrolled?: boolean;
-    /** Variété seedée d'un humain GÉNÉRIQUE (#223) — opt-in réservé au rendu de scène
-     *  (`entityRigProfileFor`) ; les goldens appellent SANS → apparence de repli figée. */
-    seededVariety?: boolean },
+    /** L'entité est ENRÔLÉE dans une rencontre (membre d'un `EncounterDef`) : elle porte les ARMES que
+     *  les traits de son record déclarent (parité avec le spawn `creatureToCombatant`). Non enrôlée (défaut
+     *  `false`) : mains libres. */
+    enrolled?: boolean },
 ): EnemyRigProfile | null {
   const rec = findCreatureById(name);
   // Résolution d'espèce par la DONNÉE (espèce explicite de l'entité → espèce du record) — IDENTIQUE à
@@ -222,36 +225,25 @@ export function entityRigProfile(
   const r = resolveRender(opts?.species ?? rec?.appearance?.species, rec?.traits, name);
   if (r.kind === 'plan') return null; // non-humanoïde → gabarit corporel
   const cd = rec?.appearance; // apparence par défaut UNIFIÉE du record créature
-  const base = bipedBase(r.species); // espèce RÉSOLUE → def/race/perso corrects
-  // Override d'AUTHORING → `Partial<Appearance>` (yeux clés→art) passé au CONSTRUCTEUR UNIQUE `rigAppearance`.
+  const base = bipedBase(r); // espèce RÉSOLUE → def/race/perso corrects
   // Une entité d'ambiance « mutée » déclare ses parts/overlays dans son apparence (monster), pas via le nom.
-  const override: Partial<Appearance> = {
-    species: opts?.species === undefined ? undefined : asRigSpeciesId(opts.species), sex: opts?.sex, build: opts?.build, monster: opts?.monster,
-    features: opts?.features, colors: opts?.colors, parts: opts?.parts, hairstyle: opts?.hairstyle, eyes: eyesArtFromKeys(opts?.eyes),
-  };
-  // Variété seedée des humains GÉNÉRIQUES (#223, miroir exact d'`enemyRigProfile`) : opt-in de scène,
-  // hors record de bestiaire (`!rec`), sans couleurs/coiffure authorées → dérivées du seed stable.
-  if (opts?.seededVariety && r.kind === 'rig' && !rec && baseSpeciesOf(r.species) === 'humain' && !override.colors && !override.parts) {
-    override.colors = humanSeedColors(seed);
-    override.parts = { cheveux: humanSeedHairIndex(seed) };
-  }
-  // Équipement : MÊME dérivation qu'au combat (parité explo↔combat). Précédence des traits de combat :
-  //   statbloc d'éditeur (`opts.traits`) → record créature SI ENRÔLÉE (`rec.traits`) → mains libres.
-  // Le repli sur `rec.traits` est RÉSERVÉ aux entités enrôlées (combattantes) — c'est exactement la
-  // dérivation du spawn `creatureToCombatant` (ref sans statbloc). Une entité d'AMBIANCE (non enrôlée)
-  // reste mains libres même si son record porte un trait « Arme ». Armes EXPLICITES seulement
-  // (`renderWeaponsFromTraits` — pas de repli « Arme » générique qui serait dessiné en épée).
-  const traits = opts?.traits ?? (opts?.enrolled ? rec?.traits ?? [] : []);
+  const override = apparenceDAuteur(opts);
+  // Équipement : MÊME dérivation qu'au combat (parité explo↔combat). Traits de l'entité : statbloc
+  // d'éditeur (`opts.traits`), sinon ceux du record. L'ARMURE fait partie de l'apparence : elle se dérive
+  // toujours de ces traits. Les ARMES n'en sortent que pour une entité enrôlée (`enrolled`). Armes
+  // EXPLICITES seulement (`renderWeaponsFromTraits`, pas de repli « Arme » générique dessiné en épée).
+  const traits = opts?.traits ?? rec?.traits ?? [];
+  const traitsArmes = opts?.traits || opts?.enrolled ? traits : [];
   // `opts.weapon` (trappingId d'authoring) ne s'ajoute QUE si les Traits n'ont PAS déjà produit une arme du
   // MÊME type (melee/ranged) — même règle que le spawn de combat (`spawn.ts` spawnEnemy), sinon
   // DUPLICATION du rendu (#126/#145). Un type ABSENT des Traits reste additif (Garde du Village posté
   // « archer » : trait Arme mêlée générique + `weapon:'arc'`).
-  const traitWeapons = renderWeaponsFromTraits(traits);
+  const traitWeapons = renderWeaponsFromTraits(traitsArmes);
   const idWeaponInst = opts?.weapon ? weaponFromId(opts.weapon) : undefined;
   const idWeapon = idWeaponInst && !traitWeapons.some((w) => w.type === idWeaponInst.type) ? [idWeaponInst] : [];
   const armourPA: ArmourPoints = opts?.armour != null ? emptyArmour(opts.armour) : armourFromTraits(traits);
   return {
-    appearance: rigAppearance(seed, base, cd, override),
+    appearance: rigAppearance(graineDeTirage(opts?.seed, seed, rec), base, cd, override),
     tenue: bipedTenue(opts?.tenue, cd, base.perso, base.race),
     equip: { weapons: [...idWeapon, ...traitWeapons], armour: synthArmour(armourPA, opts?.armurePortee ?? cd?.armurePortee) },
   };
@@ -268,15 +260,14 @@ export function refOf(ent: Pick<SceneEntity, 'ref'>): string | undefined {
  *  `buildPovBillboards` (POV) : mêmes seed / refName / apparence / équipement (dont `enrolled`). Une
  *  entité sans réf NI Espèce n'a aucune apparence à résoudre : signalée en dev, nommée par son id. */
 export function entityRigProfileFor(ent: SceneEntity, enrolled?: boolean): EnemyRigProfile | null {
-  const seed = ent.appearance?.seed ?? hashSeed(ent.id);
   const refName = refOf(ent);
   if (import.meta.env?.DEV && !refName && !ent.appearance?.species)
     diagOnce(`rig:entite:${diagSubject() || ent.id}`, () => console.error(`[rig] entité « ${ent.id} » (${ent.label ?? 'sans libellé'}) : ni réf de créature ni Espèce — donnée de scène à corriger.`));
-  return entityRigProfile(refName, seed, {
-    species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster,
+  return entityRigProfile(refName, hashSeed(ent.id), {
+    seed: ent.appearance?.seed, species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster,
     features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors,
     parts: ent.appearance?.parts, hairstyle: ent.appearance?.hairstyle, sex: ent.appearance?.sex, build: ent.appearance?.build,
     eyes: ent.appearance?.eyes, traits: ent.statblock?.traits, armour: ent.statblock?.armour, enrolled,
-    armurePortee: ent.appearance?.armurePortee, seededVariety: true,
+    armurePortee: ent.appearance?.armurePortee,
   });
 }

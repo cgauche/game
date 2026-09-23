@@ -2301,6 +2301,7 @@ export interface RaceAppearanceData {
   armG?: string;
   armD?: string;
   dropHeadgear?: boolean;
+  tirageIndividuel?: Partial<Record<import('./palette.types').Slot, string[]>>;
   featureKeys?: string[];
   pose?: Record<string, number>;
   tenue?: string;

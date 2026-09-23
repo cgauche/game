@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { weaponFromTrait, creatureToCombatant, statblockToCombatant, skillsFromBook, spawnEnemy } from './spawn';
 import { enemyRigProfile } from '../gameIso/rig/enemyProfile';
+import { teintesTirees } from '../gameIso/rig/parts/tirageIndividuel';
+import { raceById } from '../gameIso/rig/races';
 import { weaponFamily } from '../gameIso/rig/parts/equipment';
 import { findCreature, findCreatureById, talentConcrete } from '../data';
 import { CHAR_KEYS } from '../engine/types';
@@ -274,13 +276,12 @@ describe('spawnEnemy — transport de l’apparence/carrière éditée vers le C
     expect(c.appearanceOverride).toBeUndefined();
   });
 
-  it('override PARTIEL (seed seul) → enemyRigProfile conserve les défauts de race (coiffure/couleurs)', () => {
-    const plain = enemyRigProfile(spawnEnemy('mutant', undefined, 'e1', at))!;
+  it('override PARTIEL (seed seul) → enemyRigProfile dérive la palette non éditée du seed édité (#1882 T1)', () => {
     const seeded = enemyRigProfile(spawnEnemy('mutant', undefined, 'e1', at, { appearance: { seed: 999 } }))!;
     expect(seeded.appearance.seed).toBe(999);
-    // Les champs NON édités (parts/colors canoniques de la race) restent ceux du défaut.
-    expect(seeded.appearance.parts).toEqual(plain.appearance.parts);
-    expect(seeded.appearance.colors).toEqual(plain.appearance.colors);
+    // Palette NON éditée : tirage individuel par le seed édité (record `mutant` sans palette authorée).
+    expect(seeded.appearance.parts).toBeUndefined();
+    expect(seeded.appearance.colors).toEqual(teintesTirees(999, raceById('humain').tirageIndividuel!));
   });
 });
 

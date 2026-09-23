@@ -54,9 +54,9 @@ export function lum(r: number, g: number, b: number): number {
   return ((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255) * 100;
 }
 
-/** Emplacements de base (ordre stable). */
-export const SLOTS = ['peau', 'cheveux', 'yeux', 'vet1', 'vet2', 'cuir', 'metal', 'corps', 'accent'] as const;
-export type Slot = (typeof SLOTS)[number];
+import { SLOTS, type Slot } from '../../data/palette.types';
+
+export { SLOTS, type Slot };
 
 /**
  * Palette STOCKÉE d'une tenue/tête : peut contenir non seulement les bases (`vet1`,

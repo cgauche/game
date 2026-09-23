@@ -483,6 +483,7 @@ export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/raceAppearance.json', ref: 'parts | cheveux,visage', occurrence: 1 },
   { fichier: 'src/data/raceAppearance.json', ref: 'pose | cou,epauleD,epauleG,tete,torse', occurrence: 1 },
   { fichier: 'src/data/raceAppearance.json', ref: 'pose | cou,tete,torse', occurrence: 1 },
+  { fichier: 'src/data/raceAppearance.json', ref: 'tirageIndividuel | cheveux,peau', occurrence: 1 },
   { fichier: 'src/data/reglesOptionnelles.json', ref: 'action | icon,label,run,when', occurrence: 1 },
   { fichier: 'src/data/rencontres-edoc.json', ref: 'tables | dangereuses,fortuites,positives', occurrence: 1 },
   { fichier: 'src/data/river-criticals.json', ref: 'crewHit | crewTarget,ops', occurrence: 1 },

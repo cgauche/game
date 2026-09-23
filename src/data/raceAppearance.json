@@ -250,6 +250,23 @@
     "label": "Humain",
     "gabarit": "moyen",
     "tenue": "bourgeois",
+    "tirageIndividuel": {
+      "peau": [
+        "#e8c3a0",
+        "#cf9d72",
+        "#b89060",
+        "#9a6f4a",
+        "#6f4a2f"
+      ],
+      "cheveux": [
+        "#2b241f",
+        "#5a4427",
+        "#7a5234",
+        "#8a4a26",
+        "#b89152",
+        "#9a938a"
+      ]
+    },
     "palette": {
       "cheveux": "#5a4427",
       "peauH": "#e2b48c",

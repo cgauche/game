@@ -35,8 +35,8 @@ export function applyEyes(visage: string, eyes?: { G?: string; D?: string }): st
   return out;
 }
 
-/** CLÉS du catalogue (donnée éditeur) → ARTS, ou undefined si rien à remplacer. Utilisé par les
- *  tokens d'entité (les combattants passent par riggedAppearance qui résout au spawn). */
+/** CLÉS du catalogue (donnée éditeur) → ARTS, ou undefined si rien à remplacer. Lecteurs :
+ *  `apparenceDAuteur` (`gameIso/rig/enemyProfile.ts`), `planOptsForRecord`, `composeRig`. */
 export function eyesArtFromKeys(eyes?: { G?: string; D?: string }): { G?: string; D?: string } | undefined {
   if (!eyes) return undefined;
   const G = eyes.G ? EYE_OPTIONS[eyes.G]?.art : undefined;

@@ -29,6 +29,9 @@ export interface RaceDef {
   armG?: string;                // id de bras monstrueux (ARMS) remplaçant l'épaule gauche
   armD?: string;                // id de bras monstrueux (ARMS) remplaçant l'épaule droite (ex. griffe)
   dropHeadgear?: boolean;       // saute le couvre-chef de tenue (ex. vampire : pas de chapeau de cour)
+  /** Plages du tirage INDIVIDUEL des teintes, par emplacement de palette. Sans plages, aucun individu de la
+   *  race ne varie de teinte. */
+  tirageIndividuel?: Partial<Record<import('../palette').Slot, string[]>>;
   features?: RaceFeature[];     // traits de corps (gut, barbe, queue, cornes…)
   pose?: Record<string, number>;// posture de repos, front + profil
   // Défauts d'espèce :
