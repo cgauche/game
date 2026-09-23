@@ -223,7 +223,8 @@ donnée committée fait foi.
 `{ police, taille? }` MESURÉES au PDF que lit la sonde des titres — `titre` (celle qu'un run de tête
 de ligne CONTIENT), `accompagnement` (celles qui peuvent la suivre dans ce run : « Climb (S) » + `basic`
 en italique, sort à lore en gras italique), `encadre` (titre d'encadré ou de tableau), `capitales`
-(nom de créature en petites capitales, toute taille) et `exclusions` (une ligne qui en porte une n'est
+(nom de créature en petites capitales, toute taille), `intertitre` (titre du fil du texte d'un corps
+plus petit, en tête de run : événements, niveaux de carrière) et `exclusions` (une ligne qui en porte une n'est
 pas un titre : en-têtes de statbloc) ; `null` pour un livre non sondé. La sonde,
 `node scripts/raw/sonde-titres.mjs <id> [--boites <boites.json>] [--json <sites.json>]`, lit le PDF
 par `python scripts/raw/lib/pdf-lignes.py <id> <boites.json>` : l'analyse de mise en page de pdfminer
@@ -232,8 +233,8 @@ boîtes et lignes avec leurs spans typographiques ; `scripts/raw/lib/colonnes.mj
 ces boîtes (colonnes par grappes d'abscisses de boîte, pur et joué en CI sur des pages réelles
 réduites, `scripts/raw/lib/fixtures/pages-crb/`). Chaque titre imprimé s'apparie à la ligne qui précède
 la 1re ligne de SON corps dans le `.md` ; un titre imprimé sur deux lignes (même gabarit, même colonne,
-interligne serré) est UN titre. Familles : entrée, encadré, tableau, capitales. Formes des
-entrées : S soudé, F fragment soudé à un corps étranger, M migré, S′ absent, B gras sans `#`, O hors
+interligne serré) est UN titre. Familles : entrée, encadré, tableau, capitales,
+intertitre ; entrée et intertitre sont les familles d'ENTRÉE. Formes des entrées : S soudé, F fragment soudé à un corps étranger, M migré, S′ absent, B gras sans `#`, O hors
 d'ordre (à poser `devant` le titre qui la suit au PDF), P paragraphe scindé (une ligne ouverte par un
 gras sans `:` dont la ligne de prose précédente s'arrête au milieu d'une phrase, PROUVÉE au PDF par
 deux lignes consécutives d'une colonne au gras CONTINU d'une ligne à l'autre ; le site nomme la ligne
@@ -264,11 +265,10 @@ ligne ne porte plus ce que la sonde a vu (JSON périmé), si deux gestes tombent
 le multi-ensemble des MOTS du LIVRE gagne autre chose que les mots des S′ ou perd autre chose que les
 débris. Rejouée sur un livre réparé, la sonde ne rend plus aucun site à réparer (N reste rapporté), et la réparation rien. Puis le
 recalage du § 7, étape 2. **La garde** : la famille `titre-soude` de `raw:check-source-format`,
-pour tout livre à `gabaritTitre`, sur TOUT le livre — P5 (`**X** Y…` : groupe sans `:`, hors
-repère `A)`, `Y` ni minuscule ni `:-–—(|=`) et titre à deux groupes gras, prédicats de
-`scripts/raw/lib/titres-soudes.mjs`. Elle ne voit pas un titre d'une AUTRE typographie que le
-gabarit (`**40–42: Levy**`, Bold 10 des tables d'événements) : la sonde PDF reste la porte de S′,
-F, M et O.
+pour tout livre à `gabaritTitre`, sur TOUT le livre — P5 (`**X** Y…` : groupe hors étiquette
+`X:`, hors repère `A)`, hors gras fini par `,` ou `;`, `Y` ni minuscule ni `:-–—(|=`) et titre à
+deux groupes gras, prédicats de `scripts/raw/lib/titres-soudes.mjs`. La sonde PDF reste la porte de
+S′, F, M et O, que le `.md` seul ne trahit pas.
 
 **Le critère à tenir** : mettre le livre N+1 au grain de ses sections coûte **UN fichier de donnée,
 zéro ligne de code**.

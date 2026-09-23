@@ -1432,7 +1432,7 @@ Le chapitre GM n'ajoute aucune restriction mécanique, seulement un cadrage de d
 - `CRB 006 l.7`, `CRB 006 l.25` — aire `creation`
 - `CRB 021 l.388-390`, `CRB 021 l.742-744` — aire `talents`
 - `CRB 066 l.95-101`, `CRB 067 l.169-175`, `CRB 065 l.67` — aire `religion`
-- `CRB 047 l.25`, `CRB 047 l.37-39`, `CRB 047 l.69-75` — aire `activites`
+- `CRB 047 l.25`, `CRB 047 l.37-39`, `CRB 047 l.71-77` — aire `activites`
 - `CRB 070 l.203-206`, `CRB 071 l.221`, `CRB 071 l.249-279`, `CRB 072 l.120-130`, `CRB 074 l.69` — aire `magie`
 - `CRB 116 l.36` — aire `conversion`
 

@@ -96,3 +96,12 @@ test('P PÉRIMÉ : rejoué sur le livre recollé, chaque site est REFUSÉ, nomm�
   assert.deepEqual(r.refus, ['107:7 P : la ligne n\'est plus « **Endurance** Test to avoid a Festering Wound »', '107:5 P : la ligne n\'est plus « **Easy (+4 SL)** »'])
   assert.deepEqual(r.textes, textes)
 })
+
+test('S soudé DANS le gras de l’étiquette, blanc de tête (CRB 018 l.108) : le titre détaché, le gras refermé des deux côtés', () => {
+  const avant = new Map([['018', ['Read/Write **Trappings:** Writing Kit', '', ' **Adviser — Silver 3 Skills:** Consume Alcohol, Cool', ''].join('\n')]])
+  const sites = [{ forme: 'S', site: '018:3', titreMd: '**Adviser — Silver 3', ligneTitre: '#### **Adviser — Silver 3**', titre: 'Adviser — Silver 3' }]
+  const { textes, refus } = reparerLivre(avant, sites)
+  assert.deepEqual(refus, [])
+  assert.equal(textes.get('018'), ['Read/Write **Trappings:** Writing Kit', '', '#### **Adviser — Silver 3**', '', '**Skills:** Consume Alcohol, Cool', ''].join('\n'))
+  assert.equal(infidelite(avant, textes, sites), null)
+})

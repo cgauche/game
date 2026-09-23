@@ -105,7 +105,9 @@ Advisers provide counsel to those they serve. Well-versed in the social conditio
 
 Read/Write **Trappings:** Writing Kit
 
- **Adviser — Silver 3 Skills:** Consume Alcohol, Cool, Gamble, Intimidate, Language (Classical, Guilder, or Thieves Tongue), Lore (Heraldry)
+#### **Adviser — Silver 3**
+
+**Skills:** Consume Alcohol, Cool, Gamble, Intimidate, Language (Classical, Guilder, or Thieves Tongue), Lore (Heraldry)
 
 **Talents:** Criminal, Embezzle, Schemer, Supportive **Trappings:** Livery
 
@@ -167,9 +169,9 @@ As an Agitator, you can sway crowds in your favour and help your party negotiate
 
 **Skills:** Art (Writing), *Charm*, Consume Alcohol, Entertain (Storytelling), Gossip, Haggle, Lore (Local), Lore (Politics), Trade (Printing), Stealth (Urban) **Talents:** Blather, Gregarious, Panhandle, Read/Write **Trappings:** Hammer and Nails, Pile of Leaflets, Writing
 
-#### **Agitator — Brass 2**
-
 Kit
+
+#### **Agitator — Brass 2**
 
 **Skills:** Cool, Dodge, Gamble, Intuition, Leadership, Melee (Brawling)
 
@@ -679,13 +681,17 @@ Trick Rider
 
 #### **Trappings:** Breastplate, Open Helm
 
- **Cavalry Sergeant — Gold 1 Skills:** Intimidate, Leadership, Lore (Warfare), Ranged
+#### **Cavalry Sergeant — Gold 1**
+
+**Skills:** Intimidate, Leadership, Lore (Warfare), Ranged
 
 (Engineering) **Talents:** Combat Reflexes, Fast Shot, Hatred (Any One),
 
 War Leader **Trappings:** Sash
 
- **Cavalry Officer — Gold 2 Skills:** Intuition, Lore (Heraldry)
+#### **Cavalry Officer — Gold 2**
+
+**Skills:** Intuition, Lore (Heraldry)
 
 **Talents:** Accurate Shot, Inspiring, Read/Write, Robust
 
@@ -3069,7 +3075,7 @@ Playing a Scout makes you the eyes of the party, able to lead your companions sa
 
 **Skills:** Animal Care, Haggle, Lore (Geography), Ride (Horse) **Talents:** Combat Aware, Hardy, Shadow, Sharp **Trappings:** Map, Riding Horse, Saddlebags with 2 weeks'
 
- **Explorer — Silver 5**
+#### **Explorer — Silver 5**
 
 **Skills:** Language (Any One), Trade (Cartographer) **Talents:** Craftsman (Cartographer), Linguistics, Read/Write,
 
@@ -3557,9 +3563,9 @@ Playing a Townsman lets you navigate the bustle of urban life with confidence. Y
 
 **Talents:** Dealmaker, Embezzle, Read/Write, Speedreader
 
-#### **Townsman — Silver 1**
-
 **Trappings:** Lodgings
+
+#### **Townsman — Silver 1**
 
 **Skills:** Bribery, Cool, Entertain (Any One), Language (Any One), Melee (Brawling), Trade (Any One) **Talents:** Blather, Etiquette (Any One), Gregarious, Savvy
 

@@ -44,6 +44,8 @@ A celebration is called! The GM decides the nature of the event. Possibilities i
 
 A travelling potion salesman arrives in the region, driving a gaudy wagon bedecked with racks of mysterious liquids in vials, jars, and earthen jugs. Scarce and Rare Herbs and Draughts (page 314) have their Availability improved by one step if bought from the travelling merchant during this Downtime. For each item bought this way, the GM rolls a d10: on a 1 or 2, it is actually a Poison (page 313) of the GM's choosing.
 
+#### **40–42: Levy**
+
 A local lord levies warriors to form a regiment in his name. Maybe they are looking to contribute to a wider war effort, assemble a private army for their own purposes, or just keep up appearances through sponsoring a temporary military exercise. Characters from the Warrior Class gain an additional 50% from any *Income* Endeavours as they assist in training or recruiting villagers. Warriors who undertake the *Income* Endeavour count as having taken the *Combat Training* Endeavour.
 
 #### **43–45: Travelling Players**
@@ -72,7 +74,7 @@ To the horror of the merchants, a run of counterfeit coins plagues the locale. C
 
 #### **69–73: Tax Collector**
 
-**40–42: Levy** An unexpected visit by the tax collector (with several soldiers in tow) sweeps through the settlement. Those with legal employment earn 50% less from any *Income* Endeavours due to harsh taxes, while Rogues and others who operate outside the law earn double the usual amount as opportunities for smuggling and dirty dealing abound.
+An unexpected visit by the tax collector (with several soldiers in tow) sweeps through the settlement. Those with legal employment earn 50% less from any *Income* Endeavours due to harsh taxes, while Rogues and others who operate outside the law earn double the usual amount as opportunities for smuggling and dirty dealing abound.
 
 #### **74–81: Crime Crackdown**
 

@@ -2,13 +2,15 @@
 // réelles du CRB, et, pour la forme P, la prose coupée et le recollement de deux morceaux.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { estP5, estTitreADeuxGras, prosePrecedenteCoupee, recoller, sitesDeTitresSoudes } from './titres-soudes.mjs'
+import { estP5, estTitreADeuxGras, grasOuvert, prosePrecedenteCoupee, recoller, sitesDeTitresSoudes } from './titres-soudes.mjs'
 
-test('P5 : un gras de tête que suit un texte qui n’en est pas la prose ; étiquette, repère, minuscule et ponctuation exclus', () => {
+test('P5 : un gras de tête que suit un texte qui n’en est pas la prose, `:` interne compris (CRB 046 l.75) ; étiquette, repère, morceau de phrase (CRB 107 l.75), minuscule et ponctuation exclus', () => {
   assert.equal(estP5('**Names** Add one Advance (+5) to any five of the following'), true)
   assert.equal(estP5('**Climb (S)** *basic* The ability to ascend'), true)
   assert.equal(estP5('**Combat Reflexes:** texte'), false)
-  assert.equal(estP5('**40–42: Levy** An unexpected visit'), false)
+  assert.equal(estP5('**40–42: Levy** An unexpected visit'), true)
+  assert.equal(estP5('**Optional Bow and Arrows: (35/+7) 50 yards,** *Impale*'), false)
+  assert.equal(estP5('**Range: Touch;** Target'), false)
   assert.equal(estP5('**A)** Choose one'), false)
   assert.equal(estP5('**Stunned** condition applies'), false)
   assert.equal(estP5('**Easy (+4 SL)**'), false)
@@ -19,6 +21,12 @@ test('titre à deux groupes gras', () => {
   assert.equal(estTitreADeuxGras('#### **Bounce** **Cold-blooded**'), true)
   assert.equal(estTitreADeuxGras('#### **Bounce**'), false)
   assert.deepEqual(sitesDeTitresSoudes('x\n#### **A** **B**\n**Names** Add').map((s) => [s.ligne, s.classe]), [[2, 'deux-gras'], [3, 'p5']])
+})
+
+test('gras ouvert : un nombre impair de `**` (CRB 018 l.108, `**Adviser — Silver 3 Skills:**`)', () => {
+  assert.equal(grasOuvert('**Adviser — Silver 3'), true)
+  assert.equal(grasOuvert('**Adviser — Silver 3**'), false)
+  assert.equal(grasOuvert('Adviser'), false)
 })
 
 test('recoller : une espace ; le gras coupé par le saut redevient UN gras', () => {

@@ -13,6 +13,7 @@ const GABARIT = {
   accompagnement: [{ police: 'ACaslonPro-Italic', taille: 12 }],
   encadre: { police: 'CaslonAntique-Bold', taille: 15 },
   capitales: { police: 'CaslonAntique-Bold-SC700' },
+  intertitre: { police: 'ACaslonPro-Bold', taille: 10 },
   exclusions: [{ police: 'CaslonAntique-Bold', taille: 12 }],
 }
 const L = (colonne, y0, texte, police = 'ACaslonPro-Regular', taille = 9) => ({ colonne, x0: 58 + 244 * colonne, y0, texte, spans: [{ texte, police, taille }] })
@@ -267,4 +268,32 @@ test('#1739 : P — paragraphe scindé, PROUVÉ au PDF par un gras CONTINU d’u
   ]
   const p = classer(pages, [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes }], GABARIT).sites.filter((s) => s.forme === 'P')
   assert.deepEqual(p.map((s) => [s.site, s.avec, s.preuve]), [['001:5', '001:3', 'p.10 col.0 y371→358'], ['001:7', '001:5', 'p.10 col.0 y358→345']])
+})
+
+test('#1739 : famille « intertitre » (CRB p.46, p.92, p.171, p.193) — F soudé au corps de son jumeau, S soudé DANS le gras de l’étiquette, B à blanc de tête, titre sur deux lignes ; niveau du frère intertitre', () => {
+  const I = (colonne, y0, texte) => L(colonne, y0, texte, 'ACaslonPro-Bold', 10)
+  const pages = [{
+    page: 10,
+    lignes: [
+      I(0, 700, '36–39: Cures'), L(0, 690, 'Cures body words go here'),
+      I(0, 600, '40–42: Levy'), L(0, 590, 'Levy body words sit here'),
+      I(0, 300, 'Inflicting Critical Wounds'), I(0, 287, 'on an Opponent with 0 Wounds'), L(0, 277, 'Damage words reduce here now'),
+      I(1, 600, '69–73: Tax Collector'), L(1, 590, 'Tax body words are here'),
+      I(1, 500, 'Adviser — Silver 3'), L(1, 490, 'Skills: Consume Alcohol, Cool'),
+      I(1, 400, 'Explorer — Silver 5'), L(1, 390, 'Explorer body words go here'),
+    ],
+  }]
+  const md = [
+    '#### **36–39: Cures**', 'Cures body words go here', 'Levy body words sit here',
+    '#### **Inflicting Critical Wounds on an Opponent with 0 Wounds**', 'Damage words reduce here now',
+    '#### **69–73: Tax Collector**', '**40–42: Levy** Tax body words are here',
+    ' **Adviser — Silver 3 Skills:** Consume Alcohol, Cool', ' **Explorer — Silver 5**', 'Explorer body words go here',
+  ]
+  const r = classer(pages, [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes: md.flatMap((l, i) => (i ? ['', l] : [l])) }], GABARIT)
+  const de = (f, t) => r.sites.find((s) => s.forme === f && s.titre === t)
+  assert.deepEqual([de('F', '40–42: Levy')?.famille, de('F', '40–42: Levy')?.site, de('F', '40–42: Levy')?.cible, de('F', '40–42: Levy')?.ligneTitre], ['intertitre', '001:13', '001:5', '#### **40–42: Levy**'])
+  assert.deepEqual([de('S', 'Adviser — Silver 3')?.site, de('S', 'Adviser — Silver 3')?.titreMd, de('S', 'Adviser — Silver 3')?.ligneTitre], ['001:15', '**Adviser — Silver 3', '#### **Adviser — Silver 3**'])
+  assert.deepEqual([de('B', 'Explorer — Silver 5')?.site, de('B', 'Explorer — Silver 5')?.ligneTitre], ['001:17', '#### **Explorer — Silver 5**'])
+  assert.equal(r.titres.find((t) => t.texte === 'Inflicting Critical Wounds on an Opponent with 0 Wounds')?.forme, 'ok')
+  assert.deepEqual(r.sites.map((s) => s.forme).sort(), ['B', 'F', 'S'])
 })

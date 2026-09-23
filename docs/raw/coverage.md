@@ -406,148 +406,148 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.72-75 « 5. Trappings » — candidat trou de règle, 0 réf
   - ⬜ l.76-79 « 6. Status » — candidat trou de règle, 0 réf
   - ⬜ l.80-97 « ADVISER » — candidat trou de règle, 0 réf
-  - ⬜ l.98-133 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.134-163 « AGITATOR » — candidat trou de règle, 0 réf
-  - ⬜ l.164-191 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.192-217 « APOTHECARY » — candidat trou de règle, 0 réf
-  - ⬜ l.218-255 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.256-269 « ARTISAN » — candidat trou de règle, 0 réf
-  - ⬜ l.270-279 « A MULTITUDE OF TRADES » — candidat trou de règle, 0 réf
-  - ⬜ l.280-313 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.314-335 « ARTIST » — candidat trou de règle, 0 réf
-  - ⬜ l.336-373 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.374-401 « BAILIFF » — candidat trou de règle, 0 réf
-  - ⬜ l.402-439 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.440-461 « BEGGAR » — candidat trou de règle, 0 réf
-  - ⬜ l.462-471 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.472-487 « Beggar — Brass 1 » — candidat trou de règle, 0 réf
-  - ⬜ l.488-501 « Beggar King — Silver 2 » — candidat trou de règle, 0 réf
-  - ⬜ l.502-525 « BOATMAN » — candidat trou de règle, 0 réf
-  - ⬜ l.526-531 « BOATMAN ADVANCE SCHEME » — candidat trou de règle, 0 réf
-  - ⬜ l.532-573 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.574-603 « BOUNTY HUNTER » — candidat trou de règle, 0 réf
-  - ⬜ l.604-631 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.632-657 « CAVALRYMAN » — candidat trou de règle, 0 réf
-  - ⬜ l.658-711 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.712-749 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.750-775 « COACHMAN » — candidat trou de règle, 0 réf
-  - ⬜ l.776-841 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.842-881 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.882-905 « ENGINEER » — candidat trou de règle, 0 réf
-  - ⬜ l.906-941 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.942-963 « ENTERTAINER » — candidat trou de règle, 0 réf
-  - ⬜ l.964-999 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1000-1027 « ENVOY » — candidat trou de règle, 0 réf
-  - ⬜ l.1028-1063 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1064-1091 « FENCE » — candidat trou de règle, 0 réf
-  - ⬜ l.1092-1125 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1126-1149 « FLAGELLANT » — candidat trou de règle, 0 réf
-  - ⬜ l.1150-1177 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1178-1187 « Prophet of Doom — Brass 0 » — candidat trou de règle, 0 réf
-  - ⬜ l.1188-1215 « GRAVE ROBBER » — candidat trou de règle, 0 réf
-  - ⬜ l.1216-1247 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1248-1273 « GUARD » — candidat trou de règle, 0 réf
-  - ⬜ l.1274-1315 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1316-1335 « HEDGE WITCH » — candidat trou de règle, 0 réf
-  - ⬜ l.1336-1345 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1346-1371 « Hedge Witch — Brass 4 » — candidat trou de règle, 0 réf
-  - ⬜ l.1372-1393 « HERBALIST » — candidat trou de règle, 0 réf
-  - ⬜ l.1394-1431 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1432-1455 « HUNTER » — candidat trou de règle, 0 réf
-  - ⬜ l.1456-1489 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1490-1517 « INVESTIGATOR » — candidat trou de règle, 0 réf
-  - ⬜ l.1518-1541 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1542-1567 « KNAVE » — candidat trou de règle, 0 réf
-  - ⬜ l.1568-1599 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1600-1621 « KNIGHT » — candidat trou de règle, 0 réf
-  - ⬜ l.1622-1651 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1652-1673 « LAWYER » — candidat trou de règle, 0 réf
-  - ⬜ l.1674-1685 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1686-1721 « Lawyer — Silver 3 » — candidat trou de règle, 0 réf
-  - ⬜ l.1722-1747 « MERCHANT » — candidat trou de règle, 0 réf
-  - ⬜ l.1748-1779 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1780-1803 « MESSENGER » — candidat trou de règle, 0 réf
-  - ⬜ l.1804-1845 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1846-1871 « MINER » — candidat trou de règle, 0 réf
-  - ⬜ l.1872-1905 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1906-1933 « MYSTIC » — candidat trou de règle, 0 réf
-  - ⬜ l.1934-1967 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.1968-1993 « NOBLE » — candidat trou de règle, 0 réf
-  - ⬜ l.1994-2023 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2024-2049 « NUN » — candidat trou de règle, 0 réf
-  - ⬜ l.2050-2087 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2088-2115 « OUTLAW » — candidat trou de règle, 0 réf
-  - ⬜ l.2116-2147 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2148-2175 « PEDLAR » — candidat trou de règle, 0 réf
-  - ⬜ l.2176-2203 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2204-2225 « PHYSICIAN » — candidat trou de règle, 0 réf
-  - ⬜ l.2226-2263 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2264-2289 « PILOT » — candidat trou de règle, 0 réf
-  - ⬜ l.2290-2291 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2292-2315 « Riverguide — Brass 4 » — candidat trou de règle, 0 réf
-  - ⬜ l.2316-2331 « Navigator — Silver 3 » — candidat trou de règle, 0 réf
-  - ⬜ l.2332-2359 « PIT FIGHTER » — candidat trou de règle, 0 réf
-  - ⬜ l.2360-2395 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2396-2417 « PRIEST » — candidat trou de règle, 0 réf
-  - ⬜ l.2418-2469 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2470-2497 « PROTAGONIST » — candidat trou de règle, 0 réf
-  - ⬜ l.2498-2547 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2548-2571 « RACKETEER » — candidat trou de règle, 0 réf
-  - ⬜ l.2572-2613 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2614-2639 « RAT CATCHER » — candidat trou de règle, 0 réf
-  - ⬜ l.2640-2685 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2686-2711 « RIVERWARDEN » — candidat trou de règle, 0 réf
-  - ⬜ l.2712-2753 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2754-2781 « RIVERWOMAN » — candidat trou de règle, 0 réf
-  - ⬜ l.2782-2827 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2828-2853 « ROADWARDEN » — candidat trou de règle, 0 réf
-  - ⬜ l.2854-2879 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2880-2889 « Road Captain — Gold 1 » — candidat trou de règle, 0 réf
-  - ⬜ l.2890-2917 « SAILOR » — candidat trou de règle, 0 réf
-  - ⬜ l.2918-2957 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.2958-2985 « SCHOLAR » — candidat trou de règle, 0 réf
-  - ⬜ l.2986-3005 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3006-3025 « Fellow — Silver 5 » — candidat trou de règle, 0 réf
-  - ⬜ l.3026-3053 « SCOUT » — candidat trou de règle, 0 réf
-  - ⬜ l.3054-3111 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3112-3145 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3146-3175 « SLAYER » — candidat trou de règle, 0 réf
-  - ⬜ l.3176-3185 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3186-3205 « Giant Slayer — Brass 2 » — candidat trou de règle, 0 réf
-  - ⬜ l.3206-3233 « SMUGGLER » — candidat trou de règle, 0 réf
-  - ⬜ l.3234-3253 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3254-3259 « Master Smuggler — Silver 5 » — candidat trou de règle, 0 réf
-  - ⬜ l.3260-3267 « Smuggler King — Gold 3 » — candidat trou de règle, 0 réf
-  - ⬜ l.3268-3293 « SOLDIER » — candidat trou de règle, 0 réf
-  - ⬜ l.3294-3325 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3326-3347 « SPY » — candidat trou de règle, 0 réf
-  - ⬜ l.3348-3363 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3364-3387 « Agent — Gold 1 » — candidat trou de règle, 0 réf
-  - ⬜ l.3388-3415 « STEVEDORE » — candidat trou de règle, 0 réf
-  - ⬜ l.3416-3459 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3460-3489 « THIEF » — candidat trou de règle, 0 réf
-  - ⬜ l.3490-3525 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3526-3551 « TOWNSMAN » — candidat trou de règle, 0 réf
-  - ⬜ l.3552-3581 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3582-3605 « VILLAGER » — candidat trou de règle, 0 réf
-  - ⬜ l.3606-3643 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3644-3671 « WARDEN » — candidat trou de règle, 0 réf
-  - ⬜ l.3672-3711 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3712-3735 « WARRIOR PRIEST » — candidat trou de règle, 0 réf
-  - ⬜ l.3736-3763 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3764-3771 « Priest Captain — Gold 1 » — candidat trou de règle, 0 réf
-  - ⬜ l.3772-3799 « WATCHMAN » — candidat trou de règle, 0 réf
-  - ⬜ l.3800-3823 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3824-3833 « Watch Captain — Gold 1 » — candidat trou de règle, 0 réf
-  - ⬜ l.3834-3859 « WITCH » — candidat trou de règle, 0 réf
-  - ⬜ l.3860-3889 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3890-3915 « WITCH HUNTER » — candidat trou de règle, 0 réf
-  - ⬜ l.3916-3955 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.3956-3981 « WIZARD » — candidat trou de règle, 0 réf
-  - ⬜ l.3982-4025 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.4026-4049 « WRECKER » — candidat trou de règle, 0 réf
-  - ⬜ l.4050-4079 « Career Path » — candidat trou de règle, 0 réf
-  - ⬜ l.4080-4089 « Wrecker Captain — Silver 5 » — candidat trou de règle, 0 réf
+  - ⬜ l.98-135 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.136-165 « AGITATOR » — candidat trou de règle, 0 réf
+  - ⬜ l.166-193 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.194-219 « APOTHECARY » — candidat trou de règle, 0 réf
+  - ⬜ l.220-257 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.258-271 « ARTISAN » — candidat trou de règle, 0 réf
+  - ⬜ l.272-281 « A MULTITUDE OF TRADES » — candidat trou de règle, 0 réf
+  - ⬜ l.282-315 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.316-337 « ARTIST » — candidat trou de règle, 0 réf
+  - ⬜ l.338-375 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.376-403 « BAILIFF » — candidat trou de règle, 0 réf
+  - ⬜ l.404-441 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.442-463 « BEGGAR » — candidat trou de règle, 0 réf
+  - ⬜ l.464-473 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.474-489 « Beggar — Brass 1 » — candidat trou de règle, 0 réf
+  - ⬜ l.490-503 « Beggar King — Silver 2 » — candidat trou de règle, 0 réf
+  - ⬜ l.504-527 « BOATMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.528-533 « BOATMAN ADVANCE SCHEME » — candidat trou de règle, 0 réf
+  - ⬜ l.534-575 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.576-605 « BOUNTY HUNTER » — candidat trou de règle, 0 réf
+  - ⬜ l.606-633 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.634-659 « CAVALRYMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.660-717 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.718-755 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.756-781 « COACHMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.782-847 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.848-887 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.888-911 « ENGINEER » — candidat trou de règle, 0 réf
+  - ⬜ l.912-947 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.948-969 « ENTERTAINER » — candidat trou de règle, 0 réf
+  - ⬜ l.970-1005 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1006-1033 « ENVOY » — candidat trou de règle, 0 réf
+  - ⬜ l.1034-1069 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1070-1097 « FENCE » — candidat trou de règle, 0 réf
+  - ⬜ l.1098-1131 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1132-1155 « FLAGELLANT » — candidat trou de règle, 0 réf
+  - ⬜ l.1156-1183 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1184-1193 « Prophet of Doom — Brass 0 » — candidat trou de règle, 0 réf
+  - ⬜ l.1194-1221 « GRAVE ROBBER » — candidat trou de règle, 0 réf
+  - ⬜ l.1222-1253 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1254-1279 « GUARD » — candidat trou de règle, 0 réf
+  - ⬜ l.1280-1321 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1322-1341 « HEDGE WITCH » — candidat trou de règle, 0 réf
+  - ⬜ l.1342-1351 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1352-1377 « Hedge Witch — Brass 4 » — candidat trou de règle, 0 réf
+  - ⬜ l.1378-1399 « HERBALIST » — candidat trou de règle, 0 réf
+  - ⬜ l.1400-1437 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1438-1461 « HUNTER » — candidat trou de règle, 0 réf
+  - ⬜ l.1462-1495 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1496-1523 « INVESTIGATOR » — candidat trou de règle, 0 réf
+  - ⬜ l.1524-1547 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1548-1573 « KNAVE » — candidat trou de règle, 0 réf
+  - ⬜ l.1574-1605 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1606-1627 « KNIGHT » — candidat trou de règle, 0 réf
+  - ⬜ l.1628-1657 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1658-1679 « LAWYER » — candidat trou de règle, 0 réf
+  - ⬜ l.1680-1691 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1692-1727 « Lawyer — Silver 3 » — candidat trou de règle, 0 réf
+  - ⬜ l.1728-1753 « MERCHANT » — candidat trou de règle, 0 réf
+  - ⬜ l.1754-1785 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1786-1809 « MESSENGER » — candidat trou de règle, 0 réf
+  - ⬜ l.1810-1851 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1852-1877 « MINER » — candidat trou de règle, 0 réf
+  - ⬜ l.1878-1911 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1912-1939 « MYSTIC » — candidat trou de règle, 0 réf
+  - ⬜ l.1940-1973 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.1974-1999 « NOBLE » — candidat trou de règle, 0 réf
+  - ⬜ l.2000-2029 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2030-2055 « NUN » — candidat trou de règle, 0 réf
+  - ⬜ l.2056-2093 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2094-2121 « OUTLAW » — candidat trou de règle, 0 réf
+  - ⬜ l.2122-2153 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2154-2181 « PEDLAR » — candidat trou de règle, 0 réf
+  - ⬜ l.2182-2209 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2210-2231 « PHYSICIAN » — candidat trou de règle, 0 réf
+  - ⬜ l.2232-2269 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2270-2295 « PILOT » — candidat trou de règle, 0 réf
+  - ⬜ l.2296-2297 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2298-2321 « Riverguide — Brass 4 » — candidat trou de règle, 0 réf
+  - ⬜ l.2322-2337 « Navigator — Silver 3 » — candidat trou de règle, 0 réf
+  - ⬜ l.2338-2365 « PIT FIGHTER » — candidat trou de règle, 0 réf
+  - ⬜ l.2366-2401 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2402-2423 « PRIEST » — candidat trou de règle, 0 réf
+  - ⬜ l.2424-2475 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2476-2503 « PROTAGONIST » — candidat trou de règle, 0 réf
+  - ⬜ l.2504-2553 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2554-2577 « RACKETEER » — candidat trou de règle, 0 réf
+  - ⬜ l.2578-2619 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2620-2645 « RAT CATCHER » — candidat trou de règle, 0 réf
+  - ⬜ l.2646-2691 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2692-2717 « RIVERWARDEN » — candidat trou de règle, 0 réf
+  - ⬜ l.2718-2759 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2760-2787 « RIVERWOMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.2788-2833 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2834-2859 « ROADWARDEN » — candidat trou de règle, 0 réf
+  - ⬜ l.2860-2885 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2886-2895 « Road Captain — Gold 1 » — candidat trou de règle, 0 réf
+  - ⬜ l.2896-2923 « SAILOR » — candidat trou de règle, 0 réf
+  - ⬜ l.2924-2963 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.2964-2991 « SCHOLAR » — candidat trou de règle, 0 réf
+  - ⬜ l.2992-3011 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3012-3031 « Fellow — Silver 5 » — candidat trou de règle, 0 réf
+  - ⬜ l.3032-3059 « SCOUT » — candidat trou de règle, 0 réf
+  - ⬜ l.3060-3117 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3118-3151 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3152-3181 « SLAYER » — candidat trou de règle, 0 réf
+  - ⬜ l.3182-3191 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3192-3211 « Giant Slayer — Brass 2 » — candidat trou de règle, 0 réf
+  - ⬜ l.3212-3239 « SMUGGLER » — candidat trou de règle, 0 réf
+  - ⬜ l.3240-3259 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3260-3265 « Master Smuggler — Silver 5 » — candidat trou de règle, 0 réf
+  - ⬜ l.3266-3273 « Smuggler King — Gold 3 » — candidat trou de règle, 0 réf
+  - ⬜ l.3274-3299 « SOLDIER » — candidat trou de règle, 0 réf
+  - ⬜ l.3300-3331 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3332-3353 « SPY » — candidat trou de règle, 0 réf
+  - ⬜ l.3354-3369 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3370-3393 « Agent — Gold 1 » — candidat trou de règle, 0 réf
+  - ⬜ l.3394-3421 « STEVEDORE » — candidat trou de règle, 0 réf
+  - ⬜ l.3422-3465 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3466-3495 « THIEF » — candidat trou de règle, 0 réf
+  - ⬜ l.3496-3531 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3532-3557 « TOWNSMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.3558-3587 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3588-3611 « VILLAGER » — candidat trou de règle, 0 réf
+  - ⬜ l.3612-3649 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3650-3677 « WARDEN » — candidat trou de règle, 0 réf
+  - ⬜ l.3678-3717 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3718-3741 « WARRIOR PRIEST » — candidat trou de règle, 0 réf
+  - ⬜ l.3742-3769 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3770-3777 « Priest Captain — Gold 1 » — candidat trou de règle, 0 réf
+  - ⬜ l.3778-3805 « WATCHMAN » — candidat trou de règle, 0 réf
+  - ⬜ l.3806-3829 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3830-3839 « Watch Captain — Gold 1 » — candidat trou de règle, 0 réf
+  - ⬜ l.3840-3865 « WITCH » — candidat trou de règle, 0 réf
+  - ⬜ l.3866-3895 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3896-3921 « WITCH HUNTER » — candidat trou de règle, 0 réf
+  - ⬜ l.3922-3961 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.3962-3987 « WIZARD » — candidat trou de règle, 0 réf
+  - ⬜ l.3988-4031 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.4032-4055 « WRECKER » — candidat trou de règle, 0 réf
+  - ⬜ l.4056-4085 « Career Path » — candidat trou de règle, 0 réf
+  - ⬜ l.4086-4095 « Wrecker Captain — Silver 5 » — candidat trou de règle, 0 réf
 - **CRB 020** (Skills) :
   - ⬜ l.57-60 « Animal Care (Int) *advanced* » — candidat trou de règle, 0 réf
   - ⬜ l.61-66 « Animal Training (Int) *advanced, grouped* » — candidat trou de règle, 0 réf
@@ -2134,4 +2134,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: 04a681c9b08ced35d5e13c009f028b55cc6a20e7 (467 fichiers, 20 dossiers) corps: 2eef7dee839c73f3dd9ef3fd011920a08d0e9ad0 -->
+<!-- sources-empreinte: c91e827785b6ce45c0578e3a082210e6a24b0b43 (467 fichiers, 20 dossiers) corps: aa3c4b689a440dc67608dbebec41041f3f7a4a80 -->

@@ -10,11 +10,13 @@
 /** Caractère qui, après un gras de tête, dit une prose et non un titre : minuscule, ou `:-–—(|=`. */
 const suiteDeProse = (c) => (c !== c.toUpperCase() && c === c.toLowerCase()) || ':-–—(|='.includes(c)
 
-/** P5 : ligne ouverte par un gras (sans `:`, hors repère `A)`/`12)`) que suit un texte qui n'en est pas
- *  la prose — un titre soudé à une ligne, ou la suite d'un paragraphe scindé au milieu d'un gras. PURE. */
+/** P5 : ligne ouverte par un gras que suit un texte qui n'en est pas la prose — un titre soudé à une
+ *  ligne (`**40–42: Levy** An…`), ou la suite d'un paragraphe scindé au milieu d'un gras. Hors P5 : le gras
+ *  ÉTIQUETTE (fini par `:`), le REPÈRE `A)`/`12)`, le gras fini par `,` ou `;` (un morceau de phrase, jamais un
+ *  titre). PURE. */
 export function estP5(ligne) {
-  const m = /^\*\*([^*:]+)\*\*\s+(\S)/.exec(ligne)
-  return !!m && !/^[A-Z0-9]{1,2}\)$/.test(m[1]) && !suiteDeProse(m[2])
+  const m = /^\*\*([^*]+)\*\*\s+(\S)/.exec(ligne)
+  return !!m && !/[:,;]\s*$/.test(m[1]) && !/^[A-Z0-9]{1,2}\)$/.test(m[1]) && !suiteDeProse(m[2])
 }
 
 /** Ligne de titre à DEUX groupes gras — deux titres soudés sur une ligne. PURE. */
@@ -38,6 +40,10 @@ export function prosePrecedenteCoupee(lignes, i) {
   if (!l.trim() || /^(#{1,6}\s|\||- |>)/.test(l)) return -1
   return /[.!?:;]$/.test(l.replace(/[\s*]+$/, '')) ? -1 : j
 }
+
+/** Un texte qui OUVRE un gras sans le fermer (nombre impair de `**`) : le titre `**T` coupé du gras de
+ *  l'étiquette qui le suit (`**T Skills:** …`), que la coupe referme des deux côtés. PURE. */
+export const grasOuvert = (texte) => (texte.match(/\*\*/g) ?? []).length % 2 === 1
 
 /** Deux morceaux d'un paragraphe recollés : une espace, et le gras que le saut coupait refait UN seul
  *  (`**A** ` + `**B** x` → `**A B** x`). PURE. */

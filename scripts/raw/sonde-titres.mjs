@@ -7,7 +7,9 @@
 // FAMILLES : `entree` (le run de tête contient la typographie `titre`), `encadre` (le run commence par
 // la typographie `encadre`, corps en prose), `tableau` (même typographie, corps en ligne de tableau `|`),
 // `capitales` (le run est de la typographie `capitales` : titres de section en petites capitales, noms
-// de créature compris).
+// de créature compris), `intertitre` (le run commence par la typographie `intertitre` : titres du fil du
+// texte d'un corps plus petit, événements et niveaux de carrière compris). `entree` et `intertitre` sont
+// les familles d'ENTRÉE (`ENTREES`).
 // FORMES (`FORMES`) :
 //  — S : titre soudé à son corps ;
 //  — F : gras de tête (hors étiquette `X:`) soudé à un corps ÉTRANGER, souvent celui de son JUMEAU
@@ -47,7 +49,7 @@ import { fileURLToPath } from 'node:url'
 import { decoupeDe, gabaritTitreDe, livreExtraitDe, nomsDeLaListe, normalize, readText } from './_lib.mjs'
 import { lignes } from './lib/colonnes.mjs'
 import { stripSpans } from '../../src/data/source/decoupe.ts'
-import { prosePrecedenteCoupee } from './lib/titres-soudes.mjs'
+import { grasOuvert, prosePrecedenteCoupee } from './lib/titres-soudes.mjs'
 import { canoniser, relatifSousRacine } from '../docs/lib/chemin-mesure.mjs'
 
 const PDF_LIGNES = join(dirname(fileURLToPath(import.meta.url)), 'lib', 'pdf-lignes.py')
@@ -68,12 +70,12 @@ const memeTypo = (s, t) => s.police === t.police && (t.taille == null || Math.ab
 /**
  * Les TITRES imprimés d'une page, dans l'ordre de lecture : une ligne dont le RUN de tête (spans
  * consécutifs aux typographies du gabarit) CONTIENT la typographie `titre` (entrée), COMMENCE par
- * `encadre` (encadré ou tableau) ou par `capitales`, et dont aucun span n'est d'une typographie
+ * `encadre` (encadré ou tableau), par `capitales` ou par `intertitre`, et dont aucun span n'est d'une typographie
  * `exclusions`. `texte` = la ligne quand le run la couvre (espacement lu par pdfminer : `T`+`roll` =
  * `Troll`), sinon les spans du run séparés d'une espace. Un titre imprimé sur DEUX lignes (lignes de
- * titre consécutives, même gabarit, même colonne, interligne < 1,3 × la taille) est UN titre ; `fin` =
+ * titre consécutives, même gabarit, même colonne, interligne < 1,4 × la taille) est UN titre ; `fin` =
  * l'indice de sa dernière ligne. PURE.
- * @returns {{ index: number, fin: number, texte: string, gabarit: 'entree' | 'encadre' | 'capitales' }[]}
+ * @returns {{ index: number, fin: number, texte: string, gabarit: 'entree' | 'encadre' | 'capitales' | 'intertitre' }[]}
  */
 export function titresDeLaPage(lignesDeLaPage, gabarit) {
   const out = []
@@ -81,6 +83,7 @@ export function titresDeLaPage(lignesDeLaPage, gabarit) {
     ['entree', [gabarit.titre, ...gabarit.accompagnement], gabarit.titre],
     ['encadre', [gabarit.encadre], gabarit.encadre],
     ['capitales', [gabarit.capitales], gabarit.capitales],
+    ['intertitre', [gabarit.intertitre], gabarit.intertitre],
   ]
   lignesDeLaPage.forEach((l, index) => {
     if (l.spans.some((s) => gabarit.exclusions.some((t) => memeTypo(s, t)))) return
@@ -92,7 +95,7 @@ export function titresDeLaPage(lignesDeLaPage, gabarit) {
         const texte = n === l.spans.length ? l.texte : run.map((s) => s.texte).join(' ')
         const p = out.at(-1)
         const q = lignesDeLaPage[index - 1]
-        if (p && p.fin === index - 1 && p.gabarit === nom && q.colonne === l.colonne && q.y0 - l.y0 > 0 && q.y0 - l.y0 < 1.3 * l.spans[0].taille) {
+        if (p && p.fin === index - 1 && p.gabarit === nom && q.colonne === l.colonne && q.y0 - l.y0 > 0 && q.y0 - l.y0 < 1.4 * l.spans[0].taille) {
           Object.assign(p, { fin: index, texte: `${p.texte} ${texte}` })
         } else out.push({ index, fin: index, texte, gabarit: nom })
         return
@@ -125,14 +128,14 @@ export function enTete(ligne) {
 
 /** Ligne FAITE d'un seul groupe gras (titre sans `#`) : son texte, ou null. PURE. */
 export const grasSeul = (ligne) => {
-  const m = /^\*\*([^*]+)\*\*\s*$/.exec(stripSpans(ligne))
+  const m = /^\*\*([^*]+)\*\*\s*$/.exec(stripSpans(ligne).trimStart())
   return m ? cleDeTitre(m[1]) : null
 }
 
 /** Groupe gras de TÊTE d'une ligne (après `#` éventuels) : `{ texte, reste, etiquette }` —
  *  `etiquette` : le groupe finit par `:` (étiquette en ligne, `**Combat Reflexes:** …`) —, ou null. PURE. */
 export const grasDeTete = (ligne) => {
-  const m = /^(?:#{1,6}\s+)?\*\*([^*]+)\*\*\s*(.*)$/.exec(stripSpans(ligne))
+  const m = /^(?:#{1,6}\s+)?\*\*([^*]+)\*\*\s*(.*)$/.exec(stripSpans(ligne).trimStart())
   return m ? { texte: cleDeTitre(m[1]), reste: m[2], etiquette: /:\s*$/.test(m[1]) } : null
 }
 
@@ -302,7 +305,7 @@ export function classer(pages, fichiers, gabarit) {
   const ordreDeRecherche = (p) => [...new Set([...fichiersDeLaPage(p), ...fichiers.keys()])]
   for (const t of titres.filter((x) => x.forme === 'absent')) {
     const siens = jumeaux(t)
-    const entree = t.famille === 'entree'
+    const entree = ENTREES.has(t.famille)
     let vu = null
     for (const fi of ordreDeRecherche(t.page)) {
       for (let li = 0; li < fichiers[fi].lignes.length && !vu; li++) {
@@ -332,8 +335,8 @@ export function classer(pages, fichiers, gabarit) {
   }
 
   // O : l'entrée (titre et corps) hors de la plus longue sous-suite qui tient l'ordre du PDF, parmi les
-  // ENTRÉES seules (encadrés, tableaux et capitales suivent la mise en page).
-  const places = titres.filter((t) => t.corps && t.famille === 'entree')
+  // ENTRÉES seules (`ENTREES` ; encadrés, tableaux et capitales suivent la mise en page).
+  const places = titres.filter((t) => t.corps && ENTREES.has(t.famille))
   const tenus = plusLongueCroissante(places.map((t) => t.corps.f * 1e6 + t.corps.l))
   places.forEach((t, i) => {
     if (!tenus.has(i)) t.hors = true
@@ -385,8 +388,8 @@ export function classer(pages, fichiers, gabarit) {
     for (let j = i + 1; j < titres.length && !u; j++) if (frere(j)) u = titres[j]
     if (!u) return { ligneTitre: null, frere: null }
     const ligneU = stripSpans(fichiers[u.titreMd.f].lignes[u.titreMd.l]).replace(/^#{1,6}\s+/, '')
-    const nu = texteMd ? texteMd.replace(/^#{1,6}\s+/, '') : t.famille === 'entree' ? t.texte : enCasse(t.texte, casseDe(ligneU.replace(/\*/g, '')))
-    const texte = nu && /^\*\*[^*]+\*\*/.test(ligneU) && !nu.startsWith('**') ? `**${nu}**` : nu
+    const nu = texteMd ? texteMd.replace(/^#{1,6}\s+/, '') : ENTREES.has(t.famille) ? t.texte : enCasse(t.texte, casseDe(ligneU.replace(/\*/g, '')))
+    const texte = nu && /^\*\*[^*]+\*\*/.test(ligneU) && !nu.startsWith('**') ? `**${nu}**` : nu && grasOuvert(nu) ? `${nu}**` : nu
     return { ligneTitre: texte ? `${'#'.repeat(u.titreMd.niveau)} ${texte}` : null, frere: `${adresse(u.titreMd.f, u.titreMd.l)} « ${u.texte} »` }
   }
   // Un titre DÉPLACÉ vers un autre fichier (F, M, O) : sa page doit tenir dans la découpe de celui-ci.
@@ -401,7 +404,7 @@ export function classer(pages, fichiers, gabarit) {
     const site = t.titreMd ? adresse(t.titreMd.f, t.titreMd.l) : null
     if (t.debris) sites.push({ ...t.debris, site: cible(t), ...base })
     const pose = () => poser(t, i, t.forme === "S'" ? null : exact(t))
-    if (t.famille !== 'entree') {
+    if (!ENTREES.has(t.famille)) {
       if (t.forme === 'S') sites.push({ forme: 'S', site, titreMd: exact(t), ...pose(), ...base })
       else if (t.forme === 'F') emettre({ forme: 'F', site, titreMd: exact(t), cible: cible(t), ...pose(), ...decoupe(t, t.corps), comment: t.comment, ...base }, { cible: t.corps })
       else if (t.forme === "S'" && t.comptage) emettre({ forme: "S'", site: null, cible: cible(t), ...pose(), mentions: t.mentions, comptage: t.comptage, ...base }, { cible: t.corps })
@@ -412,7 +415,7 @@ export function classer(pages, fichiers, gabarit) {
     else if (t.forme === "S'") emettre({ forme: "S'", site: null, cible: cible(t), ...pose(), mentions: t.mentions, ...base }, { cible: t.corps })
     else if (t.forme === 'corps-introuvable') sites.push({ forme: 'corps-introuvable', site: null, cause: t.cause, corpsPdf: t.corpsPdf, ...base })
     if (t.hors) {
-      const suivant = titres.slice(i + 1).find((u) => u.famille === 'entree' && ouEst(u))
+      const suivant = titres.slice(i + 1).find((u) => ENTREES.has(u.famille) && ouEst(u))
       const devant = suivant && ouEst(suivant)
       emettre({ forme: 'O', site, titreMd: exact(t), corps: cible(t), devant: devant ? adresse(devant.f, devant.l) : null, titreSuivant: suivant?.texte ?? null, ...decoupe(t, devant), ...base }, { devant })
     }
@@ -486,7 +489,9 @@ function boitesDuPdf(id) {
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'P', 'N', 'corps-introuvable', 'cible-invalide', 'doublon']
-const FAMILLES = ['entree', 'encadre', 'tableau', 'capitales']
+const FAMILLES = ['entree', 'encadre', 'tableau', 'capitales', 'intertitre']
+/** Les familles d'ENTRÉE : titres du fil du texte, dans l'ordre du PDF, sondés dans toutes leurs formes. */
+const ENTREES = new Set(['entree', 'intertitre'])
 
 function main() {
   const args = process.argv.slice(2)

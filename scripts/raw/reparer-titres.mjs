@@ -27,7 +27,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { decoupeDe, livreExtraitDe, nomsDeLaListe, readText } from './_lib.mjs'
-import { recoller } from './lib/titres-soudes.mjs'
+import { grasOuvert, recoller } from './lib/titres-soudes.mjs'
 import { motsDe, ecartDeMots } from './reparer-mobilier.mjs'
 import { enTete, sondeDuLivre } from './sonde-titres.mjs'
 
@@ -64,8 +64,10 @@ export function reparerLivre(textes, sites) {
   }
   const detacher = (site, tete) => {
     const s = slot(site.site)
-    if (!s || !tete || !s.texte.startsWith(tete)) return refus.push(`${site.site} ${site.forme} « ${site.titre} » : la ligne ne s'ouvre plus sur « ${tete} »`)
-    return s.texte.slice(tete.length).trimStart()
+    const texte = s?.texte.trimStart()
+    if (!s || !tete || !texte.startsWith(tete)) return refus.push(`${site.site} ${site.forme} « ${site.titre} » : la ligne ne s'ouvre plus sur « ${tete} »`)
+    const reste = texte.slice(tete.length).trimStart()
+    return reste && grasOuvert(tete) ? `**${reste}` : reste
   }
   const poser = (adresse, bloc) => {
     const s = slot(adresse)
