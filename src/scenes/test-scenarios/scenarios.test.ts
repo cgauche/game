@@ -3,8 +3,7 @@ import { testScenarios } from './index';
 import { validateScene } from '../../state/validateScene';
 import { spawnEnemy } from '../../state/spawn';
 import { enemyRigProfile } from '../../gameIso/rig/enemyProfile';
-import { terrainEntree } from '../../state/terrain';
-import { findSpellById } from '../../data';
+import { refs } from '../../data/schemas/grammaire/ref';
 
 describe('Batterie de scénarios de test', () => {
   it('couvre au moins 6 scénarios', () => {
@@ -22,32 +21,12 @@ describe('Batterie de scénarios de test', () => {
     },
   );
   /**
-   * FILET des scènes TS (#1690). Le schéma refuse AU PARSE une tuile qui nomme un sol absent de
-   * `terrains.json` (`layerSchema.tiles: idDe('terrain')`), mais les scénarios de test sont
-   * construits EN CODE et ne passent par aucun parse : sans cette garde, un id de sol mort y peindrait
-   * le repli d'alarme sans que rien ne le dise. DÉRIVÉE — aucune liste d'ids récitée.
+   * Sorts des HÉROS posés EN CODE (`makeParty`) : aucun document ne les porte, donc aucun schéma de
+   * scène ne les voit — la porte est celle de la grammaire (`refs('spell')`). DÉRIVÉE.
    */
-  it('tout id de TERRAIN posé par une scène TS existe dans `terrains.json`', () => {
-    const morts: string[] = [];
-    for (const s of testScenarios)
-      for (const l of s.scene.layers)
-        for (const t of new Set(l.tiles))
-          if (!terrainEntree(t)) morts.push(`${s.id} z=${l.z} : « ${t} »`);
-    expect([...new Set(morts)], `sol(s) absent(s) du dataset : ${morts.join(' | ')}`).toEqual([]);
-  });
-
-  /**
-   * FILET des sorts d'AUTEUR des scènes TS (#1897) — même trou que le terrain ci-dessus : le schéma
-   * prouve `combat.spells` et `statblock.spells` au parse (`refs('spell')`), le spawn les pose tels
-   * quels, et les scénarios construits EN CODE ne passent par aucun parse. DÉRIVÉE.
-   */
-  it('tout id de SORT d’auteur posé par une scène TS existe dans `spells.json`', () => {
-    const morts: string[] = [];
-    for (const s of testScenarios)
-      for (const e of s.scene.entities)
-        for (const id of [...(e.combat?.spells ?? []), ...(e.statblock?.spells ?? [])])
-          if (!findSpellById(id)) morts.push(`${s.id} ${e.id} : « ${id} »`);
-    expect(morts, `sort(s) absent(s) du dataset : ${morts.join(' | ')}`).toEqual([]);
+  it.each(testScenarios.map((s) => [s.id, s] as const))('les sorts des héros du scénario %s existent dans `spells.json`', (_id, s) => {
+    const verdict = refs('spell').safeParse(s.makeParty().flatMap((h) => h.spells ?? []));
+    expect(verdict.success ? [] : verdict.error.issues.map((i) => i.message)).toEqual([]);
   });
 
   it('contient les piliers Embuscade et Magie', () => {

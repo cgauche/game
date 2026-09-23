@@ -8,7 +8,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { validateScene, type Warning } from './validateScene';
 import { emptyScene, type Scene, type WallSeg } from './scene';
 import { spawnEnemy } from './spawn';
-import { creatures, siegeEngines, vehicles } from '../data';
+import { creatures, siegeEngines, spells, vehicles } from '../data';
+import { resetData, setDataset } from '../data/overrides';
 import type { MapPlace, WorldMap } from './worldMap';
 
 /** Ids LUS AUX REGISTRES (jamais un littéral : le bestiaire et les catalogues vivent). */
@@ -134,12 +135,12 @@ describe('une RÉF de créature que le spawn ne résout pas est une erreur, pas 
     const morte = scene();
     morte.entities.push({ id: 'p-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'tonneau-imaginaire' });
     expect(validateScene([morte]).filter((w) => w.level === 'error').map((w) => w.message))
-      .toEqual(['p-1 → décor inexistant « tonneau-imaginaire »']);
+      .toEqual(['p-1 › ref : décor « p-1 » : « tonneau-imaginaire » est absent du catalogue des décors (props.json).']);
 
     const sansType = scene();
     sansType.entities.push({ id: 'p-2', kind: 'prop', pos: { x: 2, y: 2 } });
     expect(validateScene([sansType]).filter((w) => w.level === 'error').map((w) => w.message))
-      .toEqual(['p-2 : décor sans type — un décor NOMME son type au catalogue']);
+      .toEqual(['p-2 › ref : décor « p-2 » : « ref » absente — un décor NOMME son type au catalogue (props.json)']);
   });
 });
 
@@ -232,5 +233,34 @@ describe('un combattant de rencontre occupe SON EMPREINTE, pas seulement son anc
       statblock: { type: 'statblock', label: 'Ogre', char: { B: 10 }, size: 'grande' },
     });
     expect(de(s, 'entity')).toEqual([]);
+  });
+});
+
+describe('le SCHÉMA de scène se joue sur une scène VIVANTE (#877, #1897)', () => {
+  /** Un personnage de la scène qui porte un sort d'auteur absent de `spells.json`. */
+  const aSortMort = (): Scene => {
+    const s = scene();
+    s.entities.push({ id: 'mage', kind: 'personnage', label: 'Mage', pos: { x: 2, y: 2 }, ref: REF_CREATURE, combat: { spells: ['sort-fantome'] } });
+    return s;
+  };
+  const erreurs = (s: Scene) => validateScene([s]).filter((w) => w.level === 'error');
+
+  it('un SORT d’auteur mort est une erreur, rattachée à son entité', () => {
+    expect(erreurs(aSortMort())).toEqual([{
+      level: 'error', sceneId: 'S', scope: 'entity', refId: 'mage',
+      message: 'Mage › combat.spells.0 : « sort-fantome » est absent du catalogue des sorts (spells.json).',
+    }]);
+  });
+
+  it('le verdict d’une scène INCHANGÉE suit le catalogue : une écriture au seam le re-date', () => {
+    const s = aSortMort();
+    expect(erreurs(s)).toHaveLength(1);
+    try {
+      setDataset('spells', [...spells, { ...spells[0], id: 'sort-fantome' }]);
+      expect(erreurs(s)).toEqual([]);
+    } finally {
+      resetData();
+    }
+    expect(erreurs(s)).toHaveLength(1);
   });
 });

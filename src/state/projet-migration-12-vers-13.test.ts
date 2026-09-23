@@ -76,7 +76,7 @@ describe('PROJECT_MIGRATIONS[12] — un projet format 12 se charge à travers la
   it('un id de sort MORT n’est pas du ressort de la migration : le schéma le NOMME', () => {
     const mort = structuredClone(PROJET_FORMAT_12);
     mort.narratif.presetsPnj[0].profil.spells = [{ id: 'zzz-disparu' }];
-    expect(() => parseProject(mort)).toThrow(/ref\('spell'\) : id « zzz-disparu » absent de spells\.json/);
+    expect(() => parseProject(mort)).toThrow(/« zzz-disparu » est absent du catalogue des sorts \(spells\.json\)/);
   });
 });
 

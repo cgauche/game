@@ -65,7 +65,7 @@ describe('paquet de campagne schema 3 — bloc narratif', () => {
   it('(c) LÈVE si preset.base ne résout aucune créature globale (FK `creatures.json`)', () => {
     const n = validNarratif();
     n.presetsPnj[0].base = 'creature-inexistante';
-    expect(() => parseProject(doc(n))).toThrow(/id « creature-inexistante » absent de creatures\.json/);
+    expect(() => parseProject(doc(n))).toThrow(/« creature-inexistante » est absent du catalogue des créatures \(creatures\.json\)/);
   });
 
   it('(c2) LÈVE si un preset PNJ sans base a un profil sans « char »', () => {

@@ -4,11 +4,11 @@ import { footprintTiles, sizeFootprint } from './footprint';
 import { entitySize, refEntiteResolue } from './spawn';
 import { METRES_PER_LEVEL } from './relief';
 import { realFloorAt } from './sceneEdit';
-import { CHAR_KEYS } from '../engine/types';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, carriedFlows, EMPTY_FLOW } from './flow';
-import { refEstVolumique, stakeSpeaks, findPropById, matieresCouvrantes } from '../data';
-import { capDecorAdmis } from '../data/props.types';
-import { PENTE_TOIT_DEG } from '../data/schemas/defs-scenes/scene';
+import { stakeSpeaks, matieresDe } from '../data';
+import { versionDesDatasets } from '../data/versionDataset';
+import { PENTE_TOIT_DEG, sceneSchema } from '../data/schemas/defs-scenes/scene';
+import { validateDocument, cheminLisible, type Faute } from '../data/schemas/validate';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
 // ré-exporte combatEffects), comme le store : entrer le cycle d'effets/combat par le MÊME nœud
 // canonique préserve l'ordre d'évaluation (un import direct de `combatEffects` ici casse la
@@ -20,14 +20,13 @@ import { allMusicDefs } from '../audio/music';
 import { scenePlanDefects, type PlanDefectAt, type PlanDefectFamily } from './planDefects';
 import { seatAssignmentDefects } from './seating';
 
-/** Clés valides de `CustomStatblock.char` : les 10 `CharKey` (slugs pleins, #311) ∪ `M`/`B`
- *  (Mouvement/Blessures, hors `CharKey` — cf. `CustomStatblock` dans `./scene`). */
-const VALID_STATBLOCK_CHAR_KEYS = new Set<string>([...CHAR_KEYS, 'M', 'B']);
-/** Ids POSABLES sur une masse de toit : les matériaux que la DONNÉE déclare couvrants
- *  (`materials.json` domaine `roof`, champ `couverture`) — même source que les sélecteurs de l'éditeur
- *  (`matieresCouvrantes`). CALCULÉ À L'APPEL : le document des matières se mute EN PLACE à l'édition,
- *  un ensemble cuit à l'import refuserait encore une couverture qui vient d'être déclarée. */
-const roofCoveringIds = (): ReadonlySet<string> => new Set(matieresCouvrantes().map((material) => material.id));
+/** Ids de la sous-liste `roof` que la DONNÉE ne déclare PAS couvrants (`materials.json`, champ
+ *  `couverture` — le plan vu du dessus) : le schéma prouve l'appartenance à `roof`, ce sous-filtre de
+ *  SCÈNE dit le reste (`couvertureSchema`, `defs-scenes/scene.ts`). CALCULÉ À L'APPEL : le document des
+ *  matières se mute EN PLACE à l'édition, un ensemble cuit à l'import refuserait encore une couverture
+ *  qui vient d'être déclarée. */
+const roofNonCoveringIds = (): ReadonlySet<string> =>
+  new Set(matieresDe('roof').filter((material) => !material.couverture).map((material) => material.id));
 
 export interface Warning {
   level: 'error' | 'warn';
@@ -47,6 +46,66 @@ export type ArchitectureWarningRef =
   | { type: 'architecturePart'; bodyId: string; storeyId: string; id: string }
   | { type: 'facadeSection'; bodyId: string; id: string }
   | { type: 'roofSection'; bodyId: string; id: string };
+
+/** Verdict du SCHÉMA de scène par objet scène, daté par la version des datasets : les éditions de
+ *  l'éditeur sont IMMUABLES (`useSceneHistory`), seule la scène modifiée se re-parse, et une écriture
+ *  au catalogue (Compendium) re-date tous les verdicts — les réfs se résolvent au catalogue VIF. */
+const verdictsDeSchema = new WeakMap<Scene, { version: number; fautes: readonly Faute[] | null }>();
+function fautesDeSchema(s: Scene): readonly Faute[] | null {
+  const version = versionDesDatasets();
+  const connu = verdictsDeSchema.get(s);
+  if (connu?.version === version) return connu.fautes;
+  const fautes = validateDocument(sceneSchema, s);
+  verdictsDeSchema.set(s, { version, fautes });
+  return fautes;
+}
+
+/** Le FAUTIF d'une faute de schéma : l'élément de scène que nomme la tête de son chemin (pour le clic
+ *  → sélection de l'éditeur), et le reste du chemin, le champ fautif DANS cet élément. */
+interface Fautif {
+  scope: Warning['scope'];
+  refId?: string;
+  nom?: string;
+  architectureRef?: ArchitectureWarningRef;
+  reste: readonly (string | number)[];
+}
+function fautifDe(s: Scene, chemin: readonly (string | number)[]): Fautif {
+  const [tete, i, ...reste] = chemin;
+  const element = <T,>(liste: readonly T[] | undefined): T | undefined => (typeof i === 'number' ? liste?.[i] : undefined);
+  const dansLaListe = (scope: Warning['scope'], el: { id: string; label?: string } | undefined): Fautif =>
+    el ? { scope, refId: el.id, nom: el.label ?? el.id, reste } : { scope, reste: chemin };
+  switch (tete) {
+    case 'entities': return dansLaListe('entity', element(s.entities));
+    case 'triggers': return dansLaListe('trigger', element(s.triggers));
+    case 'dialogues': return dansLaListe('dialogue', element(s.dialogues));
+    case 'encounters': return dansLaListe('encounter', element(s.encounters));
+    case 'effectZones': return dansLaListe('scene', element(s.effectZones));
+    case 'architecture': {
+      const body = element(s.architecture);
+      if (!body) return { scope: 'architecture', reste: chemin };
+      const [collection, j, sous, k, ...fin] = reste;
+      const de = <T extends { id: string },>(liste: readonly T[] | undefined, n: unknown): T | undefined =>
+        typeof n === 'number' ? liste?.[n] : undefined;
+      const storey = collection === 'storeys' ? de(body.storeys, j) : undefined;
+      const part = sous === 'parts' ? de(storey?.parts, k) : undefined;
+      if (storey && part)
+        return { scope: 'architecture', refId: part.id, nom: part.id, architectureRef: { type: 'architecturePart', bodyId: body.id, storeyId: storey.id, id: part.id }, reste: fin };
+      if (storey)
+        return { scope: 'architecture', refId: storey.id, nom: storey.id, architectureRef: { type: 'architectureStorey', bodyId: body.id, id: storey.id }, reste: reste.slice(2) };
+      const facade = collection === 'facades' ? de(body.facades, j) : undefined;
+      const feature = sous === 'features' ? de(facade?.features, k) : undefined;
+      if (facade && feature)
+        return { scope: 'architecture', refId: feature.id, nom: feature.id, architectureRef: { type: 'facadeSection', bodyId: body.id, id: facade.id }, reste: fin };
+      if (facade)
+        return { scope: 'architecture', refId: facade.id, nom: facade.id, architectureRef: { type: 'facadeSection', bodyId: body.id, id: facade.id }, reste: reste.slice(2) };
+      const mass = collection === 'masses' ? de(body.masses, j) : undefined;
+      if (mass)
+        return { scope: 'architecture', refId: mass.id, nom: mass.id, architectureRef: { type: 'roofSection', bodyId: body.id, id: mass.id }, reste: reste.slice(2) };
+      return { scope: 'architecture', refId: body.id, nom: body.label ?? body.id, architectureRef: { type: 'architectureBody', id: body.id }, reste };
+    }
+    default: return { scope: 'scene', reste: chemin };
+  }
+}
 
 /**
  * Vérifie un PROJET (liste de scènes + carte du monde optionnelle) avant le runtime : réfs cassées
@@ -143,6 +202,15 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       }
     };
 
+    // Le SCHÉMA de scène (`sceneSchema`) : il prouve au parse toutes les références de catalogue et la
+    // forme de la scène ; une scène VIVANTE de l'éditeur ne repasse pas par le parse, l'auteur l'apprend
+    // donc ici, rattaché à son fautif (#877, #1897).
+    for (const faute of fautesDeSchema(s) ?? []) {
+      const f = fautifDe(s, faute.chemin);
+      const ou = [f.nom, f.reste.length ? cheminLisible(f.reste) : undefined].filter(Boolean).join(' › ');
+      add('error', f.scope, f.refId, ou ? `${ou} : ${faute.message}` : faute.message, f.architectureRef);
+    }
+
     for (const [slot, v] of Object.entries(s.music ?? {}))
       if (typeof v === 'string' && !musicIds.has(v)) add('warn', 'scene', undefined, `Musique (${slot === 'ambient' ? 'ambiance' : 'combat'}) inconnue au registre « ${v} »`);
 
@@ -159,27 +227,12 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (e.dialogueId && !dlgIds.has(e.dialogueId)) add('error', 'entity', e.id, `${e.label ?? e.id} → dialogue inexistant « ${e.dialogueId} »`);
       if (!within(e.pos.x, e.pos.y)) add('warn', 'entity', e.id, `${e.label ?? e.id} hors carte (${e.pos.x},${e.pos.y})`);
       if (e.z && !layerZs.has(e.z)) add('warn', 'entity', e.id, `${e.label ?? e.id} sur étage ${e.z} inexistant`);
-      // Un décor VOLUMIQUE ne prend qu'un cap CARDINAL : sa recette tourne là où son empreinte solide ne
-      // tourne pas (#1509), une diagonale poserait son corps en travers de cases restées traversables.
-      // L'émetteur unique (`gameIso/builders/props.ts`) le refuse en dur — c'est ici que l'auteur l'apprend.
-      if (e.kind === 'prop' && !capDecorAdmis(refEstVolumique(e.ref), e.facing))
-        add('error', 'entity', e.id, `${e.label ?? e.id} : décor volumique « ${e.ref} » au cap ${e.facing} — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)`);
-      // RÉF de décor : REQUISE et résolue au catalogue (#877), sœur de la réf de personnage ci-dessous.
-      // Le schéma la refuse au parse ; c'est ICI que l'auteur l'apprend d'une scène VIVANTE de l'éditeur,
-      // qui ne repasse pas par le parse. Sans type résolu, le rendu pose la silhouette d'erreur
-      // (`missingPropSvg`) : un décor se DIT, il ne se remplace jamais.
-      if (e.kind === 'prop' && !findPropById(e.ref))
-        add('error', 'entity', e.id, e.ref === undefined
-          ? `${e.label ?? e.id} : décor sans type — un décor NOMME son type au catalogue`
-          : `${e.label ?? e.id} → décor inexistant « ${e.ref} »`);
-      // RÉF de personnage : la résolution est CELLE du spawn (`refEntiteResolue`, `state/spawn`) —
+      // RÉF de personnage : le schéma n'en dit que la forme (`ref: z.string().optional()`), la résolution
+      // est CELLE du spawn (`refEntiteResolue`, `state/spawn`) —
       // un statbloc ou un preset de PNJ prime sur la réf et la rend sans objet, comme au runtime. Une réf
       // fournie mais irrésoluble pose un mannequin `RÉF ?` à l'écran (#223) : l'auteur l'apprend ici.
       if (e.kind === 'personnage' && e.ref && !e.statblock && !e.presetId && !refEntiteResolue(e.ref))
         add('error', 'entity', e.id, `${e.label ?? e.id} → créature inexistante « ${e.ref} »`);
-      if (e.statblock?.char)
-        for (const k of Object.keys(e.statblock.char))
-          if (!VALID_STATBLOCK_CHAR_KEYS.has(k)) add('error', 'entity', e.id, `${e.label ?? e.id} : statblock.char porte une clé étrangère « ${k} » (format canonique = CharKey slug plein, cf. #311)`);
     }
     // ASSISE AUTHORÉE (`Scene.seatAssignments`) : les règles vivent dans `state/seating`, source
     // unique partagée avec le compilateur d'authoring (`mapSpec.buildScene`, fail-fast).
@@ -244,7 +297,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (edge.z !== undefined && edge.z !== z) add('error', 'architecture', refId, `Architecture « ${refId} » : arête sur étage ${edge.z} différent de la section ${z}`, architectureRef);
     };
     dup((s.architecture ?? []).map((body) => body.id), 'architecture', (id) => ({ type: 'architectureBody', id }));
-    const couvertures = roofCoveringIds();
+    const nonCouvrantes = roofNonCoveringIds();
     for (const body of s.architecture ?? []) {
       dup(body.storeys.map((storey) => storey.id), 'architecture', (id) => ({ type: 'architectureStorey', bodyId: body.id, id }));
       dup(body.facades.map((facade) => facade.id), 'architecture', (id) => ({ type: 'facadeSection', bodyId: body.id, id }));
@@ -277,26 +330,24 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         dup((facade.features ?? []).map((feature) => feature.id), 'architecture', () => facadeRef);
         for (const feature of facade.features ?? []) {
           checkEdge(feature.edge, facade.z, feature.id, facadeRef);
-          if (feature.offset !== undefined && (!Number.isFinite(feature.offset) || feature.offset < 0 || feature.offset > 1))
+          if (feature.offset !== undefined && (feature.offset < 0 || feature.offset > 1))
             add('error', 'architecture', feature.id, `Feature « ${feature.id} » : offset hors 0-1`, facadeRef);
-          if (feature.width !== undefined && (!Number.isFinite(feature.width) || feature.width <= 0))
+          if (feature.width !== undefined && feature.width <= 0)
             add('error', 'architecture', feature.id, `Feature « ${feature.id} » : largeur invalide`, facadeRef);
         }
       }
       for (const mass of body.masses) {
         const massRef: ArchitectureWarningRef = { type: 'roofSection', bodyId: body.id, id: mass.id };
         if (mass.z !== 0 && !layerZs.has(mass.z)) add('error', 'architecture', mass.id, `Étage ${mass.z} inexistant`, massRef);
-        if (!Array.isArray(mass.footprint) || mass.footprint.length === 0)
+        if (mass.footprint.length === 0)
           add('error', 'architecture', mass.id, `Masse « ${mass.id} » sans partie`, massRef);
-        for (const part of mass.footprint ?? [])
+        for (const part of mass.footprint)
           if (!validRect(part)) add('error', 'architecture', mass.id, `Masse « ${mass.id} » hors carte ou d’emprise invalide`, massRef);
-        if (!['gable', 'hip', 'shed', 'flat'].includes(mass.profile)) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : profil invalide`, massRef);
-        if (mass.ridge !== undefined && mass.ridge !== 'x' && mass.ridge !== 'y') add('error', 'architecture', mass.id, `Masse « ${mass.id} » : faîtage invalide`, massRef);
         if (mass.profile === 'shed' && !mass.eaveSide) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : profil appentis sans côté d’égout`, massRef);
-        if (!couvertures.has(mass.material))
+        if (nonCouvrantes.has(mass.material))
           add('error', 'architecture', mass.id, `Masse « ${mass.id} » : « ${mass.material} » n’est pas une couverture de toit`, massRef);
         if (!Number.isInteger(mass.levels) || mass.levels < 1) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : niveaux invalides`, massRef);
-        if (!Number.isFinite(mass.pitchDeg) || mass.pitchDeg < PENTE_TOIT_DEG.min || mass.pitchDeg > PENTE_TOIT_DEG.max)
+        if (mass.pitchDeg < PENTE_TOIT_DEG.min || mass.pitchDeg > PENTE_TOIT_DEG.max)
           add('error', 'architecture', mass.id, `Masse « ${mass.id} » : pente hors plage`, massRef);
         // INVARIANT d'ALTITUDE — les deux encodages de la même hauteur (l'INDEX d'étage `z` et la COTE
         // métrique que `layer.height` porte, lue par `heightAt`) ne peuvent pas diverger sans le dire.
@@ -314,7 +365,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         // rejoint précisément la cote du dessus : c'est par là qu'on MONTE.
         if (mass.z > 0 && layerZs.has(mass.z - 1)) {
           const plancherHaut = realFloor(mass.z);
-          const tropBas = (mass.footprint ?? []).flatMap((rect) => {
+          const tropBas = mass.footprint.flatMap((rect) => {
             const out: { x: number; y: number; h: number; sous: number }[] = [];
             for (let y = rect.y; y < rect.y + rect.h; y++)
               for (let x = rect.x; x < rect.x + rect.w; x++) {

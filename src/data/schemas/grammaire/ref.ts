@@ -34,6 +34,9 @@ export interface CibleDeType {
    * (`specCatalogOf`).
    */
   readonly specsOpen: boolean;
+  /** Le catalogue tel que l'AUTEUR le nomme, au pluriel (« des sorts ») : le refus d'une référence
+   *  morte se lit à l'éditeur, au Compendium et à l'import d'un projet, jamais qu'en CI. */
+  readonly catalogue: string;
 }
 
 /**
@@ -46,35 +49,35 @@ export interface CibleDeType {
  * Un type s'ajoute avec le lot qui le migre, jamais « au cas où ».
  */
 export const TYPES = {
-  skill: { dataset: 'skills.json', specsOpen: true },
-  talent: { dataset: 'talents.json', specsOpen: false },
-  trait: { dataset: 'traits.json', specsOpen: false },
-  trapping: { dataset: 'trappings.json', specsOpen: false },
-  spell: { dataset: 'spells.json', specsOpen: false },
-  creature: { dataset: 'creatures.json', specsOpen: false },
-  vehicle: { dataset: 'vehicles.json', specsOpen: false },
-  structure: { dataset: 'structures.json', specsOpen: false },
-  career: { dataset: 'careers.json', specsOpen: false },
-  species: { dataset: 'species.json', specsOpen: false },
-  navalTrait: { dataset: 'naval-traits.json', specsOpen: false },
+  skill: { dataset: 'skills.json', specsOpen: true, catalogue: 'compétences' },
+  talent: { dataset: 'talents.json', specsOpen: false, catalogue: 'talents' },
+  trait: { dataset: 'traits.json', specsOpen: false, catalogue: 'traits' },
+  trapping: { dataset: 'trappings.json', specsOpen: false, catalogue: 'objets' },
+  spell: { dataset: 'spells.json', specsOpen: false, catalogue: 'sorts' },
+  creature: { dataset: 'creatures.json', specsOpen: false, catalogue: 'créatures' },
+  vehicle: { dataset: 'vehicles.json', specsOpen: false, catalogue: 'véhicules' },
+  structure: { dataset: 'structures.json', specsOpen: false, catalogue: 'structures' },
+  career: { dataset: 'careers.json', specsOpen: false, catalogue: 'carrières' },
+  species: { dataset: 'species.json', specsOpen: false, catalogue: 'espèces' },
+  navalTrait: { dataset: 'naval-traits.json', specsOpen: false, catalogue: 'traits navals' },
   // PORT du catalogue naval : `MapPlace.port.ref` résout AU PARSE, toutes les réfs mortes nommées.
-  navalPort: { dataset: 'naval-ports.json', specsOpen: false },
-  shipStation: { dataset: 'ship-stations.json', specsOpen: false },
-  crewRole: { dataset: 'crew-roles.json', specsOpen: false },
-  table: { dataset: 'tables.json', specsOpen: false },
-  etat: { dataset: 'etats.json', specsOpen: false },
-  maladie: { dataset: 'maladies.json', specsOpen: false },
-  symptome: { dataset: 'symptoms.json', specsOpen: false },
-  material: { dataset: 'materials.json', specsOpen: false },
+  navalPort: { dataset: 'naval-ports.json', specsOpen: false, catalogue: 'ports' },
+  shipStation: { dataset: 'ship-stations.json', specsOpen: false, catalogue: 'postes de navire' },
+  crewRole: { dataset: 'crew-roles.json', specsOpen: false, catalogue: 'rôles d’équipage' },
+  table: { dataset: 'tables.json', specsOpen: false, catalogue: 'tables' },
+  etat: { dataset: 'etats.json', specsOpen: false, catalogue: 'états' },
+  maladie: { dataset: 'maladies.json', specsOpen: false, catalogue: 'maladies' },
+  symptome: { dataset: 'symptoms.json', specsOpen: false, catalogue: 'symptômes' },
+  material: { dataset: 'materials.json', specsOpen: false, catalogue: 'matières' },
   // RÈGLE OPTIONNELLE : cible du terme `{rule}` d'une `Formula` (#1599) — une quantité que le livre ne
   // chiffre pas se lit au registre, l'id résout donc AU PARSE comme toute autre référence.
-  regleOptionnelle: { dataset: 'reglesOptionnelles.json', specsOpen: false },
-  terrain: { dataset: 'terrains.json', specsOpen: false },
+  regleOptionnelle: { dataset: 'reglesOptionnelles.json', specsOpen: false, catalogue: 'règles optionnelles' },
+  terrain: { dataset: 'terrains.json', specsOpen: false, catalogue: 'terrains' },
   // PALIER D'ÉCLAIRAGE (#1716) : la semence d'éclairage d'une scène neuve (`semences-de-scene.json`)
   // nomme un palier — l'id résout AU PARSE, là où `Scene.ambientLight` reste une chaîne libre.
-  lightLevel: { dataset: 'lightLevels.json', specsOpen: false },
-  prop: { dataset: 'props.json', specsOpen: false },
-  building: { dataset: 'buildings.json', specsOpen: false },
+  lightLevel: { dataset: 'lightLevels.json', specsOpen: false, catalogue: 'paliers d’éclairage' },
+  prop: { dataset: 'props.json', specsOpen: false, catalogue: 'décors' },
+  building: { dataset: 'buildings.json', specsOpen: false, catalogue: 'bâtiments' },
 } as const satisfies Record<string, CibleDeType>;
 
 export type TypeEntite = keyof typeof TYPES;
@@ -134,6 +137,12 @@ export function estSpecialisable(type: TypeEntite, id: string): boolean {
   return catalogueSpecs(type, id).length > 0;
 }
 
+/** Refus d'un id qu'aucune entrée du catalogue de `type` ne porte — UNE graphie pour `idDe` et
+ *  `typedRef`. */
+function refMorte(type: TypeEntite, id: string): string {
+  return `« ${id} » est absent du catalogue des ${TYPES[type].catalogue} (${cibleDe(type)}).`;
+}
+
 /**
  * Schéma d'un id NU de `type` : refiné contre le registre, brandé `Id<type>` à la sortie. C'est la
  * FEUILLE porteuse de la référence — elle porte la marque que la marche des slots retrouve
@@ -160,8 +169,8 @@ export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<
           code: 'custom',
           message:
             valeur === undefined
-              ? `ref('${type}') : id « ${v} » absent de ${dataset} (registre _ids.generated.ts).`
-              : `ref('${type}', '${valeur}') : id « ${v} » hors de la sous-liste « ${valeur} » de ${dataset} (registre _ids.generated.ts).`,
+              ? refMorte(type, v)
+              : `« ${v} » est hors de la sous-liste « ${valeur} » du catalogue des ${TYPES[type].catalogue} (${dataset}).`,
         });
       })
       .transform((v) => v as Id<T>),
@@ -199,7 +208,7 @@ export function typedRef(types: readonly TypeEntite[] = Object.keys(TYPES) as Ty
       ctx.addIssue({
         code: 'custom',
         path: ['id'],
-        message: `ref('${v.type}') : id « ${v.id} » absent de ${cibleDe(v.type)} (registre _ids.generated.ts).`,
+        message: refMorte(v.type, v.id),
       });
     });
 }

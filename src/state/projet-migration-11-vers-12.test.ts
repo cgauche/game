@@ -101,6 +101,6 @@ describe('PROJECT_MIGRATIONS[11] — un projet format 11 se charge à travers la
   it('une ref MORTE n’est pas du ressort de la migration : le schéma la NOMME, personne ne la remplace', () => {
     const mort = { ...structuredClone(PROJET_FORMAT_11), schema: CURRENT_PROJECT_SCHEMA };
     mort.scenes[0].entities = [{ ...mort.scenes[0].entities[1], ref: 'zzz-disparu' }] as never;
-    expect(() => parseProject(mort)).toThrow(/décor « table » : ref\('prop'\) : id « zzz-disparu » absent de props\.json/);
+    expect(() => parseProject(mort)).toThrow(/décor « table » : « zzz-disparu » est absent du catalogue des décors \(props\.json\)/);
   });
 });

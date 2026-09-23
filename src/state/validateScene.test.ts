@@ -35,7 +35,7 @@ describe('validateScene', () => {
     const s = base();
     s.entities.push({ id: 'table', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'table-ronde-4-tabourets', facing: 'NE' });
     const w = validateScene([s]).filter((x) => x.scope === 'entity' && x.refId === 'table' && x.level === 'error');
-    expect(msgs(w)).toEqual(['table : décor volumique « table-ronde-4-tabourets » au cap NE — un décor volumique ne prend qu\'un cap cardinal (N/E/S/O)']);
+    expect(msgs(w)).toEqual(['table › facing : décor volumique « table-ronde-4-tabourets » au cap NE — un décor volumique ne prend qu\'un cap cardinal (N/E/S/O)']);
 
     const cardinal = base();
     cardinal.entities.push({ id: 'table', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'table-ronde-4-tabourets', facing: 'E' });
@@ -190,13 +190,13 @@ describe('validateScene', () => {
   });
 
   it.each([
-    ['offset négatif', { offset: -0.1 }],
-    ['offset supérieur à 1', { offset: 1.1 }],
-    ['offset non fini', { offset: Number.NaN }],
-    ['largeur nulle', { width: 0 }],
-    ['largeur négative', { width: -1 }],
-    ['largeur non finie', { width: Number.POSITIVE_INFINITY }],
-  ])('architecture : refuse une feature avec %s', (_label, patch) => {
+    ['offset négatif', { offset: -0.1 }, /offset/],
+    ['offset supérieur à 1', { offset: 1.1 }, /offset/],
+    ['offset non fini', { offset: Number.NaN }, /offset/],
+    ['largeur nulle', { width: 0 }, /largeur/],
+    ['largeur négative', { width: -1 }, /largeur/],
+    ['largeur non finie', { width: Number.POSITIVE_INFINITY }, /width/],
+  ])('architecture : refuse une feature avec %s', (_label, patch, champ) => {
     const s = base();
     s.architecture = [{
       id: 'corps', style: 'maison', storeys: [], masses: [],
@@ -206,7 +206,7 @@ describe('validateScene', () => {
       }],
     }];
     expect(validateScene([s]).some((warning) =>
-      warning.scope === 'architecture' && warning.refId === 'feature' && /offset|largeur/.test(warning.message))).toBe(true);
+      warning.scope === 'architecture' && warning.refId === 'feature' && champ.test(warning.message))).toBe(true);
   });
 
   it('architecture : expose une cible d’éditeur stable pour partie, feature et masse invalides', () => {

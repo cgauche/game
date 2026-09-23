@@ -429,7 +429,7 @@ describe('décor volumique — le cap DIAGONAL est refusé de bout en bout', () 
     const scene = sceneWith(propEntity({ id: 'e-1', ref: 'table-ronde-4-tabourets', pos: { x: 2, y: 2 }, facing: 'N' }));
     const diagonale = { ...scene, entities: [{ ...scene.entities[0], facing: 'NE' as const }] };
     expect(validateScene([diagonale]).filter((w) => w.level === 'error').map((w) => w.message)).toEqual([
-      "e-1 : décor volumique « table-ronde-4-tabourets » au cap NE — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)",
+      "e-1 › facing : décor volumique « table-ronde-4-tabourets » au cap NE — un décor volumique ne prend qu'un cap cardinal (N/E/S/O)",
     ]);
     expect(validateScene([scene])).toEqual([]);
   });

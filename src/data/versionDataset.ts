@@ -34,6 +34,16 @@ export function versionDuDataset(cle: CleDeDataset): number {
   return VERSIONS.get(cle)?.v ?? 0;
 }
 
+/** Version de TOUS les datasets à la fois : la somme de leurs compteurs, qui croît strictement à chaque
+ *  écriture au seam sur n'importe quelle clé (`bumperDataset` n'incrémente jamais que d'un). Le témoin
+ *  d'une valeur dérivée d'un document qui référence le catalogue ENTIER — le verdict de schéma d'une
+ *  scène (`state/validateScene.ts`). */
+export function versionDesDatasets(): number {
+  let v = 0;
+  for (const c of VERSIONS.values()) v += c.v;
+  return v;
+}
+
 /** Marque un dataset comme ÉDITÉ — appelée par le seam d'écriture (`setDataset`/`setObjectDataset`/
  *  `resetData`), jamais par un lecteur. Tout index mémoïsé sur cette clé se reconstruira à sa
  *  prochaine lecture. */

@@ -1002,10 +1002,12 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
     expect(attendu).toBe(UNE_COMPETENCE.id);
   });
 
-  it('REFUSE un id inventé en nommant le type, l’id et le dataset', () => {
+  it('REFUSE un id inventé en nommant l’id, le catalogue et le dataset', () => {
     const res = ref('skill').safeParse({ id: 'competence-qui-n-existe-pas' });
     expect(res.success).toBe(false);
-    expect(JSON.stringify(res.error?.issues)).toMatch(/ref\('skill'\).*competence-qui-n-existe-pas.*skills\.json/);
+    expect(res.error?.issues.map((i) => i.message)).toEqual([
+      '« competence-qui-n-existe-pas » est absent du catalogue des compétences (skills.json).',
+    ]);
   });
 
   it('compose FERMÉ avec les champs du porteur (`extra`) et refuse le reste', () => {
