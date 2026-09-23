@@ -7,7 +7,7 @@
 // REFUS quand elle est rompue, l'IDEMPOTENCE, et le recalage d'une entrée de stock AVEC sa `preuve`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { aUneCleDeSection, carteDesSlugs, suiviBloque, contenuDe, fluxDe, indexDe, planDe, recalerStock, recouper } from './recouper-source.mjs'
+import { aUneCleDeSection, carteDesSlugs, entreesScindees, suiviBloque, contenuDe, fluxDe, indexDe, planDe, recalerStock, recouper } from './recouper-source.mjs'
 import { carteDeLignes } from './lib/carte-lignes.mjs'
 import { hunksDe } from '../guards/lib/hunks.mjs'
 
@@ -202,4 +202,30 @@ test('#1739 : --suivre-diff est BLOQUÉ (rien écrit, sortie en échec) tant qu�
   assert.equal(suiviBloque([], [{ orphelines: [] }]), false)
   assert.equal(suiviBloque(['x.md :: a#1 (l.3) — ligne supprimée'], []), true)
   assert.equal(suiviBloque([], [{ orphelines: ['Source/L/x.md :: a#1 :: k'] }]), true)
+})
+
+// Titres réparés (#1739, 3b-3b-2) : un titre DÉPLACÉ suit sa ligne neuve ; un titre NEUF scinde la
+// section qui le précède, et les entrées qui y sont keyées sont RAPPORTÉES. Diff git réel (-U0).
+const HEAD_TITRES = ['*P*', '', '### **Wounds**', '', 'table', '', '### **Spellcaster**', '', 'corps S', '', '### **Skittish**', '', 'corps K', '', '### **Stupid**', '', 'Aimed body', ''].join('\n')
+const ARBRE_TITRES = ['*P*', '', '### **Wounds**', '', 'table', '', '### **Skittish**', '', 'corps K', '', '### **Spellcaster**', '', 'corps S', '', '### **Stupid**', '', '#### **Aimed Shots**', '', 'Aimed body', ''].join('\n')
+const DIFF_TITRES = ['@@ -6,0 +7,4 @@', '+### **Skittish**', '+', '+corps K', '+', '@@ -11,4 +14,0 @@', '-### **Skittish**', '-', '-corps K', '-', '@@ -16,0 +17,2 @@', '+#### **Aimed Shots**', '+'].join('\n')
+
+test('#1739 : un titre DÉPLACÉ (sa ligne ôtée, son slug sur UNE ligne neuve) suit sa ligne neuve ; un titre NEUF scinde la section qui le précède', () => {
+  const { carte, rapportees, scindees } = carteDesSlugs('115 - X.md', HEAD_TITRES, ARBRE_TITRES, carteDeLignes(hunksDe(DIFF_TITRES)))
+  assert.deepEqual(rapportees, [])
+  assert.equal(carte.get('115 - X.md :: skittish#1').ref, 'skittish#1')
+  assert.deepEqual(scindees, [{ cle: '115 - X.md :: wounds#1', par: 'skittish#1 (l.7)' }, { cle: '115 - X.md :: stupid#1', par: 'aimed-shots#1 (l.17)' }])
+})
+
+test('#1739 : une entrée keyée sur une section SCINDÉE est rapportée et BLOQUE le suivi ; les autres passent', () => {
+  const racine = 'Source/Livre forge'
+  const scindees = [{ cle: '036 - X.md :: melee#1', par: 'aimed-shots#1 (l.168)' }]
+  const entrees = [
+    { famille: 'donnee-en-tete', fichier: `${racine}/036 - X.md`, ref: 'melee#1 :: a|b', occurrence: 1 },
+    { famille: 'donnee-en-tete', fichier: `${racine}/036 - X.md`, ref: 'scatter#1 :: 1|2|3', occurrence: 1 },
+  ]
+  const sur = entreesScindees(entrees, racine, scindees)
+  assert.deepEqual(sur, [`${racine}/036 - X.md :: melee#1 :: a|b  ← section scindée par aimed-shots#1 (l.168)`])
+  assert.equal(suiviBloque([], [], sur), true)
+  assert.equal(suiviBloque([], [], []), false)
 })

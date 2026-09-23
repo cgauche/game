@@ -74,9 +74,7 @@ Your target gains +10 Fellowship.
 
 **Duration:** 6 rounds
 
-Your target must pass an **Average (+2 SL)** 
-
-**Cool** Test to break any of the strictures of your deity. If they fail, they are overcome with shame and do not take the action.
+Your target must pass an **Average (+2 SL) Cool** Test to break any of the strictures of your deity. If they fail, they are overcome with shame and do not take the action.
 
 ### **Blessing of Courage**
 
@@ -150,9 +148,7 @@ Your target gains +10 Strength.
 
 **Duration:** 6 rounds
 
-Enemies must make an **Average (+2 SL)** 
-
-**Cool** Test to attack your target as shame wells within for considering violence. If they fail, they must choose a different target, or a different Action.
+Enemies must make an **Average (+2 SL) Cool** Test to attack your target as shame wells within for considering violence. If they fail, they must choose a different target, or a different Action.
 
 # **Blessing of Recuperation**
 

@@ -36,6 +36,8 @@ Temples to Verena can be found in most cities and larger towns, generally situat
 
 Penances set by Verena normally involve the recovery or preservation of knowledge, the righting of an injustice, or the resolution of a dispute. Cultists may also be sent to recover a long-forgotten book of lore, or to mediate in a difficult quarrel. This could be anything from a farmers' boundary dispute to unpicking the complicated politics of two realms on the brink of war.
 
+#### **Strictures**
+
 - Never refuse to arbitrate a dispute when asked.
 - Always tell the truth without fear or favour.
 - Protect knowledge at all costs.

@@ -34,6 +34,8 @@ Ranald has no formal temple organisation, although the cult maintains seemingly 
 
 Ranald's penances usually involve stealing into locked and guarded locations to recover precious items or leave a token. Humiliating oppressors of the poor is also common — perhaps by framing a brutal watch captain for a ludicrous crime, for example, or locking him in his own cells. Ranald often sends favoured and disfavoured cultists alike on a Pilgrimage of Fingers, a set of tasks proving capability and loyalty.
 
+#### **Strictures**
+
 - One coin in ten belongs to Ranald.
 - Never betray another to the authorities; there is no greater sin than informing.
 - Violence is prohibited except in self-defence.

@@ -28,6 +28,8 @@ Temples resemble fortified keeps and are normally square. The interior of the ma
 
 Penances set by Ulric are almost always tests of strength, courage, and martial skill. Slaying a powerful monster, or clearing out a nest of beastmen or outlaws, are typical tasks.
 
+#### **Strictures**
+
 - Obey your betters.
 - Defend your honour in all matters, and never refuse a challenge.
 - Stand honest and true; outside an ambush, trickery and deception are forbidden.

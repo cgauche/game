@@ -197,9 +197,7 @@ needed, see page 357 for details
 
 **Dark Vision:** See in the dark as daylight
 
-**Infected:** Wounded opponents must take an **Easy (+4** 
-
-**SL) Endurance** Test to avoid a Festering Wound
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
 
 **Regeneration:** Regain 1d10 Wounds at start of round. A roll of 10 heals a Critical Wound. At 0 Wounds, roll 8+ to regain one Wound. Cannot Regenerate Wounds or Critical Wounds caused by Fire.
 
@@ -247,6 +245,8 @@ Consume Alcohol 60, Melee (Basic) 35
 #### **Optional Traits**
 
  *Hungry, Infected, Infestation, Night Vision, Size (Monstrous), Stupid*
+
+# **Griffon**
 
 With the forequarters and wings of an eagle and the hindquarters of a great cat, griffons are elegant creatures with a proud, regal bearing. Perhaps because of this perceived nobility, the griffon has become one of the Empire's foremost symbols, appearing on heraldry, religious iconography, and imperial regalia. Griffons are also among the most intelligent of beasts. If captured young and properly trained, they become fiercely loyal companions, capable of understanding and obeying a remarkable range of commands. So prized are they that hunters regularly die attempting to steal griffon eggs.
 
@@ -344,7 +344,9 @@ Pegasi are handsome white horses with great swan-like wings. They are dogged and
 
 > — Berthold Bruner, Farmer and Pegasus-watcher
 
-**Troll** Trolls are filthy, foul creatures that infest every corner of the Old World. Quick to adapt to their surroundings, they come in many forms, but all are huge and imposing. Dim-witted and driven by an endless hunger, they nevertheless hoard anything that catches their eye, making their lairs a trove of valuable treasures... and the grisly remains of previous meals. There are many species of troll, all of which share several common traits: they are exceptionally stupid, allowing cunning foes to outwit them; they regenerate, making them notoriously difficult to kill; and they can regurgitate their last meal at will, vomiting acrid bile over astonishing distances — although they are loath to do this as it leaves them extremely hungry.
+# **Troll**
+
+Trolls are filthy, foul creatures that infest every corner of the Old World. Quick to adapt to their surroundings, they come in many forms, but all are huge and imposing. Dim-witted and driven by an endless hunger, they nevertheless hoard anything that catches their eye, making their lairs a trove of valuable treasures... and the grisly remains of previous meals. There are many species of troll, all of which share several common traits: they are exceptionally stupid, allowing cunning foes to outwit them; they regenerate, making them notoriously difficult to kill; and they can regurgitate their last meal at will, vomiting acrid bile over astonishing distances — although they are loath to do this as it leaves them extremely hungry.
 
 ### **TROLL TYPES**
 

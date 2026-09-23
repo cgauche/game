@@ -1,0 +1,175 @@
+// RÉPARATION des TITRES D'ENTRÉE d'un livre extrait (#1739) : applique aux `.md` en service les sites
+// que la SONDE relève (`sonde-titres.mjs`, JSON `--json` ou sonde rejouée). Elle ne relève rien
+// elle-même.
+//
+// Règle utilisateur, verbatim (2026-09-20) : « Il est interdit de réécrire le texte. On peut réparer
+// le texte s'il est tronqué/mélangé car l'extraction n'est pas parfaite. »
+// Invariant : chaque titre d'entrée du PDF est une ligne de titre isolée qui précède la 1re ligne de
+// SON corps ; le corps ne bouge pas (sauf O, l'entrée entière).
+//  — S : `titreMd` détaché de la tête de sa ligne, posé en ligne de titre devant elle ;
+//  — F, M : `titreMd` RETIRÉ de la tête de la ligne étrangère (vide, elle part avec les blancs), posé
+//    devant `cible` ;
+//  — B : le gras seul devient la ligne de titre ;
+//  — S′ : la ligne de titre restaurée posée devant `cible` ;
+//  — O : l'entrée entière (sa ligne de titre jusqu'au titre suivant) posée devant `devant` ;
+//  — doublon : le débris `texteMd` retiré de la tête de sa ligne ;
+//  — P : la ligne recollée à la ligne de prose `avec` (`lib/titres-soudes.mjs#recoller`), les lignes
+//    entre elles ôtées ; de la plus basse à la plus haute, une chaîne de morceaux se recolle entière.
+// La ligne de titre posée est `ligneTitre` de la sonde (texte du `.md`, niveau du frère typographique).
+// Un titre posé est un bloc : une ligne vide avant et après, jamais deux vides de suite.
+// REFUS D'ÉCRIRE : un site dont la ligne ne porte plus ce que la sonde a vu (rejeu d'un JSON périmé),
+// deux gestes sur une ligne, ou un MULTI-ENSEMBLE DES MOTS du livre qui gagne autre chose que les mots
+// des S′ ou perd autre chose que les débris.
+//
+// Usage : node scripts/raw/reparer-titres.mjs <id du livre> [--sites <json> | --boites <json>] [--apply]
+// Sans `--apply`, rend ce qu'il ferait. Idempotent : rejoué sur un livre réparé, il n'écrit rien.
+import { readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { decoupeDe, livreExtraitDe, nomsDeLaListe, readText } from './_lib.mjs'
+import { recoller } from './lib/titres-soudes.mjs'
+import { motsDe, ecartDeMots } from './reparer-mobilier.mjs'
+import { enTete, sondeDuLivre } from './sonde-titres.mjs'
+
+const FORMES = new Set(['S', 'F', 'M', 'B', "S'", 'O', 'doublon'])
+/** `NNN:l` → rang de tri, de la plus basse ligne à la plus haute. PURE. */
+const rang = (adresse) => {
+  const [nnn, l] = adresse.split(':')
+  return [nnn, Number(l)]
+}
+
+/** `NNN:l` → `{ nnn, i }` (i : indice 0-based). PURE. */
+const lieu = (adresse) => {
+  const [nnn, l] = adresse.split(':')
+  return { nnn, i: Number(l) - 1 }
+}
+
+/**
+ * Les textes réparés d'un livre — PUR. `textes` : `Map<nnn, texte>` ; `sites` : ceux de la sonde.
+ * @returns {{ textes: Map<string, string>, appliques: string[], refus: string[], recolles: { nnn: string, ligne: number, avec: number }[] }}
+ */
+export function reparerLivre(textes, sites) {
+  const lignes = new Map([...textes].map(([k, t]) => [k, t.split('\n')]))
+  const slots = new Map([...lignes].map(([k, ls]) => [k, ls.map((texte) => ({ texte, avant: [], touche: false }))]))
+  const refus = []
+  const appliques = []
+  const slot = (adresse) => {
+    const { nnn, i } = lieu(adresse)
+    return slots.get(nnn)?.[i] ?? null
+  }
+  const retoucher = (adresse, texte) => {
+    const s = slot(adresse)
+    if (s.touche) return refus.push(`${adresse} : deux gestes sur une ligne`)
+    Object.assign(s, { texte, touche: true })
+  }
+  const detacher = (site, tete) => {
+    const s = slot(site.site)
+    if (!s || !tete || !s.texte.startsWith(tete)) return refus.push(`${site.site} ${site.forme} « ${site.titre} » : la ligne ne s'ouvre plus sur « ${tete} »`)
+    return s.texte.slice(tete.length).trimStart()
+  }
+  const poser = (adresse, bloc) => {
+    const s = slot(adresse)
+    if (!s) return refus.push(`${adresse} : ligne absente`)
+    s.avant.push(bloc)
+  }
+  for (const site of sites.filter((x) => FORMES.has(x.forme))) {
+    const avant = refus.length
+    if (['S', 'F', 'M', 'B', "S'"].includes(site.forme) && !site.ligneTitre) refus.push(`${site.site ?? site.cible} ${site.forme} « ${site.titre} » : aucune ligne de titre à poser`)
+    else if (site.forme === 'S') {
+      const reste = detacher(site, site.titreMd)
+      if (typeof reste === 'string') { retoucher(site.site, reste); poser(site.site, [site.ligneTitre]) }
+    } else if (site.forme === 'F' || site.forme === 'M') {
+      const reste = detacher(site, site.titreMd)
+      if (typeof reste === 'string') { retoucher(site.site, reste); poser(site.cible, [site.ligneTitre]) }
+    } else if (site.forme === 'B') {
+      if (slot(site.site)?.texte.trim() !== site.titreMd) refus.push(`${site.site} B « ${site.titre} » : la ligne n'est plus « ${site.titreMd} »`)
+      else retoucher(site.site, site.ligneTitre)
+    } else if (site.forme === "S'") {
+      if (lignes.get(lieu(site.cible).nnn).includes(site.ligneTitre)) refus.push(`${site.cible} S′ « ${site.titre} » : « ${site.ligneTitre} » déjà dans le fichier`)
+      else poser(site.cible, [site.ligneTitre])
+    } else if (site.forme === 'O') {
+      const { nnn, i } = lieu(site.site)
+      const ls = lignes.get(nnn)
+      if (ls[i] !== site.titreMd) { refus.push(`${site.site} O « ${site.titre} » : la ligne n'est plus « ${site.titreMd} »`); continue }
+      let k = i + 1
+      while (k < ls.length && !enTete(ls[k])) k += 1
+      let fin = k
+      while (fin > i && !ls[fin - 1].trim()) fin -= 1
+      for (let r = i; r < k; r += 1) retoucher(`${nnn}:${r + 1}`, null)
+      poser(site.devant, ls.slice(i, fin))
+    } else if (site.forme === 'doublon') {
+      const reste = detacher(site, site.texteMd)
+      if (typeof reste === 'string') retoucher(site.site, reste)
+    }
+    if (refus.length === avant) appliques.push(`${site.forme} ${site.site ?? '---'}${site.cible ? ` → ${site.cible}` : site.devant ? ` → ${site.devant}` : ''} « ${site.titre} »${site.ligneTitre ? ` = « ${site.ligneTitre} »` : ''}`)
+  }
+  const recolles = []
+  const parLeBas = sites.filter((x) => x.forme === 'P').sort((x, y) => {
+    const [a, b] = [rang(x.site), rang(y.site)]
+    return a[0] === b[0] ? b[1] - a[1] : a[0] < b[0] ? -1 : 1
+  })
+  for (const site of parLeBas) {
+    const { nnn, i } = lieu(site.site)
+    const j = lieu(site.avec).i
+    const ss = slots.get(nnn)
+    if (lignes.get(nnn)?.[i] !== site.ligneMd) { refus.push(`${site.site} P : la ligne n'est plus « ${site.ligneMd} »`); continue }
+    if (ss.slice(j, i + 1).some((s) => s.touche)) { refus.push(`${site.site} P : ligne déjà retouchée`); continue }
+    ss[j].texte = recoller(ss[j].texte, ss[i].texte)
+    for (let r = j + 1; r <= i; r += 1) ss[r].texte = null
+    recolles.push({ nnn, ligne: i + 1, avec: j + 1 })
+  }
+  const out = new Map()
+  for (const [nnn, ss] of slots) {
+    const brut = ss.flatMap((s) => [...s.avant.flatMap((b) => ['', ...b, '']), ...(s.texte === null ? [] : [s.texte])])
+    const serre = brut.filter((l, i) => l.trim() || (i > 0 && brut[i - 1].trim()))
+    while (serre.length && !serre.at(-1).trim()) serre.pop()
+    if (lignes.get(nnn).at(-1) === '') serre.push('')
+    out.set(nnn, serre.join('\n'))
+  }
+  return { textes: out, appliques, refus, recolles }
+}
+
+/** Mots du livre AJOUTÉS et RETIRÉS, `Map<mot, n>` chacun (balisage exclu). PURE. */
+export function ecartDuLivre(avant, apres) {
+  const tout = (m) => [...m.values()].join('\n')
+  return ecartDeMots(motsDe(tout(avant)), motsDe(tout(apres)))
+}
+
+/** Le verdict de fidélité au livre : `null`, ou ce qui cloche. Ajoutés = les mots des S′ ; retirés =
+ *  ceux des débris. PURE. */
+export function infidelite(avant, apres, sites) {
+  const { retires, ajoutes } = ecartDuLivre(avant, apres)
+  const attendus = (formes, champ) => motsDe(sites.filter((s) => formes.includes(s.forme)).map((s) => s[champ]).join('\n'))
+  const dit = (m) => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([k, n]) => `${k}×${n}`).join(' ') || '∅'
+  if (dit(ajoutes) !== dit(attendus(["S'"], 'ligneTitre'))) return `mots ajoutés ${dit(ajoutes)} ≠ mots des S′ ${dit(attendus(["S'"], 'ligneTitre'))}`
+  if (dit(retires) !== dit(attendus(['doublon'], 'texteMd'))) return `mots retirés ${dit(retires)} ≠ mots des débris ${dit(attendus(['doublon'], 'texteMd'))}`
+  return null
+}
+
+function main() {
+  const args = process.argv.slice(2)
+  const opt = (nom) => (args.includes(nom) ? args[args.indexOf(nom) + 1] : null)
+  const id = args.find((a, i) => !a.startsWith('--') && !['--sites', '--boites'].includes(args[i - 1]))
+  if (!id) { console.error('usage : node scripts/raw/reparer-titres.mjs <id du livre> [--sites <json> | --boites <json>] [--apply]'); process.exitCode = 2; return }
+  const livre = livreExtraitDe(id)
+  if (!livre) { console.error(`reparer-titres : aucun livre extrait d'id « ${id} » au registre`); process.exitCode = 2; return }
+  const dir = String(livre.dir).split('\\').join('/').replace(/\/$/, '')
+  const noms = new Map(nomsDeLaListe(decoupeDe(id)).map((nom) => [nom.slice(0, nom.indexOf(' ')), nom]))
+  const avant = new Map([...noms].map(([k, nom]) => [k, readText(`${dir}/${nom}`)]))
+  const sites = opt('--sites')
+    ? JSON.parse(readFileSync(opt('--sites'), 'utf8')).sites
+    : (sondeDuLivre(id, opt('--boites') ? JSON.parse(readFileSync(opt('--boites'), 'utf8')) : null)?.sites ?? [])
+  const { textes, appliques, refus, recolles } = reparerLivre(avant, sites)
+  for (const r of refus) console.log(`REFUS ${r}`)
+  const faute = refus.length ? null : infidelite(avant, textes, sites)
+  if (faute) console.log(`REFUS : ${faute}`)
+  if (refus.length || faute) { console.log('rien n’est écrit : un refus au moins.'); process.exitCode = 1; return }
+  for (const a of appliques) console.log(`  ${a}`)
+  for (const r of recolles) console.log(`  P ${r.nnn}:${r.ligne} recollée à ${r.nnn}:${r.avec}`)
+  const changes = [...textes].filter(([k, t]) => t !== avant.get(k))
+  console.log(`${appliques.length} site(s), ${recolles.length} paragraphe(s) recollé(s), ${changes.length} fichier(s)${args.includes('--apply') ? ' écrit(s)' : ' à écrire — --apply pour écrire'}`)
+  if (args.includes('--apply')) for (const [k, t] of changes) writeFileSync(`${dir}/${noms.get(k)}`, t)
+}
+
+const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+if (isMain) main()

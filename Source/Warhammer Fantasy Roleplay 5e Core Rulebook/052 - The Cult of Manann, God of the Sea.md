@@ -30,6 +30,8 @@ The cult is prevalent in coastal regions and communities relying on the sea. It 
 
 Penances from Manann often involve hazardous, maritime pilgrimages, tests of sailing skills, or expeditions against the sea god's enemies, especially followers of the heretical Cult of Stromfels, god of predators.
 
+#### **Strictures**
+
 - No whistling or swearing when at sea or on holy ground.
 - Never harm an albatross.
 - First catch to Manann.

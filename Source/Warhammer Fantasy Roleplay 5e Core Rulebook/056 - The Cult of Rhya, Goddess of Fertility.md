@@ -32,6 +32,8 @@ Shrines to Rhya are usually simple statues of the goddess, often piled high with
 
 Rhyan penances may involve replanting devastated areas, helping broken households, and maintaining sacred groves. It is also common to find Rhyans tasked to protect helpless families, which can often put them at odds with local bailiffs and law enforcement.
 
+#### **Strictures**
+
 - Defend families, children, and crops from all harm.
 - Never feel shame for the flesh Rhya gave you.
 - Life is sacred, do no harm lest another life is in danger.

@@ -40,6 +40,8 @@ Melee (Brawling) 40, Perception 40, Stealth (Rural) 40
 
 *Belligerent, Frenzy, Infected, Size (Large), Territorial, Trained (Broken, Magic, Mount, War)*
 
+# **Dog**
+
 While the pampered pooches of the courtiers of Altdorf pose only a threat to an adventurer's dignity, larger breeds, such as those bred for war, can be a formidable threat.
 
 #### **DOG**

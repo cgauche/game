@@ -68,6 +68,7 @@ LDB compris ; la garde imprime le compte de dossiers hors format à chaque exéc
 | Numéro de chapitre | un **entier** ≥ 1, zéro-paddé à la largeur du **plus grand numéro du livre**, deux au minimum (`livre-de-base` : `21` ; un livre de 120 chapitres : `007`, `105`) — `largeurDeChapitre` / `graphieDeChapitre` (`src/data/source/decoupe.ts`) rendent cette graphie, et elle est la même pour tous les fichiers d'un dossier | `largeur-de-numero` |
 | GRAIN | un fichier porte **UNE section** du livre et **OUVRE** sur le titre que la LISTE DE DÉCOUPE lui donne (`ouverture`) | livre AVEC liste : rouge nommé, sans stock — livre SANS liste : `sans-decoupe` |
 | Mobilier de page | aucun chiffre d'**onglet** de chapitre ni **folio** mêlé au texte | livre dont la liste porte des `onglets` : `mobilier`, rouge nommé, sans stock |
+| Titres d'entrée | aucun gras de tête soudé à une ligne (P5), aucune ligne de titre à deux groupes gras | livre dont la liste porte un `gabaritTitre` : `titre-soude`, rouge nommé, sans stock |
 
 **Le GRAIN, et son régime.** Arbitrage utilisateur du 2026-09-21, verbatim : « Oui : un fichier par
 section majeure ». Le grain d'un livre est sa **LISTE DE DÉCOUPE** (§ 2,
@@ -230,9 +231,13 @@ par `python scripts/raw/lib/pdf-lignes.py <id> <boites.json>` : l'analyse de mis
 boîtes et lignes avec leurs spans typographiques ; `scripts/raw/lib/colonnes.mjs` ne fait qu'ORDONNER
 ces boîtes (colonnes par grappes d'abscisses de boîte, pur et joué en CI sur des pages réelles
 réduites, `scripts/raw/lib/fixtures/pages-crb/`). Chaque titre imprimé s'apparie à la ligne qui précède
-la 1re ligne de SON corps dans le `.md`. Familles : entrée, encadré, tableau, capitales. Formes des
+la 1re ligne de SON corps dans le `.md` ; un titre imprimé sur deux lignes (même gabarit, même colonne,
+interligne serré) est UN titre. Familles : entrée, encadré, tableau, capitales. Formes des
 entrées : S soudé, F fragment soudé à un corps étranger, M migré, S′ absent, B gras sans `#`, O hors
-d'ordre (à poser `devant` le titre qui la suit au PDF), N niveau, `corps-introuvable` avec sa cause ;
+d'ordre (à poser `devant` le titre qui la suit au PDF), P paragraphe scindé (une ligne ouverte par un
+gras sans `:` dont la ligne de prose précédente s'arrête au milieu d'une phrase, PROUVÉE au PDF par
+deux lignes consécutives d'une colonne au gras CONTINU d'une ligne à l'autre ; le site nomme la ligne
+`avec` laquelle recoller et sa `preuve`), N niveau, `corps-introuvable` avec sa cause ;
 des autres familles, S et F seuls, plus le S′ de capitales par COMPTAGE (imprimé sur les pages de son
 fichier plus de fois que son `.md` ne le porte, une fois au moins ; restauré dans la forme de ses
 frères du `.md`). Débris devant un corps à sa place, toutes familles : `doublon` — les folios sont
@@ -240,8 +245,30 @@ du mobilier de page, jamais un débris de titre. Toute cible est le DÉBUT d'un 
 de fichier, après une ligne vide ou un titre ; une ligne de tableau se remonte à l'en-tête de son
 bloc) ; sinon le site sort en `cible-invalide`. Les ancres `<span id="page-…">` ne comptent pas
 (`stripSpans`). Sites en `NNN:ligne`, avec `titreMd` (le texte EXACT du titre dans le `.md`), la
-page, la position au PDF et la ligne CIBLE. Elle
+page, la position au PDF et la ligne CIBLE ; pour tout titre à poser, `ligneTitre` (la ligne de titre
+complète : texte du `.md`, ou texte imprimé pour un S′ ; niveau et gras du FRÈRE TYPOGRAPHIQUE
+précédent — même gabarit, à sa place dans le MÊME fichier —, le suivant pour le premier du fichier ;
+`frere` le nomme), et
+pour un déplacement vers un autre fichier la vérification de sa découpe (`interFichiers`). Elle
 n'écrit rien sous le dépôt (`--json` sous la racine est refusé) ; hors CI (pas de PDF).
+
+**La RÉPARATION des titres** : `node scripts/raw/reparer-titres.mjs <id> [--sites <json> | --boites
+<json>]`, puis `--apply`. Elle CONSOMME les sites de la sonde (le JSON `--json`, ou la sonde
+rejouée) et n'en relève aucun : S détaché de la tête de sa ligne ; F et M retirés de la ligne
+étrangère (la ligne part si rien ne reste) et posés devant leur corps ; B promu ; S′ inséré ; O,
+l'entrée entière, posée devant le titre qui la suit au PDF ; le débris d'un doublon retiré. Le titre
+posé est un bloc (une ligne vide avant et après, jamais deux). Elle recolle ensuite chaque site **P**
+à sa ligne `avec`, de la plus basse à la plus haute (un paragraphe en trois morceaux se recolle
+entier), le gras coupé refait un seul. Elle REFUSE d'écrire si une
+ligne ne porte plus ce que la sonde a vu (JSON périmé), si deux gestes tombent sur une ligne, ou si
+le multi-ensemble des MOTS du LIVRE gagne autre chose que les mots des S′ ou perd autre chose que les
+débris. Rejouée sur un livre réparé, la sonde ne rend plus aucun site à réparer (N reste rapporté), et la réparation rien. Puis le
+recalage du § 7, étape 2. **La garde** : la famille `titre-soude` de `raw:check-source-format`,
+pour tout livre à `gabaritTitre`, sur TOUT le livre — P5 (`**X** Y…` : groupe sans `:`, hors
+repère `A)`, `Y` ni minuscule ni `:-–—(|=`) et titre à deux groupes gras, prédicats de
+`scripts/raw/lib/titres-soudes.mjs`. Elle ne voit pas un titre d'une AUTRE typographie que le
+gabarit (`**40–42: Levy**`, Bold 10 des tables d'événements) : la sonde PDF reste la porte de S′,
+F, M et O.
 
 **Le critère à tenir** : mettre le livre N+1 au grain de ses sections coûte **UN fichier de donnée,
 zéro ligne de code**.
@@ -661,7 +688,9 @@ stock et rougit la garde — c'est ainsi qu'un geste non canonique se voit.
    la carte de recalage se lit du diff `git HEAD`↔arbre, elle n'existe donc que tant que la
    correction n'est pas commitée. Les stocks keyés par section (`slug#occ :: …`) suivent la MÊME
    carte : `node scripts/raw/recouper-source.mjs <id du livre> --suivre-diff --dry`, puis sans
-   `--dry` — un titre réécrit emmène sa clé ; un titre supprimé ou scindé, ou une entrée sans section
+   `--dry` — un titre réécrit emmène sa clé, un titre DÉPLACÉ (sa ligne ôtée, son slug sur une seule
+   ligne de titre neuve) la sienne ; une entrée keyée sur une section qu'un titre NEUF scinde, un
+   titre supprimé ou scindé, ou une entrée sans section
    porteuse, est RAPPORTÉ et BLOQUE l'écriture (sortie en échec) jusqu'à son tri à la main.
 3. `npx vitest run src/data/prose-resolution.test.ts` — la garde de re-résolution liste **exactement**
    les entrées dont l'adresse ne rend plus son texte, avec le code de la rupture

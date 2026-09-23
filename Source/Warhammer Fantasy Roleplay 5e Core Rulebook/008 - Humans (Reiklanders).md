@@ -34,6 +34,8 @@ Human civilisations have existed in distant lands for thousands of years, but th
 
 — Jacob Stackeldorf, Professor of Altdorf University
 
+#### **Names**
+
 **Forenames:** Adhemar, Anders, Artur, Beatrijs, Clementia, Detlev, Erika, Frauke, Frederich, Gerner, Gertraud, Haletha, Heinrich, Helga, Henryk, Irmina, Jehanne, Karl, Kruger, Lorelay, Marieke, Sebastien, Sigfreda, Talther, Talunda, Ulrich, Ulrika, Viola, Walther, Werther, Willelma, Wilryn, Xaver
 
 **Surnames:** Augenlos (One Eye), Bauer (Farmer), Dunn (Very Thin), Fleischer (Butcher), Lang (Tall), Laut (Loud Voice), Meyer (Steward), Müller (Miller), Schmidt (Smith), Schuster (Cobbler), Stark (Strong)
@@ -56,7 +58,7 @@ Take six Advances (+30) in the Language (Reikspiel) Skill
 
 #### **Starting Skills**
 
-**Names** Add one Advance (+5) to any five of the following Skills: Animal Care, Charm, Cool, Evaluate, Gossip, Haggle, Language (Bretonnian), Language (Wastelander), Leadership, Lore (Reikland), Melee (Basic), Ranged (Bow)
+Add one Advance (+5) to any five of the following Skills: Animal Care, Charm, Cool, Evaluate, Gossip, Haggle, Language (Bretonnian), Language (Wastelander), Leadership, Lore (Reikland), Melee (Basic), Ranged (Bow)
 
 #### **Starting Talents**
 

@@ -34,6 +34,8 @@ The first records of halflings come from the fertile lands where the Blue Reach 
 
 — 'Jammy' Mercimaus Alderflower II, Scholar from Fielbach
 
+### **Names**
+
 **Halfling Forenames:** Antinnerra (Anni), Augustus (Gus), Esmerelda (Esme), Ferdinand (Fred), Heironymus (Hiro), Maximilian (Max), Theodosius (Theo), Thomasina (Tina), Seralinadara (Lin), Valentina (Val)
 
 **Halfling Clan Names:** Brandysnap, Croop, Greenthistle, Fumbletoe, Hamfist, Lostpocket, Lowhaven, Rootbottom, Stoutbarrel, Thorncobble, Willowpot
@@ -56,7 +58,7 @@ Take six Advances (+30) in both the Language (Haffennaff ) and Language (Reikspi
 
 #### **Starting Skills**
 
-**Names** Add one Advance (+5) to any five of the following Skills: Charm, Consume Alcohol, Dodge, Gamble, Haggle, Intuition, Lore (Reikland), Perception, Sleight of Hand, Stealth (Any), Trade (Cook)
+Add one Advance (+5) to any five of the following Skills: Charm, Consume Alcohol, Dodge, Gamble, Haggle, Intuition, Lore (Reikland), Perception, Sleight of Hand, Stealth (Any), Trade (Cook)
 
 #### **Starting Talents**
 

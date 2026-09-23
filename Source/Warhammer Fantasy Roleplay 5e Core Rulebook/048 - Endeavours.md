@@ -48,6 +48,8 @@ To advance in your Career, you need to spend some time rubbing shoulders with th
 
 You spend time training one of your animals. Make an **Average (+2 SL) Animal Training** Test. If successful, add one skill to your animal from the *Trained* Creature Trait (see page 363).
 
+# **Banking**
+
 All the money remaining at the end of your 'Between Adventures' phase is lost before the next adventure begins, unless it is saved with this Endeavour. You have two options when taking the Banking Endeavour:
 
 #### **Invest with Banking House**
@@ -67,7 +69,7 @@ All the money remaining at the end of your 'Between Adventures' phase is lost be
 
 ### **Change Career**
 
-**Banking** Time spent on this Endeavour represents making the appropriate introductions, doling out bribes, acquiring permits and anything else needed to start a new Career. Work out the particulars with your GM — switching from Soldier to Sailor might be as simple as being press-ganged into the navy, while switching from a Rat Catcher to become a Noble is all but impossible. Additionally, not every Career is available to every Species. Assuming your GM agrees, you may pay 100 XP to change to a Career within your current Class, or 200 XP to change to a Career in another Class.
+Time spent on this Endeavour represents making the appropriate introductions, doling out bribes, acquiring permits and anything else needed to start a new Career. Work out the particulars with your GM — switching from Soldier to Sailor might be as simple as being press-ganged into the navy, while switching from a Rat Catcher to become a Noble is all but impossible. Additionally, not every Career is available to every Species. Assuming your GM agrees, you may pay 100 XP to change to a Career within your current Class, or 200 XP to change to a Career in another Class.
 
 # **Combat Training**
 
@@ -134,6 +136,8 @@ If successful, you can attempt a Charm Test during your next adventure to rally 
 
 Once you have successfully fomented dissent, you may try to turn the mob against a different target during the same adventure, though the Charm Test is two Difficulty levels harder.
 
+#### **Income**
+
 Most people resume their usual employment between bouts of adventuring. Bounty Hunters hunt bounties, Riverwardens ward rivers, Troll Slayers slay trolls — in the modern Empire, some even rely on a lucrative skill not featured in their job title. Wealthier Characters, such as Nobles and Merchants, might collect a stipend by (briefly) indulging their family, or collecting interest on their investments and business ventures. Roguish types have any number of means to acquire funds, though it's best not to ask for details.
 
 Take the *Income* Endeavour to represent your Character working in their chosen Career. Make an Average (+2 SL) Test using the *Earning Skill* listed in bold italics in the first Level of your Career. On a success, you earn income based on the **Status**  of your current Career Level, as shown below.
@@ -154,7 +158,7 @@ Certain results on the **Events Tables** may directly affect your income. The mo
 
 #### **Invent!**
 
-**Income** The *Invent* Endeavour allows you to create entirely new Trappings by combining the properties of two or more existing ones. A pair of Pistols might become a Repeating Pistol, or Pigeons combined with Bombs might produce Pigeon Bombs. The exact effects of any invention are ultimately determined by the GM.
+The *Invent* Endeavour allows you to create entirely new Trappings by combining the properties of two or more existing ones. A pair of Pistols might become a Repeating Pistol, or Pigeons combined with Bombs might produce Pigeon Bombs. The exact effects of any invention are ultimately determined by the GM.
 
 Inventing is a two-stage process: Plan and Build.
 
@@ -201,6 +205,8 @@ Favours come in three levels: Minor, Major, and Significant. Regardless of a Fav
 
 In the Old World, breaking one's sworn word carries significant social ramifications. No-one trusts oath breakers, meaning your Status is reduced by 1 Tier (see page @@). Powerful and dangerous folks tend to take it very, very poorly if someone refuses a Favour owed them, so bloody consequences may follow.
 
+# **Study a Mark**
+
 Use this Endeavour to observe a potential target and gain advantages during future criminal enterprises. A Charlatan may study a merchant in order to better impersonate them during a future scam, or a Thief may spend time watching the comings and goings of a warehouse's guards to get an idea of their patrol routes.
 
 Attempt a **Challenging (+0 SL) Perception** Test, though the difficulty may be modified for especially easy or difficult marks. If you succeed, you may gain Advantage on a Test concerning your mark once during your next adventure. Note this on your Character Sheet. You can take this Endeavour multiple times if you wish. Further, the GM should provide information (or disinformation!) concerning your mark according to the SL you scored.
@@ -209,7 +215,7 @@ Attempt a **Challenging (+0 SL) Perception** Test, though the difficulty may be 
 
 This Endeavour allows you to train a Skill or Characteristic outside your Career. In addition to the normal XP cost, you must also pay a tutor. Training in Basic Skills and Characteristics costs a number of pennies equal to the XP cost of the Advance. Advanced Skills cost twice that amount. For more on Advances, see page 191.
 
-**Study a Mark** You should be able to find a tutor for most skills, especially in a large city such as Altdorf. For some specialist Skills, however, you may first need to undertake *Consult an Expert* to locate a suitable teacher — those willing to teach Pick Lock, for example, rarely advertise their services.
+You should be able to find a tutor for most skills, especially in a large city such as Altdorf. For some specialist Skills, however, you may first need to undertake *Consult an Expert* to locate a suitable teacher — those willing to teach Pick Lock, for example, rarely advertise their services.
 
 > Some Skills, particularly certain Lore Skills, can only be learned at appropriate institutions, while others are outright forbidden in the Empire. Finding a tutor able (and willing) to teach proscribed subjects, such as Necromancy or those related to the Ruinous Powers, may itself become an adventure. Such tutors usually demand far more than the usual fee, often requiring a Significant Favour (see **Do Me a Favour!**, page 200).
 

@@ -34,6 +34,8 @@ Temples of Morr are within gardens of Morr: great graveyards wrapped with black 
 
 Morr's penances typically involve hunting necromancers and destroying undead, or finding and restoring burial places and holy sites fallen to disuse and disrepair. He also occasionally requires servants of Khaine be stopped from fulfilling their dark deeds.
 
+#### **Strictures**
+
 - Respect and protect the dead.
 - Hunt down necromancers and the undead wherever they may gather.
 - Pay heed to your dreams.

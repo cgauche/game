@@ -118,7 +118,7 @@ test('#1739 : famille « capitales » — le nom de créature SC700 est un titre
 
 test('#1739 : S′ de capitales par COMPTAGE — imprimé plus de fois que le `.md` ne le porte, restauré dans la forme de ses frères', () => {
   const s = site("S'", 'Ogre')
-  assert.deepEqual([s?.famille, s?.cible, s?.verbatim, s?.comptage], ['capitales', '001:59', '## **Ogre**', { auPdf: 2, auMd: 1 }])
+  assert.deepEqual([s?.famille, s?.cible, s?.ligneTitre, s?.frere, s?.comptage], ['capitales', '001:59', '## Ogre', '001:55 « Wolf »', { auPdf: 2, auMd: 1 }])
   assert.equal(titre('Career Path').forme, "S'")
   assert.equal(sites.some((x) => x.titre === 'Career Path'), false)
 })
@@ -139,9 +139,9 @@ test('#1739 : `titreMd` — le texte EXACT du titre dans le `.md`, que la répar
   )
 })
 
-test('#1739 : S′ — une étiquette `**X:**` est une MENTION, pas un fragment ; le verbatim est le texte imprimé', () => {
+test('#1739 : S′ — une étiquette `**X:**` est une MENTION, pas un fragment ; la ligne restaurée porte le texte imprimé', () => {
   const s = site("S'", 'Delta')
-  assert.equal(s.verbatim, 'Delta')
+  assert.equal(s.ligneTitre, '### **Delta**')
   assert.equal(s.cible, '001:11')
   assert.ok(s.mentions.includes('001:13'))
 })
@@ -206,4 +206,65 @@ test('#1739 : une cible au milieu d’un paragraphe sort en cible-invalide, avec
   const lignes = ['Intro line here', 'Omega corps words go here', '', '**Omega** Autre corps étranger ici']
   const [s] = classer(pages, [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes }], GABARIT).sites
   assert.deepEqual([s.forme, s.formeVisee, s.champ, s.cible, s.ligneCible], ['cible-invalide', 'F', 'cible', '001:2', 'Omega corps words go here'])
+})
+
+test('#1739 : la ligne de titre POSÉE — niveau et gras du frère typographique précédent (le suivant pour le premier), texte du `.md`', () => {
+  assert.deepEqual([site('S', 'Gamma').ligneTitre, site('S', 'Gamma').frere], ['### **Gamma**', '001:5 « Beta »'])
+  assert.deepEqual([site('M', 'Theta').ligneTitre, site('B', 'Iota').ligneTitre], ['### **Theta**', '### **Iota**'])
+  assert.deepEqual([site('S', 'Troll').ligneTitre, site('S', 'Troll').frere], ['## **Troll**', '001:55 « Wolf »'])
+})
+
+test('#1739 : une ligne imprimée en deux boîtes (même y) est UNE ligne de corps, ses morceaux de gauche à droite', () => {
+  const morceau = (x0, texte) => ({ colonne: 0, x0, y0: 490, texte, spans: [{ texte, police: 'ACaslonPro-Regular', taille: 9 }] })
+  const pages = [{ page: 10, lignes: [T(0, 500, 'Nostrum'), morceau(120, 'Range: Touch'), morceau(58, 'CN: 0')] }]
+  const lignes = ['#### **Nostrum**', '', '**CN:** 0 **Range:** Touch']
+  const { titres: ts } = classer(pages, [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes }], GABARIT)
+  assert.deepEqual([ts[0].forme, ts[0].cles], ['ok', ['cn: 0 range:']])
+})
+
+test('#1739 : le frère qui donne le niveau est dans le MÊME fichier — le premier titre d’un fichier prend le suivant, jamais le dernier du fichier précédent', () => {
+  const pages = [
+    { page: 10, lignes: [T(0, 700, 'Aa'), L(0, 690, 'Aa corps words go here')] },
+    { page: 11, lignes: [T(0, 700, 'Bb'), L(0, 690, 'Bb corps words go here'), T(0, 600, 'Cc'), L(0, 590, 'Cc corps words go here')] },
+  ]
+  const fichiers = [
+    { nom: '001 - Un.md', page: 10, pageFin: 10, lignes: ['## **Aa**', '', 'Aa corps words go here'] },
+    { nom: '002 - Deux.md', page: 11, pageFin: 11, lignes: ['**Bb** Bb corps words go here', '', '#### **Cc**', '', 'Cc corps words go here'] },
+  ]
+  const s = classer(pages, fichiers, GABARIT).sites.find((x) => x.titre === 'Bb')
+  assert.deepEqual([s?.forme, s?.ligneTitre, s?.frere], ['S', '#### **Bb**', '002:3 « Cc »'])
+})
+
+test('#1739 : un titre imprimé sur DEUX lignes (même gabarit, même colonne, interligne serré) est UN titre (CRB p.170)', () => {
+  const E = (y0, texte) => L(0, y0, texte, 'CaslonAntique-Bold', 15)
+  const pages = [{ page: 10, lignes: [E(229, 'THE HEAL SKILL AND'), E(215, 'BLEEDING CONDITIONS'), L(0, 200, 'Heal skill prose words here')] }]
+  const lignes = ['#### THE HEAL SKILL AND BLEEDING CONDITIONS', '', 'Heal skill prose words here']
+  const r = classer(pages, [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes }], GABARIT)
+  assert.deepEqual(r.titres.map((t) => [t.texte, t.forme]), [['THE HEAL SKILL AND BLEEDING CONDITIONS', 'ok']])
+  assert.deepEqual(r.sites, [])
+})
+
+test('#1739 : P — paragraphe scindé, PROUVÉ au PDF par un gras CONTINU d’une ligne à l’autre (CRB p.338) ; un repère de liste ou un libellé ne l’est pas (CRB p.36)', () => {
+  const G = (colonne, y0, ...morceaux) => ({ colonne, x0: 58, y0, texte: morceaux.map(([t]) => t).join(' '), spans: morceaux.map(([texte, gras]) => ({ texte, police: gras ? 'ACaslonPro-Bold' : 'ACaslonPro-Regular', taille: 9 })) })
+  const pages = [{
+    page: 10,
+    lignes: [
+      G(0, 384, ['see page 356']),
+      G(0, 371, ['Infected:', true], ['Wounded opponents must take an']),
+      G(0, 358, ['Easy (+4 SL)', true]),
+      G(0, 345, ['Endurance', true], ['Test to avoid a Festering Wound']),
+      G(1, 580, ['A)', true], ['Choose a Class and Career available']),
+      G(1, 567, ['or']),
+      G(1, 554, ['B)', true], ['Roll on your Species table']),
+      G(1, 400, ['Skills: Charm, Gossip', true]),
+      G(1, 387, ['Talents:', true], ['Craftsman, Strong Back']),
+    ],
+  }]
+  const lignes = [
+    'see page 356', '', '**Infected:** Wounded opponents must take an', '', '**Easy (+4 SL)**', '', '**Endurance** Test to avoid a Festering Wound', '',
+    '**A)** Choose a Class and Career available *or*', '', '**B)** Roll on your Species table', '',
+    '**Skills: Charm, Gossip**', '', '**Talents:** Craftsman, Strong Back',
+  ]
+  const p = classer(pages, [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes }], GABARIT).sites.filter((s) => s.forme === 'P')
+  assert.deepEqual(p.map((s) => [s.site, s.avec, s.preuve]), [['001:5', '001:3', 'p.10 col.0 y371→358'], ['001:7', '001:5', 'p.10 col.0 y358→345']])
 })

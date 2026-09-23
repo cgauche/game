@@ -48,9 +48,7 @@ Dodge 35, Melee (Basic) 30, Perception 25, Ranged (Bow) 35, Stealth (Rural) 35, 
 
 dislikes orcs and goblins, see page 183
 
-**Infected:** Wounded opponents must take an **Easy (+4** 
-
-**SL) Endurance** Test to avoid a Festering Wound
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
 
 **Night Vision:** See clearly for 20 yards and extend the
 
@@ -144,11 +142,7 @@ Pea-brained creatures akin to enthusiastic, uncontrolled puppies, snotlings are 
 
 see page 356
 
-**Infected:** Wounded opponents must take an
-
-**Easy (+4 SL)**
-
-**Endurance** Test to avoid a Festering Wound
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
 
 **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 

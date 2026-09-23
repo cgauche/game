@@ -34,6 +34,8 @@ Officially, the Hierarch leads the cult from there, though he spends most of his
 
 Taal's penances usually involve clearing diseased or mutated monsters from wild areas, replanting sacred trees, and maintaining groves important to the cult. A cultist might also be ordered to climb a high mountain and leave a stone on a cairn at the top, or clear an obstruction at the top of a waterfall. Whatever the specific task that must be undertaken, Taal's penances almost always challenge the cultist to survive in the wild.
 
+#### **Strictures**
+
 - Offer a prayer of thanks for every animal taken.
 - Spend a week alone communing with the wilderness every year.
 - Eschew metal armour; clad yourself in the hides of Taal.

@@ -45,6 +45,12 @@
 // (`scripts/guards/lib/mobilierExemptions.mjs`) pour ses `jetons` sites exactement : au-delà, le site
 // est rouge ; en deçà, l'exemption l'est.
 //
+// TITRES SOUDÉS (famille `titre-soude`, #1739) : pour tout livre dont la liste de découpe porte un
+// `gabaritTitre`, une ligne ouverte par un gras que suit autre chose que sa prose (P5) ou une ligne de
+// titre à deux groupes gras est un ROUGE NOMMÉ, sans stock — le geste est
+// `node scripts/raw/reparer-titres.mjs <id>`. Le prédicat est celui de la réparation
+// (`lib/titres-soudes.mjs`), importé, jamais redit.
+//
 // Re-run    : node scripts/raw/check-source-format.mjs
 // Régénérer : node scripts/raw/check-source-format.mjs --ecrire-stock [--lot <#N …>] — le lot est REQUIS dès qu'une entrée NEUVE naît (`ecrireStockSousLot`, scripts/guards/lib/stock.mjs)
 import { existsSync, writeFileSync, statSync } from 'node:fs'
@@ -56,8 +62,9 @@ import { ecartDuVolet, ecrireStockSousLot, sitesEnEntrees, survieDeLecheance } f
 import { readStock } from './stockNominatif.mjs'
 import { estSeparateur, graphieDeChapitre, graphieDuFichier, largeurDeChapitre, ligne1DePlage, numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { estLigneDeTitre, ouvreSur } from './lib/titres.mjs'
-import { decoupeDe, livreDuDossier, livresDecoupes, nomsDeLaListe, ongletsDe, REGISTRE_LIVRES } from './_lib.mjs'
+import { decoupeDe, gabaritTitreDe, livreDuDossier, livresDecoupes, nomsDeLaListe, ongletsDe, REGISTRE_LIVRES } from './_lib.mjs'
 import { exemptionsFausses, mobilierDuDossier } from './lib/mobilier.mjs'
+import { sitesDeTitresSoudes } from './lib/titres-soudes.mjs'
 import { EXEMPTIONS_MOBILIER } from '../guards/lib/mobilierExemptions.mjs'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-format-stock.json')
@@ -411,6 +418,21 @@ export function mobilierAll(dossiers = dossiersFR(), exemptions = EXEMPTIONS_MOB
   return rougesDuMobilier(sites, exemptions)
 }
 
+/** Les ROUGES de la famille `titre-soude` d'UN dossier de livre, fichier par fichier dans l'ordre de sa
+ *  liste de découpe — PUR : `texteDe(nom)` rend le texte d'un fichier. `{ file, ref }`. */
+export const titresSoudesDuDossier = (dir, texteDe, liste) =>
+  nomsDeLaListe(liste).flatMap((nom) => sitesDeTitresSoudes(texteDe(nom)).map((s) => ({ file: `${dir}/${nom}`, ref: `l.${s.ligne} ${s.classe} : ${s.texte.trim().slice(0, 60)}` })))
+
+/** TITRES SOUDÉS de tous les dossiers FR dont le livre déclare un `gabaritTitre`. */
+export function titresSoudesAll(dossiers = dossiersFR(), avecListe = livresDecoupes()) {
+  return dossiers.flatMap((d) => {
+    const livre = livreDuDossier(d)
+    if (!livre || !avecListe.includes(livre.id) || !gabaritTitreDe(livre.id)) return []
+    const textes = new Map(lireDossier(d).map((f) => [f.nom, f.texte]))
+    return titresSoudesDuDossier(cheminDe(d), (nom) => textes.get(nom) ?? '', decoupeDe(livre.id))
+  })
+}
+
 /**
  * Les DOSSIERS FR suivis, dans l'ordre POSIX : l'union des livres à `dir` de `books.json` et du
  * balayage de `Source/` sur `PREFIXES_FR`. Un livre enregistré dont le dossier manque sur le disque
@@ -573,6 +595,13 @@ function main() {
     for (const m of mobilier) console.log(`  ${m.file} — ${m.ref}`)
   }
 
+  // TITRES SOUDÉS : rouge nommé, jamais stocké — son geste est `node scripts/raw/reparer-titres.mjs <id>`.
+  const soudes = titresSoudesAll(dossiers)
+  if (soudes.length) {
+    console.log(`TITRES SOUDÉS — ${soudes.length} ligne(s) (geste : node scripts/raw/reparer-titres.mjs <id>) :`)
+    for (const t of soudes) console.log(`  ${t.file} — ${t.ref}`)
+  }
+
   const { neuves, perimees } = ecartDuStock(sites, stock)
   if (neuves.length) {
     console.log('RÉGRESSION — écart(s) hors du stock :')
@@ -582,8 +611,8 @@ function main() {
     console.log('Entrée(s) SOLDÉE(s) (livre ré-extrait) :')
     for (const s of perimees) console.log(`  ${s}`)
   }
-  if (!neuves.length && !perimees.length && !grain.length && !mobilier.length) {
-    console.log('OK — cliquet aligné, aucune régression, aucun écart au grain, aucun mobilier de page.')
+  if (!neuves.length && !perimees.length && !grain.length && !mobilier.length && !soudes.length) {
+    console.log('OK — cliquet aligné, aucune régression, aucun écart au grain, aucun mobilier de page, aucun titre soudé.')
     return
   }
   process.exitCode = 1

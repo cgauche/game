@@ -36,6 +36,8 @@ The high temple of all Shallya's cult is in Couronne, Bretonnia, built over a fa
 
 Penances set by Shallya always involve helping the sick, poor, or downtrodden. A cultist might be sent to a village struck by a plague to tend the sick until the disease has passed. Shallya often tasks her servants to help the wounded at war, or patrol popular pilgrimage routes for those unable to complete their journeys due to ill health.
 
+#### **Strictures**
+
 - Always render assistance without judgement, based only on a person's need.
 - Never kill, except in self-defence.
 - Suffer not pestilence, nor those who would spread it.
