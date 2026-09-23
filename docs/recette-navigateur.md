@@ -1165,7 +1165,7 @@ que CHAQUE page rend, jamais à un `pending*` (identique des deux côtés, cf. i
 | Relay LOCAL (Worker modifié / hors ligne) | `npm run relay:dev` (= `npm --prefix server run dev`, wrangler dev, port 8787) dans un terminal, **puis** Vite relancé avec la variable | `POST http://localhost:8787/rooms` doit rendre `{"code":…,"hostToken":…}` |
 
 `VITE_RELAY_URL` est lue via `import.meta.env` **au démarrage de Vite** : la poser après coup ne
-change rien, il faut relancer le serveur de dev. Syntaxe PowerShell (shell canon de cette machine) :
+change rien, il faut relancer le serveur de dev. Syntaxe PowerShell :
 
 ```powershell
 $env:VITE_RELAY_URL = 'http://localhost:8787'; npm run dev

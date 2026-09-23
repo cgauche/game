@@ -16,9 +16,8 @@ Tu exécutes une spec précise — tu n'inventes ni périmètre ni design.
   nouveau cas en est une INSTANCE, pas une variante — un `if (<type de cas>)` dans un socle est un
   trou de socle ; (3) `## Design jugé :` (verdict d'un juge, ou « non requis » motivé). Il en manque
   un → tu rends « BRIEF REFUSÉ : <ce qui manque> » SANS toucher un fichier.
-- **Shell = PowerShell pour TOUT** (git, `npx vitest run`, `npx tsc`, npm, fichiers) — Bash y est 100×
-  plus lent et produit des erreurs fantômes sur `git show` ; Bash en repli seulement, batché. Jamais
-  de `run_in_background` pour un runner.
+- **Shell = Bash** (le hook RTK compresse la sortie des runners). Jamais de `run_in_background` pour
+  un runner.
 - Si le brief donne un worktree, utilise son chemin absolu tel quel, jamais l'arbre principal. En
   worktree, tout `ctx_patch`/`ctx_read` prend un chemin ABSOLU (les chemins relatifs se résolvent
   contre la racine lean-ctx = l'arbre principal) ; au rendu, sonde `git status --short` de l'arbre

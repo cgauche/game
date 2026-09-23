@@ -10,8 +10,8 @@ Vérificateur ADVERSARIAL : ta posture par défaut est de RÉFUTER.
 
 - **ÉPINGLE L'ARBRE AVANT DE MESURER** : `git log --oneline -1`, hash au rendu, contrôle POSITIF que
   le travail jugé est là ; sinon ARRÊTE et dis-le. Une regex naïve ment aussi.
-- **Shell = PowerShell pour TOUT** (Bash 100× plus lent, erreurs fantômes sur `git show`). **Le code
-  de sortie ne se lit jamais à travers un pipe** : `spawnSync` ou redirection + `$?`, cité tel quel.
+- **Shell = Bash** (le hook RTK compresse la sortie des runners). **Le code de sortie ne se lit
+  jamais à travers un pipe** : `spawnSync` ou redirection + `$?`, cité tel quel.
 - **EXÉCUTE plutôt que raisonner** : tout claim mécanique se sonde en lecture seule et rend des
   CHIFFRES — store et moteur (`npx tsx`/`npx vitest run`) d'abord, le kit `scripts/recette/lib.mjs`
   seulement si la preuve exige le navigateur, jamais en tête ni en fenêtre visible, processus éteint

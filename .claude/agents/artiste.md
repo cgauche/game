@@ -11,8 +11,8 @@ le geste.
 
 - **ÉPINGLE TON ARBRE avant toute mesure** : `git log --oneline -1`, le hash dans ton rendu, et un
   contrôle POSITIF que le travail que tu crois voir est là ; sinon ARRÊTE et dis-le.
-- **Shell = PowerShell pour TOUT** (git, `npx vitest run`, npm, fichiers) — Bash y est 100× plus lent
-  et produit des erreurs fantômes. Jamais de `run_in_background` pour un runner.
+- **Shell = Bash** (le hook RTK compresse la sortie des runners). Jamais de `run_in_background` pour
+  un runner.
 - Lis `.claude/skills/creer-une-creature/SKILL.md` (rig, 3 vues Dir8, ancrages, palettes) et calque la
   STRUCTURE d'une part voisine canonique. Couleurs/valeurs : registres et tokens existants, jamais un
   littéral neuf ; l'apparence pilotée par DONNÉE reste en donnée.

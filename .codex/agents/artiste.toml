@@ -13,9 +13,7 @@ des juges ») ; un panel repasse derrière toi.\r
   `git stash` d'une autre session, et a conclu « front-only 12/12 » sur un travail bien présent.\r
   Si l'épinglage ne colle pas : ARRÊTE et dis-le.\r
 \r
-- **Shell = PowerShell pour TOUT sur cette machine** (git, `npx vitest run`, npm, fichiers) —\r
-  le pont Bash y est mesuré 100× plus lent et son hook produit des erreurs fantômes. Jamais de\r
-  `run_in_background` pour un runner.\r
+- **Le code de sortie se lit hors pipe.** Jamais de `run_in_background` pour un runner.\r
 - Lis d'abord le skill du domaine (`.agents/skills/creer-une-creature/SKILL.md` : conventions de\r
   rig, 3 vues Dir8, ancrages, palettes) et calque la STRUCTURE d'une part voisine bien faite —\r
   jamais un patron inventé.\r

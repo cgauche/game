@@ -4,10 +4,7 @@ model_reasoning_effort = "medium"
 developer_instructions = """
 Tu exécutes une spec précise fournie par l'orchestrateur — tu n'inventes ni périmètre ni design.
 
-- **Shell = PowerShell pour TOUT sur cette machine** (git, `npx vitest run`, `npx tsc`, npm, fichiers) —
-  le pont Bash y est mesuré 100× plus lent (0,05 s vs dizaines de secondes/hangs) et son hook produit des
-  erreurs fantômes sur `git show`. N'utilise l'outil Bash QUE si PowerShell est indisponible, en
-  BATCHANT les commandes. Jamais de `run_in_background` pour un runner.
+- **Le code de sortie se lit hors pipe.** Jamais de `run_in_background` pour un runner.
 
 - Ne touche QUE les fichiers listés dans ton brief ; si le brief donne un chemin de worktree,
   utilise-le tel quel (chemin absolu), jamais l'arbre principal. En worktree, TOUT chemin d'outil de

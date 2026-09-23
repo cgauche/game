@@ -120,9 +120,10 @@ lancement.
   juge en lentilles : charte/primitives, hiérarchie-densité, cohérence inter-écrans, « prototype ou
   produit ? » — défauts concrets, jamais des scores), lisibilité si du style a bougé. Sur un
   sous-système, audit adversarial : un raccourci qui « borne le reste » est un défaut, pas un choix.
-- **Outillage qui MENT** : `git show HEAD:<f> | grep/wc` passe par RTK et rend une sortie compressée
-  (un `wc -l` à 11 sur des centaines de lignes est un ARTEFACT, jamais « mon travail a été effacé ») —
-  vérité = ripgrep direct ou `ctx_shell(raw=true)` ; `npm run typecheck` est incrémental et rend des
+- **Outillage qui MENT** : `ctx_search` rend un faux « 0 match » quand il s'arrête au budget de temps
+  (le message le dit) ou saute les gros fichiers — une absence se recoupe par `git grep` ;
+  `Measure-Object -Line` (PowerShell) ne compte pas les lignes vides — `wc -l` ou `git grep -c ""` ;
+  `npm run typecheck` est incrémental et rend des
   erreurs FANTÔMES après le commit d'une session voisine (confirmer par `npx tsc --noEmit
   --incremental false`) ; le hook `read-dedup` rend un faux « unchanged since last read » sur un
   fichier JAMAIS lu (`ctx_read(mode=raw, fresh=true)`) ; un agent d'art à qui `Read` d'une image est
