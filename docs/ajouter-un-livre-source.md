@@ -223,8 +223,8 @@ servi est `recouper-source.mjs` (ci-dessus). Selon que le livre a ou non une str
 **préexistante** à réaligner :
 
 - **Livre déjà présent sous `Source/`** (ré-extraction) : `marker-split.mjs <id du livre>
-  "<marker-paginé.md>" "<dossier-sortie>" [--pdf <chemin.pdf>]` — les anciens `.md` sont ceux du
-  `dir` du livre ; son PDF (`pdfDe`, que `--pdf` SURCHARGE) est la référence des vérifications de
+  "<marker-paginé.md>" "<dossier-sortie>"` — les anciens `.md` sont ceux du
+  `dir` du livre ; son PDF (`pdfRequisDe`, registre SEUL : un livre sans `pdf` échoue) est la référence des vérifications de
   pages perdues (ci-dessous) ; le 2ᵉ argument accepte un `.md` d'un tenant **ou un
   dossier de tranches `--page_range`** (`slices/<a>-<b>/<pdf>/<pdf>.md`, union des tranches par la lib
   `scripts/raw/lib/marker-pages.mjs`, parseur `{N}----` UNIQUE du dépôt). Aligne les nouveaux chapitres sur les noms de fichiers
@@ -595,7 +595,7 @@ stock et rougit la garde — c'est ainsi qu'un geste non canonique se voit.
    entière `PERDUE`, même si un autre fragment n'était qu'`AMBIGUË`. **`--apply` n'écrit que les
    `RECALÉE`** ; les trois autres se règlent à la main, au PDF.
 5. `node scripts/raw/anchor-fill.mjs <ABBR> --ch NN --apply` s'il reste des blocs sans folio (PDF du
-   registre, `--pdf <chemin>` le SURCHARGE) : il pose des ancres `data-folio` **ciblées**, et saute tout candidat absent, multiple ou
+   registre SEUL) : il pose des ancres `data-folio` **ciblées**, et saute tout candidat absent, multiple ou
    hors bornes. Une page qui porte déjà une ancre nue Marker `<span id="page-K-0"></span>` est sautée
    avec sa raison : poser la sienne ferait deux ancres de même `id`.
 6. `npm run gates && git commit` — tout dans le même commit.

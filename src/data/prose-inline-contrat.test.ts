@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { mesurerProseInline, livresExtraits } from '../../scripts/guards/lib/proseInline.mjs';
+import { mesurerProseInline } from '../../scripts/guards/lib/proseInline.mjs';
 import { PROSE_INLINE_TOLEREE } from './schemas/grammaire/prose-inline';
-import { extraits } from './schemas/grammaire/livres-extraits';
 
 /**
  * EN-TÊTE STRUCTURÉ de la garde (#1475).
@@ -80,16 +79,6 @@ describe(`prose inline recopiée d’un livre extrait — stock à cible ZÉRO (
   it('(c) aucune ligne à 0 — une famille migrée perd sa ligne, elle ne la garde pas vide', () => {
     const vides = declares.filter((t) => PROSE_INLINE_TOLEREE[t].entrees <= 0).map((t) => `${t} : ${PROSE_INLINE_TOLEREE[t].entrees}`);
     expect(vides, `Ligne(s) à zéro — à RETIRER (le stock ne fait que décroître) :\n${vides.join('\n')}`).toEqual([]);
-  });
-
-  it('(d) les deux dérivations de « livre EXTRAIT » coïncident — le verrou et le stock lisent le même ensemble', () => {
-    // `EXTRAITS` (`schemas/grammaire/livres-extraits.ts`) porte les verrous V2/V3 au PARSE ;
-    // `livresExtraits()` (`scripts/guards/lib/proseInline.mjs`) porte le stock. Deux lectures de
-    // `books.json` : un changement de forme du document (racine encapsulée, `dir` vide plutôt
-    // qu'absent) les décorrellerait EN SILENCE — le stock compterait ce que le verrou ne voit plus.
-    // `livresExtraits()` juge par `estLivreExtrait` (`scripts/raw/_lib.mjs`) : le prédicat de l'outillage
-    // est dans ce contrat.
-    expect([...extraits()].sort()).toEqual([...livresExtraits()].sort());
   });
 
   it('chaque ligne porte son PILOTAGE : lot, date, motif', () => {

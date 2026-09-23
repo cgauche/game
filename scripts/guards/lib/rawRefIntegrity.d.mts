@@ -48,7 +48,7 @@ export function readText(path: string): string;
 export function alternationDuRegistre(): string;
 export const REGISTRE_LIVRES: { id: string; abbr?: string; dir?: string; language?: string }[];
 type LivreDuRegistre = (typeof REGISTRE_LIVRES)[number];
-export function estLivreExtrait(b: LivreDuRegistre | null | undefined): boolean;
+export { estLivreExtrait } from '../../../src/data/source/livre-extrait.ts';
 export function livreExtraitDe(id: string, registre?: LivreDuRegistre[]): (LivreDuRegistre & { abbr: string; dir: string }) | null;
 export function sigleDe(id: string, registre?: LivreDuRegistre[]): string | null;
 

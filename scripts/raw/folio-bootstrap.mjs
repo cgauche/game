@@ -11,11 +11,11 @@
 //   4. il régénère `00 - Index.md` en TOC à folios (`— folio N`, format des livres déjà bakés).
 //
 // Entrée  : <ABBR> de `books.json` (dossier `Source/…` associé) ; le PDF du livre vient de
-//           `pdfDuSigle` (`_lib.mjs`, champ `pdf`), `--pdf <chemin>` le SURCHARGE explicitement.
+//           `pdfDuSigle` (`_lib.mjs`, champ `pdf`), SEULE source du PDF (#1739).
 // Sortie  : table des folios lus (K → folio, en runs) + rapport de pose d'`anchor-fill` ; `--apply`
 //           écrit les `.md` et l'index, sinon rapport seul.
-// Usage   : node scripts/raw/folio-bootstrap.mjs <ABBR> [--pdf <chemin>] [--apply]
-import { writeFileSync, existsSync } from 'node:fs'
+// Usage   : node scripts/raw/folio-bootstrap.mjs <ABBR> [--apply]
+import { writeFileSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, resolve, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -109,18 +109,16 @@ export function buildFolioToc(dir, title) {
 function main() {
   const args = process.argv.slice(2)
   const abbr = args.find((a) => !a.startsWith('--'))
-  const pdfIdx = args.indexOf('--pdf')
   const apply = args.includes('--apply')
   if (!abbr) {
-    console.log('Usage: node scripts/raw/folio-bootstrap.mjs <ABBR> [--pdf <chemin>] [--apply]')
+    console.log('Usage: node scripts/raw/folio-bootstrap.mjs <ABBR> [--apply]')
     process.exitCode = 1
     return
   }
   const dir = livreDuSigle(abbr)?.dir
   if (!dir) { console.log(`abréviation inconnue de books.json : ${abbr}`); process.exitCode = 1; return }
   let pdfPath
-  try { pdfPath = pdfIdx >= 0 ? args[pdfIdx + 1] : pdfDuSigle(abbr) } catch (e) { console.log(e.message); process.exitCode = 1; return }
-  if (!existsSync(pdfPath)) { console.log(`PDF introuvable : ${pdfPath}`); process.exitCode = 1; return }
+  try { pdfPath = pdfDuSigle(abbr) } catch (e) { console.log(e.message); process.exitCode = 1; return }
 
   const corpus = corpusRange(dir)
   if (!corpus) { console.log(`aucun en-tête \`*Pages PDF N[-M]*\` dans ${dir}`); process.exitCode = 1; return }
@@ -140,7 +138,7 @@ function main() {
   }
   if (unread.length) console.log(`pages sans folio imprimé lisible (K) : ${unread.join(', ')}`)
 
-  const result = runBook(abbr, { apply, pdfPath, offset: off.offset })
+  const result = runBook(abbr, { apply, offset: off.offset })
   if (!result.ok) { console.log(`ABANDON — ${result.reason}`); process.exitCode = 1; return }
   let placed = 0, skipped = 0
   for (const c of result.chapters) {

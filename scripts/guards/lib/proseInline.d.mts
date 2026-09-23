@@ -8,7 +8,7 @@ export interface RacineProse {
 export const RACINE_DEPOT: string;
 export const RACINES_PROSE: readonly RacineProse[];
 
-export function livresExtraits(root?: string): Set<string>;
+export function livresExtraits(): Set<string>;
 export function typeDuDocument(doc: unknown, chemin: string): string;
 export function mesurerProseInline(
   racines?: readonly RacineProse[],

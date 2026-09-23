@@ -28,6 +28,9 @@ test('sitesFautifs : chaque forme refusée est VUE, chacune seule', () => {
     ['extension-seule', 'Path(x).with_suffix(".§")'],
     ['gabarit-ouvert', 'const c = `marker ${x}.§ --out`'],
     ['filtre-regex', 'const re = /\\.§$/'],
+    ...[0, 1, 2, [0, 1, 2]].map((i) => ['glob-classe', `globSync('Source/*.${[...EXT].map((c, j) => ([i].flat().includes(j) ? `[${c}${c.toUpperCase()}]` : c)).join('')}')`]),
+    ['glob-alternative', `globSync('Source/*.{${EXT},${EXT.toUpperCase()}}')`],
+    ...'@!+*?'.split('').map((p) => ['glob-alternative', `globSync('Source/*.${p}(${EXT}|${EXT.toUpperCase()})')`]),
     ['litteral-coupe', "const p = 'Source/x.p' + 'df'"],
     ['litteral-coupe', "const e = 'p' + 'df'"],
   ]

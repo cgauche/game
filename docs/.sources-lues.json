@@ -329,6 +329,7 @@
       "src/data/skills.json",
       "src/data/slug.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/species.json",
       "src/data/speciesRace.json",
@@ -1121,6 +1122,7 @@
       "src/data/skills.json",
       "src/data/slug.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/species.json",
       "src/data/speciesRace.json",
@@ -1563,6 +1565,7 @@
       "src/data/slug.ts",
       "src/data/source/chapitres.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/sourceRefs.ts",
       "src/data/species.json",
@@ -3801,6 +3804,7 @@
       "src/data/slug.ts",
       "src/data/source/chapitres.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/sourceRefs.ts",
       "src/data/species.json",
@@ -6844,6 +6848,7 @@
       "src/data/slug.ts",
       "src/data/source/chapitres.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/sourceRefs.ts",
       "src/data/species.json",
@@ -9984,6 +9989,7 @@
       "src/data/books.json",
       "src/data/hash.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts"
     ],
     "dossiers": []
@@ -10265,6 +10271,7 @@
       "src/data/skills.json",
       "src/data/slug.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/species.json",
       "src/data/speciesRace.json",
@@ -10602,6 +10609,7 @@
       "src/data/slug.ts",
       "src/data/source/chapitres.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/structureCriticals.ts",
       "src/data/systemes.manifest.json",
@@ -12493,6 +12501,7 @@
       "src/data/slug.ts",
       "src/data/source/chapitres.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/sourceRefs.ts",
       "src/data/structureCriticals.ts",
@@ -14681,6 +14690,7 @@
       "src/data/slug.ts",
       "src/data/source/chapitres.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/sourceRefs.ts",
       "src/data/species.json",
@@ -15319,6 +15329,7 @@
       "src/data/books.json",
       "src/data/hash.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts"
     ],
     "dossiers": [
@@ -15472,6 +15483,7 @@
       "src/data/books.json",
       "src/data/hash.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts"
     ],
     "dossiers": [
@@ -16213,6 +16225,8 @@
       "src/data/source/chapitres.ts",
       "src/data/source/decoupe.test.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.test.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/source/numero-de-chapitre.test.ts",
       "src/data/source/prose-source.test.ts",
@@ -20208,6 +20222,7 @@
       "src/data/books.json",
       "src/data/hash.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts"
     ],
     "dossiers": [
@@ -20507,6 +20522,7 @@
       "src/data/books.json",
       "src/data/hash.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts"
     ],
     "dossiers": [
@@ -21289,6 +21305,8 @@
       "src/data/source/chapitres.ts",
       "src/data/source/decoupe.test.ts",
       "src/data/source/decoupe.ts",
+      "src/data/source/livre-extrait.test.ts",
+      "src/data/source/livre-extrait.ts",
       "src/data/source/normalize.ts",
       "src/data/source/numero-de-chapitre.test.ts",
       "src/data/source/prose-source.test.ts",

@@ -5,7 +5,7 @@
 //
 // Principe :
 //   1. Livre → dossier `Source/<dir>/` (`livreDuSigle` de `_lib.mjs`) → PDF du livre par `pdfDuSigle`
-//      (`_lib.mjs`, champ `pdf` de `books.json`) ; `--pdf` le SURCHARGE explicitement.
+//      (`_lib.mjs`, champ `pdf` de `books.json`), SEULE source du PDF (#1739).
 //   2. Offset id↔folio PAR LIVRE : chaque ancre existante `id="page-K-0" data-folio="F"` donne
 //      `offset = K - F` (K = index pypdf 0-based, identique au numéro d'id Marker). Vérifié CONSTANT
 //      sur TOUTES les ancres du livre (tous chapitres confondus) — s'il varie, le livre est SKIPPÉ
@@ -33,9 +33,9 @@
 //   8. Idempotent : un folio déjà ancré dans le fichier n'est jamais retraité.
 //
 // Usage :
-//   node scripts/raw/anchor-fill.mjs <ABBR> [--ch NN] [--pdf <chemin>] [--offset N] [--dry|--apply]
+//   node scripts/raw/anchor-fill.mjs <ABBR> [--ch NN] [--offset N] [--dry|--apply]
 //   --dry (défaut) : rapport seul. --apply : réécrit les .md.
-//   --pdf : surcharge du PDF que le registre déclare. --offset : offset K−folio fourni par
+//   --offset : offset K−folio fourni par
 //   l'appelant (livre VIERGE, aucune ancre à dériver — cf. `folio-bootstrap.mjs`).
 import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
@@ -320,14 +320,13 @@ export function applyEdits(text, edits) {
 // `offset` : amorce d'un livre VIERGE (aucune ancre → `resolveBookOffset` n'a rien à dériver) ;
 // l'appelant fournit alors l'offset qu'il a LU au pied/en-tête des pages du PDF
 // (`folio-bootstrap.mjs`). Absent → offset dérivé des ancres existantes, comme d'habitude.
-export function runBook(abbr, { chapter = null, apply = false, dir: dirOverride, pdfPath: pdfOverride, offset: offsetOverride = null } = {}) {
+export function runBook(abbr, { chapter = null, apply = false, dir: dirOverride, offset: offsetOverride = null } = {}) {
   const dir = dirOverride ?? livreDuSigle(abbr)?.dir
   if (!dir) return { abbr, ok: false, reason: `sigle sans livre extrait au registre : ${abbr}` }
   const off = offsetOverride == null ? resolveBookOffset(dir) : { ok: true, offset: offsetOverride }
   if (!off.ok) return { abbr, ok: false, reason: off.reason }
   let pdfPath
-  try { pdfPath = pdfOverride ?? pdfDuSigle(abbr) } catch (e) { return { abbr, ok: false, reason: e.message } }
-  if (!existsSync(pdfPath)) return { abbr, ok: false, reason: `PDF introuvable : ${pdfPath}` }
+  try { pdfPath = pdfDuSigle(abbr) } catch (e) { return { abbr, ok: false, reason: e.message } }
 
   if (!existsSync(dir)) return { abbr, ok: false, reason: 'dossier introuvable' }
   let files = listerDossier(dir, { absent: 'vide' }).filter((f) => numeroDuFichier(f) != null)
@@ -392,22 +391,20 @@ function main() {
   const abbr = args.find((a) => !a.startsWith('--'))
   const chIdx = args.indexOf('--ch')
   const chapter = chIdx >= 0 ? args[chIdx + 1] : null
-  const pdfIdx = args.indexOf('--pdf')
   const offIdx = args.indexOf('--offset')
   const apply = args.includes('--apply')
   if (!abbr) {
-    console.log('Usage: node scripts/raw/anchor-fill.mjs <ABBR> [--ch NN] [--pdf <chemin>] [--offset N] [--dry|--apply]')
+    console.log('Usage: node scripts/raw/anchor-fill.mjs <ABBR> [--ch NN] [--offset N] [--dry|--apply]')
     process.exitCode = 1
     return
   }
-  const pdfPath = pdfIdx >= 0 ? args[pdfIdx + 1] : undefined
   const offset = offIdx >= 0 ? Number(args[offIdx + 1]) : null
   if (offIdx >= 0 && !Number.isInteger(offset)) {
     console.log(`--offset attend un entier, reçu : ${args[offIdx + 1]}`)
     process.exitCode = 1
     return
   }
-  const result = runBook(abbr, { chapter, apply, pdfPath, offset })
+  const result = runBook(abbr, { chapter, apply, offset })
   console.log(report(result))
   if (!apply) console.log('(--dry : relancer avec --apply pour écrire)')
 }

@@ -3,6 +3,7 @@
 // (`scripts/raw/_lib.mjs`, #1739, 2026-09-19, bloquant 3) ou de sa CLI `scripts/raw/pdf-de.mjs`.
 // Banc et balayage : `pdfHorsCouture.test.mjs`, joué par `test:hooks`, qui exige que la déclaration
 // `lit` de cette gate (`scripts/gates/toutes.mjs`) couvre `racinesBalayees`.
+// LIMITE : garde LEXICALE, sans analyse de valeur — une extension portée par une variable ou épelée par morceaux lui échappe (#1739).
 import { existsSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -18,12 +19,15 @@ export const nomPdf = (nom) => [nom, EXT].join('.')
 // FORMES refusées, chacune avec un cas au banc : l'extension seule en littéral (concaténation,
 // `concat`, `join`, `endsWith`, `with_suffix`, `path.format`, `os.extsep`), littéral qui FINIT par
 // l'extension (glob, gabarit et f-string compris), gabarit ouvert avant l'extension, filtre
-// d'expression régulière, littéral COUPÉ par `+`. En shell, tout mot qui finit par l'extension.
+// d'expression régulière, glob à CLASSES de caractères ou à ALTERNATIVE (accolades, extglob),
+// littéral COUPÉ par `+`. En shell, tout mot qui finit par l'extension.
 const FORMES = {
   'extension-seule': new RegExp(`(['"])\\.?${EXT}\\1`, 'i'),
   'litteral-fini': new RegExp(`(['"\`])(?:(?!\\1)[^\\n])*\\.${EXT}\\1`, 'i'),
   'gabarit-ouvert': new RegExp(`\\}\\.${EXT}\\b`, 'i'),
   'filtre-regex': new RegExp(`\\\\\\.${EXT}\\b`, 'i'),
+  'glob-classe': new RegExp(`\\.(?!${EXT})${[...EXT].map((c) => `(?:${c}|\\[[^\\]\\n]*${c}[^\\]\\n]*\\])`).join('')}`, 'i'),
+  'glob-alternative': new RegExp(`\\.(?:\\{[^}\\n]*\\b${EXT}\\b[^}\\n]*\\}|[@!+*?]\\([^)\\n]*\\b${EXT}\\b[^)\\n]*\\))`, 'i'),
 }
 const MOT_SHELL = new RegExp(`\\S*\\.${EXT}\\b`, 'i')
 const LITTERAL = /(['"])((?:(?!\1)[^\n\\]|\\.)*)\1/g

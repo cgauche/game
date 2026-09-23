@@ -26,6 +26,8 @@ import { normalize, ELLIPSIS_SENTINEL } from '../../src/data/source/normalize.ts
 // Le NUMÉRO DE CHAPITRE (prédicat, motif de nom, résolution) vit dans sa maison unique
 // `src/data/source/decoupe.ts` — module PUR, chargé tel quel par Node nu comme par vitest.
 import { fichierDuChapitre, numeroDuFichier } from '../../src/data/source/decoupe.ts'
+// « Livre EXTRAIT » : définition UNIQUE app/outillage, `src/data/source/livre-extrait.ts` (#1739).
+import { estLivreExtrait } from '../../src/data/source/livre-extrait.ts'
 
 // Lecture CRLF-robuste (#604) -- SOURCE UNIQUE de lecture texte pour tout fichier Source/**/docs/raw/** :
 // une reecriture Windows du 2026-07-07 a mutile 202 fichiers en CRLF/mixte (contenu identique, index git
@@ -37,17 +39,15 @@ import { fichierDuChapitre, numeroDuFichier } from '../../src/data/source/decoup
 // N'affecte pas JSON.parse (deja tolerant aux fins de ligne) ni les fichiers deja en LF (no-op).
 export const readText = (path) => readFileSync(path, 'utf8').replace(/\r\n|\r/g, '\n')
 
-// Un livre est-il EXTRAIT (donc adressable par l'outillage Atlas) ? Prédicat de l'OUTILLAGE : tout
-// `scripts/` en juge par lui (`booksDe`, `livreExtraitDe`, `livreDuSigle`, `sigleDe`…) — une entrée de
-// `books.json` sans `dir` (livre autorisé mais jamais converti en `.md`) n'a ni chapitre à lire ni
-// fiche à intégrer. L'app en porte la MÊME définition (`abbr` ET `dir`) dans sa propre maison,
-// `src/data/schemas/grammaire/livres-extraits.ts`, verrouillée par `src/data/prose-inline-contrat.test.ts` (d).
-export function estLivreExtrait(b) { return Boolean(b && b.abbr && b.dir) }
+// Un livre est-il EXTRAIT (donc adressable par l'outillage Atlas) ? Définition UNIQUE, partagée avec
+// l'app (import en tête). Tout `scripts/` en juge par elle (`booksDe`,
+// `livreExtraitDe`, `livreDuSigle`, `sigleDe`…), ré-exportée ICI.
+export { estLivreExtrait }
 
 // ABRÉV → dossier Source, DÉRIVÉ de `books.json` (SOURCE UNIQUE des acronymes ET de l'ordre,
 // ref #585, #1825) : les entrées porteuses d'un `dir` (les livres couverts par l'Atlas RAW), dans
 // l'ORDRE DU FICHIER — le même que l'app sert au joueur (`src/data/index.ts` `books`,
-// `src/ui/compendium/DescRefField.tsx` par `estExtrait` de `src/data/schemas/grammaire/livres-extraits.ts`). C'est aussi l'ordre d'affichage des
+// `src/ui/compendium/DescRefField.tsx` par `estExtrait`, qui applique le même `estLivreExtrait`). C'est aussi l'ordre d'affichage des
 // rapports : un livre de plus est UNE entrée de `books.json`, zéro ligne ici.
 export const booksDe = (registre) => registre.filter(estLivreExtrait).map((b) => [b.abbr, b.dir])
 // Registre BRUT des livres, tel que `books.json` le porte — la lecture du fichier vit ICI et nulle

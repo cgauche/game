@@ -19,7 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { listerArbre } from './lister.mjs';
-import { estLivreExtrait } from '../../raw/_lib.mjs';
+import { REGISTRE_LIVRES, estLivreExtrait } from '../../raw/_lib.mjs';
 import { fileURLToPath } from 'node:url';
 
 /** Racine du dépôt, déduite de l'emplacement de ce module (`scripts/guards/lib`). */
@@ -37,11 +37,9 @@ export const RACINES_PROSE = Object.freeze([
   Object.freeze({ dossier: 'src/scenes', suffixe: '-projet.json', recursif: true }),
 ]);
 
-/** Ids des livres EXTRAITS (`estLivreExtrait`) du registre de `root` — les seuls adressables. */
-export function livresExtraits(root = RACINE_DEPOT) {
-  const books = JSON.parse(fs.readFileSync(path.join(root, 'src/data/books.json'), 'utf8'));
-  const liste = Array.isArray(books) ? books : books.entries;
-  return new Set(liste.filter(estLivreExtrait).map((b) => b.id));
+/** Ids des livres EXTRAITS (`estLivreExtrait`) du registre (`REGISTRE_LIVRES`) — les seuls adressables. */
+export function livresExtraits() {
+  return new Set(REGISTRE_LIVRES.filter(estLivreExtrait).map((b) => b.id));
 }
 
 function fichiersDe(dir, suffixe, recursif) {
@@ -67,7 +65,7 @@ export function typeDuDocument(doc, chemin) {
  * triés, pour que la garde nomme ce qui dérive au lieu d'imprimer un delta nu.
  */
 export function mesurerProseInline(racines = RACINES_PROSE, root = RACINE_DEPOT) {
-  const extraits = livresExtraits(root);
+  const extraits = livresExtraits();
   const parType = new Map();
   for (const racine of racines) {
     for (const fichier of fichiersDe(path.join(root, racine.dossier), racine.suffixe, racine.recursif)) {
