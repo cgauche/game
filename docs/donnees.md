@@ -62,7 +62,7 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 ### Magie & religion
 | Fichier | Contient | Exposition (Codex — édition) |
 |---|---|---|
-| `spells.json` | Sorts, bénédictions, miracles (`effects`) (576 entrée(s)) | `spells` — dataset `spells` |
+| `spells.json` | Sorts, bénédictions, miracles (`effects`) (526 entrée(s)) | `spells` — dataset `spells` |
 | `domains.json` | Domaines de magie (Vents) (20 entrée(s)) | `domains` — dataset `domains` |
 | `gods.json` | Dieux (bénédictions/miracles rattachés) (41 entrée(s)) | `gods` — dataset `gods` |
 | `miscast.json` | Tables d'Incident magique — 5 documents : Imparfaites Mineures/Majeures (LDB), leurs révisions VDM, Colère des dieux (5 entrée(s)) | `miscastMinor` · `miscastMajor` · `miscastWrath` — niché (`miscastMinor` · `miscastMajor` · `miscastWrath`) |
@@ -495,4 +495,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: 5e7bf64cb8f0caeccdffd9717660680a8a0b896b (378 fichiers, 2 dossiers) corps: 2196f35b8591c188836fca6cb068cac913af0c1f -->
+<!-- sources-empreinte: debb2420c13bb402e583a58496521a657bf20489 (378 fichiers, 2 dossiers) corps: 2eb002893dc06ae30416242cf782277dd513b4bf -->

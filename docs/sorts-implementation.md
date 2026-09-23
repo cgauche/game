@@ -7,17 +7,13 @@
 
 **Périmètre mesuré / angles morts** — la classification (État/Curé/Reste) lit `s.effects` (le `Flow` authoré) via `spellOps(s.effects, on)`, appelé seulement pour `on: 'target'` et `on: 'caster'`. `EffectOp.on` admet aussi `'party'` et `'hero'` (`src/engine/flowCore.ts`) : un effet authoré sur ces deux cibles est invisible ici — ni compté dans État/Curé, ni listé dans « Reste à mécaniser ». Mesuré sur `src/data/spells.json` : 0 occurrence de `party`/`hero` aujourd'hui (angle mort inerte). Second angle mort, DISTINCT : `spellOps` ne descend jamais dans les `Flow` imbriqués d'un `GameOp.onHitEffects` (`augmentWeapon`/`grantWeapon`, ex. Serres d'ambre → « En flammes » à la touche) — ces ops ciblent la victime touchée via `TriggeredEffect.on: 'victim'` (un champ DIFFÉRENT d'`EffectOp.on`, cf. `EffectTargeting`). Mesuré : 5 sorts / 6 occurrences (`serres-d-ambre`, `l-epee-ardente-de-rhuin`, `marteau-ardent-de-sigmar`, `morsure-de-l-hiver`, `epee-de-justice`) — mais chacun porte déjà un autre op non-narratif au premier niveau (`augmentWeapon`/`grantWeapon`), donc la classification affichée n'est PAS sous-évaluée par ce trou aujourd'hui ; seul le détail « Reste à mécaniser » de ces 5 lignes est incomplet. Troisième angle mort : la mesure est STRUCTURELLE (le `Flow` authoré existe), pas une preuve d'exécution — une op comptée « mécanique » ici peut rester « inerte au switch » d'`applyOps` (cf. `docs/vocabulaire-mecanique.md`).
 
-## Bénédiction (5)
-**Synthèse** : 576 sorts — ✅ 93 mécaniques · 🟡 216 partiels · 📜 267 narratifs (arbitrage MJ) · 438 specs curées.
+## Bénédiction (1)
+**Synthèse** : 526 sorts — ✅ 92 mécaniques · 🟡 212 partiels · 📜 222 narratifs (arbitrage MJ) · 438 specs curées.
 
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
 | Culpabilité | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Justice | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Rapidité | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Robustesse | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Soins | 📜 | repli | Non curé : desc journalisée telle quelle. |
 
 ## Béni (19)
 
@@ -51,10 +47,11 @@
 | Contamination | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Immuno - Déficience | 📜 | repli | Non curé : desc journalisée telle quelle. |
 
-## du Domaine de la Ruine (6)
+## du Domaine de la Ruine (7)
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
+| Bouclier | 🟡 | repli | Bouclier : un adversaire qui attaque le sorcier à mains nues ou avec une arme métallique encaisse 7 Points de Dégâts (pas de PA d’armure métallique). |
 | Crépitement Funeste | ✅ | repli |  |
 | Crevasse | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Dépeçage | 🟡 | repli | Non curé : desc journalisée telle quelle. |
@@ -223,21 +220,18 @@
 | Sagesse de la chouette | ✅ | oui |  |
 | Verena est mon témoin | 📜 | oui | Verena est mon témoin : tant que vous ne dites que la vérité, tous vos auditeurs croient vos paroles pour la durée (sans nécessairement partager vos conclusions) — arbitrage MJ. |
 
-## Magie des Arcanes (56)
+## Magie des Arcanes (49)
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
 | Agressivité de la Maresang | ✅ | oui |  |
 | Algues Cruelles | 🟡 | repli | Non curé : desc journalisée telle quelle. |
-| Âme Dévoilée | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Argile fertile | 📜 | oui | Argile fertile : pendant la Durée du Sort, la bête des marais se régénère du double de Points de Blessures qu'elle devrait normalement obtenir — doublement d'une Régénération non modélisé, arbitrage MJ. |
 | Arme aethyrique | ✅ | oui |  |
 | Armure Aethyrique | ✅ | oui |  |
 | Attaques en chaîne | ✅ | oui |  |
 | Aura ordinaire | 📜 | oui | Aura ordinaire : votre nature magique est indétectable (Perception de la magie et similaires). |
-| Bélier | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Berceuse Soporifique UA II | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Bouclier | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Bouclier anti-flèches | ✅ | oui |  |
 | Bouclier magique | 📜 | oui | Bouclier magique : +BFM DR à vos tentatives de Dissipation tant que le Sort est actif (la Dissipation n’est pas encore modélisée). |
 | Cacophonie Scabreuse | 🟡 | repli | Non curé : desc journalisée telle quelle. |
@@ -254,12 +248,9 @@
 | Effrayant | ✅ | oui |  |
 | Enchevêtrement | ✅ | oui |  |
 | Envol | ✅ | oui |  |
-| Esprit Enfiévré | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Explosion | ✅ | oui |  |
-| Explosion de Dhar | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Fêlure AEthyrique | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Haleine Fétide | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Introspection | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Langue Acérée | ✅ | repli |  |
 | Maîtrise du Destin | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Peau d'écorce et d'os | 🟡 | oui | Peau d'écorce et d'os : NI 1 pour Ghyran et 3 pour Ghur, deux sorciers différents devant contribuer au Sort lors d'un même Round ; la Durée retient le Bonus de Force Mentale le plus haut des deux participants — incantation à deux lanceurs de Domaines distincts non modélisée, arbitrage MJ. |
@@ -268,9 +259,8 @@
 | Pierre de Souffrance | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Pont | 🟡 | oui | Pont : pont d’énergie de BFM mètres (long./larg.), +BFM mètres par +2 DR (arbitrage MJ). |
 | Poussée | ✅ | oui |  |
-| Projectile | 🟡 | repli | Non curé : desc journalisée telle quelle. |
-| Projectile de Dhar | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Protection | ✅ | oui |  |
+| Putréfaction | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Rejeton de Slaanesh | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Sang corrosif | ✅ | oui |  |
 | Secourir un serviteur magique | ✅ | oui |  |
@@ -284,34 +274,30 @@
 | Varech avarié | ✅ | oui |  |
 | Vision dans l'obscurité | ✅ | oui |  |
 
-## Magie des Arcanes & de Nécromancie (8)
+## Magie des Arcanes & de Nécromancie (7)
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
 | Agression AEthyrique | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Appel de Vanhel | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Armure d’AEthyr | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Entrave | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Forme Spectrale | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Frénésie Artificielle | 📜 | repli | Non curé : desc journalisée telle quelle. |
+| Invitation à la Danse Macabre de Vanhel | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Invocation d’un Colosses Necrofex | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Mouchard | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Télékinésie | 📜 | repli | Non curé : desc journalisée telle quelle. |
 
-## Magie des Arcanes & de Sorcellerie (5)
+## Magie des Arcanes & de Sorcellerie (3)
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
 | Effigie Maudite | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Faux- Semblant | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Nuée | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Ruine | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Terreur Nocturne | 📜 | repli | Non curé : desc journalisée telle quelle. |
 
-## Magie des Arcanes & des Taillis (5)
+## Magie des Arcanes & des Taillis (4)
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
-| Bienveillance | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Bouillon Revigorant | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Fertilisation | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Nostrum | 📜 | repli | Non curé : desc journalisée telle quelle. |
@@ -671,33 +657,15 @@
 | Trahison de Tzeentch | 📜 | oui | Trahison de Tzeentch : pour la durée, la cible ne peut plus utiliser ses Talents ni ajouter ses Augmentations de Compétences — tous ses Tests se font sur la Caractéristique nue — arbitrage MJ. |
 | Transformation de Tzeentch | 🟡 | oui | Transformation de Tzeentch : la Cible est impuissante toute la durée du Sort. À la fin, elle fait un Test de Résistance Intermédiaire (+0) opposé à votre Langue (Magick) ; si elle échoue, +1 Point de Corruption, +1 par DR d’écart — arbitrage MJ. |
 
-## Magie Mineure (23)
+## Magie Mineure (5)
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
-| Alarme | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Bruit | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Brume Mystique | 🟡 | repli | Non curé : desc journalisée telle quelle. |
-| Chuchotis | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Conserve | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Courant d’Air | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Eau Pure | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Éclat | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Espionnage | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Fatigue | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Feu Follet | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Flamme | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Langue des Gors | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Langue des Pestigors | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Langue des Slaangors | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Langue des Tzaangors | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Ouverture | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Pied Léger | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Position | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Pourriture | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Projectile Mineur | ✅ | repli |  |
 | Regard Lubrique | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Saccade | 📜 | repli | Non curé : desc journalisée telle quelle. |
 
 ## Magie mineure (25)
 
@@ -736,40 +704,24 @@
 | Faveur du Rat Cornu | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Marque du Rat Cornu | 📜 | repli | Non curé : desc journalisée telle quelle. |
 
-## Miracle (30)
+## Miracle (14)
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
 | Abondance de Rhya | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Apaisement | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Arrière, Sorcière ! | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Aux Innocents les Mains Pleines ! | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Baratin | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Bénédicité de Taal | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Blizzard | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Bon Débarras ! | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Catharsis | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Chaleur de la Fourrure | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Courage du Loup | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Dressage de Rhya | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Fers de | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Haine du Faible | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Instinct Animal | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| La Vérité finit toujours par sortir | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Les Voies de la Nature | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Main de Rhya | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Marteau de Justice | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Modèle de Vertu | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Morsure d’Hiver | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Oeil de Lynx | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Piste Froide | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Résistance du Pénitent | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Sagesse du Hibou | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Sanctuaire | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Saut de Cabri | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Sus à l’Ennemi ! | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Trêve de Taal DSFL | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Verena m’est témoin ! | 📜 | repli | Non curé : desc journalisée telle quelle. |
 
 ## Rituel (11)
 
@@ -813,7 +765,7 @@
 | Invocation de l'élémentaire incarné de la Mort | ✅ | oui |  |
 | Les Faux croisées | 📜 | oui |  |
 
-## Sort (17)
+## Sort (15)
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
@@ -823,8 +775,6 @@
 | Crépitements Vengeurs | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Démangeaison Agaçante | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Douces Paroles | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Flammes Bleues de Tzeentch | 🟡 | repli | Non curé : desc journalisée telle quelle. |
-| Flammes Roses de Tzeentch | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Furoncle Infecté | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Lune de Malheur | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Malveillance Absolue | 🟡 | repli | Non curé : desc journalisée telle quelle. |
@@ -834,4 +784,4 @@
 | Vol | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | WAAAGH ! | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Z’Oeils de Mork | 📜 | repli | Non curé : desc journalisée telle quelle. |
-<!-- sources-empreinte: f829e157afb76fbadfdd9d1788ff52ec97d378a1 (215 fichiers, 0 dossiers) corps: 57339bd26972a9f6c7b187ddec8028b3552b357f -->
+<!-- sources-empreinte: 900b00152d66a1e545dae42a0ca3d762fdc7efbb (215 fichiers, 0 dossiers) corps: d72e0baa4ce6cefe29dbb323d31db20ea25014f3 -->

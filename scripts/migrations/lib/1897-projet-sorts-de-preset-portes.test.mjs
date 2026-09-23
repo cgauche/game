@@ -43,8 +43,8 @@ const alpha = (schema = SCHEMA_AVANT) => ({
   narratif: {
     affaires: [],
     presetsPnj: [
-      { id: 'sorcier', base: 'squelette', profil: { spells: [{ id: 'flechette' }, { id: 'alarme' }] } },
-      { id: 'mixte', base: 'squelette', profil: { spells: ['flechette', { id: 'alarme' }] } },
+      { id: 'sorcier', base: 'squelette', profil: { spells: [{ id: 'flechette' }, { id: 'alerte' }] } },
+      { id: 'mixte', base: 'squelette', profil: { spells: ['flechette', { id: 'alerte' }] } },
       { id: 'muet', base: 'squelette' },
     ],
   },
@@ -61,8 +61,8 @@ const alphaApres = (schema = SCHEMA_APRES) => ({
   narratif: {
     affaires: [],
     presetsPnj: [
-      { id: 'sorcier', base: 'squelette', profil: { spells: ['flechette', 'alarme'] } },
-      { id: 'mixte', base: 'squelette', profil: { spells: ['flechette', 'alarme'] } },
+      { id: 'sorcier', base: 'squelette', profil: { spells: ['flechette', 'alerte'] } },
+      { id: 'mixte', base: 'squelette', profil: { spells: ['flechette', 'alerte'] } },
       { id: 'muet', base: 'squelette' },
     ],
   },
@@ -150,11 +150,11 @@ test('(h) FAIL-FAST `narratif.presetsPnj` NON-TABLEAU → sortie 1 NOMINATIVE, r
 
 test('(i) PORTE DE FORME : un sort ni `{ id }` ni id nu → sortie 1 NOMMANT le preset et le rang, rien d’écrit', () => {
   const etranger = alpha();
-  etranger.narratif.presetsPnj[0].profil.spells = [{ id: 'flechette' }, { id: 'alarme', rang: 2 }];
+  etranger.narratif.presetsPnj[0].profil.spells = [{ id: 'flechette' }, { id: 'alerte', rang: 2 }];
   refuse(
     MIGRATION,
     { [ALPHA]: serialise(etranger, FORME_PROJET), [BETA]: serialise(beta(), FORME_PROJET) },
-    `${ALPHA} preset « sorcier » profil.spells[1] : {"id":"alarme","rang":2} — ni \`{ id }\` ni id nu`,
+    `${ALPHA} preset « sorcier » profil.spells[1] : {"id":"alerte","rang":2} — ni \`{ id }\` ni id nu`,
   );
 });
 

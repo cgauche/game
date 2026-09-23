@@ -113,6 +113,16 @@ describe('auditSecondaryRef — attestation POSITIVE (#563 Lot 1 item 2, morsure
     expect(auditSecondaryRef({ book: 'frenchy-bzh', page, label: undefined, quote }).verdict).toBe(verdict);
   });
 
+  // Tête de chapitre (#1897) : ZI 11 - Chat sauvage.md l.27, avant le premier marqueur (l.47 = 83) ;
+  // 10 - Macareux a bec tranchant.md finit sur 82.
+  it.each([
+    [82, 'attesté'],
+    [83, 'non-attesté'],
+  ] as const)('tête de chapitre, située par continuité : quote en folio %i → %s', (page, verdict) => {
+    const quote = "En présence d'une créature Déstabilisante, une créature Instable compte ses Avantages";
+    expect(auditSecondaryRef({ book: 'zoo-imperial', page, label: undefined, quote }).verdict).toBe(verdict);
+  });
+
   it('livre-hors-atlas si le livre déclaré n\'a pas d\'extraction FR', () => {
     const r = auditSecondaryRef({ book: 'inexistant', page: 1, label: 'X', quote: undefined });
     expect(r.verdict).toBe('livre-hors-atlas');

@@ -157,7 +157,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "classes.json", champ: "grantGroups", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "classes.json", champ: "trappings", occurrences: 56, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "combat-stakes.json", champ: "entryCategory", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "combat-stakes.json", champ: "kind", occurrences: 7, lot: "L2/L3 #1473", date: "2026-08-26" },
+  { dataset: "combat-stakes.json", champ: "kind", occurrences: 6, lot: "L2/L3 #1473", date: "2026-08-26" }, // 7 → 6 (#1897) : la valeur `fatigue` ne coïncide plus avec un id de sort (fusionné dans `drain`)
   { dataset: "combat-stakes.json", champ: "rule", occurrences: 25, lot: "L2/L3 #1473", date: "2026-08-26" }, // 23 → 24 (#1657 B3-1) : l'enjeu `critRowTest` de la rangée de Critique nomme son foyer ; 24 → 25 (#1657 B3-2) : l'enjeu `shipCrewHit` du coup à l'équipage nomme le sien (`critiques-de-bateau`, MSRC 07 l.74)
   { dataset: "creatures.json", champ: "appearance", occurrences: 456, lot: "L2/L3 #1473", date: "2026-08-27" }, // +1 : Chien de trait, EDOC 07 folio 22, #673
   { dataset: "creatures.json", champ: "features", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },

@@ -7,7 +7,7 @@ d'une entrée et leurs libellés d'édition (AST du def zod `src/data/schemas/de
 4 formes de portée, 5 de cible et 5 de durée (les
 `z.discriminatedUnion('kind', …)` du même def), les 9 rubriques d'un Rituel, les
 3 issues de `spellSupport` (type de retour de `src/engine/spellspec.ts`), et l'INVENTAIRE
-mesuré sur les 576 entrées de `src/data/spells.json` (curées, familles, population de chaque
+mesuré sur les 526 entrées de `src/data/spells.json` (curées, familles, population de chaque
 forme). **Angles morts** : l'état d'implémentation SORT PAR SORT n'est pas ici — il vit dans le
 tableau de bord `docs/sorts-implementation.md` (généré à part, avec ses propres angles morts, dont
 le fait que la mesure est STRUCTURELLE et non une preuve d'exécution) ; le vocabulaire des `GameOp`
@@ -26,9 +26,9 @@ Fichier **généré** (`npm run docs:sorts`) : chaque sort avec son état ✅ m�
 📜 narratif, sa colonne « Curé », et le texte « arbitrage MJ » restant à journaliser. C'est le point
 d'entrée pour repérer un sort à curer, ou vérifier qu'un ajout a bien basculé.
 
-**État du catalogue au moment de cette génération** : 576 entrées, dont 438 curées
-(`curated: true`), 17 Rituels (`isRitual`), 576 portant un `effects`.
-Répartition par `family` : `arcane` 359 · `invocation` 117 · `mineure` 50 · `chaos` 26 · `beni` 24.
+**État du catalogue au moment de cette génération** : 526 entrées, dont 438 curées
+(`curated: true`), 17 Rituels (`isRitual`), 526 portant un `effects`.
+Répartition par `family` : `arcane` 347 · `invocation` 101 · `mineure` 32 · `chaos` 26 · `beni` 20.
 
 ## 1. La forme d'une entrée
 
@@ -71,32 +71,32 @@ forme à 0 est déclarée mais jamais exercée par la donnée.
 
 | Forme (`kind`) | Champs | Entrées de `spells.json` |
 |---|---|---|
-| `self` | — | 146 |
-| `touch` | — | 77 |
-| `distance` | `value`, `unit` | 263 |
+| `self` | — | 138 |
+| `touch` | — | 76 |
+| `distance` | `value`, `unit` | 242 |
 | `special` | `text` | 37 |
 
-53 entrées portent `range: null` (portée non applicable ou non renseignée).
+33 entrées portent `range: null` (portée non applicable ou non renseignée).
 
 ### `target` — qui/quoi il affecte (`src/engine/spellRange.ts`)
 
 | Forme (`kind`) | Champs | Entrées de `spells.json` |
 |---|---|---|
-| `self` | — | 127 |
-| `count` | `n` | 179 |
-| `area` | `span`, `meters`, `excludesCaster?`, `affects?`, `maison?` | 99 |
+| `self` | — | 120 |
+| `count` | `n` | 167 |
+| `area` | `span`, `meters`, `excludesCaster?`, `affects?`, `maison?` | 97 |
 | `cone` | `lengthMeters`, `widthMeters`, `affects?`, `maison?` | 1 |
-| `special` | `text` | 117 |
+| `special` | `text` | 108 |
 
 ### `duration` — combien de temps (`src/engine/spellDuration.ts`)
 
 | Forme (`kind`) | Champs | Entrées de `spells.json` |
 |---|---|---|
-| `instant` | — | 137 |
-| `rounds` | `value`, `plus?` | 197 |
-| `clock` | `value`, `unit` | 129 |
+| `instant` | — | 122 |
+| `rounds` | `value`, `plus?` | 193 |
+| `clock` | `value`, `unit` | 122 |
 | `untilDawn` | — | 4 |
-| `special` | `text`, `plus?` | 56 |
+| `special` | `text`, `plus?` | 52 |
 
 `value`/`n`/`meters` sont des `Formula` (`src/engine/ops.ts`) : littéral `number`,
 `{charOf}` (« (Force Mentale) ») ou `{bonusOf}` (« (Bonus de FM) »). Les `parseSpellRange`/
@@ -119,7 +119,7 @@ Cas particuliers, mesurés sur la donnée :
 
 - **Projectile magique** — pas un `GameOp` : champs dédiés `missile`, `damage`, `ignorePA`,
   `ignoreBE`, lus par `missileDamage`/`isMagicMissile` (`src/engine/magic.ts`) et résolus comme
-  une attaque. 40 entrées aujourd'hui.
+  une attaque. 35 entrées aujourd'hui.
 - **Souffle** — `breathAttack`, délégué à l'attaque de zone du Trait Souffle, pas un `GameOp`.
   2 entrées.
 - **Opposition** — `opposed` : `resist` 4.
@@ -183,4 +183,4 @@ effet de cible —, `missile` vient d'`isMagicMissile`.
 
 `npm run typecheck` en plus : les unions de portée/cible/durée et `Formula` sont strictement
 typées — une valeur mal formée casse la compilation avant le runtime.
-<!-- sources-empreinte: 16606437f7d18fbbd6df54f3e59251fe1c4a904e (16 fichiers, 0 dossiers) corps: dc9513126c4f04310c110096a0b7a8a4e7493e11 -->
+<!-- sources-empreinte: 8e36c292c85395cb5053628b74ffa1497ccef006 (16 fichiers, 0 dossiers) corps: ecae67b62ff64cda12e2c2f06d89a38314d207f1 -->

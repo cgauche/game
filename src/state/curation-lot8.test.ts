@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyCast } from './combatFlow';
 import { pregen, pregenParty, PREGEN } from '../data/pregens';
-import { spells, findSpell, findSpellById } from '../data';
+import { spells, findSpellById } from '../data';
 import { spellSupportOf } from '../engine/spellspec';
 import { woundsFromHit } from '../engine/combat';
 import { effectiveArmourAt } from '../engine/characteristics';
@@ -32,19 +32,19 @@ describe('couverture de curation', () => {
     }
   });
 
-  it('labels en double : « Enchevêtrement » résolu par école (Arcane vs miracle de Taal, tous deux curés)', () => {
-    const arcane = spells.find((s) => s.label === 'Enchevêtrement' && s.ecole === 'Magie des Arcanes');
-    const taal = spells.find((s) => s.label === 'Enchevêtrement' && s.ecole === 'Invocation');
-    expect(arcane?.ecole).toBe('Magie des Arcanes'); // discriminant du Sort d'Arcane
-    expect(taal?.ecole).toBe('Invocation'); // discriminant du miracle de Taal
-    const taalSpell = findSpellById('enchevetrement-2')!; // miracle de Taal (le label « Enchevêtrement » est en double)
-    expect(taalSpell.curated).toBe(true);
+  it('label en double : « Enchevêtrement » est DEUX ids (Arcane vs miracle de Taal), tous deux curés', () => {
+    const arcane = findSpellById('enchevetrement')!;
+    const taal = findSpellById('enchevetrement-2')!;
+    expect(arcane.label).toBe(taal.label);
+    expect(arcane.ecole).toBe('Magie des Arcanes');
+    expect(taal.ecole).toBe('Invocation');
+    expect(arcane.curated && taal.curated).toBe(true);
   });
 
   it('spellSupportOf : classification mécanique / partiel / narratif', () => {
     const choc = findSpellById('choc')!; // Magie mineure
     expect(spellSupportOf(choc)).toBe('mecanique');
-    const lumiere = findSpell('Lumière')!;
+    const lumiere = findSpellById('lumiere')!;
     // Lumière émet désormais une VRAIE lumière (op `light` → brouillard de guerre) : volet mécanique +
     // la narration de modulation bougie↔lanterne (Test de Focalisation, non modélisé, arbitrage MJ) → partiel.
     expect(spellSupportOf(lumiere)).toBe('partiel');
@@ -52,9 +52,9 @@ describe('couverture de curation', () => {
     // « arbitrage MJ » (le hurlement de douleur). Le Test interne a migré en nœud Flow `test` (Lot 4b) :
     // sa narration vit dans la branche `fail`, visible par `spellEffectOps` → la classification reflète
     // ce volet → « partiel ».
-    const cauteriser = findSpell('Cautériser')!;
+    const cauteriser = findSpellById('cauteriser')!;
     expect(spellSupportOf(cauteriser)).toBe('partiel');
-    const couronne = findSpell('Couronne de Flammes')!;
+    const couronne = findSpellById('couronne-de-flammes')!;
     expect(spellSupportOf(couronne)).toBe('partiel');
   });
 });
@@ -64,7 +64,7 @@ describe('Armure Aethyrique — PA temporisés', () => {
     const w = pregen(PREGEN.sorcier);
     useGame.setState({ party: [w] as Combatant[] });
     const before = effectiveArmourAt(w, 'corps');
-    applyCast(useGame.getState, useGame.setState, w, w, findSpell('Armure Aethyrique')!, ok(3), false, false);
+    applyCast(useGame.getState, useGame.setState, w, w, findSpellById('armure-aethyrique')!, ok(3), false, false);
     expect(effectiveArmourAt(w, 'corps')).toBe(before + 1);
     const arme: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], subType: 'Base' } as never;
     const sans = { ...w, activeEffects: [] } as Combatant;
@@ -87,7 +87,7 @@ describe('ops de spec sur la branche Projectile (curées seulement)', () => {
   it('Éblouissant : Aveuglé immédiat + récurrent porté par un effet actif', () => {
     const [w, cible] = pregenParty(PREGEN.sorcier, PREGEN.soldat);
     useGame.setState({ party: [w, cible] as Combatant[] });
-    applyCast(useGame.getState, useGame.setState, w, cible, findSpell('Éblouissant')!, ok(2), false, false);
+    applyCast(useGame.getState, useGame.setState, w, cible, findSpellById('eblouissant')!, ok(2), false, false);
     const after = useGame.getState().party.find((h) => h.id === cible.id)!;
     expect(after.conditions.find((x) => x.id === 'aveugle')?.value).toBe(1);
     expect(after.activeEffects?.some((e) => e.opsPerRound?.some((o) => o.op === 'condition' && o.id === 'aveugle'))).toBe(true);
@@ -97,7 +97,7 @@ describe('ops de spec sur la branche Projectile (curées seulement)', () => {
     const [p, w] = pregenParty(PREGEN.pretre, PREGEN.sorcier);
     w.corruption = 2;
     useGame.setState({ party: [p, w] as Combatant[] });
-    applyCast(useGame.getState, useGame.setState, p, w, findSpell('Innocence immaculée')!, ok(1), false, false);
+    applyCast(useGame.getState, useGame.setState, p, w, findSpellById('innocence-immaculee')!, ok(1), false, false);
     expect(useGame.getState().party.find((h) => h.id === w.id)!.corruption).toBe(1);
   });
 });

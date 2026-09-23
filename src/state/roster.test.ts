@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { rosterLoad, rosterAdd, rosterRemove, rosterUpdate, rosterExport, rosterImport, RosterEntry } from './roster';
 import { Combatant } from '../engine/types';
 import { skillBaseValue } from '../engine/skills';
+import { findSpellById } from '../data';
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
 function fakeStorage(): Storage {
@@ -239,5 +240,34 @@ describe('roster — remap `skillId`→`id` des Compétences persistées (#1548 
     expect((un[0].hero.skills as unknown as Record<string, unknown>[])[0]).toEqual({ id: 'resistance', characteristic: 'endurance', advances: 20 });
     rosterAdd(un[0]); // ré-écrit puis relit : 2e passage
     expect(rosterLoad()[0].hero.skills).toEqual(un[0].hero.skills);
+  });
+});
+
+/** #1897 : 54 ids de sort du livre fan sont FUSIONNÉS dans l'entrée qui les double (`SORTS_FUSIONNES`).
+ *  Un héros exporté ou gardé au roster avant le lot porte l'ancien id : aux DEUX canaux il désigne
+ *  l'entrée absorbante, jamais un sort que `findSpellById` ne résout plus. */
+describe('roster — ids de sort FUSIONNÉS remappés (#1897, les DEUX canaux)', () => {
+  const heros = (id: string) => ({ id, label: 'Apprenti d’avant le lot', kind: 'hero', spells: ['alarme', 'alerte', 'flamme', 'choc'], skills: [], talents: [] });
+
+  beforeEach(() => {
+    (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
+  });
+  afterEach(() => {
+    delete (globalThis as { localStorage?: Storage }).localStorage;
+  });
+
+  it('(a) un export v4 CHARGE avec ses sorts vivants, dédoublonnés à la fusion', () => {
+    const res = rosterImport(JSON.stringify({ kind: 'wfrp4-hero', v: 4, hero: heros('h-export'), wealth: { gold: 0, silver: 0, brass: 0 } }));
+    expect(res.error).toBeUndefined();
+    expect(res.entry!.hero.spells).toEqual(['alerte', 'flamme-magique', 'choc']);
+    expect(res.entry!.hero.spells!.every((id) => findSpellById(id))).toBe(true);
+  });
+
+  it('(b) une entrée localStorage d’avant le lot est remappée à la lecture, et une 2ᵉ lecture ne change rien', () => {
+    localStorage.setItem('wfrp4.roster.v1', JSON.stringify([{ hero: heros('h-prelot'), wealth: { gold: 0, silver: 0, brass: 0 } }]));
+    const un = rosterLoad();
+    expect(un[0].hero.spells).toEqual(['alerte', 'flamme-magique', 'choc']);
+    rosterAdd(un[0]);
+    expect(rosterLoad()[0].hero.spells).toEqual(['alerte', 'flamme-magique', 'choc']);
   });
 });

@@ -4511,12 +4511,12 @@ export function castSpell(
   set: SetFn,
   caster: Combatant,
   target: Combatant,
-  label: string,
+  spellId: string,
   fromGrimoire = false,
 ) {
-  const spell = resolveSpell(label);
+  const spell = resolveSpell(spellId);
   if (!spell) {
-    castRefused(get, set, caster, tr('cf.spellNotFound', { spell: label }));
+    castRefused(get, set, caster, tr('cf.spellNotFound', { spell: spellId }));
     return;
   }
   // Contrecoups bloquants (LDB 46/40) : « Propos ésotériques », « Vous abusez de ma patience »…
@@ -4534,7 +4534,7 @@ export function castSpell(
   }
   // Lecture au grimoire (LDB 47 l.21) : sort NON mémorisé de son Domaine, NI doublé.
   if (fromGrimoire && !canCastFromGrimoire(caster, spell)) {
-    castRefused(get, set, caster, tr('cf.grimoireRefused', { name: caster.label, spell: label }));
+    castRefused(get, set, caster, tr('cf.grimoireRefused', { name: caster.label, spell: spell.label }));
     return;
   }
   // Sort « Souffle » (LDB 47 l.509) : délégué à l'attaque de ZONE du Trait — la portée suit le

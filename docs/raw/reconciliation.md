@@ -45,7 +45,7 @@
 - `src/data/reseau-routier.json:192` (l.11) — "note": "EDOC 10 l.11 — section « Patrouilles routières » ; la phrase reprend l.17, l'encadré « LES JUSTICIERS » (l.13-15) la coupant."
 
 ### MCLB 2 — 5 réf(s) code, 0 dans l'Atlas
-- `src/data/creatures.json:57836` (l.2420) — "note": "MCLB 02 l.2420"
+- `src/data/creatures.json:57902` (l.2420) — "note": "MCLB 02 l.2420"
 - `src/data/skills.json:962` (l.1844) — "note": "MCLB 02 l.1844"
 - `src/data/skills.json:1559` (l.1322) — "note": "MCLB 02 l.1322"
 - `src/data/skills.json:1569` (l.2426) — "note": "MCLB 02 l.2426"
@@ -63,7 +63,7 @@
 - `src/data/naval-traits.json:12` (l.90) — "maison": "MSRC 07 l.94 gate le Critique de Superstructure sur « si le bateau dispose d'une cale » sans imprimer de Trait naval ; la cale rejoint le catalogue d
 - `src/data/regles-optionnelles-partition.test.ts:58` (l.90) — // 1 → 2 (#1657 B3-2b-a) : le Trait `cale` porte MSRC 10 l.90 (le livre DIT la cale du navire
 - `src/data/schemas/grammaire/formes-partagees.test.ts:406` (l.90) — // de Superstructure sur « si le bateau dispose d'une cale », MSRC 10 l.90 la dit du navire marchand).
-- `src/ui/compendium/registry-enveloppe.test.ts:163` (l.90) — // gate le Critique de Superstructure dessus ; MSRC 10 l.90 le dit du navire marchand).
+- `src/ui/compendium/registry-enveloppe.test.ts:165` (l.90) — // gate le Critique de Superstructure dessus ; MSRC 10 l.90 le dit du navire marchand).
 
 ### NADJ 4 — 7 réf(s) code, 0 dans l'Atlas
 - `src/data/schemas/defs-scenes/scene.ts:136` (l.72) — /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
@@ -207,4 +207,4 @@ _Aucun._
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, LDB, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, CRB, EDO, EDOC, LDB, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 6979754bc410b42072aaba6b7467b037e4b8c006 (4217 fichiers, 152 dossiers) corps: 8a93451b05ed150074255caf91f41c05c01d8e33 -->
+<!-- sources-empreinte: 7bc83e8d29f7495884f475510b9a00f93b79cc9a (4219 fichiers, 152 dossiers) corps: 9e420b979f4a67cddd6673ca281909a34ecb327a -->

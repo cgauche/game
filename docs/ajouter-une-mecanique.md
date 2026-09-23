@@ -122,7 +122,7 @@ Documents porteurs :
 | `src/data/mutations.json` | `effects` | `src/data/schemas/defs/mutations.ts` | 1 / 116 |
 | `src/data/psychology.json` | `effects` | `src/data/schemas/defs/psychology.ts` | 1 / 9 |
 | `src/data/qualities.json` | `effects` | `src/data/schemas/defs/qualities.ts` | 10 / 59 |
-| `src/data/spells.json` | `effects` | `src/data/schemas/defs/spells.ts` | 576 / 576 |
+| `src/data/spells.json` | `effects` | `src/data/schemas/defs/spells.ts` | 526 / 526 |
 | `src/data/symptoms.json` | `effects` | `src/data/schemas/defs/symptoms.ts` | 1 / 18 |
 | `src/data/talents.json` | `effects` | `src/data/schemas/defs/talents.ts` | 4 / 187 |
 | `src/data/traits.json` | `effects` | `src/data/schemas/defs/traits.ts` | 25 / 132 |
@@ -220,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: 8d2313f363edef67eaaa8b06bed7ab19f1f23857 (158 fichiers, 1 dossiers) corps: 46f0fdea83755a45a0d069ab5f5c787f2224813c -->
+<!-- sources-empreinte: 51ecc9d6149a64793ea71f214f3c251661e722ac (158 fichiers, 1 dossiers) corps: b8c198b75254667c0123aa6e7990d85696570b5c -->

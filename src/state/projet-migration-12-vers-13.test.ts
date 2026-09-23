@@ -26,7 +26,7 @@ const PROJET_FORMAT_12 = {
     affaires: [],
     indices: [],
     presetsPnj: [
-      { id: 'sorcier', base: 'squelette', profil: { spells: [{ id: 'flechette' }, { id: 'alarme' }] } },
+      { id: 'sorcier', base: 'squelette', profil: { spells: [{ id: 'flechette' }, { id: 'alerte' }] } },
       { id: 'deja-nu', base: 'squelette', profil: { spells: ['flechette'] } },
     ],
     objets: [],
@@ -55,7 +55,7 @@ describe('PROJECT_MIGRATIONS[12] — un projet format 12 se charge à travers la
   });
 
   it('les sorts `{ id }` d’un preset ressortent en ids NUS, dans leur ORDRE', () => {
-    expect(presetsMigrés()[0].profil?.spells).toEqual(['flechette', 'alarme']);
+    expect(presetsMigrés()[0].profil?.spells).toEqual(['flechette', 'alerte']);
   });
 
   it('un preset dont les sorts sont DÉJÀ nus traverse INTACT', () => {

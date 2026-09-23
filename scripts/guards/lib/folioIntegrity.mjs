@@ -72,7 +72,7 @@ const DROP = new Set(['*', '_', '`'])
 
 /**
  * Normalise pour un match VERBATIM tolérant au seul habillage (casse, apostrophes typographiques,
- * espaces insécables, emphase Markdown, retours à la ligne), et retourne la carte index→offset BRUT
+ * espaces insécables, emphase Markdown, retours à la ligne, `<br>` d'une cellule de table), et retourne la carte index→offset BRUT
  * qui permet de relocaliser l'occurrence dans le texte d'origine (donc entre ses marqueurs).
  * @param {string} s @returns {{ text: string, idx: number[] }}
  */
@@ -85,6 +85,7 @@ export function normMap(s) {
     let c = src[i]
     if (c === '’' || c === '‘') c = "'"
     if (c === ' ' || c === ' ') c = ' '
+    if (c === '<' && src.startsWith('<br>', i)) { c = ' '; i += 3 }
     if (DROP.has(c)) continue
     if (/\s/.test(c)) {
       if (prevSpace) continue
@@ -107,23 +108,26 @@ const PIED_DE_PAGE = /^[ \t]*(?:(\d+)[ \t]+sur|sur[ \t]+(\d+))[ \t]+(\d+)[ \t]*$
  *  admis seulement si son total `M` est celui d'un pied SEUL du même chapitre — une prose « 3 sur 10 »
  *  en fin de ligne n'est pas un folio. */
 const PIED_FUSIONNE = /\S[ \t]+(\d+)[ \t]+sur[ \t]+(\d+)[ \t]*$/gm
+/** Pied pris dans une RANGÉE de table (`frenchy.bzh 46` l.58 : `||||||sur<br>268<br>630||`) : même
+ *  admission par le total `M` qu'un pied fusionné. */
+const PIED_EN_CELLULE = /\|[ \t]*sur<br>(\d+)<br>(\d+)[ \t]*\|/g
 
 /**
  * Marqueurs de DÉBUT de folio `[offset, folio]` d'un chapitre brut, triés par offset. Deux graphies :
- * `<span data-folio="N">` (Marker) OUVRE la page N ; un pied de page `N sur M` (seul ou fusionné) la
+ * `<span data-folio="N">` (Marker) OUVRE la page N ; un pied de page `N sur M` (seul, fusionné ou pris dans une rangée) la
  * CLÔT — le texte qui le précède est en folio N, celui qui le suit en N+1. Le DERNIER pied ferme sa page
  * (marqueur de même folio N à sa fin quand rien ne le suit) et la fin du chapitre ferme la page N+1
  * (marqueur de même folio à la fin du texte) : aucune plage n'est ouverte sur les folios suivants. Un
  * pied manquant laisse l'encadrement ouvert sur deux folios.
  * @param {string} raw @returns {[number, number][]}
  */
-function marqueursDeFolio(raw) {
+export function marqueursDeFolio(raw) {
   /** @type {[number, number][]} */
   const folios = []
   for (const m of raw.matchAll(/data-folio="(\d+)"/g)) folios.push([m.index ?? 0, Number(m[1])])
   const seuls = [...raw.matchAll(PIED_DE_PAGE)].map((m) => ({ fin: (m.index ?? 0) + m[0].length, n: Number(m[1] ?? m[2]), total: m[3] }))
   const totaux = new Set(seuls.map((p) => p.total))
-  const fusionnes = [...raw.matchAll(PIED_FUSIONNE)]
+  const fusionnes = [...raw.matchAll(PIED_FUSIONNE), ...raw.matchAll(PIED_EN_CELLULE)]
     .filter((m) => totaux.has(m[2]))
     .map((m) => ({ fin: (m.index ?? 0) + m[0].length, n: Number(m[1]) }))
   const pieds = [...seuls, ...fusionnes].sort((a, b) => a.fin - b.fin)
@@ -244,7 +248,7 @@ export function auditFolio({ book, page, desc }) {
   /** @type {{lo:number,hi:number|null,file:string}[]} */
   const ranges = []
   let found = false
-  for (const doc of docs) {
+  docs.forEach((doc, d) => {
     let from = 0
     for (;;) {
       const i = doc.text.indexOf(nd, from)
@@ -252,20 +256,24 @@ export function auditFolio({ book, page, desc }) {
       found = true
       const a = doc.idx[i]
       const b = doc.idx[Math.min(i + nd.length - 1, doc.idx.length - 1)]
-      const r = folioRange(doc.folios, a, b)
+      const r = occurrenceRange(docs, d, a, b)
       if (r) ranges.push({ ...r, file: doc.file })
       from = i + 1
     }
-  }
+  })
   if (!found) return { verdict: 'desc-introuvable' }
   if (ranges.length === 0) return { verdict: 'sans-marqueur' }
   // UNE occurrence encadrante suffit — non par confort, mais parce qu'une desc retrouvée SUR le folio
   // déclaré ne peut pas être dite mensongère : le texte y est. La contrepartie est que ce module ne
   // départage PAS deux occurrences : ce choix est une convention de citation, pas un fait réfutable —
-  // `auditFolios` les SIGNALE (`multi`) pour arbitrage humain. Mesuré sur les 1047 entrées à desc
-  // retrouvée : 1 SEULE est multi-occurrence (`traits.json:fouissement`, folios 23 et 134 — le ZI y
-  // définit le Trait DEUX fois en toutes lettres ; le schéma ne sait pas écrire « défini à deux
-  // endroits », #563) — la règle ne pèse donc sur rien d'autre.
+  // `auditFolios` les SIGNALE (`multi`) pour arbitrage humain. Mesuré le 2026-09-23 (#1897) par
+  // `auditFolios(src/data).multi` sur les 1783 entrées à desc située (`folio-ok` + `folio-ment`) :
+  // 8 sont multi-occurrences.
+  // 5 à folios DISTINCTS : `traits.json:fouissement` (23 et 134) et `traits.json:destabilisant`
+  // (82 et 135), le ZI définissant chacun deux fois en toutes lettres, #563 ; `criticals.json:aa-corps-31`
+  // (85 et 86), `aa-jambe-46` (85 et 86), `aa-jambe-66` (84 et 86). 3 au MÊME folio, sans choix à
+  // faire : `mutations.json:tete-bestiale-taureau` (65+), `ship-stations.json:pont` (119),
+  // `ship-stations.json:greement` (118).
   const ok = ranges.some(({ lo, hi }) => page >= lo && (hi === OPEN || page <= hi))
   return { verdict: ok ? 'folio-ok' : 'folio-ment', ranges }
 }
@@ -330,6 +338,17 @@ export function preMarkerRange(docs, i) {
   }
   if (lo === 0 || lo > hi) return null
   return { lo, hi }
+}
+
+/**
+ * Plage de folios d'une occurrence `[a, b]` du document `docs[d]` : l'encadrement par marqueurs
+ * (`folioRange`), sinon la continuité de tête de chapitre (`preMarkerRange`). Lecture UNIQUE des
+ * trois voies — desc (`auditFolio`), titre (`auditFolioByTitle`), secondaire (`auditSecondaryRef`).
+ * @param {{ folios: [number, number][] }[]} docs @param {number} d @param {number} a @param {number} b
+ * @returns {{ lo: number, hi: number | null } | null}
+ */
+function occurrenceRange(docs, d, a, b) {
+  return folioRange(docs[d].folios, a, b) ?? preMarkerRange(docs, d)
 }
 
 /** Premier index de `arr` (trié) dont la valeur est ≥ `v`. */
@@ -418,7 +437,7 @@ export function auditFolioByTitle({ book, page, label }) {
       const nt = normHeading(title)
       if (nt !== nl && !nt.startsWith(`${nl} (`)) continue
       found = true
-      const r = folioRange(doc.folios, off, off + title.length) ?? preMarkerRange(docs, i)
+      const r = occurrenceRange(docs, i, off, off + title.length)
       if (r) ranges.push({ lo: r.lo, hi: r.hi, file: doc.file })
     }
   })
@@ -556,14 +575,14 @@ export function auditSecondaryRef({ book, page, label, quote }) {
   for (const [needle, via] of candidates) {
     const nd = normMap(needle).text
     if (!nd) continue
-    for (const doc of docs) {
+    for (const [d, doc] of docs.entries()) {
       let from = 0
       for (;;) {
         const i = doc.text.indexOf(nd, from)
         if (i < 0) break
         const a = doc.idx[i]
         const b = doc.idx[Math.min(i + nd.length - 1, doc.idx.length - 1)]
-        const r = folioRange(doc.folios, a, b)
+        const r = occurrenceRange(docs, d, a, b)
         if (r && page >= r.lo && (r.hi === OPEN || page <= r.hi)) return { verdict: 'attesté', via }
         from = i + 1
       }

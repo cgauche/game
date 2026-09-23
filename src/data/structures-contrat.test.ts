@@ -1700,7 +1700,9 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
     // (la rançon des autres mendiants).
     // #1678 (2026-09-20) : 2279 → 2280 — le verrou de TYPE d'À Terre (`LDB 18 l.15`) descend en DONNÉE
     // (`etats.json › lockedUntil`) : c'est un `compare`, et son `op` compte ici.
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2280);
+    // #1897 (2026-09-23) : 2280 → 2281 — le Bouclier skaven (`frenchy.bzh 56` l.145) naît avec 1 `ap` et
+    // 1 `narrative` ; « Projectile Mineur » fusionne dans Fléchette et emporte son `wounds`.
+    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2281);
     // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
     // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
     // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le

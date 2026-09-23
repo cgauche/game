@@ -201,7 +201,7 @@
     "duration": {
       "kind": "instant"
     },
-    "desc": "Votre cible peut réduire la durée d'une maladie dont elle est affligée d'une 1 journée. Cette Prière ne peut être tentée q'une fois par maladie et par personne.",
+    "desc": "Votre cible peut réduire d'une journée la durée d'une maladie dont elle est affligée. Cette Prière ne peut être tentée qu'une fois par maladie et par personne.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -320,6 +320,13 @@
       "book": "livre-de-base",
       "page": 221
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 90,
+        "quote": "Justice"
+      }
+    ],
     "family": "beni",
     "curated": true
   },
@@ -457,6 +464,13 @@
       "book": "livre-de-base",
       "page": 221
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 79,
+        "quote": "Soins"
+      }
+    ],
     "family": "beni",
     "curated": true
   },
@@ -824,6 +838,13 @@
       "book": "livre-de-base",
       "page": 221
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 90,
+        "quote": "Robustesse"
+      }
+    ],
     "family": "beni",
     "curated": true
   },
@@ -871,6 +892,13 @@
       "book": "livre-de-base",
       "page": 221
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 96,
+        "quote": "Rapidité"
+      }
+    ],
     "family": "beni",
     "curated": true
   },
@@ -916,6 +944,13 @@
       "book": "livre-de-base",
       "page": 240
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 455,
+        "quote": "Alarme"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1013,6 +1048,13 @@
       "book": "livre-de-base",
       "page": 240
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 324,
+        "quote": "Bruit"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1105,6 +1147,13 @@
       "book": "livre-de-base",
       "page": 240
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 140,
+        "quote": "Conserve"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1152,6 +1201,13 @@
       "book": "livre-de-base",
       "page": 240
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 570,
+        "quote": "Courant d’Air"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1238,6 +1294,13 @@
       "book": "livre-de-base",
       "page": 240
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 145,
+        "quote": "Fatigue"
+      }
+    ],
     "family": "mineure",
     "missile": true,
     "ignorePA": true,
@@ -1387,6 +1450,13 @@
       "book": "livre-de-base",
       "page": 241
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 140,
+        "quote": "Feu Follet"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1432,6 +1502,13 @@
       "book": "livre-de-base",
       "page": 241
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 247,
+        "quote": "Flamme"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1465,6 +1542,13 @@
       "book": "livre-de-base",
       "page": 241
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 145,
+        "quote": "Projectile Mineur"
+      }
+    ],
     "family": "mineure",
     "missile": true,
     "curated": true
@@ -1567,6 +1651,13 @@
       "book": "livre-de-base",
       "page": 241
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 145,
+        "quote": "Chuchotis"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1613,6 +1704,13 @@
       "book": "livre-de-base",
       "page": 241
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 140,
+        "quote": "Pied Léger"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1703,6 +1801,13 @@
       "book": "livre-de-base",
       "page": 241
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 140,
+        "quote": "Eau Pure"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1752,6 +1857,13 @@
       "book": "livre-de-base",
       "page": 241
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 145,
+        "quote": "Pourriture"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1794,6 +1906,13 @@
       "book": "livre-de-base",
       "page": 242
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 140,
+        "quote": "Position"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -1852,6 +1971,13 @@
       "book": "livre-de-base",
       "page": 242
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 293,
+        "quote": "Saccade"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -2051,6 +2177,13 @@
       "book": "livre-de-base",
       "page": 242
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 268,
+        "quote": "Espionnage"
+      }
+    ],
     "family": "mineure",
     "curated": true
   },
@@ -2310,6 +2443,13 @@
       "book": "livre-de-base",
       "page": 243
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 247,
+        "quote": "Bouclier"
+      }
+    ],
     "family": "arcane",
     "curated": true
   },
@@ -2388,6 +2528,13 @@
       "book": "livre-de-base",
       "page": 243
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 247,
+        "quote": "Projectile"
+      }
+    ],
     "family": "arcane",
     "missile": true,
     "damage": 4,
@@ -2496,6 +2643,13 @@
       "book": "livre-de-base",
       "page": 243
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 571,
+        "quote": "Télékinésie"
+      }
+    ],
     "family": "arcane",
     "curated": true
   },
@@ -2651,6 +2805,13 @@
       "book": "livre-de-base",
       "page": 244
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 571,
+        "quote": "Entrave"
+      }
+    ],
     "family": "arcane",
     "curated": true
   },
@@ -2897,6 +3058,13 @@
       "book": "livre-de-base",
       "page": 244
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 247,
+        "quote": "Bélier"
+      }
+    ],
     "family": "arcane",
     "curated": true
   },
@@ -3405,7 +3573,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "force-mentale"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -8222,6 +8390,13 @@
       "book": "livre-de-base",
       "page": 254
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 143,
+        "quote": "Bienveillance"
+      }
+    ],
     "family": "arcane",
     "curated": true,
     "domainId": "magie-naturelle"
@@ -8507,6 +8682,13 @@
       "book": "livre-de-base",
       "page": 255
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 148,
+        "quote": "Ruine"
+      }
+    ],
     "family": "arcane",
     "curated": true,
     "domainId": "sorcellerie"
@@ -8785,6 +8967,13 @@
       "book": "livre-de-base",
       "page": 256
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 148,
+        "quote": "Nuée"
+      }
+    ],
     "family": "arcane",
     "curated": true,
     "domainId": "sorcellerie"
@@ -9136,6 +9325,13 @@
       "book": "livre-de-base",
       "page": 256
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 520,
+        "quote": "Appel de Vanhel"
+      }
+    ],
     "family": "arcane",
     "curated": true,
     "domainId": "necromancie"
@@ -9505,6 +9701,13 @@
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 80
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 269,
+        "quote": "Projectile de Dhar"
+      }
+    ],
     "family": "chaos",
     "missile": true,
     "damage": 6,
@@ -9680,6 +9883,13 @@
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 80
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 254,
+        "quote": "Explosion de Dhar"
+      }
+    ],
     "family": "chaos",
     "missile": true,
     "damage": 5,
@@ -9926,6 +10136,13 @@
       "book": "livre-de-base",
       "page": 257
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 290,
+        "quote": "Introspection"
+      }
+    ],
     "family": "chaos",
     "curated": true
   },
@@ -10197,6 +10414,13 @@
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 82
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 322,
+        "quote": "Flammes Bleues de Tzeentch"
+      }
+    ],
     "family": "chaos",
     "missile": true,
     "curated": true
@@ -10249,6 +10473,13 @@
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 82
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 321,
+        "quote": "Flammes Roses de Tzeentch"
+      }
+    ],
     "family": "chaos",
     "missile": true,
     "damage": 6,
@@ -10324,6 +10555,13 @@
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 82
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 330,
+        "quote": "Esprit Enfiévré"
+      }
+    ],
     "family": "chaos",
     "curated": true
   },
@@ -10633,6 +10871,13 @@
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 83
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 330,
+        "quote": "Âme Dévoilée"
+      }
+    ],
     "family": "chaos",
     "curated": true
   },
@@ -12393,6 +12638,13 @@
       "book": "livre-de-base",
       "page": 224
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 119,
+        "quote": "Oeil de Lynx"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -12486,6 +12738,13 @@
       "book": "livre-de-base",
       "page": 225
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 156,
+        "quote": "Main de Rhya"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -12783,6 +13042,13 @@
       "book": "livre-de-base",
       "page": 225
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 79,
+        "quote": "Apaisement"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -12836,6 +13102,13 @@
       "book": "livre-de-base",
       "page": 225
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 79,
+        "quote": "Résistance du Pénitent"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -13179,6 +13452,13 @@
       "book": "livre-de-base",
       "page": 226
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 90,
+        "quote": "Modèle de Vertu"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -13252,6 +13532,13 @@
       "book": "livre-de-base",
       "page": 226
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 90,
+        "quote": "Marteau de Justice"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -13306,6 +13593,13 @@
       "book": "livre-de-base",
       "page": 226
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 90,
+        "quote": "Arrière, Sorcière !"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -13367,6 +13661,13 @@
       "book": "livre-de-base",
       "page": 226
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 90,
+        "quote": "Sus à l’Ennemi !"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -13416,6 +13717,13 @@
       "book": "livre-de-base",
       "page": 227
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 162,
+        "quote": "Saut de Cabri"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -13583,6 +13891,13 @@
       "book": "livre-de-base",
       "page": 227
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 162,
+        "quote": "Instinct Animal"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -14015,6 +14330,13 @@
       "book": "livre-de-base",
       "page": 227
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 93,
+        "quote": "Morsure d’Hiver"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -14061,6 +14383,13 @@
       "book": "livre-de-base",
       "page": 228
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 93,
+        "quote": "Chaleur de la Fourrure"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -14115,6 +14444,13 @@
       "book": "livre-de-base",
       "page": 228
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 96,
+        "quote": "Fers de Vérité"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -14295,6 +14631,13 @@
       "book": "livre-de-base",
       "page": 228
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 97,
+        "quote": "La Vérité finit toujours par sortir"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -14349,6 +14692,13 @@
       "book": "livre-de-base",
       "page": 228
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 97,
+        "quote": "Sagesse du Hibou"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -14394,6 +14744,13 @@
       "book": "livre-de-base",
       "page": 228
     },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 96,
+        "quote": "Verena m’est témoin !"
+      }
+    ],
     "family": "invocation",
     "curated": true
   },
@@ -14631,36 +14988,6 @@
     "family": "arcane"
   },
   {
-    "id": "alarme",
-    "type": "spells",
-    "label": "Alarme",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 1,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Le sort permet de savoir si un objet est empoisonné ou piégé. Le sort ne peutPASneutralisé le poison ou désamorcer le piège.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 454
-    },
-    "family": "mineure"
-  },
-  {
     "id": "algues-cruelles",
     "type": "spells",
     "label": "Algues Cruelles",
@@ -14689,85 +15016,6 @@
     "source": {
       "book": "frenchy-bzh",
       "page": 502
-    },
-    "family": "arcane"
-  },
-  {
-    "id": "ame-devoilee",
-    "type": "spells",
-    "label": "Âme Dévoilée",
-    "ecole": "Magie des Arcanes",
-    "subType": null,
-    "cn": 2,
-    "range": {
-      "kind": "self"
-    },
-    "target": {
-      "kind": "self"
-    },
-    "duration": {
-      "kind": "special",
-      "text": "1 Tour"
-    },
-    "desc": "Le mage parvient à connaître la Motivation, l’Objectif de Court-Terme et l’Objectif de Long- Terme de sa cible.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 329
-    },
-    "family": "arcane"
-  },
-  {
-    "id": "apaisement",
-    "type": "spells",
-    "label": "Apaisement",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "La cible ne ressent aucun effets d’États Psychologiques. À la fin du miracle, la cible ressent un impérieux besoin de dormir jusqu’au lever de soleil suivant. La cible peut ne pas s’endormir si elle réussit un Test de Calme (+0).",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 78
-    },
-    "family": "invocation"
-  },
-  {
-    "id": "appel-de-vanhel",
-    "type": "spells",
-    "label": "Appel de Vanhel",
-    "ecole": "Magie des Arcanes & de Nécromancie",
-    "subType": null,
-    "cn": 5,
-    "range": {
-      "kind": "distance",
-      "value": 55,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Le nécromancien infuse duDhardans le corps de 5 morts-vivants qu’il contrôle. Ils gagnent tous la MÊME ActionOUle MÊME Mouvement supplémentaire. Pour chaque +2 DR au-dessus de +0, le nombre de morts-vivants concerné augmente de +5.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 519
     },
     "family": "arcane"
   },
@@ -14860,27 +15108,6 @@
     "domainId": "domaine-des-ombres"
   },
   {
-    "id": "arriere-sorciere",
-    "type": "spells",
-    "label": "Arrière, Sorcière !",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Un sorcier qui lance un sort sur une personne ou un objet dans la zone du miracle a un Malus de -20 en Langue (Magick). Pour chaque +2 DR au-dessus de +0, le Diamètre peut être augmenté de 5 mètres. Attention ! ce miracle affecte les sorciers et mages alliés…",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 89
-    },
-    "family": "invocation"
-  },
-  {
     "id": "aux-innocents-les-mains-pleines",
     "type": "spells",
     "label": "Aux Innocents les Mains Pleines !",
@@ -14951,33 +15178,6 @@
     "family": "invocation"
   },
   {
-    "id": "belier",
-    "type": "spells",
-    "label": "Bélier",
-    "ecole": "Magie des Arcanes",
-    "subType": null,
-    "cn": 3,
-    "range": {
-      "kind": "self"
-    },
-    "target": {
-      "kind": "self"
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Toutes les personnes et créatures dans un diamètre de 6 mètres autour du Shaman sont repoussées de 6 mètres et subissent l’État « À Terre ». S’il y a un obstacle, ils encaissent autant de Points de Dégâts que le nombre de mètres parcourus. En cas d’Incantation Critique, l’adversaire recule d’une distance de 6 mètres additionnelle pour chaque +2 DR au- dessus du NI.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 246
-    },
-    "family": "arcane"
-  },
-  {
     "id": "benedicite-de-taal",
     "type": "spells",
     "label": "Bénédicité de Taal",
@@ -15026,36 +15226,6 @@
     "source": {
       "book": "frenchy-bzh",
       "page": 289
-    },
-    "family": "arcane"
-  },
-  {
-    "id": "bienveillance",
-    "type": "spells",
-    "label": "Bienveillance",
-    "ecole": "Magie des Arcanes & des Taillis",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "self"
-    },
-    "target": {
-      "kind": "area",
-      "span": "diameter",
-      "meters": 5
-    },
-    "duration": {
-      "kind": "special",
-      "text": "3 Tours"
-    },
-    "desc": "Le rebouteux crée une atmosphère amicale. Bonus +10 pour tous les Tests de Sociablité dans la zone. Les effets des États « Animosité » et « Haine » ne fonctionnent pas.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 142
     },
     "family": "arcane"
   },
@@ -15131,37 +15301,6 @@
     "domainId": "domaine-des-ombres"
   },
   {
-    "id": "bouclier",
-    "type": "spells",
-    "label": "Bouclier",
-    "ecole": "Magie des Arcanes",
-    "subType": null,
-    "cn": 2,
-    "range": {
-      "kind": "self"
-    },
-    "target": {
-      "kind": "area",
-      "span": "diameter",
-      "meters": 6
-    },
-    "duration": {
-      "kind": "rounds",
-      "value": 6,
-      "plus": true
-    },
-    "desc": "Tout projectile contenant de la matière organique (flèches ou carreaux en bois) est automatiquement détruit au contact du bouclier. Les balles de plombs ou les billes d’aciers ne sont pas affectées.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 246
-    },
-    "family": "arcane"
-  },
-  {
     "id": "bouillon-revigorant",
     "type": "spells",
     "label": "Bouillon Revigorant",
@@ -15190,37 +15329,6 @@
       "page": 142
     },
     "family": "arcane"
-  },
-  {
-    "id": "bruit",
-    "type": "spells",
-    "label": "Bruit",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 75,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "duration": {
-      "kind": "rounds",
-      "value": 7
-    },
-    "desc": "Le démon crée un bruit naturel (bruit de pas, ronflement, sifflement, grattement, murmure inaudible, etc). Le démon n’a pas besoin de voir l’endroit où le son est émis. Avec un Test réussi de Focalisation, le démon peut faire bouger le son dans l’espace, ainsi que diminuer ou augmenter son volume.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 323
-    },
-    "family": "mineure"
   },
   {
     "id": "brume-acide",
@@ -15340,58 +15448,6 @@
     "family": "invocation"
   },
   {
-    "id": "chaleur-de-la-fourrure",
-    "type": "spells",
-    "label": "Chaleur de la Fourrure",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "La cible ne souffre pas des effets de l’exposition aux éléments (Malus et États divers).",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 92
-    },
-    "family": "invocation"
-  },
-  {
-    "id": "chuchotis",
-    "type": "spells",
-    "label": "Chuchotis",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 30,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "duration": {
-      "kind": "rounds",
-      "value": 3
-    },
-    "desc": "Le PJ projette sa voix à un point éloigné. Toute personne à portée de la voix entend les paroles du PJ.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 144
-    },
-    "family": "mineure"
-  },
-  {
     "id": "cogne-fort",
     "type": "spells",
     "label": "Cogne-Fort",
@@ -15420,38 +15476,6 @@
       "page": 472
     },
     "family": "arcane"
-  },
-  {
-    "id": "conserve",
-    "type": "spells",
-    "label": "Conserve",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 1,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "clock",
-      "value": 3,
-      "unit": "days"
-    },
-    "desc": "Le PJ peut préserver l’équivalent d’une ration pour une journée pour une personne. Cette ration ne pourrit pas et ne moisit pas. Elle peut cependant être mouillée, brûlée ou empoisonnée.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 139
-    },
-    "family": "mineure"
   },
   {
     "id": "contamination",
@@ -15535,36 +15559,6 @@
       "page": 92
     },
     "family": "invocation"
-  },
-  {
-    "id": "courant-d-air",
-    "type": "spells",
-    "label": "Courant d’Air",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 80,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "La bourrasque est assez forte pour éteindre une bougie, claquer une porte, tourner les pages d’un livres, disperser des feuilles de papiers…",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 569
-    },
-    "family": "mineure"
   },
   {
     "id": "crepitement-funeste",
@@ -15998,36 +15992,6 @@
     "family": "arcane"
   },
   {
-    "id": "eau-pure",
-    "type": "spells",
-    "label": "Eau Pure",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 1,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Le sort purifie l’eau dans un petit contenant (carafe, gourde, outre…). Il élimine poisons, impuretés, parasites…",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 139
-    },
-    "family": "mineure"
-  },
-  {
     "id": "eclat",
     "type": "spells",
     "label": "Éclat",
@@ -16086,159 +16050,6 @@
       "page": 147
     },
     "family": "arcane"
-  },
-  {
-    "id": "entrave",
-    "type": "spells",
-    "label": "Entrave",
-    "ecole": "Magie des Arcanes & de Nécromancie",
-    "subType": null,
-    "cn": 3,
-    "range": {
-      "kind": "distance",
-      "value": 80,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "desc": "La cible du vampire subit un État « Entravé » avec une Force de 60. En cas d’Incantation Critique, l’adversaire subit un État « Entravé » additionnel pour chaque +2 DR au- dessus du NI.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 570
-    },
-    "family": "arcane"
-  },
-  {
-    "id": "espionnage",
-    "type": "spells",
-    "label": "Espionnage",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 40,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "clock",
-      "value": 4,
-      "unit": "minutes"
-    },
-    "desc": "Le sorcier entend la conversation comme s’il était à côté de la personne qui parle.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 267
-    },
-    "family": "mineure"
-  },
-  {
-    "id": "esprit-enfievre",
-    "type": "spells",
-    "label": "Esprit Enfiévré",
-    "ecole": "Magie des Arcanes",
-    "subType": null,
-    "cn": 5,
-    "range": {
-      "kind": "distance",
-      "value": 90,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "La cible du sort effectue un Test de Calme (+0) VS 1 Point de Corruption. Pour chaque +2 DR au- dessus de +0, on ajoute +1 Point de Corruption en cas d’échec au Test de Calme. Si la cible développe une mutation suite à ce sort, il s’agit forcément d’une mutation psychologique. Lorsque la mutation a lieu, la cible subit 1 État « En Feu » au niveau de la tête !",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 329
-    },
-    "family": "arcane"
-  },
-  {
-    "id": "explosion-de-dhar",
-    "type": "spells",
-    "label": "Explosion de Dhar",
-    "ecole": "Magie des Arcanes",
-    "subType": null,
-    "cn": 6,
-    "range": {
-      "kind": "distance",
-      "value": 80,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "area",
-      "span": "diameter",
-      "meters": 8
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Projectile magique infligeant 13 Points de Dégâts + Test Résistance (+0) VS 1 Point de Corruption à toutes les créatures dans la zone.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 253
-    },
-    "family": "arcane",
-    "missile": true
-  },
-  {
-    "id": "fatigue",
-    "type": "spells",
-    "label": "Fatigue",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "touch"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Après un Test de Mêlée réussi, le sort inflige 3 Points de Dégâts et la sorcière récupère 1 Point de Blessure",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 144
-    },
-    "family": "mineure"
   },
   {
     "id": "faux-semblant",
@@ -16331,27 +16142,6 @@
     "family": "arcane"
   },
   {
-    "id": "fers-de",
-    "type": "spells",
-    "label": "Fers de",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Pendant la durée du miracle, si une personne prétend ne pas avoir commis de crime alors que c’est faux, il souffre d’un État « Enchevêtré » avec ses vêtements, ses lacets, etc. Si le prêtre a en revanche injustement accusé un innocent, le prêtre gagne 1 Point de Péché et lance immédiatement les dés sur la Table du Courroux Divin.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 94
-    },
-    "family": "invocation"
-  },
-  {
     "id": "fertilisation",
     "type": "spells",
     "label": "Fertilisation",
@@ -16378,66 +16168,6 @@
       "page": 142
     },
     "family": "arcane"
-  },
-  {
-    "id": "feu-follet",
-    "type": "spells",
-    "label": "Feu Follet",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 30,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "duration": {
-      "kind": "clock",
-      "value": 30,
-      "unit": "minutes"
-    },
-    "desc": "Le PJ crée DR feux follets (Max = Bonus Int). Avec un Test de Focalisation (+20), le PJ peut faire bouger ces lumières en ligne droite. Le PJ doit voir les lumières pour les contrôler. M = 4. Un nouveau Test est nécessaire pour changer de direction.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 139
-    },
-    "family": "mineure"
-  },
-  {
-    "id": "flamme",
-    "type": "spells",
-    "label": "Flamme",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "self"
-    },
-    "target": {
-      "kind": "self"
-    },
-    "duration": {
-      "kind": "rounds",
-      "value": 6
-    },
-    "desc": "Une flamme apparaît dans la paume du Shaman. Elle éclaire, réchauffe et peut enflammer autre chose.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 246
-    },
-    "family": "mineure"
   },
   {
     "id": "flamme-verdatre",
@@ -16471,69 +16201,6 @@
     },
     "family": "arcane",
     "domainId": "domaine-de-la-ruine"
-  },
-  {
-    "id": "flammes-bleues-de-tzeentch",
-    "type": "spells",
-    "label": "Flammes Bleues de Tzeentch",
-    "ecole": "Sort",
-    "subType": null,
-    "cn": 6,
-    "range": {
-      "kind": "distance",
-      "value": 30,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "area",
-      "span": "diameter",
-      "meters": 3
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Projectile magique infligeant 6 Points de Dégâts (Armure OK) + 1 État « En Feu » à toutes les créatures dans la zone. Si l’une des créature tombe à 0 PB à cause du sort ou de l’État « En Feu », on lance un D10. Si le résultat est « 9 », la créature meurt déchiquetée par 2 Horreurs Bleues qui surgissent de son corps !",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 321
-    },
-    "family": "arcane",
-    "missile": true
-  },
-  {
-    "id": "flammes-roses-de-tzeentch",
-    "type": "spells",
-    "label": "Flammes Roses de Tzeentch",
-    "ecole": "Sort",
-    "subType": null,
-    "cn": 6,
-    "range": {
-      "kind": "distance",
-      "value": 50,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Projectile magique infligeant 13 Points de Dégâts (Armure OK) + 1 État « En Feu ». Si la cible tombe à 0 PB à cause du sort ou de l’État « En Feu », on lance un D10. Si le résultat est « 9 », la cible meurt déchiquetée par 1 Horreur Rose qui surgit de son corps !",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 320
-    },
-    "family": "arcane",
-    "missile": true
   },
   {
     "id": "forme-spectrale",
@@ -16793,100 +16460,6 @@
     "domainId": "domaine-de-la-peste"
   },
   {
-    "id": "instinct-animal",
-    "type": "spells",
-    "label": "Instinct Animal",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "La cible bénéficie d’un niveau du Talent « Acuité Sensorielle ». Elle doit choisir l'un des cinq sens. Par ailleurs, si la cible dort, elle se réveille si une menace potentielle est à moins de (Initiative) mètres.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 161
-    },
-    "family": "invocation"
-  },
-  {
-    "id": "introspection",
-    "type": "spells",
-    "label": "Introspection",
-    "ecole": "Magie des Arcanes",
-    "subType": null,
-    "cn": 6,
-    "range": {
-      "kind": "distance",
-      "value": 85,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "special",
-      "text": "8 Tours"
-    },
-    "desc": "La cible contemple avec désarroi ses échecs successifs et répétés. Son Initiative est réduite à 10. Au moment de son Tour de jeu, la cible se déplace en pleurnichant dans une direction aléatoire déterminée par le MJ. La cible ne peut effectuer une Action qu’en réussissant un Test de Calme (+0). Sinon il est trop occupé à se plaindre.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 289
-    },
-    "family": "arcane"
-  },
-  {
-    "id": "justice",
-    "type": "spells",
-    "label": "Justice",
-    "ecole": "Bénédiction",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "l’arme de la cible devient « Magique ».",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 89
-    },
-    "family": "beni"
-  },
-  {
-    "id": "la-verite-finit-toujours-par-sortir",
-    "type": "spells",
-    "label": "La Vérité finit toujours par sortir",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Le prêtre pose UNE question à son interlocuteur. L’interlocuteur effectue un Test Opposé de Calme (+20) VS Prière Prêtre. En cas d’échec, l’interlocuteur DOIT dire TOUTE la vérité en répondant à la question du prêtre. En cas de succès, la situation varie : +2 ou +3 DR = l’interlocuteur ne divulgue pas quelques détails mineurs. +4 ou +5 DR = l’interlocuteur ne divulgue pas certains détails majeurs. +6 DR ou plus = l’interlocuteur peut mentir et envoyé le prêtre sur une fausse piste.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 96
-    },
-    "family": "invocation"
-  },
-  {
     "id": "langue-aceree",
     "type": "spells",
     "label": "Langue Acérée",
@@ -16960,93 +16533,23 @@
       "book": "frenchy-bzh",
       "page": 267
     },
-    "family": "mineure"
-  },
-  {
-    "id": "langue-des-pestigors",
-    "type": "spells",
-    "label": "Langue des Pestigors",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "self"
-    },
-    "target": {
-      "kind": "self"
-    },
-    "duration": {
-      "kind": "clock",
-      "value": 75,
-      "unit": "minutes"
-    },
-    "desc": "Le sorcier peut échanger normalement avec des gors adeptes de Nurgle.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 302
-    },
-    "family": "mineure"
-  },
-  {
-    "id": "langue-des-slaangors",
-    "type": "spells",
-    "label": "Langue des Slaangors",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "self"
-    },
-    "target": {
-      "kind": "self"
-    },
-    "duration": {
-      "kind": "clock",
-      "value": 75,
-      "unit": "minutes"
-    },
-    "desc": "Le démon peut échanger normalement avec des gors adeptes de Slaanesh et en particulier leur donner des ordres.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 286
-    },
-    "family": "mineure"
-  },
-  {
-    "id": "langue-des-tzaangors",
-    "type": "spells",
-    "label": "Langue des Tzaangors",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "self"
-    },
-    "target": {
-      "kind": "self"
-    },
-    "duration": {
-      "kind": "clock",
-      "value": 75,
-      "unit": "minutes"
-    },
-    "desc": "Le démon peut échanger normalement avec des gors adeptes de Tzeentch.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 323
-    },
+    "alsoIn": [
+      {
+        "book": "frenchy-bzh",
+        "page": 303,
+        "quote": "Langue des Pestigors"
+      },
+      {
+        "book": "frenchy-bzh",
+        "page": 287,
+        "quote": "Langue des Slaangors"
+      },
+      {
+        "book": "frenchy-bzh",
+        "page": 324,
+        "quote": "Langue des Tzaangors"
+      }
+    ],
     "family": "mineure"
   },
   {
@@ -17101,27 +16604,6 @@
       "page": 455
     },
     "family": "arcane"
-  },
-  {
-    "id": "main-de-rhya",
-    "type": "spells",
-    "label": "Main de Rhya",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Le prêtre impose les mains à une personne mal en point. Il peut au choix : guérir 5 Points de Blessure ; Annuler 1 Maladie d’origine naturelle. Le miracle met du temps à agir. Il faut une heure pour que les effets apparaissent. Si le prêtre est interrompu dans cet intervalle de temps, le miracle ne fonctionne pas. Il faut recommencer Pour chaque +2 DR au-dessus de +0, le prêtre peut cumuler plusieurs fois l’un des deux effets.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 155
-    },
-    "family": "invocation"
   },
   {
     "id": "maitrise-du-destin",
@@ -17222,69 +16704,6 @@
     "family": "mineure"
   },
   {
-    "id": "marteau-de-justice",
-    "type": "spells",
-    "label": "Marteau de Justice",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Le prêtre enchante son marteau de guerre. Le marteau devient magique. Il inflige +5 Points de Dégâts en plus des dégâts habituels. En cas d’attaque réussie, la cible souffre d’un État « En Feu » et d’un État « À Terre ».",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 89
-    },
-    "family": "invocation"
-  },
-  {
-    "id": "modele-de-vertu",
-    "type": "spells",
-    "label": "Modèle de Vertu",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Annule les États « En Déroute » (Broken). Les alliés du prêtre bénéficie du Talent « Intrépide » (Fearless). Les peaux-vertes qui peuvent voir le prêtre souffre d’un État « Peur 1 ».",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 89
-    },
-    "family": "invocation"
-  },
-  {
-    "id": "morsure-d-hiver",
-    "type": "spells",
-    "label": "Morsure d’Hiver",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "La hache du prêtre devient magique. Elle inflige DR + 12 Points de Dégâts. Toute créature vivante touchée par la hache effectue un Test de Résistance (+0) VS État « Étourdi ». La hache, en revanche, annule tout État « Hémorragie » préalable de la cible. Elle-même ne peut pas causer d’État « Hémorragie ».",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 92
-    },
-    "family": "invocation"
-  },
-  {
     "id": "mouchard",
     "type": "spells",
     "label": "Mouchard",
@@ -17344,37 +16763,6 @@
     "family": "arcane"
   },
   {
-    "id": "nuee",
-    "type": "spells",
-    "label": "Nuée",
-    "ecole": "Magie des Arcanes & de Sorcellerie",
-    "subType": null,
-    "cn": 5,
-    "range": {
-      "kind": "distance",
-      "value": 30,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "special",
-      "text": "3 Tours"
-    },
-    "desc": "La sorcière invoque une nuée. Au choix : rats géants, araignées géantes, serpents. Une fois la nuée invoquée, la sorcière peut effectuer un Test Emprise sur Animaux (+0) pour changer de cible.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 147
-    },
-    "family": "arcane"
-  },
-  {
     "id": "nuee-de-mouches",
     "type": "spells",
     "label": "Nuée de Mouches",
@@ -17404,27 +16792,6 @@
       "page": 305
     },
     "family": "arcane"
-  },
-  {
-    "id": "oeil-de-lynx",
-    "type": "spells",
-    "label": "Oeil de Lynx",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Le prêtre invoque un chat. À partir de ce moment, le prêtre perçoit tout à travers le corps du chat (vue, ouïe, odorat…). Bien pratique pour espionner discrètement ! Le chat ne bénéficie pas des compétences et talents du prêtre. Le chat est une créature surnaturelle. Il ne peut être blessé. Attention : pendant la durée du miracle, l’esprit du prêtre est dans le corps du chat. Son propre corps peut donc être en danger…",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 118
-    },
-    "family": "invocation"
   },
   {
     "id": "ouverture",
@@ -17483,35 +16850,6 @@
     },
     "family": "arcane",
     "domainId": "domaine-des-ombres"
-  },
-  {
-    "id": "pied-leger",
-    "type": "spells",
-    "label": "Pied Léger",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "self"
-    },
-    "target": {
-      "kind": "self"
-    },
-    "duration": {
-      "kind": "clock",
-      "value": 30,
-      "unit": "minutes"
-    },
-    "desc": "Les matières organiques (herbes, branches, taillis) ne gardent pas trace du passage du PJ. Un poursuivant doit réussir un Test de Pistage (-30) pour le retrouver.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 139
-    },
-    "family": "mineure"
   },
   {
     "id": "pierre-de-souffrance",
@@ -17596,33 +16934,6 @@
     "domainId": "domaine-des-ombres"
   },
   {
-    "id": "position",
-    "type": "spells",
-    "label": "Position",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "self"
-    },
-    "target": {
-      "kind": "self"
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Le PJ sait où est le nord, même en milieu clos.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 139
-    },
-    "family": "mineure"
-  },
-  {
     "id": "poudre-d-escampette",
     "type": "spells",
     "label": "Poudre d’Escampette",
@@ -17650,36 +16961,6 @@
     },
     "family": "arcane",
     "domainId": "domaine-des-ombres"
-  },
-  {
-    "id": "pourriture",
-    "type": "spells",
-    "label": "Pourriture",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 1,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Le sort fait pourrir ou moisir un volume de matière organique (fruits, légumes, pain, viande, vêtements, cuir, bois…) qui tiendrait dans la main de la sorcière.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 144
-    },
-    "family": "mineure"
   },
   {
     "id": "prise-de-tete",
@@ -17710,114 +16991,6 @@
       "page": 472
     },
     "family": "arcane"
-  },
-  {
-    "id": "projectile",
-    "type": "spells",
-    "label": "Projectile",
-    "ecole": "Magie des Arcanes",
-    "subType": null,
-    "cn": 3,
-    "range": {
-      "kind": "distance",
-      "value": 60,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Projectile magique infligeant 10 Points de Dégâts à sa cible.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 246
-    },
-    "family": "arcane",
-    "missile": true
-  },
-  {
-    "id": "projectile-de-dhar",
-    "type": "spells",
-    "label": "Projectile de Dhar",
-    "ecole": "Magie des Arcanes",
-    "subType": null,
-    "cn": 7,
-    "range": {
-      "kind": "distance",
-      "value": 40,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Projectile magique infligeant 10 Points de Dégâts. La cible touchée effectue un Test de Résistance (+0) VS 1 Point de Corruption.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 267
-    },
-    "family": "arcane",
-    "missile": true
-  },
-  {
-    "id": "projectile-mineur",
-    "type": "spells",
-    "label": "Projectile Mineur",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 30,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Le projectile inflige 3 Points de Dégâts.",
-    "effects": {
-      "kind": "seq",
-      "steps": [
-        {
-          "kind": "do",
-          "effect": {
-            "type": "ops",
-            "on": "target",
-            "ops": [
-              {
-                "op": "wounds",
-                "amount": 3,
-                "ignoreTB": false,
-                "ignoreAP": false
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 144
-    },
-    "family": "mineure"
   },
   {
     "id": "rafale-hurlante",
@@ -17917,27 +17090,6 @@
     "family": "arcane"
   },
   {
-    "id": "rapidite",
-    "type": "spells",
-    "label": "Rapidité",
-    "ecole": "Bénédiction",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Bonus +10 en Initiative (I).",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 94
-    },
-    "family": "beni"
-  },
-  {
     "id": "rat-esclave",
     "type": "spells",
     "label": "Rat Esclave",
@@ -18032,130 +17184,6 @@
     "family": "arcane"
   },
   {
-    "id": "resistance-du-penitent",
-    "type": "spells",
-    "label": "Résistance du Pénitent",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "La cible ne ressent aucune douleur. Elle ne souffre d’aucun Malus infligé par des États.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 78
-    },
-    "family": "invocation"
-  },
-  {
-    "id": "robustesse",
-    "type": "spells",
-    "label": "Robustesse",
-    "ecole": "Bénédiction",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Bonus +10 en Endurance (E).",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 89
-    },
-    "family": "beni"
-  },
-  {
-    "id": "ruine",
-    "type": "spells",
-    "label": "Ruine",
-    "ecole": "Magie des Arcanes & de Sorcellerie",
-    "subType": null,
-    "cn": 13,
-    "range": {
-      "kind": "distance",
-      "value": 3,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "duration": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "desc": "La sorcière peut viser un champ, un puit ou un animal domestique. En cas de succès, les effets suivants se manifestent : Puits : eaux stagnantes et non-potable ; Champ : les cultures pourrissent sur pied ; Animal : plus de lait / oeuf, peau / laine inutilisable, viande avariée, animal meurent en 10 - DR jours.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 147
-    },
-    "family": "arcane"
-  },
-  {
-    "id": "saccade",
-    "type": "spells",
-    "label": "Saccade",
-    "ecole": "Magie Mineure",
-    "subType": null,
-    "cn": 0,
-    "range": {
-      "kind": "distance",
-      "value": 10,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "special",
-      "text": "Spécial"
-    },
-    "duration": {
-      "kind": "instant"
-    },
-    "desc": "Le démon fait légèrement bouger un objet moyen (un vase tombe d’une étagère, un livre se referme tout seul…). Si l’objet est tenu par quelqu’un, la cible doit réussir un Test de Dextérité (+20) pour ne pas lâcher l’objet.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 292
-    },
-    "family": "mineure"
-  },
-  {
-    "id": "sagesse-du-hibou",
-    "type": "spells",
-    "label": "Sagesse du Hibou",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Les yeux du prêtre remettent à briller. Il bénéficie d’un Bonus de +20 en Intelligence et d’un niveau des Talent « Acuité Sensorielle (Vue) » et « Menaçant ».",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 96
-    },
-    "family": "invocation"
-  },
-  {
     "id": "sanctuaire",
     "type": "spells",
     "label": "Sanctuaire",
@@ -18173,27 +17201,6 @@
     "source": {
       "book": "frenchy-bzh",
       "page": 89
-    },
-    "family": "invocation"
-  },
-  {
-    "id": "saut-de-cabri",
-    "type": "spells",
-    "label": "Saut de Cabri",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Le prêtre bénéficie des Bonus suivants : +1 en Mouvement, +1 niveau du Talent « Jambes Puissantes ». Tous les Tests de sauts sont réussi avec au moins +0 DR (on effectue le Test mais si le Test est raté il est devient +0 DR quand même).",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 161
     },
     "family": "invocation"
   },
@@ -18257,27 +17264,6 @@
     "domainId": "domaine-des-ombres"
   },
   {
-    "id": "soins",
-    "type": "spells",
-    "label": "Soins",
-    "ecole": "Bénédiction",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "la cible récupère 1 Point de Blessure",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 78
-    },
-    "family": "beni"
-  },
-  {
     "id": "soleil-noir",
     "type": "spells",
     "label": "Soleil Noir",
@@ -18306,58 +17292,6 @@
     "source": {
       "book": "frenchy-bzh",
       "page": 480
-    },
-    "family": "arcane"
-  },
-  {
-    "id": "sus-a-l-ennemi",
-    "type": "spells",
-    "label": "Sus à l’Ennemi !",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Les alliés bénéficient de l’ État Psychologique « Haine » contre les peaux-vertes, les morts-vivants et les serviteurs du chaos.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 89
-    },
-    "family": "invocation"
-  },
-  {
-    "id": "telekinesie",
-    "type": "spells",
-    "label": "Télékinésie",
-    "ecole": "Magie des Arcanes & de Nécromancie",
-    "subType": null,
-    "cn": 4,
-    "range": {
-      "kind": "distance",
-      "value": 80,
-      "unit": "m"
-    },
-    "target": {
-      "kind": "count",
-      "n": 1
-    },
-    "duration": {
-      "kind": "rounds",
-      "value": 1
-    },
-    "desc": "Le vampire peut faire bouger un objet inerte jusqu’à une taille et un poids équivalents à la sienne. Le déplacement maximum de l’objet est de 9 mètres. Cette distance est augmentée d’autant pour chaque +2 DR au-dessus du NI.",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 570
     },
     "family": "arcane"
   },
@@ -18470,27 +17404,6 @@
       "page": 502
     },
     "family": "arcane"
-  },
-  {
-    "id": "verena-m-est-temoin",
-    "type": "spells",
-    "label": "Verena m’est témoin !",
-    "ecole": "Miracle",
-    "subType": null,
-    "cn": null,
-    "range": null,
-    "target": null,
-    "duration": null,
-    "desc": "Si le prêtre ne dit que des choses vraies alors sont auditoire est bien persuadé qu'il dit la vérité. Ce qui ne veut pas dire que tout l’auditoire est d’accord avec ce que dit le prêtre…",
-    "effects": {
-      "kind": "seq",
-      "steps": []
-    },
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 94
-    },
-    "family": "invocation"
   },
   {
     "id": "vol",
@@ -29915,5 +28828,153 @@
       "consequences": "Le Rituel échoue. Le cœur-de-pierre est conservé."
     },
     "curated": true
+  },
+  {
+    "id": "invocation-d-un-colosses-necrofex",
+    "type": "spells",
+    "label": "Invocation d’un Colosses Necrofex",
+    "ecole": "Magie des Arcanes & de Nécromancie",
+    "subType": null,
+    "cn": 180,
+    "range": {
+      "kind": "distance",
+      "value": 70,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "1 Cimetière / Charnier / Champ de Bataille"
+    },
+    "duration": {
+      "kind": "special",
+      "text": "jusqu’à l’aube suivante"
+    },
+    "desc": "Voir le profil de la créature par ailleurs.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy-bzh",
+      "page": 524
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "invitation-a-la-danse-macabre-de-vanhel",
+    "type": "spells",
+    "label": "Invitation à la Danse Macabre de Vanhel",
+    "ecole": "Magie des Arcanes & de Nécromancie",
+    "subType": null,
+    "cn": 14,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 700
+    },
+    "duration": {
+      "kind": "special",
+      "text": "jusqu’à l’aube suivante"
+    },
+    "desc": "Sort issu du terrible_Liber Mortis_. Tous les corps décédés dans la zone se dressent s’ils n’ont pas été correctement enterrés et bénis. Pour chaque rayon de 100 mètres, le mage gagne 1 Point de Corruption. Si le mage est tué ou inconscient, les morts s’écroulent.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy-bzh",
+      "page": 524
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "putrefaction-2",
+    "type": "spells",
+    "label": "Putréfaction",
+    "ecole": "Magie des Arcanes",
+    "subType": null,
+    "cn": 8,
+    "range": {
+      "kind": "distance",
+      "value": 85,
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": 8
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Le démon fait pourrir ou tourner toute la nourriture et toutes les boissons dans la zone d’effet. Toute créature qui consomme ces aliments attrape automatiquement une Foirade (_Galloping_ _Trots_).",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "frenchy-bzh",
+      "page": 306
+    },
+    "family": "arcane"
+  },
+  {
+    "id": "bouclier-ruine",
+    "type": "spells",
+    "label": "Bouclier",
+    "ecole": "du Domaine de la Ruine",
+    "subType": null,
+    "cn": 6,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 2,
+      "plus": true
+    },
+    "desc": "Le sorcier bénéficie de +10 Points d’Armure. Si un adversaire attaque à mains nues ou avec une arme métallique, il encaisse 7 Points de Dégâts à cause des interférences (pas de PA d’armure métallique).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "ap",
+                "amount": 10
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Bouclier : un adversaire qui attaque le sorcier à mains nues ou avec une arme métallique encaisse 7 Points de Dégâts (pas de PA d’armure métallique)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "frenchy-bzh",
+      "page": 362
+    },
+    "family": "arcane"
   }
 ]
