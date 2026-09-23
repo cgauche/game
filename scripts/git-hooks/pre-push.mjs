@@ -6,7 +6,9 @@
 //   2. un STOCK NOMINATIF qui grandit quelque part dans la PLAGE poussée, sans que le message de SON
 //      commit le dise (`scripts/guards/lib/plageStock.mjs`) : les portes de stock du commit et du
 //      DERNIER commit ne voient qu'une tête, et un commit intermédiaire leur échappe (revue de
-//      palier n°2, 2026-09-03 — `429b9a1a2` a traversé les deux, six heures après leur pose) ;
+//      palier n°2, 2026-09-03 — `429b9a1a2` a traversé les deux, six heures après leur pose) — et,
+//      par la même lecture, un RECLASSEMENT CSS non déclaré au prix de son commit ou de la plage
+//      (`reclassementsDeLaPlage`, même fichier) ;
 //   3. un push NON fast-forward vers une ref distante EXISTANTE. Une ref neuve ne peut écraser aucune
 //      histoire, elle n'est pas jugée. `refs/heads/chantier/**` en est EXEMPTÉE : une branche de
 //      chantier n'a qu'un écrivain (régime « une session par chantier », 2026-09-01), et le train la
@@ -34,6 +36,7 @@ import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
 import { estAncetre, lireGit, sortieOuNull, urlOrigineAcceptee } from '../guards/lib/gitPorte.mjs'
 import { ROUGES, coursesCi } from '../guards/lib/coursesCi.mjs'
 import { croissancesDeLaPlage, raisonDeRefusDePlage } from '../guards/lib/plageStock.mjs'
+import { raisonDeRefusDeReclassement } from '../guards/lib/reclassementCss.mjs'
 
 const ZERO = '0'.repeat(40)
 
@@ -123,6 +126,7 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
     if (stocks.indisponible)
       refus.push(`${refLocale} → ${refDistante} : plage \`${stocks.plage}\` illisible : ${stocks.indisponible}`)
     if (stocks.refus.length) refus.push(raisonDeRefusDePlage(stocks.refus))
+    if (stocks.reclassements.length) refus.push(raisonDeRefusDeReclassement(stocks.reclassements))
 
     if (!fastForwardJuge(refDistante)) {
       notes.push(`${refDistante} : branche de chantier — fast-forward non jugé, le train la rebase avant chaque push`)

@@ -4,20 +4,28 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { estFichierVitest } from '../../scripts/guards/lib/fichierVitest.mjs';
-import { FEUILLES_PARTAGEES, baseSection, declarations, mediaBlock, reglesCss } from '../../scripts/guards/lib/cssCouches.mjs';
 import { comparerPoids } from '../../scripts/guards/lib/cssConservation.mjs';
-import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
 import {
-  mesureCssCouches,
+  FEUILLES_PARTAGEES,
+  baseSection,
+  declarations,
+  mediaBlock,
   modulesDEcran,
   modulesDePrimitive,
+  reglesCss,
+  sitesEspacementHorsEchelle,
+  sitesIdentiteEcran,
+  type Fichier as FichierMesure,
+} from '../../scripts/guards/lib/cssCouches.mjs';
+import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
+import {
+  composantsDuDisque,
+  imageDuDisque,
+  mesureCssCouches,
   SEUIL_GRAND_TITRE_PX,
   VIEWPORT_RECETTE,
-  sitesEspacementHorsEchelle,
   sitesGrandTitre,
-  sitesIdentiteEcran,
   sitesStyleInline,
-  type Fichier as FichierMesure,
 } from '../../scripts/guards/lib/cssCouchesAudit';
 import {
   CSS_ESPACEMENT_RATCHET,
@@ -34,6 +42,10 @@ import { cleDeSite, ecartDuVolet } from '../../scripts/guards/lib/stock.mjs';
  */
 
 const UI = fileURLToPath(new URL('.', import.meta.url)); // src/ui/
+/** Les modules d'ÉCRAN de l'arbre de travail. */
+const ecransDuDisque = () => modulesDEcran(imageDuDisque());
+/** Les trois volets du stock CSS, mesurés sur l'arbre de travail. */
+const mesureDuDisque = () => mesureCssCouches(imageDuDisque(), composantsDuDisque());
 
 /** Un fichier du corpus tel que `readCorpus` le rend : chemin POSIX depuis la racine + texte. */
 type Fichier = { rel: string; text: string };
@@ -617,12 +629,12 @@ describe('#236 — cliquets d’hygiène UI', () => {
   //    silence. Toute feuille hors de `src/ui/styles/` doit donc être déclarée nommément, et les
   //    trois statuts couvrent `src/ui/styles/` par construction — ce que l'union vérifie.
   it('(xiv) exhaustivité : chaque .css de src/ui est PARTAGÉ, de PRIMITIVE ou d’ÉCRAN', () => {
-    const primitives = modulesDePrimitive();
+    const primitives = modulesDePrimitive(imageDuDisque().manifeste);
     const toutes = FICHIERS_UI().filter(estCss).map((f) => f.rel);
     const partagees = new Set(SHARED_CSS_FILES.map((f) => (f.startsWith('..') ? f.replace('../', 'src/') : `src/ui/${f}`)));
     const sansStatut = toutes.filter((f) => !partagees.has(f) && !primitives.has(f) && !f.startsWith('src/ui/styles/')).sort();
     expect(sansStatut, `CSS hors radar (ni partagé, ni de primitive, ni sous src/ui/styles/) :\n${sansStatut.join('\n')}`).toEqual([]);
-    const couverts = new Set([...partagees, ...primitives, ...modulesDEcran().map((f) => f.rel)]);
+    const couverts = new Set([...partagees, ...primitives, ...ecransDuDisque().map((f) => f.rel)]);
     const oublies = toutes.filter((f) => !couverts.has(f)).sort();
     expect(oublies, `CSS qu'aucun des trois statuts ne prend :\n${oublies.join('\n')}`).toEqual([]);
   });
@@ -710,7 +722,13 @@ const ECARTS_RESPONSIVE_STOCK: Record<string, number> = {
   'world-meta.css|@media (max-width: 900px)': 3,
 };
 
-describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
+// Matrice du HUD (design 2026-07-31 §12) : ce bloc garde des STRUCTURES — le canon des tranches de
+// toute la couche `src/ui/styles`, les peaux et matières partagées, les primitives hors HUD, et les
+// RELATIONS et PRÉSENCES du HUD qu'aucune recette de CI ne joue (piste hors tranche, rangs de la bande
+// dépliée). Le RENDU des cellules que la sonde porte se MESURE au navigateur, hors CI :
+// `scripts/recette/hud-clickables.mjs` (`defautsMatrice`, `defautsTactile`, `defautsCompacite`) ;
+// les cellules qu'elle ne mesure pas sont nommées dans son en-tête.
+describe('canon responsive, peaux et matières partagées de src/ui/styles', () => {
   const read = (m: string) => readFileSync(join(UI, 'styles', m), 'utf8');
 
   it('TOUT module écrit chaque tranche du canon au plus UNE fois, et aucun breakpoint hors de 900 / 700 / 560', () => {
@@ -743,6 +761,8 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
   });
 
   it('pointeur grossier : toute boîte vissée offre une cible de 44px', () => {
+    // design 2026-07-31 §12, <=560 × Caméra / inspection — au HUD, mesuré aussi par
+    // `scripts/recette/hud-clickables.mjs` (`defautsTactile`) ; ici, la peau de TOUS ses poseurs.
     // NORME d'accessibilité — la seule valeur qu'un test unitaire de CSS a le droit d'énoncer.
     // La cible tactile suit la PEAU partagée `.skin-tole` (components.css) : une seule définition
     // pour toutes les commandes vissées (journal, menu ☰, ouvreurs d'écran, plaque de l'éditeur).
@@ -939,7 +959,7 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
     const orchestrateur = readFileSync(join(UI, 'styles.css'), 'utf8');
     const rang = (rel: string) => orchestrateur.indexOf(`/${base(rel)}'`);
     const rangPeau = Math.max(...FEUILLES_PARTAGEES.map(rang));
-    const modules = [...modulesDEcran().map((f) => f.rel), ...modulesDePrimitive()];
+    const modules = [...ecransDuDisque().map((f) => f.rel), ...modulesDePrimitive(imageDuDisque().manifeste)];
 
     // 0. Les MATIÈRES de la couche partagée, DÉRIVÉES de ses sélecteurs.
     const PEAUX = new Set<string>();
@@ -1051,6 +1071,7 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
   });
 
   it('les modales de jet occupent l’écran sous 560, corps défilable et pied fixe', () => {
+    // design 2026-07-31 §12, <=560 × Dock et modales.
     const css = read('roll-shell.css');
     expect(css).toMatch(/\.modal:has\(>\s*\.rs-scroll\)\s*\{[^}]*overflow:\s*hidden/); // le corps défile, pas la boîte
     expect(css).toMatch(/\.modal:has\(>\s*\.rs-scroll\)\s*>\s*\.modal-actions/); // pied hors du scrollport
@@ -1503,7 +1524,7 @@ function regleGagnante(
 describe('#1800 — trois couches CSS : un module d’écran ne pose que du PLACEMENT', () => {
   it('(xxi) identité en module d’écran : stock nominatif, décroissant', () => {
     const { neuves, perimees } = ecartDuVolet({
-      sites: mesureCssCouches().identite,
+      sites: mesureDuDisque().identite,
       stock: CSS_IDENTITE_ECRAN_RATCHET,
       ou: 'scripts/guards/lib/cssCouchesStock.mjs (CSS_IDENTITE_ECRAN_RATCHET)',
     });
@@ -1513,7 +1534,7 @@ describe('#1800 — trois couches CSS : un module d’écran ne pose que du PLAC
 
   it('(xxi) espacement hors échelle : stock nominatif, décroissant', () => {
     const { neuves, perimees } = ecartDuVolet({
-      sites: mesureCssCouches().espacement,
+      sites: mesureDuDisque().espacement,
       stock: CSS_ESPACEMENT_RATCHET,
       ou: 'scripts/guards/lib/cssCouchesStock.mjs (CSS_ESPACEMENT_RATCHET)',
     });
@@ -1523,7 +1544,7 @@ describe('#1800 — trois couches CSS : un module d’écran ne pose que du PLAC
 
   it('(xxii) style inline hors variable CSS : stock nominatif, décroissant', () => {
     const { neuves, perimees } = ecartDuVolet({
-      sites: mesureCssCouches().inline,
+      sites: mesureDuDisque().inline,
       stock: STYLE_INLINE_RATCHET,
       ou: 'scripts/guards/lib/cssCouchesStock.mjs (STYLE_INLINE_RATCHET)',
     });
@@ -1533,7 +1554,7 @@ describe('#1800 — trois couches CSS : un module d’écran ne pose que du PLAC
 
   it('(xxi) le manifeste classe chaque module : un css de primitive existe, et n’est pas une feuille partagée', () => {
     const fautes: string[] = [];
-    for (const css of modulesDePrimitive()) {
+    for (const css of modulesDePrimitive(imageDuDisque().manifeste)) {
       if (!css.endsWith('.css')) fautes.push(`${css} — n’est pas une feuille CSS`);
       if (!existsSync(join(UI, '..', '..', css))) fautes.push(`${css} — absent du disque`);
       if (FEUILLES_PARTAGEES.includes(css)) fautes.push(`${css} — feuille PARTAGÉE, aucune primitive ne la possède`);
@@ -1542,7 +1563,7 @@ describe('#1800 — trois couches CSS : un module d’écran ne pose que du PLAC
   });
 
   it('(xxi) le balayage n’est pas vide : des modules d’écran, et chacun hors couche partagée', () => {
-    const ecrans = modulesDEcran().map((f) => f.rel);
+    const ecrans = ecransDuDisque().map((f) => f.rel);
     expect(ecrans.length, 'aucun module d’ÉCRAN mesuré — le cliquet serait vert par vacuité').toBeGreaterThan(0);
     expect(ecrans.filter((f) => FEUILLES_PARTAGEES.includes(f))).toEqual([]);
   });
@@ -1578,8 +1599,8 @@ describe('#1800 — trois couches CSS : un module d’écran ne pose que du PLAC
   it('(xxi) preuve — le même texte en module de PRIMITIVE est VERT (la frontière vient du manifeste)', () => {
     const feuilles = [fixture('src/ui/styles/faux.css', '.x { color: red }')];
     const manifeste = [{ id: 'fausse', css: 'src/ui/styles/faux.css' }];
-    expect(modulesDEcran(feuilles, modulesDePrimitive(manifeste))).toEqual([]);
-    expect(modulesDEcran(feuilles, modulesDePrimitive([{ id: 'autre' }]))).toEqual(feuilles);
+    expect(modulesDEcran({ fichiers: feuilles, manifeste, partagees: FEUILLES_PARTAGEES })).toEqual([]);
+    expect(modulesDEcran({ fichiers: feuilles, manifeste: [{ id: 'autre' }], partagees: FEUILLES_PARTAGEES })).toEqual(feuilles);
   });
 
   it('(xxi) preuve — l’échelle : un littéral px est un site, un token n’en est pas un', () => {

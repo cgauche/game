@@ -48,7 +48,9 @@
 //                                 ticket fermé ;
 //   `evaluateArbrePrincipal`      `ask` sur un commit hors worktree ;
 //   `evaluateHunksEmportes`       `git commit -- <paths>` qui prendrait l'arbre au lieu de l'index ;
-//   `evaluateStocksQuiGrandissent` stock nominatif qui naît ou grandit sans `CLIQUET:` au message.
+//   `evaluateStocksQuiGrandissent` stock nominatif qui naît ou grandit sans `CLIQUET:` au message ;
+//   `evaluateReclassementsCss`    revendication ARMÉE (`reclassementCss.mjs`) qui sort des sites du
+//                                 stock CSS sans `RECLASSEMENT:` au message.
 //
 // COÛT, et pourquoi le `timeout: 10` de `.claude/settings.json` (et son miroir `.codex/hooks.json`)
 // reste à 10 s (mesuré 2026-09-04, worst case fabriqué : 49 fichiers / 23 520 insertions dont 12
@@ -63,6 +65,8 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
+import { CHEMIN_COUCHES, CHEMIN_MANIFESTE } from '../guards/lib/cssCouches.mjs'
+import { raisonDeRefusDeReclassement, reclassementsNonDeclares } from '../guards/lib/reclassementCss.mjs'
 import {
   PORTEUR_DU_PLAFOND, estCheminDuBudget, importsDe, mesurerBudget, plafondDeLaSource, refusDeBudget,
 } from '../guards/budget-contexte.mjs'
@@ -2215,6 +2219,24 @@ export function evaluateStocksQuiGrandissent({ command, diff, images }) {
 }
 
 /**
+ * Décision « une revendication ARMÉE sort des sites du stock CSS sans que le message le dise »
+ * (`RECLASSEMENT:`). Mêmes `images` que `evaluateStocksQuiGrandissent` ; ne se prononce que sur un
+ * `git commit` qui EMPORTE la frontière (manifeste, `cssCouches.mjs`) ou une feuille `.css`.
+ * @returns {{ decision: 'deny', reason: string } | null}
+ */
+export function evaluateReclassementsCss({ command, fichiersEmportes, images }) {
+  if (!command || !isGitCommitCommand(command)) return null
+  if (!fichiersEmportes.some((f) => f === CHEMIN_MANIFESTE || f === CHEMIN_COUCHES || f.endsWith('.css'))) return null
+  let restants
+  try {
+    restants = reclassementsNonDeclares({ message: command }, images, fichiersEmportes)
+  } catch (e) {
+    return { decision: 'deny', reason: `⛔ RECLASSEMENT CSS injugeable : ${e.message}` }
+  }
+  return restants.length ? { decision: 'deny', reason: raisonDeRefusDeReclassement(restants) } : null
+}
+
+/**
  * Le refus d'un commit qui fait GRANDIR le contexte permanent au-delà du plafond de sa pré-image sans
  * le DIRE (`CLIQUET:`). La mesure vient de ce que le commit EMPORTE, la référence et le plafond de sa
  * pré-image : c'est la même discipline de lecture que `evaluateStocksQuiGrandissent`.
@@ -2424,6 +2446,11 @@ if (isMain) {
     diff: porteursDeStock.map((f) => commit.fichier(f)).join('\n'),
     images: { lirePostImage: commit.contenu, lirePreImage: commit.avant },
   })
+  const reclassements = evaluateReclassementsCss({
+    command: text,
+    fichiersEmportes: fichiers,
+    images: { lirePostImage: commit.contenu, lirePreImage: commit.avant },
+  })
   // BUDGET DU CONTEXTE PERMANENT : mesuré seulement si le commit touche un chemin du périmètre —
   // sinon aucune lecture n'est payée au-delà de l'image de `CLAUDE.md`, qui dit les fichiers IMPORTÉS
   // (`@<chemin>`) et donc le périmètre lui-même : post-image si le commit l'emporte, pré-image sinon.
@@ -2443,7 +2470,7 @@ if (isMain) {
     : null
   const rendu = rendre(decisionCumulee([
     decision, porteDuTicket, antiEsquive, juge, amendInvisible, registresPorteurs,
-    horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null, stocks, budget,
+    horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null, stocks, reclassements, budget,
   ]))
   if (!rendu && hunks?.contexte) {
     console.log(JSON.stringify({

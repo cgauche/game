@@ -1,6 +1,11 @@
-// PARSEUR des TROIS COUCHES CSS (#1800) — pur, sans disque : il LIT du texte et rend des règles,
-// des déclarations et deux prédicats. Le VERDICT appartient aux gardes (`src/ui/ui-ratchets.test.ts`),
-// la MESURE à `cssCouchesAudit.ts` qui, lui, touche le disque.
+// PARSEUR et MESURE PURE des TROIS COUCHES CSS (#1800) — sans disque : il LIT du texte et rend des
+// règles, des déclarations, deux prédicats, et les sites d'IDENTITÉ et d'ESPACEMENT d'une IMAGE
+// `{ fichiers, manifeste, partagees }` — partitionnée en STOCK (modules d'écran et `layout.css`) et
+// zone EXEMPTE (feuilles partagées, modules de primitive), puis VENTILÉE entre deux images
+// (`ventilerDecrue`). Le VERDICT
+// appartient aux gardes (`src/ui/ui-ratchets.test.ts`, `reclassementCss.mjs`) ; la LECTURE des
+// images (disque, ref git) à `cssCouchesAudit.ts`. Pur `.mjs` parce que les hooks de commit et de
+// push le chargent sous `node` nu (#1806).
 //
 // Pourquoi un LEXER et pas une regex : la regex plate `([^{}]+)\{([^{}]*)\}` ne voit pas les blocs
 // IMBRIQUÉS — elle rend le CONTENU d'un `@media` comme s'il vivait au premier niveau, et perd donc
@@ -14,7 +19,7 @@
 
 /** Feuilles PARTAGÉES de `src/ui/styles/` : aucune primitive ne les possède, aucun module d'écran
  *  n'en fait partie. Source UNIQUE — `SHARED_CSS_FILES` (ui-ratchets), `CSS_PARTAGES`
- *  (`build-primitives.mjs`) et `modulesDEcran()` en dérivent tous. */
+ *  (`build-primitives.mjs`) et `feuillesPartageesDe` (la liste lue dans une image) en dérivent. */
 export const FEUILLES_PARTAGEES = [
   'src/ui/styles/base.css',
   'src/ui/styles/components.css',
@@ -249,4 +254,257 @@ export function valeurHorsEchelle(valeur) {
   let m;
   while ((m = LITTERAL_DE_LONGUEUR.exec(valeur))) if (Number(m[1]) !== 0) return true;
   return false;
+}
+
+/** La couche LAYOUT : feuille partagée des primitives de PLACEMENT, mesurée comme un module d'écran —
+ *  identité et espacement au stock (docs/charte-ui.md § « Architecture CSS »). */
+export const FEUILLE_LAYOUT = 'src/ui/styles/layout.css';
+
+/** Le manifeste des primitives, chemin UNIQUE : la frontière primitive / écran s'y lit. */
+export const CHEMIN_MANIFESTE = 'src/data/primitives.manifest.json';
+
+/** Ce fichier : la liste `FEUILLES_PARTAGEES` d'une image se lit dans SON texte (`feuillesPartageesDe`). */
+export const CHEMIN_COUCHES = 'scripts/guards/lib/cssCouches.mjs';
+
+/**
+ * LECTEUR UNIQUE du manifeste d'une image. Absent → `[]` ; JSON invalide ou non-tableau → lève.
+ * @param {string | null} texte @returns {{ id: string, css?: string }[]}
+ */
+export function manifesteDe(texte) {
+  if (texte == null) return [];
+  let m;
+  try {
+    m = JSON.parse(texte);
+  } catch (e) {
+    throw new Error(`${CHEMIN_MANIFESTE} illisible : ${e.message}`, { cause: e });
+  }
+  if (!Array.isArray(m)) throw new Error(`${CHEMIN_MANIFESTE} n'est pas un tableau`);
+  return m;
+}
+
+/** La déclaration de `FEUILLES_PARTAGEES` dans le texte de `CHEMIN_COUCHES`. */
+const DECLARATION_DES_PARTAGEES = /export const FEUILLES_PARTAGEES = \[([^\]]*)\]/;
+
+/**
+ * LECTEUR PUR de `FEUILLES_PARTAGEES` dans le TEXTE de `CHEMIN_COUCHES` d'une image. Absent → `[]` ;
+ * texte sans la déclaration → lève.
+ * @param {string | null} texte @returns {string[]}
+ */
+export function feuillesPartageesDe(texte) {
+  if (texte == null) return [];
+  const m = DECLARATION_DES_PARTAGEES.exec(sansCommentaires(texte));
+  if (!m) throw new Error(`${CHEMIN_COUCHES} : déclaration \`FEUILLES_PARTAGEES\` introuvable`);
+  return [...m[1].matchAll(/'([^']+)'|"([^"]+)"/g)].map((x) => x[1] ?? x[2]);
+}
+
+/** Le sélecteur NORMALISÉ d'une règle : la liste telle qu'elle est écrite, espaces réduits. Le
+ *  contexte `@media` n'entre PAS dans la clé — il n'est pas un abri, et l'y mettre ferait dériver
+ *  le stock au moindre déplacement de breakpoint. */
+export const cleDeRegle = (selecteurs) => selecteurs.join(', ').replace(/\s+/g, ' ');
+
+/**
+ * Sites d'IDENTITÉ : une déclaration qui n'est pas du PLACEMENT.
+ * @param {readonly { rel: string, text: string }[]} fichiers @returns {{ file: string, ref: string }[]}
+ */
+export function sitesIdentiteEcran(fichiers) {
+  const sites = [];
+  for (const f of fichiers) {
+    for (const { selecteurs, corps } of reglesCss(f.text)) {
+      const sel = cleDeRegle(selecteurs);
+      for (const { prop } of declarations(corps)) {
+        if (!estPlacement(prop)) sites.push({ file: f.rel, ref: `${sel} :: ${prop}` });
+      }
+    }
+  }
+  return sites;
+}
+
+/**
+ * Sites d'ESPACEMENT hors échelle `--sp-*`.
+ * @param {readonly { rel: string, text: string }[]} fichiers @returns {{ file: string, ref: string }[]}
+ */
+export function sitesEspacementHorsEchelle(fichiers) {
+  const sites = [];
+  for (const f of fichiers) {
+    for (const { selecteurs, corps } of reglesCss(f.text)) {
+      const sel = cleDeRegle(selecteurs);
+      for (const { prop, valeur } of declarations(corps)) {
+        if (PROPRIETES_A_ECHELLE.has(prop) && valeurHorsEchelle(valeur)) {
+          sites.push({ file: f.rel, ref: `${sel} :: ${prop} :: ${valeur.replace(/\s+/g, ' ')}` });
+        }
+      }
+    }
+  }
+  return sites;
+}
+
+/**
+ * Les modules qu'une primitive POSSÈDE (champ `css` du manifeste).
+ * @param {readonly { id: string, css?: string }[]} manifeste @returns {Set<string>}
+ */
+export function modulesDePrimitive(manifeste) {
+  return new Set(manifeste.map((e) => e.css).filter((c) => typeof c === 'string'));
+}
+
+/**
+ * La zone EXEMPTE d'une image, source UNIQUE de sa frontière : les modules revendiqués au manifeste
+ * et les feuilles partagées de SA liste, hors `FEUILLE_LAYOUT`. Tout le reste est au stock.
+ * @param {{ manifeste: readonly { id: string, css?: string }[], partagees: readonly string[] }} image
+ * @returns {Set<string>}
+ */
+export function modulesExemptes({ manifeste, partagees }) {
+  const out = modulesDePrimitive(manifeste);
+  for (const f of partagees) if (f !== FEUILLE_LAYOUT) out.add(f);
+  return out;
+}
+
+/**
+ * Les modules d'ÉCRAN d'une image : son stock (`modulesExemptes` en est le complément) moins
+ * `FEUILLE_LAYOUT`.
+ * @param {{ fichiers: readonly { rel: string, text: string }[], manifeste: readonly { id: string, css?: string }[], partagees: readonly string[] }} image
+ */
+export function modulesDEcran(image) {
+  const exempts = modulesExemptes(image);
+  return image.fichiers.filter((f) => !exempts.has(f.rel) && f.rel !== FEUILLE_LAYOUT);
+}
+
+/**
+ * La MÊME mesure jouée sur les deux zones d'une image. `stock` : tout ce qui n'est pas exempté —
+ * modules d'écran et `FEUILLE_LAYOUT` —, ce que jugent les cliquets (xxi)/(xxii). `exempte` :
+ * `modulesExemptes`.
+ * @param {{ fichiers: readonly { rel: string, text: string }[], manifeste: readonly { id: string, css?: string }[], partagees: readonly string[] }} image
+ */
+export function partitionCss(image) {
+  const exempts = modulesExemptes(image);
+  const stock = image.fichiers.filter((f) => !exempts.has(f.rel));
+  const exempte = image.fichiers.filter((f) => exempts.has(f.rel));
+  return {
+    stock: { identite: sitesIdentiteEcran(stock), espacement: sitesEspacementHorsEchelle(stock) },
+    exempte: { identite: sitesIdentiteEcran(exempte), espacement: sitesEspacementHorsEchelle(exempte) },
+  };
+}
+
+/**
+ * Sites qu'un module porterait s'il était un module d'ÉCRAN, PAR VOLET : le prix d'une revendication,
+ * mesuré sur l'image où elle est posée. Texte absent → 0.
+ * @param {string} module @param {string | null} texte
+ * @returns {{ identite: number, espacement: number, n: number }} `n` = identité + espacement
+ */
+export function sitesSiEcran(module, texte) {
+  if (texte == null) return { identite: 0, espacement: 0, n: 0 };
+  const f = [{ rel: module, text: texte }];
+  const identite = sitesIdentiteEcran(f).length;
+  const espacement = sitesEspacementHorsEchelle(f).length;
+  return { identite, espacement, n: identite + espacement };
+}
+
+/**
+ * Les revendications ARMÉES entre deux côtés `{ manifeste, partagees, lire }` : un module exempté à la
+ * tête, NEUF ou à 0 site à la base, qui en porte N > 0 à la tête (#1806, juge de
+ * diff du 2026-09-23). `touches` = les chemins que le geste modifie : un module déjà exempté et
+ * intouché a le même texte aux deux bouts, il ne s'arme donc pas — il n'est pas lu.
+ * @param {{ manifeste: readonly { id: string, css?: string }[], partagees: readonly string[], lire: (f: string) => string | null }} base
+ * @param {typeof base} tete @param {Iterable<string>} touches
+ * @returns {{ module: string, identite: number, espacement: number, n: number }[]} triées
+ */
+export function revendicationsArmees(base, tete, touches) {
+  const avant = modulesExemptes(base);
+  const touche = new Set(touches);
+  return [...modulesExemptes(tete)]
+    .filter((m) => !avant.has(m) || touche.has(m))
+    .sort()
+    .filter((m) => !avant.has(m) || sitesSiEcran(m, base.lire(m)).n === 0)
+    .map((module) => ({ module, ...sitesSiEcran(module, tete.lire(module)) }))
+    .filter((r) => r.n > 0);
+}
+
+/** Les deux volets d'une mesure CSS. */
+const VOLETS = ['identite', 'espacement'];
+
+/** Sites qu'un chemin porte AU STOCK d'un côté : une feuille de `RACINE_DES_MODULES` non exemptée. */
+const sitesAuStock = (cote, exempts, f) =>
+  f.startsWith(RACINE_DES_MODULES) && f.endsWith('.css') && !exempts.has(f)
+    ? sitesSiEcran(f, cote.lire(f))
+    : { identite: 0, espacement: 0, n: 0 };
+
+/**
+ * Le PRIX d'un intervalle `base → tete`, par volet : ce que les revendications ARMÉES
+ * (`revendicationsArmees`) ont fait sortir du stock, soit `min(Σ N du volet, max(0, −Δstock du
+ * volet))` — un intervalle dont le stock ne baisse pas ne coûte rien (juge de seconde passe du
+ * 2026-09-23). La MÊME fonction sert le commit (parent, commit), la plage poussée (base, tête) et
+ * `ventilerDecrue`. `Δstock` se lit sur les seuls chemins qui peuvent changer : `touches` et les
+ * modules dont la frontière bouge.
+ * @param {Parameters<typeof revendicationsArmees>[0]} base @param {typeof base} tete
+ * @param {Iterable<string>} touches
+ * @returns {{ revendications: ReturnType<typeof revendicationsArmees>, deltaStock: { identite: number, espacement: number }, identite: number, espacement: number, n: number }}
+ */
+export function prixDuReclassement(base, tete, touches) {
+  const chemins = [...touches];
+  const revendications = revendicationsArmees(base, tete, chemins);
+  const deltaStock = { identite: 0, espacement: 0 };
+  const prix = { identite: 0, espacement: 0, n: 0 };
+  if (!revendications.length) return { revendications, deltaStock, ...prix };
+  const exBase = modulesExemptes(base);
+  const exTete = modulesExemptes(tete);
+  const frontiere = [...exBase, ...exTete].filter((m) => exBase.has(m) !== exTete.has(m));
+  for (const f of new Set([...chemins, ...frontiere])) {
+    const avant = sitesAuStock(base, exBase, f);
+    const apres = sitesAuStock(tete, exTete, f);
+    for (const v of VOLETS) deltaStock[v] += apres[v] - avant[v];
+  }
+  for (const v of VOLETS) {
+    prix[v] = Math.min(revendications.reduce((s, r) => s + r[v], 0), Math.max(0, -deltaStock[v]));
+  }
+  prix.n = prix.identite + prix.espacement;
+  return { revendications, deltaStock, ...prix };
+}
+
+/** Le côté `{ manifeste, partagees, lire }` d'une image mesurable. */
+const coteDe = (image) => {
+  const textes = new Map(image.fichiers.map((f) => [f.rel, f.text]));
+  return { manifeste: image.manifeste, partagees: image.partagees, lire: (f) => textes.get(f) ?? null };
+};
+
+/**
+ * VENTILATION d'une décrue entre deux images, par volet : `deltaStock`, `deltaExempte`,
+ * `entre = max(0, min(−deltaStock, deltaExempte))` (sites ENTRÉS en zone exempte),
+ * `disparu = −(deltaStock + deltaExempte)` (négatif = matière APPARUE), `reclasse = min(prix du
+ * volet, entre)` (`prixDuReclassement`), `primitivise = entre − reclasse`. Aucun appariement de
+ * déclarations.
+ * @param {{ fichiers: readonly { rel: string, text: string }[], manifeste: readonly { id: string, css?: string }[], partagees: readonly string[] }} base
+ * @param {typeof base} tete
+ */
+export function ventilerDecrue(base, tete) {
+  const b = partitionCss(base);
+  const t = partitionCss(tete);
+  const chemins = [...base.fichiers, ...tete.fichiers].map((f) => f.rel);
+  const prix = prixDuReclassement(coteDe(base), coteDe(tete), chemins);
+  const volet = (v) => {
+    const deltaStock = t.stock[v].length - b.stock[v].length;
+    const deltaExempte = t.exempte[v].length - b.exempte[v].length;
+    const entre = Math.max(0, Math.min(-deltaStock, deltaExempte));
+    const reclasse = Math.min(prix[v], entre);
+    return {
+      stock: [b.stock[v].length, t.stock[v].length],
+      exempte: [b.exempte[v].length, t.exempte[v].length],
+      deltaStock,
+      deltaExempte,
+      entre,
+      disparu: 0 - (deltaStock + deltaExempte),
+      reclasse,
+      primitivise: entre - reclasse,
+    };
+  };
+  return { identite: volet('identite'), espacement: volet('espacement'), revendications: prix.revendications };
+}
+
+/**
+ * Ligne lisible d'un volet ventilé : bornes, `ENTRÉ`, `DISPARU` (ou `APPARU`), `RECLASSÉ`,
+ * `PRIMITIVISÉ`.
+ * @param {string} nom @param {ReturnType<typeof ventilerDecrue>['identite']} v @returns {string}
+ */
+export function ligneDeVentilation(nom, v) {
+  const signe = (n) => (n > 0 ? `+${n}` : String(n));
+  const solde = v.disparu < 0 ? `APPARU ${-v.disparu}` : `DISPARU ${v.disparu}`;
+  return `${nom.padEnd(10)} stock ${v.stock[0]} → ${v.stock[1]} (Δ ${signe(v.deltaStock)}) · exempté ${v.exempte[0]} → ${v.exempte[1]} (Δ ${signe(v.deltaExempte)}) · ENTRÉ ${v.entre} · ${solde} · RECLASSÉ ${v.reclasse} · PRIMITIVISÉ ${v.primitivise}`;
 }

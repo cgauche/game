@@ -12,8 +12,8 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
-  croissanceDesStocks, croissancesNonCouvertes, cliquetsDuMessage, entreesDeStock, estEntreeDeStock,
-  estPorteurDeStock, raisonDeRefus,
+  croissanceDesStocks, croissancesNonCouvertes, cliquetsDuMessage, declarationsDuMessage, entreesDeStock,
+  estEntreeDeStock, estPorteurDeStock, raisonDeRefus,
 } from '../guards/lib/stocksNominatifs.mjs'
 import { croissancesDeLaPlage, raisonDeRefusDePlage, SHA_NUL } from '../guards/lib/plageStock.mjs'
 
@@ -510,6 +510,21 @@ test('CLIQUET — le message couvre le fichier s il annonce le BON compte et un 
   assert.deepEqual(croissancesNonCouvertes({ diff, message: couvrant }, REPLI), [])
 })
 
+test('déclarations — UN lecteur par mot-clé : `CLIQUET:` et `RECLASSEMENT:` ne se lisent jamais l’un pour l’autre', () => {
+  const message = [
+    'refactor: lot',
+    '',
+    'CLIQUET: scripts/x.test.mjs +2 — deux fixtures du test neuf, motif assez long',
+    'RECLASSEMENT: src/ui/styles/console.css +255 — la console devient un organisme, refs #1806',
+  ].join('\n')
+  assert.deepEqual(cliquetsDuMessage(message).map((k) => [k.fichier, k.n]), [['scripts/x.test.mjs', 2]])
+  assert.deepEqual(
+    declarationsDuMessage(message, 'RECLASSEMENT').map((k) => [k.fichier, k.n]),
+    [['src/ui/styles/console.css', 255]],
+  )
+  assert.deepEqual(declarationsDuMessage('RECLASSEMENT: a.css +1 — court', 'RECLASSEMENT'), [])
+})
+
 test('CLIQUET — un compte FAUX ou un motif de tampon ne couvre rien, et le refus le dit', () => {
   const diff = diffDe('src/state/flowtest-derived-stake.test.ts', [ENTREE_A, ENTREE_B])
   const fauxCompte = 'CLIQUET: src/state/flowtest-derived-stake.test.ts +1 — motif suffisamment long pour passer'
@@ -520,6 +535,17 @@ test('CLIQUET — un compte FAUX ou un motif de tampon ne couvre rien, et le ref
   assert.equal(croissancesNonCouvertes({ diff, message: tampon }, REPLI).length, 1)
   const autreFichier = 'CLIQUET: scripts/guards/lib/domResiduStock.mjs +2 — un motif assez long mais pour un autre fichier'
   assert.equal(croissancesNonCouvertes({ diff, message: autreFichier }, REPLI).length, 1)
+})
+
+test('CLIQUET — deux lignes pour le MÊME fichier (`+999` puis le bon compte) → refus nommé : une déclaration par porteur', () => {
+  const diff = diffDe('src/state/flowtest-derived-stake.test.ts', [ENTREE_A, ENTREE_B])
+  const double = [
+    'CLIQUET: src/state/flowtest-derived-stake.test.ts +999 — motif suffisamment long pour passer',
+    'CLIQUET: src/state/flowtest-derived-stake.test.ts +2 — motif suffisamment long pour passer',
+  ].join('\n')
+  const [c] = croissancesNonCouvertes({ diff, message: double }, REPLI)
+  assert.deepEqual([c.net, c.declare, c.declarees], [2, 999, [999, 2]])
+  assert.match(raisonDeRefus([c]), /2 lignes \(\+999, \+2\)/)
 })
 
 test('refus — nomme le fichier, le compte et jusqu à trois exemples', () => {

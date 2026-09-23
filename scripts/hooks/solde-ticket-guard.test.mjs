@@ -54,6 +54,7 @@ import {
   avecCibleIgnoree,
   gesteJuge,
   evaluateBudgetContexte,
+  evaluateReclassementsCss,
   listeurDImage,
 } from './solde-ticket-guard.mjs'
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
@@ -2519,4 +2520,34 @@ test('le budget qui grandit sans CLIQUET est refusé, avec CLIQUET il passe, et 
   const avec = 'git commit -m "docs: une ligne\n\nCLIQUET: scripts/guards/budget-contexte.mjs +1024 — une règle de routage neuve"'
   assert.equal(evaluateBudgetContexte({ command: avec, mesure, reference, plafond: 9127 }), null)
   assert.equal(evaluateBudgetContexte({ command: 'git status', mesure, reference, plafond: 9127 }), null)
+})
+
+// ── RECLASSEMENT CSS (#1806) ────────────────────────────────────────────────────────────────────
+
+test('reclassement CSS : jugé sur un commit qui emporte le manifeste, `cssCouches.mjs` ou une feuille, au prix du commit', () => {
+  const manifeste = 'src/data/primitives.manifest.json'
+  const module = 'src/ui/styles/console.css'
+  const ecran = 'src/ui/styles/ecran.css'
+  const css = '.c { color: red; gap: 3px }'
+  const images = {
+    lirePreImage: (f) => (f === manifeste ? '[]' : f === module ? css : null),
+    lirePostImage: (f) => (f === manifeste ? JSON.stringify([{ id: 'c', css: module }]) : f === module ? css : null),
+  }
+  const sans = evaluateReclassementsCss({ command: 'git commit -m "refactor: console"', fichiersEmportes: [manifeste], images })
+  assert.equal(sans.decision, 'deny')
+  assert.ok(sans.reason.includes('2 site(s) sortent du stock CSS') && sans.reason.includes(`${module} (N 2, aucune ligne)`), sans.reason)
+  const avec = `git commit -m "refactor: console\n\nRECLASSEMENT: ${module} +2 — la console devient un organisme, refs #1806"`
+  assert.equal(evaluateReclassementsCss({ command: avec, fichiersEmportes: [manifeste], images }), null)
+  assert.equal(evaluateReclassementsCss({ command: 'git commit -m "x"', fichiersEmportes: ['README.md'], images }), null)
+  const verse = {
+    lirePreImage: (f) => (f === manifeste ? JSON.stringify([{ id: 'c', css: module }]) : f === ecran ? css : null),
+    lirePostImage: (f) => (f === manifeste ? JSON.stringify([{ id: 'c', css: module }]) : f === module ? css : null),
+  }
+  const seul = evaluateReclassementsCss({ command: 'git commit -m "refactor: git mv"', fichiersEmportes: [ecran, module], images: verse })
+  assert.equal(seul?.decision, 'deny', 'module revendiqué VIDE à la base, versé par ce commit : armé sans toucher le manifeste')
+  assert.equal(evaluateReclassementsCss({ command: 'git status', fichiersEmportes: [manifeste], images }), null)
+  const casse = { lirePreImage: images.lirePreImage, lirePostImage: (f) => (f === manifeste ? '[{"id":' : null) }
+  const injugeable = evaluateReclassementsCss({ command: 'git commit -m "x"', fichiersEmportes: [manifeste], images: casse })
+  assert.equal(injugeable?.decision, 'deny', 'manifeste illisible : refus nommé, jamais un passage muet')
+  assert.match(injugeable.reason, /injugeable : src\/data\/primitives\.manifest\.json illisible/)
 })

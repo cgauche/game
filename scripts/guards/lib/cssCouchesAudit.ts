@@ -11,7 +11,8 @@
  *      son aspect.
  *   2. ESPACEMENT hors échelle — un `gap`/`padding`/`margin` en littéral `px`/`rem`/`em` au lieu
  *      d'un pas `var(--sp-*)`, en module d'écran ET dans `layout.css` (la couche s'applique sa
- *      propre règle ; les modules de PRIMITIVE, eux, portent leur densité comme leur matière).
+ *      propre règle — identité comprise ; les modules de PRIMITIVE, eux, portent leur densité comme
+ *      leur matière).
  *   3. STYLE INLINE — toute forme de `style=` dans `src/ui` hors l'unique exception légale
  *      (arbitrage A2, 2026-09-18) : un littéral d'objet dont TOUTES les clés sont des variables
  *      CSS, consommées par une classe (patron `.swatch`).
@@ -21,93 +22,83 @@
  * `css`) le module qu'elle POSSÈDE. Tout autre `src/ui/styles/*.css` hors feuilles partagées est un
  * module d'écran.
  *
- * Chaque fonction de mesure est PURE sur les fichiers qu'elle reçoit : les preuves par mutation lui
- * passent des fixtures en mémoire, jamais le disque.
+ * DEUX ÉTAGES : la mesure des volets identité / espacement est PURE et vit dans `cssCouches.mjs`
+ * (les hooks la chargent sous `node` nu) ; ce module-ci compose les trois volets
+ * (`mesureCssCouches`, pur sur ce qu'il reçoit) et LIT les images — disque ou ref git — par une
+ * `SourceCss` unique (`imageCss`).
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from './sourceCorpus.mjs';
+import { lireGit, sortieOuNull } from './gitPorte.mjs';
 import {
+  CHEMIN_COUCHES,
+  CHEMIN_MANIFESTE,
+  cleDeRegle,
   declarations,
-  estPlacement,
   FEUILLES_PARTAGEES,
-  PROPRIETES_A_ECHELLE,
+  feuillesPartageesDe,
+  manifesteDe,
+  modulesDePrimitive,
+  partitionCss,
+  RACINE_DES_MODULES,
   reglesCss,
-  valeurHorsEchelle,
+  type EntreeManifeste,
+  type Fichier,
+  type ImageCss,
+  type Site,
 } from './cssCouches.mjs';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 
-/** Un fichier tel que `readCorpus` le rend — ou une FIXTURE de même forme. */
-export type Fichier = { rel: string; text: string };
+/** D'où une image se lit : la liste des `.css` d'un dossier, et le texte d'un chemin (`null` = absent). */
+type SourceCss = { lister: (dossier: string) => readonly string[]; lire: (rel: string) => string | null };
 
-/** Un site mesuré, forme d'entrée de `sitesEnEntrees` (`stock.mjs`). */
-export type Site = { file: string; ref: string };
-
-type EntreeManifeste = { id: string; css?: string };
-
-/** Les modules de `src/ui/styles/` qu'une primitive POSSÈDE (champ `css` du manifeste). */
-export function modulesDePrimitive(
-  manifeste: readonly EntreeManifeste[] = JSON.parse(
-    readFileSync(`${RACINE}src/data/primitives.manifest.json`, 'utf8'),
-  ),
-): Set<string> {
-  return new Set(manifeste.map((e) => e.css).filter((c): c is string => typeof c === 'string'));
-}
-
-/** Les modules d'ÉCRAN : `src/ui/styles/*.css` moins les feuilles partagées, moins les modules de
- *  primitive. Ce sont EUX que le cliquet (xxi) juge. */
-export function modulesDEcran(
-  fichiers: readonly Fichier[] = feuillesDeStyle(),
-  primitives: ReadonlySet<string> = modulesDePrimitive(),
-): Fichier[] {
-  return fichiers.filter((f) => !FEUILLES_PARTAGEES.includes(f.rel) && !primitives.has(f.rel));
-}
-
-/** Toutes les feuilles MESURÉES : `src/ui/styles/` ∪ les modules déclarés par le manifeste (champ
- *  `css`), où qu'ils vivent — une primitive qui n'habite pas `src/ui` (le plateau, `gameIso`) POSSÈDE
- *  quand même sa feuille, et le corpus se lit sur la SOURCE UNIQUE qu'est le manifeste (#1806 A3). */
-export const feuillesDeStyle = (): readonly Fichier[] => {
-  const dansStyles = readCorpus(['src/ui/styles'], { exts: ['.css'] });
-  const dejaLues = new Set(dansStyles.map((f) => f.rel));
-  const ailleurs = [...modulesDePrimitive()].filter((c) => !dejaLues.has(c) && existsSync(`${RACINE}${c}`));
-  return [...dansStyles, ...ailleurs.map((rel) => ({ rel, text: readFileSync(`${RACINE}${rel}`, 'utf8') }))];
+/** L'arbre de travail. */
+const sourceDuDisque: SourceCss = {
+  lister: (dossier) => readCorpus([dossier], { exts: ['.css'] }).map((f) => f.rel),
+  lire: (rel) => (existsSync(`${RACINE}${rel}`) ? readFileSync(`${RACINE}${rel}`, 'utf8') : null),
 };
 
-/** Le sélecteur NORMALISÉ d'une règle : la liste telle qu'elle est écrite, espaces réduits. Le
- *  contexte `@media` n'entre PAS dans la clé — il n'est pas un abri, et l'y mettre ferait dériver
- *  le stock au moindre déplacement de breakpoint. */
-const cleDeRegle = (selecteurs: readonly string[]) => selecteurs.join(', ').replace(/\s+/g, ' ');
-
-/** Sites d'IDENTITÉ : une déclaration qui n'est pas du PLACEMENT, dans un module d'écran. */
-export function sitesIdentiteEcran(fichiers: readonly Fichier[]): Site[] {
-  const sites: Site[] = [];
-  for (const f of fichiers) {
-    for (const { selecteurs, corps } of reglesCss(f.text)) {
-      const sel = cleDeRegle(selecteurs);
-      for (const { prop } of declarations(corps)) {
-        if (!estPlacement(prop)) sites.push({ file: f.rel, ref: `${sel} :: ${prop}` });
-      }
-    }
-  }
-  return sites;
+/** Un commit, lu par l'hôte git des portes (`gitPorte.mjs`) — sans toucher l'arbre de travail. Une
+ *  ref inconnue ou un git indisponible LÈVENT en se nommant : une image vide ventilerait sur rien. */
+export function sourceDeRef(ref: string, cwd: string = RACINE): SourceCss {
+  const lire = (args: string[]): string | null => {
+    const vu = lireGit(args, { cwd });
+    if (!vu.disponible) throw new Error(`git indisponible pour lire ${ref} : ${vu.raison}`);
+    return sortieOuNull(vu);
+  };
+  if (lire(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]) === null) throw new Error(`ref inconnue : ${ref}`);
+  return {
+    lister: (dossier) =>
+      (lire(['ls-tree', '-r', '--name-only', ref, '--', dossier]) ?? '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l.endsWith('.css')),
+    lire: (rel) => lire(['show', `${ref}:${rel}`]),
+  };
 }
 
-/** Sites d'ESPACEMENT hors échelle `--sp-*`. */
-export function sitesEspacementHorsEchelle(fichiers: readonly Fichier[]): Site[] {
-  const sites: Site[] = [];
-  for (const f of fichiers) {
-    for (const { selecteurs, corps } of reglesCss(f.text)) {
-      const sel = cleDeRegle(selecteurs);
-      for (const { prop, valeur } of declarations(corps)) {
-        if (PROPRIETES_A_ECHELLE.has(prop) && valeurHorsEchelle(valeur)) {
-          sites.push({ file: f.rel, ref: `${sel} :: ${prop} :: ${valeur.replace(/\s+/g, ' ')}` });
-        }
-      }
-    }
-  }
-  return sites;
+/** L'IMAGE d'une source : son manifeste, SA liste `FEUILLES_PARTAGEES`, et ses feuilles MESURÉES —
+ *  `src/ui/styles/` ∪ les modules déclarés par le manifeste (champ `css`), où qu'ils vivent : une
+ *  primitive qui n'habite pas `src/ui` (le plateau, `gameIso`) POSSÈDE quand même sa feuille (#1806 A3). */
+export function imageCss(source: SourceCss): ImageCss {
+  const manifeste: EntreeManifeste[] = manifesteDe(source.lire(CHEMIN_MANIFESTE));
+  const partagees = feuillesPartageesDe(source.lire(CHEMIN_COUCHES));
+  const dansStyles = source.lister(RACINE_DES_MODULES);
+  const dejaLues = new Set(dansStyles);
+  const ailleurs = [...modulesDePrimitive(manifeste)].filter((c) => !dejaLues.has(c));
+  const fichiers = [...dansStyles, ...ailleurs]
+    .map((rel) => ({ rel, text: source.lire(rel) }))
+    .filter((f): f is Fichier => f.text !== null);
+  return { fichiers, manifeste, partagees };
 }
+
+/** L'image de l'arbre de travail. */
+export const imageDuDisque = (): ImageCss => imageCss(sourceDuDisque);
+
+/** Le corpus que juge le volet INLINE : les composants `.tsx` de `src/ui`. */
+export const composantsDuDisque = (): readonly Fichier[] => readCorpus(['src/ui'], { exts: ['.tsx'] });
 
 /** Corps à partir duquel un texte est un GRAND TITRE D'AFFICHAGE, en px. */
 export const SEUIL_GRAND_TITRE_PX = 30;
@@ -412,16 +403,14 @@ function refDeStyleInline(expr: string, src: string, ouvre: number, ferme: numbe
   return [...cles].sort().join(',');
 }
 
-/** Les trois collections mesurées sur le corpus RÉEL. */
-export function mesureCssCouches(): { identite: Site[]; espacement: Site[]; inline: Site[] } {
-  const feuilles = feuillesDeStyle();
-  const ecrans = modulesDEcran(feuilles);
-  const layout = feuilles.filter((f) => f.rel === 'src/ui/styles/layout.css');
-  return {
-    identite: sitesIdentiteEcran(ecrans),
-    espacement: sitesEspacementHorsEchelle([...ecrans, ...layout]),
-    inline: sitesStyleInline(readCorpus(['src/ui'], { exts: ['.tsx'] })),
-  };
+/** Les trois collections du STOCK, PUR sur ce qu'il reçoit : identité et espacement par la partition
+ *  (`partitionCss`), inline sur les composants. Lieu UNIQUE de composition des trois volets. */
+export function mesureCssCouches(
+  image: ImageCss,
+  composants: readonly Fichier[],
+): { identite: Site[]; espacement: Site[]; inline: Site[] } {
+  const { stock } = partitionCss(image);
+  return { ...stock, inline: sitesStyleInline(composants) };
 }
 
 /** Motifs de refus des trois volets (dernière phrase de `refusDeCroissance`, `stock.mjs`). */

@@ -91,10 +91,42 @@ export function verdictArbreGele(avant, apres) {
     `sous elle — relancer en fenêtre calme plutôt que de rejouer (#1679 L1c).`
   );
 }
-const CHROME_CANDIDATES = [
+const CHROME_WINDOWS = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
   'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
 ];
+/** Racine des navigateurs Playwright quand `PLAYWRIGHT_BROWSERS_PATH` n'est pas posée. */
+const RACINE_PLAYWRIGHT = '/opt/pw-browsers';
+
+/**
+ * Exécutable Chrome et arguments de lancement propres à la machine. Ordre : chemin `explicite` de
+ * l'appelant, `CHROME_PATH`, chemins Windows présents (sur `win32` seulement : ailleurs ils se
+ * résoudraient contre le dossier courant), puis le Chromium Playwright de plus haute
+ * version sous `PLAYWRIGHT_BROWSERS_PATH` (défaut `/opt/pw-browsers`), trouvé par lecture du dossier
+ * (`chromium-<N>/chrome-linux/chrome`). `--no-sandbox` en root seulement : Chromium refuse d'y
+ * démarrer avec son bac à sable. PURE : `fs`, `uid` et `plateforme` injectés.
+ * @param {{ explicite?: string, env: Record<string, string | undefined>, fs: { existe: (p: string) => boolean, lister: (d: string) => string[] }, uid?: number, plateforme: string }} o
+ * @returns {{ chemin: string, args: string[] }}
+ */
+export function resoudreChrome({ explicite, env, fs, uid, plateforme }) {
+  const args = uid === 0 ? ['--no-sandbox'] : [];
+  const direct = explicite || env.CHROME_PATH;
+  if (direct) return { chemin: direct, args };
+  const windows = plateforme === 'win32' ? CHROME_WINDOWS.find((p) => fs.existe(p)) : undefined;
+  if (windows) return { chemin: windows, args };
+  const racine = env.PLAYWRIGHT_BROWSERS_PATH || RACINE_PLAYWRIGHT;
+  const playwright = (fs.existe(racine) ? fs.lister(racine) : [])
+    .map((d) => /^chromium-(\d+)$/.exec(d))
+    .filter(Boolean)
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .map((m) => `${racine}/${m[0]}/chrome-linux/chrome`)
+    .find((p) => fs.existe(p));
+  if (playwright) return { chemin: playwright, args };
+  throw new Error(
+    `aucun Chrome trouvé — pose CHROME_PATH, ou installe Chrome (${CHROME_WINDOWS.join(', ')}) ` +
+      `ou un Chromium Playwright (${racine}/chromium-*/chrome-linux/chrome)`,
+  );
+}
 
 /** Attend `ms` millisecondes. */
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -165,10 +197,9 @@ process.on('exit', () => {
   }
 });
 
-function resolveChromePath(explicit) {
-  if (explicit) return explicit;
-  return CHROME_CANDIDATES.find((p) => existsSync(p)) ?? CHROME_CANDIDATES[0];
-}
+/** `resoudreChrome` sur le disque et l'environnement réels. */
+const chromeDeLaMachine = (explicite) =>
+  resoudreChrome({ explicite, env: process.env, fs: { existe: existsSync, lister: readdirSync }, uid: process.getuid?.(), plateforme: process.platform });
 
 /**
  * Vérifie que le serveur de dev répond (le kit ne le DÉMARRE jamais) ET qu'il sert BIEN cet arbre
@@ -268,11 +299,12 @@ export async function pourChaqueVue(session, fn, { reposMs = 500 } = {}) {
  * écrans. Une recette responsive passe sa vue explicitement (`pourChaqueVue`, `setMobileViewport`).
  */
 export async function launchSession({ chromePath, width = VUE_REFERENCE.largeur, height = VUE_REFERENCE.hauteur, port, mobile = false, timeoutMs = 10000 } = {}) {
+  const lancement = chromeDeLaMachine(chromePath);
   const cdpPort = port ?? 9222 + Math.floor(Math.random() * 2000);
   const profile = join(os.tmpdir(), `recette-cdp-profile-${Date.now()}-${Math.floor(Math.random() * 1e6)}`);
   mkdirSync(profile, { recursive: true });
-  const chrome = spawn(resolveChromePath(chromePath), [
-    '--headless=new', '--mute-audio', `--remote-debugging-port=${cdpPort}`, `--user-data-dir=${profile}`,
+  const chrome = spawn(lancement.chemin, [
+    ...lancement.args, '--headless=new', '--mute-audio', `--remote-debugging-port=${cdpPort}`, `--user-data-dir=${profile}`,
     `--window-size=${width},${height}`, '--no-first-run', '--no-default-browser-check', 'about:blank',
   ], { stdio: 'ignore' });
   const childEntry = { chrome, profile };

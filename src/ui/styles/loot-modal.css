@@ -4,14 +4,14 @@
   width: min(560px, 94vw);
 }
 .loot-modal .reward-messages {
-  margin: 2px 0 10px;
+  margin: var(--sp-2xs) 0 var(--sp-md);
   max-width: none;
   text-align: left;
 }
 .loot-modal .reward-stats {
   justify-content: flex-start;
-  margin: 10px 0;
+  margin: var(--sp-md) 0;
 }
 .loot-modal .reward-continue {
-  margin-top: 14px;
+  margin-top: var(--sp-lg);
 }

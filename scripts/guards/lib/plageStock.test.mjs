@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { refusDeLaPlage, raisonDeRefusDePlage, croissancesDeLaPlage, SHA_NUL } from './plageStock.mjs'
+import { refusDeLaPlage, raisonDeRefusDePlage, croissancesDeLaPlage, reclassementsDeLaPlage, SHA_NUL } from './plageStock.mjs'
 import { instanceDeDepot } from './depotGabarit.mjs'
 
 const PORTEUR = 'scripts/x.test.mjs'
@@ -385,4 +385,137 @@ test('équivalence — un `*-stock.json` qui NAÎT, puis qui GRANDIT : même com
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
+})
+
+// ── RECLASSEMENT CSS (#1806) : même lecture par commit, même filtre cumulé, mêmes deux voies ─────
+
+const MANIFESTE = 'src/data/primitives.manifest.json'
+const CONSOLE = 'src/ui/styles/console.css'
+const manifesteAvec = (...css) => `${JSON.stringify([{ id: 'a' }, ...css.map((c, i) => ({ id: `p${i}`, css: c }))])}\n`
+const RECLASSE = 'refactor: console en organisme\n\nRECLASSEMENT: src/ui/styles/console.css +3 — la console devient un organisme, refs #1806'
+
+/** Dépôt jetable : le module d'écran existe, le manifeste ne le revendique pas encore. */
+function depotCss() {
+  const { racine, sha } = instanceDeDepot({
+    fichiers: { [MANIFESTE]: manifesteAvec(), [CONSOLE]: '.c { color: red; border: 0; gap: 3px }\n' },
+    message: 'socle',
+  })
+  const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  const commettre = (manifeste, message) => {
+    writeFileSync(join(racine, MANIFESTE), manifeste, 'utf8')
+    git('add', '-A')
+    git('commit', '-q', '--no-verify', '-m', message)
+    return git('rev-parse', 'HEAD').trim()
+  }
+  return { racine, base: sha, git, commettre }
+}
+
+test('RECLASSEMENT : une revendication neuve sans ligne est refusée PAR COMMIT, la ligne exacte passe', () => {
+  const { racine, base, commettre } = depotCss()
+  try {
+    const muet = commettre(manifesteAvec(CONSOLE), 'refactor: console en organisme')
+    const { reclassements, plage } = croissancesDeLaPlage({ cwd: racine, avant: base, apres: muet })
+    const ecart = { prix: 3, declare: 0, modules: [{ module: CONSOLE, n: 3, declarees: [] }] }
+    assert.deepEqual(reclassements, [{ sha: muet, ...ecart }, { plage, ...ecart }])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+  const d = depotCss()
+  try {
+    const dit = d.commettre(manifesteAvec(CONSOLE), RECLASSE)
+    assert.deepEqual(croissancesDeLaPlage({ cwd: d.racine, avant: d.base, apres: dit }).reclassements, [])
+  } finally {
+    rmSync(d.racine, { recursive: true, force: true })
+  }
+})
+
+test('RECLASSEMENT : revendiquée puis RETIRÉE dans la plage, la frontière n’a pas bougé — rien à dire', () => {
+  const { racine, base, commettre } = depotCss()
+  try {
+    commettre(manifesteAvec(CONSOLE), 'refactor: console en organisme')
+    const retour = commettre(manifesteAvec(), 'revert: la console redevient un écran')
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant: base, apres: retour }).reclassements, [])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('équivalence — RECLASSEMENT au commit et à la plage : même verdict, même N', async () => {
+  const { diffDuCommit, evaluateReclassementsCss } = await import('../../hooks/solde-ticket-guard.mjs')
+  for (const message of ['refactor: console en organisme', RECLASSE]) {
+    const { racine, base, git } = depotCss()
+    try {
+      writeFileSync(join(racine, MANIFESTE), manifesteAvec(CONSOLE), 'utf8')
+      git('add', '-A')
+      const commande = `git commit -m "${message}"`
+      const lectures = diffDuCommit(commande, racine)
+      const auCommit = evaluateReclassementsCss({
+        command: commande,
+        fichiersEmportes: [MANIFESTE],
+        images: { lirePostImage: lectures.contenu, lirePreImage: lectures.avant },
+      })
+      git('commit', '-q', '--no-verify', '-m', message)
+      const auPush = croissancesDeLaPlage({ cwd: racine, avant: base, apres: git('rev-parse', 'HEAD').trim() })
+      assert.equal(auCommit === null, auPush.reclassements.length === 0, `${message} : les deux voies divergent`)
+      assert.equal(auCommit === null, message === RECLASSE, `${message} : verdict`)
+      if (auCommit) assert.ok(auCommit.reason.includes(`3 site(s) sortent du stock CSS`) && auCommit.reason.includes(`${CONSOLE} (N 3`), auCommit.reason)
+    } finally {
+      rmSync(racine, { recursive: true, force: true })
+    }
+  }
+})
+
+/** Le diff qu'un intervalle nomme, pour `cheminsDuDiff`. */
+const entetesDe = (...chemins) => chemins.map((c) => `diff --git a/${c} b/${c}\n`).join('')
+
+test('RECLASSEMENT en DEUX commits — revendication vide, puis module versé : le second commit et la plage le refusent (T1)', () => {
+  const STUB = 'src/ui/styles/stub.css'
+  const CSS = '.e { color: red; border: 0; font-size: 3px; gap: 3px }'
+  const t0 = { [MANIFESTE]: manifesteAvec(), [CONSOLE]: CSS }
+  const t1 = { [MANIFESTE]: manifesteAvec(STUB), [CONSOLE]: CSS }
+  const t2 = { [MANIFESTE]: manifesteAvec(STUB), [STUB]: CSS }
+  const paire = (a, b) => ({ lirePreImage: (f) => a[f] ?? null, lirePostImage: (f) => b[f] ?? null })
+  const commits = [
+    { sha: 'c1'.padEnd(40, '0'), message: 'feat: une primitive vide', diff: entetesDe(MANIFESTE), images: paire(t0, t1) },
+    { sha: 'c2'.padEnd(40, '0'), message: 'refactor: git mv', diff: entetesDe(CONSOLE, STUB), images: paire(t1, t2) },
+  ]
+  const cumul = { cumule: entetesDe(MANIFESTE, CONSOLE, STUB), imagesCumul: paire(t0, t2) }
+  const ecart = { prix: 4, declare: 0, modules: [{ module: STUB, n: 4, declarees: [] }] }
+  assert.deepEqual(reclassementsDeLaPlage({ commits, ...cumul }), [{ sha: commits[1].sha, ...ecart }, { plage: 'poussée', ...ecart }])
+  const dit = { ...commits[1], message: `refactor: git mv\n\nRECLASSEMENT: ${STUB} +4 — la console devient un organisme, refs #1806` }
+  assert.deepEqual(reclassementsDeLaPlage({ commits: [commits[0], dit], ...cumul }), [])
+})
+
+test('RECLASSEMENT d’un module QUASI VIDE — revendiqué à 1 site, puis rempli : la PLAGE exige son prix (juge 2026-09-23, T1)', () => {
+  const STUB = 'src/ui/styles/stub.css'
+  const CSS = '.e { color: red; border: 0; font-size: 3px; gap: 3px }'
+  const t0 = { [MANIFESTE]: manifesteAvec(), [CONSOLE]: CSS }
+  const t1 = { [MANIFESTE]: manifesteAvec(STUB), [CONSOLE]: CSS, [STUB]: '.s { color: blue }' }
+  const t2 = { [MANIFESTE]: manifesteAvec(STUB), [STUB]: CSS }
+  const paire = (a, b) => ({ lirePreImage: (f) => a[f] ?? null, lirePostImage: (f) => b[f] ?? null })
+  const commits = [
+    { sha: 'c1'.padEnd(40, '0'), message: 'feat: une primitive stub naissante', diff: entetesDe(MANIFESTE, STUB), images: paire(t0, t1) },
+    { sha: 'c2'.padEnd(40, '0'), message: 'refactor: git mv', diff: entetesDe(CONSOLE, STUB), images: paire(t1, t2) },
+  ]
+  const cumul = { cumule: entetesDe(MANIFESTE, CONSOLE, STUB), imagesCumul: paire(t0, t2) }
+  assert.deepEqual(reclassementsDeLaPlage({ commits, ...cumul }),
+    [{ plage: 'poussée', prix: 4, declare: 0, modules: [{ module: STUB, n: 4, declarees: [] }] }],
+    'aucun commit n’arme à lui seul un prix : c1 ne fait rien baisser, c2 part d’un module à 1 site')
+  const dit = { ...commits[1], message: `refactor: git mv\n\nRECLASSEMENT: ${STUB} +4 — la console devient un organisme, refs #1806` }
+  assert.deepEqual(reclassementsDeLaPlage({ commits: [commits[0], dit], ...cumul }), [], 'la somme de la plage porte le prix')
+})
+
+test('RECLASSEMENT : manifeste ILLISIBLE → refus NOMMÉ par commit et par plage, jamais une levée qui emporterait les autres refus (juge 2026-09-23, écart 3)', () => {
+  const git = (args) => {
+    if (args[0] === 'rev-list') return 'c1'
+    if (args[0] === 'show' && args[1] === '-s') return 'feat'
+    if (args[0] === 'show' && args[1] === '--format=') return entetesDe(MANIFESTE)
+    if (args[0] === 'diff') return entetesDe(MANIFESTE)
+    if (args[0] === 'show') return args[1].endsWith(`:${MANIFESTE}`) ? '{pas du json' : null
+    return null
+  }
+  const lu = croissancesDeLaPlage({ avant: 'a'.repeat(40), apres: 'b'.repeat(40), git })
+  assert.deepEqual(lu.reclassements.map((r) => [r.sha ?? r.plage, /primitives\.manifest\.json illisible/.test(r.illisible)]),
+    [['c1', true], [lu.plage, true]])
+  assert.deepEqual(lu.refus, [])
 })

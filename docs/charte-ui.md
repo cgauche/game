@@ -451,6 +451,25 @@ autre entrée du manifeste n'importe son `fichier` — une primitive que d'autre
 est générique, et le reste (le sens compte : c'est d'ÊTRE importé qui disqualifie ; un organisme, lui,
 compose librement des primitives).
 
+**Une revendication est un ÉVÉNEMENT de frontière, et elle se DIT** (#1806). La zone exempte d'un arbre
+est lue dans CET arbre : les modules revendiqués au manifeste (`css`) et les feuilles de
+`FEUILLES_PARTAGEES` (`scripts/guards/lib/cssCouches.mjs`) hors `layout.css`, mesuré comme un écran
+(identité et espacement). Une revendication est ARMÉE quand son module est NEUF dans la zone exempte, ou
+à 0 site à la base, et qu'il en porte N > 0 à la tête (`revendicationsArmees`). Son PRIX sur un
+intervalle est ce qu'elle a réellement fait sortir du stock (xxi), par volet : min(Σ N des modules
+armés, baisse du stock) — un intervalle dont le stock ne baisse pas ne coûte rien
+(`prixDuReclassement`, `scripts/guards/lib/cssCouches.mjs`). Le message porte `RECLASSEMENT: <module> +N
+— <motif #ticket>`, UNE ligne par module (deux sont refusées, comme pour `CLIQUET:`) : la somme des
+lignes égale le prix, chacune au plus le N de son module — un seul module armé porte donc exactement le
+prix. Le garde de solde le juge au commit ; la porte de plage au push le juge par commit ET sur la plage
+entière, où la somme des lignes de tous les messages égale le prix de la plage
+(`scripts/guards/lib/reclassementCss.mjs`, `plageStock.mjs`). Entre deux arbres,
+`npx tsx scripts/ui/regen-css-couches-stock.mts --ventiler <ref> [--tete <ref>]` rend, par volet, TROIS
+nombres : DISPARU (matière effacée ; APPARU si de la matière neuve est entrée en zone exempte), RECLASSÉ
+(= min(prix du volet, ENTRÉ)) et PRIMITIVISÉ (= ENTRÉ − RECLASSÉ), puis nomme les revendications armées.
+Les modules d'ÉCRAN (`modulesDEcran`) sont le stock moins `layout.css` : ils dérivent de la même
+frontière (`modulesExemptes`).
+
 | Classe | Rôle | Quand l'utiliser / anti-patron |
 |---|---|---|
 | `.codex-ref` | ENVELOPPE du déclencheur de popover Codex (`CodexRef`) | Posée par la seule primitive `CodexRef` — une chip, un chiffre ou un segment qui ouvre une fiche la porte par composition ; jamais un `onClick` d'ouverture recodé sur une classe d'écran. |

@@ -73,6 +73,12 @@ Moissonné de scripts scratchpad éprouvés (patrons repris tels quels) : CDP nu
 **Zéro dépendance nouvelle** : `playwright-core` n'était PAS installé dans ce dépôt (vérifié —
 seul le scratchpad d'un agent l'avait en local) ; le socle reste donc en CDP nu (fetch + WebSocket
 natifs Node ≥ 22), le choix le plus robuste des scripts moissonnés au regard de cette contrainte.
+
+**Quel Chrome** (`resoudreChrome`, `lib.mjs`, testée à fixtures) : `CHROME_PATH` d'abord, puis les
+chemins Windows de Chrome (sur `win32` seulement), puis le Chromium Playwright de plus haute version sous
+`PLAYWRIGHT_BROWSERS_PATH` (défaut `/opt/pw-browsers`, `chromium-<N>/chrome-linux/chrome`) ; en root,
+`--no-sandbox` est ajouté. Aucun candidat : refus nommant les chemins essayés.
+
 Le kit ne DÉMARRE **jamais** le serveur de dev — il s'y **attache** (erreur claire si injoignable).
 
 > **L'étalon se juge aux TROIS VUES, source unique `scripts/recette/vues-recette.json`** (#1847) :
@@ -130,6 +136,38 @@ d'initiative, badges de score montés ; tour engagé ; acteur au trait EN BAS de
 à fond),
 l'ouvreur d'écran d'un rail dissous garde un ancrage hors flux, et la boîte pleine ligne du bandeau
 d'objectif n'avale rien hors de sa tête. Exit ≠ 0 avec la liste des défauts.
+La MATRICE RESPONSIVE du HUD (design 2026-07-31 §12) se juge sur le RENDU pour les cellules qu'un
+DOM de la sonde porte (`defautsMatrice`, `defautsCompacite`, `defautsTactile`, testées à fixtures) :
+**Groupe** — toutes les cartes rendues avec leur vie et leur NOM à toute tranche
+(`docs/plans/2026-08-16-spec-hud-combat.md:192-194`), la vie superposée au portrait à
+561–700, un défilement horizontal de secours ; à ≤560, R-M1 (`:66-68`) : chaque tuile rendue fait
+≥ 44px de large et n'est rognée par le champ de la piste que si celle-ci défile ; à ≤560 la bande
+REPLIÉE se déplie par clic réel sur sa poignée et le groupe déplié se juge (une ligne, chaque portrait
+reçoit son clic — en combat devant le fil d'événements, recouvrement volet × fil imprimé), puis elle
+se replie ; **Initiative** — colonne à gauche au-dessus de 900 avec le cartouche de Round rendu DANS
+sa boîte (« round intégré »), colonne jusqu'à 701 avec l'entrée au trait entière dans le champ
+(« courant entier »), bande à 700 et moins dont la piste est défilable, cartouche de Round en première
+entrée, bande sous le groupe à 561–700, courant + deux suivants entiers à ≤560 ; **Dock** — pont de
+bord à bord, chaque case entière dans l'écran, hauteur du pont ≤ 21 % du viewport dès 1280px et
+≤ 45 % à ≤560 (`docs/plans/2026-08-16-spec-hud-combat.md` Zone 1) ; **compacité** sur la série des
+largeurs (cartes et colonne d'initiative plus étroites à 701–900 qu'au-delà de 900, portraits à
+561–700) ; **cibles tactiles** : le pointeur grossier est ÉMULÉ (`Emulation.setTouchEmulationEnabled`
+fait répondre `(pointer: coarse)`) et chaque commande vissée rendue offre 44px à ≤560. L'ouvreur
+d'écran du rail n'est monté qu'avec un navire (`src/ui/CampaignView.tsx`) : la mise en place du combat
+pose un `vessel` de campagne.
+Cellules NON MESURÉES, et pourquoi :
+- **Caméra / inspection** `>900`, `701–900`, `561–700` : ces cellules décrivent `ViewControls`, monté
+  en jeu nulle part (#1822, « Inspection de combattant : aucun contrôle visible (ViewControls monté
+  nulle part, touche I seule)… ») — `grep -rn ViewControls src` ne le trouve qu'à
+  `src/ui/editor/EditorCanvas.tsx` et `src/ui/gallery/registry.tsx`.
+- **Dock** `701–900` « dock sur deux rangées au besoin » : conditionnel, aucun rendu ne le rend
+  exigible.
+- **Dock** `561–700` « actions sur deux colonnes » : la grille du pont (`.cc-dock`) est réécrite sous
+  #1856 ; la cellule se mesurera sur la grille qui en sortira.
+- **Dock** `<=560` « modales plein écran, corps défilable, actions finales fixes » : la sonde n'ouvre
+  aucune modale de jet ; la structure reste gardée par `src/ui/ui-ratchets.test.ts`.
+- **Dock** `>900` « disposition de référence » : aucun contrat propre au-delà du bord à bord et du
+  budget de hauteur, mesurés.
 Le TIROIR DU JOURNAL se juge **ouvert** : la sonde le déplie par clic réel sur sa poignée
 (`.ld-btn`) au premier tour tenu par un héros, puis refuse un panneau qui recouvre la console
 (« recouvre la console de N×Mpx ») — fermé, il ne recouvre rien, et la question n'a pas de sens.

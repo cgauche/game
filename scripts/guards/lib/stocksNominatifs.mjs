@@ -577,19 +577,55 @@ export function croissanceDesStocks(diffU0, images) {
 export const MOTIF_MIN = 20;
 
 /**
- * Cliquets DÉCLARÉS par un message de commit : `CLIQUET: <fichier> +N — <motif>`. Le tiret peut
- * être cadratin, demi-cadratin ou trait d'union ; un motif plus court que `MOTIF_MIN` n'est pas
- * retenu (l'appelant voit alors le fichier comme non couvert).
- * @param {string} message
+ * Lignes DÉCLARÉES par un message de commit sous un MOT-CLÉ : `<MOT>: <fichier> +N — <motif>`. Lecteur
+ * UNIQUE des déclarations au compte exact — `CLIQUET:` (un stock qui grandit, ci-dessous) et
+ * `RECLASSEMENT:` (une revendication `css` qui sort des sites du stock CSS, `reclassementCss.mjs`).
+ * Le tiret peut être cadratin, demi-cadratin ou trait d'union ; un motif plus court que `MOTIF_MIN`
+ * n'est pas retenu (l'appelant voit alors le fichier comme non couvert).
+ * @param {string} message @param {string} motCle
  * @returns {{ fichier: string, n: number, motif: string }[]}
  */
-export function cliquetsDuMessage(message) {
+export function declarationsDuMessage(message, motCle) {
   const out = [];
-  for (const m of String(message ?? '').matchAll(/^[^\S\n]*CLIQUET\s*:\s*(\S+)\s*\+(\d+)\s*[—–-]\s*(.+)$/gm)) {
-    const motif = m[3].trim();
-    if (motif.length >= MOTIF_MIN) out.push({ fichier: m[1].replace(/\\/g, '/'), n: Number(m[2]), motif });
+  const motif = new RegExp(String.raw`^[^\S\n]*${motCle}\s*:\s*(\S+)\s*\+(\d+)\s*[—–-]\s*(.+)$`, 'gm');
+  for (const m of String(message ?? '').matchAll(motif)) {
+    const raison = m[3].trim();
+    if (raison.length >= MOTIF_MIN) out.push({ fichier: m[1].replace(/\\/g, '/'), n: Number(m[2]), motif: raison });
   }
   return out;
+}
+
+/** Cliquets DÉCLARÉS par un message de commit : `CLIQUET: <fichier> +N — <motif>`. */
+export const cliquetsDuMessage = (message) => declarationsDuMessage(message, 'CLIQUET');
+
+/**
+ * Les mesures NON COUVERTES par les lignes déclarées : une mesure `{ fichier, n }` n'est couverte que
+ * par UNE ligne qui la nomme ET annonce son compte exact — sinon la ligne serait un tampon qui survit
+ * au geste suivant, et deux lignes pour un même fichier laisseraient choisir la bonne. Juge UNIQUE de
+ * `CLIQUET:` (ci-dessous) et de `RECLASSEMENT:` (`reclassementCss.mjs`).
+ * @template {{ fichier: string, n: number }} M
+ * @param {readonly M[]} mesures @param {readonly { fichier: string, n: number }[]} lignes
+ * @returns {(M & { declare: number | null, declarees?: number[] })[]} `declare` = le premier `+N` lu
+ *   pour ce fichier ; `declarees` = tous, présent seulement s'il y en a plusieurs.
+ */
+export function mesuresNonCouvertes(mesures, lignes) {
+  return mesures.flatMap((m) => {
+    const pourLui = lignes.filter((d) => d.fichier === m.fichier);
+    if (pourLui.length === 1 && pourLui[0].n === m.n) return [];
+    const declarees = pourLui.length > 1 ? { declarees: pourLui.map((d) => d.n) } : {};
+    return [{ ...m, declare: pourLui.length ? pourLui[0].n : null, ...declarees }];
+  });
+}
+
+/**
+ * Ce que le message a déclaré pour une mesure non couverte, en clair : aucune ligne, un compte
+ * faux, ou plusieurs lignes pour le même fichier.
+ * @param {{ n: number, declare: number | null, declarees?: number[] }} r @returns {string}
+ */
+export function declarationLue(r) {
+  if (r.declarees) return `le message porte ${r.declarees.length} lignes (${r.declarees.map((n) => `+${n}`).join(', ')}) — une seule par fichier`;
+  if (r.declare === null) return 'aucune ligne au message';
+  return `le message annonce \`+${r.declare}\`, pas +${r.n}`;
 }
 
 /**
@@ -603,21 +639,15 @@ export function cliquetsDuMessage(message) {
  * @throws {Error} propagé de `croissanceDesStocks` : sans `images.lirePostImage`, le compte ment.
  */
 export function croissancesNonCouvertes({ diff, message }, images) {
-  const cliquets = cliquetsDuMessage(message);
-  return croissanceDesStocks(diff, images)
-    .map((c) => {
-      const pourCeFichier = cliquets.filter((k) => k.fichier === c.fichier);
-      const couvert = pourCeFichier.some((k) => k.n === c.net);
-      return couvert ? null : { ...c, declare: pourCeFichier.length ? pourCeFichier[0].n : null };
-    })
-    .filter(Boolean);
+  const mesures = croissanceDesStocks(diff, images).map((c) => ({ ...c, n: c.net }));
+  return mesuresNonCouvertes(mesures, cliquetsDuMessage(message)).map(({ n: _n, ...c }) => c);
 }
 
 /** Refus lisible d'une croissance : ce qui a grossi, de combien, trois exemples, et le geste. */
 export function raisonDeRefus(croissances) {
   const lignes = croissances.map((c) => {
     const compte = `+${c.net} entrée(s) nette(s) (${c.ajoutees} ajoutée(s), ${c.retirees} retirée(s))`;
-    const declare = c.declare === null ? '' : ` — le message annonce \`+${c.declare}\`, pas +${c.net}`;
+    const declare = c.declare === null ? '' : ` — ${declarationLue({ ...c, n: c.net })}`;
     return `${c.fichier} : ${compte}${declare} — ex. ${c.exemples.join(' · ')}`;
   });
   return (

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { reglesCss, FEUILLES_PARTAGEES, declarations, estPlacement } from '../../scripts/guards/lib/cssCouches.mjs';
-import { feuillesDeStyle, modulesDePrimitive } from '../../scripts/guards/lib/cssCouchesAudit.js';
+import { reglesCss, FEUILLES_PARTAGEES, declarations, estPlacement, modulesDePrimitive } from '../../scripts/guards/lib/cssCouches.mjs';
+import { imageDuDisque } from '../../scripts/guards/lib/cssCouchesAudit.js';
 
 /**
  * #1806 — le module CSS d'une PRIMITIVE est le SEUL foyer de ce qu'elle peint (règle A1,
@@ -60,7 +60,7 @@ function classesDefinies(rel: string): Set<string> {
 /** classe → feuille PROPRIÉTAIRE (couche partagée d'abord, puis modules de primitive). */
 function proprietaires(): Map<string, string> {
   const map = new Map<string, string>();
-  for (const f of [...FEUILLES_PARTAGEES, ...modulesDePrimitive()]) {
+  for (const f of [...FEUILLES_PARTAGEES, ...modulesDePrimitive(imageDuDisque().manifeste)]) {
     if (!existsSync(`${RACINE}${f}`)) continue;
     for (const c of classesDefinies(f)) if (!map.has(c)) map.set(c, f);
   }
@@ -108,7 +108,7 @@ const REPEINTS_STOCK: readonly string[] = [
 /** Un site de repeint mesuré : `feuille|sélecteur` + la feuille qui possède la classe. */
 export function sitesRepeint(feuilles: readonly { rel: string; text: string }[]): string[] {
   const proprio = proprietaires();
-  const primitives = modulesDePrimitive();
+  const primitives = modulesDePrimitive(imageDuDisque().manifeste);
   const classesDePrimitive = new Set([...primitives].filter((f) => existsSync(`${RACINE}${f}`)).flatMap((f) => [...classesDefinies(f)]));
   const out: string[] = [];
   for (const { rel, text } of feuilles) {
@@ -166,7 +166,7 @@ const FAMILLE_EXEMPT_SITES = new Map<string, string>([
 
 /** Les classes d'une famille JET définies dans un module d'ÉCRAN, avec leur destination. */
 export function sitesFamilleEgaree(feuilles: readonly { rel: string; text: string }[]): string[] {
-  const primitives = modulesDePrimitive();
+  const primitives = modulesDePrimitive(imageDuDisque().manifeste);
   const out: string[] = [];
   for (const { rel, text } of feuilles) {
     if (FEUILLES_PARTAGEES.includes(rel) || primitives.has(rel)) continue;
@@ -185,7 +185,7 @@ export function sitesFamilleEgaree(feuilles: readonly { rel: string; text: strin
 }
 
 describe('#1806 — un module de primitive est le seul foyer de ce qu’il peint', () => {
-  const feuilles = feuillesDeStyle();
+  const feuilles = imageDuDisque().fichiers;
 
   it('§5.3 aucun REPEINT neuf d’une classe possédée ailleurs (stock nominatif)', () => {
     const mesures = sitesRepeint(feuilles);

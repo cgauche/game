@@ -14,10 +14,17 @@
 // Donc : les croissances non couvertes se lèvent PAR COMMIT, et l'on n'en retient que les fichiers
 // dont la croissance CUMULÉE sur toute la plage reste positive.
 //
+// `RECLASSEMENT: <module> +N — <motif>` (`reclassementCss.mjs`) se juge aux DEUX échelles par la
+// même fonction de prix (`prixDesImages`) : PAR COMMIT, retenu si l'un de ses modules reste ARMÉ sur
+// la plage (une revendication posée puis retirée ne reclasse rien), et SUR LA PLAGE, où la somme des
+// lignes de tous ses messages doit égaler le prix de la plage — un module revendiqué quasi vide puis
+// rempli ne s'arme qu'au cumul.
+//
 // La lib CALCULE ; le VERDICT appartient à l'appelant (le pre-push refuse, la mesure a posteriori
 // échoue). Elle reste PURE dans son cœur (`refusDeLaPlage`) : les lectures git sont injectées.
 import { lireGit, sortieOuNull } from './gitPorte.mjs'
 import { croissanceDesStocks, croissancesNonCouvertes } from './stocksNominatifs.mjs'
+import { ecartDeReclassement, lignesDeReclassement, prixDesImages } from './reclassementCss.mjs'
 
 /** Le sha nul que git écrit sur stdin du pre-push pour une branche NEUVE. */
 export const SHA_NUL = '0'.repeat(40)
@@ -37,6 +44,61 @@ export function refusDeLaPlage({ commits = [], cumule = '', imagesCumul } = {}) 
       if (!enCroissance.has(c.fichier)) continue
       refus.push({ sha, fichier: c.fichier, net: c.net, declare: c.declare, exemples: c.exemples })
     }
+  }
+  return refus
+}
+
+/** Les chemins qu'un diff git nomme (`diff --git a/<x> b/<y>`). */
+function cheminsDuDiff(diff) {
+  return [...String(diff ?? '').matchAll(/^diff --git a\/(\S+) b\/(\S+)$/gm)].flatMap((m) => [m[1], m[2]])
+}
+
+/** Les lignes d'une plage, une par module : la somme de ses `+N` sur tous les messages. */
+function sommeParModule(lignes) {
+  const somme = new Map()
+  for (const d of lignes) somme.set(d.fichier, (somme.get(d.fichier) ?? 0) + d.n)
+  return [...somme].map(([fichier, n]) => ({ fichier, n }))
+}
+
+/**
+ * Le prix d'un intervalle, ou son image ILLISIBLE nommée (`illisible` = le motif).
+ * @returns {{ prix: ReturnType<typeof prixDesImages> } | { illisible: string }}
+ */
+function prixOuIllisible(images, diff) {
+  try {
+    return { prix: prixDesImages(images, cheminsDuDiff(diff)) }
+  } catch (e) {
+    return { illisible: e.message }
+  }
+}
+
+/**
+ * Reclassements CSS non déclarés d'une plage, PUR, par la même fonction de prix aux deux échelles :
+ * PAR COMMIT (la ligne vit dans UN message), retenus si l'un de leurs modules reste ARMÉ sur la plage
+ * (`imagesCumul`, `cumule`) ; SUR LA PLAGE, la somme des lignes de tous les messages contre le prix de
+ * la plage. Une image illisible est un refus NOMMÉ par son commit (ou la plage), jamais une levée.
+ * @returns {({ sha?: string, plage?: string, prix: number, declare: number, modules: { module: string, n: number, declarees: number[] }[] } | { sha?: string, plage?: string, illisible: string })[]}
+ */
+export function reclassementsDeLaPlage({ commits = [], cumule, imagesCumul, plage = 'poussée' } = {}) {
+  const auCumul = prixOuIllisible(imagesCumul, cumule)
+  const armes = new Set(auCumul.prix?.revendications.map((r) => r.module) ?? [])
+  const refus = []
+  const lignesDeLaPlage = []
+  for (const { sha, message, diff, images } of commits) {
+    const lignes = lignesDeReclassement(message)
+    lignesDeLaPlage.push(...lignes)
+    const lu = prixOuIllisible(images, diff)
+    if (lu.illisible !== undefined) {
+      refus.push({ sha, illisible: lu.illisible })
+      continue
+    }
+    const ecart = ecartDeReclassement(lu.prix, lignes)
+    if (ecart && ecart.modules.some((m) => armes.has(m.module))) refus.push({ sha, ...ecart })
+  }
+  if (auCumul.illisible !== undefined) refus.push({ plage, illisible: auCumul.illisible })
+  else {
+    const ecart = ecartDeReclassement(auCumul.prix, sommeParModule(lignesDeLaPlage))
+    if (ecart) refus.push({ plage, ...ecart })
   }
   return refus
 }
@@ -64,7 +126,7 @@ export function raisonDeRefusDePlage(refus) {
  * pas, elle se dit.
  * @param {{ cwd?: string, avant: string, apres: string,
  *           git?: (args: string[]) => string | null }} p
- * @returns {{ refus: [], notes: string[], plage: string, indisponible: string|null, commits?: number }}
+ * @returns {{ refus: [], reclassements: [], notes: string[], plage: string, indisponible: string|null, commits?: number }}
  */
 export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } = {}) {
   const pannes = []
@@ -91,7 +153,7 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
   const liste = lire(['rev-list', '--reverse', '--no-merges', plage])
   if (liste === null) {
     notes.push(`plage \`${plage}\` illisible : rien n'est jugé`)
-    return { refus: [], notes, plage, indisponible: pannes[0] ?? null }
+    return { refus: [], reclassements: [], notes, plage, indisponible: pannes[0] ?? null }
   }
   const shas = liste.split('\n').map((l) => l.trim()).filter(Boolean)
   const commits = shas.map((sha) => ({
@@ -110,6 +172,7 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
   }
   return {
     refus: refusDeLaPlage({ commits, cumule, imagesCumul }),
+    reclassements: reclassementsDeLaPlage({ commits, cumule, imagesCumul, plage }),
     notes,
     commits: shas.length,
     plage,

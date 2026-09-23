@@ -275,6 +275,32 @@ test('un STOCK nominatif qui grandit dans la plage sans `CLIQUET:` au commit est
   }
 })
 
+test('une revendication `css` NEUVE au manifeste sans `RECLASSEMENT:` au commit est refusée (#1806)', () => {
+  const racine = depot()
+  try {
+    const manifeste = 'src/data/primitives.manifest.json'
+    const commettre = (css, message) => {
+      mkdirSync(join(racine, 'src', 'data'), { recursive: true })
+      mkdirSync(join(racine, 'src', 'ui', 'styles'), { recursive: true })
+      writeFileSync(join(racine, 'src', 'ui', 'styles', 'console.css'), '.c { color: red }\n')
+      writeFileSync(join(racine, manifeste), JSON.stringify([{ id: 'console', ...css }]))
+      git(racine)(['add', '-A'])
+      git(racine)(['commit', '-m', message])
+      return tete(racine)
+    }
+    const base = commettre({}, 'chore: socle')
+    commettre({ css: 'src/ui/styles/console.css' }, 'refactor: la console devient un organisme')
+    const { refus } = jugerPush({
+      cwd: racine,
+      stdin: pousse(racine, { refDistante: 'refs/heads/chantier/x', base }),
+      env: stubCi(racine, []),
+    })
+    assert.match(refus.join('\n'), /RECLASSEMENT CSS non déclaré : [0-9a-f]{9} 1 site\(s\) sortent du stock CSS, les lignes en annoncent 0 — src\/ui\/styles\/console\.css \(N 1, aucune ligne\)/)
+  } finally {
+    jeter(racine)
+  }
+})
+
 // ── Forme de stdin ─────────────────────────────────────────────────────────────────────────────
 
 test('une SUPPRESSION de branche (sha local nul) n’est pas une ref à juger', () => {

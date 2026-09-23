@@ -31,6 +31,13 @@
 // réf, même ordre) reste muette ; la RÉ-ORDINALISATION (corriger la 1re de deux occurrences
 // homonymes) rend une périmée ET une neuve pour un seul geste ; le RENOMMAGE d'un sélecteur rend un
 // faux neuf + un faux périmé — les trois se soldent par un `regen`, net 0 pour la porte de plage.
+//
+// VENTILATION d'une baisse (#1806, grief 1 de la revue de palier du 2026-09-20) :
+// `regen-css-couches-stock.mts --ventiler <ref>` (`ventilerDecrue`, `cssCouches.mjs`) rend par volet
+// DISPARU (ou APPARU), RECLASSÉ et PRIMITIVISÉ. Toute revendication ARMÉE — module NEUF ou à 0 site
+// à la base, au manifeste comme à `FEUILLES_PARTAGEES` — dont le prix (`prixDuReclassement`,
+// `cssCouches.mjs`) est non nul exige `RECLASSEMENT: <module> +N — <motif #ticket>` au message
+// (`reclassementCss.mjs`, au commit et au push, cumul de plage compris).
 
 /** @type {import('./stock.mjs').EntreeNominative[]} */
 export const CSS_IDENTITE_ECRAN_RATCHET = [
@@ -1627,9 +1634,6 @@ export const CSS_ESPACEMENT_RATCHET = [
   { fichier: 'src/ui/styles/house-rules.css', ref: '.house-rules .hr-label :: gap :: 0.4rem', occurrence: 1 },
   { fichier: 'src/ui/styles/house-rules.css', ref: '.house-rules .hr-row :: gap :: 0.5rem', occurrence: 1 },
   { fichier: 'src/ui/styles/house-rules.css', ref: '.house-rules .hr-row :: padding :: 0.4rem 0.5rem', occurrence: 1 },
-  { fichier: 'src/ui/styles/loot-modal.css', ref: '.loot-modal .reward-continue :: margin-top :: 14px', occurrence: 1 },
-  { fichier: 'src/ui/styles/loot-modal.css', ref: '.loot-modal .reward-messages :: margin :: 2px 0 10px', occurrence: 1 },
-  { fichier: 'src/ui/styles/loot-modal.css', ref: '.loot-modal .reward-stats :: margin :: 10px 0', occurrence: 1 },
   { fichier: 'src/ui/styles/mass-battle.css', ref: '.mb-actions :: gap :: 8px', occurrence: 1 },
   { fichier: 'src/ui/styles/mass-battle.css', ref: '.mb-actions :: margin-top :: 8px', occurrence: 1 },
   { fichier: 'src/ui/styles/mass-battle.css', ref: '.mb-armies :: gap :: 12px', occurrence: 1 },
