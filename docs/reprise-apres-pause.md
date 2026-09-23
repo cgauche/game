@@ -99,7 +99,7 @@ C'est le signal qu'un geste manuel a dévié de ce que `npm install` pose seul.
 
 - `Source/` — texte des livres en `.md`, **citable** (réfs `LDB <chap> l.<ligne>`).
 - `src/data/` — données app-owned (124 fichiers JSON commités, éditables au Compendium).
-- Les gardes de données : `scripts/guards/validate-data.mts` + 136 modules
+- Les gardes de données : `scripts/guards/validate-data.mts` + 137 modules
   sous `scripts/guards/lib/` (dont `scripts/guards/lib/commentPoison.mjs`,
   `scripts/guards/lib/emojiAffordance.mjs`, `scripts/guards/lib/hardcode.mjs`,
   `scripts/guards/lib/labelLogic.mjs`).
@@ -179,14 +179,14 @@ refaire `npm install`.
 | Fichier | Nom | Déclencheurs | État |
 |---|---|---|---|
 | `.github/workflows/canari.yml` | Canari | schedule, workflow_dispatch (cron `0 6 * * 1`) | **autosignale** — le step « Résumé du canari » (`if: ${{ !cancelled() }}`) poste son rapport dans l’issue survivante par `scripts/ops/signaler-rouge.mjs`, puis `exit 1` si une mesure est rouge |
-| `.github/workflows/ci.yml` | CI | push, pull_request | **porte** — la porte au push lit ses courses pour le sha poussé — scripts/git-hooks/pre-push.mjs:150 passe par scripts/guards/lib/coursesCi.mjs, dont le workflow par défaut EST PORTE — et le ruleset `main` en fait ses checks requis |
+| `.github/workflows/ci.yml` | CI | push, pull_request | **porte** — la porte au push lit ses courses pour le sha poussé — scripts/git-hooks/pre-push.mjs:149 passe par scripts/guards/lib/coursesCi.mjs, dont le workflow par défaut EST PORTE — et le ruleset `main` en fait ses checks requis |
 | `.github/workflows/deploy.yml` | Déploiement prod | workflow_dispatch | **manuel** — `on: workflow_dispatch:` seul : lancé et regardé par une main humaine (CLAUDE.md § Pile et commandes, « prod — sur demande explicite SEULEMENT ») |
 | `.github/workflows/deps-report.yml` | Rapport de dépendances | schedule, workflow_dispatch (cron `0 6 1 * *`) | **autosignale** — le step « Se nommer en rougissant » (`if: ${{ !cancelled() }}`) nomme le run et son `job.status` par `scripts/ops/signaler-rouge.mjs` : un rouge AVANT `npm run deps:report` a son canal |
 
 La colonne « État » vient du registre `scripts/gates/workflowsDuDepot.mjs`, et chaque état y est
 MESURÉ sur le YAML (garde `scripts/gates/workflowsDuDepot.test.mjs`) :
 
-- **porte** — le workflow EST la porte : la porte au push consulte ses courses (scripts/git-hooks/pre-push.mjs:150 → coursesCi, dont le défaut est PORTE) et le ruleset `main` exige ses jobs
+- **porte** — le workflow EST la porte : la porte au push consulte ses courses (scripts/git-hooks/pre-push.mjs:149 → coursesCi, dont le défaut est PORTE) et le ruleset `main` exige ses jobs
 - **autosignale** — le workflow se nomme lui-même en rougissant : un step qui joue MÊME sur rouge (`if` portant `always()`, `!cancelled()` ou `failure()` non nié, jamais sous `success()`) EXÉCUTE `scripts/ops/signaler-rouge.mjs`, qui commente ou ouvre l'issue survivante
 - **manuel** — le workflow est lancé à la main sur demande explicite et regardé par celui qui le lance : son bloc `on:` ne porte que `workflow_dispatch`
 
@@ -236,4 +236,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: e19dc8b98956da4b11014b898616b3b4709571ea (23 fichiers, 8 dossiers) corps: 5f15a2251a95330c2cb36f70cefdd35325748937 -->
+<!-- sources-empreinte: d70670d19c793b24abb12958b88b475a117b30c4 (23 fichiers, 8 dossiers) corps: 3a061edce568816c6fe3f6ad5453e1c6687597bc -->
