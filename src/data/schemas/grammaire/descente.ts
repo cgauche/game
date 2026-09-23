@@ -1,9 +1,6 @@
 /**
  * DESCENTE d'un schéma zod 4.4.3 composé — la seule lecture de la forme d'un nœud (`defDe`), de ses
- * enfants (`enfantsDe`) et du parcours de son arbre (`descendre`). Consommateurs : `validate.ts`
- * (`noeudObjet`), `scripts/docs/lib/zod-introspect.mts`, `scripts/docs/build-structures.mts`, et les
- * gardes qui relèvent des nœuds (`grammaire-guard.test.ts`, `records-de-libelles.test.ts`,
- * `valeurs-de-champ.test.ts`, `parse-de-mesure.test.ts`).
+ * enfants (`enfantsDe`) et du parcours de son arbre (`descendre`).
  *
  * Invariant (#1473 R1) : `enfantsDe` rend chaque enfant que le parse EXÉCUTE, et un `z.lazy` y descend
  * par l'instance que le parse exécute (`_zod.innerType`, `node_modules/zod/v4/core/schemas.js:2194-2206`).

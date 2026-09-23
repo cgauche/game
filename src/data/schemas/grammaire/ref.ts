@@ -239,9 +239,20 @@ function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[]
  * SYNCHRONE à `safeParse` (zod lève sur tout nœud async), et le `finally` le rend à sa valeur
  * précédente, y compris quand le recueil lève. Les seuls parses exécutés dans cette fenêtre sont
  * ceux que ce `safeParse` imbrique (payload d'une op, `grammaire/mecanique.ts › gameOpSchema`).
- * Une issue qui n'est pas un repère LÈVE : la donnée doit être valide au parse normal.
+ * La donnée doit être VALIDE au parse normal, et c'est ce parse, exécuté HORS de la fenêtre de mesure,
+ * qui en juge : dans la fenêtre, le repère d'une feuille `idDe` fait avorter le `pipe` qui la porte, et
+ * un raffinement posé EN SORTIE de la feuille (`.transform`, `.pipe`) ne s'y exécute pas. Un échec du
+ * parse normal LÈVE en nommant sa première issue ; dans la fenêtre, une issue qui n'est pas un repère
+ * LÈVE aussi.
  */
 export function reperesDuParse(schema: z.ZodType, donnee: unknown): RepereDeMesure[] {
+  const normal = schema.safeParse(donnee);
+  if (!normal.success) {
+    const [premiere] = normal.error.issues;
+    throw new Error(
+      `parse de mesure : la donnée est invalide au parse normal — issue « ${premiere.code} » à « ${premiere.path.map(String).join('.') || '(racine)'} » (${premiere.message}).`,
+    );
+  }
   const precedent = parseDeMesure;
   parseDeMesure = true;
   try {

@@ -22,6 +22,9 @@
 // (table bornée par `MARQUE_HORS_STRATE`), rendu par le générateur depuis le disque du jour. Ce qui
 // se cliquette est la SIGNATURE ; qu'une même signature soit écrite 1 ou 300 fois ne change pas la
 // dette de structure, et graver ce compte ferait rougir le stock à chaque entrée de donnée ajoutée.
+//
+// Les signatures `{op, char, …}` tombent ici faute de concept de strate `Ops` (#1933) ; `char` y est
+// une référence typée par une liste d'ids recopiée (`charKeySchema`, #1932).
 
 export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/activities.json', ref: 'battle | amount,scale,side,target', occurrence: 1 },

@@ -19609,7 +19609,7 @@
       "src/vite-env.d.ts",
       "src/weapon-load-owner-guard.test.ts",
       "src/worktree-isolation-guard.test.ts",
-      "src/zod-deprecie-guard.test.ts"
+      "src/zod-retire-guard.test.ts"
     ],
     "dossiers": [
       "Source/WH - V4 - Aux Armes",
@@ -24698,7 +24698,7 @@
       "src/vite-env.d.ts",
       "src/weapon-load-owner-guard.test.ts",
       "src/worktree-isolation-guard.test.ts",
-      "src/zod-deprecie-guard.test.ts"
+      "src/zod-retire-guard.test.ts"
     ],
     "dossiers": [
       "Source/WH - V4 - Aux Armes",

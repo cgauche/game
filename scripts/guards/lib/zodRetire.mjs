@@ -1,6 +1,6 @@
 // API RETIRÉE de zod (#1473 R1, décision 8) — les noms que `zod` étiquette comme retirés (balise JSDoc
 // de retrait, `node_modules/zod/v4/classic/compat.d.ts:10`) dans sa couche de compatibilité se LISENT
-// dans cette déclaration, jamais dans une liste tenue ici. Consommateur : `src/zod-deprecie-guard.test.ts`.
+// dans cette déclaration, jamais dans une liste tenue ici. Consommateur : `src/zod-retire-guard.test.ts`.
 // Module ESM pur.
 
 /**
@@ -9,9 +9,9 @@
  * @param {string} declaration texte de `compat.d.ts`
  * @returns {string[]}
  */
-export function apisDepreciees(declaration) {
+export function apisRetirees(declaration) {
   const noms = [];
-  for (const m of declaration.matchAll(/\/\*\*\s*@deprecated[\s\S]*?\*\/\s*(?:(\w+)\s+as\s+(\w+)|export\s+(?:declare\s+)?(?:const|function|enum|type)\s+(\w+))/g))
+  for (const m of declaration.matchAll(/\/\*\*\s*@deprecated[\s\S]*?\*\/\s*(?:([\w$]+)\s+as\s+(\w+)|export\s+(?:declare\s+)?(?:const|function|enum|type)\s+(\w+))/g))
     noms.push(m[2] ?? m[3]);
   return noms;
 }
@@ -26,7 +26,7 @@ const sansCommentaires = (source) => source.replace(/\/\*[\s\S]*?\*\//g, (c) => 
  * @param {readonly string[]} noms
  * @returns {string[]} `chemin:ligne Nom`
  */
-export function usagesDepreciees(fichiers, noms) {
+export function usagesRetirees(fichiers, noms) {
   if (noms.length === 0) return [];
   const alternance = noms.join('|');
   const acces = new RegExp(`\\bz\\.(${alternance})\\b`, 'g');

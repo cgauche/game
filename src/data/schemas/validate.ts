@@ -63,7 +63,7 @@ export function metaPourFichier(file: string): Readonly<Record<string, MetaChamp
 
 /**
  * NŒUD OBJET sous un nœud quelconque — le premier nœud à `shape` atteint par la descente
- * (`descendre`, `grammaire/descente.ts`, largeur d'abord, règle `identite` : le plus PROCHE) à travers
+ * (`descendre`, `grammaire/descente.ts`, largeur d'abord, visite unique par identité : le plus PROCHE) à travers
  * l'emballage de famille, le sceau et les enveloppes (`z.array`, `.pipe`, refines, `optional`, `lazy`).
  * C'est le seul chemin schéma→atelier vers les NŒUDS d'un document scellé, à TOUTE profondeur : la
  * méta publiée ne porte que le libellé du CHAMP, celui de ses VALEURS vit sur le nœud (`enumNomme`,

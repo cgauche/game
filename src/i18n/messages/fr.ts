@@ -1715,10 +1715,6 @@ export const fr = {
   'sv.steamMode': 'vapeur (M 4, insensible au vent)',
   'sv.becalmed': 'Encalminé',
   'sv.strikeSails': 'Affaler les voiles !',
-  // ASPECT du vent (`windAspect`, `engine/seaWeather.ts`) : les trois valeurs sont des ids
-  // (`face`/`arriere`/`lateral`) — le flux les collait derrière « vent » (« vent arriere »). Les trois
-  // libellés sont le VERBATIM de la table Direction du vent, MDG 13 l.267-270 : « Vent de face » /
-  // « Vent arrière » / « Vent latéral » — seule la capitale tombe (l'incise les veut en minuscule).
   'sv.forcePace': 'Forcer le rythme',
   'sv.navigation': 'Navigation',
   'sv.progression': 'Progression',

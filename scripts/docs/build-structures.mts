@@ -30,7 +30,7 @@ import {
 } from './lib/structures-lexique.mjs';
 import { champsJoints, champsSansSlot, registreDesSlots, slotsDuParse } from './lib/slots-registre.mjs';
 import { effectSchema } from '../../src/data/schemas/defs-scenes/effets';
-import { defDe, enfantsDe } from '../../src/data/schemas/grammaire/descente';
+import { defDe, descendre, enfantsDe } from '../../src/data/schemas/grammaire/descente';
 
 const OUT = 'docs/structures-donnees.md';
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
@@ -52,12 +52,17 @@ const SECTION = {
 
 const echappe = (s: string) => String(s).replace(/\|/g, '\\|');
 
-/** Discriminants DÉCLARÉS des options d'`effectSchema` (le `z.lazy` est déroulé par `enfantsDe`). */
+/** Discriminants DÉCLARÉS des options de la première union sous `effectSchema` (`descendre`). */
 function discriminantsDeffet(): string[] {
-  const cible = defDe(effectSchema)?.type === 'lazy' ? enfantsDe(effectSchema)[0]?.noeud : effectSchema;
-  const options = defDe(cible)?.options ?? [];
-  return options.flatMap((o) => {
-    const litteral = defDe(o)?.shape?.type;
+  let union: unknown;
+  descendre([effectSchema], ({ noeud, def }) => {
+    if (def.type !== 'union') return;
+    union = noeud;
+    return 'arreter';
+  });
+  const options = enfantsDe(union).filter((e) => e.segment.startsWith('|'));
+  return options.flatMap(({ noeud }) => {
+    const litteral = enfantsDe(noeud).find((e) => e.cle === 'type')?.noeud;
     const d = defDe(litteral);
     const brut = d?.values ?? d?.value;
     const valeurs = Array.isArray(brut) ? brut : brut instanceof Set ? [...brut] : [brut];

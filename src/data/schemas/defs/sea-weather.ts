@@ -25,7 +25,7 @@ const windForce = z.enum([
   'vent-violent',
   'violente-tempete',
 ]);
-/** Aspect du vent relatif au cap (MDG 13 l.262-270). */
+/** Aspect du vent relatif au cap (MDG 13 l.267-270). */
 export const windAspectSchema = enumNomme({ arriere: 'vent arrière', lateral: 'vent latéral', face: 'vent de face' });
 const windEffectCell = z.strictObject({
   pctSail: z.number().optional(),

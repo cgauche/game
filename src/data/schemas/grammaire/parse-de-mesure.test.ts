@@ -12,6 +12,7 @@ import { execFileSync } from 'node:child_process';
 import { z } from 'zod';
 import { estFeuilleDId, idDe, reperesDuParse } from './ref';
 import { gameOpSchema, OP_DEFS } from './mecanique';
+import { refTestDeCorruption } from './valeurs';
 import { descendre } from './descente';
 import { IDS_PAR_DATASET } from '../_ids.generated';
 import { DEFS_DE_DOCUMENT } from '../validate';
@@ -65,6 +66,11 @@ describe('reperesDuParse — le path de DONNÉE de chaque référence validée p
 
   it('une donnée INVALIDE au parse normal LÈVE en nommant le path — jamais un slot en moins en silence', () => {
     expect(() => reperesDuParse(flux, { steps: [{ skill: 'zzz-inconnue' }] })).toThrow(/« custom » à « steps\.0\.skill »/);
+  });
+
+  it('un RAFFINEMENT posé en SORTIE de la feuille est jugé au parse normal : hors borne LÈVE, dans la borne rend son slot', () => {
+    expect(() => reperesDuParse(refTestDeCorruption, { id: 'athletisme' })).toThrow(/« custom » à « id » \(corruptionExposure\.skill : « athletisme »/);
+    expect(reperesDuParse(refTestDeCorruption, { id: 'resistance' })).toEqual([{ path: ['id'], type: 'skill', parCle: false }]);
   });
 });
 

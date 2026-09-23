@@ -913,15 +913,15 @@ export const STRUCTURES_ENVELOPPE = [
 /** Objet qui ANNONCE une référence (clé `…Id`/`…Ids`/`…Ref`, clé réservée, clé d'identité) et qui
  *  ne résout vers RIEN, sans être un document ni une op : HORS STRATE. `L1a #1466` quand le NOM de
  *  la clé annonçait une FK (`clé de référence non résolue`) — branche VIDE à ce jour, 0 ligne —,
- *  `#1553` sinon. CE QUE LE MOTIF DIT, ligne à ligne (mesuré 2026-09-01, #1633) : `clé réservée`
- *  95 lignes / 406 occurrences, `identité non résolue` 2 / 2. Ces comptes sont DÉRIVÉS des lignes
+ *  `#1553` sinon. CE QUE LE MOTIF DIT, ligne à ligne (mesuré 2026-09-23, #1473) : `clé réservée`
+ *  97 lignes / 409 occurrences, `identité non résolue` 2 / 2. Ces comptes sont DÉRIVÉS des lignes
  *  ci-dessous — la garde `src/data/plage-bornes-contrat.test.ts` (sonde D) les recalcule et exige
  *  que cet en-tête les CITE, elle ne les compare plus à un littéral recopié. Le motif `clé
  *  réservée` ne décrit PAS une valeur qui pointerait vers rien — le déclencheur est le NOM
  *  (`CLES_RESERVEES` du lexique : skill, char, talent, price, cost, count, source), et le contenu
- *  est légitime : `source` à lui seul déclenche 64 des 95 lignes (145 occurrences), qui portent de
+ *  est légitime : `source` à lui seul déclenche 64 des 97 lignes (145 occurrences), qui portent de
  *  vraies références de livre. Il se solde donc au VOCABULAIRE (#1463 S2 : un nom de concept est
- *  réservé à son type), jamais en curant un contenu. Les 97 lignes de ce volet ne sont pas du
+ *  réservé à son type), jamais en curant un contenu. Les 99 lignes de ce volet ne sont pas du
  *  ressort de `L1b #1467`, dont le dénominateur (205) les comptait ; elles portent leur lot ligne
  *  à ligne. */
 export const STRUCTURES_ORPHELINES = [
@@ -968,8 +968,8 @@ export const STRUCTURES_ORPHELINES = [
   // sœurs sous la signature commune.
   { dataset: "domains.json", champ: "windModifiers", signature: "desc,dr,source,tests,when", motif: "clé réservée", occurrences: 19, lot: "#1553", date: "2026-08-23" },
   { dataset: "etats.json", champ: "of", signature: "id,kind,who", motif: "identité non résolue", occurrences: 1, lot: "#1553", date: "2026-08-23" },
-  { dataset: "etats.json", champ: "value", signature: "char,factor,who", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-09-23" }, // #1473 R1 : `char` y est un littéral de `charKeySchema` (#1463, arbitrages L0 point 3)
-  { dataset: "etats.json", champ: "value", signature: "char,who", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-09-23" }, // #1473 R1 : `char` y est un littéral de `charKeySchema` (#1463, arbitrages L0 point 3)
+  { dataset: "etats.json", champ: "value", signature: "char,factor,who", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-09-23" }, // #1932 : `char` y est un littéral de `charKeySchema` (#1463, arbitrages L0 point 3)
+  { dataset: "etats.json", champ: "value", signature: "char,who", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-09-23" }, // #1932 : `char` y est un littéral de `charKeySchema` (#1463, arbitrages L0 point 3)
   { dataset: "land-cargo.json", champ: "buy", signature: "availabilityMultiplier,merchantSkill,minEnc,partialSurchargePct,source,wineAlcoholResistThreshold,wineEvalDifficulty,wineEvalEasyDifficulty", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "land-cargo.json", champ: "sell", signature: "commerceBonus,dumpingPctOfBase,offerByRichesse,source,targetPerSize", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
   { dataset: "localisation.json", champ: "personnage", signature: "shapes,source", motif: "clé réservée", occurrences: 1, lot: "#1553", date: "2026-08-23" },
