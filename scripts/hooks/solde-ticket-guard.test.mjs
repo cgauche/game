@@ -56,10 +56,10 @@ import {
   evaluateBudgetContexte,
   evaluateReclassementsCss,
   fichiersCitantTickets,
-  listeurDImage,
+  listeurDuBudget,
 } from './solde-ticket-guard.mjs'
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
-import { GitIndisponible, estDansHead } from '../guards/lib/gitPorte.mjs'
+import { GitIndisponible, INDEX, estDansHead } from '../guards/lib/gitPorte.mjs'
 import {
   archivesDe, derniereRevueArchivee, fenetreDeRevue, mesureDuPalier, nomDArchiveDeRevue, nomsDArchiveAcceptes,
   revuesNeuves,
@@ -2490,8 +2490,8 @@ test('un poste SUPPRIMÉ par le commit sort de la mesure et reste dans la RÉFÉ
   })
   try {
     execFileSync('git', ['rm', '-q', '-r', '--cached', '.claude/skills/b'], { cwd: racine, env: envDeDepotForge(), stdio: ['ignore', 'pipe', 'ignore'] })
-    const image = listeurDImage(['ls-files', '--cached'], racine)
-    const preImage = listeurDImage(['ls-tree', '--name-only', 'HEAD'], racine)
+    const image = listeurDuBudget(INDEX, racine)
+    const preImage = listeurDuBudget('HEAD', racine)
     assert.deepEqual(image('.claude/skills'), ['a'], 'la skill retirée de l’index sort de la MESURE')
     assert.deepEqual(preImage('.claude/skills'), ['a', 'b'], 'la pré-image la porte encore — sans quoi « aucun poste ne grossit »')
     assert.deepEqual(image('.claude/agents'), ['c.md'])
@@ -2504,7 +2504,7 @@ test('un poste SUPPRIMÉ par le commit sort de la mesure et reste dans la RÉFÉ
 test('hors dépôt, le listeur d’image rend [] — comme le listeur de disque devant un dossier absent', () => {
   const vide = mkdtempSync(join(tmpdir(), 'hors-depot-'))
   try {
-    assert.deepEqual(listeurDImage(['ls-files', '--cached'], vide)('.claude/skills'), [])
+    assert.deepEqual(listeurDuBudget(INDEX, vide)('.claude/skills'), [])
   } finally {
     rmSync(vide, { recursive: true, force: true })
   }

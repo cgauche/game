@@ -115,22 +115,26 @@ const delitteral = (v) => v.replace(/\\(.)/g, '$1');
 /**
  * Les entrées de la collection `nom` (`export const <nom> = [ … ]`) dans le TEXTE d'un fichier de
  * stock écrit par `ligneDEntree` — le stock d'un ARBRE lu par git, qu'aucun `import` n'atteint.
- * `null` = texte absent ; une collection introuvable ou une ligne hors forme LÈVENT en se nommant.
+ * `null` = texte absent. Une collection introuvable ou une ligne hors forme est rendue en PHRASE
+ * (`ecarts`), comme `lignesMalQualifiees` : le verdict appartient à l'appelant.
  * @param {string | null} texte @param {string} nom
- * @returns {{ fichier: string, ref: string, occurrence: number }[] | null}
+ * @returns {{ entrees: { fichier: string, ref: string, occurrence: number }[], ecarts: string[] } | null}
  */
 export function entreesEcrites(texte, nom) {
   if (texte === null) return null;
   const ouvre = `export const ${nom} = [`;
   const debut = texte.indexOf(ouvre);
-  if (debut < 0) throw new Error(`collection ${nom} introuvable dans le stock lu`);
+  if (debut < 0) return { entrees: [], ecarts: [`collection ${nom} introuvable dans le stock lu`] };
   const fin = texte.indexOf('\n]', debut);
   const corps = texte.slice(debut + ouvre.length, fin < 0 ? undefined : fin).split('\n').filter((l) => l.trim());
-  return corps.map((l) => {
+  const entrees = [];
+  const ecarts = [];
+  for (const l of corps) {
     const m = LIGNE_ECRITE.exec(l);
-    if (!m) throw new Error(`ligne hors forme dans ${nom} : ${l.trim()}`);
-    return { fichier: delitteral(m[1]), ref: delitteral(m[2]), occurrence: Number(m[3]) };
-  });
+    if (m) entrees.push({ fichier: delitteral(m[1]), ref: delitteral(m[2]), occurrence: Number(m[3]) });
+    else ecarts.push(`ligne hors forme dans ${nom} : ${l.trim()}`);
+  }
+  return { entrees, ecarts };
 }
 
 /**

@@ -99,11 +99,36 @@ test('deplaceLaFrontiere : une ligne RETIRÉE qui importait un `fichier` du mani
   assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("-import { Console } from './Console.tsx'")), true)
 })
 
-test('deplaceLaFrontiere : un diff `src/` sans import d’un `fichier` du manifeste ne relit rien', () => {
+test('deplaceLaFrontiere : un diff `src/` sans import d’un `fichier` du manifeste ne relit rien — un simple LITTÉRAL non plus', () => {
   assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+import { Autre } from './ConsoleBis'")), false)
+  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+const onglet = 'Console'")), false, 'un littéral qui porte le nom n’est pas un import')
+  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+import { C } from 'Console'")), false, 'un spécificateur NU n’est pas relatif')
   assert.equal(deplace(['src/ui/Console.tsx'], diffDEcran('+export const Console = 2')), false, 'l’en-tête `+++ b/src/ui/Console.tsx` n’est pas une ligne')
   assert.equal(deplaceLaFrontiere({ chemins: ['src/ui/Ecran.tsx'], diff: jamais('diff'), manifeste: () => [{ id: 'sans-fichier' }] }), false,
     'un manifeste sans `fichier` n’a rien à importer : le diff n’est pas lu')
+})
+
+/** Le diff `--no-renames -U0` d'un fichier AJOUTÉ (`ajoute`) ou SUPPRIMÉ. */
+const diffDeFichier = (chemin, { ajoute }) => [
+  `diff --git a/${chemin} b/${chemin}`,
+  ajoute ? 'new file mode 100644' : 'deleted file mode 100644',
+  ajoute ? '--- /dev/null' : `--- a/${chemin}`,
+  ajoute ? `+++ b/${chemin}` : '+++ /dev/null',
+  ajoute ? '@@ -0,0 +1 @@' : '@@ -1 +0,0 @@',
+  `${ajoute ? '+' : '-'}export const x = 1`,
+].join('\n')
+
+test('deplaceLaFrontiere : un importeur SUPPRIMÉ en entier relit la frontière', () => {
+  const suppr = diffDeFichier('src/ui/Ecran2.tsx', { ajoute: false }).replace('-export const x = 1', "-import { Console } from './Console'")
+  assert.equal(deplace(['src/ui/Ecran2.tsx'], suppr), true)
+})
+
+test('deplaceLaFrontiere : un module HOMONYME ajouté ou supprimé relit la frontière — `./Console` peut changer de cible', () => {
+  assert.equal(deplace(['src/ui/Console.ts'], diffDeFichier('src/ui/Console.ts', { ajoute: true })), true, '`Console.ts` passe avant `Console.tsx`')
+  assert.equal(deplace(['src/ui/Console.ts'], diffDeFichier('src/ui/Console.ts', { ajoute: false })), true, 'le retirer rend `./Console` à `Console.tsx`')
+  assert.equal(deplace(['src/ui/Console/index.ts'], diffDeFichier('src/ui/Console/index.ts', { ajoute: true })), true, 'repli `index.*`')
+  assert.equal(deplace(['src/ui/console.css'], diffDeFichier('src/ui/Console.css', { ajoute: true })), false, 'une feuille n’est pas un module de code')
+  assert.equal(deplace(['src/ui/Autre.ts'], diffDeFichier('src/ui/Autre.ts', { ajoute: true })), false, 'témoin : un autre nom')
 })
 
 test('le refus nomme chaque écart, le commit, et le geste `rebase -i` sur une plage', () => {

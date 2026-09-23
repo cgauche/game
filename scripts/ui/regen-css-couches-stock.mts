@@ -30,7 +30,8 @@ import {
   MOTIF_INLINE,
 } from '../guards/lib/cssCouchesAudit';
 import { admisAuRetour, ligneDeVentilation } from '../guards/lib/cssCouches.mjs';
-import { CHEMIN_STOCK_CSS, TRAVAIL, ventilationDeGit } from '../guards/lib/cssImages.mjs';
+import { CHEMIN_STOCK_CSS, ventilationDeGit } from '../guards/lib/cssImages.mjs';
+import { TRAVAIL } from '../guards/lib/gitPorte.mjs';
 import {
   CSS_ESPACEMENT_RATCHET,
   CSS_IDENTITE_ECRAN_RATCHET,

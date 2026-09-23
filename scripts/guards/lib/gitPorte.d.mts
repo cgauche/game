@@ -16,3 +16,9 @@ export function grepDe(
   motif: string,
   dossiers: readonly string[],
 ): Map<string, string>;
+export const INDEX: string;
+export const TRAVAIL: string;
+/** Les fichiers d'une image git sous `dossier` (ref, `INDEX` ou `TRAVAIL`). */
+export function listerImage(git: (args: string[]) => string | null, arbre: string, dossier: string): string[];
+/** Les entrées directes de `dossier` parmi des chemins complets. */
+export function enfantsDirects(chemins: readonly string[], dossier: string): string[];

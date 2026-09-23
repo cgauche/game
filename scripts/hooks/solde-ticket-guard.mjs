@@ -57,12 +57,13 @@
 // PORTEURS de stock) : `git commit -a` 1,8 s, `git commit -- .` 2,2 s, le rejeu de `429b9a1a2`
 // (23 734 insertions, 5 porteurs) 1,1 s ; `git show <sha> -U0` sur ce commit 0,15 s ; le chargement
 // du compilateur `typescript` (portée de module, à la demande) 0,20 s et le parse de ses 5 porteurs
-// 0,06 s. La porte `RECLASSEMENT:` (mesuré 2026-09-23, `.wt-1806`, 3 passes) : un commit qui ne
-// déplace pas la frontière (`deplaceLaFrontiere` faux) paie le `-U0` de `src/` et le manifeste de
-// HEAD, 26-64 ms ; un commit qui touche le manifeste ou `cssCouches.mjs` relit les deux côtés,
-// 0,9-2,0 s, soit 4,2 s cumulés au pire cas de 2,2 s. La marge est d'un facteur 2,4 sur ce pire cas
-// — un hook expiré ne bloque pas, donc ce chiffre se re-mesure quand la porte s'alourdit, il ne se
-// gonfle pas par précaution.
+// 0,06 s. La porte `RECLASSEMENT:` (mesuré 2026-09-23, `.wt-1806`, 3 passes, 4 cœurs) : un commit qui
+// ne déplace pas la frontière (`deplaceLaFrontiere` faux) paie le `-U0` de `src/` et le manifeste de
+// HEAD, 17-64 ms ; un commit qui la déplace relit les deux côtés, 0,8-1,2 s sous une charge de 8
+// (`/proc/loadavg`) et 1,45-3,9 s sous une charge de 18 à 20. Cumulée au pire cas de 2,2 s, la
+// relecture chargée donne 6,1 s : la marge sur le `timeout` n'est plus que d'un facteur 1,6 — un hook
+// expiré ne bloque pas, donc ce chiffre se re-mesure quand la porte s'alourdit, il ne se gonfle pas
+// par précaution.
 import { Buffer } from 'node:buffer'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -77,7 +78,9 @@ import { RACINE_DES_SOURCES, coteCss, renommagesDe, sourceGit } from '../guards/
 import {
   PORTEUR_DU_PLAFOND, estCheminDuBudget, importsDe, mesurerBudget, plafondDeLaSource, refusDeBudget,
 } from '../guards/budget-contexte.mjs'
-import { GitIndisponible, estDansHead, estRepertoire, grepDe, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
+import {
+  GitIndisponible, INDEX, enfantsDirects, estDansHead, estRepertoire, grepDe, lireGit, listerImage, sortieOuNull,
+} from '../guards/lib/gitPorte.mjs'
 import { hunksDe } from '../guards/lib/hunks.mjs'
 import { motifRattachement, numerosDeLaChaine, numerosFermes } from '../guards/lib/fermetures.mjs'
 import {
@@ -1888,7 +1891,7 @@ export function diffDuCommit(command, dir = process.cwd()) {
       commit: coteCss({
         lire: contenu,
         grep: (motif) => grepDuCommit(motif),
-        lister: (dossier) => (lire(['ls-files', '--cached', '--', dossier]) ?? '').split('\n').filter(Boolean),
+        lister: (dossier) => listerImage(lire, INDEX, dossier),
       }, { racine: dir }),
     }),
   }
@@ -2279,30 +2282,13 @@ export function evaluateBudgetContexte({ command, mesure, reference, plafond }) 
 }
 
 /**
- * Les entrées DIRECTES d'un dossier telles qu'une IMAGE git les porte — noms simples, triés,
- * dédupliqués, le contrat de `readdirSync` qu'attend `mesurerBudget`. Le LISTAGE est par image comme
- * la lecture : `['ls-files', '--cached']` dit ce que le commit emporte, `['ls-tree', '--name-only',
- * 'HEAD']` ce que sa pré-image portait. Un listage de DISQUE commun aux deux rendait une skill
- * SUPPRIMÉE par le commit absente de la référence elle-même — la porte concluait alors « aucun poste
- * ne grossit ». `ls-files` rend les FEUILLES et `ls-tree` les enfants directs : le premier segment
- * sous `<dossier>/` est la même notion pour les deux. Git muet (dépôt sans HEAD, hors dépôt) → `[]`,
- * comme le listeur de disque devant un dossier absent.
- * @param {string[]} args @param {string} dir @returns {(dossier: string) => string[]}
+ * Le listeur d'entrées DIRECTES d'une IMAGE git (`listerImage` puis `enfantsDirects`, `gitPorte.mjs`)
+ * qu'attend `mesurerBudget` : `INDEX` pour ce que le commit emporte, `HEAD` pour sa pré-image.
+ * @param {string} arbre @param {string} dir @returns {(dossier: string) => string[]}
  */
-export function listeurDImage(args, dir) {
-  return (dossier) => {
-    const prefixe = `${dossier}/`
-    const sortie = sortieOuNull(lireGit([...args, prefixe], { cwd: dir }))
-    if (sortie === null) return []
-    const noms = new Set()
-    for (const ligne of sortie.split(/\r?\n/)) {
-      const rel = ligne.trim().replace(/\\/g, '/')
-      if (!rel.startsWith(prefixe)) continue
-      const nom = rel.slice(prefixe.length).split('/')[0]
-      if (nom) noms.add(nom)
-    }
-    return [...noms].sort()
-  }
+export function listeurDuBudget(arbre, dir) {
+  const git = (args) => sortieOuNull(lireGit(args, { cwd: dir }))
+  return (dossier) => enfantsDirects(listerImage(git, arbre, dossier), dossier)
 }
 
 /** Décision d'ensemble d'un cumul de refus (patron de driver partagé avec `git-destructive-guard` :
@@ -2494,8 +2480,8 @@ if (isMain) {
   const budget = fichiers.some((f) => estCheminDuBudget(f, importsDuContexte))
     ? evaluateBudgetContexte({
       command: text,
-      mesure: mesurerBudget(targetDir, { lire: commit.contenu, lister: listeurDImage(['ls-files', '--cached'], targetDir) }),
-      reference: mesurerBudget(targetDir, { lire: commit.avant, lister: listeurDImage(['ls-tree', '--name-only', 'HEAD'], targetDir) }),
+      mesure: mesurerBudget(targetDir, { lire: commit.contenu, lister: listeurDuBudget(INDEX, targetDir) }),
+      reference: mesurerBudget(targetDir, { lire: commit.avant, lister: listeurDuBudget('HEAD', targetDir) }),
       plafond: plafondDeLaSource(commit.avant(PORTEUR_DU_PLAFOND)),
     })
     : null

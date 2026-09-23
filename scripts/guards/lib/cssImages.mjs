@@ -5,10 +5,10 @@
 // l'arbre lu, sur les seules lignes que `git grep` (`grepDe`, `gitPorte.mjs`) trouve citant le nom d'un
 // `fichier` du manifeste. Appelants : `cssCouchesAudit.ts` (disque), `ventilationDeGit` (le
 // régénérateur), le garde de solde au commit, la porte de plage au push.
-import { existsSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { directImportsOf } from './importGraph.mjs'
-import { grepDe, lireGit, sortieOuNull } from './gitPorte.mjs'
+import { INDEX, TRAVAIL, grepDe, lireGit, listerImage, sortieOuNull } from './gitPorte.mjs'
 import { entreesEcrites } from './stock.mjs'
 import {
   CHEMIN_COUCHES, CHEMIN_MANIFESTE, RACINE_DES_MODULES, feuillesPartageesDe, fichiersReutilises,
@@ -22,26 +22,40 @@ export const RACINE_DES_SOURCES = 'src'
 const echapper = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
- * Le motif `git grep -E` des lignes qui peuvent importer un `fichier` du manifeste : son nom sans
- * extension (celui de son dossier pour un `index.*`), en fin de spécificateur. `null` = rien à chercher.
+ * Le NOM par lequel un spécificateur relatif atteint `chemin` : son nom sans extension, celui de son
+ * dossier pour un `index.*` (l'ordre de repli de `resolveImport`, `importGraph.mjs`).
+ * @param {string} chemin @returns {string}
+ */
+export function nomDImport(chemin) {
+  const segments = chemin.split('/')
+  const base = segments.at(-1).replace(/\.[^.]+$/, '')
+  return base === 'index' ? segments.at(-2) ?? base : base
+}
+
+/**
+ * Les NOMS d'import des `fichier`s du manifeste (`nomDImport`).
+ * @param {readonly { fichier?: string }[]} manifeste @returns {Set<string>}
+ */
+export function nomsDImport(manifeste) {
+  return new Set(manifeste.flatMap(({ fichier }) => (typeof fichier === 'string' ? [nomDImport(fichier)] : [])))
+}
+
+/**
+ * Le motif `-E` (`git grep` comme `RegExp`) des lignes qui IMPORTENT un `fichier` du manifeste, aux
+ * seules formes que lit `IMPORT_RE` (`importGraph.mjs`) — `from '…'`, `import('…')`, `import '…'` —
+ * sur un spécificateur RELATIF qui finit par son nom (`nomsDImport`). `null` = rien à chercher.
  * @param {readonly { fichier?: string }[]} manifeste @returns {string | null}
  */
 export function motifDImport(manifeste) {
-  const noms = new Set()
-  for (const { fichier } of manifeste) {
-    if (typeof fichier !== 'string') continue
-    const segments = fichier.split('/')
-    const base = segments.at(-1).replace(/\.[^.]+$/, '')
-    noms.add(base === 'index' ? segments.at(-2) : base)
-  }
+  const noms = nomsDImport(manifeste)
   if (!noms.size) return null
-  return `['"/](${[...noms].map(echapper).join('|')})(\\.[cm]?[jt]sx?)?['"]`
+  return `(from|import)[ \t]*\\(?[ \t]*['"]\\.\\.?/([^'"]*/)?(${[...noms].map(echapper).join('|')})(\\.[cm]?[jt]sx?)?['"]`
 }
 
 /**
  * Le CÔTÉ d'un arbre : manifeste, `FEUILLES_PARTAGEES`, `fichier`s RÉUTILISÉS et lecteur de texte.
- * Les imports se résolvent contre les fichiers de CET arbre (`lister`), plus le disque de `racine` :
- * un arbre qui n'est pas l'arbre de travail ne se lit pas sur le disque seul (#1806).
+ * Les imports se résolvent contre les SEULS fichiers de cet arbre (`lister`) : le disque n'est pas
+ * l'arbre jugé (#1806).
  * @param {{ lire: (rel: string) => string | null, grep: (motif: string) => Map<string, string>,
  *   lister: (dossier: string) => readonly string[] }} source
  * @param {{ racine?: string }} [options] le dépôt où les imports se résolvent
@@ -53,7 +67,7 @@ export function coteCss(source, { racine = '.' } = {}) {
   const motif = motifDImport(manifeste)
   const racineAbs = resolve(racine).split('\\').join('/')
   const arbre = motif ? new Set(source.lister(RACINE_DES_SOURCES).map((rel) => `${racineAbs}/${rel}`)) : new Set()
-  const existe = (abs) => arbre.has(abs) || existsSync(abs)
+  const existe = (abs) => arbre.has(abs)
   const imports = motif
     ? [...source.grep(motif)].map(([rel, lignes]) => [rel, directImportsOf(rel, lignes, { racine, existe })])
     : []
@@ -83,10 +97,6 @@ const lecteurGit = (cwd, quoi) => (args) => {
   return sortieOuNull(vu)
 }
 
-/** Marques des deux arbres qui ne sont pas des refs : l'index et l'arbre de travail. */
-export const INDEX = ':index'
-export const TRAVAIL = ':travail'
-
 /**
  * Une source lue par git dans `cwd` : `arbre` = une ref, `INDEX` ou `TRAVAIL`. `git` (args → sortie,
  * `null` = objet absent) est le lecteur de l'appelant ; par défaut `lireGit`, dont une indisponibilité
@@ -98,10 +108,7 @@ export function sourceGit({ cwd = process.cwd(), arbre, git }) {
   const portee = arbre === INDEX ? ['--cached'] : arbre === TRAVAIL ? ['--untracked'] : [arbre]
   return {
     existe: () => arbre === INDEX || arbre === TRAVAIL || lire(['rev-parse', '--verify', '--quiet', `${arbre}^{commit}`]) !== null,
-    lister: (dossier) =>
-      (arbre === INDEX || arbre === TRAVAIL
-        ? lire(['ls-files', ...(arbre === TRAVAIL ? ['--cached', '--others', '--exclude-standard'] : []), '--', dossier])
-        : lire(['ls-tree', '-r', '--name-only', arbre, '--', dossier]))?.split('\n').map((l) => l.trim()).filter(Boolean) ?? [],
+    lister: (dossier) => listerImage(lire, arbre, dossier),
     lire: arbre === TRAVAIL
       ? (rel) => lireDuTravail(cwd, rel)
       : (rel) => lire(['show', `${arbre === INDEX ? '' : arbre}:${rel}`]),
@@ -153,10 +160,12 @@ export function ventilationDeGit({ cwd = process.cwd(), base, tete = TRAVAIL, gi
   }
   const avant = source(base)
   const texte = avant.lire(CHEMIN_STOCK_CSS)
-  const stockAvant = texte === null ? undefined : {
-    identite: entreesEcrites(texte, COLLECTIONS.identite),
-    espacement: entreesEcrites(texte, COLLECTIONS.espacement),
-  }
+  const lus = texte === null ? null : Object.fromEntries(
+    Object.entries(COLLECTIONS).map(([volet, nom]) => [volet, entreesEcrites(texte, nom)]),
+  )
+  const ecarts = lus ? Object.values(lus).flatMap((l) => l.ecarts) : []
+  if (ecarts.length) throw new Error(`${CHEMIN_STOCK_CSS} illisible à ${base} : ${ecarts.join(' ; ')}`)
+  const stockAvant = lus ? { identite: lus.identite.entrees, espacement: lus.espacement.entrees } : undefined
   const v = ventiler(imageCss(avant, { racine: cwd }), imageCss(source(tete), { racine: cwd }), {
     renommages: renommagesDe(lire, tete === TRAVAIL ? [base] : [base, tete]),
     stockAvant,

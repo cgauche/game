@@ -203,9 +203,11 @@ export function baseSection(css) {
   }
 }
 
-/** Propriétés de PLACEMENT, liste FERMÉE (docs/charte-ui.md § « Architecture CSS ») : elles PLACENT,
- *  bornent, ferrent ou retirent une puce — elles ne PEIGNENT pas. Tout le reste est de l'IDENTITÉ et
- *  appartient à une primitive. `cursor` est de l'identité : l'affordance est la matière d'un contrôle. */
+/** Propriétés de PLACEMENT nommées une à une (docs/charte-ui.md § « Architecture CSS »), sous leur
+ *  nom PHYSIQUE (`physique`) ; avec les familles à préfixe ci-dessous, elles forment TOUT le
+ *  placement : elles PLACENT, bornent, ferrent ou retirent une puce — elles ne PEIGNENT pas. Tout le
+ *  reste est de l'IDENTITÉ et appartient à une primitive. `cursor` est de l'identité : l'affordance est
+ *  la matière d'un contrôle. */
 export const PROPRIETES_DE_PLACEMENT = new Set([
   'display', 'flex', 'grid', 'gap', 'row-gap', 'column-gap', 'order',
   'position', 'inset', 'top', 'right', 'bottom', 'left', 'z-index',
@@ -219,21 +221,47 @@ export const PROPRIETES_DE_PLACEMENT = new Set([
      requête (`container-type: size`) donne à ses surfaces un repère à elles ; c'est du placement,
      et c'est l'écran qui compose les rangées. */
   'isolation', 'contain', 'container', 'will-change', 'list-style',
+  /* Multicolonne et puce : la GÉOMÉTRIE seule. Le filet (`column-rule*`) et l'image de puce
+     (`list-style-image`) peignent — ils restent de l'identité. */
+  'column-count', 'column-width', 'column-span', 'column-fill',
+  'list-style-type', 'list-style-position',
 ]);
 
-/** Familles de PLACEMENT à préfixe (`flex-grow`, `grid-template-columns`, `padding-top`…). */
+/** Familles de PLACEMENT à préfixe (`flex-grow`, `grid-template-columns`, `padding-top`…) : une
+ *  famille n'entre ici que si AUCUN de ses membres ne peint. */
 const PREFIXES_DE_PLACEMENT = [
   'container-',
   'flex-', 'grid-', 'place-', 'align-', 'justify-', 'inset-', 'min-', 'max-',
-  'margin-', 'padding-', 'overflow-', 'overscroll-', 'scroll-', 'column-', 'list-style-',
+  'margin-', 'padding-', 'overflow-', 'overscroll-', 'scroll-',
 ];
 
-/** Vrai si la propriété PLACE. Une variable CSS (`--x`) est un PARAMÈTRE de primitive (patron
- *  `.swatch`), jamais une matière — elle reste hors du stock d'identité. */
-export const estPlacement = (prop) =>
-  prop.startsWith('--')
-  || PROPRIETES_DE_PLACEMENT.has(prop)
-  || PREFIXES_DE_PLACEMENT.some((p) => prop.startsWith(p));
+/**
+ * Le nom PHYSIQUE d'une propriété LOGIQUE (`block-size` → `height`, `margin-inline-start` →
+ * `margin-left`, `inset-block-end` → `bottom`, `overflow-inline` → `overflow-x`, `border-inline-color`
+ * → `border-left-color`) : une propriété logique se classe comme son équivalent physique. Une
+ * propriété physique est rendue telle quelle.
+ * @param {string} prop @returns {string}
+ */
+export const physique = (prop) =>
+  prop
+    .replace(/^(overflow|overscroll-behavior)-block$/, '$1-y')
+    .replace(/^(overflow|overscroll-behavior)-inline$/, '$1-x')
+    .replace(/(^|-)block-size$/, '$1height')
+    .replace(/(^|-)inline-size$/, '$1width')
+    .replace(/-block-end(?=-|$)/, '-bottom')
+    .replace(/-block(-start)?(?=-|$)/, '-top')
+    .replace(/-inline-end(?=-|$)/, '-right')
+    .replace(/-inline(-start)?(?=-|$)/, '-left')
+    .replace(/^inset-(?=(top|right|bottom|left)$)/, '');
+
+/** Vrai si la propriété PLACE, classée sous son nom physique (`physique`). Une variable CSS (`--x`)
+ *  est un PARAMÈTRE de primitive (patron `.swatch`), jamais une matière — elle reste hors du stock
+ *  d'identité. */
+export const estPlacement = (prop) => {
+  if (prop.startsWith('--')) return true;
+  const p = physique(prop);
+  return PROPRIETES_DE_PLACEMENT.has(p) || PREFIXES_DE_PLACEMENT.some((x) => p.startsWith(x));
+};
 
 /** Propriétés dont la VALEUR doit se poser sur l'échelle `--sp-*` (base.css). */
 export const PROPRIETES_A_ECHELLE = new Set([

@@ -9,7 +9,10 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { STATUS_DLL_INIT_FAILED } from './spawnResilient.mjs'
-import { arbrePrincipal, classer, commitsDe, estAncetre, estRepertoire, fetchOrigin, lireGit, natureDuChemin, raisonCourte, sortieOuNull } from './gitPorte.mjs'
+import {
+  INDEX, TRAVAIL, arbrePrincipal, classer, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin, lireGit,
+  listerImage, natureDuChemin, raisonCourte, sortieOuNull,
+} from './gitPorte.mjs'
 import { envDeDepotForge, instanceDeDepot } from './depotGabarit.mjs'
 
 const ZERO = '0'.repeat(40)
@@ -283,4 +286,20 @@ test('classer : la RAISON est la première ligne significative, bornée à 200 c
   assert.equal(vu.raison.length, 200)
   assert.ok(!vu.raison.includes('une seconde ligne'))
   assert.equal(raisonCourte('   \n  premier mot  \nsuite'), 'premier mot')
+})
+
+test('listerImage : l’unique listeur d’image — ref, INDEX et TRAVAIL rendent chacun LEURS fichiers ; enfantsDirects en projette les noms', () => {
+  const { racine } = instanceDeDepot({ fichiers: { 'd/a.txt': 'a\n', 'd/s/b.txt': 'b\n', 'x.txt': 'x\n' }, message: 'socle' })
+  const git = (args) => sortieOuNull(lireGit(args, { cwd: racine }))
+  try {
+    execFileSync('git', ['rm', '-q', '--cached', 'd/a.txt'], { cwd: racine, env: envDeDepotForge(), stdio: ['ignore', 'pipe', 'ignore'] })
+    writeFileSync(join(racine, 'd/neuf.txt'), 'n\n')
+    assert.deepEqual(listerImage(git, 'HEAD', 'd'), ['d/a.txt', 'd/s/b.txt'])
+    assert.deepEqual(listerImage(git, INDEX, 'd'), ['d/s/b.txt'], 'retiré de l’index : hors de ce que le commit emporte')
+    assert.deepEqual(listerImage(git, TRAVAIL, 'd').sort(), ['d/a.txt', 'd/neuf.txt', 'd/s/b.txt'], 'l’arbre de travail : non suivis compris')
+    assert.deepEqual(enfantsDirects(listerImage(git, 'HEAD', 'd'), 'd'), ['a.txt', 's'])
+    assert.deepEqual(listerImage(() => null, 'HEAD', 'd'), [], 'git muet : []')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
 })

@@ -20,6 +20,7 @@ export function baseSection(css: string): string;
 export const PROPRIETES_DE_PLACEMENT: ReadonlySet<string>;
 export const PROPRIETES_A_ECHELLE: ReadonlySet<string>;
 export function estPlacement(prop: string): boolean;
+export function physique(prop: string): string;
 export function valeurHorsEchelle(valeur: string): boolean;
 
 /** Un fichier lu (disque, image git) — ou une FIXTURE de même forme. */

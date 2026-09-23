@@ -15,7 +15,7 @@
 import {
   CHEMIN_COUCHES, CHEMIN_MANIFESTE, RACINE_DES_MODULES, modulesDePrimitive, modulesExemptes, ventiler,
 } from './cssCouches.mjs'
-import { motifDImport } from './cssImages.mjs'
+import { motifDImport, nomDImport, nomsDImport } from './cssImages.mjs'
 import { MOTIF_MIN, declarationsDuMessage, mesuresNonCouvertes } from './stocksNominatifs.mjs'
 
 /** Le mot-clé de la ligne de message. */
@@ -46,27 +46,40 @@ export function franchisDesCotes(parent, commit) {
 
 /**
  * Un geste peut-il déplacer la frontière (#1806 E) ? Il touche le manifeste ou `FEUILLES_PARTAGEES`
- * (`cssCouches.mjs`), ou une ligne `+`/`-` de son diff importe un `fichier` du manifeste
- * (`motifDImport`) — seul chemin par lequel un importeur se gagne ou se perd. `diff` et `manifeste`
- * (celui du parent) ne sont lus qu'à défaut des chemins : la frontière n'est relue que si elle peut
- * avoir bougé.
+ * (`cssCouches.mjs`) ; ou une ligne `+`/`-` de son diff importe un `fichier` du manifeste
+ * (`motifDImport`) — un importeur gagné ou perdu, supprimé compris ; ou il AJOUTE ou SUPPRIME un module
+ * de code qui porte le nom d'import d'un `fichier` (`nomDImport`) : l'ordre de repli de
+ * `resolveImport` (`importGraph.mjs`) peut alors faire changer de cible un import que rien ne réécrit.
+ * `diff` et `manifeste` (celui du parent) ne sont lus qu'à défaut des chemins.
  * @param {{ chemins: Iterable<string>, diff: () => string,
  *   manifeste: () => readonly { fichier?: string }[] }} p
  * @returns {boolean}
  */
 export function deplaceLaFrontiere({ chemins, diff, manifeste }) {
   if ([...chemins].some((f) => f === CHEMIN_COUCHES || f === CHEMIN_MANIFESTE)) return true
-  const motif = motifDImport(manifeste())
+  const lu = manifeste()
+  const motif = motifDImport(lu)
   if (!motif) return false
   const importe = new RegExp(motif)
+  const noms = nomsDImport(lu)
+  const homonyme = (chemin) => MODULE_DE_CODE.test(chemin) && noms.has(nomDImport(chemin))
   let entete = false
+  let bouts = null
   for (const l of diff().split('\n')) {
-    if (l.startsWith('diff --git ')) entete = true
-    else if (l.startsWith('@@')) entete = false
-    else if (!entete && (l.startsWith('+') || l.startsWith('-')) && importe.test(l)) return true
+    if (l.startsWith('diff --git ')) {
+      entete = true
+      bouts = / a\/(.+) b\/(.+)$/.exec(l)
+    } else if (l.startsWith('@@')) entete = false
+    else if (entete) {
+      if (l === '--- /dev/null' && bouts && homonyme(bouts[2])) return true
+      if (l === '+++ /dev/null' && bouts && homonyme(bouts[1])) return true
+    } else if ((l.startsWith('+') || l.startsWith('-')) && importe.test(l)) return true
   }
   return false
 }
+
+/** Un chemin de MODULE de code, que `resolveImport` peut désigner. */
+const MODULE_DE_CODE = /\.[cm]?[jt]sx?$/
 
 /** Les lignes `RECLASSEMENT:` d'un message dont le motif porte son `#<ticket>`. */
 export const lignesDeReclassement = (message) =>

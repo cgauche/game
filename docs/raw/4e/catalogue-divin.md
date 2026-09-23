@@ -2555,4 +2555,4 @@ Vous vous concentrez sur un navire endommagé et vous exercez votre volonté pou
 Vous invoquez les vents pour qu'ils soufflent avec davantage de force dans les voiles d'un navire. Augmentez l'intensité du vent d'un cran pendant toute la durée du Miracle (voir page 107). La direction du vent n'est pas affectée.
 
 <span id="page-95-0" data-folio="92"></span>
-<!-- sources-empreinte: 8b5ec3f294ea6f3e1fb297c770c0aff6c16bd52b (137 fichiers, 20 dossiers) corps: 09e1a9697fb887ad4f01aff6f60138a6eb924478 -->
+<!-- sources-empreinte: 9a30d405fd3434fb1cc407f760e3d9b384515c33 (137 fichiers, 20 dossiers) corps: 09e1a9697fb887ad4f01aff6f60138a6eb924478 -->

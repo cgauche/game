@@ -28,7 +28,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { readCorpus } from './sourceCorpus.mjs';
-import { imageCss, sourceGit, TRAVAIL } from './cssImages.mjs';
+import { imageCss, sourceGit } from './cssImages.mjs';
+import { TRAVAIL } from './gitPorte.mjs';
 import {
   cleDeRegle,
   declarations,

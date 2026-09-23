@@ -181,6 +181,43 @@ export function lireGit(args, opts = {}) {
 export const sortieOuNull = (union) =>
   union.disponible && !union.absent && union.valeur.status === 0 ? union.valeur.stdout : null
 
+/** Marques des deux images qui ne sont pas des refs : l'index et l'arbre de travail. */
+export const INDEX = ':index'
+export const TRAVAIL = ':travail'
+
+/**
+ * Les FICHIERS qu'une IMAGE git porte sous `dossier`, chemins POSIX complets — l'unique listeur
+ * d'image des portes : `arbre` = une ref (`ls-tree -r`), `INDEX` (`ls-files --cached`, ce que le
+ * commit emporte) ou `TRAVAIL` (l'index plus les non-suivis non ignorés). Un listage de DISQUE commun
+ * à deux images rendait un fichier SUPPRIMÉ absent de la pré-image elle-même (#1728). `git` (args →
+ * sortie, `null` = rien) est le lecteur de l'appelant : git muet → `[]`, comme un dossier absent.
+ * @param {(args: string[]) => string | null} git @param {string} arbre @param {string} dossier
+ * @returns {string[]}
+ */
+export function listerImage(git, arbre, dossier) {
+  const args = arbre === INDEX ? ['ls-files', '--cached']
+    : arbre === TRAVAIL ? ['ls-files', '--cached', '--others', '--exclude-standard']
+      : ['ls-tree', '-r', '--name-only', arbre]
+  const sortie = git([...args, '--', dossier]) ?? ''
+  return sortie.split(/\r?\n/).map((l) => l.trim().replace(/\\/g, '/')).filter(Boolean)
+}
+
+/**
+ * Les entrées DIRECTES de `dossier` parmi des `chemins` complets (`listerImage`) — noms simples,
+ * triés, dédupliqués : ce qu'attend `mesurerBudget` (`budget-contexte.mjs`).
+ * @param {readonly string[]} chemins @param {string} dossier @returns {string[]}
+ */
+export function enfantsDirects(chemins, dossier) {
+  const prefixe = `${dossier}/`
+  const noms = new Set()
+  for (const rel of chemins) {
+    if (!rel.startsWith(prefixe)) continue
+    const nom = rel.slice(prefixe.length).split('/')[0]
+    if (nom) noms.add(nom)
+  }
+  return [...noms].sort()
+}
+
 /**
  * Les lignes qui portent le motif `-E` `motif` sous `dossiers`, PAR FICHIER (texte des lignes, `\n`
  * final) — l'unique lecture `git grep` des portes. `portee` : `[]` (arbre de travail suivi),

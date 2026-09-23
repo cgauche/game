@@ -86,4 +86,7 @@ export function lignesMalQualifiees(
 ): string[];
 
 export function ligneDEntree(e: EntreeNominative): string;
-export function entreesEcrites(texte: string | null, nom: string): EntreeNominative[] | null;
+export function entreesEcrites(
+  texte: string | null,
+  nom: string,
+): { entrees: EntreeNominative[]; ecarts: string[] } | null;

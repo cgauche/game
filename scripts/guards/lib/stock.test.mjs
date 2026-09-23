@@ -170,15 +170,15 @@ test('survie : la clé SEULE apparie — une réf qui bouge redate l’entrée',
   ])
 })
 
-test('entreesEcrites relit ce que `ligneDEntree` écrit — guillemet et barre oblique compris ; absent → null ; hors forme → refus nommé', () => {
+test('entreesEcrites relit ce que `ligneDEntree` écrit — guillemet et barre oblique compris ; absent → null ; hors forme → écart rendu en phrase', () => {
   const entrees = [
     { fichier: 'src/ui/styles/a.css', ref: ".grid[data-min='sm'] :: color", occurrence: 1 },
     { fichier: 'src/ui/styles/a.css', ref: '.b\\:hover :: gap :: 3px', occurrence: 2 },
   ]
   const texte = `// en-tête\nexport const AUTRE = [\n]\nexport const S = [\n${entrees.map(ligneDEntree).join('\n')}\n]\n`
-  assert.deepEqual(entreesEcrites(texte, 'S'), entrees)
-  assert.deepEqual(entreesEcrites(texte, 'AUTRE'), [])
+  assert.deepEqual(entreesEcrites(texte, 'S'), { entrees, ecarts: [] })
+  assert.deepEqual(entreesEcrites(texte, 'AUTRE'), { entrees: [], ecarts: [] })
   assert.equal(entreesEcrites(null, 'S'), null)
-  assert.throws(() => entreesEcrites(texte, 'MANQUE'), /collection MANQUE introuvable/)
-  assert.throws(() => entreesEcrites('export const S = [\n  { fichier: 1 },\n]\n', 'S'), /ligne hors forme dans S/)
+  assert.deepEqual(entreesEcrites(texte, 'MANQUE'), { entrees: [], ecarts: ['collection MANQUE introuvable dans le stock lu'] })
+  assert.deepEqual(entreesEcrites('export const S = [\n  { fichier: 1 },\n]\n', 'S'), { entrees: [], ecarts: ['ligne hors forme dans S : { fichier: 1 },'] })
 })

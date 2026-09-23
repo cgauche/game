@@ -14,8 +14,8 @@ export interface CoteCss {
   lire: (rel: string) => string | null;
 }
 export const RACINE_DES_SOURCES: string;
-export const INDEX: string;
-export const TRAVAIL: string;
+export function nomDImport(chemin: string): string;
+export function nomsDImport(manifeste: readonly EntreeManifeste[]): Set<string>;
 export function motifDImport(manifeste: readonly EntreeManifeste[]): string | null;
 export function coteCss(source: SourceCss, options?: { racine?: string }): CoteCss;
 export function imageCss(source: SourceCss, options?: { racine?: string }): ImageCss;

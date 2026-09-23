@@ -6,15 +6,12 @@
 // le corpus réel se prouve ailleurs (`src/ui/ui-ratchets.test.ts`, cliquets (xxi)/(xxii)).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import {
   admisAuRetour, CHEMIN_COUCHES, declarations, decoupeSelecteurs, estPlacement, FEUILLE_LAYOUT,
   FEUILLES_PARTAGEES, feuillesPartageesDe, fichiersReutilises, ligneDeVentilation, manifesteDe,
-  moduleHorsCouche, modulesExemptes, partitionCss, reglesCss, valeurHorsEchelle, ventiler,
+  moduleHorsCouche, modulesExemptes, partitionCss, physique, reglesCss, valeurHorsEchelle, ventiler,
 } from './cssCouches.mjs'
 import { CHEMIN_STOCK_CSS, ventilationDeGit } from './cssImages.mjs'
 import { croissanceDesStocks } from './stocksNominatifs.mjs'
@@ -66,17 +63,37 @@ test('declarations : sépare sur les `;` de premier niveau seulement', () => {
   assert.deepEqual(declarations('  ;  '), [])
 })
 
-test('estPlacement : la liste FERMÉE place, tout le reste PEINT', () => {
+test('estPlacement : les propriétés nommées et les familles à préfixe placent, tout le reste PEINT', () => {
   for (const p of ['display', 'flex', 'flex-direction', 'grid-template-columns', 'gap', 'padding-left',
     'margin-inline-start', 'min-width', 'max-height', 'overflow-y', 'position', 'z-index', 'text-align',
     'white-space', 'list-style', 'touch-action', 'user-select', 'transform', '--ma-var',
-    'contain', 'container', 'container-type', 'container-name']) {
+    'contain', 'container', 'container-type', 'container-name',
+    'column-count', 'column-width', 'column-span', 'column-fill', 'column-gap',
+    'list-style-type', 'list-style-position']) {
     assert.equal(estPlacement(p), true, `${p} PLACE`)
   }
   for (const p of ['color', 'background', 'border', 'border-color', 'border-radius', 'box-shadow',
-    'font-size', 'font-weight', 'opacity', 'cursor', 'transition', 'filter', 'line-height']) {
+    'font-size', 'font-weight', 'opacity', 'cursor', 'transition', 'filter', 'line-height',
+    'column-rule', 'column-rule-color', 'column-rule-style', 'column-rule-width', 'list-style-image']) {
     assert.equal(estPlacement(p), false, `${p} PEINT`)
   }
+})
+
+test('physique : une propriété LOGIQUE se classe comme son équivalent physique', () => {
+  const PAIRES = [
+    ['block-size', 'height'], ['inline-size', 'width'], ['min-block-size', 'min-height'], ['max-inline-size', 'max-width'],
+    ['inset-block-start', 'top'], ['inset-block-end', 'bottom'], ['inset-inline-start', 'left'], ['inset-inline-end', 'right'],
+    ['inset-block', 'top'], ['margin-inline', 'margin-left'], ['margin-block-end', 'margin-bottom'],
+    ['padding-inline-end', 'padding-right'], ['scroll-padding-inline-start', 'scroll-padding-left'],
+    ['overflow-inline', 'overflow-x'], ['overscroll-behavior-block', 'overscroll-behavior-y'], ['border-inline-start-color', 'border-left-color'], ['border-block', 'border-top'],
+    ['border-start-start-radius', 'border-start-start-radius'], ['width', 'width'],
+  ]
+  for (const [logique, attendu] of PAIRES) assert.equal(physique(logique), attendu, logique)
+  for (const [logique, equivalent] of PAIRES) {
+    assert.equal(estPlacement(logique), estPlacement(equivalent), `${logique} se classe comme ${equivalent}`)
+  }
+  for (const p of ['block-size', 'inline-size', 'inset-inline-end', 'margin-block']) assert.equal(estPlacement(p), true, `${p} PLACE`)
+  for (const p of ['border-inline-color', 'border-block-start-width']) assert.equal(estPlacement(p), false, `${p} PEINT`)
 })
 
 test('valeurHorsEchelle : un littéral de longueur NON NUL, et rien d’autre', () => {
@@ -271,16 +288,13 @@ test('D (#1806) : sur un changement de frontière, Σ CLIQUET du stock CSS = APP
   const apres = stockDe(commit)
   const v = ventiler(parent, commit, { stockAvant: avant })
   assert.deepEqual([v.identite.APPARU, v.identite.RETOURNE, v.espacement.APPARU, v.espacement.RETOURNE], [3, 3, 1, 1])
-  const dossier = mkdtempSync(join(tmpdir(), 'cliquet-css-'))
-  let diff
-  try {
-    writeFileSync(join(dossier, 'avant.mjs'), texteDeStock(avant))
-    writeFileSync(join(dossier, 'apres.mjs'), texteDeStock(apres))
-    const vu = spawnSync('git', ['diff', '--no-index', '-U0', 'avant.mjs', 'apres.mjs'], { cwd: dossier, encoding: 'utf8' })
-    diff = vu.stdout.replace(/a\/avant\.mjs|b\/apres\.mjs/g, (m) => `${m[0]}/${CHEMIN_STOCK_CSS}`)
-  } finally {
-    rmSync(dossier, { recursive: true, force: true })
-  }
+  const pre = texteDeStock(avant).split('\n')
+  const post = texteDeStock(apres).split('\n')
+  assert.ok(pre.every((l) => post.includes(l)), 'le cas n’ajoute que des lignes : un hunk par ligne ajoutée suffit')
+  const diff = [
+    `diff --git a/${CHEMIN_STOCK_CSS} b/${CHEMIN_STOCK_CSS}`, `--- a/${CHEMIN_STOCK_CSS}`, `+++ b/${CHEMIN_STOCK_CSS}`,
+    ...post.flatMap((l, i) => (pre.includes(l) ? [] : [`@@ -${i},0 +${i + 1} @@`, `+${l}`])),
+  ].join('\n')
   const cliquet = croissanceDesStocks(diff, {
     lirePostImage: () => texteDeStock(apres),
     lirePreImage: () => texteDeStock(avant),
