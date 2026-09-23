@@ -7,7 +7,7 @@
 > après crédit du folio d'une donnée et de la dette de fiche déclarée au manifest.
 > Tolérance ligne = ±20.
 
-**Sens A — code → Atlas (tous livres)** : 12 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 2 réf(s) sans chapitre (non réconciliables par cette mesure). Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
+**Sens A — code → Atlas (tous livres)** : 12 chapitre(s)-livre cités par le code & absents de l'Atlas · 11 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure). Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 2 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
 **Sens B — Atlas → code** : 19 marqueur(s) « (non implémenté) » (tous docs), dont 17 sous dette déclarée, 0 sans entrée et 2 hors champ Implémente · LDB (cœur 4e) : 1 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédits : 12 · 11 crédité(s) par une source folio de `src/data` · 0 sous dette de fiche déclarée) · CRB (cœur 5e) : 0 chapitre(s) cité(s) par l'Atlas jamais référencé(s) dans le code (avant crédits : 50 · 0 crédité(s) par une source folio de `src/data` · 50 sous dette de fiche déclarée).
 
 ## A0 — Résumé Sens A par livre
@@ -18,7 +18,6 @@
 | ADE II | — | 0 | 1 | 0 |
 | EDO | — | 1 | 2 | 0 |
 | EDOC | — | 2 | 2 | 0 |
-| LDB | 4e | 0 | 0 | 2 |
 | MCLB | — | 1 | 0 | 0 |
 | MDG | — | 2 | 1 | 0 |
 | MSRC | — | 1 | 2 | 0 |
@@ -60,11 +59,11 @@
 ### MDG 6 — 1 réf(s) code, 0 dans l'Atlas
 - `src/data/species.json:2557` (l.50) — "note": "MDG 06 l.50"
 
-### MSRC 10 — 4 réf(s) code, 0 dans l'Atlas
+### MSRC 10 — 5 réf(s) code, 0 dans l'Atlas
 - `src/data/naval-traits.json:12` (l.90) — "maison": "MSRC 07 l.94 gate le Critique de Superstructure sur « si le bateau dispose d'une cale » sans imprimer de Trait naval ; la cale rejoint le catalogue d
+- `src/data/regles-optionnelles-partition.test.ts:58` (l.90) — // 1 → 2 (#1657 B3-2b-a) : le Trait `cale` porte MSRC 10 l.90 (le livre DIT la cale du navire
 - `src/data/schemas/grammaire/formes-partagees.test.ts:406` (l.90) — // de Superstructure sur « si le bateau dispose d'une cale », MSRC 10 l.90 la dit du navire marchand).
 - `src/ui/compendium/registry-enveloppe.test.ts:163` (l.90) — // gate le Critique de Superstructure dessus ; MSRC 10 l.90 le dit du navire marchand).
-- `src/ui/ship-stations-panel.test.tsx:120` (l.90) — it('5. « Cale » sur la BARGE commerciale (MSRC 10 l.90) : ouverte, épinglable', () => {
 
 ### NADJ 4 — 7 réf(s) code, 0 dans l'Atlas
 - `src/data/schemas/defs-scenes/scene.ts:136` (l.72) — /** JOUEUR de taverne (`NADJ 04 l.72`) : `gameId` de `tavernGames.json`, mise de DÉPART en sous. */
@@ -123,12 +122,12 @@
 - l.46 — `src/state/interlude-activities.test.ts:303` — // ── Identifier un artefact magique (ADE II 4 l.46-59) ─────────────────────────────────────
 - l.50 — `src/state/interlude-activities.test.ts:362` — it('Identifier : Échec (−2 à −3) → confond avec un objet similaire, AUCUNE fausse Particularité (ADE II 4 l.50)', () => {
 
-### EDOC 13 — 3/8 ligne(s) code hors couverture (propriétaire : 4e/talents.md)
+### EDOC 13 — 3/9 ligne(s) code hors couverture (propriétaire : 4e/talents.md)
 - l.137 — `src/data/index.ts:1097` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
 - l.522 — `src/data/index.ts:1705` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
 - l.524 — `src/data/refs-migrated.test.ts:852` — *  sont au catalogue, sourcées à la desc verbatim de leur Trait (`EDOC 13 l.524` folio 83,
 
-### MDG 15 — 3/49 ligne(s) code hors couverture (propriétaire : 4e/deplacement.md)
+### MDG 15 — 3/50 ligne(s) code hors couverture (propriétaire : 4e/deplacement.md)
 - l.461 — `src/data/naval-ports.test.ts:47` — it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
 - l.468 — `src/data/naval-ports.test.ts:67` — it('Kirkjugarður Langskipa : production armes/produits-de-luxe, sans surplus ni demande (MDG 15 l.468-469, folio 138)', () => {
 - l.474 — `src/data/naval-ports.test.ts:74` — it('Fjirgard : production produits-de-luxe, Demande armes +1, sans surplus (MDG 15 l.474, folio 138)', () => {
@@ -152,9 +151,7 @@
 
 ## A3 — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d'unité chapitre à couvrir)
 
-### LDB — 2 réf(s) sans chapitre
-- `src/engine/combat.ts:336` (l.20) — // Pénalité de mobilité : pire pénalité (non-cumul, LDB l.20) entre Encombrement et traumatisme
-- `src/engine/trauma.ts:1192` (l.20) — /** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). Une prothèse
+_Aucune._
 
 ## B1 — Règles décrites par l'Atlas marquées « (non implémenté) »
 
@@ -210,4 +207,4 @@ _Aucun._
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, LDB, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, CRB, EDO, EDOC, LDB, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 3ccf3338aa936d9cec3fbc20efffaff1d78a3185 (4130 fichiers, 152 dossiers) corps: 7f4c19180bbda083a27933d6f15a4e7cced7ef83 -->
+<!-- sources-empreinte: 895f22c186945407350f5939c01ef35a1d879630 (4210 fichiers, 152 dossiers) corps: eeb5a5e11c22d1251b25a48eeaba2b8f0086bdc4 -->

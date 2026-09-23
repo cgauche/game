@@ -17,7 +17,7 @@
 - **Cœur 5e** : ✅ 33 traités par une fiche · 📖 0 transcrits par un catalogue seul (jamais traités) · 🟡 17 effleurés · ⬜ 67 trous, sur 117 chapitres-règles (hors artefacts OCR).
 - **Livres sans cœur déclaré** : ✅ 48 traités par une fiche · 📖 45 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous, sur 95 chapitres-règles (hors artefacts OCR).
 
-Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3834 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2470 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **671 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅33·📖0·🟡17·⬜67 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
+Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3838 section(s) non couvertes par une fiche : **639 transcrite(s) en catalogue** (recopiées, pas traitées) · **2470 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **671 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 2 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅33·📖0·🟡17·⬜67 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -66,9 +66,9 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 41 | Benedictions | ✅ | 12 (4e/religion.md ×7) |
 | 42 | Miracles | 📖 | 4 (4e/magie.md ×2) |
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
-| 44 | L'Aethyr | ✅ | 10 (4e/magie.md ×10) |
+| 44 | L'Aethyr | ✅ | 11 (4e/magie.md ×11) |
 | 45 | • MAGIE • | ➖ hors-règle | ouverture « • MAGIE • » : exergue + prose d'intro ; les règles vivent aux ch. suivants |
-| 46 | Les regles magiques | ✅ | 91 (4e/magie.md ×51) |
+| 46 | Les regles magiques | ✅ | 90 (4e/magie.md ×50) |
 | 47 | Listes des sorts | ✅ | 7 (4e/magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 18 (4e/magie.md ×18) |
 | 49 | Sorcellerie | ✅ | 4 (4e/magie.md ×3) |
@@ -1270,8 +1270,8 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 | 10 | Macareux a bec tranchant | 📖 | catalogue (catalogue-*.md) |
 | 11 | Chat sauvage | 📖 | catalogue (catalogue-*.md) |
 | 12 | Il Potente Granchio | 📖 | catalogue (catalogue-*.md) |
-| 13 | Sirene | ✅ | 5 (4e/etats.md ×3) |
-| 14 | Expeditions prevues | ✅ | 26 (4e/combat.md ×22) |
+| 13 | Sirene | ✅ | 4 (4e/etats.md ×3) |
+| 14 | Expeditions prevues | ✅ | 27 (4e/combat.md ×23) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
@@ -1330,6 +1330,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - 📖 l.753-758 « Armes et armures » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.862-871 « Objets magiques » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.872-974 « Armes » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.975-1033 « Postface » — transcrit en catalogue, jamais traité, 0 réf
 - **ZI 14** (Expeditions prevues) :
   - 📖 l.3-218 « Expéditions prévues » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.219-385 « JORUNN GROMSDOTTIR » — transcrit en catalogue, jamais traité, 0 réf
@@ -1454,6 +1455,9 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - 📖 l.19-22 « SOCIÉTÉ MUTANTE » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.23-32 « Mutants secrets » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.33-39 « Mutants cultistes » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.40-45 « Mutants Bandits et Sauvages » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.46-53 « Mutants et hommes-bêtes » — transcrit en catalogue, jamais traité, 0 réf
+  - 📖 l.54-62 « CRÉER DES MUTANTS » — transcrit en catalogue, jamais traité, 0 réf
 - **EDOC 13** (CHAPITRE 9 - La Main pourpre - Guide du Meneur) :
   - ➖ l.3-11 « CHAPITRE 9 : LA MAIN POURPRE : GUIDE DU MENEUR » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.12-23 « TZEENTCH LE CHANGEUR DE VOIES » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
@@ -2116,4 +2120,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: 9bb0b71d751cda1454ad01cd0d812e36c7534347 (467 fichiers, 20 dossiers) corps: 69b01d6fb12f957e7fdad8ae6c5eca21ba639642 -->
+<!-- sources-empreinte: 2f989ade83cc781df6c1f592bb0d5df74d855c93 (467 fichiers, 20 dossiers) corps: 2d08f4ed18469838200d14d356d66d2de8475178 -->
