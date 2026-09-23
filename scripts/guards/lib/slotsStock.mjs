@@ -94,7 +94,7 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "barge-du-sel-projet.json", champ: "qualities", occurrences: 15, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "scene", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "barge-du-sel-projet.json", champ: "victoryCondition", occurrences: 1, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "barge-du-sel-projet.json", champ: "ref", occurrences: 6, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R1 : 1 `prop` atteints (`idDe('prop')` de la branche `prop` de `sceneEntitySchema`, `defs-scenes/scene.ts:169`) + 5 `personnage` (`ref` en chaîne libre : dette réelle, #1882)
+  { dataset: "barge-du-sel-projet.json", champ: "ref", occurrences: 6, lot: "L2/L3 #1473", date: "2026-09-23" }, // #1473 R1 : 1 `prop` atteint (`idDe('prop')` de la branche `prop` de `sceneEntitySchema`, `defs-scenes/scene.ts:169`) + 5 `personnage` (`ref` en chaîne libre : dette réelle, #1882)
   { dataset: "careerLevels.json", champ: "career", occurrences: 432, lot: "L2/L3 #1473", date: "2026-08-26" },
   // 27 → 29 (#1463 L-ref-1) : RAFRAÎCHISSEMENT DE COMPTE, pas un champ neuf — « Atelier (Ingénierie ou
   // Magie) » (alchimiste-4) devient l'emplacement `{choice:[{id,spec},{id,spec}]}` et pose 2 références

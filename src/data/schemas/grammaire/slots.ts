@@ -118,9 +118,10 @@ export function marquesPosées(): readonly { readonly noeud: object; readonly ma
  * Mesure du 2026-09-23 (#1473 R1, `sceneEntitySchema` en union discriminée : +1 niveau) :
  * `src/scenes` descend à 30 (`arene-projet.json`, chemin
  * `scenes[].entities[]|0.usable.actions[].flow|1.effect|51.foes[].ref|1.custom.skills[].choix|1[]`),
- * `src/data` à 23 (`criticals.json`). Ces chiffres se RE-MESURENT, ils ne se recopient pas.
+ * `src/data` à 23 (`criticals.json`). La borne vaut la profondeur mesurée + 1, le plus petit entier
+ * que le test de marge admet. Ces chiffres se RE-MESURENT, ils ne se recopient pas.
  */
-export const PROFONDEUR_MAX = 32;
+export const PROFONDEUR_MAX = 31;
 
 /**
  * CAP DUR de la MESURE de profondeur — filet de sécurité de `profondeurDe`, sans rapport avec la

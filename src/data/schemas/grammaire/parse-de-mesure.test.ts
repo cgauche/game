@@ -4,18 +4,21 @@
  *  - le PATH de donnée de chaque repère, à travers la récursion (`z.lazy`), l'union (première branche
  *    propre), la clé de record, et le report d'une issue de payload d'op (`gameOpSchema`) ;
  *  - la BORNE du mode : aucun parse hors `reperesDuParse` n'émet de repère, même quand il lève ;
- *  - la GARDE DES UNIONS : aucune union des documents des deux racines ne place une branche
- *    permissive sans `idDe` APRÈS une branche qui en porte — le parse de mesure y perdrait le slot.
+ *  - la GARDE DU MASQUAGE : sur les documents des deux racines, aucun nœud ne fait perdre au parse de
+ *    mesure une référence que le parse normal valide.
  */
 import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
 import { z } from 'zod';
 import { estFeuilleDId, idDe, reperesDuParse } from './ref';
-import { gameOpSchema } from './mecanique';
+import { gameOpSchema, OP_DEFS } from './mecanique';
 import { defDe, enfantsDe } from './slots';
 import { IDS_PAR_DATASET } from '../_ids.generated';
 import { DEFS_DE_DOCUMENT } from '../validate';
+import { scannerDonnees } from '../../../../scripts/docs/lib/structures-scan.mjs';
 
 const COMPETENCE = IDS_PAR_DATASET['skills.json'][0];
+const TALENT = IDS_PAR_DATASET['talents.json'][0];
 const TRAIT = IDS_PAR_DATASET['traits.json'][0];
 const POSTE = IDS_PAR_DATASET['ship-stations.json'][0];
 
@@ -46,8 +49,12 @@ describe('reperesDuParse — le path de DONNÉE de chaque référence validée p
   });
 
   it('UNION : seule la PREMIÈRE branche propre compte — celle que le parse normal choisit', () => {
-    const u = z.union([z.strictObject({ a: idDe('skill') }), z.strictObject({ a: idDe('skill'), b: z.string().optional() })]);
-    expect(reperesDuParse(u, { a: COMPETENCE })).toEqual([{ path: ['a'], type: 'skill', parCle: false }]);
+    // Les deux branches sont propres, et la seconde rend un repère de plus : le parse normal prend la
+    // branche 0 (objet ouvert), où `b` n'est validé contre aucun registre.
+    const u = z.union([z.looseObject({ a: idDe('skill') }), z.strictObject({ a: idDe('skill'), b: idDe('talent') })]);
+    expect(u.safeParse({ a: COMPETENCE, b: 'zzz-inconnu' }).success).toBe(true);
+    expect(reperesDuParse(u, { a: COMPETENCE, b: TALENT })).toEqual([{ path: ['a'], type: 'skill', parCle: false }]);
+    // Une branche en FAUTE qui précède n'est pas propre : la première branche PROPRE est la seconde.
     const v = z.union([z.strictObject({ k: z.number() }), z.strictObject({ k: idDe('skill') })]);
     expect(reperesDuParse(z.array(v), [{ k: 1 }, { k: COMPETENCE }])).toEqual([{ path: [1, 'k'], type: 'skill', parCle: false }]);
   });
@@ -73,62 +80,179 @@ describe('le mode de mesure est BORNÉ à l’appel de `reperesDuParse`', () => 
   });
 });
 
-/** Le nœud porte-t-il une feuille `idDe` (pile d'ancêtres contre les `z.lazy`) ? */
-function porteUneReference(noeud: unknown, ancetres: ReadonlySet<unknown> = new Set()): boolean {
-  if (!noeud || typeof noeud !== 'object' || ancetres.has(noeud)) return false;
-  if (estFeuilleDId(noeud)) return true;
-  const def = defDe(noeud);
-  if (!def) return false;
-  const pile = new Set(ancetres).add(noeud);
-  return enfantsDe(def).some((e) => porteUneReference(e.noeud, pile));
-}
+// ============================================================================
+// GARDE DU MASQUAGE. Au parse de mesure, une validation réussie d'`idDe` rend une issue (le repère) :
+// tout nœud dont le parse dépend de la présence d'une issue chez un enfant peut perdre ce repère. Chaque
+// document est parsé deux fois (normal, mesure) sous des schémas instrumentés LE TEMPS DU TEST, rien
+// n'étant posé dans le code de production. Trois fautes, nommées par le path de schéma du nœud :
+//  - AVALEMENT : un nœud rend un résultat sans issue alors qu'un enfant lui a rendu des repères seuls ;
+//  - SAUT : une feuille validée au parse normal n'est plus exécutée au parse de mesure ;
+//  - COUVERTURE : un repère rendu vient d'une feuille que la marche instrumentée n'a pas atteinte.
+// ============================================================================
 
-/** Une branche PERMISSIVE accepte toute donnée de sa classe : chaîne ou valeur sans contrainte, objet ouvert, record. */
-function permissivite(noeud: unknown): string | undefined {
-  const def = defDe(noeud) as { type: string; checks?: unknown[]; catchall?: unknown } | undefined;
-  if (!def) return undefined;
-  if (['string', 'unknown', 'any', 'custom'].includes(def.type) && !def.checks?.length) return def.type;
-  if (def.type === 'object' && defDe(def.catchall)?.type === 'unknown') return 'looseObject';
-  if (def.type === 'record') return 'record';
-  return undefined;
-}
+type Issue = { readonly code: string; readonly params?: object; readonly errors?: readonly (readonly Issue[])[]; readonly issues?: readonly Issue[] };
+type Charge = { value: unknown; issues: Issue[] };
+type Run = (charge: Charge, ctx: unknown) => Charge;
+type AvecRun = { _zod: { run: Run } };
 
-/** Les unions d'un schéma où une branche permissive sans `idDe` suit une branche qui en porte. */
-function unionsQuiMasquent(schema: unknown, nom: string): string[] {
-  const trouvees: string[] = [];
-  const vues = new Set<unknown>();
-  const marcher = (noeud: unknown, path: string, ancetres: ReadonlySet<unknown>): void => {
-    if (!noeud || typeof noeud !== 'object' || ancetres.has(noeud) || estFeuilleDId(noeud)) return;
+/** Enfants que le parse exécute et que `enfantsDe` ne visite pas. Un `z.lazy` exécute son `innerType`
+ *  mis en cache, là où `enfantsDe` rappelle le `getter`, qui construit une autre instance. */
+const ENFANTS_HORS_DESCENTE = ['keyType', 'catchall', 'left', 'right', 'rest'] as const;
+
+/** Chaque nœud atteint depuis les racines, une fois, avec le premier path de schéma qui l'atteint. */
+function noeudsAtteints(racines: readonly (readonly [string, unknown])[]): Map<object, string> {
+  const vus = new Map<object, string>();
+  const file: [unknown, string][] = racines.map(([nom, s]) => [s, nom]);
+  for (let i = 0; i < file.length; i++) {
+    const [noeud, nom] = file[i];
+    if (!noeud || typeof noeud !== 'object' || vus.has(noeud)) continue;
     const def = defDe(noeud);
-    if (!def) return;
-    if (def.type === 'union' && !vues.has(noeud)) {
-      vues.add(noeud);
-      const options = def.options ?? [];
-      options.forEach((o, i) => {
-        if (!porteUneReference(o)) return;
-        options.slice(i + 1).forEach((q, j) => {
-          const p = permissivite(q);
-          if (p && !porteUneReference(q)) trouvees.push(`${nom} ${path} : branche ${i} (idDe) puis branche ${i + 1 + j} (${p})`);
-        });
-      });
+    if (!def) continue;
+    vus.set(noeud, nom);
+    for (const e of enfantsDe(def)) file.push([e.noeud, nom + e.segment]);
+    for (const k of ENFANTS_HORS_DESCENTE) {
+      const enfant = (def as Record<string, unknown>)[k];
+      if (enfant !== undefined) file.push([enfant, `${nom}<${k}>`]);
     }
-    const pile = new Set(ancetres).add(noeud);
-    for (const e of enfantsDe(def)) marcher(e.noeud, path + e.segment, pile);
-  };
-  marcher(schema, '', new Set());
-  return trouvees;
+    if (def.type === 'lazy') file.push([(noeud as { _zod: { innerType: unknown } })._zod.innerType, nom]);
+  }
+  return vus;
 }
 
-describe('GARDE DES UNIONS — aucune branche permissive sans `idDe` après une branche qui en porte', () => {
-  it('le détecteur mord sur une union fautive, et laisse passer l’ordre inverse', () => {
-    const fautive = z.strictObject({ k: z.union([idDe('skill'), z.string()]) });
-    expect(unionsQuiMasquent(fautive, 'témoin')).toEqual(['témoin .k : branche 0 (idDe) puis branche 1 (string)']);
-    expect(unionsQuiMasquent(z.union([z.number(), idDe('skill')]), 'témoin')).toEqual([]);
-    // Ce qu'elle protège : sous une telle union, la mesure perd la référence que le parse normal valide.
-    expect(reperesDuParse(fautive, { k: COMPETENCE })).toEqual([]);
+interface Sonde {
+  mesure: boolean;
+  pile: boolean[][];
+  validees: { normal: Map<string, number>; mesure: Map<string, number> };
+  emis: WeakSet<object>;
+  nbEmis: number;
+  avalements: string[];
+}
+
+/** Instrumente les nœuds atteints depuis les racines ; rend la sonde et la remise à l'identique. */
+function instrumenter(racines: readonly (readonly [string, unknown])[]): { sonde: Sonde; restaurer: () => void } {
+  const sonde: Sonde = { mesure: false, pile: [], validees: { normal: new Map(), mesure: new Map() }, emis: new WeakSet(), nbEmis: 0, avalements: [] };
+  const estPropre = (i: Issue): boolean =>
+    (i.params !== undefined && sonde.emis.has(i.params)) ||
+    (i.code === 'invalid_union' && (i.errors ?? []).some((b) => b.length > 0 && b.every(estPropre))) ||
+    ((i.code === 'invalid_key' || i.code === 'invalid_element') && (i.issues ?? []).length > 0 && i.issues!.every(estPropre));
+  const originaux: [AvecRun['_zod'], Run][] = [];
+  for (const [noeud, nom] of noeudsAtteints(racines)) {
+    const zod = (noeud as AvecRun)._zod;
+    const run = zod.run;
+    originaux.push([zod, run]);
+    const feuille = estFeuilleDId(noeud);
+    zod.run = (charge, ctx) => {
+      const avant = charge.issues.length;
+      const valeur = charge.value;
+      sonde.pile.push([]);
+      let r: Charge;
+      let enfants: boolean[];
+      try {
+        r = run(charge, ctx);
+      } finally {
+        enfants = sonde.pile.pop()!;
+      }
+      if (r instanceof Promise) throw new Error(`${nom} : parse ASYNC, hors du parse de mesure`);
+      const nouvelles = r.issues.slice(avant);
+      if (feuille) {
+        const validee = sonde.mesure ? nouvelles.length > 0 && nouvelles.every((i) => i.params !== undefined) : nouvelles.length === 0;
+        if (validee) {
+          const cle = `${nom} « ${String(valeur)} »`;
+          const compte = sonde.mesure ? sonde.validees.mesure : sonde.validees.normal;
+          compte.set(cle, (compte.get(cle) ?? 0) + 1);
+          if (sonde.mesure) {
+            sonde.nbEmis += 1;
+            for (const i of nouvelles) sonde.emis.add(i.params!);
+          }
+        }
+      }
+      if (sonde.mesure && nouvelles.length === 0 && enfants.some(Boolean)) sonde.avalements.push(nom);
+      sonde.pile[sonde.pile.length - 1]?.push(sonde.mesure && nouvelles.length > 0 && nouvelles.every(estPropre));
+      return r;
+    };
+  }
+  return { sonde, restaurer: () => originaux.forEach(([zod, run]) => (zod.run = run)) };
+}
+
+/** Les fautes de masquage d'un document, sous des schémas instrumentés par `instrumenter`. */
+function masquagesDe(sonde: Sonde, nom: string, schema: z.ZodType, donnee: unknown): string[] {
+  Object.assign(sonde, { mesure: false, pile: [], validees: { normal: new Map(), mesure: new Map() }, nbEmis: 0, avalements: [] });
+  if (!schema.safeParse(donnee).success) return [`${nom} : invalide au parse normal`];
+  sonde.mesure = true;
+  let rendus: number;
+  try {
+    rendus = reperesDuParse(schema, donnee).length;
+  } catch (e) {
+    return [`${nom} : ${(e as Error).message}`];
+  } finally {
+    sonde.mesure = false;
+  }
+  const fautes = sonde.avalements.map((n) => `${nom} AVALEMENT : ${n}`);
+  for (const [cle, n] of sonde.validees.normal) {
+    const m = sonde.validees.mesure.get(cle) ?? 0;
+    if (m < n) fautes.push(`${nom} SAUT : ${cle} validée ${n}× au parse normal, ${m}× au parse de mesure`);
+  }
+  if (rendus > sonde.nbEmis) fautes.push(`${nom} COUVERTURE : ${rendus} repères rendus, ${sonde.nbEmis} émis par les feuilles instrumentées`);
+  return fautes;
+}
+
+/** Les fautes de masquage d'un témoin : son schéma seul est instrumenté. */
+function masquagesDuTemoin(schema: z.ZodType, donnee: unknown): string[] {
+  const { sonde, restaurer } = instrumenter([['témoin', schema]]);
+  try {
+    return masquagesDe(sonde, 'témoin', schema, donnee);
+  } finally {
+    restaurer();
+  }
+}
+
+describe('GARDE DU MASQUAGE — aucun nœud ne perd au parse de mesure une référence que le parse normal valide', () => {
+  it('A — union dont une branche postérieure NON permissive accepte la donnée', () => {
+    const s = z.union([z.strictObject({ k: idDe('skill') }), z.strictObject({ k: z.string() })]);
+    expect(masquagesDuTemoin(s, { k: COMPETENCE })).toEqual(['témoin AVALEMENT : témoin']);
   });
 
-  it('les schémas des documents des DEUX racines n’en portent aucune', () => {
-    expect(DEFS_DE_DOCUMENT.flatMap((d) => unionsQuiMasquent(d.schema, d.file))).toEqual([]);
+  it('B — union dont la branche postérieure est une chaîne CONTRAINTE', () => {
+    expect(masquagesDuTemoin(z.union([idDe('skill'), z.string().min(1)]), COMPETENCE)).toEqual(['témoin AVALEMENT : témoin']);
+  });
+
+  it('C — union dont la branche postérieure est une chaîne FACULTATIVE', () => {
+    const s = z.strictObject({ k: z.union([idDe('skill'), z.string().optional()]) });
+    expect(masquagesDuTemoin(s, { k: COMPETENCE })).toEqual(['témoin AVALEMENT : témoin.k']);
+  });
+
+  it('D — record dont la clé ET la valeur portent une référence : la valeur n’est plus parsée', () => {
+    const s = z.record(idDe('shipStation'), z.strictObject({ s: idDe('skill') }));
+    expect(masquagesDuTemoin(s, { [POSTE]: { s: COMPETENCE } })).toEqual([
+      `témoin SAUT : témoin{}.s « ${COMPETENCE} » validée 1× au parse normal, 0× au parse de mesure`,
+    ]);
+  });
+
+  it('E — `.catch` au-dessus d’une feuille `idDe`', () => {
+    const s = z.strictObject({ k: idDe('skill').catch(COMPETENCE as never) });
+    expect(masquagesDuTemoin(s, { k: COMPETENCE })).toEqual(['témoin AVALEMENT : témoin.k']);
+  });
+
+  it('F — pipe dont le côté `in` et le côté `out` portent une référence : le côté `out` avorte', () => {
+    const s = z.strictObject({ a: idDe('skill'), b: z.string() }).pipe(z.strictObject({ a: z.string(), b: idDe('skill') }) as never);
+    expect(masquagesDuTemoin(s, { a: COMPETENCE, b: COMPETENCE })).toEqual([
+      `témoin SAUT : témoin.b « ${COMPETENCE} » validée 1× au parse normal, 0× au parse de mesure`,
+    ]);
+  });
+
+  it('les documents des DEUX racines n’en portent aucun (payloads d’`OP_DEFS` compris, re-parsés par `gameOpSchema`)', () => {
+    const racine = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
+    const { brutParNom } = scannerDonnees(racine);
+    const documents = DEFS_DE_DOCUMENT.filter((d) => brutParNom.has(d.file));
+    expect(documents.length).toBeGreaterThan(100);
+    const { sonde, restaurer } = instrumenter([
+      ...DEFS_DE_DOCUMENT.map((d) => [d.file, d.schema] as const),
+      ...Object.entries(OP_DEFS).map(([op, s]) => [`OP_DEFS.${op}`, s] as const),
+    ]);
+    try {
+      expect(documents.flatMap((d) => masquagesDe(sonde, d.file, d.schema, brutParNom.get(d.file)))).toEqual([]);
+    } finally {
+      restaurer();
+    }
   });
 });

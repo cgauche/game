@@ -159,7 +159,7 @@ const brancheDEntite = <R extends z.ZodTypeAny>(kind: EntityKindId, ref: R) =>
 
 type EntityKindId = z.infer<typeof entityKindSchema>;
 
-/** `SceneEntity` (`state/scene.ts:41`). `id` = identité STABLE partagée avec le `Combatant` au spawn.
+/** `SceneEntity` (`state/scene.ts:98`). `id` = identité STABLE partagée avec le `Combatant` au spawn.
  *  Union DISCRIMINÉE par `kind` : la `ref` d'un DÉCOR résout au registre `props.json` (`idDe('prop')`,
  *  #877) ; celle d'un personnage est une chaîne libre (#1882). Le `superRefine` de la branche `prop`
  *  porte ses deux invariants CROSS-CHAMP : la `ref` présente, et le cap d'un décor volumique. */
@@ -722,7 +722,7 @@ export const sceneStationAnchorSchema = z.strictObject({
 // ── La scène ────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * `Scene` (`state/scene.ts:683`) — l'agrégat. Les collections `layers`/`entities`/`dialogues`/
+ * `Scene` (`state/scene.ts:370`) — l'agrégat. Les collections `layers`/`entities`/`dialogues`/
  * `triggers`/`encounters`/`flags`, requises sur le type manuscrit, sont OPTIONNELLES ici : le
  * schéma voit le document AVANT `normalizeScene`, qui les comble au SEUL point d'entrée.
  */

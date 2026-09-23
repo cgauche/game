@@ -140,10 +140,10 @@ export function estSpecialisable(type: TypeEntite, id: string): boolean {
  */
 const REPERE: unique symbol = Symbol('repère de parse de mesure');
 
-/** Vrai le temps SYNCHRONE d'un `reperesDuParse`, et jamais ailleurs : aucun export ne le lit ni ne l'écrit. */
+/** Vrai le temps SYNCHRONE d'un `reperesDuParse`, qui seul l'écrit, et jamais ailleurs : aucun export n'expose l'état. */
 let parseDeMesure = false;
 
-/** Les feuilles construites par `idDe` — ce que la garde des unions reconnaît comme porteur de référence. */
+/** Les feuilles construites par `idDe` — ce que la garde du masquage (`parse-de-mesure.test.ts`) instrumente. */
 const FEUILLES_D_ID = new WeakSet<object>();
 
 /** Le nœud est-il une feuille construite par `idDe` ? */
@@ -232,7 +232,7 @@ function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[]
     else if (issue.code === 'invalid_element' && estPropre(issue)) recueillir(issue.issues!, path, parCle, out);
     else
       throw new Error(
-        `parse de mesure : issue « ${issue.code} » à « ${path.map(String).join('.') || '(racine)'} » (${issue.message}) — ni repère d'\`idDe\`, ni union, clé ou élément fait de repères : le document est invalide au parse normal, ou un nœud masque le repère (union à branche permissive, \`.catch\`).`,
+        `parse de mesure : issue « ${issue.code} » à « ${path.map(String).join('.') || '(racine)'} » (${issue.message}) — ni repère d'\`idDe\`, ni union, clé ou élément fait de repères : le document est invalide au parse normal.`,
       );
   }
 }

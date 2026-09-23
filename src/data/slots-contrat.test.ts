@@ -203,16 +203,16 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
       mkdirSync(join(dossier, 'src/data'), { recursive: true });
       mkdirSync(join(dossier, 'src/scenes'), { recursive: true });
       cpSync(join(ROOT, 'src/data/schemas/grammaire'), join(dossier, 'src/data/schemas/grammaire'), { recursive: true });
-      writeFileSync(join(dossier, 'src/data/cibles.json'), JSON.stringify([{ id: 'alpha', label: 'Alpha' }, { id: 'beta', label: 'Beta' }]));
-      writeFileSync(join(dossier, 'src/data/grille.json'), JSON.stringify([[{ cibleId: 'alpha' }, { cibleId: 'beta' }], [{ cibleId: 'beta' }]]));
+      writeFileSync(join(dossier, 'src/data/skills.json'), JSON.stringify([{ id: 'alpha', label: 'Alpha' }, { id: 'beta', label: 'Beta' }]));
+      writeFileSync(join(dossier, 'src/data/grille.json'), JSON.stringify([[{ skillId: 'alpha' }, { skillId: 'beta' }], [{ skillId: 'beta' }]]));
       const fixture = scannerDonnees(dossier);
-      const grille = fixture.brutParNom.get('grille.json') as { cibleId: string }[][];
+      const grille = fixture.brutParNom.get('grille.json') as { skillId: string }[][];
       const slots: SlotDuParse[] = grille.flat().map((porteur) => ({
         dataset: 'grille.json',
-        path: '[][].cibleId',
+        path: '[][].skillId',
         type: 'skill',
         porteur,
-        cle: 'cibleId',
+        cle: 'skillId',
         parCle: false,
       }));
       expect(couplesDeReference(fixture, slots)).toEqual([{ dataset: 'grille.json', champ: '(racine)', occurrences: 3, atteintes: 3 }]);
