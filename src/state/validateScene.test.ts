@@ -545,12 +545,27 @@ describe('validateScene — POI de plan (#345 phase 5)', () => {
     expect(w.filter((x) => x.level === 'error')).toEqual([]);
   });
 
-  it('id de POI dupliqué (même lieu) → erreur', () => {
+  it('id de POI dupliqué (même lieu) → erreur du SCHÉMA de carte, le POI répété nommé par son libellé', () => {
     const w = validateScene([base()], wm([
       { id: 'poi-1', label: 'A', pos: { x: 1, y: 1 }, sceneId: 'A' },
       { id: 'poi-1', label: 'B', pos: { x: 2, y: 2 }, serviceKind: 'auberge' },
-    ]));
-    expect(msgs(w).some((m) => /id dupliqué/.test(m))).toBe(true);
+    ], [{ kind: 'auberge' }]));
+    expect(w.filter((x) => x.level === 'error')).toEqual([
+      expect.objectContaining({ scope: 'worldMap', refId: 'poi-1', message: 'B : « poi-1 » dupliqué : « id » identifie l’élément dans sa liste, il y est unique.' }),
+    ]);
+  });
+
+  it('id de POI dupliqué d’un lieu à l’AUTRE → erreur de carte, l’id et le lieu qui le porte déjà sont le sujet', () => {
+    const w = validateScene([base()], {
+      id: 'w', label: 'Carte', routes: [],
+      places: [
+        { ...place([{ id: 'poi-1', label: 'A', pos: { x: 1, y: 1 }, sceneId: 'A' }]), id: 'lieu-1', label: 'Lieu 1' },
+        { ...place([{ id: 'poi-1', label: 'B', pos: { x: 2, y: 2 }, sceneId: 'A' }]), id: 'lieu-2', label: 'Lieu 2' },
+      ],
+    });
+    expect(w.filter((x) => x.level === 'error')).toEqual([
+      expect.objectContaining({ scope: 'worldMap', refId: 'poi-1', message: 'B : POI « poi-1 » déjà posé au lieu « lieu-1 » : un id de POI est unique sur la carte.' }),
+    ]);
   });
 
   it('ni scène ni service (cible absente) → erreur EXCLUSIVE', () => {

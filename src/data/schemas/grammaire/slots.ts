@@ -154,20 +154,29 @@ function descendreArbre(
   descendre(schema, '', new Set(), 0);
 }
 
-function marcher(schema: unknown, visite: (noeud: object, marque: MarqueDeSlot, path: string) => void): void {
+/**
+ * Visite CHAQUE nœud d'un schéma composé avec son path, sous `PROFONDEUR_MAX` (coupe BRUYANTE) — la
+ * marche que partagent les registres de marques : slots de référence (`marcher`) et clés d'élément de
+ * liste (`grammaire/liste-cle.ts`).
+ */
+export function visiterNoeuds(schema: unknown, visite: (noeud: object, path: string) => void): void {
   descendreArbre(
     schema,
     PROFONDEUR_MAX,
-    (noeud, path) => {
-      const m = marqueDe(noeud);
-      if (m) visite(noeud, m, path);
-    },
+    (noeud, path) => visite(noeud, path),
     (path) => {
       throw new Error(
-        `slots : descente coupée à PROFONDEUR_MAX=${PROFONDEUR_MAX} sous « ${path} » — le schéma est plus profond que la borne, ses slots seraient perdus sans un mot.`,
+        `slots : descente coupée à PROFONDEUR_MAX=${PROFONDEUR_MAX} sous « ${path} » — le schéma est plus profond que la borne, ses marques seraient perdues sans un mot.`,
       );
     },
   );
+}
+
+function marcher(schema: unknown, visite: (noeud: object, marque: MarqueDeSlot, path: string) => void): void {
+  visiterNoeuds(schema, (noeud, path) => {
+    const m = marqueDe(noeud);
+    if (m) visite(noeud, m, path);
+  });
 }
 
 /**

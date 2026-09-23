@@ -136,12 +136,20 @@ describe('une RÉF de créature que le spawn ne résout pas est une erreur, pas 
     const morte = scene();
     morte.entities.push({ id: 'p-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'tonneau-imaginaire' });
     expect(validateScene([morte]).filter((w) => w.level === 'error').map((w) => w.message))
-      .toEqual(['p-1 › ref : décor « p-1 » : « tonneau-imaginaire » est absent du catalogue des décors (props.json).']);
+      .toEqual(['p-1 › ref : « tonneau-imaginaire » est absent du catalogue des décors (props.json).']);
 
     const sansType = scene();
     sansType.entities.push({ id: 'p-2', kind: 'prop', pos: { x: 2, y: 2 } });
     expect(validateScene([sansType]).filter((w) => w.level === 'error').map((w) => w.message))
-      .toEqual(['p-2 › ref : décor « p-2 » : « ref » absente — un décor NOMME son type au catalogue (props.json)']);
+      .toEqual(['p-2 › ref : « ref » absente — un décor NOMME son type au catalogue (props.json)']);
+  });
+
+  it('un décor LIBELLÉ se nomme UNE fois, par son libellé, et la faute se rattache à son id (#1897)', () => {
+    const nomme = scene();
+    nomme.entities.push({ id: 'p-1', kind: 'prop', pos: { x: 2, y: 2 }, label: 'Tonneau' });
+    expect(validateScene([nomme]).filter((w) => w.level === 'error')).toEqual([
+      expect.objectContaining({ scope: 'entity', refId: 'p-1', message: 'Tonneau › ref : « ref » absente — un décor NOMME son type au catalogue (props.json)' }),
+    ]);
   });
 });
 

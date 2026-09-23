@@ -439,7 +439,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   const [needsGrant, setNeedsGrant] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [msg, setMsg] = useState('');
-  // Refus de SCHÉMA (contrat de donnée #176) : message champ-par-champ (formatZodError) quand la donnée
+  // Refus de SCHÉMA (contrat de donnée #176) : message champ-par-champ (validateDataset) quand la donnée
   // sérialisée ne parse pas son schéma zod — l'écriture disque est bloquée. Effacé à toute ré-édition.
   const [schemaError, setSchemaError] = useState<string | null>(null);
 

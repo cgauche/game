@@ -8,7 +8,8 @@ import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, c
 import { stakeSpeaks, matieresDe } from '../data';
 import { versionDesDatasets } from '../data/versionDataset';
 import { PENTE_TOIT_DEG, sceneSchema } from '../data/schemas/defs-scenes/scene';
-import { validateDocument, cheminLisible, type Faute } from '../data/schemas/validate';
+import { worldMapSchema } from '../data/schemas/defs-scenes/worldmap';
+import { validateDocument, cheminLisible, type ElementDeLieu, type Faute, type SegmentDeLieu } from '../data/schemas/validate';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
 // ré-exporte combatEffects), comme le store : entrer le cycle d'effets/combat par le MÊME nœud
 // canonique préserve l'ordre d'évaluation (un import direct de `combatEffects` ici casse la
@@ -47,64 +48,63 @@ export type ArchitectureWarningRef =
   | { type: 'facadeSection'; bodyId: string; id: string }
   | { type: 'roofSection'; bodyId: string; id: string };
 
-/** Verdict du SCHÉMA de scène par objet scène, daté par la version des datasets : les éditions de
- *  l'éditeur sont IMMUABLES (`useSceneHistory`), seule la scène modifiée se re-parse, et une écriture
- *  au catalogue (Compendium) re-date tous les verdicts — les réfs se résolvent au catalogue VIF. */
-const verdictsDeSchema = new WeakMap<Scene, { version: number; fautes: readonly Faute[] | null }>();
-function fautesDeSchema(s: Scene): readonly Faute[] | null {
+/** Verdict d'un SCHÉMA par objet validé (une scène, la carte), daté par la version des datasets : les
+ *  éditions de l'éditeur sont IMMUABLES (`useSceneHistory`), seul l'objet modifié se re-parse, et une
+ *  écriture au catalogue (Compendium) re-date tous les verdicts — les réfs se résolvent au catalogue VIF. */
+const verdictsDeSchema = new WeakMap<object, { version: number; fautes: readonly Faute[] | null }>();
+function fautesDeSchema(schema: Parameters<typeof validateDocument>[0], objet: object): readonly Faute[] | null {
   const version = versionDesDatasets();
-  const connu = verdictsDeSchema.get(s);
+  const connu = verdictsDeSchema.get(objet);
   if (connu?.version === version) return connu.fautes;
-  const fautes = validateDocument(sceneSchema, s);
-  verdictsDeSchema.set(s, { version, fautes });
+  const fautes = validateDocument(schema, objet);
+  verdictsDeSchema.set(objet, { version, fautes });
   return fautes;
 }
 
-/** Le FAUTIF d'une faute de schéma : l'élément de scène que nomme la tête de son chemin (pour le clic
- *  → sélection de l'éditeur), et le reste du chemin, le champ fautif DANS cet élément. */
-interface Fautif {
-  scope: Warning['scope'];
-  refId?: string;
-  nom?: string;
-  architectureRef?: ArchitectureWarningRef;
-  reste: readonly (string | number)[];
-}
-function fautifDe(s: Scene, chemin: readonly (string | number)[]): Fautif {
-  const [tete, i, ...reste] = chemin;
-  const element = <T,>(liste: readonly T[] | undefined): T | undefined => (typeof i === 'number' ? liste?.[i] : undefined);
-  const dansLaListe = (scope: Warning['scope'], el: { id: string; label?: string } | undefined): Fautif =>
-    el ? { scope, refId: el.id, nom: el.label ?? el.id, reste } : { scope, reste: chemin };
-  switch (tete) {
-    case 'entities': return dansLaListe('entity', element(s.entities));
-    case 'triggers': return dansLaListe('trigger', element(s.triggers));
-    case 'dialogues': return dansLaListe('dialogue', element(s.dialogues));
-    case 'encounters': return dansLaListe('encounter', element(s.encounters));
-    case 'effectZones': return dansLaListe('scene', element(s.effectZones));
-    case 'architecture': {
-      const body = element(s.architecture);
-      if (!body) return { scope: 'architecture', reste: chemin };
-      const [collection, j, sous, k, ...fin] = reste;
-      const de = <T extends { id: string },>(liste: readonly T[] | undefined, n: unknown): T | undefined =>
-        typeof n === 'number' ? liste?.[n] : undefined;
-      const storey = collection === 'storeys' ? de(body.storeys, j) : undefined;
-      const part = sous === 'parts' ? de(storey?.parts, k) : undefined;
-      if (storey && part)
-        return { scope: 'architecture', refId: part.id, nom: part.id, architectureRef: { type: 'architecturePart', bodyId: body.id, storeyId: storey.id, id: part.id }, reste: fin };
-      if (storey)
-        return { scope: 'architecture', refId: storey.id, nom: storey.id, architectureRef: { type: 'architectureStorey', bodyId: body.id, id: storey.id }, reste: reste.slice(2) };
-      const facade = collection === 'facades' ? de(body.facades, j) : undefined;
-      const feature = sous === 'features' ? de(facade?.features, k) : undefined;
-      if (facade && feature)
-        return { scope: 'architecture', refId: feature.id, nom: feature.id, architectureRef: { type: 'facadeSection', bodyId: body.id, id: facade.id }, reste: fin };
-      if (facade)
-        return { scope: 'architecture', refId: facade.id, nom: facade.id, architectureRef: { type: 'facadeSection', bodyId: body.id, id: facade.id }, reste: reste.slice(2) };
-      const mass = collection === 'masses' ? de(body.masses, j) : undefined;
-      if (mass)
-        return { scope: 'architecture', refId: mass.id, nom: mass.id, architectureRef: { type: 'roofSection', bodyId: body.id, id: mass.id }, reste: reste.slice(2) };
-      return { scope: 'architecture', refId: body.id, nom: body.label ?? body.id, architectureRef: { type: 'architectureBody', id: body.id }, reste };
-    }
-    default: return { scope: 'scene', reste: chemin };
+/** PORTÉE d'une faute pour l'éditeur (clic → sélection), par la suite des LISTES à clé que son lieu
+ *  traverse depuis la racine ; les clés rencontrées nomment la sélection. Choix d'ÉCRAN : une façade
+ *  et son ornement se sélectionnent par la façade, une masse par sa section de toiture. */
+type Portee = { scope: Warning['scope']; architectureRef?: ArchitectureWarningRef };
+const PORTEE_DU_LIEU: Readonly<Record<string, (cles: readonly string[]) => Portee>> = {
+  entities: () => ({ scope: 'entity' }),
+  triggers: () => ({ scope: 'trigger' }),
+  dialogues: () => ({ scope: 'dialogue' }),
+  encounters: () => ({ scope: 'encounter' }),
+  effectZones: () => ({ scope: 'scene' }),
+  architecture: ([id]) => ({ scope: 'architecture', architectureRef: { type: 'architectureBody', id } }),
+  'architecture › storeys': ([bodyId, id]) => ({ scope: 'architecture', architectureRef: { type: 'architectureStorey', bodyId, id } }),
+  'architecture › storeys › parts': ([bodyId, storeyId, id]) => ({ scope: 'architecture', architectureRef: { type: 'architecturePart', bodyId, storeyId, id } }),
+  'architecture › facades': ([bodyId, id]) => ({ scope: 'architecture', architectureRef: { type: 'facadeSection', bodyId, id } }),
+  'architecture › facades › features': ([bodyId, id]) => ({ scope: 'architecture', architectureRef: { type: 'facadeSection', bodyId, id } }),
+  'architecture › masses': ([bodyId, id]) => ({ scope: 'architecture', architectureRef: { type: 'roofSection', bodyId, id } }),
+  places: () => ({ scope: 'worldMap' }),
+  'places › poi': () => ({ scope: 'worldMap' }),
+  routes: () => ({ scope: 'worldMap' }),
+};
+
+/** L'élément qu'une faute désigne pour l'éditeur : le plus PROFOND élément à clé de la tête de son
+ *  lieu que la table de portée connaît ; le reste du lieu est le champ fautif DANS cet élément. */
+function fautifDe(lieu: readonly SegmentDeLieu[], portees: 'scene' | 'worldMap'): Portee & { element?: ElementDeLieu; reste: readonly SegmentDeLieu[] } {
+  const listes: string[] = [];
+  const cles: string[] = [];
+  let trouve: (Portee & { element: ElementDeLieu; reste: readonly SegmentDeLieu[] }) | undefined;
+  for (const [k, segment] of lieu.entries()) {
+    if (typeof segment !== 'object') break;
+    listes.push(segment.liste);
+    cles.push(segment.cle);
+    const portee = PORTEE_DU_LIEU[listes.join(' › ')];
+    if (!portee) break;
+    trouve = { ...portee(cles), element: segment, reste: lieu.slice(k + 1) };
   }
+  return trouve ?? { scope: portees, reste: lieu };
+}
+
+/** Le message d'une faute de schéma à l'écran de l'éditeur : l'élément par son LIBELLÉ d'auteur, puis
+ *  le lieu du champ fautif, puis le message du schéma. */
+const nomDAuteur = (element: ElementDeLieu): string => element.libelle ?? element.cle;
+function messageDeFaute(f: ReturnType<typeof fautifDe>, message: string): string {
+  const ou = [f.element && nomDAuteur(f.element), f.reste.length ? cheminLisible(f.reste, nomDAuteur) : undefined].filter(Boolean).join(' › ');
+  return ou ? `${ou} : ${message}` : message;
 }
 
 /**
@@ -118,8 +118,13 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
   if (worldMap) {
     const addWm = (refId: string, message: string) =>
       out.push({ level: 'error', sceneId: worldMap.id, scope: 'worldMap', refId, message });
+    // Le SCHÉMA de carte (`worldMapSchema`) : unicité des lieux, routes et POI, cibles exclusives d'un
+    // POI — une carte VIVANTE de l'éditeur ne repasse pas par le parse, l'auteur l'apprend ici.
+    for (const faute of fautesDeSchema(worldMapSchema, worldMap) ?? []) {
+      const f = fautifDe(faute.lieu, 'worldMap');
+      out.push({ level: 'error', sceneId: worldMap.id, scope: f.scope, refId: f.element?.cle, message: messageDeFaute(f, faute.message) });
+    }
     const placeIds = new Set(worldMap.places.map((p) => p.id));
-    const poiIds = new Set<string>();
     for (const p of worldMap.places) {
       if (!sceneIds.has(p.scene)) addWm(p.id, `Lieu « ${p.label} » → scène inexistante « ${p.scene} »`);
       // Cible RÉSOLUE via `placeServices` (source unique, `state/worldMap.ts`) — pas le seul catalogue
@@ -127,12 +132,8 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       // `'port'`/`'marche'`), exactement ce que `CityHubScreen` résout à l'affichage (#360).
       const resolvedServiceIds = new Set(placeServices(p).map((s) => s.id));
       for (const poi of p.poi ?? []) {
-        if (poiIds.has(poi.id)) addWm(poi.id, `POI « ${poi.id} » du lieu « ${p.label} » : id dupliqué`);
-        poiIds.add(poi.id);
-        const hasScene = poi.sceneId != null, hasService = poi.serviceKind != null;
-        if (hasScene === hasService) addWm(poi.id, `POI « ${poi.label} » (lieu « ${p.label} ») : cible EXCLUSIVE scène XOR service requise`);
-        if (hasScene && !sceneIds.has(poi.sceneId!)) addWm(poi.id, `POI « ${poi.label} » → scène inexistante « ${poi.sceneId} »`);
-        if (hasService && !resolvedServiceIds.has(poi.serviceKind!)) addWm(poi.id, `POI « ${poi.label} » → service inconnu « ${poi.serviceKind} »`);
+        if (poi.sceneId != null && !sceneIds.has(poi.sceneId)) addWm(poi.id, `POI « ${poi.label} » → scène inexistante « ${poi.sceneId} »`);
+        if (poi.serviceKind != null && !resolvedServiceIds.has(poi.serviceKind)) addWm(poi.id, `POI « ${poi.label} » → service inconnu « ${poi.serviceKind} »`);
       }
     }
     for (const r of worldMap.routes) {
@@ -190,35 +191,16 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       const refs = (EFFECT_HANDLERS[eff.type] as EffectHandler).refs;
       if (refs) for (const issue of refs(eff, refCtx)) add(issue.level, scope, refId, issue.message);
     };
-    const dup = (
-      ids: string[],
-      scope: Warning['scope'],
-      architectureRef?: (id: string) => ArchitectureWarningRef,
-    ) => {
-      const seen = new Set<string>();
-      for (const id of ids) {
-        if (seen.has(id)) add('error', scope, id, `Id dupliqué « ${id} »`, architectureRef?.(id));
-        seen.add(id);
-      }
-    };
-
-    // Le SCHÉMA de scène (`sceneSchema`) : il prouve au parse toutes les références de catalogue et la
-    // forme de la scène ; une scène VIVANTE de l'éditeur ne repasse pas par le parse, l'auteur l'apprend
-    // donc ici, rattaché à son fautif (#877, #1897).
-    for (const faute of fautesDeSchema(s) ?? []) {
-      const f = fautifDe(s, faute.chemin);
-      const ou = [f.nom, f.reste.length ? cheminLisible(f.reste) : undefined].filter(Boolean).join(' › ');
-      add('error', f.scope, f.refId, ou ? `${ou} : ${faute.message}` : faute.message, f.architectureRef);
+    // Le SCHÉMA de scène (`sceneSchema`) : il prouve au parse toutes les références de catalogue, la
+    // forme de la scène et l'unicité des clés de ses listes ; une scène VIVANTE de l'éditeur ne repasse
+    // pas par le parse, l'auteur l'apprend donc ici, rattaché à son fautif (#877, #1897).
+    for (const faute of fautesDeSchema(sceneSchema, s) ?? []) {
+      const f = fautifDe(faute.lieu, 'scene');
+      add('error', f.scope, f.element?.cle, messageDeFaute(f, faute.message), f.architectureRef);
     }
 
     for (const [slot, v] of Object.entries(s.music ?? {}))
       if (typeof v === 'string' && !musicIds.has(v)) add('warn', 'scene', undefined, `Musique (${slot === 'ambient' ? 'ambiance' : 'combat'}) inconnue au registre « ${v} »`);
-
-    dup(s.entities.map((e) => e.id), 'entity');
-    dup(s.triggers.map((t) => t.id), 'trigger');
-    dup(s.dialogues.map((d) => d.id), 'dialogue');
-    dup(s.encounters.map((e) => e.id), 'encounter');
-    dup((s.effectZones ?? []).map((zone) => zone.id), 'scene');
 
     // Couches (`Scene.layers`) : ids d'étage valides pour rattacher les entités posées en hauteur.
     const layerZs = new Set(s.layers.map((l) => l.z));
@@ -296,12 +278,8 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (!Number.isInteger(edge.x) || !Number.isInteger(edge.y) || !within(edge.x, edge.y)) add('error', 'architecture', refId, `Architecture « ${refId} » : arête hors carte`, architectureRef);
       if (edge.z !== undefined && edge.z !== z) add('error', 'architecture', refId, `Architecture « ${refId} » : arête sur étage ${edge.z} différent de la section ${z}`, architectureRef);
     };
-    dup((s.architecture ?? []).map((body) => body.id), 'architecture', (id) => ({ type: 'architectureBody', id }));
     const nonCouvrantes = roofNonCoveringIds();
     for (const body of s.architecture ?? []) {
-      dup(body.storeys.map((storey) => storey.id), 'architecture', (id) => ({ type: 'architectureStorey', bodyId: body.id, id }));
-      dup(body.facades.map((facade) => facade.id), 'architecture', (id) => ({ type: 'facadeSection', bodyId: body.id, id }));
-      dup(body.masses.map((mass) => mass.id), 'architecture', (id) => ({ type: 'roofSection', bodyId: body.id, id }));
       // Intention de toiture (`RoofDefaults`) : un appentis sans côté d'égout ne se devine pas — la
       // dérivation ne pose alors AUCUN `eaveSide` et chaque masse produite est invalide. Nommé sur le
       // CORPS, là où le réglage se fait.
@@ -310,12 +288,6 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       for (const storey of body.storeys) {
         const storeyRef: ArchitectureWarningRef = { type: 'architectureStorey', bodyId: body.id, id: storey.id };
         if (storey.z !== 0 && !layerZs.has(storey.z)) add('error', 'architecture', storey.id, `Étage ${storey.z} inexistant`, storeyRef);
-        dup(storey.parts.map((part) => part.id), 'architecture', (id) => ({
-          type: 'architecturePart',
-          bodyId: body.id,
-          storeyId: storey.id,
-          id,
-        }));
         for (const part of storey.parts) {
           const partRef: ArchitectureWarningRef = { type: 'architecturePart', bodyId: body.id, storeyId: storey.id, id: part.id };
           if (!validRect(part.foot)) add('error', 'architecture', part.id, `Partie « ${part.id} » hors carte ou d’emprise invalide`, partRef);
@@ -327,7 +299,6 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         if (facade.z !== 0 && !layerZs.has(facade.z)) add('error', 'architecture', facade.id, `Étage ${facade.z} inexistant`, facadeRef);
         for (const edge of facade.edges) checkEdge(edge, facade.z, facade.id, facadeRef);
         checkZoneRefs(facade.roomZoneIds ?? [], facade.z, facade.id, facadeRef);
-        dup((facade.features ?? []).map((feature) => feature.id), 'architecture', () => facadeRef);
         for (const feature of facade.features ?? []) {
           checkEdge(feature.edge, facade.z, feature.id, facadeRef);
           if (feature.offset !== undefined && (feature.offset < 0 || feature.offset > 1))

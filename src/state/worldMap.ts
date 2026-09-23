@@ -1023,7 +1023,7 @@ export function exigerUnRefus(err: unknown): asserts err is ProjetRefuse {
 
 /** Refus hors schéma : une seule faute, rapportée `Projet invalide : <faute>.` */
 export function refusDeForme(cause: CauseDeRefus, chemin: readonly (string | number)[], faute: string): ProjetRefuse {
-  return new ProjetRefuse(cause, [{ chemin, message: faute, code: cause }], `Projet invalide : ${faute}.`);
+  return new ProjetRefuse(cause, [{ chemin, lieu: chemin, message: faute, code: cause }], `Projet invalide : ${faute}.`);
 }
 
 /** Ce que la porte dit d'un refus de MIGRATION, par la raison que `migrateDoc` NOMME : un numéro

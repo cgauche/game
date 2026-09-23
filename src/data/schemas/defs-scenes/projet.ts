@@ -22,6 +22,7 @@
 import { z } from 'zod';
 import { IDS_PAR_DATASET } from '../_ids.generated';
 import { document } from '../grammaire/document';
+import { listeCle } from '../grammaire/liste-cle';
 import { sceneSchema } from './scene';
 import { worldMapSchema } from './worldmap';
 import { narratifSchema } from './narratif';
@@ -43,7 +44,9 @@ export const projetDoc = document(
      *  proposé). La version de FORME du document est `schema`, jamais ce champ. */
     versionContenu: z.number(),
     auteur: z.string().min(1).optional(),
-    scenes: z.array(sceneSchema).min(1, 'le projet ne porte aucune scène : il en faut au moins une pour l’ouvrir ou le jouer.'),
+    scenes: listeCle(sceneSchema, 'id', {
+      min: { taille: 1, message: 'le projet ne porte aucune scène : il en faut au moins une pour l’ouvrir ou le jouer.' },
+    }),
     worldMap: worldMapSchema.optional(),
     /** Axes de forces/faiblesses ACTIFS de la campagne (#409) — absent = socle `coreAxisIds`. */
     activeAxes: z.array(z.string()).optional(),
@@ -80,7 +83,7 @@ export const projetDoc = document(
       entree.superRefine((valeur, ctx) => {
         const doc = valeur as {
           activeAxes?: string[];
-          scenes: { id: string; entities?: { id: string; presetId?: string }[] }[];
+          scenes: { entities?: { presetId?: string }[] }[];
           narratif: { presetsPnj: { id: string }[] };
         };
         const connus = idsDAxes();
@@ -101,7 +104,7 @@ export const projetDoc = document(
             ctx.addIssue({
               code: 'custom',
               path: ['scenes', is, 'entities', ie, 'presetId'],
-              message: `l'entité « ${e.id} » de la scène « ${s.id} » référence un preset de PNJ inconnu « ${e.presetId} » (narratif.presetsPnj).`,
+              message: `preset de PNJ inconnu « ${e.presetId} » (narratif.presetsPnj).`,
             });
           });
         });

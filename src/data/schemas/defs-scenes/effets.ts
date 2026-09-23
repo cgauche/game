@@ -17,6 +17,7 @@ import { proseDeScene } from '../grammaire/prose';
 import { chaosAlignSchema, enumNomme, exposureLevelSchema, hitLocationSchema, moneyPartialSchema, refTestDeCorruption } from '../grammaire/valeurs';
 import { conditionSchema, effectOpSchema, extendedTestSchema, gameOpSchema, noeudTest } from '../grammaire/mecanique';
 import { idDe, refOuSpec } from '../grammaire/ref';
+import { listeCle } from '../grammaire/liste-cle';
 import { customStatblockSchema, ptSchema, wallSideSchema } from './communs';
 import { waterAppliesToSchema } from '../defs/water-exposure';
 import type { Effect } from '../../../state/scene';
@@ -528,7 +529,7 @@ export const startPursuitSchema = z.strictObject({
   distance: z.number(),
   escapeAt: z.number().optional(),
   skill: refOuSpec('skill'),
-  foes: z.array(pursuitFoeSchema),
+  foes: listeCle(pursuitFoeSchema, 'id'),
   encounter: z.string().optional(),
   policy: pursuitPolicySchema.optional(),
 });

@@ -6,46 +6,124 @@
  *    Le registre couvre les DEUX racines (`src/data` par basename, `src/scenes` par chemin relatif).
  *  - `validateDocument(schema, value)` : porte par SCHÉMA, pour un seam qui n'a PAS de nom de
  *    fichier — `parseProject` sert du JSON committé, du localStorage et de l'import utilisateur.
- * Le format d'une faute a UNE source (`rapportDeFautes`) : `formatZodError` en dérive pour la porte
+ * Le format d'une faute a UNE source (`rapportDeFautes`) : `validateDataset` en dérive pour la porte
  * par fichier, `validateDocument` rend les fautes elles-mêmes (`Faute`). credo.md:7, 2ᵉ phrase.
+ * Le LIEU d'une faute a UNE source aussi (`fautesDe`) : un élément de liste à clé (`listeCle`) s'y
+ * nomme par sa clé, lue sur la valeur ; aucun message de schéma ne nomme son propre emplacement.
  */
 import type { z } from 'zod';
 import { SCHEMA_DEFS } from './_registry.generated';
 import { SCHEMA_DEFS_SCENES } from './_registry-scenes.generated';
 import type { SchemaDef } from './types';
 import { defDe, enfantsDe } from './grammaire/slots';
+import { cleDe } from './grammaire/liste-cle';
 import { valeursDe, type MetaChamp } from './grammaire/meta';
 
 /** Le registre des DEUX racines de documents (`src/data` + `src/scenes`). */
 export const DEFS_DE_DOCUMENT: readonly SchemaDef[] = [...SCHEMA_DEFS, ...SCHEMA_DEFS_SCENES];
 
-/** Une FAUTE d'un document refusé, telle que zod la trouve : son chemin, son message (jamais
- *  reformulé) et son code. Type SANS zod : une surface lit les fautes sans importer le validateur. */
-export type Faute = { readonly chemin: readonly (string | number)[]; readonly message: string; readonly code: string };
+/** Un ÉLÉMENT de liste à clé, nommé par la valeur de sa clé (`cle`) et, s'il en porte un, par son
+ *  `label` (`libelle`) ; `liste` = le champ qui porte la liste (`''` pour une liste racine). */
+export type ElementDeLieu = { readonly liste: string; readonly cle: string; readonly libelle?: string };
+/** Un segment du LIEU d'une faute : un champ, un rang de liste sans clé, ou un élément à clé. */
+export type SegmentDeLieu = string | number | ElementDeLieu;
 
-/** Les fautes d'un `ZodError`, dans l'ordre de ses `issues`. */
-export function fautesDe(error: z.ZodError): readonly Faute[] {
-  return error.issues.map((iss) => ({
-    chemin: iss.path.map((k) => (typeof k === 'number' ? k : String(k))),
-    message: iss.message,
-    code: iss.code,
-  }));
+/** Une FAUTE d'un document refusé, telle que zod la trouve : son chemin BRUT (pour les machines), son
+ *  LIEU (pour l'auteur), son message (jamais reformulé) et son code. Type SANS zod : une surface lit
+ *  les fautes sans importer le validateur. */
+export type Faute = {
+  readonly chemin: readonly (string | number)[];
+  readonly lieu: readonly SegmentDeLieu[];
+  readonly message: string;
+  readonly code: string;
+};
+
+const estObjet = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object';
+
+/** Un nœud et ses enveloppes TRANSPARENTES (`''` : optionnel, pipe, lazy ; `|N` : branches d'union) —
+ *  ce que le même segment de chemin peut traverser. */
+function ouverts(noeuds: readonly unknown[]): unknown[] {
+  const vus = new Set<unknown>();
+  const file = [...noeuds];
+  for (let i = 0; i < file.length; i++) {
+    const n = file[i];
+    if (!estObjet(n) || vus.has(n)) continue;
+    vus.add(n);
+    const def = defDe(n);
+    if (def) for (const e of enfantsDe(def)) if (e.segment === '' || e.segment.startsWith('|')) file.push(e.noeud);
+  }
+  return [...vus];
 }
 
-/** Le chemin d'une faute tel que le rapport l'écrit : `scenes.0.entities.3.ref`, `(racine)` si vide. */
-export function cheminLisible(chemin: readonly (string | number)[]): string {
-  return chemin.join('.') || '(racine)';
+/** Les nœuds atteints depuis `noeuds` par UN segment de chemin (clé d'objet ou de record, rang de liste
+ *  ou de tuple) — la descente UNIQUE `enfantsDe`. */
+function enfantsParSegment(noeuds: readonly unknown[], segment: string | number): unknown[] {
+  const admis = typeof segment === 'number' ? ['[]', `[${segment}]`] : [`.${segment}`, '{}'];
+  return noeuds.flatMap((n) => {
+    const def = defDe(n);
+    return def ? enfantsDe(def).filter((e) => admis.includes(e.segment)).map((e) => e.noeud) : [];
+  });
 }
 
-/** Rapport ACTIONNABLE d'une liste de fautes : `<sujet> — …` puis une puce `<chemin>: <message>` par faute. */
+/** Le LIEU d'un chemin : le schéma et la valeur sont descendus ENSEMBLE ; un rang dans une liste à
+ *  clé devient l'élément nommé par sa clé (lue sur la valeur), le champ qui porte la liste s'y fond. */
+function lieuDe(schema: unknown, valeur: unknown, chemin: readonly (string | number)[]): SegmentDeLieu[] {
+  const lieu: SegmentDeLieu[] = [];
+  let noeuds: unknown[] = [schema];
+  let ici = valeur;
+  for (const segment of chemin) {
+    const traverses = ouverts(noeuds);
+    const element = typeof segment === 'number' && Array.isArray(ici) ? ici[segment] : undefined;
+    const marque = typeof segment === 'number' ? traverses.map(cleDe).find((m) => m !== undefined) : undefined;
+    const cle = marque?.de(element);
+    if (cle === undefined) lieu.push(segment);
+    else {
+      const precedent = lieu[lieu.length - 1];
+      const liste = typeof precedent === 'string' ? precedent : '';
+      if (typeof precedent === 'string') lieu.pop();
+      const libelle = estObjet(element) && typeof element.label === 'string' ? element.label : undefined;
+      lieu.push(libelle === undefined ? { liste, cle } : { liste, cle, libelle });
+    }
+    noeuds = enfantsParSegment(traverses, segment);
+    ici = estObjet(ici) ? (ici as Record<string | number, unknown>)[segment] : undefined;
+  }
+  return lieu;
+}
+
+/** Les fautes de `valeur` refusée par `schema` (son `ZodError`), dans l'ordre de ses `issues`. */
+function fautesDe(schema: unknown, valeur: unknown, error: z.ZodError): readonly Faute[] {
+  return error.issues.map((iss) => {
+    const chemin = iss.path.map((k) => (typeof k === 'number' ? k : String(k)));
+    return { chemin, lieu: lieuDe(schema, valeur, chemin), message: iss.message, code: iss.code };
+  });
+}
+
+/** Le LIEU d'une faute tel que l'auteur le lit : les champs joints par `.`, un élément à clé écrit
+ *  `liste « clé »`, les deux séparés par ` › ` — `scenes « arene » › entities « p-1 » › ref`,
+ *  `(racine)` si vide. `nom` choisit ce qui nomme l'élément (la clé par défaut, stable). */
+export function cheminLisible(
+  lieu: readonly SegmentDeLieu[],
+  nom: (element: ElementDeLieu) => string = (element) => element.cle,
+): string {
+  const parties: string[] = [];
+  let champs: (string | number)[] = [];
+  for (const segment of lieu) {
+    if (typeof segment !== 'object') {
+      champs.push(segment);
+      continue;
+    }
+    if (champs.length) parties.push(champs.join('.'));
+    champs = [];
+    parties.push(segment.liste ? `${segment.liste} « ${nom(segment)} »` : `« ${nom(segment)} »`);
+  }
+  if (champs.length) parties.push(champs.join('.'));
+  return parties.join(' › ') || '(racine)';
+}
+
+/** Rapport ACTIONNABLE d'une liste de fautes : `<sujet> — …` puis une puce `<lieu>: <message>` par faute. */
 export function rapportDeFautes(sujet: string, fautes: readonly Faute[]): string {
-  const lines = fautes.map((f) => `  - ${cheminLisible(f.chemin)}: ${f.message}`);
+  const lines = fautes.map((f) => `  - ${cheminLisible(f.lieu)}: ${f.message}`);
   return `${sujet} — JSON invalide contre son schéma :\n${lines.join('\n')}`;
-}
-
-/** Formate un `ZodError` en message ACTIONNABLE — le rapport de ses fautes (`rapportDeFautes`). */
-export function formatZodError(sujet: string, error: z.ZodError): string {
-  return rapportDeFautes(sujet, fautesDe(error));
 }
 
 /** Schéma zod d'un document par nom de fichier (`characteristics.json`, `arene/arene-projet.json`),
@@ -154,8 +232,8 @@ export function validateDataset(file: string, value: unknown): string | null {
   if (!schema) {
     return `${file} — aucun schéma registré : déposer son def dans src/data/schemas/defs/ (racine src/data) ou defs-scenes/ (racine src/scenes), puis \`npm run gen\`.`;
   }
-  const result = schema.safeParse(value);
-  return result.success ? null : formatZodError(file, result.error);
+  const fautes = validateDocument(schema, value);
+  return fautes ? rapportDeFautes(file, fautes) : null;
 }
 
 /** Valide `value` contre `schema` — porte du seam SANS nom de fichier (chargement d'un projet depuis
@@ -163,5 +241,5 @@ export function validateDataset(file: string, value: unknown): string | null {
  *  tire son rapport (`rapportDeFautes`) et sa surface les lit sans re-parser de texte. */
 export function validateDocument(schema: z.ZodTypeAny, value: unknown): readonly Faute[] | null {
   const result = schema.safeParse(value);
-  return result.success ? null : fautesDe(result.error);
+  return result.success ? null : fautesDe(schema, value, result.error);
 }
