@@ -67,6 +67,7 @@ import {
   PORTEUR_DU_PLAFOND, estCheminDuBudget, importsDe, mesurerBudget, plafondDeLaSource, refusDeBudget,
 } from '../guards/budget-contexte.mjs'
 import { GitIndisponible, estDansHead, estRepertoire, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
+import { hunksDe } from '../guards/lib/hunks.mjs'
 import { motifRattachement, numerosDeLaChaine, numerosFermes } from '../guards/lib/fermetures.mjs'
 import {
   DOSSIERS_DE_SUBSTANCE, estCheminDeSubstance, fenetreDeRevue, memeSha, mesureDuPalier,
@@ -839,11 +840,8 @@ export function restesRoutants(content) {
  *  correction à son site était impossible pour toute une classe de gestes. */
 export function lignesDeHunks(diffU0) {
   const lignes = new Set()
-  for (const m of String(diffU0 ?? '').matchAll(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/gm)) {
-    for (const [debut, compte] of [[m[1], m[2]], [m[3], m[4]]]) {
-      const n = compte === undefined ? 1 : Number(compte)
-      for (let k = 0; k < n; k++) lignes.add(Number(debut) + k)
-    }
+  for (const { a, b, c, d } of hunksDe(diffU0)) {
+    for (const [debut, n] of [[a, b], [c, d]]) for (let k = 0; k < n; k++) lignes.add(debut + k)
   }
   return [...lignes].sort((a, b) => a - b)
 }

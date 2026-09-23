@@ -18,12 +18,16 @@
 // la carte émise (`--carte`) est ce qui se relit pour le vérifier.
 //
 // Usage    : node scripts/raw/recouper-source.mjs <id du livre> [--dry] [--carte <fichier>]
+//            node scripts/raw/recouper-source.mjs <id du livre> --suivre-diff [--dry]
+// `--suivre-diff` ne re-coupe rien : les `.md` ont été édités EN PLACE, et les stocks suivent la
+// carte de SLUGS dérivée du diff `git HEAD` → arbre (`carteDesSlugs`) — à lancer AVANT de committer.
 // Idempotent : rejoué sur un livre déjà au grain, il n'écrit rien et sort 0.
 import { writeFileSync, rmSync, existsSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { decoupeDe, livreExtraitDe, readText } from './_lib.mjs'
 import { couperAuxTitres } from './lib/marker-pages.mjs'
+import { carteDuFichier, destinEnTexte } from './lib/carte-lignes.mjs'
 import { INDEX } from './check-source-format.mjs'
 import { nomAscii } from '../source/nom-ascii.mjs'
 import {
@@ -205,18 +209,23 @@ const stocksNominatifs = (dir) =>
 
 const CLE_DE_REF = /^([a-z0-9-]*)#(\d+)(?= ::|$)/
 
+/** L'entrée est-elle keyée par SECTION (`slug#occ :: …`) ? Les autres (clé de fichier, compte…) ne
+ *  relèvent pas d'une carte de slugs. */
+export const aUneCleDeSection = (e) => CLE_DE_REF.test(String(e.ref ?? ''))
+
 /**
  * RECALE les entrées d'un stock qui pointent un `.md` du livre : le chemin suit la carte, et la
  * `ref` prend l'occurrence que la section a dans son NOUVEAU fichier. Rend les entrées recalées et
- * celles qu'aucune section ne porte — jamais devinées.
+ * celles qu'aucune section ne porte — jamais devinées. `portee` restreint les entrées concernées ;
+ * les autres passent inchangées.
  * @returns {{ entrees: object[], recalees: string[], orphelines: string[] }}
  */
-export function recalerStock(entrees, racine, carte) {
+export function recalerStock(entrees, racine, carte, { portee = () => true } = {}) {
   const recalees = []
   const orphelines = []
   const out = entrees.map((e) => {
     const chemin = e.fichier ?? e.file
-    if (typeof chemin !== 'string' || !chemin.startsWith(`${racine}/`)) return e
+    if (typeof chemin !== 'string' || !chemin.startsWith(`${racine}/`) || !portee(e)) return e
     const ancien = chemin.slice(racine.length + 1)
     const m = CLE_DE_REF.exec(String(e.ref ?? ''))
     const cible = m ? carte.get(`${ancien} :: ${m[0]}`) : null
@@ -227,6 +236,88 @@ export function recalerStock(entrees, racine, carte) {
     return neuf
   })
   return { entrees: out, recalees, orphelines }
+}
+
+/**
+ * CARTE des sections d'un fichier ÉDITÉ EN PLACE, dérivée de sa carte de lignes EXACTE
+ * (`lib/carte-lignes.mjs`) — même forme que `carteDesSections`, pour `recalerStock` : la ligne de
+ * titre de `slug#occ` suit la carte, et le titre qui s'y trouve donne le nouveau `slug#occ`
+ * (`parseChapitre`). Le préambule (`#1`, section sans titre que `parseChapitre` ouvre toujours en
+ * tête) va au préambule. Un titre supprimé, pris dans un hunk ambigu (titre scindé), ou dont la
+ * ligne n'est plus un titre est RAPPORTÉ avec sa raison — jamais deviné. PUR.
+ * @param {string} nom fichier (relatif au dossier du livre) @param {string} texteHead @param {string} texteArbre
+ * @param {(n: number) => ({ ligne: number } | { supprimee: true } | { ambigue: true, candidates: number[] })} carteLignes
+ * @returns {{ carte: Map<string, { fichier: string, ref: string }>, rapportees: string[] }}
+ */
+export function carteDesSlugs(nom, texteHead, texteArbre, carteLignes) {
+  const [preambule, ...titres] = parseChapitre(texteHead).sections
+  const parLigne = new Map(parseChapitre(texteArbre).sections.slice(1).map((s) => [s.line, `${s.slug}#${s.occ}`]))
+  const carte = new Map([[`${nom} :: ${preambule.slug}#${preambule.occ}`, { fichier: nom, ref: `${preambule.slug}#${preambule.occ}` }]])
+  const rapportees = []
+  for (const s of titres) {
+    const cle = `${s.slug}#${s.occ}`
+    const destin = carteLignes(s.line)
+    const ref = 'ligne' in destin ? parLigne.get(destin.ligne) : undefined
+    if (ref) { carte.set(`${nom} :: ${cle}`, { fichier: nom, ref }); continue }
+    rapportees.push(`${nom} :: ${cle} (l.${s.line}) — ${'ligne' in destin ? `l.${destin.ligne} n'est plus un titre` : destinEnTexte(destin)}`)
+  }
+  return { carte, rapportees }
+}
+
+/** Le recalage de TOUS les stocks nominatifs de `scripts/raw` par une carte de sections — aucun
+ *  stock n'est nommé dans ce code. Rend les stocks touchés, texte réécrit compris. */
+function stocksRecales(racine, carte, options) {
+  const stocks = []
+  for (const chemin of stocksNominatifs(join('scripts', 'raw'))) {
+    const brut = JSON.parse(readText(chemin))
+    if (!Array.isArray(brut.entrees)) continue
+    const r = recalerStock(brut.entrees, racine, carte, options)
+    if (!r.recalees.length && !r.orphelines.length) continue
+    stocks.push({ chemin, texte: `${JSON.stringify({ ...brut, entrees: r.entrees }, null, 2)}\n`, ...r })
+  }
+  return stocks
+}
+
+function afficherStocks(stocks) {
+  for (const s of stocks) {
+    console.log(`  stock ${s.chemin} : ${s.recalees.length} entrée(s) recalée(s), ${s.orphelines.length} sans section porteuse`)
+    for (const r of s.recalees) console.log(`    RECALÉE : ${r}`)
+    for (const o of s.orphelines) console.log(`    NON RECALÉE : ${o}`)
+  }
+}
+
+/** Un suivi de diff est BLOQUÉ tant qu'un titre est rapporté ou qu'une entrée keyée par section
+ *  reste sans section porteuse : rien n'est deviné, donc rien n'est écrit. PUR. */
+export const suiviBloque = (rapportees, stocks) => rapportees.length > 0 || stocks.some((s) => s.orphelines.length > 0)
+
+/**
+ * `--suivre-diff` : les `.md` du livre ont été ÉDITÉS EN PLACE (aucun fichier renommé) ; chaque
+ * entrée keyée par section suit la carte de SLUGS dérivée du diff `git HEAD` → arbre de travail de
+ * chaque chapitre. Sort en échec, sans rien écrire, tant que `suiviBloque`.
+ */
+function suivreLeDiff(dir, racine, DRY) {
+  const carte = new Map()
+  const rapportees = []
+  for (const nom of chapitresEnService(dir)) {
+    const texteArbre = readText(join(dir, nom))
+    const git = carteDuFichier(`${racine}/${nom}`)
+    if (!git) { rapportees.push(`${nom} — absent de HEAD`); continue }
+    const r = carteDesSlugs(nom, git.texteHead, texteArbre, git.carte)
+    for (const [k, v] of r.carte) carte.set(k, v)
+    rapportees.push(...r.rapportees)
+  }
+  const stocks = stocksRecales(racine, carte, { portee: aUneCleDeSection })
+  console.log(`${racine} : carte de slugs par diff — ${carte.size} section(s) portée(s), ${rapportees.length} rapportée(s).`)
+  for (const r of rapportees) console.log(`  RAPPORTÉE : ${r}`)
+  afficherStocks(stocks)
+  if (suiviBloque(rapportees, stocks)) {
+    console.log('BLOQUÉ — titre(s) rapporté(s) ou entrée(s) sans section porteuse : à trancher à la main ; rien n\'est écrit.')
+    process.exitCode = 1
+    return
+  }
+  if (DRY) { console.log('--dry : rien écrit'); return }
+  for (const s of stocks) writeFileSync(s.chemin, s.texte)
+  console.log(stocks.length ? 'écrit' : 'aucun stock à recaler')
 }
 
 /* ─── CLI ────────────────────────────────────────────────────────────────────────────────────── */
@@ -245,6 +336,7 @@ function main() {
   }
   const dir = livre.dir
   const racine = String(dir).split('\\').join('/').replace(/\/$/, '')
+  if (args.includes('--suivre-diff')) { suivreLeDiff(dir, racine, DRY); return }
   const liste = decoupeDe(livre.id)
 
   const anciensNoms = chapitresEnService(dir)
@@ -269,16 +361,7 @@ function main() {
   const aEcrire = plan.filter((e) => !existsSync(join(dir, e.nom)) || readText(join(dir, e.nom)) !== contenus.get(e.nom))
   const indexAEcrire = !existsSync(join(dir, INDEX)) || readText(join(dir, INDEX)) !== index
 
-  // Recalage des stocks nominatifs keyés par chemin — aucun stock n'est nommé dans ce code.
-  const ICI = join('scripts', 'raw')
-  const stocks = []
-  for (const chemin of stocksNominatifs(ICI)) {
-    const brut = JSON.parse(readText(chemin))
-    if (!Array.isArray(brut.entrees)) continue
-    const r = recalerStock(brut.entrees, racine, carte)
-    if (!r.recalees.length && !r.orphelines.length) continue
-    stocks.push({ chemin, texte: `${JSON.stringify({ ...brut, entrees: r.entrees }, null, 2)}\n`, ...r })
-  }
+  const stocks = stocksRecales(racine, carte)
 
   const lignesCarte = [
     `# Carte de re-découpe — ${racine}`,
@@ -295,10 +378,7 @@ function main() {
 
   console.log(`${racine} : ${anciens.length} → ${plan.length} fichier(s) ; flux identique à l'octet (${flux.length} octets).`)
   console.log(`  à écrire : ${aEcrire.length} fichier(s)${indexAEcrire ? ' + index' : ''} ; à supprimer : ${aSupprimer.length}`)
-  for (const s of stocks) {
-    console.log(`  stock ${s.chemin} : ${s.recalees.length} entrée(s) recalée(s), ${s.orphelines.length} sans section porteuse`)
-    for (const o of s.orphelines) console.log(`    NON RECALÉE : ${o}`)
-  }
+  afficherStocks(stocks)
 
   if (DRY) {
     console.log(lignesCarte)

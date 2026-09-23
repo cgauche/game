@@ -25,18 +25,18 @@ import { writeFileSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { execFileSync } from 'node:child_process'
 import { BOOKS, esc, chapterFile, livreDuSigle, normalize, ELLIPSIS_SENTINEL as SENT, pagesDeLAtlas, readText } from './_lib.mjs'
 import { graphieDuFichier } from '../../src/data/source/decoupe.ts'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
 import { ecrireDoc } from '../docs/lib/empreinte-sources.mjs'
+import { carteDuFichier, destinEnTexte } from './lib/carte-lignes.mjs'
 
 const APPLY = process.argv.includes('--apply')
-// --remap : ré-ancre les réfs de SYNTHÈSE (sans citation) par alignement de contenu old↔new.
-// L'ancienne extraction (celle contre laquelle l'Atlas a été bâti) = la Source de `git HEAD` ;
-// la nouvelle (Marker) = l'arbre de travail. Migration ONE-SHOT à lancer APRÈS une ré-extraction,
-// AVANT de committer la nouvelle Source (une fois committée, HEAD == arbre → carte identité → no-op).
+// --remap : ré-ancre les réfs de SYNTHÈSE (sans citation) et leurs CONTINUATIONS nues par la carte
+// de lignes EXACTE `git HEAD` → arbre de travail (`lib/carte-lignes.mjs`). Migration ONE-SHOT à
+// lancer AVANT de committer la Source (une fois committée, HEAD == arbre → carte identité → no-op).
+// Une réf dont la ligne est supprimée ou tombe dans un hunk ambigu est RAPPORTÉE, jamais réécrite.
 const REMAP = process.argv.includes('--remap')
 const MIN_QUOTE_LEN = 24   // ancre verbatim < 24 car. → trop générique, on n'ancre pas
 export const RAWDIR = 'docs/raw'
@@ -87,59 +87,45 @@ function allOccurrences(hay, needle) {
   return out
 }
 
-// ---------- carte de lignes old→new (diff de contenu HEAD ↔ arbre, pour --remap) ----------
-// Ancres = lignes normalisées UNIQUES communes aux deux versions ; LIS pour garder la monotonie ;
-// interpolation linéaire entre ancres (les lignes ajoutées/supprimées se répartissent proportionnellement).
+// ---------- carte de lignes HEAD → arbre (pour --remap) ----------
+// Carte d'un chapitre, ou `null` s'il n'a pas de fichier ou est absent de `HEAD`. Cache par chemin.
 const mapCache = new Map()
-function lineMap(abbr, ch) {
+export function carteDuChapitre(abbr, ch) {
   const cf = chapterFile(abbr, ch)
   if (!cf) return null
-  if (mapCache.has(cf.path)) return mapCache.get(cf.path)
-  let oldText
-  try { oldText = execFileSync('git', ['show', `HEAD:${cf.dir}/${cf.file}`], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }) }
-  catch { mapCache.set(cf.path, null); return null }   // absent de HEAD (fichier neuf) → pas de carte
-  const fn = buildLineMap(oldText.split('\n'), readText(cf.path).split('\n'))
-  mapCache.set(cf.path, fn)
-  return fn
+  if (!mapCache.has(cf.path)) mapCache.set(cf.path, carteDuFichier(`${cf.dir}/${cf.file}`)?.carte ?? null)
+  return mapCache.get(cf.path)
 }
-function buildLineMap(oldLines, newLines) {
-  const oldN = oldLines.map(normalize), newN = newLines.map(normalize)
-  const tally = (arr) => { const m = new Map(); for (const s of arr) if (s.length >= 8) m.set(s, (m.get(s) || 0) + 1); return m }
-  const oc = tally(oldN), nc = tally(newN)
-  const newPos = new Map(); newN.forEach((s, j) => { if (nc.get(s) === 1) newPos.set(s, j) })
-  const pairs = []   // [oldIdx, newIdx] des lignes uniques communes
-  oldN.forEach((s, i) => { if (oc.get(s) === 1 && newPos.has(s)) pairs.push([i, newPos.get(s)]) })
-  pairs.sort((a, b) => a[0] - b[0])
-  const A = longestIncreasingBySecond(pairs).map(([oi, nj]) => [oi + 1, nj + 1])  // 1-based
-  if (A.length < 3) return null   // trop peu d'ancres → on ne remappe pas ce chapitre
-  const newCount = newLines.length
-  return (X) => {
-    if (!(X >= 1)) return null
-    let lo = null, hi = null
-    for (const a of A) { if (a[0] <= X) lo = a; if (a[0] >= X) { hi = a; break } }
-    let y
-    if (lo && hi) y = lo[0] === hi[0] ? lo[1] : Math.round(lo[1] + (X - lo[0]) * (hi[1] - lo[1]) / (hi[0] - lo[0]))
-    else if (lo) y = X + (lo[1] - lo[0])
-    else if (hi) y = X + (hi[1] - hi[0])
-    else return null
-    return Math.min(Math.max(1, y), newCount)
+
+// Nouveau libellé `l.X[-Y]…` d'une réf par la carte, ou la RAISON pour laquelle elle ne se remappe
+// pas. Seule la borne `-Y` d'une plage se remappe ; les suffixes `+n` suivent tels quels.
+export function remapperRef(carte, depart, suffix = '') {
+  const d = carte(depart)
+  if (!('ligne' in d)) return { raison: `l.${depart} : ${destinEnTexte(d)}` }
+  const rg = suffix.match(/^-(\d+)/)
+  if (!rg) return { texte: `l.${d.ligne}${suffix}`, change: d.ligne !== depart }
+  const f = carte(Number(rg[1]))
+  if (!('ligne' in f)) return { raison: `l.${rg[1]} (fin de plage) : ${destinEnTexte(f)}` }
+  return { texte: `l.${d.ligne}-${f.ligne}${suffix.slice(rg[0].length)}`, change: d.ligne !== depart || f.ligne !== Number(rg[1]) }
+}
+
+// CONTINUATIONS nues d'une ligne d'Atlas : un `l.N` qui SUIT une réf `<ABRÉV> NN l.X` dans la même
+// ligne — ou, sur une ligne de table, dans la même CELLULE — hérite de son `<ABRÉV> NN`. PUR.
+export function continuations(ligne) {
+  const re = new RegExp(`\\b(?:(${ABBR_ALT}) (\\d+) )?l\\.(\\d+)((?:[-+]\\d+)*)`, 'g')
+  const table = /^\s*\|/.test(ligne)
+  const out = []
+  let hote = null, m
+  while ((m = re.exec(ligne))) {
+    if (table && hote && ligne.slice(hote.fin, m.index).includes('|')) hote = null
+    if (m[1]) { hote = { abbr: m[1], ch: m[2], fin: m.index + m[0].length }; continue }
+    if (!hote) continue
+    out.push({ index: m.index, full: m[0], abbr: hote.abbr, ch: hote.ch, depart: Number(m[3]), suffix: m[4] })
+    hote.fin = m.index + m[0].length
   }
+  return out
 }
-// Plus longue sous-suite croissante par pairs[k][1] (pairs déjà triées par [0]) — patience sort + reconstruction.
-function longestIncreasingBySecond(pairs) {
-  if (!pairs.length) return []
-  const tails = [], tailIdx = [], prev = new Array(pairs.length).fill(-1)
-  for (let k = 0; k < pairs.length; k++) {
-    const v = pairs[k][1]
-    let lo = 0, hi = tails.length
-    while (lo < hi) { const mid = (lo + hi) >> 1; if (tails[mid] < v) lo = mid + 1; else hi = mid }
-    if (lo > 0) prev[k] = tailIdx[lo - 1]
-    tails[lo] = v; tailIdx[lo] = k
-  }
-  let k = tailIdx[tailIdx.length - 1]; const out = []
-  while (k !== -1) { out.push(pairs[k]); k = prev[k] }
-  return out.reverse()
-}
+
 // Plus longue séquence de mots EN TÊTE de la citation présente dans le texte source. Tolère les
 // retouches du build (parenthèse inline supprimée, ponctuation finale ajoutée, préfixe « Note : »
 // retiré) qui font échouer le match exact intégral — l'ancre reste un fragment VERBATIM ≥ MIN_QUOTE_LEN.
@@ -209,12 +195,15 @@ export function classifyQuote(li, citedStart, rawQuote, findCross) {
 // ---------- balayage de l'Atlas ----------
 // `scan` est le cœur RÉUTILISABLE (CLI ET tests) : parcourt `rawDir`, classe chaque réf, applique
 // les réécritures --apply/--remap sur DISQUE (seul effet de bord — pas d'écriture de rapport ici,
-// à charge de l'appelant), et renvoie tally + lignes de rapport + les réfs LOW (pour le cliquet).
-export function scan(rawDir = RAWDIR, { apply = false, remap = false, classes = CLASSES } = {}) {
+// à charge de l'appelant), et renvoie tally + lignes de rapport + les réfs LOW (pour le cliquet) +
+// les réfs que --remap n'a pas pu porter (`nonRemappees`). `carteDe(abbr, ch)` fournit la carte de
+// lignes d'un chapitre (injectable en banc).
+export function scan(rawDir = RAWDIR, { apply = false, remap = false, classes = CLASSES, carteDe = carteDuChapitre } = {}) {
   const DOCS = pagesDeLAtlas(rawDir, { classes })
   const tally = { OK: 0, DRIFT: 0, MEDIUM: 0, LOW: 0, RANGE: 0, 'PAST-EOF': 0, 'NO-SOURCE': 0 }
   let totalRefs = 0, totalQuotes = 0, appliedTotal = 0, remappedTotal = 0
   const lowRows = []   // [{ doc: chemin de la FICHE, full, detail }] — un SITE = une unité du cliquet
+  const nonRemappees = []   // [{ doc, ligne, full, detail }] — réf sur une ligne supprimée ou ambiguë
   const sections = []  // [{ file, rows }] pour le rapport
 
   for (const { relatif: file, chemin: path } of DOCS) {
@@ -222,6 +211,21 @@ export function scan(rawDir = RAWDIR, { apply = false, remap = false, classes = 
     const rows = []
     const edits = new Map()   // lineIdx -> [{start,end,replacement}]
     const consumed = new Set()  // lignes (index i) dont la citation a déjà été prise (cf. clé ci-dessous)
+    // Porte UNE réf (directe ou continuation) par la carte : réécriture planifiée, ou site RAPPORTÉ.
+    const remapperSite = (i, index, full, abbr, ch, depart, suffix) => {
+      const carte = carteDe(abbr, ch)
+      const r = carte ? remapperRef(carte, depart, suffix || '')
+        : { raison: chapterFile(abbr, ch) ? 'chapitre absent de HEAD' : 'chapitre introuvable' }
+      if (r.raison) {
+        rows.push({ full, status: 'NON-REMAP', detail: r.raison })
+        nonRemappees.push({ doc: path.split('\\').join('/'), ligne: i + 1, full, detail: r.raison })
+      } else if (r.change) {
+        if (!edits.has(i)) edits.set(i, [])
+        edits.get(i).push({ start: index, end: index + full.length, replacement: full.replace(/l\.\d+(?:[-+]\d+)*$/, r.texte) })
+        remappedTotal++
+      }
+      return r
+    }
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
@@ -252,18 +256,8 @@ export function scan(rawDir = RAWDIR, { apply = false, remap = false, classes = 
           const eof = citedStart > li.count
           if (eof) tally['PAST-EOF']++; else tally.RANGE++
           if (remap) {
-            const mp = lineMap(abbr, ch)
-            const ns = mp ? mp(citedStart) : null
-            if (ns && ns !== citedStart) {
-              let newSuffix = suffix || ''
-              const rg = (suffix || '').match(/^-(\d+)/)
-              if (rg) { const ne = mp(Number(rg[1])); newSuffix = `-${ne && ne >= ns ? ne : ns + (Number(rg[1]) - citedStart)}` + suffix.slice(rg[0].length) }
-              const newFull = full.replace(`l.${startStr}${suffix || ''}`, `l.${ns}${newSuffix}`)
-              if (!edits.has(i)) edits.set(i, [])
-              edits.get(i).push({ start: m.index, end: m.index + full.length, replacement: newFull })
-              remappedTotal++
-              if (eof) rows.push({ full, status: 'PAST-EOF', detail: `→ l.${ns} (ré-ancré par diff)` })
-            } else if (eof) rows.push({ full, status: 'PAST-EOF', detail: `l.${citedStart} > ${li.count} lignes (non ré-ancré)` })
+            const r = remapperSite(i, m.index, full, abbr, ch, citedStart, suffix)
+            if (eof) rows.push({ full, status: 'PAST-EOF', detail: r?.change ? `→ ${r.texte} (ré-ancré par diff)` : `l.${citedStart} > ${li.count} lignes (non ré-ancré)` })
           } else if (eof) rows.push({ full, status: 'PAST-EOF', detail: `l.${citedStart} > ${li.count} lignes` })
           continue
         }
@@ -301,6 +295,7 @@ export function scan(rawDir = RAWDIR, { apply = false, remap = false, classes = 
           rows.push({ full, status: 'NO-SOURCE', detail: 'chapitre source introuvable' })
         }
       }
+      if (remap) for (const c of continuations(line)) remapperSite(i, c.index, c.full, c.abbr, c.ch, c.depart, c.suffix)
     }
 
     // applique les réécritures (droite→gauche par ligne pour ne pas décaler les offsets)
@@ -317,26 +312,26 @@ export function scan(rawDir = RAWDIR, { apply = false, remap = false, classes = 
     if (rows.length) sections.push({ file, rows })
   }
 
-  return { DOCS, tally, sections, lowRows, totalRefs, totalQuotes, appliedTotal, remappedTotal }
+  return { DOCS, tally, sections, lowRows, nonRemappees, totalRefs, totalQuotes, appliedTotal, remappedTotal }
 }
 
 // ---------- rapport Markdown (aucun effet de bord de `scan` — écrit ici uniquement) ----------
 function buildReport(result, { apply, remap }) {
-  const { DOCS, tally, sections, totalRefs, totalQuotes, appliedTotal, remappedTotal } = result
+  const { DOCS, tally, sections, nonRemappees, totalRefs, totalQuotes, appliedTotal, remappedTotal } = result
   const out = ['# Atlas RAW — Ré-ancrage des citations', '',
     '> Déterministe (`node scripts/raw/reanchor.mjs` ; `--apply` réécrit les dérives HIGH). GATE (#434) :',
     '> exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.',
     '> Pour chaque citation verbatim « … » d\'une fiche, on relocalise le texte dans le `.md` source',
     '> courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu',
     '> (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).', '']
-  const MARK = { OK: '✅', DRIFT: '🔧', MEDIUM: '🟡', LOW: '❌', RANGE: '➖', 'PAST-EOF': '⛔', 'NO-SOURCE': '⚠️' }
+  const MARK = { OK: '✅', DRIFT: '🔧', MEDIUM: '🟡', LOW: '❌', RANGE: '➖', 'PAST-EOF': '⛔', 'NO-SOURCE': '⚠️', 'NON-REMAP': '🧭' }
   for (const { file, rows } of sections) {
     out.push(`## ${file}`, '', '| Réf | Statut | Détail |', '|---|---|---|')
     for (const r of rows) out.push(`| \`${r.full}\` | ${MARK[r.status]} ${r.status} | ${r.detail} |`)
     out.push('')
   }
   const driftLabel = apply ? `🔧 ${appliedTotal} corrigées` : `🔧 ${tally.DRIFT} dérives (relancer --apply)`
-  const remapLabel = remap ? ` · 🧭 ${remappedTotal} synthèses ré-ancrées (diff)` : ''
+  const remapLabel = remap ? ` · 🧭 ${remappedTotal} synthèses ré-ancrées (diff), ${nonRemappees.length} non portées` : ''
   out.splice(6, 0,
     `**Bilan : ✅ ${tally.OK} · ${driftLabel} · 🟡 ${tally.MEDIUM} ambigus · ❌ ${tally.LOW} introuvables · ➖ ${tally.RANGE} synthèses${remapLabel}** ` +
     `(⛔ ${tally['PAST-EOF']} hors-fichier · ⚠️ ${tally['NO-SOURCE']} sans source) sur ${totalRefs} réfs · ${totalQuotes} citations · ${DOCS.length} fiches.`, '')
@@ -345,11 +340,11 @@ function buildReport(result, { apply, remap }) {
 
 function main() {
   const result = scan(RAWDIR, { apply: APPLY, remap: REMAP })
-  const { tally, totalRefs, totalQuotes, appliedTotal, remappedTotal, DOCS, lowRows } = result
+  const { tally, totalRefs, totalQuotes, appliedTotal, remappedTotal, DOCS, lowRows, nonRemappees } = result
   ecrireDoc(join(RAWDIR, 'reanchor.md'), buildReport(result, { apply: APPLY, remap: REMAP }))
 
   const driftLabel = APPLY ? `🔧 ${appliedTotal} corrigées` : `🔧 ${tally.DRIFT} dérives (relancer --apply)`
-  const remapLabel = REMAP ? ` · 🧭 ${remappedTotal} synthèses ré-ancrées (diff)` : ''
+  const remapLabel = REMAP ? ` · 🧭 ${remappedTotal} synthèses ré-ancrées (diff), ${nonRemappees.length} non portées` : ''
   console.log(`ré-ancrage : ✅ ${tally.OK} · ${driftLabel} · 🟡 ${tally.MEDIUM} · ❌ ${tally.LOW} · ➖ ${tally.RANGE}${remapLabel} (⛔${tally['PAST-EOF']} ⚠️${tally['NO-SOURCE']})`)
   console.log(`${totalQuotes} citations vérifiées sur ${totalRefs} réfs (${DOCS.length} fiches)` + (REMAP ? ` — ${remappedTotal} synthèses ré-ancrées par diff` : APPLY ? ` — ${appliedTotal} réécrites` : tally.DRIFT ? ` — relancer avec --apply pour corriger ${tally.DRIFT} dérives` : ''))
 
@@ -361,6 +356,11 @@ function main() {
   }
   if (tally.MEDIUM > 0) {
     console.log(`RÉGRESSION — ${tally.MEDIUM} réf(s) ambiguë(s) 🟡 : trancher manuellement (jamais d'auto-résolution, cf. #434 défaut 1).`)
+    fail = true
+  }
+  if (nonRemappees.length) {
+    console.log(`RÉGRESSION — ${nonRemappees.length} réf(s) que la carte de lignes ne porte pas (ligne supprimée ou hunk ambigu) : à trancher à la main, au Source.`)
+    for (const n of nonRemappees) console.log(`  ${n.doc}:${n.ligne} \`${n.full}\` — ${n.detail}`)
     fail = true
   }
   const { neuves, perimees } = ecartDuVolet({

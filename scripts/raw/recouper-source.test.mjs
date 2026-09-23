@@ -7,7 +7,9 @@
 // REFUS quand elle est rompue, l'IDEMPOTENCE, et le recalage d'une entrée de stock AVEC sa `preuve`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { contenuDe, fluxDe, indexDe, planDe, recalerStock, recouper } from './recouper-source.mjs'
+import { aUneCleDeSection, carteDesSlugs, suiviBloque, contenuDe, fluxDe, indexDe, planDe, recalerStock, recouper } from './recouper-source.mjs'
+import { carteDeLignes } from './lib/carte-lignes.mjs'
+import { hunksDe } from '../guards/lib/hunks.mjs'
 
 const CH1 = [
   '*Pages PDF 1-2*',
@@ -145,4 +147,59 @@ test('#1739 : `planDe` et `contenuDe` sont PURS — mêmes entrées, mêmes sort
   const b = planDe(lignes, LISTE, new Map([[1, 0], [3, 11], [5, 17]]))
   assert.deepEqual(a, b)
   assert.equal(contenuDe(lignes, a.plan[0]), contenuDe(lignes, b.plan[0]))
+})
+
+// ---------- --suivre-diff : carte de SLUGS dérivée de la carte de lignes EXACTE ----------
+// Un chapitre ÉDITÉ EN PLACE : un romain d'onglet ôté d'un titre, une ligne de romain nu supprimée,
+// un titre inchangé, un titre soudé scindé en deux. Le diff est celui que `git diff -U0` écrit.
+const HEAD_EDITE = ['*Pages PDF 1-2*', '', '### IV SELECTION OF POISONS', 'texte', 'IV', '### LEAPING', 'texte', '### ALPHA BETA', 'texte', ''].join('\n')
+const ARBRE_EDITE = ['*Pages PDF 1-2*', '', '### SELECTION OF POISONS', 'texte', '### LEAPING', 'texte', '### ALPHA', '### BETA', 'texte', ''].join('\n')
+const DIFF_EDITE = ['@@ -3 +3 @@', '-### IV SELECTION OF POISONS', '+### SELECTION OF POISONS', '@@ -5 +4,0 @@', '-IV', '@@ -8 +7,2 @@', '-### ALPHA BETA', '+### ALPHA', '+### BETA'].join('\n')
+
+test('#1739 : carte de slugs — titre renommé EN PLACE suivi, titre inchangé gardé, titre SCINDÉ rapporté', () => {
+  const { carte, rapportees } = carteDesSlugs('09 - X.md', HEAD_EDITE, ARBRE_EDITE, carteDeLignes(hunksDe(DIFF_EDITE)))
+  assert.deepEqual(Object.fromEntries([...carte].map(([k, v]) => [k, v.ref])), {
+    '09 - X.md :: #1': '#1',
+    '09 - X.md :: iv-selection-of-poisons#1': 'selection-of-poisons#1',
+    '09 - X.md :: leaping#1': 'leaping#1',
+  })
+  assert.deepEqual(rapportees, ['09 - X.md :: alpha-beta#1 (l.8) — hunk ambigu, candidates l.7/8'])
+})
+
+test('#1739 : la carte de slugs se branche sur `recalerStock` — la clé suit, le titre scindé reste NOMMÉ', () => {
+  const racine = 'Source/Livre forge'
+  const { carte } = carteDesSlugs('09 - X.md', HEAD_EDITE, ARBRE_EDITE, carteDeLignes(hunksDe(DIFF_EDITE)))
+  const entrees = [
+    { famille: 'br-litteral', fichier: `${racine}/09 - X.md`, ref: 'iv-selection-of-poisons#1 :: name|source', occurrence: 1, preuve: 'PDF p.2' },
+    { famille: 'br-litteral', fichier: `${racine}/09 - X.md`, ref: 'leaping#1 :: difficulty|action', occurrence: 1 },
+    { famille: 'br-litteral', fichier: `${racine}/09 - X.md`, ref: 'alpha-beta#1 :: a|b', occurrence: 1 },
+  ]
+  const { entrees: apres, recalees, orphelines } = recalerStock(entrees, racine, carte)
+  assert.equal(apres[0].ref, 'selection-of-poisons#1 :: name|source')
+  assert.equal(apres[0].preuve, 'PDF p.2')
+  assert.deepEqual(apres[1], entrees[1])
+  assert.deepEqual(recalees, ['09 - X.md :: iv-selection-of-poisons#1 :: name|source  →  09 - X.md :: selection-of-poisons#1 :: name|source'])
+  assert.deepEqual(orphelines, [`${racine}/09 - X.md :: alpha-beta#1 :: a|b`])
+})
+
+test('#1739 : compte ÉGAL sans correspondance (scission + ligne vide ôtée, diff git réel) — le titre est RAPPORTÉ, jamais réécrit', () => {
+  const head = 'a\n\n#### **Bounce** XII **Cold-blooded**\n\nbody\n'
+  const arbre = 'a\n\n#### **Bounce**\n#### **Cold-blooded**\nbody\n'
+  const diff = '@@ -3,2 +3,2 @@\n-#### **Bounce** XII **Cold-blooded**\n-\n+#### **Bounce**\n+#### **Cold-blooded**\n'
+  const { carte, rapportees } = carteDesSlugs('x.md', head, arbre, carteDeLignes(hunksDe(diff)))
+  assert.equal(carte.has('x.md :: bounce-xii-cold-blooded#1'), false)
+  assert.deepEqual(rapportees, ['x.md :: bounce-xii-cold-blooded#1 (l.3) — hunk ambigu, candidates l.3/4'])
+})
+
+test('#1739 : --suivre-diff ne porte que les clés de SECTION — une clé de fichier passe inchangée, sans orpheline', () => {
+  const racine = 'Source/Livre forge'
+  const entrees = [{ famille: 'sans-folio', fichier: `${racine}/001 - Cover.md`, ref: '122 chapitre(s)', occurrence: 1 }]
+  const r = recalerStock(entrees, racine, new Map(), { portee: aUneCleDeSection })
+  assert.deepEqual(r, { entrees, recalees: [], orphelines: [] })
+})
+
+test('#1739 : --suivre-diff est BLOQUÉ (rien écrit, sortie en échec) tant qu’un titre est rapporté ou une entrée orpheline', () => {
+  assert.equal(suiviBloque([], [{ orphelines: [] }]), false)
+  assert.equal(suiviBloque(['x.md :: a#1 (l.3) — ligne supprimée'], []), true)
+  assert.equal(suiviBloque([], [{ orphelines: ['Source/L/x.md :: a#1 :: k'] }]), true)
 })

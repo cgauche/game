@@ -107,6 +107,7 @@
 import { SUFFIXE_SUITE } from './fichierVitest.mjs'
 import { parUnitesDeCode } from './lister.mjs'
 import { scriptKindDe, typescript } from './dialecte.mjs'
+import { enteteDeHunk } from './hunks.mjs'
 
 /** Fichiers susceptibles de porter un stock nominatif. Une BASELINE de COMPTE
  *  (`scripts/raw/*-baseline.json`, `scripts/guards/*.json`) n'y entre que pour ses CLÉS — limite
@@ -523,10 +524,10 @@ export function croissanceDesStocks(diffU0, images) {
       numNouveau = 0;
       continue;
     }
-    const hunk = /^@@+ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(ligne);
+    const hunk = enteteDeHunk(ligne);
     if (hunk) {
-      numAncien = Number(hunk[1]);
-      numNouveau = Number(hunk[2]);
+      numAncien = hunk.a;
+      numNouveau = hunk.c;
       dansHunk = true;
       continue;
     }

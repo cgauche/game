@@ -182,6 +182,7 @@ zéro ligne de code**.
 
 ```bash
 node scripts/raw/recouper-source.mjs <id du livre> [--dry] [--carte <fichier>]
+node scripts/raw/recouper-source.mjs <id du livre> --suivre-diff [--dry]   # § 7 : édition EN PLACE, aucune re-coupe
 ```
 
 Le FLUX est fait des `.md` **en service** du livre, dans l'ordre — **jamais** la sortie Marker, qui
@@ -550,7 +551,16 @@ node scripts/raw/reconcile.mjs            # code ↔ Atlas : Sens A (règle cod�
 ```
 
 - `reanchor.mjs --apply` corrige les dérives **HIGH** (citation retrouvée de façon unique dans la
-  source) ; `--remap` (réservé aux réfs de *synthèse*, sans citation attachée) ne doit être lancé
+  source) ; `--remap` (réservé aux réfs de *synthèse*, sans citation attachée, et aux
+  continuations nues `l.N` qui suivent une réf `<ABRÉV> NN l.X` sur leur ligne ou dans leur cellule)
+  les porte par la carte de lignes EXACTE du diff `git diff -U0` (`scripts/raw/lib/carte-lignes.mjs`) :
+  dans un hunk, une nouvelle ligne s'apparie à l'ancienne qui lui est égale après `normalize`,
+  sinon dont elle est l'amputée (mêmes jetons, moins certains, dont un d'au moins trois lettres) —
+  rang à rang si le hunk garde son nombre de lignes et que chaque paire correspond, sinon à
+  condition que l'appariement soit unique et garde l'ordre des lignes ; une ancienne ligne non appariée est
+  supprimée si toutes les nouvelles sont appariées. Une réf vers une ligne supprimée ou non appariable
+  est RAPPORTÉE (sortie en échec), jamais réécrite : après une ré-extraction COMPLÈTE, la plupart des
+  réfs de synthèse sortent donc rapportées, à reprendre à la main, au lieu d'être devinées. Il ne doit être lancé
   **qu'avant de committer** une nouvelle extraction de la Source — une fois committée, `git HEAD`
   == l'arbre de travail et la carte devient un no-op. Ne jamais lancer `--remap` sur une Source déjà
   committée : il recalerait aussi les réfs des autres livres via le diff `git HEAD`↔arbre.
@@ -581,7 +591,10 @@ stock et rougit la garde — c'est ainsi qu'un geste non canonique se voit.
 2. `node scripts/raw/reanchor.mjs --apply --remap` — **avant** de committer la Source. La clause de
    `--remap` est écrite plus haut (§6, « Ne jamais lancer `--remap` sur une Source déjà committée ») :
    la carte de recalage se lit du diff `git HEAD`↔arbre, elle n'existe donc que tant que la
-   correction n'est pas commitée.
+   correction n'est pas commitée. Les stocks keyés par section (`slug#occ :: …`) suivent la MÊME
+   carte : `node scripts/raw/recouper-source.mjs <id du livre> --suivre-diff --dry`, puis sans
+   `--dry` — un titre réécrit emmène sa clé ; un titre supprimé ou scindé, ou une entrée sans section
+   porteuse, est RAPPORTÉ et BLOQUE l'écriture (sortie en échec) jusqu'à son tri à la main.
 3. `npx vitest run src/data/prose-resolution.test.ts` — la garde de re-résolution liste **exactement**
    les entrées dont l'adresse ne rend plus son texte, avec le code de la rupture
    (`bornes-hors-limites`, `empreinte-divergente`, `ligne-introuvable`…). C'est l'inventaire des
