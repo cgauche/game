@@ -136,15 +136,15 @@ export const MANDAT_SLOTS =
   'Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».';
 
 /**
- * ANGLES MORTS du volet SLOTS — SOURCE UNIQUE, même patron que `ANGLES_MORTS` (le doc les émet, la
- * garde les référence, l'en-tête du stock en porte la copie et la garde compare les trois).
+ * ANGLES MORTS du volet SLOTS — SOURCE UNIQUE, même patron que `ANGLES_MORTS` : le doc les émet, la
+ * garde les référence, les autres sites y RENVOIENT.
  */
 export const ANGLES_MORTS_SLOTS: readonly string[] = [
   'L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.',
   'Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).',
-  'La PROJECTION path → champ retient le DERNIER segment-clé : deux paths distincts qui finissent sur la même clé se joignent au même champ observé, et la couverture y est SUR-estimée — jusqu’à couvrir un champ ENTIER qu’aucun slot ne déclare. Mesuré le 2026-09-22 : la déclaration de `worldMap.places[].port.ref` (`idDe(\'navalPort\')`) se joint aux `ref` des entités de scène des 4 paquets `*-projet.json` (444 occurrences : 314 `prop`, 130 `personnage`), qui ne portent AUCUN slot déclaré à leur path — le `ref` d’un décor est résolu par le `superRefine` par `kind` de `sceneEntitySchema` (`idDe(\'prop\')`, #877), celui d’un personnage par aucun schéma (`defs-scenes/scene.ts`).',
-  'Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.',
-  '`valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.',
+  'Une référence que le parse valide HORS de la marche de `slotsDe` ne déclare aucun slot, et son couple reste au stock `SLOTS_SANS_DECLARATION` bien que la fabrique soit adoptée : le `ref` d’un décor est résolu par le `superRefine` par `kind` de `sceneEntitySchema` (`idDe(\'prop\')`, #877) — mesuré le 2026-09-23, 314 des 444 `ref` d’entités des 4 paquets `*-projet.json` ; les 130 autres, de `kind` `personnage`, n’ont aucun schéma qui les résolve (dette réelle, #1473). Même cause pour le payload d’une op (`gameOpSchema`, `z.looseObject(…).superRefine`, `grammaire/mecanique.ts:200`) : aucun slot sous `ops[]` — `tables.json | of` et `activities.json | factor` y vivent (`defs/tables.ts:23`, `defs/activities.ts:115`) ; la récursion `z.lazy` de `formulaSchema` sous `times` n’y est que secondaire.',
+  'Une occurrence dont AUCUNE case ne porte de chaîne n’est jamais ATTEINTE, quel que soit le schéma : aucune valeur lue à un path déclaré ne peut y tomber, et son couple reste au stock `SLOTS_SANS_DECLARATION`. Mesuré le 2026-09-23 : 14 `{choice:[…]}` de `careerLevels.json | trappings` (les feuilles comptent sous `careerLevels.json | choice`), 19 `{random:N}` de `species.json | talents`, 2 `{random:N}` de `species.json | of`, et 1 occurrence de `creatures.json | spec` dont la seule case est une clé de `CLES_DE_SPECIALISATION`. Stock nominatif `SLOTS_INATTEIGNABLES`, qui ne fait que décroître.',
+  '`valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches. La RÉSOLUTION (§6.1) y compte chaque valeur une fois par branche ; la jointure, qui compte des OCCURRENCES, n’en est pas affectée.',
 ];
 
 /**
@@ -558,6 +558,14 @@ export const CONCEPT_REFERENCE = CONCEPTS.find((c) => c.resolvables)!;
 export const GRAPHIE_REFERENCE: ReadonlySet<string> = new Set(
   CONCEPT_REFERENCE.signatures.flatMap((s) => s.sig.split(',')).filter((k) => !k.includes('-')),
 );
+
+/**
+ * Clés de SPÉCIALISATION d'une référence (`RefASpecialisation`, `src/data/schemas/grammaire/ref.ts:215`) :
+ * membres de `GRAPHIE_REFERENCE` qui QUALIFIENT la référence posée à `id` sans en porter une. Le scan
+ * ne les inscrit jamais comme CASE d'une occurrence (`inscrireReference`, #1473) : une valeur qui y
+ * résout vers l'index par homonymie ne rend pas l'occurrence inatteignable.
+ */
+export const CLES_DE_SPECIALISATION: ReadonlySet<string> = new Set(['spec', 'choix']);
 
 /**
  * Clés de PROSE : leur valeur est un texte d'affichage, jamais une référence — même quand le texte

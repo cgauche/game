@@ -11,8 +11,6 @@
 // alimente vit dans scripts/guards/lib/structuresStock.mjs (garde src/data/structures-contrat.test.ts).
 import { execFileSync } from 'node:child_process';
 import { emitOrCheck } from './lib/jsdocUnion.mjs';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import {
   scanDuCorpus,
   scannerRedeclarations,
@@ -31,9 +29,9 @@ import {
   clesDuRole,
 } from './lib/structures-lexique.mjs';
 import {
-  champDuPath,
   champsJoints,
   champsSansSlot,
+  couplesTouches,
   estTypeDuRegistre,
   idsDuType,
   slotsDeclares,
@@ -86,7 +84,7 @@ function variantesDeffetJamaisPosees(): string[] {
     if (typeof v === 'string') posees.add(v);
     for (const enfant of Object.values(n as Record<string, unknown>)) marche(enfant);
   };
-  for (const d of listerDocuments(ROOT)) marche(JSON.parse(readFileSync(join(ROOT, d.chemin), 'utf8')));
+  for (const brut of scan.brutParNom.values()) marche(brut);
   return discriminantsDeffet().filter((t) => !posees.has(t)).sort();
 }
 const tableau = (entetes: string[], lignes: (string | number)[][]) =>
@@ -579,28 +577,29 @@ out += `${MANDAT_SLOTS}\n\n`;
   const slots = slotsDeclares(DEFS);
   const parEspece = new Map<string, number>();
   for (const s of slots) parEspece.set(s.espece, (parEspece.get(s.espece) ?? 0) + 1);
-  const documents = new Map<string, unknown>();
-  for (const d of listerDocuments(ROOT)) documents.set(d.nom, JSON.parse(readFileSync(join(ROOT, d.chemin), 'utf8')));
 
   out += `Slots déclarés : **${slots.length}** — `;
   out += [...parEspece].map(([e, n]) => `espèce \`${e}\` **${n}**`).join(', ') + '.\n\n';
 
   out += '### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)\n\n';
   out += 'Pour chacun, les valeurs POSÉES à ce path dans le document, et leur résolution contre le registre\n';
-  out += 'des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une ligne de stock.\n\n';
+  out += 'des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une ligne de stock.\n';
+  out += '« Couples touchés » : les couples `(dataset, champ)` que le scan attribue aux occurrences dont ces\n';
+  out += 'valeurs TOUCHENT une case (jointure par occurrence) — « — » quand le slot n’en touche aucune.\n\n';
   out += tableau(
-    ['Dataset', 'Path déclaré', 'Champ projeté', 'Type', 'Cardinalité', 'Valeurs posées', 'Résolues'],
+    ['Dataset', 'Path déclaré', 'Couples touchés', 'Type', 'Cardinalité', 'Valeurs posées', 'Résolues'],
     slots
       .filter((s) => s.espece === 'id')
       .map((s) => {
-        const valeurs = documents.has(s.dataset) ? valeursAuPath(documents.get(s.dataset), s.path) : [];
+        const valeurs = scan.brutParNom.has(s.dataset) ? valeursAuPath(scan.brutParNom.get(s.dataset), s.path) : [];
+        const touches = couplesTouches(scan, s);
         const resolues = estTypeDuRegistre(s.type)
           ? valeurs.filter((v) => (idsDuType(s.type as never) as readonly string[]).includes(v.valeur)).length
           : 0;
         return [
           `\`${s.dataset}\``,
           `\`${s.path}\``,
-          `\`${champDuPath(s.path)}\``,
+          touches.length ? touches.map((k) => `\`${k}\``).join(' ') : '—',
           `\`${s.type ?? '—'}\``,
           s.cardinalite,
           valeurs.length,
@@ -609,21 +608,21 @@ out += `${MANDAT_SLOTS}\n\n`;
       }),
   );
 
-  const joints = champsJoints(scan.formes, slots);
-  out += `Champs porteurs de réfs OBSERVÉES que le déclaré ATTEINT : **${joints.length}** — `;
+  const joints = champsJoints(scan, slots);
+  out += `Couples porteurs de réfs OBSERVÉES dont le déclaré ATTEINT toutes les occurrences : **${joints.length}** — `;
   out += `${joints.map((k) => `\`${k}\``).join(' ') || '—'}. Une jointure VIDE rendrait ce volet muet :\n`;
   out += 'la garde l’exige NON VIDE.\n\n';
 
   out += '### 6.2 Couverture — réfs observées qu’AUCUN slot ne déclare\n\n';
   out += 'La dette d’ADOPTION du registre : un `(dataset, champ)` porteur de références mesurées (strate\n';
-  out += '`Référence`) que le déclaré n’atteint par aucun slot. Stock `SLOTS_SANS_DECLARATION`\n';
+  out += '`Référence`) dont une occurrence au moins n’est pas ATTEINTE — une de ses cases ne reçoit aucune valeur déclarée. Stock `SLOTS_SANS_DECLARATION`\n';
   out += '(`scripts/guards/lib/slotsStock.mjs`, garde `src/data/slots-contrat.test.ts`) — il se solde concept\n';
   out += 'par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.\n\n';
-  const sansSlot = champsSansSlot(scan.formes, slots);
+  const sansSlot = champsSansSlot(scan, slots);
   out += `**${sansSlot.length}** couples (dataset, champ) sans slot déclaré.\n\n`;
   out += tableau(
-    ['Dataset', 'Champ', 'Occurrences observées'],
-    sansSlot.map((c) => [`\`${c.dataset}\``, `\`${c.champ}\``, c.occurrences]),
+    ['Dataset', 'Champ', 'Occurrences observées', 'Atteintes'],
+    sansSlot.map((c) => [`\`${c.dataset}\``, `\`${c.champ}\``, c.occurrences, c.atteintes]),
   );
 
   out += '### 6.3 Angles morts DÉCLARÉS de ce volet\n\n';
