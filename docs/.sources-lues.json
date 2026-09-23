@@ -5629,6 +5629,8 @@
       "scripts/raw",
       "scripts/raw/decoupes",
       "scripts/raw/lib",
+      "scripts/raw/lib/fixtures",
+      "scripts/raw/lib/fixtures/pages-crb",
       "scripts/recette",
       "scripts/rig",
       "scripts/skills",

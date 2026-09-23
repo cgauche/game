@@ -216,6 +216,26 @@ donnée. `onglets` se LIT au PDF, jamais à la main : `python scripts/raw/onglet
 folio imprimé — le même que `scripts/data/gen-progression-schemas.py`). Hors CI (pas de PDF) : la
 donnée committée fait foi.
 
+**Les TITRES D'ENTRÉE** — clé `gabaritTitre`, REQUISE à côté de `gabaritOnglet` : les typographies
+`{ police, taille? }` MESURÉES au PDF que lit la sonde des titres — `titre` (celle qu'un run de tête
+de ligne CONTIENT), `accompagnement` (celles qui peuvent la suivre dans ce run : « Climb (S) » + `basic`
+en italique, sort à lore en gras italique), `encadre` (titre d'encadré ou de tableau), `capitales`
+(nom de créature en petites capitales, toute taille) et `exclusions` (une ligne qui en porte une n'est
+pas un titre : en-têtes de statbloc) ; `null` pour un livre non sondé. La sonde,
+`node scripts/raw/sonde-titres.mjs <id> [--boites <boites.json>] [--json <sites.json>]`, lit le PDF
+par `python scripts/raw/lib/pdf-lignes.py <id> <boites.json>` : l'analyse de mise en page de pdfminer
+(paramètres de pdfminer à `all_texts=True` — ses défauts, plus le texte des figures où vivent les encadrés) rend
+boîtes et lignes avec leurs spans typographiques ; `scripts/raw/lib/colonnes.mjs` ne fait qu'ORDONNER
+ces boîtes (colonnes par grappes d'abscisses de boîte, pur et joué en CI sur des pages réelles
+réduites, `scripts/raw/lib/fixtures/pages-crb/`). Chaque titre imprimé s'apparie à la ligne qui précède
+la 1re ligne de SON corps dans le `.md`. Familles : entrée, encadré, tableau, capitales. Formes des
+entrées : S soudé, F fragment soudé à un corps étranger, M migré, S′ absent, B gras sans `#`, O hors
+d'ordre (à poser `devant` le titre qui la suit au PDF), N niveau, `corps-introuvable` avec sa cause ;
+des autres familles, S et F seuls. Débris devant un corps à sa place, toutes familles : `doublon`,
+`numero-de-page`. Toute cible est le DÉBUT d'un bloc Markdown (en tête de fichier, après une ligne
+vide ou un titre : d'un tableau, son en-tête) ; sinon le site sort en `cible-invalide`. Sites en `NNN:ligne`, avec la page, la position au PDF et la ligne CIBLE. Elle
+n'écrit rien sous le dépôt (`--json` sous la racine est refusé) ; hors CI (pas de PDF).
+
 **Le critère à tenir** : mettre le livre N+1 au grain de ses sections coûte **UN fichier de donnée,
 zéro ligne de code**.
 

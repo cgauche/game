@@ -233,6 +233,11 @@ export const nomsDeLaListe = (liste) => {
  *  @param {string} bookId @param {string} [dir] @returns {{ chiffre: string, pages: [number, number] }[] | null} */
 export const ongletsDe = (bookId, dir = DECOUPES_DIR) => JSON.parse(readText(join(dir, `${bookId}.json`))).onglets
 
+/** Le GABARIT des titres d'entrée d'un livre, `{ titre, accompagnement, encadre, capitales, exclusions }` (typographies
+ *  `{ police, taille? }`), ou `null` déclaré — champ `gabaritTitre` de sa liste de découpe, lu ICI et
+ *  nulle part ailleurs. @param {string} bookId @param {string} [dir] */
+export const gabaritTitreDe = (bookId, dir = DECOUPES_DIR) => JSON.parse(readText(join(dir, `${bookId}.json`))).gabaritTitre
+
 // PDF d'un livre et sorties Marker — #1739 (2026-09-19, bloquant 3). Les PDF et `Source/_marker/` sont
 // gitignorés (`.gitignore`) : ils n'existent que dans l'ARBRE PRINCIPAL, jamais dans un worktree
 // lié. `Source/` s'y résout par `arbrePrincipal` (`scripts/guards/lib/gitPorte.mjs`) : l'IMPORT de

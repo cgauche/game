@@ -7,7 +7,7 @@
 // redit ; chaque entrée porte exactement son jeu de clés ; les pages sont croissantes (deux entrées
 // peuvent partager une page : on coupe à la LIGNE du titre, pas à la page) ; aucune entrée n'est
 // saisie deux fois ; chaque titre de fichier survit à `nomAscii` sans changer (le nom écrit sous
-// `Source/` est celui de la donnée) ; `onglets` est déclaré, bien formé et couvre chaque chapitre, `gabaritOnglet` l'accompagne.
+// `Source/` est celui de la donnée) ; `onglets` est déclaré, bien formé et couvre chaque chapitre, `gabaritOnglet` l'accompagne ; `gabaritTitre` est déclaré et bien formé.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -182,6 +182,33 @@ test('#1739 : `gabaritOnglet` est non nul si et seulement si `onglets` l’est, 
     }
   }
   assert.deepEqual(fautes, [], `gabarit d’onglet incohérent :\n${fautes.join('\n')}`)
+})
+
+// Le GABARIT des titres d'entrée est ce que la sonde `scripts/raw/sonde-titres.mjs` lit : REQUIS,
+// `null` déclare un livre non sondé ; sinon cinq clés, chaque typographie `{ police, taille? }`.
+test('#1739 : `gabaritTitre` est déclaré — `null`, ou `{ titre, accompagnement, encadre, capitales, exclusions }` de typographies bien formées', () => {
+  const fautes = []
+  const typo = (ou, t, tailleRequise) => {
+    const cles = Object.keys(t ?? {}).sort().join(',')
+    if (cles !== 'police,taille' && (tailleRequise || cles !== 'police')) fautes.push(`${ou} — clés ${cles || '(aucune)'}`)
+    if (typeof t?.police !== 'string' || !t.police.trim() || t.police.includes('+')) fautes.push(`${ou} — \`police\` ${JSON.stringify(t?.police)} : un nom sans préfixe de sous-ensemble`)
+    if ('taille' in (t ?? {}) && !(typeof t.taille === 'number' && t.taille > 0)) fautes.push(`${ou} — \`taille\` ${JSON.stringify(t.taille)} : un corps en pt positif`)
+  }
+  for (const id of IDS) {
+    const g = JSON.parse(readFileSync(join(DECOUPES_DIR, `${id}.json`), 'utf8')).gabaritTitre
+    if (g === undefined) { fautes.push(`${id}.json — \`gabaritTitre\` absent`); continue }
+    if (g === null) continue
+    const cles = Object.keys(g).sort().join(',')
+    if (cles !== 'accompagnement,capitales,encadre,exclusions,titre') fautes.push(`${id}.json — clés du gabarit ${cles}, attendu accompagnement,capitales,encadre,exclusions,titre`)
+    typo(`${id}.json titre`, g.titre, true)
+    typo(`${id}.json encadre`, g.encadre, true)
+    typo(`${id}.json capitales`, g.capitales, false)
+    for (const k of ['accompagnement', 'exclusions']) {
+      if (!Array.isArray(g[k])) { fautes.push(`${id}.json — \`${k}\` doit être un tableau`); continue }
+      g[k].forEach((t, i) => typo(`${id}.json ${k}[${i}]`, t, k === 'accompagnement'))
+    }
+  }
+  assert.deepEqual(fautes, [], `gabarit de titre mal formé :\n${fautes.join('\n')}`)
 })
 
 // Tout CHAPITRE de la liste imprime son onglet quelque part : son segment de pages rencontre au moins
