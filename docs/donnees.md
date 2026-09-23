@@ -101,7 +101,7 @@ un def qui change d'exposition change cette colonne au prochain `npm run docs:do
 | `mutations.json` · `mutationTables.json` | Mutations du Chaos · tables d100 de mutation (116 entrée(s) · 17 entrée(s)) | `mutations` — dataset `mutations` ; `mutationTables` — dataset `mutationTables` |
 | `water-exposure.json` | Exposition à l'eau (noyade, maladies) (objet à sous-catalogues) | `waterExposure` — objet single |
 | `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) (objet à sous-catalogues · objet à sous-catalogues) | `obsessions` — niché (`obsessions`) ; `drunkenness` — niché (`drunkenness`) |
-| `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`) (15 entrée(s)) | `nightStakes` — dataset `nightStakes` |
+| `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStakeRef` (`src/data/index.ts`, appelé par `src/state/restFlow.ts`) (15 entrée(s)) | `nightStakes` — dataset `nightStakes` |
 | `voyage-stakes.json` | Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`) (42 entrée(s)) | `voyageStakes` — aucune (exposé au Codex en LECTURE seule — aucune clé de `CodexEdit.CATEGORY_DATASET` ne le route vers un formulaire d’atelier) — dataset `voyageStakes` |
 | `flow-stakes.json` | Enjeu d'un JET DE MODALE MONO (#1117), keyé par l'id de jet `{flow, phase}` — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `flowStakeRef`/`resolveStake` (`src/data/index.ts`) (34 entrée(s)) | `flowStakes` — aucune (exposé en LECTURE seule au Codex (catégorie `flowStakes`) — absent de `CodexEdit.CATEGORY_DATASET`) — dataset `flowStakes` |
 | `combat-stakes.json` | Enjeu d'une étape de cascade de COMBAT (#1117), keyé par le `kind` de son applier — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `combatStakeRef`/`resolveStake` (`src/data/index.ts`) (37 entrée(s)) | `combatStakes` — aucune (exposé en LECTURE seule au Codex (catégorie `combatStakes`) — absent de `CodexEdit.CATEGORY_DATASET`) — dataset `combatStakes` |
@@ -223,7 +223,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   stock n'est donc pas « les défauts du dépôt », c'est « les défauts que ces deux voies prouvent ».
   Si une desc se retrouve sur PLUSIEURS folios (définition ET récapitulatif d'annexe), cite la **DÉFINITION** ;
   le rapport les signale (rubrique « À ARBITRER ») car la garde ne les départage pas.
-  **Mode CLIQUET** : le stock des 109 entrées déjà fausses est gelé dans `scripts/guards/lib/folioRatchetStock.mjs`
+  **Mode CLIQUET** : le stock des 108 entrées déjà fausses est gelé dans `scripts/guards/lib/folioRatchetStock.mjs`
   et ne peut que DÉCROÎTRE — toute entrée NEUVE au folio réfuté échoue la CI, toute clé soldée qui y traîne
   aussi, et sa TAILLE est plafonnée par la garde (`FOLIO_RATCHET_MAX`) pour qu'« ajouter une ligne au stock »
   ne soit jamais le chemin le plus court. `node scripts/data/audit-folios.mjs --stock` re-rend le stock et
@@ -495,4 +495,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: c6d41330b8c61a40d11c2dfe970084e49c20fb0d (377 fichiers, 2 dossiers) corps: 19605c249861b8f90488b05b39b0b3bd27af5223 -->
+<!-- sources-empreinte: 5f38c09ded65415d2a08f568f07cf82b669920c0 (377 fichiers, 2 dossiers) corps: 9b4cda6d90d4b244386068b172538f17099d3a1c -->
