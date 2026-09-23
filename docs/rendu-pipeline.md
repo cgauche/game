@@ -199,4 +199,4 @@ relancer, comparer : une migration donnée-neutre doit rester identique.
 - **un TYPE d'élément** (au-delà des 5 membres de `SceneEl`) : ajouter le variant au pivot,
   son builder, sa cuisson dans le monde volumique, et — s'il doit se voir à l'authoring — son peintre
   SVG avec sa profondeur de tri.
-<!-- sources-empreinte: 46c0d67a0fee8506a789809efbc631e302867c44 (1011 fichiers, 92 dossiers) corps: cfbb29e4c7a810898b8c1902daa706bcb92c5655 -->
+<!-- sources-empreinte: 83c9dc55ae1795ed71f8406f3615134ff3ba80c3 (1011 fichiers, 92 dossiers) corps: cfbb29e4c7a810898b8c1902daa706bcb92c5655 -->
