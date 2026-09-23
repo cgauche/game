@@ -6,8 +6,7 @@
 // Re-run : node scripts/raw/build-implemente.mjs (npm run raw:implemente).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { parUnitesDeCode, listerArbre } from '../guards/lib/lister.mjs'
-import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { refRe, span, bookOf, BOOKS, estLivreExtrait, esc, folioRange, allAbbrAlternation, pagesDeLAtlas, readText } from './_lib.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 import { declarerCorpsPerime } from '../docs/lib/empreinte-sources.mjs'
@@ -766,5 +765,5 @@ function main() {
   if (orphans.length || sansObjet.length) process.exit(1)
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

@@ -18,8 +18,7 @@
 // Sortie : docs/raw/coverage.md  ·  `--check` : compare au committé sans écrire.
 import { existsSync } from 'node:fs'
 import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
-import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { BOOKS, coeurDe, esc, chapterFile, estHorsRegle, folioSpan, motifHorsRegle, niveauDeSectionDe, pagesDeLAtlas, readText, teneurDe } from './_lib.mjs'
 import { graphieDuFichier, numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { ecrireOuVerifier } from '../docs/lib/empreinte-sources.mjs'
@@ -433,5 +432,5 @@ function main(rawDir = RAWDIR) {
   console.log('par livre : ' + perBook.join(' · '))
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

@@ -16,7 +16,6 @@
 // est la SOURCE UNIQUE du `timeout` déclaré aux surfaces. Le hook n'échoue JAMAIS la session : ce
 // qu'il n'a pas pu poser, il le NOMME sur sa sortie, qui entre au contexte de la session.
 import { spawnSync } from 'node:child_process'
-import { fileURLToPath } from 'node:url'
 
 /** Marqueur d'un conteneur distant Claude Code (`CLAUDE_CODE_REMOTE=true`). */
 export const estConteneurDistant = (env) => env.CLAUDE_CODE_REMOTE === 'true'
@@ -118,7 +117,7 @@ export function bootstrap(env = process.env, racine = process.cwd(), run = lance
   return mettreEnConformite({ racine, run })
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+if (import.meta.main) {
   const lignes = bootstrap(process.env, process.env.CLAUDE_PROJECT_DIR || process.cwd())
   if (lignes.length) process.stdout.write(`${lignes.join('\n')}\n`)
 }

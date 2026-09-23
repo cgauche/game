@@ -30,7 +30,7 @@
 // `resoudreOutilLocal` + `envIsole`, qui transmettent l'env).
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import path, { resolve } from 'node:path'
+import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { binLocal, envIsole, resoudreOutilLocal } from '../lancer-local.mjs'
 import { correspondGlob, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
@@ -678,5 +678,5 @@ function main() {
   process.exitCode = executer({ cwd })
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

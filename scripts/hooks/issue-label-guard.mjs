@@ -27,7 +27,6 @@
 // `package.json` : la sonde `scripts/ops/sondes/audit-2026-09-01/sonde-bypass.mjs` le laisse passer
 // tant qu'AUCUN script `open-ticket` n'existe dans ce dépôt — le jour où il en porte un qui appelle
 // `gh issue create`, la création est refusée comme les autres.
-import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import { segmentsProfonds, extractTargetDir, ancrerScriptsNpm } from './solde-ticket-guard.mjs'
 
@@ -191,7 +190,7 @@ export function contexteEmission(command, options) {
 }
 
 // ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────────
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) {
   let raw = ''
   process.stdin.setEncoding('utf8')

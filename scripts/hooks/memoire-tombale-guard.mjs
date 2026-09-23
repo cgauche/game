@@ -22,8 +22,6 @@
 // CONSÉQUENCE DITE : replacer le MÊME en-tête dans `old_string` le rend silencieux — la ligne n'est
 // plus ajoutée. Le garde arbitre l'ÉCRITURE d'un en-tête, il n'inspecte pas la fiche existante.
 import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { resolve } from 'node:path'
 
 /** Ligne débarrassée de ses ornements de tête (citation, puce, titre, gras, avertissement). */
 const nu = (ligne) => ligne.replace(/⚠|️/gu, ' ').replace(/^[\s>#*_~–—•!-]+/u, '').trim()
@@ -117,7 +115,7 @@ export function evaluate(input, lireDisque = () => '') {
 }
 
 // ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────────
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) {
   let raw = ''
   process.stdin.setEncoding('utf8')

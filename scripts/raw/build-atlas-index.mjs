@@ -10,8 +10,7 @@
 // `injecte` de `scripts/docs/build-all.mjs`).
 // Re-run : node scripts/raw/build-atlas-index.mjs (`--check` : compare sans écrire, corps périmé déclaré par `declarerCorpsPerime`).
 import { readFileSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { declarerCorpsPerime } from '../docs/lib/empreinte-sources.mjs'
 import { booksDe, coeursDe, coeursDuRegistre, domainesDe, livresDeCoeur, pagesDeLAtlas, REGISTRE_LIVRES } from './_lib.mjs'
 
@@ -129,5 +128,5 @@ function regenerer() {
   }
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

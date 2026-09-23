@@ -41,7 +41,7 @@
 // Re-run    : node scripts/raw/check-source-format.mjs
 // Régénérer : node scripts/raw/check-source-format.mjs --ecrire-stock
 import { existsSync, writeFileSync, statSync } from 'node:fs'
-import { join, dirname, resolve } from 'node:path'
+import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
@@ -553,5 +553,5 @@ function main() {
   process.exitCode = 1
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

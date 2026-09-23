@@ -747,6 +747,6 @@ export function genAll(verbose = false, { check = false } = {}) {
 }
 
 // Exécution directe (node scripts/gen-registry.mjs) : détail complet (audit manuel).
-if (import.meta.url === `file://${join(process.cwd(), 'scripts/gen-registry.mjs').replace(/\\/g, '/')}` || process.argv[1]?.endsWith('gen-registry.mjs')) {
+if (import.meta.main) {
   genAll(true, { check: process.argv.includes('--check') });
 }

@@ -13,8 +13,6 @@
 // node scripts/raw/build-catalogs.mjs [--check]   (`--check` compare chaque catalogue sans écrire)
 import { existsSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
-import { resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { BOOKS, blockStartRe, chapterFile as chapterFileLib, esc, livresDeCatalogue, pagesDeLAtlas, readText } from './_lib.mjs'
 import { titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { ecrireOuVerifier } from '../docs/lib/empreinte-sources.mjs'
@@ -143,5 +141,5 @@ for (const dom of CATALOGUES) {
 console.log(log.join('\n'))
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

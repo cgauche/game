@@ -14,5 +14,5 @@ export async function injectProjectCredo(surface, scriptUrl = import.meta.url, o
   output.write(credo);
 }
 
-if (fileURLToPath(import.meta.url) === process.argv[1])
+if (import.meta.main)
   injectProjectCredo(process.argv[2]).catch((error) => { process.stderr.write(`${error.message}\n`); process.exitCode = 1; });

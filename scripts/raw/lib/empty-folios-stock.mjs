@@ -17,8 +17,6 @@
 // fichier, `net 1` à deux).
 // Re-run : node scripts/raw/lib/empty-folios-stock.mjs [--seuil N] [--dry]
 import { writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { BOOKS, pdfDuSigle } from '../_lib.mjs'
 import { EMPTY_BENIGNES_PATH, EMPTY_PERDUES_PATH, SEUIL_UTILE, entreesDAncresVides, scanEmptyFoliosInBook } from '../check-folio-continuity.mjs'
 import { extractPages, resolveBookOffset, HAS_LOWER_RE } from '../anchor-fill.mjs'
@@ -109,5 +107,5 @@ function main() {
   }
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

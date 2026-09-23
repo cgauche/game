@@ -39,7 +39,7 @@
 //   l'appelant (livre VIERGE, aucune ancre à dériver — cf. `folio-bootstrap.mjs`).
 import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { listerDossier } from '../guards/lib/lister.mjs'
-import { join, resolve, dirname } from 'node:path'
+import { join, dirname } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
@@ -409,5 +409,5 @@ function main() {
   if (!apply) console.log('(--dry : relancer avec --apply pour écrire)')
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

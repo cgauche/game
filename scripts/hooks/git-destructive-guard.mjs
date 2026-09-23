@@ -23,7 +23,6 @@
 // tokenizer quote-aware de `solde-ticket-guard` (`segmentsProfonds`/`gitSubcommand`, invariant
 // partagé) — sans lui, `Write-Output "git stash"` ou un message de commit citant `git reset --hard`
 // déclenchaient un `ask` sur une commande qui n'exécute rien (faux positif mesuré 2026-08-03).
-import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import {
   segmentsProfonds, gitSubcommand, valeurParametre, indexParametre,
@@ -287,7 +286,7 @@ export function evaluate(command, { cwd = null } = {}) {
 }
 
 // ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────────
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) {
   let raw = ''
   process.stdin.setEncoding('utf8')

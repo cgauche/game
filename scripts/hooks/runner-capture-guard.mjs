@@ -27,8 +27,6 @@
 //     head -5`) n'en forment pas un : rien n'y tronque la sortie du runner, et le garde se tait
 //     (3 faux positifs mesurés avant ce groupement). La profondeur reste couverte : les pipelines
 //     d'un `sh -c "npx vitest | tail"` sont rendus comme les autres.
-import { fileURLToPath } from 'node:url'
-import { resolve } from 'node:path'
 import { pipelinesProfonds } from './solde-ticket-guard.mjs'
 
 /** `{ exe, args }` d'un segment : basename sans extension, en minuscules (call-operator sauté). */
@@ -155,7 +153,7 @@ export function evaluate(command) {
 }
 
 // ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────────
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) {
   let raw = ''
   process.stdin.setEncoding('utf8')

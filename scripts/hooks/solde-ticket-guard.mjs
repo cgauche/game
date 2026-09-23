@@ -2265,7 +2265,7 @@ export function decisionCumulee(decisions) {
 }
 
 // ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) {
   let raw = ''
   process.stdin.setEncoding('utf8')

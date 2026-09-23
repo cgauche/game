@@ -38,7 +38,7 @@
 import { spawn, spawnSync } from 'node:child_process'
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
 import { gatesDeCi } from './gatesDeCi.mjs'
 import {
@@ -147,7 +147,7 @@ export const ECRIT_LU = {
     lit: ['src/', 'scripts/ops/', 'scripts/guards/lib/', 'scripts/raw/', 'scripts/port-dev.mjs', 'scripts/hooks/', '.claude/workflows/', '.github/workflows/', 'knip.json', 'knip-exports-baseline.json'],
     raison:
       'six modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
-      '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.url === argv[1]`, l.121 ; seul `--sync` ' +
+      '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.main`, l.121 ; seul `--sync` ' +
       'écrirait la baseline, l.94-96), `ruleset-main.mjs` (le corps du ruleset part par un fichier de ' +
       'os.tmpdir(), ruleset-main.mjs:117-120, et son `executer` n’est jamais appelé par les tests), ' +
       '`fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()), `faits-de-palier.mjs` (le JSON des ' +
@@ -161,7 +161,7 @@ export const ECRIT_LU = {
       '(`validateRevuePalier` de solde-ticket-guard.mjs), sans rien y écrire ; LIT knip.json (le cliquet ' +
       'd’exports le relit) ; les 3 fichiers de .claude/workflows/ sont lus EN PLACE, sur l’arbre réel. ' +
       'Ce que `soldesSuivis()` lirait de .claude/soldes/ n’est atteint que par le `main()` du script, ' +
-      'gardé par `import.meta.url === argv[1]` (fermetures-non-citees.mjs:195) : les tests passent leurs ' +
+      'gardé par `import.meta.main` (fermetures-non-citees.mjs:218) : les tests passent leurs ' +
       'PROPRES dépôts jetables, et la sonde n’a mesuré aucune lecture sous .claude/soldes/ ; ' +
       '+1 écrivain le 2026-09-18 (#1813) : `plageFermante.test.mjs` prend ses dépôts jetables à ' +
       '`instanceDeDepot` (os.tmpdir()) et y pose `.claude/soldes/42.md` avant de commiter — lire une plage ' +
@@ -1050,7 +1050,7 @@ export async function principal({
   return code
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) {
   process.exit(
     await principal().catch((e) => {

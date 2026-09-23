@@ -22,8 +22,7 @@
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 // Frontière du champ dérivé : SOURCE UNIQUE partagée avec le générateur (scripts/raw/build-implemente.mjs).
 import { NOT_IMPL, parseFiche } from '../raw/build-implemente.mjs'
 // Blocs préservés des catalogues : SOURCE UNIQUE partagée avec le générateur.
@@ -155,5 +154,5 @@ function main(argv) {
   return 0
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) process.exit(main(process.argv.slice(2)))

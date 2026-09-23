@@ -394,5 +394,5 @@ function main() {
   console.log(aEcrire.length || aSupprimer.length || indexAEcrire ? 'écrit' : 'déjà au grain — aucun changement')
 }
 
-const estMain = process.argv[1] && process.argv[1].endsWith('recouper-source.mjs')
+const estMain = import.meta.main
 if (estMain) main()

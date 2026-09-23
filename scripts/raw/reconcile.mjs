@@ -579,5 +579,5 @@ function main() {
   })
 }
 
-const isMain = process.argv[1] && process.argv[1].endsWith('reconcile.mjs')
+const isMain = import.meta.main
 if (isMain) main()

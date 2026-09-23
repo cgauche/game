@@ -12,7 +12,7 @@
  * `00 - Index.md` changent par la CIBLE de leurs liens relatifs (pas 4 ci-dessous). Sans ce pas, le
  * renommage tuerait 196 liens VIVANTS (mesure : 196 cibles non ASCII, 196 vivantes avant) dans la
  * vérité citable du dépôt. Ces index sont des TOC DÉRIVÉES — `buildFolioToc`
- * (`scripts/raw/folio-bootstrap.mjs:95-104`) régénère la ligne `- [titre](<NN - Titre.md>)` depuis les
+ * (`scripts/raw/folio-bootstrap.mjs:94-103`) régénère la ligne `- [titre](<NN - Titre.md>)` depuis les
  * noms de fichiers —, et seule leur cible bouge : ni prose, ni libellé.
  *
  * LES PAS, dans l'ordre, tous idempotents :
@@ -458,5 +458,5 @@ function main() {
   if (r.collisions.length) process.exitCode = 1;
 }
 
-const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+const isMain = import.meta.main;
 if (isMain) main();

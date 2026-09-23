@@ -128,5 +128,5 @@ export function executer({
   }
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1])
+if (import.meta.main)
   process.exit(executer({ argv: process.argv.slice(2) }))

@@ -224,7 +224,5 @@ function main() {
   for (const u of unresolved) console.log(`  docs/raw/${u.doc}:${u.row} — \`${u.ref}\` — ${u.reason}`)
 }
 
-import { resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

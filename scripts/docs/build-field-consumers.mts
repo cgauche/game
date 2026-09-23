@@ -81,7 +81,7 @@
  *     ex. `difficultySchema`, `charKeySchema`) : aucun champ objet à consommer, hors du périmètre
  *     de la question « qui lit CE CHAMP ? ».
  */
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 import { listProdFiles, scanFieldReads, fieldOwnership, groupByField } from '../guards/lib/fieldConsumers.mjs'
@@ -263,7 +263,7 @@ export function buildFieldConsumersMd(files: string[] = listProdFiles(SRC_DIR)):
 }
 
 /** CLI : écriture du `.md`, ou `--check` (chaîné dans `npm run docs:check`). */
-if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
+if (import.meta.main) {
   const { md, totalFields, totalUnread } = buildFieldConsumersMd()
   ecrireOuVerifier({
     out: md,

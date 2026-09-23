@@ -8,9 +8,7 @@
 // des deux côtés : un fichier hors `DOCUMENTAIRE` rend le push PRODUIT, une gate dont `lit` est
 // vide n'est jamais sautée, un diff vide est PRODUIT.
 import { execFileSync } from 'node:child_process'
-import { argv, env, exit, stderr, stdout } from 'node:process'
-import { fileURLToPath } from 'node:url'
-import { resolve } from 'node:path'
+import { env, exit, stderr, stdout } from 'node:process'
 
 /**
  * Chemins NON EXÉCUTABLES, chacun avec sa raison. Un push dont TOUS les fichiers changés tombent
@@ -154,7 +152,7 @@ export function classerPush({ ref, before, sha, cwd = process.cwd() } = {}) {
   return { ...classer(fichiers), base: socle.base, fichiers }
 }
 
-if (argv[1] && resolve(argv[1]) === resolve(fileURLToPath(import.meta.url))) {
+if (import.meta.main) {
   try {
     const sha = env.SHA || 'HEAD'
     const verdict = classerPush({ ref: env.REF, before: env.BEFORE, sha })

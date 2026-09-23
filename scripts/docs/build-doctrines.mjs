@@ -23,7 +23,6 @@
 import { readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { ecrireOuVerifier } from './lib/empreinte-sources.mjs'
 import { parUnitesDeCode } from '../guards/lib/lister.mjs'
 
@@ -229,5 +228,5 @@ function main() {
   })
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

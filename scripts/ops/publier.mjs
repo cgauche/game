@@ -1187,5 +1187,5 @@ function main() {
   return verdict.etat === 'vert' ? 0 : verdict.etat === 'indeterminee' ? 3 : 1
 }
 
-const estMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const estMain = import.meta.main
 if (estMain) process.exit(main())

@@ -141,5 +141,5 @@ function main() {
   process.exitCode = 1
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()

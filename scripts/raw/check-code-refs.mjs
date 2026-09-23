@@ -23,7 +23,7 @@
 // Re-run : node scripts/raw/check-code-refs.mjs (npm run raw:check-code-refs).
 import { readFileSync } from 'node:fs'
 import { listerArbre } from '../guards/lib/lister.mjs'
-import { join, dirname, resolve } from 'node:path'
+import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { refRe, span, chapterFile, bookOf, readText } from './_lib.mjs'
 import { ecartDuVolet } from '../guards/lib/stock.mjs'
@@ -170,5 +170,5 @@ function main() {
   if (!neuves.length && !perimees.length && !neuvesV.length && !perimeesV.length) console.log('OK — cliquets alignés, aucune régression.')
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isMain = import.meta.main
 if (isMain) main()
