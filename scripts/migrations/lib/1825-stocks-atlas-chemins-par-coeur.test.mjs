@@ -30,12 +30,12 @@ const deuxCoeurs = () => {
 const texteDe = (doc) => serialise(doc, { indent: 2, nl: true });
 
 /**
- * Dépôt jetable : les `LUS` copiés, `STOCK` posé à `doc`, les autres stocks vides et les `pages`
- * (chemins relatifs à l'Atlas), tous antidatés. REND `{ racine, avant }`.
+ * Dépôt jetable : les `LUS` copiés, `STOCK` posé à `doc` — ABSENT sans `doc` —, les autres stocks
+ * vides et les `pages` (chemins relatifs à l'Atlas), tous antidatés. REND `{ racine, avant }`.
  */
 function depotAtlas(t, pages, doc) {
   const d = depot({
-    [STOCK]: texteDe(doc),
+    ...(doc === undefined ? {} : { [STOCK]: texteDe(doc) }),
     ...Object.fromEntries(AUTRES_STOCKS.map((rel) => [rel, texteDe({ entrees: [] })])),
     ...Object.fromEntries(pages.map((page) => [path.posix.join(RAWDIR, page), '# page\n'])),
   }, LUS);
@@ -91,13 +91,11 @@ test('MIXTE — un homonyme NON cité et un nom à UN cœur cité à plat : sort
 
 test('un stock SOLDÉ, ABSENT du disque : sortie 0, RIEN À FAIRE, le stock n’est pas recréé', (t) => {
   const [a] = deuxCoeurs();
-  const { racine, stocks } = depot(t, [`${a}/y.md`], { entrees: [] });
-  const abs = path.join(racine, STOCK);
-  fs.rmSync(abs);
-  stocks.delete(abs);
+  const { racine, avant } = depotAtlas(t, [`${a}/y.md`]);
+  assert.throws(() => lireDans(racine, STOCK), { code: 'ENOENT' }, `${STOCK} présent avant le jeu : le cas ne joue pas un stock SOLDÉ`);
   const r = joue(racine, MIGRATION);
   assert.equal(r.code, 0, r.sortie);
   assert.match(r.stdout, /RIEN À FAIRE/u);
-  assert.equal(fs.existsSync(abs), false, `${STOCK} recréé`);
-  intacts(stocks);
+  assert.throws(() => lireDans(racine, STOCK), { code: 'ENOENT' }, `${STOCK} recréé`);
+  assert.deepEqual(rienTouche(racine, avant), []);
 });
