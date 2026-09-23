@@ -297,6 +297,11 @@ const ATTENDU = {
     'scripts/raw/citation-graphy-guard.test.mjs',
     'scripts/raw/folio-bootstrap.mjs',
     'scripts/raw/folio-bootstrap.test.mjs',
+    // +1 le 2026-09-23 (#1739 lot 3b-2a) : le banc de la carte de lignes éprouve le refus du CR isolé
+    // (#604) de `carteDuFichier` sur un fichier JETABLE (`mkdtempSync` + `writeFileSync` sous
+    // `os.tmpdir()`, `rmSync` en finally). Aucune écriture DANS l'arbre : même classe que
+    // `check-source-format.test.mjs` ci-dessus.
+    'scripts/raw/lib/carte-lignes.test.mjs',
     // +1 le 2026-09-14 (#1727 T2) : `check-folio-continuity.test.mjs` importe la fonction d'ÉCRITURE
     // du générateur des ancres sans contenu (`stocksEnTexte`) pour comparer son rendu aux deux stocks
     // committés ; elle rend un TEXTE. Le seul `writeFileSync` du module vit dans `main()`, sous
@@ -314,7 +319,7 @@ const ATTENDU = {
     // +1 le 2026-09-21 (#1739 S1) : `recouper-source.test.mjs` importe le re-coupeur des `.md` en
     // service pour éprouver son cœur PUR (`recouper`, `planDe`, `contenuDe`, `indexDe`, `recalerStock`)
     // sur un livre FORGÉ en mémoire ; ses `writeFileSync`/`rmSync` vivent dans `main()`, sous sa porte
-    // `estMain` (recouper-source.mjs:318) — déclarés en `ecritFerme` de `test:raw` (ECRIT_LU).
+    // `estMain` (recouper-source.mjs:397) — déclarés en `ecritFerme` de `test:raw` (ECRIT_LU).
     'scripts/raw/recouper-source.mjs',
     // +1 le 2026-09-14 (#1759) : le test du LECTEUR de stock nominatif vit sous `scripts/raw`,
     // racine de cette gate. Il pose ses fixtures (`mkdtempSync` + `writeFileSync`,

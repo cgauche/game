@@ -363,11 +363,11 @@ export const ECRIT_LU = {
       // (`scripts/raw/decoupes/<id>.json`), et recale tout stock nominatif keyé par ses fichiers.
       'Source/**/*.md':
         '`recouper-source.test.mjs` IMPORTE le re-coupeur des `.md` en service ; ses `writeFileSync` et ' +
-        '`rmSync` vivent dans `main()`, sous sa porte `estMain` (scripts/raw/recouper-source.mjs:318), ' +
+        '`rmSync` vivent dans `main()`, sous sa porte `estMain` (scripts/raw/recouper-source.mjs:397), ' +
         'et le banc n’appelle que son cœur PUR sur un livre FORGÉ en mémoire',
       'scripts/raw/*-stock.json':
         'même porte, même module : le recalage des stocks nominatifs (`recalerStock`) rend un TEXTE, ' +
-        'que le seul `main()` écrit derrière `estMain` (scripts/raw/recouper-source.mjs:318)',
+        'que le seul `main()` écrit derrière `estMain` (scripts/raw/recouper-source.mjs:397)',
       // Le MOTIF, pas une page : l’outil répare TOUTE page de l’Atlas dont un renvoi d’ancre est mort.
       'docs/raw/**/*.md':
         '`reparer-ancres.test.mjs` IMPORTE l’outil de réparation des renvois d’ancre (#1824) ; son unique ' +
