@@ -10,8 +10,8 @@
 // repayer les vingt autres.
 //
 // TROIS PHASES, et l'ordre est la garantie :
-//   1. `npm run gen` — `build` et la suite appellent `genAll()` depuis deux lanes : joué une fois ici,
-//      il ne leur reste rien à écrire, et un registre périmé se dit tout de suite.
+//   1. `npm run gen -- --check` — `build` et la suite appellent `genAll()` depuis deux lanes : un
+//      registre périmé se dit ici, sans rien écrire, et un registre à jour ne se réécrit jamais.
 //   2. les LANES, qui ne contiennent que des LECTEURS (aucune gate de ci.yml n'écrit dans l'arbre).
 //   3. le RÉSUMÉ, puis la photo de l'arbre. Dans cet ordre : un résumé est ce qu'on vient de payer,
 //      il s'imprime AVANT tout ce qui pourrait encore échouer.
@@ -235,7 +235,7 @@ export const ECRIT_LU = {
       'src/_registry.generated.ts':
         'le `buildStart` du plugin `registryGen` (vite.config.ts) appelle `genAll()`, qui n’écrit que si ' +
         'le rendu diffère (`ecrireDoc`, scripts/docs/lib/empreinte-sources.mjs) — `toutes.mjs` joue ' +
-        '`npm run gen` avant toute gate et REFUSE si un registre bouge, donc il ne reste rien à écrire',
+        '`npm run gen -- --check` avant toute gate et REFUSE un registre périmé, donc il ne reste rien à écrire',
     },
     lit: ['src/', 'server/src/', 'scripts/', 'docs/', 'Source/', '.gitattributes', 'vite.config.ts'],
     raison:
@@ -258,7 +258,7 @@ export const ECRIT_LU = {
   build: {
     ecrit: [],
     ecritFerme: {
-      'src/_registry.generated.ts': 'même `genAll()` que la suite, même porte : `npm run gen` avant toute gate',
+      'src/_registry.generated.ts': 'même `genAll()` que la suite, même porte : `npm run gen -- --check` avant toute gate',
       'vite.config.ts.timestamp-':
         'Vite recompile sa config dans un module horodaté posé à côté d’elle, puis l’efface — mesuré ' +
         '(`vite.config.ts.timestamp-1788894628882-….mjs`, sonde 2026-09-08). LA PORTE : AUCUNE gate ne lit ' +
@@ -864,29 +864,19 @@ export async function principal({
     return 0
   }
 
-  // `npm run gen` AVANT tout : `build` ET la suite appellent `genAll()` (plugin `registryGen` de
-  // vite.config.ts) depuis deux lanes, et réécriraient `src/**/*.generated.ts` en même temps si un
-  // registre avait bougé. Joué une fois ici, il ne leur reste rien à écrire — et un registre périmé
-  // se dit MAINTENANT, avant sept minutes de lanes.
+  // `npm run gen -- --check` AVANT tout : `build` ET la suite appellent `genAll()` (plugin
+  // `registryGen` de vite.config.ts) depuis deux lanes, et réécriraient `src/**/*.generated.ts` en
+  // même temps si un registre était périmé. Le verdict est celui de `ecrireOuVerifier`, rien n'est
+  // écrit, et un registre périmé se dit MAINTENANT, avant sept minutes de lanes.
   const avantGen = Date.now()
-  const gen = spawnSync('npm', ['run', 'gen'], {
+  const gen = spawnSync('npm', ['run', 'gen', '--', '--check'], {
     cwd: racine,
     stdio: ['ignore', 'ignore', 'pipe'],
     shell: process.platform === 'win32',
     encoding: 'utf8',
   })
   if (gen.status !== 0) {
-    journal(`[gates] REFUS — « npm run gen » a échoué (exit ${gen.status}) :\n${gen.stderr ?? ''}\n`)
-    return 1
-  }
-  const derive = spawnSync('git', ['diff', '--name-only', '--', '*.generated.ts'], { cwd: racine, encoding: 'utf8' })
-    .stdout.trim()
-  if (derive) {
-    journal(
-      `[gates] REFUS — registres générés PÉRIMÉS (« npm run gen » les a réécrits) :\n` +
-        `${derive.split('\n').map((f) => `  ${f}`).join('\n')}\n` +
-        '[gates] committe-les : sans quoi la suite et `build` les réécriraient en même temps.\n',
-    )
+    journal(`[gates] REFUS — « npm run gen -- --check » rouge (exit ${gen.status}) :\n${gen.stderr ?? ''}\n`)
     return 1
   }
   journal(`[gates] gen — registres à jour en ${secondesDepuis(avantGen).toFixed(1)} s\n`)

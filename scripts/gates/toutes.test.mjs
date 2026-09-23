@@ -494,6 +494,34 @@ test('une gate qui réécrit l’arbre fait REFUSER le run à la photo de fin', 
   }
 })
 
+test('pré-vol : un registre périmé est un REFUS nommé, avant toute gate, et rien n’est écrit (#1801)', async () => {
+  const { racine, git } = depotDeGates([{ nom: 'lente', corps: LENTE }])
+  try {
+    writeFileSync(
+      join(racine, 'gen.mjs'),
+      "import { writeFileSync } from 'node:fs'\n" +
+        "if (process.argv.includes('--check')) { console.error('registre.generated.ts est PÉRIMÉ'); process.exit(2) }\n" +
+        "writeFileSync('registre.generated.ts', 'régénéré\\n')\n",
+    )
+    git('commit', '-qam', 'registre périmé')
+    const lignes = []
+    const code = await principal({
+      racine,
+      argv: ['node', 'toutes.mjs'],
+      journal: (t) => lignes.push(t),
+      lanes: [{ nom: 'a', gates: ['lente'] }],
+      ecritLu: { lente: { ecrit: [], lit: ['src/'] } },
+    })
+    const sortie = lignes.join('')
+    assert.equal(code, 1, sortie)
+    assert.match(sortie, /REFUS — « npm run gen -- --check » rouge \(exit 2\)[\s\S]*registre\.generated\.ts est PÉRIMÉ/)
+    assert.doesNotMatch(sortie, /\[gates\] lente — (?:vert|ROUGE)/, 'le refus du pré-vol précède toute gate')
+    assert.equal(git('status', '--porcelain'), '', 'le pré-vol n’écrit rien dans l’arbre')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
 /**
  * PRÉREQUIS (#1708 geste 2) : une gate dont le prérequis manque ne mesure rien — `server:typecheck`
  * sans `server/node_modules` rend un TS2688 brut, qui ne nomme ni le dossier absent ni la commande
