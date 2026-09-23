@@ -180,6 +180,7 @@ export const ECRIT_LU = {
     lit: [
       'docs/', 'src/', '.claude/memory/', 'scripts/docs/', 'scripts/guards/lib/', 'scripts/test/partition.mjs',
       'scripts/lancer-local.mjs', 'scripts/outillage-local.mjs', 'scripts/port-dev.mjs', 'CLAUDE.md',
+      'scripts/raw/', 'scripts/gen-registry.mjs', 'Source/',
     ],
     raison:
       'fixtures sous os.tmpdir() ; lit les docs et la mémoire RÉELS (les gardes de liens et de références les ' +
@@ -191,7 +192,10 @@ export const ECRIT_LU = {
       'générateurs en `--check` (build-index-moteur, build-donnees, build-structures) sur l’arbre réel — ils ' +
       'COMPARENT sans écrire, et leurs lectures passent par la sortie de mesure du test, sous os.tmpdir() ; ' +
       'LIT CLAUDE.md sur l’arbre RÉEL : `routingTableSlice` (manual-docs-ratchet.test.mjs) ancre la table de routage ' +
-      '(`## Table de routage`) et en dérive les docs à plat atteignables (l.231)',
+      '(`## Table de routage`) et `routedFlatDocs` en dérive les docs à plat atteignables ; LIT scripts/raw/, ' +
+      'scripts/gen-registry.mjs et Source/ depuis le 2026-09-23 (#1801) : `plateforme-win32.test.mjs` joue ' +
+      '`build-all.mjs --check` (qui importe gen-registry.mjs et scripts/raw/) sur build-vocabulaire et ' +
+      'reanchor, qui lit l’Atlas et Source/ — en `--check`, rien n’est écrit',
   },
   'deps:unused': {
     ecrit: [],
@@ -525,13 +529,12 @@ export const LANES = [
  * Plafond de durée par gate, en SECONDES : ×3 de la pire durée observée, jamais moins. Sans plafond,
  * une gate bloquée tient sa lane pour toujours — vécu : `server:typecheck` a rendu 0xC0000142 après
  * 33 434 s (9 h 17). Une gate EXPIRÉE est un ROUGE nommé, pas un silence.
- * Mesures de référence : pire gate hors `test` et `docs:check:tout` = `typecheck` 77,8 s (série du
- * 2026-09-07 ; ×3 = 233, largement sous les 600) ; `test` 275,1 s et il RALENTIT sous bornage
- * (×3 = 825) ; `docs:check:tout` : le rejeu complet valait 209,4 s (2026-09-07) avant d'absorber les
- * trois rapports d'Atlas (7,0 s en phase série, 2026-09-08), soit 216,4 s au pire observé — mesuré
- * SEUL à 130,3 s le 2026-09-23 (#1801) ; ×3 = 650.
+ * Mesures de référence : pire gate hors `test` = `typecheck` 77,8 s (série du 2026-09-07 ; ×3 = 233,
+ * largement sous les 600) ; `docs:check:tout`, chaque générateur rendu sur l'hôte ET sous win32 :
+ * 134,5 s au pire de deux runs SEULS (133,7 s l'autre, 2026-09-23, #1801) ; ×3 = 404, sous les 600 ;
+ * `test` 275,1 s et il RALENTIT sous bornage (×3 = 825).
  */
-export const TIMEOUTS = { defaut: 600, test: 900, 'docs:check:tout': 650 }
+export const TIMEOUTS = { defaut: 600, test: 900 }
 
 /**
  * Cœurs servis à la SUITE pendant les lanes. Mesuré sur cette machine, suite SEULE et sans lane :

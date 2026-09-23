@@ -19,8 +19,8 @@ import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
-  ENTETE_ROUGES, fraicheurDesGenerateurs, guerissable, issueDe, motifRejeuComplet, natureDuRouge, rougesNommes, SOURCES_LUES,
-  verdictDuPied,
+  ENTETE_ROUGES, fraicheurDesGenerateurs, guerissable, issueDe, motifRejeuComplet, natureDuRouge, PLATEFORMES, rougesNommes,
+  SOURCES_LUES, verdictDuPied,
 } from './build-all.mjs'
 import {
   avecPied,
@@ -284,7 +284,7 @@ function executer(racine, argv, env = {}, verificateurs = []) {
   mkdirSync(path.dirname(harnais), { recursive: true })
   writeFileSync(harnais, [
     `import { executer } from ${JSON.stringify(BUILD_ALL)}`,
-    `process.exitCode = executer({ cwd: ${JSON.stringify(racine)}, argv: ${JSON.stringify(['--quiet', ...argv])}, generateurs: ${JSON.stringify(GENERATEURS_REELS)}, verificateurs: ${JSON.stringify(verificateurs)} })`,
+    `process.exitCode = await executer({ cwd: ${JSON.stringify(racine)}, argv: ${JSON.stringify(['--quiet', ...argv])}, generateurs: ${JSON.stringify(GENERATEURS_REELS)}, verificateurs: ${JSON.stringify(verificateurs)} })`,
   ].join('\n'))
   const r = spawnSync(process.execPath, [harnais], { cwd: racine, encoding: 'utf8', env: { ...process.env, ...env } })
   return { status: r.status, sortie: `${r.stdout}${r.stderr}` }
@@ -330,6 +330,10 @@ test('ANGLE MORT de la fraîcheur : un corps « rendu sous une autre plateforme 
     const tout = executer(racine, ['--check', '--tout'])
     assert.equal(tout.status, CODE_CORPS_PERIME, `--check --tout, seul rouge un corps périmé, que \`docs:build\` guérit : ${tout.sortie}`)
     assert.match(tout.sortie, /docs:check — g\/a\.mjs — corps périmé/)
+    // Rendu sous chaque autre plateforme, le même corps périmé : l'hôte le guérit en régénérant.
+    for (const p of Object.keys(PLATEFORMES).filter((p) => p !== process.platform)) {
+      assert.ok(tout.sortie.includes(`docs:check — g/a.mjs — rendu sous ${p} — corps périmé\n`), tout.sortie)
+    }
     assert.match(tout.sortie, /committé : "Source : `src\\\\a\.ts`/, 'la divergence nomme la graphie committée')
   } finally {
     rmSync(racine, { recursive: true, force: true })
@@ -344,10 +348,16 @@ test('`--check --tout` va AU BOUT : un corps périmé ET un cliquet rouge dans l
     git('add', DOC_A)
     const rouge = executer(racine, ['--check', '--tout'], { BANC_CLIQUET_ROUGE: '1' })
     assert.equal(rouge.status, 1, `un cliquet ne se guérit pas en régénérant : ${rouge.sortie}`)
-    // `g/a.mjs` est rouge le PREMIER : `g/b.mjs`, qui le suit, doit rendre son verdict quand même.
+    // `g/a.mjs` est rouge le PREMIER : `g/b.mjs`, qui le suit, doit rendre son verdict quand même —
+    // sur l'hôte, et sous chaque autre plateforme rendue par `--tout`.
+    const autres = Object.keys(PLATEFORMES).filter((p) => p !== process.platform)
     assert.match(rouge.sortie, /docs:check — g\/a\.mjs — corps périmé\n/)
     assert.match(rouge.sortie, /docs:check — g\/b\.mjs — sortie 1\n/)
-    assert.match(rouge.sortie, /docs:check — ROUGE \(2\)/)
+    for (const p of autres) {
+      assert.ok(rouge.sortie.includes(`docs:check — g/a.mjs — rendu sous ${p} — corps périmé\n`), rouge.sortie)
+      assert.ok(rouge.sortie.includes(`docs:check — g/b.mjs — rendu sous ${p} — sortie 1\n`), rouge.sortie)
+    }
+    assert.match(rouge.sortie, new RegExp(`docs:check — ROUGE \\(${2 * (1 + autres.length)}\\)`))
 
     // Tout re-rendu : vert.
     assert.equal(executer(racine, []).status, 0)

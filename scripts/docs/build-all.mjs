@@ -28,7 +28,14 @@
 // (`tsx/dist/cli.mjs` RE-SPAWNE un processus — ils sont lancés ici par `node --import tsx/esm`) et les
 // deux qui appelaient `npx tsx <dumper>` (`build-donnees.mjs`, `build-codex-relations.mjs`, passés à
 // `resoudreOutilLocal` + `envIsole`, qui transmettent l'env).
-import { execFileSync } from 'node:child_process'
+//
+// RENDU SOUS UNE PLATEFORME (#1801) : `--check --plateforme <nom>` rend chaque générateur sur l'hôte
+// ET sous `<nom>`, par un module de `PLATEFORMES` composé dans `NODE_OPTIONS` comme l'enregistreur —
+// un générateur de plus y passe sans rien déclarer ; `--check --tout` le fait pour chaque plateforme
+// de `PLATEFORMES` autre que l'hôte. Les deux processus tournent en parallèle ; un corps qui dépend
+// de la plateforme qui l'a rendu est rouge, et le rouge nomme sa plateforme. Seul le rendu de l'hôte
+// s'écrit et se mesure (pied, `docs/.sources-lues.json`) : l'autre ne charge pas l'enregistreur.
+import { execFileSync, spawn } from 'node:child_process'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -36,7 +43,7 @@ import { binLocal, envIsole, resoudreOutilLocal } from '../lancer-local.mjs'
 import { correspondGlob, listerArbre, listerDossier } from '../guards/lib/lister.mjs'
 import { MOTIF_CATALOGUES } from '../raw/motif-catalogues.mjs'
 import { SORTIES as SORTIES_DU_REGISTRE } from '../gen-registry.mjs'
-import { execFileResilient } from '../guards/lib/spawnResilient.mjs'
+import { execFileResilient, reessayerAuChargement } from '../guards/lib/spawnResilient.mjs'
 import {
   avecPied, CODE_CORPS_PERIME, deltaSourcesLues, empreinteDeLIndex, empreinteDuDisque, existeFichier,
   fusionnerLectures, hashBlobDisque, ignoresGit, indexGit, lirePied, motifDeRejeu, estUnDocMarkdown,
@@ -98,7 +105,13 @@ export const NON_GENERATOR_CHECKS = [
 /** Chemin du dérivé qui porte les sets MESURÉS, un par générateur. */
 export const SOURCES_LUES = 'docs/.sources-lues.json'
 
-const ENREGISTREUR = pathToFileURL(fileURLToPath(new URL('lib/enregistreur-lectures.mjs', import.meta.url))).href
+const moduleDeLib = (nom) => pathToFileURL(fileURLToPath(new URL(`lib/${nom}`, import.meta.url))).href
+
+const ENREGISTREUR = moduleDeLib('enregistreur-lectures.mjs')
+
+/** Plateforme (nom de `process.platform`) → module `node --import` qui rend un générateur sous elle.
+ *  L'hôte se rend sans module : `--plateforme <hôte>` est le rendu natif. */
+export const PLATEFORMES = { win32: moduleDeLib('plateforme-win32.mjs') }
 
 /**
  * Entrée ESM de `tsx` DANS CET ARBRE (`exports['./esm']`). L'exécutable `tsx` re-spawne un processus
@@ -142,27 +155,59 @@ export function ciblesSurDisque(cibles, cwd) {
   })
 }
 
-function run({ runner, script }, { cwd, quiet, check, tsxEsm, lectures, cibles }) {
+/**
+ * Argv et env d'un générateur. Ordre des `--import` : l'enregistreur, puis la plateforme (elle
+ * l'enveloppe, la mesure reçoit donc des chemins POSIX), puis `tsx/esm` (argv, joué après
+ * `NODE_OPTIONS`). `plateforme` : `null` = l'hôte.
+ */
+function commandeDe({ runner, script }, { cwd, check, tsxEsm, lectures, cibles, plateforme }) {
   const args = [
     ...(runner === 'tsx' ? ['--import', pathToFileURL(tsxEsm).href] : []),
     script,
     ...(check ? ['--check'] : []),
   ]
   const env = envIsole(process.env, binLocal(cwd))
+  const imports = [...(lectures ? [ENREGISTREUR] : []), ...(plateforme ? [PLATEFORMES[plateforme]] : [])]
+  if (imports.length) env.NODE_OPTIONS = [env.NODE_OPTIONS ?? '', ...imports.map((m) => `--import ${m}`)].join(' ').trim()
+  if (plateforme) env.WFRP_PLATEFORME_RACINE = cwd
   if (lectures) {
-    env.NODE_OPTIONS = `${env.NODE_OPTIONS ?? ''} --import ${ENREGISTREUR}`.trim()
     env.WFRP_LECTURES_RACINE = cwd
     env.WFRP_LECTURES_SORTIE = path.join(lectures, 'l')
     env.WFRP_LECTURES_CIBLE = cibles.join(',')
   }
+  return { args, env }
+}
+
+function run(g, options) {
+  const { args, env } = commandeDe(g, options)
   // Rejeu si le processus n'a pas DÉMARRÉ : sous quatre lanes de gates, le loader Windows a refusé
   // d'initialiser `build-implemente.mjs` (3221225794) et `docs:check` est sorti ROUGE en 48,6 s sur
   // un arbre sain (mesuré le 2026-09-04). Tout autre code reste un vrai verdict.
   execFileResilient(process.execPath, args, {
-    cwd,
+    cwd: options.cwd,
     env,
-    ...sortiesDe(quiet),
-  }, { site: `build-all/${script}` })
+    ...sortiesDe(options.quiet),
+  }, { site: `build-all/${g.script}` })
+}
+
+/** `run()` SANS attendre, sorties capturées : le rendu sous une autre plateforme se joue pendant le
+ *  rendu principal du même générateur. REND `{ code, issue, sortie }` : `code` est le statut que lit
+ *  `reessayerAuChargement`, `issue` celle que lit `natureDuRouge`. */
+function lancer(g, options) {
+  const { args, env } = commandeDe(g, options)
+  return reessayerAuChargement(
+    () =>
+      new Promise((fin) => {
+        const morceaux = []
+        const enfant = spawn(process.execPath, args, { cwd: options.cwd, env, stdio: ['ignore', 'pipe', 'pipe'] })
+        enfant.stdout.on('data', (m) => morceaux.push(m))
+        enfant.stderr.on('data', (m) => morceaux.push(m))
+        enfant.on('error', (e) => fin({ code: null, issue: issueDe(e), sortie: `${e.message}\n` }))
+        enfant.on('close', (status, signal) =>
+          fin({ code: status, issue: { status, signal, code: null }, sortie: Buffer.concat(morceaux).toString('utf8') }))
+      }),
+    { site: `build-all/${g.script} (${options.plateforme})` },
+  )
 }
 
 /** `--quiet` capture les deux flux au lieu de les jeter : le diagnostic d'un rouge (le cliquet parle
@@ -513,8 +558,16 @@ export function rougesNommes(sortie) {
 /** Un rouge de générateur que `docs:build` guérit : son SEUL grief est un corps périmé. PUR. */
 export const guerissable = (issue) => !issue.code && !issue.signal && issue.status === CODE_CORPS_PERIME
 
+/** Valeur d'un drapeau à arguments : ceux qui le suivent, jusqu'au drapeau suivant ; `null` s'il est absent. */
+function argumentsDe(argv, drapeau) {
+  const i = argv.indexOf(drapeau)
+  if (i < 0) return null
+  const fin = argv.findIndex((a, j) => j > i && a.startsWith('--'))
+  return argv.slice(i + 1, fin < 0 ? argv.length : fin)
+}
+
 /**
- * `docs:build` (écriture), `--check` (vérification) ou `--empreinte`. REND le code de sortie.
+ * `docs:build` (écriture), `--check` (vérification) ou `--empreinte`. REND (promesse) le code de sortie.
  * En écriture, le premier rouge ARRÊTE : un générateur rouge laisse docs/ à moitié régénéré, et
  * enchaîner les suivants fabriquerait un lot incohérent que le hook annoncerait « à committer ».
  * En `--check`, rien n'est écrit : chaque générateur et chaque vérificateur rend son verdict, et tous
@@ -522,7 +575,7 @@ export const guerissable = (issue) => !issue.code && !issue.signal && issue.stat
  * `CODE_CORPS_PERIME` quand CHAQUE rouge est un corps, un pied ou `.sources-lues.json` périmé, 1 dès
  * qu'un rouge ne se régénère pas (cliquet, vérificateur, refus) — c'est ce que lit `publier.mjs`.
  */
-export function executer({
+export async function executer({
   cwd,
   argv = process.argv,
   generateurs = GENERATORS,
@@ -531,11 +584,29 @@ export function executer({
   const quiet = argv.includes('--quiet')
   const check = argv.includes('--check')
   const tout = argv.includes('--tout')
-  const seulement = (() => {
-    const i = argv.indexOf('--only')
-    return i < 0 ? null : new Set(argv.slice(i + 1).filter((a) => !a.startsWith('--')))
-  })()
+  const only = argumentsDe(argv, '--only')
+  const seulement = only && new Set(only)
   if (argv.includes('--empreinte')) return verifierEmpreintes(cwd, seulement)
+  const hote = process.platform
+  const [demandee = null] = argumentsDe(argv, '--plateforme') ?? []
+  if (demandee !== null && demandee !== hote && !PLATEFORMES[demandee]) {
+    process.stderr.write(`docs:build — --plateforme « ${demandee} » inconnue : ${[hote, ...Object.keys(PLATEFORMES)].join(', ')}.\n`)
+    return 2
+  }
+  // Le rendu de l'HÔTE est le seul écrit et le seul mesuré. Les plateformes rendues EN PLUS, en
+  // parallèle, sont vérifiées : `--plateforme <nom>`, ou toutes celles de `PLATEFORMES` sous `--tout`.
+  const enPlus = (demandee !== null ? [demandee] : check && tout ? Object.keys(PLATEFORMES) : []).filter((p) => p !== hote)
+  if (enPlus.length && !check) {
+    process.stderr.write(`docs:build — --plateforme ${demandee} : un rendu sous une autre plateforme se VÉRIFIE (--check), docs/ porte le rendu de l'hôte.\n`)
+    return 2
+  }
+  if (demandee !== null || (check && tout)) {
+    console.log(
+      enPlus.length
+        ? `docs:check — chaque générateur rendu sur l'hôte (${hote}) et sous ${enPlus.join(', ')}.`
+        : `docs:check — hôte ${hote} : son rendu natif EST le rendu sous ${demandee ?? Object.keys(PLATEFORMES).join(', ')}, aucune autre plateforme à rendre.`,
+    )
+  }
   // Refus d'un tsx NON LOCAL avant le premier générateur : à mi-chaîne, docs/ serait à moitié écrit.
   const tsxEsm = generateurs.some((g) => g.runner === 'tsx') ? tsxEsmDe(cwd) : null
   const ignores = ignoresGit(cwd)
@@ -598,6 +669,8 @@ export function executer({
     }
     const dossier = path.join(racineLectures, String(rang))
     mkdirSync(dossier, { recursive: true })
+    const autres = enPlus.map((plateforme) => ({ plateforme, rendu: lancer(g, { cwd, check, tsxEsm, plateforme }) }))
+    let rougePrincipal = false
     // Un générateur relit ce qu'il écrit (sa cible en `--check`, le fichier où il injecte un champ) :
     // rien de tout cela n'est une de ses sources. Seule une cible SIGNÉE — un doc écrit EN ENTIER —
     // reçoit le pied : `build-implemente` n'écrit qu'un champ des fiches docs/raw, fichiers manuscrits
@@ -611,9 +684,16 @@ export function executer({
         process.stderr.write(`docs:build — ARRÊT sur ${g.script} (${natureDuRouge(issue)}) : docs/ n'est PAS à jour.\n`)
         return 1
       }
-      rouges.push({ script: g.script, issue })
-      continue
+      rouges.push({ script: g.script, issue, plateforme: null })
+      rougePrincipal = true
     }
+    for (const { plateforme, rendu } of autres) {
+      const { issue, sortie } = await rendu
+      if (issue.status === 0) continue
+      process.stderr.write(`docs:check — ${g.script} — rendu sous ${plateforme} :\n${sortie}`)
+      rouges.push({ script: g.script, issue, plateforme })
+    }
+    if (rougePrincipal) continue
     const lues = fusionnerLectures(dossier)
     // Un chemin lu hors racine sort de la mesure : dit ici, il cesse d'être indiscernable d'une
     // absence de lecture (un générateur dont les sources vivent derrière une jonction, par exemple).
@@ -678,8 +758,8 @@ export function executer({
     return 0
   }
   // Les vérificateurs purs : ils n'écrivent rien, leur code de sortie est leur verdict.
-  for (const script of verificateurs) {
-    if (seulement && !seulement.has(script)) continue
+  const verificateursJoues = verificateurs.filter((script) => !seulement || seulement.has(script))
+  for (const script of verificateursJoues) {
     try {
       execFileResilient(process.execPath, [script], {
         cwd,
@@ -699,22 +779,29 @@ export function executer({
     process.stderr.write(diagnosticSourcesLues(actuel, rendu, mesure))
     refuser(`docs:check — ${SOURCES_LUES} est PÉRIMÉ (les sources MESURÉES d'au moins un générateur ont changé) — npm run docs:build`, { guerit: true })
   }
-  for (const { script, issue } of rouges) {
-    refus.push({ message: `docs:check — ${script} — ${natureDuRouge(issue)}`, guerit: guerissable(issue) })
+  // `docs:build` réécrit docs/ par le rendu de l'HÔTE : un rouge d'une autre plateforme ne guérit que
+  // si le rendu de l'hôte du même générateur est lui aussi un corps périmé ; hôte vert, l'écart est
+  // propre à la plateforme et aucune régénération ne le touche.
+  const hotePerime = new Set(rouges.filter((r) => !r.plateforme && guerissable(r.issue)).map((r) => r.script))
+  for (const { script, issue, plateforme } of rouges) {
+    refus.push({
+      message: `docs:check — ${script}${plateforme ? ` — rendu sous ${plateforme}` : ''} — ${natureDuRouge(issue)}`,
+      guerit: guerissable(issue) && (!plateforme || hotePerime.has(script)),
+    })
   }
   if (refus.length) {
     process.stderr.write(`${ENTETE_ROUGES} (${refus.length}) :\n${refus.map((r) => `  ${r.message}`).join('\n')}\n`)
     return refus.every((r) => r.guerit) ? CODE_CORPS_PERIME : 1
   }
   console.log(
-    `docs:check — OK (${SOURCES_LUES} à jour, ${Object.keys(parGenerateur).length} générateur(s) rejoué(s), ${sautes} frais, ${verificateurs.length} vérificateur(s))`,
+    `docs:check — OK (${SOURCES_LUES} à jour, ${Object.keys(parGenerateur).length} générateur(s) rejoué(s) sous ${[hote, ...enPlus].join(' + ')}, ${sautes} frais, ${verificateursJoues.length} vérificateur(s))`,
   )
   return 0
 }
 
-function main() {
+async function main() {
   const cwd = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
-  process.exitCode = executer({ cwd })
+  process.exitCode = await executer({ cwd })
 }
 
 if (import.meta.main) main()

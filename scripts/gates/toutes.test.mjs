@@ -113,7 +113,7 @@ test('un plafond par gate, jamais un défaut muet', () => {
   assert.equal(limiteDe('gate-inconnue'), TIMEOUTS.defaut * 1000)
   assert.equal(limiteDe('test'), TIMEOUTS.test * 1000)
   assert.ok(TIMEOUTS.test > TIMEOUTS.defaut)
-  assert.ok(TIMEOUTS['docs:check:tout'] >= 650, 'docs:check:tout vaut 216,4 s au pire observé — ×3 = 650 s au moins')
+  assert.ok(limiteDe('docs:check:tout') >= 404 * 1000, 'docs:check:tout vaut 134,5 s au pire observé — ×3 = 404 s au moins')
 })
 
 test('un enfant qui dépasse son plafond est EXPIRÉ, et son ARBRE tombe avec lui', async () => {
