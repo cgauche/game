@@ -247,3 +247,15 @@ describe('#1279 — la table s’ouvre sur l’offre du PROPOSEUR', () => {
     expect(get().tavernGames!.npcId).toBeUndefined();
   });
 });
+
+/** #1882 — un personnage SANS fiche n'a aucune valeur à opposer : la salle ne le propose pas (jamais sous
+ *  son id brut), sa faute est dite à l'auteur par `validateScene`. */
+describe('#1882 — la salle ne propose que des adversaires À FICHE', () => {
+  beforeEach(() => { useGame.setState(useGame.getInitialState(), true); });
+
+  it('un proposeur sans porteur de fiche est exclu de l’offre ; le proposeur à fiche reste', () => {
+    const { statblock: _sansFiche, ...sansFiche } = pnjDeScene('pnj-vide', 'Sans fiche', 40, { gameId: 'dominos' });
+    poseScene([pnjDeScene('pnj-gerta', 'Gerta', 45, { gameId: 'dominos' }), sansFiche as ReturnType<typeof pnjDeScene>]);
+    expect(tavernNpcOffers(get().scene).map((o) => o.id)).toEqual(['pnj-gerta']);
+  });
+});

@@ -133,7 +133,8 @@ import type { Scene } from './scene';
 // `statblock` ou `presetId`, exigé par `sceneEntitySchema`). `snapshotSave` recopie le `state` ENTIER,
 // `state.scene.entities` comprise : une save de 50 rouvrirait sur une scène vivante dont les personnages
 // sans fiche sont refusés par `validateScene` et par le seam `parseProject` au prochain export/import de
-// son projet. La save se jette (politique 2 ci-dessus).
+// son projet. Même bump : `ScheduledRespawn.summon` (file `scheduledEffects`, sauvée) porte le
+// `PorteurDeFiche` du défunt au lieu d'une réf. nue. La save se jette (politique 2 ci-dessus).
 export const SAVE_VERSION = 51;
 
 export interface SaveMeta {
@@ -185,7 +186,7 @@ function storage(): Storage | null {
 const HORS_SAVE: Record<string, string> = {
   // #767 — couche runtime posée par `loadProject` ; sa persistance (forme + golden + bump
   // `SAVE_VERSION`) est le périmètre de #766.
-  campaignNarratif: 'couche runtime de projet, repostée au chargement',
+  campaignNarratif: 'couche runtime de projet, re-dérivée de `campaignDoc` (`reposerPaquetDeCampagne`, store.ts)',
   // #1687 — état de la TOUCHE Alt à l'instant, pas une préférence : une save qui le porterait
   // rechargerait une partie aux utilisables révélés, touche relâchée.
   reveler: 'geste clavier en cours, jamais un état de partie',

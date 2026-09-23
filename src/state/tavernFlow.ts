@@ -129,17 +129,21 @@ function tavernActor(get: Get, id: string | undefined): Combatant | undefined {
 /**
  * LES PNJ DE LA SCÈNE QUI PROPOSENT UNE PARTIE (`SceneEntity.tavernGame`) — ce que la CARTE décide,
  * lu par la modale pour offrir le troisième mode d'adversaire. Rend l'entité ET sa fiche dérivée :
- * le libellé affiché est celui que rend la projection (`sceneNpc`), jamais un id brut.
+ * le libellé affiché est celui que rend la projection (`sceneNpc`), jamais un id brut. Un personnage SANS
+ * fiche n'a aucune valeur à opposer : il n'est pas proposé (sa faute est dite par `validateScene`, #1882).
  */
 export function tavernNpcOffers(scene: Scene | null | undefined): { id: string; label: string; gameId: string; stakeBrass?: number }[] {
   return (scene?.entities ?? [])
     .filter((e) => e.kind === 'personnage' && e.tavernGame)
-    .map((e) => ({
-      id: e.id,
-      label: sceneNpc(scene, e.id)?.label ?? e.id,
-      gameId: e.tavernGame!.gameId,
-      ...(e.tavernGame!.stakeBrass != null ? { stakeBrass: e.tavernGame!.stakeBrass } : {}),
-    }));
+    .flatMap((e) => {
+      const fiche = sceneNpc(scene, e.id);
+      return fiche ? [{
+        id: e.id,
+        label: fiche.label,
+        gameId: e.tavernGame!.gameId,
+        ...(e.tavernGame!.stakeBrass != null ? { stakeBrass: e.tavernGame!.stakeBrass } : {}),
+      }] : [];
+    });
 }
 
 /** Déclaration du Test (skill/char/spec) d'un jeu — MÊME repli que `tavernGameValue` (Pari si rien

@@ -18,7 +18,7 @@
  * le store (non sérialisables, jamais dans les snapshots).
  */
 import type { GameState } from './store';
-import { useGame, registerScene } from './store';
+import { useGame, registerScene, reposerPaquetDeCampagne } from './store';
 import { snapshotSave, packHouseRules, unpackHouseRules } from './saves';
 import { ruleOverrides, loadRuleOverrides } from '../engine/policy';
 import { HostSession, GuestSession } from '../net/session';
@@ -159,6 +159,7 @@ export function applyNetSnapshot(set: Set, data: Record<string, unknown>): void 
   set({
     ...base,
     ...(game as Partial<GameState>),
+    ...reposerPaquetDeCampagne((game as Partial<GameState>).campaignDoc),
     ...(keepCreator ? { screen: 'creator' as const } : null),
     localIntent: mine.localIntent,
     dispelCarrierId: mine.dispelCarrierId, // le porteur élu est le choix EN COURS de ce client

@@ -14,7 +14,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseProject, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS } from './worldMap';
 import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS, type SceneEntity } from './scene';
-import { spawnEnemy } from './spawn';
+import { ficheDEntite } from './sceneNpc';
 import species from '../data/species.json';
 import { sceneEntitySchema } from '../data/schemas/defs-scenes/scene';
 
@@ -103,26 +103,22 @@ describe('PROJECT_MIGRATIONS[12] — un projet format 12 se charge à travers la
     expect(() => parseProject(bricole)).toThrow(/personnage « aubergiste » : « ref », « statblock », « presetId » absents/);
   });
 
-  /** Le combattant AVANT (entité sans porteur, branche `!ref`) et APRÈS le migrateur, par `spawnEnemy`.
-   *  Attendus MESURÉS (juge de diff T2a, 2026-09-23). */
+  /** Le combattant APRÈS le migrateur, par la fiche du spawn (`ficheDEntite`), face à ce que la branche
+   *  `!ref` de `spawnEnemy` JOUAIT avant #1882 — le passé est une DONNÉE, mesurée sur le dernier état de
+   *  cette branche (juge de diff T2a, 2026-09-23) : quelle que soit l'espèce, ce combattant-là. */
   it('au SPAWN : libellé et Blessures inchangés sans profil standard, la forme du corps suit l’espèce ; le profil standard donne sa fiche', () => {
-    const combattants = (species: string) => {
-      const ent = { id: `p-${species}`, kind: 'personnage', pos: { x: 0, y: 0 }, appearance: { species } };
+    const AVANT_1882 = { label: 'Ennemi', blessures: 10, corps: 'humanoide', fiche: undefined };
+    const apres = (species: string) => {
+      const ent = { id: `p-${species}`, kind: 'personnage' as const, pos: { x: 0, y: 0 }, appearance: { species } };
       const doc = { schema: 12, version: 12, scenes: [{ entities: [structuredClone(ent)] }] };
-      const migree = (PROJECT_MIGRATIONS[12]!(doc as never) as { scenes: { entities: Pick<SceneEntity, 'ref' | 'statblock'>[] }[] }).scenes[0].entities[0];
-      const avant = spawnEnemy(undefined, undefined, ent.id, ent.pos, { appearance: ent.appearance });
-      const apres = spawnEnemy(migree.ref, migree.statblock, ent.id, ent.pos, { appearance: ent.appearance });
-      const vue = (c: typeof avant) => ({ label: c.label, blessures: c.wounds.max, corps: c.bodyShape, fiche: c.creatureId });
-      return { avant: vue(avant), apres: vue(apres) };
+      const migree = (PROJECT_MIGRATIONS[12]!(doc as never) as { scenes: { entities: SceneEntity[] }[] }).scenes[0].entities[0];
+      const c = ficheDEntite(migree);
+      return { label: c.label, blessures: c.wounds.max, corps: c.bodyShape, fiche: c.creatureId };
     };
-    const ennemi = (corps: string) => ({ label: 'Ennemi', blessures: 10, corps, fiche: undefined });
-    expect(combattants('loup')).toEqual({ avant: ennemi('humanoide'), apres: ennemi('quadrupede') });
-    expect(combattants('rat-geant')).toEqual({ avant: ennemi('humanoide'), apres: ennemi('quadrupede') });
-    expect(combattants('gnomes')).toEqual({ avant: ennemi('humanoide'), apres: ennemi('humanoide') });
-    expect(combattants('humains-reiklander')).toEqual({
-      avant: ennemi('humanoide'),
-      apres: { label: 'Humain', blessures: 12, corps: 'humanoide', fiche: 'humain' },
-    });
+    expect(apres('loup')).toEqual({ ...AVANT_1882, corps: 'quadrupede' });
+    expect(apres('rat-geant')).toEqual({ ...AVANT_1882, corps: 'quadrupede' });
+    expect(apres('gnomes')).toEqual(AVANT_1882);
+    expect(apres('humains-reiklander')).toEqual({ label: 'Humain', blessures: 12, corps: 'humanoide', fiche: 'humain' });
   });
 
   it('au SCHÉMA : chaque porteur SEUL suffit, l’absence de tous est l’issue nommée au chemin `ref`', () => {

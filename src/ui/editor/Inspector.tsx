@@ -759,8 +759,8 @@ export function Inspector({
               </label>
               {ent.presetId && ent.statblock && (
                 <p className="hint" style={{ color: 'var(--danger)' }}>
-                  Preset PNJ ET profil personnalisé présents — le moteur donne la PRIORITÉ au preset
-                  (`spawn.ts`) : le profil ci-dessous est ignoré au spawn tant que le preset reste renseigné.
+                  Preset PNJ ET profil personnalisé présents — le preset prime (`sceneNpc.ts`,
+                  `porteurDeFiche`) : le profil ci-dessous est ignoré tant que le preset reste renseigné.
                 </p>
               )}
               {ent.statblock ? (

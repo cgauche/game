@@ -96,12 +96,12 @@ describe('une RÉF de créature que le spawn ne résout pas est une erreur, pas 
         const s = scene();
         s.entities.push({ id: 'e-1', kind: 'personnage', pos: { x: 2, y: 2 }, ref });
         expect(validateScene([s]).filter((w) => w.level === 'error'), ref).toEqual([]);
-        expect(spawnEnemy(ref, undefined, 'e-1', { x: 2, y: 2 }).label, ref).not.toContain('RÉF ?');
+        expect(spawnEnemy({ ref: ref }, 'e-1', { x: 2, y: 2 }).label, ref).not.toContain('RÉF ?');
       }
       const faux = scene();
       faux.entities.push({ id: 'e-1', kind: 'personnage', pos: { x: 2, y: 2 }, ref: 'ref-qui-nexiste-nulle-part' });
       expect(validateScene([faux]).filter((w) => w.level === 'error')).toHaveLength(1);
-      expect(spawnEnemy('ref-qui-nexiste-nulle-part', undefined, 'e-1', { x: 2, y: 2 }).label).toContain('RÉF ?');
+      expect(spawnEnemy({ ref: 'ref-qui-nexiste-nulle-part' }, 'e-1', { x: 2, y: 2 }).label).toContain('RÉF ?');
     } finally {
       cri.mockRestore();
     }

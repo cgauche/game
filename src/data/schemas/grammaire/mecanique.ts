@@ -10,7 +10,8 @@ import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/
 import type { StakeRef } from '../../index';
 import { messageRecurrenceHorloge, type GameOp } from '../../../engine/ops';
 import { INDICE_TEMPLATE, type Condition, type EffectOp, type EffectTrigger, type Flow } from '../../../engine/flowCore';
-import { chaosAlignSchema, charKeySchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption, symptomSeveritySchema } from './valeurs';
+import { chaosAlignSchema, charKeySchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption, sizeCategorySchema, symptomSeveritySchema } from './valeurs';
+import { traitInstanceSchema } from './reference';
 import { marque } from './slots';
 import { idDe, ref, refs, refOuSpec } from './ref';
 
@@ -89,6 +90,18 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
    *  elle est déjà écrite par la ligne « Cible » du sort (ZdE, `LDB 47 l.28`) — l'op la LIT. */
   domeWard: z.strictObject({ op: z.literal('domeWard'), traitId: idDe('trait'), indice: formulaSchema }),
   suffocate: z.strictObject({ op: z.literal('suffocate') }),
+  /** `summon` — la créature invoquée se nomme par un id du bestiaire (`idDe('creature')`) : une op
+   *  sans créature est refusée AU PARSE (#1882), jamais spawnée. */
+  summon: z.strictObject({
+    op: z.literal('summon'),
+    ref: idDe('creature'),
+    count: formulaSchema,
+    countPerSL: perSLSchema.optional(),
+    addTraits: z.array(traitInstanceSchema).optional(),
+    size: sizeCategorySchema.optional(),
+    allyOfCaster: z.boolean().optional(),
+    despawnIfCasterDown: z.boolean().optional(),
+  }),
   /** `offTerrainMod` — passif POSITIONNEL : hors de son terrain d'ÉLECTION, le porteur subit un M
    *  IMPOSÉ (`mSet`, Créature marine MDG 16 l.17 « son M tombe à 1 » ; Aquatique MSRC 15 l.139 → 0),
    *  un malus de DR à TOUS ses Tests (`testDR`) et/ou la suffocation (`suffocates`). Le terrain se
@@ -123,7 +136,7 @@ export const OPS_NON_TYPEES: readonly string[] = [
   'mitigateIncoming', 'moveMod', 'moveScale', 'narrative', 'perRound', 'polymorph',
   'preventInfection', 'push', 'reduceDiseaseDays', 'reduceToZero', 'removeCondition', 'removePsychTrait',
   'removeShipPoste', 'rollMutation', 'rollTable', 'rollThreshold', 'sbBonus', 'scheduleRespawn', 'senseLoss',
-  'sinMod', 'skillDRBonus', 'skillMod', 'spendAdvantage', 'statusMod', 'summon', 'suppressPsych',
+  'sinMod', 'skillDRBonus', 'skillMod', 'spendAdvantage', 'statusMod', 'suppressPsych',
   'suppressSymptom', 'teamCommander', 'teleport', 'testMod', 'transform', 'weaponDamageMod', 'weaponRollMod',
   'weatherWard', 'wounds', 'zone',
 ];

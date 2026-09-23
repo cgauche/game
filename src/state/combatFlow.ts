@@ -6079,19 +6079,21 @@ export function resolveTriggerImpureOps(get: Get, set: SetFn, actor: Combatant, 
 /** RECONSTITUTION DIFFÉRÉE (op `scheduleRespawn`, Gardien éternel — Bestiaire de Middenheim) : à la mort du
  *  porteur, PROGRAMME (file `scheduledEffects`, horloge) la ré-invocation de la créature à `gameTime + d10
  *  jours`. Le délai `delayDays` est ROULÉ ici (`battleRng`, donc déterministe en test) ; `ref:'self'` se
- *  résout au `creatureId` du défunt (repli sur son nom). Un INSTANTANÉ minimal du défunt (id/name/kind/pos)
+ *  résout au porteur de fiche du défunt (`Combatant.porteurDeFiche`, #1882). Un INSTANTANÉ minimal du défunt (id/name/kind/pos)
  *  sert de lanceur à `applySummon` au déclenchement. Le `cancelFlag` (précautions) reste désamorçable par un
  *  Effet de scène. Sans position (hors grille) : pas de point de reconstitution → no-op. */
 function scheduleRespawnFromOp(
   _get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'scheduleRespawn' }>,
 ): string[] {
   if (!actor.pos) return [];
+  // `ref:'self'` : la fiche du défunt, quel qu'en soit le porteur (Middenheim 04 p.115, LDB 76 l.11, #1882).
+  const porteur = op.ref === 'self' ? actor.porteurDeFiche : { ref: op.ref };
+  if (!porteur) throw new Error(`[scheduleRespawn] « ${actor.id} » n'a été spawné d'aucune fiche : \`ref:'self'\` ne peut le reconstituer (#1882)`);
   const days = resolveFormula(op.delayDays, actor, battleRng());
   const count = Math.max(1, resolveFormula(op.count ?? 1, actor, battleRng()));
-  const ref = op.ref === 'self' ? (actor.creatureId ?? actor.label) : op.ref;
   const respawn: ScheduledRespawn = {
     caster: { id: actor.id, label: actor.label, kind: actor.kind, pos: { ...actor.pos } },
-    summon: { ref, count, allyOfCaster: op.allyOfCaster },
+    summon: { porteur, count, allyOfCaster: op.allyOfCaster },
   };
   set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt: s.gameTime + days * MINUTES_PER_DAY, cancelFlag: op.cancelFlag, respawn }] }));
   return [tr('cf.sourceRebuilds', { name: actor.label, days, s: days > 1 ? 's' : '' })];
