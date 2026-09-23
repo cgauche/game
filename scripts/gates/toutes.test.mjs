@@ -293,7 +293,7 @@ function depotDeGates(gatesFactices) {
     join(racine, '.github', 'workflows', 'ci.yml'),
     ['name: CI', 'jobs:', '  build:', '    steps:', ...gatesFactices.map((g) => `      - run: npm run ${g.nom}`), ''].join('\n'),
   )
-  // Le lanceur écrit ses sorties et ses durées sous `node_modules/.cache/gates/` (toutes.mjs:435,450) :
+  // Le lanceur écrit ses sorties et ses durées sous `node_modules/.cache/gates/` (`dossierSorties` de toutes.mjs) :
   // sans cet ignore, tout run réel finirait sur « l'arbre a CHANGÉ », et le code du lanceur ne
   // discriminerait plus rien.
   writeFileSync(join(racine, '.gitignore'), 'node_modules/\n')

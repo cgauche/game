@@ -72,5 +72,4 @@ function main(rawDir = RAWDIR) {
   console.log('OK — chaque renvoi d’ancre de l’Atlas désigne une ancre existante de la page qu’il vise.')
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

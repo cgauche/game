@@ -1,4 +1,4 @@
-// Tests du DRIVER de `solde-ticket-guard` (le bloc `isMain`, non importable : il se teste en
+// Tests du DRIVER de `solde-ticket-guard` (le bloc `import.meta.main`, non importable : il se teste en
 // lançant le script réel avec un payload de hook sur stdin). Lancé par `npm run test:hooks`.
 //
 // Le driver est la couture où le message de commit est REJOINT à son répertoire d'exécution : un

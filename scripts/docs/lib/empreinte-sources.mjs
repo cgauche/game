@@ -73,10 +73,11 @@ export function motifDeRejeu(texte, empreinteSources) {
   return null
 }
 
-/** Le pied est un commentaire HTML : seul un doc Markdown le porte. Une cible de CODE
- *  (`*.generated.ts`) est vérifiée par son corps seul — le pied ne se pose, ne se lit et ne se juge
- *  que sur une cible `.md`. */
-export const porteUnPied = (cible) => cible.endsWith('.md')
+/** Une cible est un doc MARKDOWN. Deux lecteurs : le pied, commentaire HTML, ne se POSE que sur
+ *  elle (`ciblesSignees`, build-all.mjs) — le lire ou le retirer vaut pour toute cible, une cible de
+ *  code (`*.generated.ts`) n'en portant simplement aucun ; et `check-docs-vs-head.mjs` ne confronte
+ *  au commit que la prose d'un doc. */
+export const estUnDocMarkdown = (cible) => cible.endsWith('.md')
 
 /**
  * Écrit un doc généré en CONSERVANT le pied qu'il portait. Un générateur joué SEUL (`npm run
@@ -99,7 +100,8 @@ export function ecrireDoc(chemin, contenu) {
 /**
  * Bit du code de sortie qui dit « corps périmé » — une seule convention pour tout dérivé. Le bit 1
  * reste celui de tout autre rouge (cliquet, refus, exception), si bien qu'un générateur dont le
- * cliquet ET le corps sont rouges sort en 3, et que `build-all.mjs --check` nomme les deux.
+ * cliquet ET le corps sont rouges sort en 3. La convention ne produit que 1, 2 et 3 : `natureDuRouge`
+ * (build-all.mjs) ne lit ce bit que sur 2 et 3, tout autre code étant une sortie de Node.
  */
 export const CODE_CORPS_PERIME = 2
 

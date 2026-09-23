@@ -154,5 +154,4 @@ function main(argv) {
   return 0
 }
 
-const isMain = import.meta.main
-if (isMain) process.exit(main(process.argv.slice(2)))
+if (import.meta.main) process.exit(main(process.argv.slice(2)))

@@ -97,5 +97,4 @@ function main() {
   console.log(`check-atlas-counts — OK (aucun compte manuscrit dans ${balayes.length} fichier(s) manuscrit(s) de l'Atlas ; ${BOOKS.length} livres dans BOOKS)`)
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

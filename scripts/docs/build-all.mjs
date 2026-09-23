@@ -5,7 +5,7 @@
 // REJOUÉ EN ENTIER par `--check --tout` (`npm run docs:check:tout`, la commande de la CI).
 // Une cible n'est pas toujours un `docs/*.md` ÉCRIT EN ENTIER : `build-implemente.mjs` injecte un
 // champ dans les fiches raw — il déclare `targets: []` et se joue comme les autres ; les registres
-// `*.generated.ts` sont des cibles de CODE, écrites en entier mais sans pied (`porteUnPied`).
+// `*.generated.ts` sont des cibles de CODE, écrites en entier mais sans pied (`estUnDocMarkdown`).
 // Ordre motivé : les registres générés passent EN TÊTE (les générateurs de docs lisent `src/`) ; les
 // rapports d'Atlas LISENT les fiches docs/raw (`pagesLues` de coverage.mjs, `computeReconciliation`
 // de reconcile.mjs, `scan` de reanchor.mjs), ils passent donc APRÈS build-catalogs/build-implemente
@@ -39,13 +39,13 @@ import { SORTIES as SORTIES_DU_REGISTRE } from '../gen-registry.mjs'
 import { execFileResilient } from '../guards/lib/spawnResilient.mjs'
 import {
   avecPied, CODE_CORPS_PERIME, deltaSourcesLues, empreinteDeLIndex, empreinteDuDisque, existeFichier,
-  fusionnerLectures, hashBlobDisque, ignoresGit, indexGit, lirePied, motifDeRejeu, porteUnPied,
+  fusionnerLectures, hashBlobDisque, ignoresGit, indexGit, lirePied, motifDeRejeu, estUnDocMarkdown,
   serialiserSourcesLues, sha1Corps,
 } from './lib/empreinte-sources.mjs'
 
 /** `{ runner, script, targets, injecte }` — `runner` = 'node' | 'tsx' ; `targets` = fichiers ÉCRITS
- *  EN ENTIER (glob toléré), dont seuls ceux qui PORTENT un pied le reçoivent (`porteUnPied` : les docs
- *  Markdown, cf. la garde de taxonomie de scripts/git-hooks/merge-docs.test.mjs) ; `injecte` = fichiers
+ *  EN ENTIER (glob toléré), dont seuls les docs Markdown reçoivent un pied (`estUnDocMarkdown`, cf. la
+ *  garde de taxonomie de scripts/git-hooks/merge-docs.test.mjs) ; `injecte` = fichiers
  *  dont le générateur ne réécrit QU'UN BLOC (il les relit, ils ne sont donc pas ses sources).
  *  Tout générateur sait `--check` : un de plus coûte une ligne ici, et rien d'autre.
  *  Ordre = ordre d'exécution. */
@@ -115,7 +115,7 @@ function tsxEsmDe(cwd) {
   const { refus } = resoudreOutilLocal(cwd, 'tsx', 'tsx')
   if (refus) {
     console.error(refus)
-    process.exit(2)
+    process.exit(1)
   }
   return fileURLToPath(import.meta.resolve('tsx/esm'))
 }
@@ -257,8 +257,8 @@ function diagnosticSourcesLues(actuel, rendu, mesure) {
   return `  différence de SÉRIALISATION seule : ${Buffer.byteLength(actuel)} / ${Buffer.byteLength(rendu)} octets, première divergence à l'octet ${i} : ${ctx(actuel)} vs ${ctx(rendu)}\n`
 }
 
-/** Les cibles SIGNÉES d'un générateur : celles de ses `targets` qui portent un pied (`porteUnPied`). */
-export const ciblesSignees = (g, cwd) => ciblesSurDisque(g.targets.filter(porteUnPied), cwd)
+/** Les cibles SIGNÉES d'un générateur : celles de ses `targets` qui sont des docs Markdown. */
+export const ciblesSignees = (g, cwd) => ciblesSurDisque(g.targets.filter(estUnDocMarkdown), cwd)
 
 /**
  * Cible → générateur qui l'ÉCRIT. Un fichier écrit en entier n'a qu'un auteur : deux pieds sur le même
@@ -471,23 +471,56 @@ export function fraicheurDesGenerateurs(cwd, blobs, lues, ignores, generateurs =
 }
 
 /**
- * La nature d'un rouge de générateur, lue sur son code de sortie : le bit `CODE_CORPS_PERIME` dit
- * « corps périmé » (`declarerCorpsPerime`), le reste est une « sortie N » (cliquet, refus,
- * exception). Un code hors octet (processus tué par le système) n'est qu'une sortie.
+ * L'issue d'un générateur rouge, lue sur l'erreur de `execFileResilient` : `status` (code de
+ * sortie, `null` pour un processus tué), `signal`, et `code` (errno : `ENOENT` = jamais démarré,
+ * `ENOBUFS` = sortie coupée au-delà de `maxBuffer`). PUR.
  */
-export function natureDuRouge(code) {
-  if (typeof code !== 'number') return `non démarré (${code})`
-  if (code > 0xff) return `sortie ${code}`
-  const reste = code & ~CODE_CORPS_PERIME
-  return [code & CODE_CORPS_PERIME ? 'corps périmé' : null, reste ? `sortie ${reste}` : null].filter(Boolean).join(' + ')
+export const issueDe = (e) => ({
+  status: typeof e?.status === 'number' ? e.status : null,
+  signal: e?.signal ?? null,
+  code: typeof e?.code === 'string' ? e.code : null,
+})
+
+/**
+ * La nature d'un rouge de générateur, lue sur son issue (`issueDe`). La convention d'un dérivé ne
+ * produit que trois codes : 1 (rouge), `CODE_CORPS_PERIME` (corps périmé), et les deux ensemble.
+ * Le bit du corps périmé ne se LIT que sur ces deux derniers : tout autre code (les codes réservés
+ * de Node, 6, 7, 13…) est une « sortie N ». Un processus tué se nomme par son signal, une erreur de
+ * lancement par son errno. PUR.
+ */
+export function natureDuRouge({ status = null, signal = null, code = null }) {
+  if (code) return signal ? `${code} (tué par ${signal})` : code
+  if (signal) return `tué par ${signal}`
+  if (status === CODE_CORPS_PERIME) return 'corps périmé'
+  if (status === (1 | CODE_CORPS_PERIME)) return 'corps périmé + sortie 1'
+  if (typeof status === 'number') return `sortie ${status}`
+  return 'sans code de sortie'
 }
+
+/** En-tête du bilan des rouges de `--check`, suivi d'un rouge par ligne indentée. */
+export const ENTETE_ROUGES = 'docs:check — ROUGE'
+
+/** Les rouges NOMMÉS par le dernier bilan `ENTETE_ROUGES` d'une sortie de `--check`. PUR. */
+export function rougesNommes(sortie) {
+  const lignes = String(sortie ?? '').split(/\r?\n/)
+  const debut = lignes.findLastIndex((l) => l.startsWith(`${ENTETE_ROUGES} (`))
+  if (debut < 0) return []
+  const suite = lignes.slice(debut + 1)
+  const fin = suite.findIndex((l) => !l.startsWith('  '))
+  return (fin < 0 ? suite : suite.slice(0, fin)).map((l) => l.trim())
+}
+
+/** Un rouge de générateur que `docs:build` guérit : son SEUL grief est un corps périmé. PUR. */
+export const guerissable = (issue) => !issue.code && !issue.signal && issue.status === CODE_CORPS_PERIME
 
 /**
  * `docs:build` (écriture), `--check` (vérification) ou `--empreinte`. REND le code de sortie.
  * En écriture, le premier rouge ARRÊTE : un générateur rouge laisse docs/ à moitié régénéré, et
  * enchaîner les suivants fabriquerait un lot incohérent que le hook annoncerait « à committer ».
  * En `--check`, rien n'est écrit : chaque générateur et chaque vérificateur rend son verdict, et tous
- * les rouges sont nommés à la fin.
+ * les rouges sont nommés à la fin. Le code de sortie dit si `docs:build` les guérit :
+ * `CODE_CORPS_PERIME` quand CHAQUE rouge est un corps, un pied ou `.sources-lues.json` périmé, 1 dès
+ * qu'un rouge ne se régénère pas (cliquet, vérificateur, refus) — c'est ce que lit `publier.mjs`.
  */
 export function executer({
   cwd,
@@ -518,9 +551,12 @@ export function executer({
     injectees: ciblesSurDisque(g.injecte ?? [], cwd),
   }]))
   // `--check` CIBLÉ : la fraîcheur saute un générateur dont chaque cible porte un pied qui signe ces
-  // sources ET ce corps. C'est un raccourci AVEUGLE à la plateforme qui a rendu le corps : un corps
-  // rendu ailleurs puis re-signé y passe pour frais. Seul `--tout` rejoue chaque générateur, et la CI
-  // joue `--tout` (#1801).
+  // sources ET ce corps — il n'est pas rejoué, son cliquet non plus (`reconcile.mjs`, `reanchor.mjs`).
+  // Pour le cliquet, c'est équivalent : il ne lit que des fichiers que l'enregistreur de lectures
+  // MESURE (son stock, les fiches docs/raw, Source/), et des sources inchangées rendent le même
+  // verdict. Pour le corps, c'est un raccourci AVEUGLE à la plateforme qui l'a rendu : un corps rendu
+  // ailleurs puis re-signé y passe pour frais. Seul `--tout` rejoue chaque générateur, et la CI joue
+  // `--tout` (#1801).
   const frais = new Map()
   const blobs = check ? indexGit(cwd) : null
   if (check && !tout) {
@@ -540,10 +576,11 @@ export function executer({
   const parGenerateur = {}
   // Verdicts de `--check`, TOUS collectés : un générateur rouge ne masque pas les suivants.
   const rouges = []
+  // Chaque refus dit s'il se GUÉRIT en régénérant (`docs:build`) : c'est le code de sortie.
   const refus = []
-  const refuser = (message) => {
+  const refuser = (message, { guerit = false } = {}) => {
     process.stderr.write(`${message}\n`)
-    refus.push(message)
+    refus.push({ message, guerit })
   }
   let sautes = 0
   for (const [rang, g] of generateurs.entries()) {
@@ -569,12 +606,12 @@ export function executer({
       run(g, { cwd, quiet, check, tsxEsm, lectures: dossier, cibles: [...new Set([...ecrites, ...injectees])].sort() })
     } catch (e) {
       transmettreDiagnostic(e, quiet)
-      const code = typeof e.status === 'number' ? e.status : e.message
+      const issue = issueDe(e)
       if (!check) {
-        process.stderr.write(`docs:build — ARRÊT sur ${g.script} (code ${code}) : docs/ n'est PAS à jour.\n`)
+        process.stderr.write(`docs:build — ARRÊT sur ${g.script} (${natureDuRouge(issue)}) : docs/ n'est PAS à jour.\n`)
         return 1
       }
-      rouges.push({ script: g.script, code })
+      rouges.push({ script: g.script, issue })
       continue
     }
     const lues = fusionnerLectures(dossier)
@@ -615,7 +652,7 @@ export function executer({
         const chemin = path.join(cwd, cible)
         if (!existeFichier(chemin)) continue
         const raison = verdictDuPied({ pied: lirePied(readFileSync(chemin, 'utf8')), empreinte, cible })
-        if (raison) refuser(`docs:check — ${g.script} — ${raison} — npm run docs:build`)
+        if (raison) refuser(`docs:check — ${g.script} — ${raison} — npm run docs:build`, { guerit: true })
       }
       continue
     }
@@ -651,7 +688,7 @@ export function executer({
       }, { site: `build-all/${script}` })
     } catch (e) {
       transmettreDiagnostic(e, quiet)
-      refuser(`docs:check — ${script} — sortie ${typeof e.status === 'number' ? e.status : e.message}`)
+      refuser(`docs:check — ${script} — ${natureDuRouge(issueDe(e))}`)
     }
   }
   const mesure = { ...lireSourcesLues(cwd), ...parGenerateur }
@@ -660,12 +697,14 @@ export function executer({
   try { actuel = readFileSync(path.join(cwd, SOURCES_LUES), 'utf8') } catch { actuel = null }
   if (actuel !== rendu) {
     process.stderr.write(diagnosticSourcesLues(actuel, rendu, mesure))
-    refuser(`docs:check — ${SOURCES_LUES} est PÉRIMÉ (les sources MESURÉES d'au moins un générateur ont changé) — npm run docs:build`)
+    refuser(`docs:check — ${SOURCES_LUES} est PÉRIMÉ (les sources MESURÉES d'au moins un générateur ont changé) — npm run docs:build`, { guerit: true })
   }
-  for (const { script, code } of rouges) refus.push(`docs:check — ${script} — ${natureDuRouge(code)}`)
+  for (const { script, issue } of rouges) {
+    refus.push({ message: `docs:check — ${script} — ${natureDuRouge(issue)}`, guerit: guerissable(issue) })
+  }
   if (refus.length) {
-    process.stderr.write(`docs:check — ROUGE (${refus.length}) :\n${refus.map((r) => `  ${r}`).join('\n')}\n`)
-    return 1
+    process.stderr.write(`${ENTETE_ROUGES} (${refus.length}) :\n${refus.map((r) => `  ${r.message}`).join('\n')}\n`)
+    return refus.every((r) => r.guerit) ? CODE_CORPS_PERIME : 1
   }
   console.log(
     `docs:check — OK (${SOURCES_LUES} à jour, ${Object.keys(parGenerateur).length} générateur(s) rejoué(s), ${sautes} frais, ${verificateurs.length} vérificateur(s))`,
@@ -678,5 +717,4 @@ function main() {
   process.exitCode = executer({ cwd })
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

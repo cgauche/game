@@ -179,5 +179,4 @@ function main() {
     console.log(`wrote ${r.path.replace(/\\/g, '/')} — ${r.topics} topics (cœur ${r.coeur})`)
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

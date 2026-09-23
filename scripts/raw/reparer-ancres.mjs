@@ -97,5 +97,4 @@ export function reparer(argv = process.argv.slice(2), rawDir = RAWDIR) {
   return bilan
 }
 
-const isMain = import.meta.main
-if (isMain) reparer()
+if (import.meta.main) reparer()

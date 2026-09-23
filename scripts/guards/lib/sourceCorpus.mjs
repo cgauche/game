@@ -36,7 +36,7 @@
 // `RATCHET_DIRS` de `labelLogic.mjs`, `['src','scripts']`) — sur un total agrégé, une moitié de
 // corpus qui s'évapore reste MUETTE derrière l'autre. Un corpus vide rend toute garde de corpus
 // verte par vacuité — son assertion `offenders == []` est satisfaite sans que rien n'ait été lu, et
-// le rouge est MUET. `listerArbre` lève déjà sur un dossier ABSENT (`lister.mjs:41-48`) ; ce refus
+// le rouge est MUET. `listerArbre` lève déjà sur un dossier ABSENT (`listerDossier`, `lister.mjs`) ; ce refus
 // ferme l'autre moitié : dossier présent, zéro fichier pour les extensions demandées.
 // Aucune exemption : les clés de TOUS les appelants ont été journalisées avec leur cardinal
 // (2026-09-07, #1709 C3s), aucune ne rend 0 — un appelant qui lit un dossier temporaire qu'il
@@ -114,7 +114,7 @@ export function readCorpus(dirs, { exts = ['.ts', '.tsx'], tests = false } = {})
 /** Relâche tous les corpus mémoïsés : la lecture suivante retourne au disque. C'est la PORTE de la
  *  condition de licéité du mémo (voir l'en-tête) — un appelant qui ÉCRIT dans un dossier scanné
  *  entre deux lectures la franchit. Aucune garde ne l'appelle : `genAll()` écrit avant les workers,
- *  les gates écrivantes tournent avant les lanes. Les tests de cette lib l'appellent.
+ *  et aucune gate de la CI n'écrit dans l'arbre. Les tests de cette lib l'appellent.
  *  PRIX : le relâchement est TOTAL (toutes les clés du worker, pas la sienne) et l'IDENTITÉ des
  *  tableaux et des entrées est perdue — les mémos par identité des appelants (`canonUnique.mjs`)
  *  repartent de zéro, et les corpus réels se relisent au disque. Une fixture `mkdtemp` supprimée ne

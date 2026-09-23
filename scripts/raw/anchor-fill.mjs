@@ -409,5 +409,4 @@ function main() {
   if (!apply) console.log('(--dry : relancer avec --apply pour écrire)')
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

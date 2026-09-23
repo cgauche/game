@@ -165,5 +165,5 @@ function main() {
 }
 
 // Le module est IMPORTABLE (la migration du pilote monte `judge`) : le rapport ne part que si ce
-// fichier est le point d'entrée du process — patron de `scripts/migrations/replay.mjs:262`.
+// fichier est le point d'entrée du process — patron de `scripts/migrations/replay.mjs`.
 if (import.meta.main) main()

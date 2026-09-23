@@ -37,6 +37,12 @@ jobs:
       - id: install
         run: npm ci
 
+      # PREMIÈRE gate : `test` et `build` passent par `vite.config.ts`, dont `buildStart` appelle
+      # `genAll()` et réécrit les `*.generated.ts` (même ordre que `ci.yml`).
+      - id: docs-check-tout
+        continue-on-error: true
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run docs:check:tout
       - id: agents-check
         continue-on-error: true
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
@@ -84,10 +90,6 @@ jobs:
         continue-on-error: true
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build
-      - id: docs-check-tout
-        continue-on-error: true
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: npm run docs:check:tout
       # Le seul volet des plans datés qui exige le réseau : un `Ticket:` dont TOUTES les issues sont
       # fermées = plan exécuté que la politique `docs/` veut SUPPRIMÉ. `gh issue list --limit N` impose
       # un plafond numérique à re-relever quand le stock grossit (849 ouvertes pour un `--limit 1000`) :
@@ -161,6 +163,7 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           RESULTATS: |
             install=${{ steps.install.outcome }}
+            docs-check-tout=${{ steps.docs-check-tout.outcome }}
             agents-check=${{ steps.agents-check.outcome }}
             test-agents=${{ steps.test-agents.outcome }}
             test-hooks=${{ steps.test-hooks.outcome }}
@@ -172,7 +175,6 @@ jobs:
             lint=${{ steps.lint.outcome }}
             test=${{ steps.test.outcome }}
             build=${{ steps.build.outcome }}
-            docs-check-tout=${{ steps.docs-check-tout.outcome }}
             plans-dates=${{ steps.plans-dates.outcome }}
             test-raw=${{ steps.test-raw.outcome }}
             raw-check-refs=${{ steps.raw-check-refs.outcome }}

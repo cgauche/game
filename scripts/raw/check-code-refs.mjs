@@ -170,5 +170,4 @@ function main() {
   if (!neuves.length && !perimees.length && !neuvesV.length && !perimeesV.length) console.log('OK — cliquets alignés, aucune régression.')
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

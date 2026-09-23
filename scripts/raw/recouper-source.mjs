@@ -394,5 +394,4 @@ function main() {
   console.log(aEcrire.length || aSupprimer.length || indexAEcrire ? 'écrit' : 'déjà au grain — aucun changement')
 }
 
-const estMain = import.meta.main
-if (estMain) main()
+if (import.meta.main) main()

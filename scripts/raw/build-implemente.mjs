@@ -765,5 +765,4 @@ function main() {
   if (orphans.length || sansObjet.length) process.exit(1)
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

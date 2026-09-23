@@ -432,5 +432,4 @@ function main(rawDir = RAWDIR) {
   console.log('par livre : ' + perBook.join(' · '))
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

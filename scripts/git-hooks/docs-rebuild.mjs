@@ -76,5 +76,4 @@ function main() {
   process.stderr.write(`docs régénérés : à committer (${changed.length}) :\n${changed.map((f) => `  ${f}`).join('\n')}\n`)
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

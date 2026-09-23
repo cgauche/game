@@ -1,6 +1,6 @@
 // REJEU D'UN PROCESSUS QUI N'A PAS DÉMARRÉ (#1679 L2 T1d) — module UNIQUE, jamais recopié : deux
-// sites de spawn en dépendent, `scripts/gates/toutes.mjs:50` (les gates du rejeu local et la photo
-// de l'arbre) et `scripts/docs/build-all.mjs:34` (chaque générateur de doc dérivée).
+// sites de spawn en dépendent, `scripts/gates/toutes.mjs` (les gates du rejeu local et la photo
+// de l'arbre) et `scripts/docs/build-all.mjs` (chaque générateur de doc dérivée).
 //
 // LE CAS, MESURÉ le 2026-09-04 (première exécution des lanes, `gates --tout` sur b939ddfe7) : sous
 // quatre lanes parallèles, le loader Windows a refusé d'initialiser des processus NEUFS et rendu

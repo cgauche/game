@@ -224,5 +224,4 @@ function main() {
   for (const u of unresolved) console.log(`  docs/raw/${u.doc}:${u.row} — \`${u.ref}\` — ${u.reason}`)
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

@@ -165,11 +165,11 @@ const ATTENDU = {
     //   journal en mémoire, verdicts, mise en forme) et ses étapes sur des `ctx` FACTICES, dans des
     //   racines jetables (mkdtemp sous os.tmpdir(), rmSync en finally — d'où ses imports d'écriture).
     //   Les écritures réelles de `publier.mjs` sont son journal `node_modules/.cache/publication/` et
-    //   le commit des docs DÉRIVÉS — toutes deux derrière sa porte `estMain` (scripts/ops/publier.mjs,
+    //   le commit des docs DÉRIVÉS — toutes deux derrière sa porte `import.meta.main` (scripts/ops/publier.mjs,
     //   dernière ligne), jamais depuis la gate.
     // · `build-all.mjs`, `empreinte-sources.mjs` et `purgerPerimes.mjs` sont atteints PAR
     //   `publier.mjs`, qui n'en importe que des CONSTANTES et des fonctions pures (`GENERATORS`,
-    //   `SOURCES_LUES`) ; leurs écritures vivent derrière leurs propres portes `isMain`, ou sous
+    //   `SOURCES_LUES`) ; leurs écritures vivent derrière leurs propres portes `import.meta.main`, ou sous
     //   `node_modules/.cache`.
     'scripts/docs/build-all.mjs',
     'scripts/docs/lib/empreinte-sources.mjs',
@@ -196,13 +196,13 @@ const ATTENDU = {
     'scripts/ops/knip-exports-ratchet.mjs',
     // +2 le 2026-09-16 (#1776) : le ruleset `main` (`scripts/ops/ruleset-main.mjs`).
     // · `ruleset-main.mjs` n'écrit QUE le corps du ruleset dans un fichier d'`os.tmpdir()`, pour le
-    //   passer à `gh api --input` (ruleset-main.mjs:117-120) — et seulement depuis `executer`, que
+    //   passer à `gh api --input` (`executer` de ruleset-main.mjs) — et seulement depuis `executer`, que
     //   les tests n'appellent jamais : ils ne jouent que `corpsDuRuleset`, `contextesRequis` et
     //   `refusGh`, tous PURS.
     // · `ruleset-main.test.mjs` écrit ses fixtures `ci.yml` sous `os.tmpdir()` (`mkdtempSync`) ; sa
     //   seule lecture de l'arbre réel est `jobsCi({ cwd: RACINE })` (ruleset-main.test.mjs:27), qui
     //   ne fait que LIRE `.github/workflows/ci.yml`.
-    // Même mesure que la raison `test:ops` d'`ECRIT_LU` (scripts/gates/toutes.mjs:129-150).
+    // Même mesure que la raison `test:ops` d'`ECRIT_LU` (`ECRIT_LU`, scripts/gates/toutes.mjs).
     'scripts/ops/ruleset-main.mjs',
     'scripts/ops/ruleset-main.test.mjs',
     // +1 le 2026-09-16 (#1779) : le banc du signaleur pose le CORPS du rapport (`--body-file` de `gh`)
@@ -267,17 +267,17 @@ const ATTENDU = {
     'scripts/raw/check-entity-in-chapter.test.mjs',
     'scripts/raw/check-folio-continuity.test.mjs',
     // +1 le 2026-09-14 (#1384 B1) : `check-source-tables.test.mjs` importe le détecteur, dont
-    // l'unique écriture (régénération du stock) est fermée par `--ecrire-stock` sous `isMain`
-    // (check-source-tables.mjs:194) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
+    // l'unique écriture (régénération du stock) est fermée par `--ecrire-stock` sous `import.meta.main`
+    // (`main` de check-source-tables.mjs) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
     'scripts/raw/check-source-tables.mjs',
     // +1 le 2026-09-21 (#1820 R4) : `check-source-puces.test.mjs` importe le détecteur des puces
     // lues comme un jeton, dont l'unique écriture (régénération du stock) est fermée par
-    // `--ecrire-stock` sous `isMain` (check-source-puces.mjs:159) — déclarée en `ecritFerme` de
+    // `--ecrire-stock` sous `import.meta.main` (`main` de check-source-puces.mjs) — déclarée en `ecritFerme` de
     // `test:raw` (ECRIT_LU).
     'scripts/raw/check-source-puces.mjs',
     // +1 le 2026-09-14 (#1739 H-0) : `check-source-format.test.mjs` importe le détecteur du format
     // des extractions, dont l'unique écriture (régénération du stock) est fermée par `--ecrire-stock`
-    // sous `isMain` (check-source-format.mjs:396) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
+    // sous `import.meta.main` (`main` de check-source-format.mjs) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
     'scripts/raw/check-source-format.mjs',
     // +1 le même jour : le banc lui-même écrit — il fabrique des dossiers de livre JETABLES sous
     // `os.tmpdir()` (`mkdtempSync`/`mkdirSync`/`writeFileSync`, retirés par `rmSync`) pour éprouver
@@ -287,7 +287,7 @@ const ATTENDU = {
     'scripts/raw/check-refs.test.mjs',
     // +1 le 2026-09-19 (#1825 lot B) : le détecteur des sauts de folio porte désormais UN
     // `writeFileSync` — la régénération de son stock nominatif, fermée par `--ecrire-stock` sous
-    // `isMain`, et déclarée en `ecritFerme` de `test:raw` (ECRIT_LU). Le banc ne fait que LIRE
+    // `import.meta.main`, et déclarée en `ecritFerme` de `test:raw` (ECRIT_LU). Le banc ne fait que LIRE
     // (`readStock`, `lireStockJson`) pour comparer le fichier commité au rendu.
     'scripts/raw/check-folio-continuity.mjs',
     'scripts/raw/citation-graphy-guard.test.mjs',
@@ -301,7 +301,7 @@ const ATTENDU = {
     // +1 le 2026-09-14 (#1727 T2) : `check-folio-continuity.test.mjs` importe la fonction d'ÉCRITURE
     // du générateur des ancres sans contenu (`stocksEnTexte`) pour comparer son rendu aux deux stocks
     // committés ; elle rend un TEXTE. Le seul `writeFileSync` du module vit dans `main()`, sous
-    // `isMain`, et exige les PDF gitignorés — déclaré en `ecritFerme` de `test:raw` (ECRIT_LU).
+    // `import.meta.main`, et exige les PDF gitignorés — déclaré en `ecritFerme` de `test:raw` (ECRIT_LU).
     'scripts/raw/lib/empty-folios-stock.mjs',
     // +1 le 2026-09-14 (#1739 Lot H) : le banc de la lib de lecture des extractions Marker fabrique
     // des dossiers de tranches JETABLES sous `os.tmpdir()` (`mkdtempSync`/`mkdirSync`/`writeFileSync`,
@@ -315,7 +315,7 @@ const ATTENDU = {
     // +1 le 2026-09-21 (#1739 S1) : `recouper-source.test.mjs` importe le re-coupeur des `.md` en
     // service pour éprouver son cœur PUR (`recouper`, `planDe`, `contenuDe`, `indexDe`, `recalerStock`)
     // sur un livre FORGÉ en mémoire ; ses `writeFileSync`/`rmSync` vivent dans `main()`, sous sa porte
-    // `estMain` (recouper-source.mjs:397) — déclarés en `ecritFerme` de `test:raw` (ECRIT_LU).
+    // `import.meta.main` (`main` de recouper-source.mjs) — déclarés en `ecritFerme` de `test:raw` (ECRIT_LU).
     'scripts/raw/recouper-source.mjs',
     // +1 le 2026-09-14 (#1759) : le test du LECTEUR de stock nominatif vit sous `scripts/raw`,
     // racine de cette gate. Il pose ses fixtures (`mkdtempSync` + `writeFileSync`,
@@ -335,7 +335,7 @@ const ATTENDU = {
     // +4 le 2026-09-20 (#1825 lot F0) : la FABRIQUE d'Atlas jetable et les deux bancs qui la
     // prennent posent leur arborescence sous `mkdtempSync` de os.tmpdir(), `rmSync` en finally ;
     // l'écrivain du bloc des cœurs est ACQUIS parce que son banc l'importe — son `writeFileSync`
-    // vit dans `main()`, sous sa porte `isMain` (build-atlas-index.mjs), et le cas `--check` le
+    // vit dans `main()`, sous sa porte `import.meta.main` (build-atlas-index.mjs), et le cas `--check` le
     // LANCE dans un arbre JETABLE dont il est le cwd.
     'scripts/raw/_lib.test.mjs',
     'scripts/raw/atlasFixture.mjs',
@@ -369,7 +369,7 @@ const ATTENDU = {
   'raw:check-refs': [],
   // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE
   // `fieldBlockMask` de `build-implemente.mjs` (frontière du bloc de champ généré, source unique) ;
-  // la réécriture des fiches de ce module vit derrière sa porte `isMain` (`main` de build-implemente.mjs).
+  // la réécriture des fiches de ce module vit derrière sa porte `import.meta.main` (`main` de build-implemente.mjs).
   // Mesure du 2026-09-11 (`scripts/docs/lib/enregistreur-lectures.mjs` en `--import` sur le CLI) :
   // 4 137 lectures, ZÉRO écriture.
   // +1 le 2026-09-23 (#1801) : `build-implemente.mjs` importe `declarerCorpsPerime` du socle
@@ -385,17 +385,17 @@ const ATTENDU = {
   'raw:check-folio-continuity': ['scripts/raw/check-folio-continuity.mjs'],
   // +1 le 2026-09-14 (#1384 B1) : la gate neuve est le détecteur des tables cassées de `Source/`,
   // qui porte UN `writeFileSync` — la régénération de son stock nominatif, fermée par la porte
-  // `--ecrire-stock` (check-source-tables.mjs:194) que ci.yml ne passe pas ; déclarée en
+  // `--ecrire-stock` (`main` de check-source-tables.mjs) que ci.yml ne passe pas ; déclarée en
   // `ecritFerme` sur `scripts/raw/source-tables-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
   'raw:check-source-tables': ['scripts/raw/check-source-tables.mjs'],
   // +1 le 2026-09-14 (#1739 H-0) : la gate neuve est le détecteur du FORMAT des extractions, qui
   // porte UN `writeFileSync` — la régénération de son stock nominatif, fermée par la porte
-  // `--ecrire-stock` (check-source-format.mjs:396) que ci.yml ne passe pas ; déclarée en
+  // `--ecrire-stock` (`main` de check-source-format.mjs) que ci.yml ne passe pas ; déclarée en
   // `ecritFerme` sur `scripts/raw/source-format-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
   'raw:check-source-format': ['scripts/raw/check-source-format.mjs'],
   // +1 le 2026-09-21 (#1820 R4) : la gate neuve est le détecteur des PUCES lues comme un jeton, qui
   // porte UN `writeFileSync` — la régénération de son stock nominatif, fermée par la porte
-  // `--ecrire-stock` (check-source-puces.mjs:159) que ci.yml ne passe pas ; déclarée en
+  // `--ecrire-stock` (`main` de check-source-puces.mjs) que ci.yml ne passe pas ; déclarée en
   // `ecritFerme` sur `scripts/raw/source-puces-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
   'raw:check-source-puces': ['scripts/raw/check-source-puces.mjs'],
   'server:typecheck': [],

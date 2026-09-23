@@ -634,9 +634,8 @@ test('R2 : un chapitre d\'un livre de cœur décrit par l\'Atlas et jamais cité
 })
 
 test('cliquet : le STOCK COMMITTÉ couvre EXACTEMENT les trous durs du vrai repo (aucun neuf, aucun périmé)', () => {
-  // Doublon ASSUMÉ du verdict de `npm run raw:reconcile` : cette lane-ci (`test:raw`) tourne dans la
-  // lane des lecteurs de `docs/raw/`, l'autre en phase SÉRIE — un stock périmé par un commit voisin
-  // se voit ici sans attendre l'écrivain, et le message nomme le remède au lieu d'un exit nu.
+  // Même écart que le cliquet de `reconcile.mjs --check` (rejoué par `docs:check:tout`) : ici, le
+  // message nomme le remède au lieu d'un exit nu.
   const { neuves, perimees, coeur } = ecartsTrousDurs(trousDurs(computeReconciliation()), lireStock())
   // R1 sur le stock RÉEL : aucune clé de Sens A d'un livre de cœur n'y est admise (trou OU entrée).
   assert.deepEqual(coeur, [], 'un livre de cœur se corrige, il ne se stocke pas')

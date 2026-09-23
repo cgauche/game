@@ -111,7 +111,7 @@ export const CHAPTER_BOUNDARY_FOLIO_RE = () => new RegExp(`\\b(${allAbbrAlternat
 // MÉMO : il porte le RÉSULTAT de la passe, pas le texte lu (`readCorpus`, scripts/guards/lib) ;
 // même condition de licéité — l'arbre scanné est STATIQUE pendant un run (aucune gate n'écrit dans
 // l'arbre, `photoArbre` de `scripts/gates/toutes.mjs` le vérifie). Les familles
-// rendues sont GELÉES, comme le corpus de `readCorpus` (`sourceCorpus.mjs:96,100`) : un `push`/`sort`
+// rendues sont GELÉES, comme le corpus de `readCorpus` (`sourceCorpus.mjs`) : un `push`/`sort`
 // d'appelant ne peut pas s'écrire dans le mémo.
 // LECTEUR : la marche reste `listerArbre`/`listerDossier` et non `readCorpus`, parce que ce garde
 // scanne des corpus que ce dernier ne sait pas dire — une base à 0 fichier (il la refuse, par base)
@@ -473,5 +473,4 @@ function main() {
   if (src.length || docs.length || implProse.length || stockFail || unknownAbbr.length || multiFolioSplit.length) process.exitCode = 1
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

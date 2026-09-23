@@ -99,5 +99,4 @@ function main(rawDir = RAWDIR) {
   console.log('OK — chaque chapitre crédité par un catalogue y est transcrit EN ENTIER (tolérance zéro, aucune baseline).')
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

@@ -197,8 +197,7 @@ export function evaluate({ agentType = null, commande = '', gates = gatesDeLaCi(
 }
 
 // ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────────
-const estPrincipal = import.meta.main
-if (estPrincipal) {
+if (import.meta.main) {
   let brut = ''
   process.stdin.setEncoding('utf8')
   for await (const morceau of process.stdin) brut += morceau

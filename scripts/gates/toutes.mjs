@@ -82,7 +82,7 @@ export const ECRIT_LU = {
     ecrit: [],
     lit: ['.claude/', '.agents/', '.codex/', 'AGENTS.md', 'CLAUDE.md', 'scripts/agents/'],
     raison:
-      'mode `check` : `runCompat` n’écrit que sous `mode === "sync"` (scripts/agents/compat-cli.mjs:64,72) ; ' +
+      'mode `check` : `runCompat` n’écrit que sous `mode === "sync"` (`runCompat`, scripts/agents/compat-cli.mjs) ; ' +
       'les 48 lectures mesurées sont les DEUX côtés de la compat — .claude/ (source) et .agents/ + .codex/ + ' +
       'AGENTS.md + CLAUDE.md (miroirs comparés), plus son propre code',
   },
@@ -100,7 +100,7 @@ export const ECRIT_LU = {
     ecrit: [],
     ecritFerme: {
       '.claude/logs/new-src-guard-skips.log':
-        'journal d’urgences du garde de nouveaux fichiers (scripts/hooks/new-src-file-guard.mjs:35) : il est ' +
+        'journal d’urgences du garde de nouveaux fichiers (`JOURNAL`, scripts/hooks/new-src-file-guard.mjs) : il est ' +
         'GITIGNORÉ (.gitignore:41 `.claude/*`, sans négation pour `logs/`), donc il n’entre dans aucune des ' +
         'deux clés de contenu et ne salit pas l’arbre ; aucune gate ne le lit',
     },
@@ -111,7 +111,7 @@ export const ECRIT_LU = {
     ],
     raison:
       'le registre d’écrans que `new-src-file-guard.test.mjs` éprouve est INJECTABLE (`WFRP_REGISTRE_ECRANS`, ' +
-      'scripts/hooks/new-src-file-guard.mjs:42) et le test en écrit une COPIE sous os.tmpdir() ; ' +
+      '`REGISTRE_DEFAUT`, scripts/hooks/new-src-file-guard.mjs) et le test en écrit une COPIE sous os.tmpdir() ; ' +
       'le reste des fixtures vit sous os.tmpdir() ; LIT src/ massivement (3 888 chemins) — les gardes de la ' +
       'gate balaient l’arbre réel (stocks nominatifs, garde des nouveaux fichiers, budget de contexte) ; ' +
       'LIT docs/ sur deux sites : le listing de docs/raw, et docs/.sources-lues.json (banc de ' +
@@ -149,19 +149,19 @@ export const ECRIT_LU = {
       'six modules atteints portent un appel d’écriture, tous hors de l’arbre ou gardés : ' +
       '`knip-exports-ratchet.mjs` (`main()` gardé par `import.meta.main`, l.121 ; seul `--sync` ' +
       'écrirait la baseline, l.94-96), `ruleset-main.mjs` (le corps du ruleset part par un fichier de ' +
-      'os.tmpdir(), ruleset-main.mjs:117-120, et son `executer` n’est jamais appelé par les tests), ' +
+      'os.tmpdir(), `executer` de ruleset-main.mjs, et son `executer` n’est jamais appelé par les tests), ' +
       '`fermer-depuis-main.test.mjs` (dépôts jetables de os.tmpdir()), `faits-de-palier.mjs` (le JSON des ' +
-      'faits va à `--sortie`, sous os.tmpdir() par défaut — `sortieParDefaut`, faits-de-palier.mjs:72-73,236) ' +
+      'faits va à `--sortie`, sous os.tmpdir() par défaut — `sortieParDefaut`, faits-de-palier.mjs) ' +
       'et `depotGabarit.mjs`, qui fabrique les dépôts jetables de `fermer-depuis-main.test.mjs` et ' +
       '`faits-de-palier.test.mjs` : ses seules écritures (`mkdtempSync`, `cpSync`, `rmSync` — ' +
       'depotGabarit.mjs:62,82,99-100) visent `os.tmpdir()` ; LIT .github/workflows/ parce que ' +
-      '`canari.test.mjs:17` et `ruleset-main.test.mjs:27` lisent les workflows RÉELS, et ' +
+      '`canari.test.mjs` et `ruleset-main.test.mjs` lisent les workflows RÉELS, et ' +
       'scripts/guards/lib/ par le stock de `fermetures-non-citees.mjs` ; LIT .claude/workflows/ ' +
       '(`workflows.test.mjs` les parse, `workflows-joues.test.mjs` les joue) et scripts/hooks/ ' +
       '(`validateRevuePalier` de solde-ticket-guard.mjs), sans rien y écrire ; LIT knip.json (le cliquet ' +
       'd’exports le relit) ; les 3 fichiers de .claude/workflows/ sont lus EN PLACE, sur l’arbre réel. ' +
       'Ce que `soldesSuivis()` lirait de .claude/soldes/ n’est atteint que par le `main()` du script, ' +
-      'gardé par `import.meta.main` (fermetures-non-citees.mjs:218) : les tests passent leurs ' +
+      'gardé par `import.meta.main` (fermetures-non-citees.mjs) : les tests passent leurs ' +
       'PROPRES dépôts jetables, et la sonde n’a mesuré aucune lecture sous .claude/soldes/ ; ' +
       '+1 écrivain le 2026-09-18 (#1813) : `plageFermante.test.mjs` prend ses dépôts jetables à ' +
       '`instanceDeDepot` (os.tmpdir()) et y pose `.claude/soldes/42.md` avant de commiter — lire une plage ' +
@@ -190,7 +190,7 @@ export const ECRIT_LU = {
       '`enregistreur-lectures.test.mjs`, venu de test:hooks avec sa racine `scripts/docs`, joue de VRAIS ' +
       'générateurs en `--check` (build-index-moteur, build-donnees, build-structures) sur l’arbre réel — ils ' +
       'COMPARENT sans écrire, et leurs lectures passent par la sortie de mesure du test, sous os.tmpdir() ; ' +
-      'LIT CLAUDE.md sur l’arbre RÉEL : `manual-docs-ratchet.test.mjs:190,194` ancre la table de routage ' +
+      'LIT CLAUDE.md sur l’arbre RÉEL : `routingTableSlice` (manual-docs-ratchet.test.mjs) ancre la table de routage ' +
       '(`## Table de routage`) et en dérive les docs à plat atteignables (l.231)',
   },
   'deps:unused': {
@@ -231,7 +231,7 @@ export const ECRIT_LU = {
       'src/_registry.generated.ts':
         'le `buildStart` du plugin `registryGen` (vite.config.ts) appelle `genAll()`, qui n’écrit que si ' +
         'le rendu diffère (`ecrireDoc`, scripts/docs/lib/empreinte-sources.mjs) — `toutes.mjs` joue ' +
-        '`npm run gen` AVANT les lanes et REFUSE si un registre bouge, donc il ne reste rien à écrire',
+        '`npm run gen` avant toute gate et REFUSE si un registre bouge, donc il ne reste rien à écrire',
     },
     lit: ['src/', 'server/src/', 'scripts/', 'docs/', 'Source/', '.gitattributes', 'vite.config.ts'],
     raison:
@@ -254,7 +254,7 @@ export const ECRIT_LU = {
   build: {
     ecrit: [],
     ecritFerme: {
-      'src/_registry.generated.ts': 'même `genAll()` que la suite, même porte : `npm run gen` avant les lanes',
+      'src/_registry.generated.ts': 'même `genAll()` que la suite, même porte : `npm run gen` avant toute gate',
       'vite.config.ts.timestamp-':
         'Vite recompile sa config dans un module horodaté posé à côté d’elle, puis l’efface — mesuré ' +
         '(`vite.config.ts.timestamp-1788894628882-….mjs`, sonde 2026-09-08). LA PORTE : AUCUNE gate ne lit ' +
@@ -293,7 +293,7 @@ export const ECRIT_LU = {
     raison:
       '`--empreinte` sort avant toute génération (build-all.mjs, branche `--empreinte` de `main`) : les 9 ' +
       'lectures mesurées sont `docs/.sources-lues.json` et son propre code — les BLOBS qu’il compare sortent ' +
-      'de l’INDEX (`indexGit`, `git ls-files -s`, empreinte-sources.mjs:143), jamais du disque : angle mort ' +
+      'de l’INDEX (`indexGit`, `git ls-files -s`, empreinte-sources.mjs), jamais du disque : angle mort ' +
       'de la sonde (sous-processus git), d’où `.claude/memory/` déclaré par LECTURE — les fiches `user-*.md` ' +
       'sont des sources de `docs/doctrines.md` (docs/.sources-lues.json) et leur blob entre dans le verdict (#1738)',
   },
@@ -302,27 +302,27 @@ export const ECRIT_LU = {
     ecritFerme: {
       'scripts/raw/source-tables-stock.json':
         '`check-source-tables.test.mjs` IMPORTE le détecteur des tables cassées, dont l’unique écriture ' +
-        '(la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
-        '(scripts/raw/check-source-tables.mjs:194) ; le banc ne fait que LIRE le stock (`readStock`)',
+        '(la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `import.meta.main` ' +
+        '(`main` de scripts/raw/check-source-tables.mjs) ; le banc ne fait que LIRE le stock (`readStock`)',
       'scripts/raw/source-puces-stock.json':
         '`check-source-puces.test.mjs` IMPORTE le détecteur des puces lues comme un jeton, dont l’unique ' +
-        'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
-        '(scripts/raw/check-source-puces.mjs:159) ; le banc ne fait que LIRE le stock (`readStock`)',
+        'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `import.meta.main` ' +
+        '(`main` de scripts/raw/check-source-puces.mjs) ; le banc ne fait que LIRE le stock (`readStock`)',
       'scripts/raw/source-format-stock.json':
         '`check-source-format.test.mjs` IMPORTE le détecteur du format des extractions, dont l’unique ' +
-        'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
-        '(scripts/raw/check-source-format.mjs:396) ; le banc ne fait que LIRE le stock (`readStock`), ' +
+        'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `import.meta.main` ' +
+        '(`main` de scripts/raw/check-source-format.mjs) ; le banc ne fait que LIRE le stock (`readStock`), ' +
         'ses dossiers JETABLES vivant sous `os.tmpdir()`',
       'scripts/raw/empty-folios-perdues-stock.json':
         '`check-folio-continuity.test.mjs` IMPORTE la fonction d’ÉCRITURE du générateur des ancres sans ' +
         'contenu (`stocksEnTexte`, scripts/raw/lib/empty-folios-stock.mjs) pour comparer son rendu au ' +
         'fichier committé ; elle rend un TEXTE et n’écrit rien — le seul `writeFileSync` du module vit ' +
-        'dans `main()`, sous sa porte `isMain`, et exige les PDF gitignorés',
+        'dans `main()`, sous sa porte `import.meta.main`, et exige les PDF gitignorés',
       'scripts/raw/empty-folios-benignes-stock.json':
-        'même porte, même module : les deux stocks sont écrits par le même `main()` derrière `isMain`',
+        'même porte, même module : les deux stocks sont écrits par le même `main()` derrière `import.meta.main`',
       'scripts/raw/folio-gaps-stock.json':
         '`check-folio-continuity.test.mjs` IMPORTE le détecteur des sauts de folio, dont l’unique ' +
-        'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ; ' +
+        'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `import.meta.main` ; ' +
         'le banc ne fait que LIRE le stock (`readStock`, `lireStockJson`)',
       // Le MOTIF, pas une page : l’écrivain tient le routeur de l’Atlas ET l’index de chaque cœur,
       // et la population des cœurs est DÉRIVÉE (#1825) — un chemin de cœur écrit ici sous-déclarerait
@@ -331,7 +331,7 @@ export const ECRIT_LU = {
       'docs/raw/**/00-index.md':
         '`build-atlas-index.test.mjs` IMPORTE l’écrivain des blocs des index de l’Atlas (cœurs du ' +
         'routeur, domaines de chaque cœur) ; son unique `writeFileSync` vit dans `main()`, sous sa ' +
-        'porte `isMain` (scripts/raw/build-atlas-index.mjs), et le banc n’appelle que ses fonctions ' +
+        'porte `import.meta.main` (scripts/raw/build-atlas-index.mjs), et le banc n’appelle que ses fonctions ' +
         'PURES (`lignesDesCoeurs`, `lignesDesDomaines`, `blocsDeLAtlas`, `injecter`). Le cas `--check` ' +
         'le LANCE, mais dans un arbre JETABLE de `os.tmpdir()` dont il est le cwd : ce sont ces ' +
         'pages-là qu’il écrit, jamais celles du dépôt',
@@ -339,11 +339,11 @@ export const ECRIT_LU = {
       // (`scripts/raw/decoupes/<id>.json`), et recale tout stock nominatif keyé par ses fichiers.
       'Source/**/*.md':
         '`recouper-source.test.mjs` IMPORTE le re-coupeur des `.md` en service ; ses `writeFileSync` et ' +
-        '`rmSync` vivent dans `main()`, sous sa porte `estMain` (scripts/raw/recouper-source.mjs:397), ' +
+        '`rmSync` vivent dans `main()`, sous sa porte `import.meta.main` (`main` de scripts/raw/recouper-source.mjs), ' +
         'et le banc n’appelle que son cœur PUR sur un livre FORGÉ en mémoire',
       'scripts/raw/*-stock.json':
         'même porte, même module : le recalage des stocks nominatifs (`recalerStock`) rend un TEXTE, ' +
-        'que le seul `main()` écrit derrière `estMain` (scripts/raw/recouper-source.mjs:397)',
+        'que le seul `main()` écrit derrière `import.meta.main` (`main` de scripts/raw/recouper-source.mjs)',
       // Le MOTIF, pas une page : l’outil répare TOUTE page de l’Atlas dont un renvoi d’ancre est mort.
       'docs/raw/**/*.md':
         '`reparer-ancres.test.mjs` IMPORTE l’outil de réparation des renvois d’ancre (#1824) ; son unique ' +
@@ -359,11 +359,11 @@ export const ECRIT_LU = {
       'JETABLES sous `os.tmpdir()`, retirés par `rmSync` — aucune écriture dans l’arbre ; +3 écrivains le ' +
       '2026-09-20 (#1825 lot E2) : `apply-livre.test.mjs` et `assemble-domain.test.mjs`, même régime ' +
       'os.tmpdir(), et `assemble-domain.mjs`, ACQUIS par l’import de son banc — ses `writeFileSync` vivent ' +
-      'dans `assemble()`, appelée par le seul `main()`, sous sa porte `isMain` ; +4 le 2026-09-20 ' +
+      'dans `assemble()`, appelée par le seul `main()`, sous sa porte `import.meta.main` ; +4 le 2026-09-20 ' +
       '(#1825 lot F0) : la fabrique d’Atlas jetable (`atlasFixture.mjs`) et les deux bancs qui la ' +
       'prennent (`_lib.test.mjs`, `build-atlas-index.test.mjs`), même régime os.tmpdir(), et ' +
       '`build-atlas-index.mjs`, ACQUIS par l’import de son banc — son `writeFileSync` vit dans ' +
-      '`main()`, sous sa porte `isMain` ; +1 lecture le 2026-09-22 (#1873) : ' +
+      '`main()`, sous sa porte `import.meta.main` ; +1 lecture le 2026-09-22 (#1873) : ' +
       '`atlas-domain.workflow.test.mjs` lit les fiches d’agent de .claude/agents/ (frontmatter `tools:`) ' +
       'pour tenir la liste des types SANS outil d’écriture (scripts/raw/atlas-domain.workflow.test.mjs:312) — ' +
       'la gate n’est plus sautable : un push qui donne `Edit` à `lecteur` doit la jouer ; +1 écrivain le ' +
@@ -415,7 +415,7 @@ export const ECRIT_LU = {
     ecritFerme: {
       'scripts/raw/source-tables-stock.json':
         'le stock NOMINATIF des tables cassées ne se réécrit que sous `--ecrire-stock` ' +
-        '(scripts/raw/check-source-tables.mjs:194), option que la commande de .github/workflows/ci.yml ' +
+        '(`main` de scripts/raw/check-source-tables.mjs), option que la commande de .github/workflows/ci.yml ' +
         'ne passe pas ; sans elle la gate COMPARE le stock à sa mesure et ne touche à rien',
     },
     lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
@@ -429,7 +429,7 @@ export const ECRIT_LU = {
     ecritFerme: {
       'scripts/raw/source-puces-stock.json':
         'le stock NOMINATIF des puces lues comme un jeton ne se réécrit que sous `--ecrire-stock` ' +
-        '(scripts/raw/check-source-puces.mjs:159), option que la commande de .github/workflows/ci.yml ' +
+        '(`main` de scripts/raw/check-source-puces.mjs), option que la commande de .github/workflows/ci.yml ' +
         'ne passe pas ; sans elle la gate COMPARE le stock à sa mesure et ne touche à rien',
     },
     lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'scripts/raw/', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
@@ -443,7 +443,7 @@ export const ECRIT_LU = {
     ecritFerme: {
       'scripts/raw/source-format-stock.json':
         'le stock NOMINATIF des écarts de format ne se réécrit que sous `--ecrire-stock` ' +
-        '(scripts/raw/check-source-format.mjs:396), option que la commande de .github/workflows/ci.yml ' +
+        '(`main` de scripts/raw/check-source-format.mjs), option que la commande de .github/workflows/ci.yml ' +
         'ne passe pas ; sans elle la gate COMPARE le stock à sa mesure et ne touche à rien',
     },
     lit: ['Source/', 'src/data/books.json', 'scripts/raw/', 'scripts/source/nom-ascii.mjs', 'scripts/guards/lib/', 'scripts/port-dev.mjs'],
@@ -549,7 +549,7 @@ export const COEURS_SUITE_EN_LANES = 10
 export const dossierSorties = (racine) => join(racine, 'node_modules', '.cache', 'gates')
 
 /** Durées du dernier run, par gate — la mesure qui compose les LANES et pose les TIMEOUTS. */
-export const fichierDurees = (racine) => join(dossierSorties(racine), 'durees.json')
+const fichierDurees = (racine) => join(dossierSorties(racine), 'durees.json')
 
 /** Nom de FICHIER de la sortie d'une gate : le nom de gate porte des `:`, que Windows refuse. */
 export const fichierDeSortie = (gate, pid) => `${encodeURIComponent(gate)}-${pid}.txt`
@@ -596,7 +596,7 @@ export function conflitsEntreLanes(lanes = LANES, ecritLu = ECRIT_LU) {
 }
 
 /**
- * Refus de COUVERTURE : gate de ci.yml ni en lane ni en phase série, gate nommée par une lane et
+ * Refus de COUVERTURE : gate de ci.yml placée dans aucune lane, gate nommée par une lane et
  * absente de ci.yml, gate sans entrée ÉCRIT/LU, gate placée deux fois. La liste doit être VIDE — une
  * gate ajoutée à la CI ARRÊTE `npm run gates` tant qu'on n'a pas dit ce qu'elle écrit, ce qu'elle lit
  * et où elle court.
@@ -1050,8 +1050,7 @@ export async function principal({
   return code
 }
 
-const isMain = import.meta.main
-if (isMain) {
+if (import.meta.main) {
   process.exit(
     await principal().catch((e) => {
       process.stderr.write(`[gates] ARRÊT INATTENDU : ${e?.stack ?? e}\n`)

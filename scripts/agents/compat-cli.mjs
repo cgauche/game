@@ -83,8 +83,7 @@ export async function runCompat({ root, mode }, dependencies = {}) {
   return diagnostics;
 }
 
-const invoked = import.meta.main;
-if (invoked) {
+if (import.meta.main) {
   const mode = process.argv[2];
   const root = resolve(process.argv[3] ?? join(dirname(fileURLToPath(import.meta.url)), '..', '..'));
   const diagnostics = await runCompat({ root, mode });

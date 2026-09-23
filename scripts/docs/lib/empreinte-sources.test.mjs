@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
-  apercuDivergences, avecPied, CODE_CORPS_PERIME, deltaSourcesLues, lirePied, porteUnPied, retirerPied,
+  apercuDivergences, avecPied, CODE_CORPS_PERIME, deltaSourcesLues, lirePied, estUnDocMarkdown, retirerPied,
 } from './empreinte-sources.mjs'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
@@ -164,15 +164,8 @@ test('ecrireOuVerifier en écriture : réécrit le corps en CONSERVANT le pied, 
   assert.match(jouerPrimitive({ committe: null, out: '# neuf\n', check: false }).stdout, /aJour=false/, 'une cible absente n’était pas à jour')
 })
 
-test('porteUnPied : seul un doc Markdown porte le pied, jamais une cible de code', () => {
-  assert.equal(porteUnPied(doc('x')), true)
-  assert.equal(porteUnPied('docs/raw/**/catalogue-*.md'), true)
-  assert.equal(porteUnPied('src/x/_registry.generated.ts'), false)
-})
-
-test('le rouge de fraîcheur de build-all.mjs PASSE par deltaSourcesLues', () => {
-  const source = readFileSync(path.join(ICI, '..', 'build-all.mjs'), 'utf8')
-  assert.match(source, /import \{[\s\S]*?\bdeltaSourcesLues\b[\s\S]*?\} from '\.\/lib\/empreinte-sources\.mjs'/)
-  assert.match(source, /\bdeltaSourcesLues\(avant, mesure\)/)
-  assert.match(source, /if \(actuel !== rendu\) \{\n\s*process\.stderr\.write\(diagnosticSourcesLues\(/)
+test('estUnDocMarkdown : un doc Markdown, jamais une cible de code', () => {
+  assert.equal(estUnDocMarkdown(doc('x')), true)
+  assert.equal(estUnDocMarkdown('docs/raw/**/catalogue-*.md'), true)
+  assert.equal(estUnDocMarkdown('src/x/_registry.generated.ts'), false)
 })

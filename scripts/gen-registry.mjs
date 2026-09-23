@@ -722,7 +722,23 @@ function genIds(check) {
  * inchangé (usage : audit manuel de ce que le générateur a vu).
  */
 export function genAll(verbose = false, { check = false } = {}) {
-  const results = REGISTRIES.map((r) => genOne(r, check));
+  // En `--check`, une validation qui LÈVE est un rouge (bit 1) parmi les autres : levée hors du
+  // processus, elle sortirait en 1 et effacerait le bit « corps périmé » d'un registre déjà jugé.
+  const jouer = (fn) => {
+    if (!check) return fn();
+    try {
+      return fn();
+    } catch (e) {
+      console.error(e instanceof Error ? e.message : String(e));
+      process.exitCode = (Number(process.exitCode) || 0) | 1;
+      return null;
+    }
+  };
+  const libelle = (nom, detail, changed) =>
+    check
+      ? `gen-registry --check: ${nom} ${changed ? 'PÉRIMÉ' : 'à jour'} (${detail})`
+      : `gen-registry: ${nom} ← ${detail}${changed ? '' : ' [inchangé]'}`;
+  const results = REGISTRIES.map((r) => jouer(() => genOne(r, check))).filter(Boolean);
   let unchangedCount = 0;
   for (const res of results) {
     if (res.missing) {
@@ -730,15 +746,15 @@ export function genAll(verbose = false, { check = false } = {}) {
       continue;
     }
     if (res.changed || verbose) {
-      console.log(`gen-registry: ${res.arrayName} ← ${res.files} fichiers (${res.dir})${res.changed ? '' : ' [inchangé]'}`);
+      console.log(libelle(res.arrayName, `${res.files} fichiers, ${res.dir}`, res.changed));
     } else {
       unchangedCount++;
     }
   }
-  const idsRes = genIds(check);
-  if (idsRes.changed || verbose) {
-    console.log(`gen-registry: IDS_PAR_DATASET ← ${idsRes.ids} ids / ${idsRes.datasets} datasets (${idsRes.out})${idsRes.changed ? '' : ' [inchangé]'}`);
-  } else {
+  const idsRes = jouer(() => genIds(check));
+  if (idsRes && (idsRes.changed || verbose)) {
+    console.log(libelle('IDS_PAR_DATASET', `${idsRes.ids} ids / ${idsRes.datasets} datasets, ${idsRes.out}`, idsRes.changed));
+  } else if (idsRes) {
     unchangedCount++;
   }
   if (!verbose && unchangedCount > 0) {

@@ -1,7 +1,8 @@
 // CLASSEMENT D'UN PUSH — documentaire ou produit (#1738).
 //
-// Module FEUILLE : il n'importe que `node:*`. La CI l'exécute AVANT `npm ci`, donc rien de `node_modules` ne peut l'atteindre, et `gatesSautables` reçoit
-// `ECRIT_LU`/`gatesDeCi()` en PARAMÈTRE au lieu de les importer.
+// Module FEUILLE : il n'importe que `node:*`. La CI l'exécute AVANT `npm ci`, donc rien de
+// `node_modules` ne peut l'atteindre, et `gatesSautables` reçoit `ECRIT_LU`/`gatesDeCi()` en
+// PARAMÈTRE au lieu de les importer.
 //
 // Ce qu'un push déclenche se décide par ce que les gates LISENT (`ECRIT_LU[gate].lit`,
 // `scripts/gates/toutes.mjs`, mesuré), jamais par un dossier deviné. La décision est FAIL-CLOSED

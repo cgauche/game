@@ -56,7 +56,7 @@ export function deltaSourcesLues(
 
 export function existeFichier(chemin: string): boolean;
 
-export function porteUnPied(cible: string): boolean;
+export function estUnDocMarkdown(cible: string): boolean;
 
 export function ecrireDoc(chemin: string, contenu: string): void;
 

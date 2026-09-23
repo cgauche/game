@@ -228,5 +228,4 @@ function main() {
   })
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

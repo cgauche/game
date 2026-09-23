@@ -322,5 +322,4 @@ function main(argv = process.argv.slice(2)) {
   if (bilan.restantes.length > 0 || bilan.echecs.length > 0) process.exitCode = 1
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

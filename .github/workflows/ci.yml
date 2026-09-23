@@ -47,6 +47,13 @@ jobs:
       # premier rouge SKIPPE les 20 suivants et un run ne rend qu'un verdict sur 21 (runs 33717131460
       # et 33719038837). Le job reste rouge dès qu'un step l'est — jamais de `continue-on-error`, qui
       # rendrait le step VERT. Seul l'échec de l'installation coupe la suite : rien ne s'y jouerait.
+      # Chaque dérivé committé (`GENERATORS`, scripts/docs/build-all.mjs) REJOUÉ EN ENTIER en `--check` :
+      # la fraîcheur par le pied est aveugle à la plateforme qui a rendu un corps (#1801). PREMIÈRE
+      # gate : `npm test` et `npm run build` passent par `vite.config.ts`, dont `buildStart` appelle
+      # `genAll()` et réécrit les `*.generated.ts` ; jouée après eux, elle vérifierait un registre
+      # déjà réécrit.
+      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run docs:check:tout
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run agents:check
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
@@ -75,10 +82,6 @@ jobs:
       # `test:map` reste dans package.json : il sert à jouer CE dossier seul.
       - if: ${{ steps.classer.outputs.produit != 'false' && !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build
-      # Chaque dérivé committé (`GENERATORS`, scripts/docs/build-all.mjs) REJOUÉ EN ENTIER en `--check` :
-      # la fraîcheur par le pied est aveugle à la plateforme qui a rendu un corps (#1801).
-      - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: npm run docs:check:tout
       # Pied « sources-empreinte » de chaque doc dérivé confronté aux blobs de l'INDEX (#1679 L1b).
       - if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run docs:empreinte

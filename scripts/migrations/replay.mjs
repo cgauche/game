@@ -47,7 +47,7 @@
  * quel que soit l'ordre des AUTRES clés du document (banc `lib/idempotence-ordre-des-cles.test.mjs`,
  * corpus entier renversé). Ce qu'une migration ne possède pas, elle le NOMME : un `id` hors tête sans
  * promotion déclarée est une anomalie, sortie 1 AVANT toute écriture. Toute migration absente
- * d'`ATTENDU_ROUGE` qui sort non nul rend le rejeu ROUGE (`replay.mjs:110`).
+ * d'`ATTENDU_ROUGE` qui sort non nul rend le rejeu ROUGE (`rouges`, plus bas).
  */
 import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';

@@ -1,7 +1,8 @@
 // Socle PARTAGÉ des générateurs de doc « vocabulaire » (#298bis) : lecture d'une union discriminée
 // TypeScript par AST (`ts.createSourceFile` — jamais de regex sur les accolades, les unions imbriquent
 // des littéraux d'objet et des intersections) et extraction du JSDoc de chaque membre. Consommé par
-// scripts/docs/build-effects.mjs (union `Effect` de src/state/scene.ts) et scripts/docs/build-vocabulaire.mjs (unions `GameOp` de src/engine/ops.ts,
+// scripts/docs/build-effects.mjs (union `Effect` de src/state/scene.ts) et
+// scripts/docs/build-vocabulaire.mjs (unions `GameOp` de src/engine/ops.ts,
 // `Condition`/`Flow`/`EffectTrigger`/`EffectTargeting` de src/engine/flowCore.ts).
 import ts from 'typescript'
 import { readFileSync } from 'node:fs'

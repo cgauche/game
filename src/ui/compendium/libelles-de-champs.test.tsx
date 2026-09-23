@@ -298,10 +298,10 @@ describe('cliquet — part des champs de premier niveau qui portent un libellé'
  * CONVENTION D'EXPORT du générateur de registre (`scripts/gen-registry.mjs`) : il est TEXTUEL et
  * lit chaque nom PAR REGEX — `fields: ['file', 'schema', 'famille', 'exposition']` plus
  * `optionalFields: ['meta']`, pour les DEUX registres de schémas. Conséquences MESURÉES, une par export :
- *  - `file` non conforme au filtre `scripts/gen-registry.mjs:388` (`^export const file = '`, guillemet
+ *  - `file` non conforme au filtre `genOne` de `scripts/gen-registry.mjs` (`^export const file = '`, guillemet
  *    SIMPLE littéral) : le def est ÉCARTÉ du registre, en silence — double quote, `: string` annoté,
  *    littéral gabarit et `= doc.file` compilent tous et sortent pourtant du registre ;
- *  - `meta` non PLAT : invisible de `presents()` (`scripts/gen-registry.mjs:400`), donc absent de
+ *  - `meta` non PLAT : invisible de `presents()` (`genOne`, `scripts/gen-registry.mjs`), donc absent de
  *    l'entrée générée — l'atelier retombe sur la clé technique sans qu'aucun gate ne rougisse ;
  *  - `schema`/`famille` destructurés (`export const { schema } = doc`) COMPILERAIENT (la destructuration
  *    crée un vrai nom importé) : ici la garde ne protège pas la compilation mais la CONVENTION du lot
@@ -315,7 +315,7 @@ const RACINES_DE_DEFS = ['src/data/schemas/defs', 'src/data/schemas/defs-scenes'
 const APPELLE_DOCUMENT = /\bdocument\s*\(/;
 /**
  * Ce qui fait d'un module un DEF : nommer un fichier de données. C'est le critère du générateur
- * lui-même (`scripts/gen-registry.mjs:388`, registre à champ `file`) — un module du dossier qui ne
+ * lui-même (`genOne` de `scripts/gen-registry.mjs`, registre à champ `file`) — un module du dossier qui ne
  * déclare aucun `export const file` n'entre pas au registre : c'est un module de FORME partagé entre
  * defs (`defs-scenes/projet.ts` déclare LE document de projet, que les 4 defs de campagne nomment
  * chacun pour SON fichier). Ici cette forme large (`export const file`, guillemet libre) borne la
@@ -329,7 +329,7 @@ const APPELLE_DOCUMENT = /\bdocument\s*\(/;
 const NOMME_UN_FICHIER = /^export const (?:file\b|\{[^}]*\bfile\b[^}]*\})/m;
 /** Les quatre exports PLATS lus par le gen, dans l'ordre du message d'échec. */
 const EXPORTS_PLATS = ['file', 'schema', 'famille', 'meta'] as const;
-/** LA regex du générateur pour `file`, recopiée de `scripts/gen-registry.mjs:388` — guillemet SIMPLE
+/** LA regex du générateur pour `file`, recopiée de `genOne` (`scripts/gen-registry.mjs`) — guillemet SIMPLE
  *  littéral : elle seule décide de l'appartenance au registre. */
 const FILE_DU_GEN = /^export const file = '/m;
 const exportPlat = (nom: string) =>
@@ -350,7 +350,7 @@ export function defsSansExportsPlats(sources: { file: string; src: string }[]): 
 }
 
 /** Les modules DIRECTS des racines de defs : la population est celle du générateur, qui liste chaque
- *  racine À PLAT (`scripts/gen-registry.mjs:371,543,582` — aucune récursion) ; un module posé dans un
+ *  racine À PLAT (`genOne` et `genIds`, `scripts/gen-registry.mjs` — aucune récursion) ; un module posé dans un
  *  sous-dossier n'entre pas au registre, il n'a donc pas la convention à tenir. Le corpus est
  *  récursif : la profondeur se borne ICI, comme la garde le mesure. */
 function sourcesDesDefs(): { file: string; src: string }[] {
@@ -397,7 +397,7 @@ describe('convention d’export lue par le générateur de registre', () => {
   });
 
   it('le bras `file` rend le verdict DU GEN, forme par forme (un `file` qui compile peut être hors registre)', () => {
-    // Verdicts du générateur MESURÉS sur son filtre `scripts/gen-registry.mjs:388` : seule la forme
+    // Verdicts du générateur MESURÉS sur son filtre `genOne` de `scripts/gen-registry.mjs` : seule la forme
     // `= '…'` (guillemet SIMPLE littéral) entre au registre — les quatre autres compilent et en sortent.
     const formes: { nom: string; ligne: string; auRegistre: boolean }[] = [
       { nom: 'simple-quote', ligne: "export const file = 'z.json';", auRegistre: true },

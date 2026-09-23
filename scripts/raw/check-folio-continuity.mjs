@@ -345,5 +345,4 @@ function main() {
   if (koGaps || koEmpty) process.exitCode = 1
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

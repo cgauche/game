@@ -141,5 +141,4 @@ for (const dom of CATALOGUES) {
 console.log(log.join('\n'))
 }
 
-const isMain = import.meta.main
-if (isMain) main()
+if (import.meta.main) main()

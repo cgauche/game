@@ -18,7 +18,10 @@ import { listerDossier } from '../guards/lib/lister.mjs'
 import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { fraicheurDesGenerateurs, motifRejeuComplet, natureDuRouge, SOURCES_LUES, verdictDuPied } from './build-all.mjs'
+import {
+  ENTETE_ROUGES, fraicheurDesGenerateurs, guerissable, issueDe, motifRejeuComplet, natureDuRouge, rougesNommes, SOURCES_LUES,
+  verdictDuPied,
+} from './build-all.mjs'
 import {
   avecPied,
   CODE_CORPS_PERIME,
@@ -219,11 +222,32 @@ test('verdictDuPied : corps identique ne dit RIEN des sources — le pied périm
   )
 })
 
-test('natureDuRouge : le bit du corps périmé et la sortie se lisent SÉPARÉMENT', () => {
-  assert.equal(natureDuRouge(CODE_CORPS_PERIME), 'corps périmé')
-  assert.equal(natureDuRouge(1), 'sortie 1')
-  assert.equal(natureDuRouge(1 | CODE_CORPS_PERIME), 'corps périmé + sortie 1')
-  assert.equal(natureDuRouge(3221225794), 'sortie 3221225794', 'un code hors octet n’est qu’une sortie')
+test('natureDuRouge : le bit du corps périmé ne se lit que sur les codes de la convention (2 et 3)', () => {
+  assert.equal(natureDuRouge({ status: CODE_CORPS_PERIME }), 'corps périmé')
+  assert.equal(natureDuRouge({ status: 1 | CODE_CORPS_PERIME }), 'corps périmé + sortie 1')
+  assert.equal(natureDuRouge({ status: 1 }), 'sortie 1')
+  // Codes réservés de Node (13 : top-level await inachevé ; 6, 7 : échecs internes) : jamais un corps.
+  for (const status of [13, 6, 7]) assert.equal(natureDuRouge({ status }), `sortie ${status}`)
+  assert.equal(natureDuRouge({ status: 3221225794 }), 'sortie 3221225794')
+})
+
+test('natureDuRouge : un processus tué ou coupé se nomme par son signal ou son errno, jamais « non démarré »', () => {
+  assert.equal(natureDuRouge(issueDe({ status: null, signal: 'SIGKILL' })), 'tué par SIGKILL')
+  assert.equal(natureDuRouge(issueDe({ status: null, signal: 'SIGTERM', code: 'ENOBUFS', message: 'spawnSync node ENOBUFS' })), 'ENOBUFS (tué par SIGTERM)')
+  assert.equal(natureDuRouge(issueDe({ code: 'ENOENT', message: 'spawnSync x ENOENT' })), 'ENOENT')
+})
+
+test('guerissable : seul un corps périmé SEUL se guérit en régénérant', () => {
+  assert.equal(guerissable({ status: CODE_CORPS_PERIME, signal: null, code: null }), true)
+  for (const issue of [{ status: 1 | CODE_CORPS_PERIME }, { status: 1 }, { status: 13 }, { status: null, signal: 'SIGKILL' }, { status: null, code: 'ENOBUFS' }]) {
+    assert.equal(guerissable(issueDe(issue)), false, JSON.stringify(issue))
+  }
+})
+
+test('rougesNommes : les lignes du DERNIER bilan, rien d’autre', () => {
+  const sortie = ['bruit', `${ENTETE_ROUGES} (2) :`, '  docs:check — a — corps périmé', '  docs:check — b — sortie 1', 'après'].join('\n')
+  assert.deepEqual(rougesNommes(sortie), ['docs:check — a — corps périmé', 'docs:check — b — sortie 1'])
+  assert.deepEqual(rougesNommes('docs:check — OK'), [])
 })
 
 // ── De bout en bout : `executer`, `generateurs` injectés, sur des générateurs RÉELS ─────────────
@@ -255,12 +279,12 @@ const GENERATEURS_REELS = [
 /** Joue `executer` dans un processus À PART (il imprime sur stderr, que le banc lit), par un HARNAIS
  *  posé sous le `node_modules/` ignoré du dépôt jetable : un module qui en importe un autre par
  *  `file://` absolu, lancé comme tout script. */
-function executer(racine, argv, env = {}) {
+function executer(racine, argv, env = {}, verificateurs = []) {
   const harnais = path.join(racine, 'node_modules', 'harnais-executer.mjs')
   mkdirSync(path.dirname(harnais), { recursive: true })
   writeFileSync(harnais, [
     `import { executer } from ${JSON.stringify(BUILD_ALL)}`,
-    `process.exitCode = executer({ cwd: ${JSON.stringify(racine)}, argv: ${JSON.stringify(['--quiet', ...argv])}, generateurs: ${JSON.stringify(GENERATEURS_REELS)}, verificateurs: [] })`,
+    `process.exitCode = executer({ cwd: ${JSON.stringify(racine)}, argv: ${JSON.stringify(['--quiet', ...argv])}, generateurs: ${JSON.stringify(GENERATEURS_REELS)}, verificateurs: ${JSON.stringify(verificateurs)} })`,
   ].join('\n'))
   const r = spawnSync(process.execPath, [harnais], { cwd: racine, encoding: 'utf8', env: { ...process.env, ...env } })
   return { status: r.status, sortie: `${r.stdout}${r.stderr}` }
@@ -304,7 +328,7 @@ test('ANGLE MORT de la fraîcheur : un corps « rendu sous une autre plateforme 
     assert.match(cible_.sortie, /docs:check — g\/a\.mjs — frais \(sources [0-9a-f]{12}, corps [0-9a-f]{12}\), non rejoué/)
 
     const tout = executer(racine, ['--check', '--tout'])
-    assert.equal(tout.status, 1, `--check --tout : ${tout.sortie}`)
+    assert.equal(tout.status, CODE_CORPS_PERIME, `--check --tout, seul rouge un corps périmé, que \`docs:build\` guérit : ${tout.sortie}`)
     assert.match(tout.sortie, /docs:check — g\/a\.mjs — corps périmé/)
     assert.match(tout.sortie, /committé : "Source : `src\\\\a\.ts`/, 'la divergence nomme la graphie committée')
   } finally {
@@ -319,7 +343,7 @@ test('`--check --tout` va AU BOUT : un corps périmé ET un cliquet rouge dans l
     writeFileSync(cible, readFileSync(cible, 'utf8').replace('# a\n', '# a édité à la main\n'))
     git('add', DOC_A)
     const rouge = executer(racine, ['--check', '--tout'], { BANC_CLIQUET_ROUGE: '1' })
-    assert.equal(rouge.status, 1, rouge.sortie)
+    assert.equal(rouge.status, 1, `un cliquet ne se guérit pas en régénérant : ${rouge.sortie}`)
     // `g/a.mjs` est rouge le PREMIER : `g/b.mjs`, qui le suit, doit rendre son verdict quand même.
     assert.match(rouge.sortie, /docs:check — g\/a\.mjs — corps périmé\n/)
     assert.match(rouge.sortie, /docs:check — g\/b\.mjs — sortie 1\n/)
@@ -331,6 +355,37 @@ test('`--check --tout` va AU BOUT : un corps périmé ET un cliquet rouge dans l
     const vert = executer(racine, ['--check', '--tout'])
     assert.equal(vert.status, 0, vert.sortie)
     assert.match(vert.sortie, /docs:check — OK/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('`--check` : un VÉRIFICATEUR rouge est nommé, et sort à 1 (aucune régénération ne le guérit)', () => {
+  const { racine } = depotReel()
+  try {
+    mkdirSync(path.join(racine, 'v'))
+    writeFileSync(path.join(racine, 'v', 'rouge.mjs'), "console.error('VÉRIFICATEUR ROUGE'); process.exitCode = 1\n")
+    const rouge = executer(racine, ['--check', '--tout'], {}, ['v/rouge.mjs'])
+    assert.equal(rouge.status, 1, rouge.sortie)
+    assert.match(rouge.sortie, /VÉRIFICATEUR ROUGE/)
+    assert.match(rouge.sortie, /docs:check — ROUGE \(1\) :\n {2}docs:check — v\/rouge\.mjs — sortie 1\n/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('`--check` : `.sources-lues.json` périmé est nommé par son DELTA (`deltaSourcesLues`), et se guérit en régénérant', () => {
+  const { racine } = depotReel()
+  try {
+    const chemin = path.join(racine, SOURCES_LUES)
+    const mesure = JSON.parse(readFileSync(chemin, 'utf8'))
+    mesure['g/a.mjs'].fichiers.push('src/fantome.ts')
+    writeFileSync(chemin, serialiserSourcesLues(mesure))
+    const rouge = executer(racine, ['--check', '--tout'])
+    assert.equal(rouge.status, CODE_CORPS_PERIME, rouge.sortie)
+    assert.match(rouge.sortie, /^ {2}g\/a\.mjs fichiers : \+0 \/ -1$/m)
+    assert.match(rouge.sortie, /src\/fantome\.ts/)
+    assert.match(rouge.sortie, /docs:check — docs\/\.sources-lues\.json est PÉRIMÉ/)
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
