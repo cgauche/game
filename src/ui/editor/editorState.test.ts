@@ -702,7 +702,7 @@ describe('éditeur — les places assises suivent le geste, atomiquement', () =>
     const s = emptyScene(10, 10);
     s.entities = [
       { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' },
-      { id: 'pnj-aubergiste', kind: 'personnage', pos: { x: 2, y: 1 }, label: 'Aubergiste' },
+      { id: 'pnj-aubergiste', kind: 'personnage', ref: 'humain', pos: { x: 2, y: 1 }, label: 'Aubergiste' },
     ];
     s.seatAssignments = { 'table-1': { 'place-1': { kind: 'entity', entityId: 'pnj-aubergiste' } } };
     return s;

@@ -129,7 +129,12 @@ import type { Scene } from './scene';
 // rouvre avec des effets qui portent ces champs et plus rien ne les lit : le −10 d'Esquive du sort, le
 // demi-Mouvement et le plafond de mains d'arme disparaissent en silence. La save se jette (politique 2
 // ci-dessus).
-export const SAVE_VERSION = 50;
+// 50 → 51 (#1882) : le document de SCÈNE change de forme — un personnage NOMME sa fiche (`ref`,
+// `statblock` ou `presetId`, exigé par `sceneEntitySchema`). `snapshotSave` recopie le `state` ENTIER,
+// `state.scene.entities` comprise : une save de 50 rouvrirait sur une scène vivante dont les personnages
+// sans fiche sont refusés par `validateScene` et par le seam `parseProject` au prochain export/import de
+// son projet. La save se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 51;
 
 export interface SaveMeta {
   version: number;

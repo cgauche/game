@@ -139,7 +139,31 @@ describe('une RÉF de créature que le spawn ne résout pas est une erreur, pas 
     const sansType = scene();
     sansType.entities.push({ id: 'p-2', kind: 'prop', pos: { x: 2, y: 2 } });
     expect(validateScene([sansType]).filter((w) => w.level === 'error').map((w) => w.message))
-      .toEqual(['p-2 : décor sans type — un décor NOMME son type au catalogue']);
+      .toEqual(['p-2 : décor « p-2 » : « ref » absente — un décor NOMME son type au catalogue (props.json)']);
+  });
+
+  it('un PERSONNAGE sans fiche est une erreur nommée ; chaque porteur SEUL (réf, statbloc, preset) la lève (#1882)', () => {
+    const sansFiche = scene();
+    sansFiche.entities.push({ id: 'e-1', kind: 'personnage', pos: { x: 2, y: 2 }, label: 'Aubergiste' });
+    expect(validateScene([sansFiche]).filter((w) => w.level === 'error').map((w) => `${w.refId} ${w.message}`))
+      .toEqual(['e-1 Aubergiste : personnage « e-1 » : « ref », « statblock », « presetId » absents — un personnage NOMME sa fiche (bestiaire, statbloc ou preset de PNJ)']);
+
+    for (const porteur of [
+      { ref: REF_CREATURE },
+      { statblock: { type: 'statblock' as const, label: 'Brigand', char: { B: 10 } } },
+      { presetId: 'pnj-de-la-campagne' },
+    ]) {
+      const s = scene();
+      s.entities.push({ id: 'e-1', kind: 'personnage', pos: { x: 2, y: 2 }, ...porteur });
+      expect(validateScene([s]).filter((w) => w.level === 'error'), Object.keys(porteur)[0]).toEqual([]);
+    }
+  });
+
+  it('une réf de personnage VIDE est présente mais irrésoluble : le faisceau du spawn la NOMME', () => {
+    const vide = scene();
+    vide.entities.push({ id: 'e-1', kind: 'personnage', pos: { x: 2, y: 2 }, ref: '' });
+    expect(validateScene([vide]).filter((w) => w.level === 'error').map((w) => w.message))
+      .toEqual(['e-1 → créature inexistante «  »']);
   });
 });
 

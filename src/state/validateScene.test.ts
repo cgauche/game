@@ -586,7 +586,7 @@ describe('validateScene — assise authorée (`Scene.seatAssignments`)', () => {
   function attable(seatAssignments: Record<string, Record<string, { kind: 'entity'; entityId: string } | { kind: 'party'; rang: number }>>, pnjPos = ABORD.nord) {
     const s = base();
     s.entities.push({ id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' });
-    s.entities.push({ id: 'pnj-1', kind: 'personnage', pos: pnjPos });
+    s.entities.push({ id: 'pnj-1', kind: 'personnage', ref: 'humain', pos: pnjPos });
     s.seatAssignments = seatAssignments;
     return s;
   }

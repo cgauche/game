@@ -139,6 +139,9 @@ const ATTENDU = {
     // +1 le 2026-09-23 (#1343 lot B) : morsure des portes de la migration #877 (ref de décor
     // nommée) ; son dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
     'scripts/migrations/lib/877-ref-de-decor-portes.test.mjs',
+    // +1 le 2026-09-23 (#1882) : morsure des portes de la migration #1882 (fiche de personnage
+    // nommée) ; son dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
+    'scripts/migrations/lib/1882-fiche-de-personnage-portes.test.mjs',
     // +2 le 2026-09-18 (#1812) : le mode CROISSANCE fait grandir les documents d'un EXPORT jetable
     // (`os.tmpdir()`, `replay-head.mjs:exporter`) avant de rejouer les migrations — l'arbre n'est
     // jamais écrit, et son banc travaille sur un dépôt `mkdtemp`.

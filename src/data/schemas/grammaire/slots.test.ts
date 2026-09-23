@@ -125,6 +125,9 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       "idDe('building')",
       "idDe('career')",
       "idDe('creature')",
+      // +1 site ADOPTÉ (#1882, 2026-09-23) : `defs/species.ts › profilStandard` (`ref('creature')`),
+      // le profil standard du PNJ de l'espèce (LDB 77 l.7).
+      "idDe('creature')",
       // +1 site ADOPTÉ (#1657 B3-2b-a) : `grammaire/mecanique.ts › crewTargetSchema.role` désigne le
       // SEUL rôle d'équipage que le livre nomme comme cible d'un coup (MSRC 07 l.86 « au timonier »).
       "idDe('crewRole')",

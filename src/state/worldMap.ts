@@ -470,7 +470,8 @@ export function declutterPositions(
 // graphie `label` et fait s'annoncer les statblocs embarqués, la 6→7 fait s'annoncer le document
 // LUI-MÊME et ses scènes et pose la provenance, la 7→8 pose les matières de relief de chaque scène.
 import { migrateDoc, type MigrationMap, type RaisonDeRefus } from './migrateDoc';
-import { findPropById } from '../data';
+import { findPropById, findSpeciesById } from '../data';
+import { typeNonNomme } from '../data/schemas/defs-scenes/scene';
 import { ACTION_FOUILLER } from './usable';
 import { type NarratifBlock, emptyNarratif } from './campaignNarratif';
 import { validateDocument, rapportDeFautes, type Faute } from '../data/schemas/validate';
@@ -675,7 +676,8 @@ function poseSurChaqueScene(
  *
  * MÊMES trois invariants : une entité qui porte DÉJÀ la clé traverse INTACTE, ce qui n'est pas une
  * liste traverse tel quel (`parseProject` le refuse ensuite en le nommant), la valeur est une
- * FABRIQUE (chaque entité reçoit SA copie).
+ * FABRIQUE (chaque entité reçoit SA copie). La clé et la valeur peuvent se lire sur l'entité retenue
+ * (#1882 : `ref` ou `statblock` selon l'espèce).
  *
  * QUEUE, sans ancre : c'est la place que l'ÉDITEUR donne à un champ posé sur une entité existante
  * (`editEntity` étale l'entité puis le patch, `state/sceneEdit.ts`) — la migration écrit donc ce que
@@ -683,8 +685,8 @@ function poseSurChaqueScene(
  */
 function poseSurChaqueEntite(
   scenes: unknown,
-  cle: string,
-  valeur: () => unknown,
+  cle: string | ((ent: Record<string, unknown>) => string),
+  valeur: (ent: Record<string, unknown>) => unknown,
   retient: (ent: Record<string, unknown>) => boolean,
 ): unknown {
   if (!Array.isArray(scenes)) return scenes;
@@ -692,9 +694,11 @@ function poseSurChaqueEntite(
     if (!s || typeof s !== 'object' || !Array.isArray((s as Record<string, unknown>).entities)) return s;
     const sc = s as Record<string, unknown>;
     const entities = (sc.entities as unknown[]).map((e) => {
-      if (!e || typeof e !== 'object' || cle in e) return e;
+      if (!e || typeof e !== 'object') return e;
       const ent = e as Record<string, unknown>;
-      return retient(ent) ? { ...ent, [cle]: valeur() } : ent;
+      if (!retient(ent)) return ent;
+      const k = typeof cle === 'string' ? cle : cle(ent);
+      return k in ent ? ent : { ...ent, [k]: valeur(ent) };
     });
     return { ...sc, entities };
   });
@@ -715,6 +719,23 @@ const decorSansType = (ent: Record<string, unknown>): boolean => ent.kind === 'p
 /** Le type que le rendu DONNAIT à un décor sans `ref` avant #877. Ce littéral ne vit QUE dans la
  *  migration 11 → 12 : une migration FIGE un passé, elle ne pose pas un défaut. */
 const REF_DU_RENDU_AVANT_877 = 'tonneau';
+
+/** Un personnage qui ne NOMME aucune fiche (`typeNonNomme`) — la population que le bump 12 → 13 nomme. */
+const personnageSansFiche = (ent: Record<string, unknown>): boolean =>
+  ent.kind === 'personnage' && typeNonNomme({ id: String(ent.id), kind: 'personnage', ref: ent.ref, statblock: ent.statblock, presetId: ent.presetId }) !== undefined;
+
+/** Le profil standard (`LDB 77 l.7`) de l'espèce AUTHORÉE de l'entité — lu au catalogue à l'INSTANT de
+ *  la migration ; `undefined` pour une espèce absente, un id de rig ou une espèce sans profil. */
+const profilDeLEspece = (ent: Record<string, unknown>): string | undefined => {
+  const species = (ent.appearance as { species?: unknown } | undefined)?.species;
+  return typeof species === 'string' ? findSpeciesById(species)?.profilStandard?.id : undefined;
+};
+
+/** Le statbloc que la branche `!ref` de `spawnEnemy` posait avant #1882 (`state/spawn.ts`) : même
+ *  libellé, même profil. Porté par l'entité, il passe par la branche `statblock`, qui reçoit
+ *  l'`appearance` : la forme du corps suit alors l'espèce authorée (`bodyShapeForSpecies`). Ce littéral ne
+ *  vit QUE dans la migration 12 → 13. */
+const FICHE_DU_SPAWN_AVANT_1882 = (): Record<string, unknown> => ({ type: 'statblock', label: 'Ennemi', char: { B: 10 } });
 
 /**
  * La fouille d'un décor devient une ACTION AUTHORÉE, et l'enveloppe `usable` vide se NOMME (#1687).
@@ -947,6 +968,32 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
       : {}),
     version: 12,
     schema: 12,
+  }),
+  /**
+   * `12` NOMME la fiche de tout personnage qui n'en nommait aucune (#1882) : un porteur (`ref`,
+   * `statblock` ou `presetId`) devient REQUIS sur une entité `kind:'personnage'`
+   * (`PORTEURS_DU_TYPE`, `defs-scenes/scene.ts`). L'espèce authorée porte un profil standard
+   * (`LDB 77 l.7`, `species.json`) → `ref` = ce profil ; sinon (espèce absente, id de rig, espèce
+   * sans profil) → le statbloc de la branche `!ref` d'avant #1882, écrit en `statblock` explicite
+   * (`FICHE_DU_SPAWN_AVANT_1882` : libellé et profil identiques, forme du corps de l'espèce). Sans ce passage, le
+   * projet serait REFUSÉ au parse sur son premier personnage sans fiche.
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-23-1882-fiche-de-personnage-nommee.mjs`
+   * (parité mesurée par `projet-migration-12-vers-13.test.ts`).
+   */
+  12: (doc) => ({
+    ...doc,
+    ...(doc.scenes !== undefined
+      ? {
+        scenes: poseSurChaqueEntite(
+          doc.scenes,
+          (ent) => (profilDeLEspece(ent) ? 'ref' : 'statblock'),
+          (ent) => profilDeLEspece(ent) ?? FICHE_DU_SPAWN_AVANT_1882(),
+          personnageSansFiche,
+        ),
+      }
+      : {}),
+    version: 13,
+    schema: 13,
   }),
 };
 

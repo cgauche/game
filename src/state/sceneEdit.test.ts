@@ -724,7 +724,7 @@ describe('normaliseAssises / seatOccupant — le seam unique d’assise', () => 
     s.layers = [{ z: 0, tiles: new Array(100).fill('plancher') }];
     s.entities = [
       { id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N', usable: { assise: true } },
-      { id: 'pnj-1', kind: 'personnage', pos: { x: 8, y: 8 } },
+      { id: 'pnj-1', kind: 'personnage', ref: 'humain', pos: { x: 8, y: 8 } },
     ];
     if (seatAssignments) s.seatAssignments = seatAssignments;
     return s;
@@ -801,7 +801,7 @@ describe('normaliseAssises / seatOccupant — le seam unique d’assise', () => 
   // ── M2 (sonde D du juge, promue) ────────────────────────────────────────────────────────────────
   it('deux corps attablés ne se retrouvent JAMAIS sur la même case', () => {
     let s = attablee();
-    s.entities.push({ id: 'pnj-2', kind: 'personnage', pos: { x: 7, y: 7 } });
+    s.entities.push({ id: 'pnj-2', kind: 'personnage', ref: 'humain', pos: { x: 7, y: 7 } });
     s = seatOccupant(s, 'table-1', 'place-1', { kind: 'entity', entityId: 'pnj-1' }, HORS_PARTIE).scene;
     s = seatOccupant(s, 'table-1', 'place-2', { kind: 'entity', entityId: 'pnj-2' }, HORS_PARTIE).scene;
     const deplacee = moveEntityTo(s, 'table-1', { x: 5, y: 5 });
