@@ -403,12 +403,12 @@ pas exigible (vocabulaires d'app, documents dont la source vit en profondeur) so
 `famille` et `meta` **À PLAT**. Le générateur de registre est TEXTUEL (lecture par regex, jamais un
 import) — la sanction diffère donc PAR EXPORT, et une seule est silencieuse :
 
-- `file` non conforme au filtre `scripts/gen-registry.mjs:370` (`^export const file = '`, guillemet
+- `file` non conforme au filtre de `genOne` (`scripts/gen-registry.mjs`, `^export const file = '`, guillemet
   SIMPLE littéral) : le def est **ÉCARTÉ du registre, en silence** — double quote, `: string` annoté,
   littéral gabarit et `= doc.file` compilent tous et sortent pourtant du registre. Seul cet export
   décide de l'appartenance au registre.
 - `meta` non plat : le def **RESTE au registre** et perd son entrée `meta` (invisible de `presents()`,
-  `scripts/gen-registry.mjs:382`) — l'atelier retombe sur la clé technique, sans qu'aucun gate rougisse.
+  `genOne`, `scripts/gen-registry.mjs`) — l'atelier retombe sur la clé technique, sans qu'aucun gate rougisse.
 - `schema`/`famille` destructurés (`export const { schema } = doc`) **COMPILERAIENT** : la
   destructuration crée un vrai nom importable. La garde n'y protège pas la compilation mais la
   CONVENTION — forme plate unique, lisible par un codemod.
@@ -495,4 +495,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: ce002089d678ceba17044c11bf72d54c80d7c980 (377 fichiers, 2 dossiers) corps: 1314ab71357f0fbc1d136407efb3cae3146e6543 -->
+<!-- sources-empreinte: 76227772bfc9f54f9a42bcaecd1959ff67d8b885 (376 fichiers, 2 dossiers) corps: 4c281dba644c67cdddec78fe154b94aa9a5cd1bb -->

@@ -66,7 +66,7 @@ une machine quelconque).
 
 Le canari (`.github/workflows/canari.yml`, schedule + workflow_dispatch, cron
 `0 6 * * 1`) rejoue exactement ce chemin en CI, sur un runner propre, en
-23 portes :
+18 portes :
 
 - `npm ci`
 - `npm run agents:check`
@@ -76,19 +76,14 @@ Le canari (`.github/workflows/canari.yml`, schedule + workflow_dispatch, cron
 - `npm run test:docs`
 - `npm run test:recette`
 - `npm run agents:sync`
-- `npm run gen`
 - `npm run typecheck`
 - `npm run lint`
 - `npm test`
 - `npm run build`
-- `npm run docs:check`
-- `npm run raw:catalogs`
-- `npm run raw:coverage`
-- `npm run raw:reconcile`
+- `npm run docs:check:tout`
 - `npm run test:raw`
 - `npm run raw:check-refs`
 - `npm run raw:check-code-refs`
-- `npm run raw:reanchor`
 - `npm --prefix server ci`
 - `npm run server:typecheck`
 
@@ -201,7 +196,7 @@ gates sur CHAQUE branche `chantier/**`, et c'est son verdict — jamais un artef
 autorise une tête à entrer dans `main`. Elle CLASSE d'abord le push
 (`scripts/gates/classerPush.mjs`) : un push dont tous les fichiers changés tombent sous
 `.claude/`, `.agents/`, `.codex/`, `AGENTS.md`, `CLAUDE.md` ne joue que les 9 gates qui LISENT un de
-ces chemins (`agents:check`, `test:agents`, `test:hooks`, `test:ops`, `test:docs`, `deps:unused`, `docs:check`, `docs:empreinte`, `test:raw`) ; les 17 autres sont sautées.
+ces chemins (`agents:check`, `test:agents`, `test:hooks`, `test:ops`, `test:docs`, `deps:unused`, `docs:check:tout`, `docs:empreinte`, `test:raw`) ; les 14 autres sont sautées.
 
 `npm run ops:publier` joue le train : rebase, docs dérivés, push de la BRANCHE, attente du run CI de
 cette branche, fast-forward de `main`, pilotage. Il refuse à la première étape rouge en la nommant,
@@ -221,20 +216,18 @@ nomme 4 refus, et celui qui exige un run vert ne vaut que pour la ref `main`.
 Ajouter une gate, c'est ajouter UN step à `ci.yml` — rien d'autre ne la récite.
 
 **Rejeu LOCAL `npm run gates`** (`node scripts/gates/toutes.mjs`), un confort de diagnostic, jamais une porte :
-26 gates classées, d'abord
-une phase SÉRIE `AVANT_LES_LANES` (`raw:coverage`, `raw:reconcile`, `raw:reanchor`) — les gates qui ÉCRIVENT dans
-l'arbre, jouées seules pour qu'aucun lecteur ne tombe sur un fichier à moitié écrit — puis
-3 lanes parallèles de LECTEURS :
+23 gates classées en 3 lanes parallèles de LECTEURS — aucune gate
+n'écrit dans l'arbre, un dérivé s'y VÉRIFIE (`docs:check:tout`) :
 
 | Lane | Gates |
 |---|---|
 | `suite` | `test` |
 | `types` | `typecheck`, `lint`, `deps:unused`, `server:typecheck`, `test:agents`, `test:ops`, `test:runner`, `test:recette`, `test:hooks` |
-| `docs` | `docs:check`, `docs:empreinte`, `test:raw`, `raw:check-refs`, `raw:check-code-refs`, `raw:check-ancres`, `raw:check-folio-continuity`, `raw:check-source-tables`, `raw:check-source-format`, `raw:check-source-puces`, `test:docs`, `agents:check`, `build` |
+| `docs` | `docs:check:tout`, `docs:empreinte`, `test:raw`, `raw:check-refs`, `raw:check-code-refs`, `raw:check-ancres`, `raw:check-folio-continuity`, `raw:check-source-tables`, `raw:check-source-format`, `raw:check-source-puces`, `test:docs`, `agents:check`, `build` |
 
 Les deux tables vivent dans `scripts/gates/toutes.mjs` : `LANES` pour la répartition ci-dessus,
-`ECRIT_LU` pour ce que CHAQUE gate écrit et lit (26 gates mesurées, dont
-11 écrivain(s) — écriture de chaque run ou écriture POSSIBLE à porte nommée) ; c'est elle
+`ECRIT_LU` pour ce que CHAQUE gate écrit et lit (23 gates mesurées, dont
+8 écrivain(s) — écriture de chaque run ou écriture POSSIBLE à porte nommée) ; c'est elle
 qui rend le classement vérifiable plutôt que déclaratif. La suite est BORNÉE par `WFRP_TEST_COEURS`
 pendant que les autres lanes tournent. Options : `--gates`, `--liste`, `--serie`. Une gate de `ci.yml`
 sans place dans ce plan fait REFUSER le run, avec son nom.
@@ -243,4 +236,4 @@ sans place dans ce plan fait REFUSER le run, avec son nom.
 `scripts/guards/lib/npmLockHoisted.mjs` — npx --yes npm@10.9.3 install --package-lock-only, puis valider avec npx npm@10.9.3 ci --dry-run. npm 11 ampute les entrées hoistées
 `@emnapi/*` que `npm ci` exige en CI ; la garde (pre-commit +
 `src/npm-lock-hoisted-guard.test.ts`) refuse un lock amputé.
-<!-- sources-empreinte: 981a8ca4148209b8e0699a5651624de7a146fc1e (25 fichiers, 8 dossiers) corps: fdc384904e58da5fe354f43c49d94bcbdf2a4e40 -->
+<!-- sources-empreinte: e19dc8b98956da4b11014b898616b3b4709571ea (23 fichiers, 8 dossiers) corps: 5f15a2251a95330c2cb36f70cefdd35325748937 -->

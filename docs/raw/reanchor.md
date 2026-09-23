@@ -3,7 +3,7 @@
 > Déterministe (`node scripts/raw/reanchor.mjs` ; `--apply` réécrit les dérives HIGH). GATE (#434) :
 > exit 1 sur dérive non appliquée, ambiguïté, ou hausse de réf FAUSSE (❌) — voir en-tête du script.
 > Pour chaque citation verbatim « … » d'une fiche, on relocalise le texte dans le `.md` source
-> courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive corrigée (HIGH, unique) · 🟡 ambigu
+> courant et on vérifie le n° de ligne cité. ✅ juste · 🔧 dérive (HIGH, unique : `--apply` la corrige) · 🟡 ambigu
 **Bilan : ✅ 632 · 🔧 0 dérives (relancer --apply) · 🟡 0 ambigus · ❌ 21 introuvables · ➖ 3545 synthèses** (⛔ 0 hors-fichier · ⚠️ 0 sans source) sur 4198 réfs · 653 citations · 29 fiches.
 
 > (MEDIUM, manuel) · ❌ introuvable (LOW, paraphrase/mauvais chapitre) · ➖ synthèse (réf sans citation).
@@ -73,4 +73,4 @@
 | Réf | Statut | Détail |
 |---|---|---|
 | `LDB 17 l.68` | ❌ LOW | « "je ne faillirai pas !" : au lieu de lancer le… » — aucune occurrence |
-<!-- sources-empreinte: e11b8fa23b8bd9e8415c7adf1747f6bef9b6839c (273 fichiers, 18 dossiers) corps: 657cffc5184d1d223cea47cdf9455b2636d8c0ef -->
+<!-- sources-empreinte: d2811b0e2bcf4c96cb83d212a8967e3e1243f032 (273 fichiers, 18 dossiers) corps: bf22c2ac0d4bafea9e8542374bbf6c3f2909769d -->
