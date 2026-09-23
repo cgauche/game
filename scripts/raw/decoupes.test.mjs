@@ -7,7 +7,7 @@
 // redit ; chaque entrée porte exactement son jeu de clés ; les pages sont croissantes (deux entrées
 // peuvent partager une page : on coupe à la LIGNE du titre, pas à la page) ; aucune entrée n'est
 // saisie deux fois ; chaque titre de fichier survit à `nomAscii` sans changer (le nom écrit sous
-// `Source/` est celui de la donnée).
+// `Source/` est celui de la donnée) ; `onglets` est déclaré, bien formé et couvre chaque chapitre, `gabaritOnglet` l'accompagne.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -126,6 +126,84 @@ test('#1739 : tout titre de fichier survit à `nomAscii` sans changer', () => {
     }
   }
   assert.deepEqual(fautes, [], `titres non ASCII :\n${fautes.join('\n')}`)
+})
+
+// Les ONGLETS DE CHAPITRE se lisent au PDF (`scripts/raw/onglets.py`, jamais joué ici : pas de PDF en
+// CI) ; ce banc tient leur FORME contre la liste elle-même. Le champ est REQUIS : `null` DÉCLARE un
+// livre sans onglet imprimé, son absence ne dit rien.
+// Même motif que `scripts/raw/onglets.py` (sonde Python qui écrit la donnée) : deux langages, une définition.
+const ROMAIN = /^(?=[IVXLC])C{0,3}(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/
+const ongletsDe = (id) => JSON.parse(readFileSync(join(DECOUPES_DIR, `${id}.json`), 'utf8')).onglets
+
+test('#1739 : `onglets` est déclaré — un tableau non vide, ou `null`', () => {
+  const fautes = IDS.filter((id) => {
+    const o = ongletsDe(id)
+    return o !== null && !(Array.isArray(o) && o.length)
+  }).map((id) => `${id}.json — \`onglets\` = ${JSON.stringify(ongletsDe(id))}`)
+  assert.deepEqual(fautes, [], `\`onglets\` non déclaré :\n${fautes.join('\n')}`)
+})
+
+test('#1739 : chaque onglet porte un chiffre romain valide et une étendue `[a, b]` dans le livre, disjointe et ordonnée', () => {
+  const fautes = []
+  for (const id of IDS) {
+    const onglets = ongletsDe(id)
+    if (!Array.isArray(onglets)) continue
+    const derniere = Math.max(...decoupeDe(id).map((e) => e.pageFin))
+    onglets.forEach((o, i) => {
+      const ou = `${id} onglet #${i + 1}`
+      const cles = Object.keys(o ?? {}).sort().join(',')
+      if (cles !== 'chiffre,pages') fautes.push(`${ou} — clés ${cles}, attendu chiffre,pages`)
+      if (typeof o?.chiffre !== 'string' || !ROMAIN.test(o.chiffre)) fautes.push(`${ou} — chiffre romain invalide ${JSON.stringify(o?.chiffre)}`)
+      const [a, b, ...reste] = Array.isArray(o?.pages) ? o.pages : []
+      if (reste.length || !Number.isInteger(a) || !Number.isInteger(b) || a < 1 || b < a || b > derniere) {
+        fautes.push(`${ou} — étendue ${JSON.stringify(o?.pages)} hors de [1, ${derniere}] ou mal formée`)
+        return
+      }
+      const avant = onglets[i - 1]?.pages
+      if (Array.isArray(avant) && a <= avant[1]) fautes.push(`${ou} — [${a}, ${b}] chevauche ou précède [${avant.join(', ')}]`)
+    })
+  }
+  assert.deepEqual(fautes, [], `onglets mal formés :\n${fautes.join('\n')}`)
+})
+
+// Le GABARIT d'onglet est ce que la sonde lit : présent si et seulement si `onglets` l'est, et bien formé.
+test('#1739 : `gabaritOnglet` est non nul si et seulement si `onglets` l’est, et porte police, taille et bandeHaute', () => {
+  const fautes = []
+  for (const id of IDS) {
+    const brut = JSON.parse(readFileSync(join(DECOUPES_DIR, `${id}.json`), 'utf8'))
+    const g = brut.gabaritOnglet
+    if (g === undefined) { fautes.push(`${id}.json — \`gabaritOnglet\` absent`); continue }
+    if ((g === null) !== (brut.onglets === null)) fautes.push(`${id}.json — \`gabaritOnglet\` ${g === null ? 'nul' : 'non nul'} pour des \`onglets\` ${brut.onglets === null ? 'nuls' : 'non nuls'}`)
+    if (g === null) continue
+    const cles = Object.keys(g ?? {}).sort().join(',')
+    if (cles !== 'bandeHaute,police,taille') fautes.push(`${id}.json — clés du gabarit ${cles}, attendu bandeHaute,police,taille`)
+    if (typeof g.police !== 'string' || !g.police.trim() || g.police.includes('+')) fautes.push(`${id}.json — \`police\` ${JSON.stringify(g.police)} : un nom sans préfixe de sous-ensemble`)
+    for (const k of ['taille', 'bandeHaute']) {
+      if (typeof g[k] !== 'number' || !(g[k] > 0)) fautes.push(`${id}.json — \`${k}\` ${JSON.stringify(g[k])} : un nombre de pt positif`)
+    }
+  }
+  assert.deepEqual(fautes, [], `gabarit d’onglet incohérent :\n${fautes.join('\n')}`)
+})
+
+// Tout CHAPITRE de la liste imprime son onglet quelque part : son segment de pages rencontre au moins
+// une étendue.
+
+test('#1739 : chaque `chapitre` de la liste est couvert par au moins une étendue d’onglet', () => {
+  const fautes = []
+  for (const id of IDS) {
+    const onglets = ongletsDe(id)
+    if (!Array.isArray(onglets)) continue
+    const segments = new Map()
+    for (const e of decoupeDe(id)) {
+      if (e.chapitre == null) continue
+      const s = segments.get(e.chapitre)
+      segments.set(e.chapitre, s ? [s[0], Math.max(s[1], e.pageFin)] : [e.page, e.pageFin])
+    }
+    for (const [c, [a, b]] of segments) {
+      if (!onglets.some((o) => o.pages[0] <= b && a <= o.pages[1])) fautes.push(`${id} — « ${c} » p.${a}-${b} : aucune étendue d’onglet`)
+    }
+  }
+  assert.deepEqual(fautes, [], `chapitre(s) sans onglet :\n${fautes.join('\n')}`)
 })
 
 test('#1739 : le `book` déclaré dans le fichier redit le nom du fichier', () => {

@@ -158,7 +158,22 @@ fichier de la section qui l'introduit. Intégrité : `scripts/raw/decoupes.test.
 fichier est l'id d'un livre couvert, chaque entrée porte exactement son jeu de clés, les plages
 PAVENT le livre — débuts croissants, aucun trou, au plus une page partagée —, les entrées d'un
 chapitre sont contiguës et son titre n'ouvre que sa première, aucune entrée en double, chaque titre
-survit à `nomAscii`).
+survit à `nomAscii`, `onglets` est déclaré — chiffres romains valides, étendues dans le livre,
+disjointes et ordonnées, chaque `chapitre` couvert par au moins une ; `gabaritOnglet` non nul si et
+seulement si `onglets` l'est, et bien formé).
+
+**Les ONGLETS DE CHAPITRE** — clé `onglets`, REQUISE au niveau du LIVRE, à côté de `book` :
+`[{ chiffre, pages: [a, b] }]`, le chiffre romain imprimé en onglet et l'ÉTENDUE de pages PDF, de la
+première à la dernière qui l'IMPRIMENT (une page paire en frontière de chapitre n'est rattachée à
+aucun chiffre) ; `null` DÉCLARÉ pour un livre qui n'en imprime aucun. Son voisin `gabaritOnglet` =
+`{ police, taille, bandeHaute }`, MESURÉ au PDF (police sans préfixe de sous-ensemble, corps en pt, pt
+sous le haut de page que le HAUT de l'onglet ne dépasse pas), `null` avec `onglets` : un livre de plus reste UN fichier de
+donnée. `onglets` se LIT au PDF, jamais à la main : `python scripts/raw/onglets.py <id>` l'écrit,
+`--check` la relit sans rien écrire et rapporte les pages impaires sans onglet ; un livre sans
+`gabaritOnglet` est refusé et nommé. La sonde passe par le **lecteur géométrique**
+`scripts/raw/lib/pdf_geometrie.py` (pdfminer : caractères avec police, taille et bbox, aplats, spans,
+folio imprimé — le même que `scripts/data/gen-progression-schemas.py`). Hors CI (pas de PDF) : la
+donnée committée fait foi.
 
 **Le critère à tenir** : mettre le livre N+1 au grain de ses sections coûte **UN fichier de donnée,
 zéro ligne de code**.

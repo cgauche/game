@@ -7,7 +7,7 @@
 # rejouable en CI (pas de pdfminer dans la chaîne Node), l'ARTEFACT COMMITTÉ est la vérité dérivée ;
 # la garde `scripts/guards/lib/progressionSchemas.mjs` le joint à `careerLevels.json`.
 #
-# Technique de lecture (mesurée, pas devinée) :
+# Technique de lecture (mesurée, pas devinée), par le lecteur géométrique `scripts/raw/lib/pdf_geometrie.py` :
 #   - le folio IMPRIMÉ se lit SUR la page (chiffres en police `DwarvenAxeBB`, pied de page) : jamais
 #     un offset folio<->page PDF, qui n'est pas constant (piège vécu : « folio 116 » -> Villageois) ;
 #   - le titre de Carrière est la ligne en `CaslonAntique-Bold` >= 17 pt (les intertitres sont en
@@ -34,13 +34,12 @@ import argparse
 import io
 import json
 import os
-import subprocess
 import sys
 
-from pdfminer.high_level import extract_pages
-from pdfminer.layout import LAParams, LTChar, LTRect
-
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, os.path.join(ROOT, "scripts", "raw", "lib"))
+from pdf_geometrie import lire_pages, pdfs_de, police_de, printed_folio  # noqa: E402
+
 OUT = os.path.join(ROOT, "src", "data", "progression-schemas.derived.json")
 
 # Ordre des colonnes du schéma imprimé == ordre de `CHAR_KEYS` (`src/engine/types.ts:41`).
@@ -59,28 +58,12 @@ CHAR_KEY = {
 }
 
 CAREERS = os.path.join(ROOT, "src", "data", "careers.json")
-PDF_DE = os.path.join(ROOT, "scripts", "raw", "pdf-de.mjs")
 
 
 def livres_porteurs():
     """Ids STABLES des livres qui portent une Carrière (`source.book` de `src/data/careers.json`), triés."""
     with open(CAREERS, encoding="utf-8") as f:
         return sorted({c["source"]["book"] for c in json.load(f) if (c.get("source") or {}).get("book")})
-
-
-def pdfs_de(ids):
-    """Chemins absolus des PDF de `ids`, dans l'ordre ; lève avec le refus de la CLI."""
-    vu = subprocess.run(["node", PDF_DE, *ids], capture_output=True, text=True, encoding="utf-8")
-    if vu.returncode != 0:
-        raise SystemExit(f"pdf-de : {vu.stderr.strip()}")
-    return vu.stdout.splitlines()
-
-
-def walk(o):
-    yield o
-    if hasattr(o, "_objs"):
-        for c in o._objs:
-            yield from walk(c)
 
 
 # Nuanciers MESURÉS des marques de niveau, par livre — un `LTRect` est une marque s'il tombe à moins
@@ -167,19 +150,6 @@ def column_centers(chars, ymax):
     return None
 
 
-def printed_folio(chars):
-    """Folio IMPRIMÉ en pied de page (police `DwarvenAxeBB`) — l'ancre, jamais l'index PDF."""
-    cand = [c for c in chars if c.y0 < 45 and "dwarvenaxe" in (c.fontname or "").lower()]
-    runs = {}
-    for c in cand:
-        runs.setdefault(round(c.y0, 0), []).append(c)
-    for y in sorted(runs, reverse=True):
-        s = "".join(x.get_text() for x in sorted(runs[y], key=lambda c: c.x0)).strip()
-        if s.isdigit():
-            return int(s)
-    return None
-
-
 TITLE_MIN_SIZE = 12
 TITLE_HEAD_SIZE = 17
 
@@ -201,7 +171,7 @@ def page_titles(chars):
     """
     lines = {}
     for c in chars:
-        fn = (c.fontname or "").split("+")[-1]
+        fn = police_de(c)
         if not fn.startswith("CaslonAntique") or c.size < TITLE_MIN_SIZE:
             continue
         for y in lines:
@@ -248,24 +218,18 @@ def cluster_bands(rects):
 
 def read_book(book_id, pdf_path, pages, errors):
     schemas = []
-    page_numbers = pages if pages else None
-    for i, page in enumerate(extract_pages(pdf_path, page_numbers=page_numbers, laparams=LAParams())):
-        pdfpage = (pages[i] if pages else i) + 1  # 1-based, index PDF (diagnostic seulement)
-        objs = list(walk(page))
-        chars = [o for o in objs if isinstance(o, LTChar)]
+    for page in lire_pages(pdf_path, pages if pages else None):
+        pdfpage = page.numero  # 1-based, index PDF (diagnostic seulement)
+        chars = page.chars
         rects = [
             o
-            for o in objs
-            if isinstance(o, LTRect) and o.fill and 15 < o.width < 40 and 6 < o.height < 30 and mark_level(o.non_stroking_color)
+            for o in page.rects
+            if o.fill and 15 < o.width < 40 and 6 < o.height < 30 and mark_level(o.non_stroking_color)
         ]
         bands = cluster_bands(rects)
         if not bands:
             continue
-        glyphs = [
-            o
-            for o in objs
-            if isinstance(o, LTChar) and "crossbat" in (o.fontname or "").lower() and o.get_text().strip()
-        ]
+        glyphs = [o for o in chars if "crossbat" in (o.fontname or "").lower() and o.get_text().strip()]
         folio = printed_folio(chars)
         titles = page_titles(chars)
         for y, rs in bands:
