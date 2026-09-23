@@ -109,9 +109,8 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     for (const tr of all) checkTrappingRef(tr);
   });
 
-  it('creatures : spells (Ref) résolvent ; skills/talents/optionals/trappings structurés (zéro chaîne)', () => {
+  it('creatures : skills/talents/optionals/trappings structurés (zéro chaîne)', () => {
     for (const c of creatures) {
-      for (const s of c.spells) { expect(isObj(s)).toBe(true); expect(findSpellById(s.id)).toBeTruthy(); }
       for (const sk of c.skills) expect(isObj(sk) && typeof sk.id === 'string').toBe(true);
       for (const t of c.talents) expect(isObj(t) && typeof t.id === 'string').toBe(true);
       for (const o of c.optionals) expect(isObj(o)).toBe(true); // OptionalEntry : TraitInstance OU note composée (#174)

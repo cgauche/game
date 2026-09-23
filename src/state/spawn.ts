@@ -294,10 +294,10 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
     ...spawnMutations(traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
     // Sorts : ceux de la DONNÉE (PNJ nommés — Eusapia en a 12), surchargés par le choix d'auteur.
-    // Combatant.spells = IDS de sort (runtime) : créature = ids des refs ; choix d'auteur = ids (filtrés valides).
+    // Combatant.spells = IDS de sort : ceux de la créature tels quels ; choix d'auteur filtrés valides.
     ...(extras?.spells?.length
       ? { spells: extras.spells.filter((id) => !!findSpellById(id)) }
-      : creature.spells.length ? { spells: creature.spells.map((s) => s.id) } : {}),
+      : creature.spells.length ? { spells: creature.spells } : {}),
     groups: groupsFor({ extras: creature.grantGroups, traits, talents }), // Groupes DÉCLARÉS par l'entrée (`grantGroups` : catégorie + dieu du Chaos) + Traits (`capabilities.grantGroups`) + culte (Talent de Prière, P3)
     traits, // conservés (facultatifs inclus) → attaques gratuites de créature en combat
     skills,

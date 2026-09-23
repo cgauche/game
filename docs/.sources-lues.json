@@ -15319,7 +15319,6 @@
       "src/i18n/messages/fr.ts",
       "src/lib/normalize.ts",
       "src/state/dir8.ts",
-      "src/state/flow.ts",
       "tsconfig.json"
     ],
     "dossiers": []
@@ -16246,6 +16245,7 @@
       "src/data/species.json",
       "src/data/speciesRace.json",
       "src/data/speciesSingular.test.ts",
+      "src/data/spell-narratifs.test.ts",
       "src/data/spells-portee-lanceur.test.ts",
       "src/data/spells.json",
       "src/data/stake-rule-ratchet.test.ts",
@@ -21330,6 +21330,7 @@
       "src/data/species.json",
       "src/data/speciesRace.json",
       "src/data/speciesSingular.test.ts",
+      "src/data/spell-narratifs.test.ts",
       "src/data/spells-portee-lanceur.test.ts",
       "src/data/spells.json",
       "src/data/stake-rule-ratchet.test.ts",

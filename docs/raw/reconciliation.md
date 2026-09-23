@@ -46,7 +46,7 @@
 - `src/data/reseau-routier.json:192` (l.11) — "note": "EDOC 10 l.11 — section « Patrouilles routières » ; la phrase reprend l.17, l'encadré « LES JUSTICIERS » (l.13-15) la coupant."
 
 ### MCLB 2 — 5 réf(s) code, 0 dans l'Atlas
-- `src/data/creatures.json:59012` (l.2420) — "note": "MCLB 02 l.2420"
+- `src/data/creatures.json:57836` (l.2420) — "note": "MCLB 02 l.2420"
 - `src/data/skills.json:962` (l.1844) — "note": "MCLB 02 l.1844"
 - `src/data/skills.json:1559` (l.1322) — "note": "MCLB 02 l.1322"
 - `src/data/skills.json:1569` (l.2426) — "note": "MCLB 02 l.2426"
@@ -126,7 +126,7 @@
 ### EDOC 13 — 3/8 ligne(s) code hors couverture (propriétaire : 4e/talents.md)
 - l.137 — `src/data/index.ts:1097` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
 - l.522 — `src/data/index.ts:1705` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
-- l.524 — `src/data/refs-migrated.test.ts:852` — *  sont au catalogue, sourcées à la desc verbatim de leur Trait (`EDOC 13 l.524` folio 83,
+- l.524 — `src/data/refs-migrated.test.ts:851` — *  sont au catalogue, sourcées à la desc verbatim de leur Trait (`EDOC 13 l.524` folio 83,
 
 ### MDG 15 — 3/49 ligne(s) code hors couverture (propriétaire : 4e/deplacement.md)
 - l.461 — `src/data/naval-ports.test.ts:47` — it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
@@ -210,4 +210,4 @@ _Aucun._
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, LDB, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, CRB, EDO, EDOC, LDB, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: d6def1b27fb85390287ab0023efec4d3470e5b10 (4129 fichiers, 152 dossiers) corps: 7f4c19180bbda083a27933d6f15a4e7cced7ef83 -->
+<!-- sources-empreinte: 9ae3b8b92b56f62ba12ec41b8b8dc72a543dafbe (4130 fichiers, 152 dossiers) corps: df3283d3d4fa70681580e194b8b0905404438e0d -->

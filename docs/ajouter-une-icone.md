@@ -214,4 +214,4 @@ emoji, même « juste pour l'instant ».
   vérifier le compteur de fichiers affiché).
 - `npm run typecheck` — un id d'icône authoré en TS hors du registre ne compile pas
   (`IconIdGenerated` est une union fermée).
-<!-- sources-empreinte: 02646de6f3e9321950cc9c1368b23c92c25980ec (137 fichiers, 2 dossiers) corps: e02688e6eab83bfaa5a891ead92463b25c8a79e0 -->
+<!-- sources-empreinte: 47f8fc65c66af2eca6e9183cf683730d37f31f56 (137 fichiers, 2 dossiers) corps: e02688e6eab83bfaa5a891ead92463b25c8a79e0 -->

@@ -160,7 +160,7 @@ const graph = versionCached<ReverseGraph>(() => {
     for (const tr of c.optionals) if (!isOptionalNote(tr)) addReverse('traits', tr.id, { ...by, detail: 'facultatif' }, 'Créatures ayant ce trait');
     for (const sk of c.skills) addReverse('skills', sk.id, by);
     for (const ta of c.talents) addReverse('talents', ta.id, by);
-    for (const sp of c.spells) addReverse('spells', sp.id, by, 'Créatures la lançant');
+    for (const sp of c.spells) addReverse('spells', sp, by, 'Créatures la lançant');
     for (const tp of c.trappings) if ('id' in tp) addReverse('trappings', tp.id, by, 'Créatures la possédant');
   }
 

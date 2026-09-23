@@ -84,6 +84,22 @@ describe('auditSecondaryRef — attestation POSITIVE (#563 Lot 1 item 2, morsure
     expect(r.via).toBe('quote');
   });
 
+  it('livre FAN (`extractionDir`, pied de page `N sur M`) : `Alarme` imprimé avant le pied `455 sur 630` est ATTESTÉ en folio 455 (frenchy.bzh 65 l.757)', () => {
+    const r = auditSecondaryRef({ book: 'frenchy-bzh', page: 455, label: undefined, quote: 'Alarme' });
+    expect(r.verdict).toBe('attesté');
+    expect(r.via).toBe('quote');
+  });
+
+  it('MORSURE (d) — livre FAN, folio VOISIN : `Alarme` déclaré en folio 454 → non-attesté (rouge)', () => {
+    const r = auditSecondaryRef({ book: 'frenchy-bzh', page: 454, label: undefined, quote: 'Alarme' });
+    expect(r.verdict).toBe('non-attesté');
+  });
+
+  it('MORSURE (e) — livre FAN, quote absent du folio 455 → non-attesté (rouge)', () => {
+    const r = auditSecondaryRef({ book: 'frenchy-bzh', page: 455, label: undefined, quote: 'Bidule' });
+    expect(r.verdict).toBe('non-attesté');
+  });
+
   it('livre-hors-atlas si le livre déclaré n\'a pas d\'extraction FR', () => {
     const r = auditSecondaryRef({ book: 'inexistant', page: 1, label: 'X', quote: undefined });
     expect(r.verdict).toBe('livre-hors-atlas');

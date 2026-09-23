@@ -7,8 +7,8 @@
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
 import { availabilitySchema, harvestRaritySchema, entityAppearanceSchema, moneySchema } from '../grammaire/valeurs';
-import { refSchema, talentRefSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
-import { refOuSpec } from '../grammaire/ref';
+import { talentRefSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
+import { refOuSpec, refs } from '../grammaire/ref';
 
 export const file = 'creatures.json';
 export const famille = 'entite';
@@ -72,7 +72,7 @@ const champs = {
     skills: z.array(skillRefSchema),
     talents: z.array(talentRefSchema),
     trappings: z.array(trappingRefSchema),
-    spells: z.array(refSchema),
+    spells: refs('spell'),
     /** Emplacements SECONDAIRES (#563) — le MÊME statbloc réimprimé par un autre livre (Bête des
      *  marais : LDB 79 p.318, republiée verbatim par VDM 13 folio 179). L'ANCRE `source` reste seule
      *  à porter la `desc` ; jamais une seconde entrée. */

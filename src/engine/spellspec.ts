@@ -7,6 +7,9 @@
  * désormais directement les champs de `SpellData` sous forme de shape partielle (duck typing).
  */
 import { GameOp } from './ops';
+import { spellEffectOps } from './flowCore';
+import { isMagicMissile } from './magic';
+import type { SpellData } from '../data';
 
 /** Shape minimale des métadonnées de résolution lues par `spellSupport` — sous-ensemble de
  *  `SpellData` (les champs migrés de l'ancienne SpellSpec). Pas d'import circulaire : les
@@ -45,4 +48,9 @@ export function spellSupport(
   if (mech && narr) return 'partiel';
   if (mech) return 'mecanique';
   return 'narratif';
+}
+
+/** `spellSupport` d'un sort de la donnée : ses ops par `spellEffectOps`, son Projectile par `isMagicMissile`. */
+export function spellSupportOf(spell: SpellData): ReturnType<typeof spellSupport> {
+  return spellSupport(spellEffectOps(spell.effects), spell, isMagicMissile(spell));
 }

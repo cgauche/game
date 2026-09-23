@@ -58,7 +58,8 @@ import { readFileSync } from 'node:fs'
 import { parUnitesDeCode, listerDossier } from './lister.mjs'
 import { join, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { livreDuSigle, sigleDe } from '../../raw/_lib.mjs'
+import { REGISTRE_LIVRES, sigleDe } from '../../raw/_lib.mjs'
+import { sourceDirOf } from '../../data/lib/skillSpecWalk.mjs'
 import { resoudreProse } from '../../source/resoudre.mjs'
 
 
@@ -100,24 +101,57 @@ export function normMap(s) {
   return { text: out.join(''), idx }
 }
 
+/**
+ * Le livre du registre (`src/data/books.json`) dont un champ vaut `valeur`, s'il porte une extraction
+ * — `dir` d'un livre de l'Atlas ou `extractionDir` d'un livre hors Atlas (`sourceDirOf`) —, sinon `null`.
+ * @param {'id'|'abbr'} champ @param {string} valeur @returns {{ abbr: string, dir: string } | null}
+ */
+function livreAvecExtraction(champ, valeur) {
+  const livre = REGISTRE_LIVRES.find((b) => b[champ] === valeur)
+  const dir = sourceDirOf(livre)
+  return dir ? { abbr: livre.abbr, dir } : null
+}
+
+/** Pied de page IMPRIMÉ `N sur M` — seule graphie de folio de l'extraction `frenchy-bzh`, rendue aussi
+ *  `sur N M` (`frenchy.bzh 16 l.185`) ; aucune extraction de l'Atlas n'en porte (mesuré le 2026-09-23). */
+const PIED_DE_PAGE = /^[ \t]*(?:(\d+)[ \t]+sur|sur[ \t]+(\d+))[ \t]+\d+[ \t]*$/gm
+
+/**
+ * Marqueurs de DÉBUT de folio `[offset, folio]` d'un chapitre brut, triés par offset. Deux graphies :
+ * `<span data-folio="N">` (Marker) OUVRE la page N ; un pied de page `N sur M` la CLÔT — le texte qui
+ * le précède est en folio N, celui qui le suit en N+1. Un pied manquant laisse l'encadrement ouvert
+ * sur deux folios, jamais un folio faux.
+ * @param {string} raw @returns {[number, number][]}
+ */
+function marqueursDeFolio(raw) {
+  /** @type {[number, number][]} */
+  const folios = []
+  for (const m of raw.matchAll(/data-folio="(\d+)"/g)) folios.push([m.index ?? 0, Number(m[1])])
+  const pieds = [...raw.matchAll(PIED_DE_PAGE)]
+  if (pieds.length > 0) folios.push([0, Number(pieds[0][1] ?? pieds[0][2])])
+  for (const m of pieds) {
+    const fin = (m.index ?? 0) + m[0].length
+    if (raw.slice(fin).trim()) folios.push([fin, Number(m[1] ?? m[2]) + 1])
+  }
+  return folios.sort((a, b) => a[0] - b[0])
+}
+
 const CACHE = new Map()
 
-/** Chapitres d'un livre (par abréviation `BOOKS`), normalisés + marqueurs `data-folio` positionnés +
- *  TITRES de section positionnés (localisateur de secours, voie C).
+/** Chapitres d'un livre (par abréviation `books.json`), normalisés + marqueurs de folio positionnés
+ *  (`marqueursDeFolio`) + TITRES de section positionnés (localisateur de secours, voie C).
  *  @param {string} abbr @returns {{ file: string, text: string, idx: number[], folios: [number, number][], heads: [number, string][] }[]} */
 export function bookDocs(abbr) {
   const hit = CACHE.get(abbr)
   if (hit) return hit
-  const rel = livreDuSigle(abbr)?.dir
+  const rel = livreAvecExtraction('abbr', abbr)?.dir
   const docs = []
   if (rel) {
     const dir = join(ROOT, rel)
     for (const name of listerDossier(dir, { absent: 'vide' }).filter((f) => f.endsWith('.md'))) {
       const raw = readFileSync(join(dir, name), 'utf8')
       const { text, idx } = normMap(raw)
-      /** @type {[number, number][]} */
-      const folios = []
-      for (const m of raw.matchAll(/data-folio="(\d+)"/g)) folios.push([m.index ?? 0, Number(m[1])])
+      const folios = marqueursDeFolio(raw)
       /** @type {[number, string][]} */
       const heads = []
       for (const m of raw.matchAll(/^#{1,6}[ \t]+(.+)$/gm)) heads.push([m.index ?? 0, m[1]])
@@ -151,7 +185,7 @@ export function bookMaxFolio(abbr) {
   if (hit !== undefined) return hit
   let max = 0
   for (const doc of bookDocs(abbr)) for (const [, f] of doc.folios) if (f > max) max = f
-  const rel = livreDuSigle(abbr)?.dir
+  const rel = livreAvecExtraction('abbr', abbr)?.dir
   if (rel) {
     try {
       const t = readFileSync(join(ROOT, rel, '00 - Index.md'), 'utf8')
@@ -511,7 +545,7 @@ export function secondaryEntriesOf(data) {
  * @returns {{ verdict: 'attesté'|'non-attesté'|'folio-impossible'|'livre-hors-atlas', via?: 'label'|'quote', max?: number }}
  */
 export function auditSecondaryRef({ book, page, label, quote }) {
-  const abbr = sigleDe(book)
+  const abbr = livreAvecExtraction('id', book)?.abbr
   if (!abbr) return { verdict: 'livre-hors-atlas' }
   const docs = bookDocs(abbr)
   if (docs.length === 0) return { verdict: 'livre-hors-atlas' }

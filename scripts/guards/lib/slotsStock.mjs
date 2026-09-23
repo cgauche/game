@@ -108,7 +108,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "arene-projet.json", champ: "roofDefaults", occurrences: 18, lot: "L2/L3 #1473", date: "2026-09-09" },
   { dataset: "arene-projet.json", champ: "roomZoneIds", occurrences: 12, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "scene", occurrences: 4, lot: "L2/L3 #1473", date: "2026-08-26" },
-  { dataset: "arene-projet.json", champ: "spells", occurrences: 2, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "start", occurrences: 9, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "traits", occurrences: 11, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "arene-projet.json", champ: "walls", occurrences: 235, lot: "L2/L3 #1473", date: "2026-08-26" },
@@ -169,7 +168,6 @@ export const SLOTS_SANS_DECLARATION = [
   { dataset: "creatures.json", champ: "optionals", occurrences: 649, lot: "L2/L3 #1473", date: "2026-08-26" }, // +2 : Trait Entêté optionnel sur Âne + Mule, EDOC 07 folio 22 (#673)
   { dataset: "creatures.json", champ: "remove", occurrences: 3, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "skills", occurrences: 5981, lot: "L2/L3 #1473", date: "2026-08-26" }, // −1 : doublon `riverain-respecte` supprimé du statbloc (687863ec6, skills 27→26) — compte non rafraîchi au commit
-  { dataset: "creatures.json", champ: "spells", occurrences: 599, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "talents", occurrences: 1724, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "creatures.json", champ: "traits", occurrences: 3049, lot: "L2/L3 #1473", date: "2026-08-26" }, // +5 : Chien de trait, EDOC 07 folio 22, #673
   { dataset: "creatures.json", champ: "trappings", occurrences: 132, lot: "L2/L3 #1473", date: "2026-08-26" },

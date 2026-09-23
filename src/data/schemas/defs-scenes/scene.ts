@@ -26,7 +26,7 @@ import { refIndiceSchema } from '../grammaire/reference';
 import { customStatblockSchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
 import { sceneFlowSchema } from './effets';
 import { PROPS_VOLUMIQUES } from '../_ids.generated';
-import { idDe } from '../grammaire/ref';
+import { idDe, refs } from '../grammaire/ref';
 import { capDecorAdmis } from '../../props.types';
 import { PARTS_RELIEF, type PartRelief } from '../../materials.types';
 import type { AuthoredShipPoste } from '../../../engine/types';
@@ -155,7 +155,7 @@ export const sceneEntitySchema = z.strictObject({
     .strictObject({
       /** OPTIONNELS choisis (`LDB 76 l.45`). */
       optionals: z.array(optionalEntrySchema).optional(),
-      spells: z.array(z.string()).optional(),
+      spells: refs('spell').optional(),
       /** Caractéristiques aléatoires au spawn (`LDB 77 l.108`). */
       randomChars: z.boolean().optional(),
       skills: z.array(skillRefSchema).optional(),

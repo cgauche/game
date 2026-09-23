@@ -1397,8 +1397,8 @@ export interface CreatureData {
   talents: TalentRef[];
   /** Possessions (`TrappingRef` : id catalogue + quantité, ou `{text}` narratif — « collection d'alcool »). */
   trappings: TrappingRef[];
-  /** Sorts connus (`Ref` par id de sort). */
-  spells: Ref[];
+  /** Sorts connus — ids de `spells.json`. */
+  spells: string[];
   desc?: string;
   source: SourceRef;
   /** Apparence par défaut UNIFIÉE (plan P2) — UN seul bloc éditable porté par l'enregistrement :
@@ -2118,7 +2118,7 @@ export interface DomainData {
   }[];
 }
 export interface SpellData {
-  /** id STABLE (slug du libellé) — cible des `Ref` de sort (sorts de créature, bénédictions/miracles). */
+  /** id STABLE (slug du libellé) — cible des références de sort (sorts de créature, bénédictions/miracles). */
   id: string;
   label: string;
   /** ÉCOLE — libellé d'affichage hérité (dépotoir de 18 valeurs) ; la logique branche sur `family`/`domainId`. Dette : #1517. */

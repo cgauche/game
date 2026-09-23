@@ -1757,7 +1757,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         chips('Traits optionnels', 'traits', optionalLabels(c.optionals)),
         chips('Compétences', 'skills', c.skills.map(skillRefLabel)), // SkillRef[] → libellés « Calme 58 »
         chips('Talents', 'talents', c.talents.map(talentRefLabel)), // TalentRef[] → libellés « Magie des Arcanes (Ghur) »
-        chips('Sorts', 'spells', c.spells.map((s) => refLabel('spells', s))),
+        chips('Sorts', 'spells', c.spells.map((id) => refLabel('spells', { id }))),
         trappingChips('Possessions', c.trappings),
         c.harvest
           ? {

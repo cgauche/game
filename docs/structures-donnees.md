@@ -1080,7 +1080,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 
 | Concept | Signature du lexique | Statut | Occurrences |
 |---|---|---|---|
-| reference | `id` | cible | 8987 |
+| reference | `id` | cible | 8388 |
 | reference | `id,spec` | cible | 1327 |
 | reference | `choix,id` | cible | 278 |
 | reference | `id,type` | cible | 0 |
@@ -1113,7 +1113,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | reference | `random` | historique | 21 |
 | reference | `text` | declaree | 577 |
 | reference | `id-nu` | historique | 2235 |
-| refs | `ids-nus` | cible | 630 |
+| refs | `ids-nus` | cible | 696 |
 | monnaie | `brass,gold,silver` | cible | 465 |
 | monnaie | `brass` | cible | 0 |
 | monnaie | `gold` | cible | 27 |
@@ -1157,8 +1157,8 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **881** (cible 404 · declaree 6 · historique 131 · divergente 340). Objets JSON parcourus : **49908**, dont **32461** portent une forme
-mesurée. Champs porteurs de référence MESURÉS : **90**.
+Lignes concept × dataset × champ × forme : **881** (cible 404 · declaree 6 · historique 131 · divergente 340). Objets JSON parcourus : **49309**, dont **31915** portent une forme
+mesurée. Champs porteurs de référence MESURÉS : **89**.
 
 Entrées de racine sans concept de valeur : **4139** sur **4226** —
 un document n’est ni orphelin ni hors strate : ce compte est le seul porteur de ce qu’aucun concept ne revendique.
@@ -1166,7 +1166,7 @@ Dont, NOMMÉES, celles qu’un concept de valeur revendiquerait sans la clause `
 
 ### 3.1 référence à une entité — `reference` (strate Référence)
 
-494 ligne(s), 24914 occurrence(s).
+493 ligne(s), 24315 occurrence(s).
 Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou GRAPHIE du lexique sous un champ porteur mesuré
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Résolvables | Cibles résolues | Note |
@@ -1308,7 +1308,6 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `skills` | `id,spec,value` | cible | `creatures.json` | 1368 | — | `activities.json` `arene-projet.json` `axes.json` `careers.json` `creatures.json` `domains.json` … | idem, spécialisation DÉSIGNÉE |
 | entité | `skills` | `id,value` | cible | `creatures.json` | 4554 | — | `activities.json` `axes.json` `creatures.json` `crew-test-types.json` `drunkenness.json` `maladies.json` … | réf de Compétence de STATBLOC + son nombre imprimé (`refOuSpec('skill', {value})`) |
 | entité | `spec` | `id-nu` | historique | `creatures.json` | 1 | — | `skills.json` | référence portée par un CHAMP SCALAIRE d’un document (`species: "humain"`) — la cible est un objet de référence |
-| entité | `spells` | `id` | cible | `creatures.json` | 599 | — | `activities.json` `axes.json` `domains.json` `lightTones.json` `mass-battle.json` `mutations.json` … |  |
 | entité | `talents` | `id` | cible | `creatures.json` | 1455 | — | `actions.json` `careers.json` `crew-roles.json` `groups.json` `naval-traits.json` `psychology.json` … |  |
 | entité | `talents` | `id,spec` | cible | `creatures.json` | 221 | — | `activities.json` `arene-projet.json` `axes.json` `careers.json` `classes.json` `creatures.json` … |  |
 | entité | `talents` | `id,times` | historique | `creatures.json` | 48 | — | `careers.json` `naval-traits.json` `spells.json` `talents.json` |  |
@@ -1668,7 +1667,7 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 
 ### 3.2 liste de références (ids nus) — `refs` (strate Référence)
 
-73 ligne(s), 630 occurrence(s).
+74 ligne(s), 696 occurrence(s).
 Reconnu par : tableau de chaînes dont au moins un élément résout
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1694,6 +1693,7 @@ Reconnu par : tableau de chaînes dont au moins un élément résout
 | entité | `features` | `ids-nus` | cible | `creatures.json` | 1 | `mutations.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `grantGroups` | `ids-nus` | cible | `creatures.json` | 90 | `creatures.json` `domains.json` `gods.json` `groups.json` `raceAppearance.json` `skills.json` … | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `remove` | `ids-nus` | cible | `creatures.json` | 3 | `traits.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
+| entité | `spells` | `ids-nus` | cible | `creatures.json` | 66 | `activities.json` `axes.json` `domains.json` `lightTones.json` `mass-battle.json` `mutations.json` … | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | config | `roles` | `ids-nus` | cible | `crew-test-types.json` | 10 | `careers.json` `crew-roles.json` `river-criticals.json` `skills.json` `talents.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `sequels` | `ids-nus` | cible | `criticals.json` | 26 | `traumas.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
 | entité | `traumas` | `ids-nus` | cible | `criticals.json` | 48 | `traumas.json` | tableau de chaînes dont au moins un élément résout — forme CIBLE, DESIGN v2 S2 (#1463, 2026-08-23) : « `refs(type)` = liste d’ids nus brandée (75 champs `string[]`) ». Ce qui reste est le TYPAGE du champ, pas une réécriture de la donnée. |
@@ -2532,7 +2532,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13456** objets sur **49908** ne sont portés par AUCUNE
+Au-delà des orphelines, **13456** objets sur **49309** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -4272,7 +4272,7 @@ dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **3368** — espèce `id` **378**, espèce `acteur` **2990**.
+Slots déclarés : **3377** — espèce `id` **387**, espèce `acteur` **2990**.
 
 ### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)
 
@@ -4297,6 +4297,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `careerLevels.json` | `[].talents[]\|1\|1.table.id` | `id` | `table` | liste | 0 | 0 / 0 |
 | `creatures.json` | `[].optionals[]\|2.grant[]\|1.id` | `id` | `skill` | liste | 1 | 1 / 1 |
 | `creatures.json` | `[].skills[].id` | `id` | `skill` | liste | 5981 | 5981 / 5981 |
+| `creatures.json` | `[].spells[]` | `spells` | `spell` | liste | 599 | 599 / 599 |
 | `crew-roles.json` | `[].skills[].id` | `id` | `skill` | liste | 10 | 10 / 10 |
 | `criticals.json` | `[].entries[].test.test.skill.id` | `id` | `skill` | liste | 38 | 38 / 38 |
 | `criticals.json` | `[].entries[].test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4504,6 +4505,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 4 | 4 / 4 |
+| `arene-projet.json` | `scenes[].entities[].combat.spells[]` | `spells` | `spell` | liste | 4 | 4 / 4 |
 | `arene-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 9 | 9 / 9 |
@@ -4533,6 +4535,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `arene-projet.json` | `narratif.presetsPnj[].base` | `base` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `narratif.presetsPnj[].profil.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].reliefDefaults.cliff` | `cliff` | `material` | liste | 3 | 3 / 3 |
 | `barge-du-sel-projet.json` | `scenes[].reliefDefaults.ramp` | `ramp` | `material` | liste | 3 | 3 / 3 |
@@ -4546,6 +4549,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].entities[].combat.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 0 | 0 / 0 |
@@ -4575,6 +4579,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `barge-du-sel-projet.json` | `narratif.presetsPnj[].base` | `base` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `narratif.presetsPnj[].profil.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].reliefDefaults.cliff` | `cliff` | `material` | liste | 2 | 2 / 2 |
 | `diligence-projet.json` | `scenes[].reliefDefaults.ramp` | `ramp` | `material` | liste | 2 | 2 / 2 |
@@ -4588,6 +4593,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].entities[].combat.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 1 | 1 / 1 |
 | `diligence-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 0 | 0 / 0 |
@@ -4617,6 +4623,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `diligence-projet.json` | `narratif.presetsPnj[].base` | `base` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `narratif.presetsPnj[].profil.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.cliff` | `cliff` | `material` | liste | 5 | 5 / 5 |
 | `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.ramp` | `ramp` | `material` | liste | 5 | 5 / 5 |
@@ -4630,6 +4637,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].entities[].combat.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 0 | 0 / 0 |
@@ -4659,8 +4667,9 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `loup-et-saumure-projet.json` | `narratif.presetsPnj[].base` | `base` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 
-Champs porteurs de réfs OBSERVÉES que le déclaré ATTEINT : **21** — `activities.json | rule` `arene-projet.json | material` `arene-projet.json | ref` `arene-projet.json | tiles` `barge-du-sel-projet.json | ref` `barge-du-sel-projet.json | tiles` `buildings.json | roofMaterial` `defauts-de-compilation.json | cheminDeRonde` `defauts-de-compilation.json | masse` `defauts-de-compilation.json | pont` `diligence-projet.json | ref` `diligence-projet.json | style` `diligence-projet.json | tiles` `loup-et-saumure-projet.json | ref` `loup-et-saumure-projet.json | tiles` `merchants.json | curated` `river-criticals.json | stations` `semences-de-scene.json | terrain` `ship-criticals.json | stations` `terrains.json | matiere` `terrains.json | overlayProp`. Une jointure VIDE rendrait ce volet muet :
+Champs porteurs de réfs OBSERVÉES que le déclaré ATTEINT : **23** — `activities.json | rule` `arene-projet.json | material` `arene-projet.json | ref` `arene-projet.json | spells` `arene-projet.json | tiles` `barge-du-sel-projet.json | ref` `barge-du-sel-projet.json | tiles` `buildings.json | roofMaterial` `creatures.json | spells` `defauts-de-compilation.json | cheminDeRonde` `defauts-de-compilation.json | masse` `defauts-de-compilation.json | pont` `diligence-projet.json | ref` `diligence-projet.json | style` `diligence-projet.json | tiles` `loup-et-saumure-projet.json | ref` `loup-et-saumure-projet.json | tiles` `merchants.json | curated` `river-criticals.json | stations` `semences-de-scene.json | terrain` `ship-criticals.json | stations` `terrains.json | matiere` `terrains.json | overlayProp`. Une jointure VIDE rendrait ce volet muet :
 la garde l’exige NON VIDE.
 
 ### 6.2 Couverture — réfs observées qu’AUCUN slot ne déclare
@@ -4670,7 +4679,7 @@ La dette d’ADOPTION du registre : un `(dataset, champ)` porteur de référence
 (`scripts/guards/lib/slotsStock.mjs`, garde `src/data/slots-contrat.test.ts`) — il se solde concept
 par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 
-**344** couples (dataset, champ) sans slot déclaré.
+**342** couples (dataset, champ) sans slot déclaré.
 
 | Dataset | Champ | Occurrences observées |
 |---|---|---|
@@ -4715,7 +4724,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `arene-projet.json` | `roomZoneIds` | 12 |
 | `arene-projet.json` | `scene` | 4 |
 | `arene-projet.json` | `skill` | 10 |
-| `arene-projet.json` | `spells` | 2 |
 | `arene-projet.json` | `start` | 9 |
 | `arene-projet.json` | `traits` | 11 |
 | `arene-projet.json` | `walls` | 235 |
@@ -4762,7 +4770,6 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 | `creatures.json` | `remove` | 3 |
 | `creatures.json` | `skills` | 5981 |
 | `creatures.json` | `spec` | 1 |
-| `creatures.json` | `spells` | 599 |
 | `creatures.json` | `talents` | 1724 |
 | `creatures.json` | `traits` | 3049 |
 | `creatures.json` | `trappings` | 132 |
@@ -5022,7 +5029,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 ### 6.3 Angles morts DÉCLARÉS de ce volet
 
 Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`) — l’espèce `acteur`
-pèse **2990** slots sur 3368.
+pèse **2990** slots sur 3377.
 
 - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).
@@ -5030,4 +5037,4 @@ pèse **2990** slots sur 3368.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: ce0ff204eca28fcf61b9ac4eaff0644e0ab06fa9 (386 fichiers, 10 dossiers) corps: 6bc7b2bc977908687790104f59c4dafdb707bbdb -->
+<!-- sources-empreinte: 03499158bebfbc0ad7992cf11f902e753c9038b1 (386 fichiers, 10 dossiers) corps: 820e39622ab75d8bbe94cabde9bef3ac877013ce -->
