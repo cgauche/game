@@ -7,6 +7,7 @@
 import { z } from 'zod';
 import { AVAILABILITIES, COUVERT_DIFFICULTES, REACH_LABELS, REACH_VARIABLE, STAKE_FORMS } from '../../../engine/types';
 import { refOuSpec, idDe, refs } from './ref';
+import { listeCle, marquerCollection, marqueDeListe } from './collection-cle';
 import { estGraphieDeChapitre } from '../../source/decoupe';
 
 /**
@@ -284,16 +285,23 @@ export type DescRef = z.infer<typeof descRefSchema>;
  * Compétence/Talent énumère sous `specs[]` : l'id STABLE manipulé par la logique, son `label` FR
  * d'affichage, l'attestation de l'entrée quand elle vient d'un autre folio (`source`/`alsoIn`), et
  * `pool: false` pour une entrée VALIDE mais non PROPOSÉE d'office (`LDB 09 l.40`). SOURCE UNIQUE :
- * `skills.ts` et `talents.ts` la composent, aucun des deux ne la retape — c'est le catalogue que
- * `specRef`/`refOuSpec` confrontent (`grammaire/ref.ts`, registre `SPECS_PAR_DATASET`).
+ * `specsSchema` la compose — c'est le catalogue que `specRef`/`refOuSpec` confrontent
+ * (`grammaire/ref.ts`, registre `SPECS_PAR_DATASET`).
  */
-export const specEntrySchema = z.strictObject({
+const specEntrySchema = z.strictObject({
   id: z.string(),
   label: z.string(),
   source: sourceRefSchema.optional(),
   alsoIn: z.array(secondarySourceRefSchema).optional(),
   pool: z.literal(false).optional(),
 });
+
+/**
+ * CATALOGUE DE SPÉCIALISATIONS d'une entrée (`specs[]`) : un ESPACE DE NOMS, clé `id`, désigné par
+ * `spec` d'un `refOuSpec`/`specRef` (`grammaire/ref.ts`). SOURCE UNIQUE : `skills.ts` et `talents.ts`
+ * le composent, aucun des deux ne le retape.
+ */
+export const specsSchema = listeCle(specEntrySchema, 'id', { espace: {} });
 
 // ============================================================================
 // COMBAT FEATURE (`src/engine/combatFeatures/types.ts`) — sac de flags CLOS conféré par un Talent/Trait,
@@ -897,11 +905,11 @@ export const dispoSaisonniereSchema = parSaison(plageSchema);
 const SAISONS_DE_DISPO = Object.keys(dispoSaisonniereSchema.shape) as (keyof z.infer<typeof dispoSaisonniereSchema>)[];
 
 /** Ce qu'une entrée MARCHANDE doit porter pour que la couverture se mesure : un libellé (le refus est
- *  NOMINATIF) et les quatre colonnes. */
-type EntreeMarchande = { label: string; avail: z.infer<typeof dispoSaisonniereSchema> };
+ *  NOMINATIF) et les quatre colonnes — et son `id`, clé du catalogue. */
+type EntreeMarchande = { id: string; label: string; avail: z.infer<typeof dispoSaisonniereSchema> };
 /** Un MARQUEUR de colonne Production/Produits : reconnu à son CHAMP d'exclusion, comme le moteur le
- *  reconnaît (`isEchangeable`, `src/engine/cargo.ts`). */
-type EntreeMarqueur = { echangeable: false };
+ *  reconnaît (`isEchangeable`, `src/engine/cargo.ts`) ; son `id` est une clé du catalogue. */
+type EntreeMarqueur = { id: string; echangeable: false };
 
 /**
  * CATALOGUE DE CARGAISONS TIRÉ AU D100 — fabrique du tableau `cargoes` des deux livres de commerce
@@ -914,6 +922,7 @@ type EntreeMarqueur = { echangeable: false };
  * DIFFÈRE : les schémas d'entrée (le Vin terrestre porte `wine`) et le `site` cité par le refus.
  *
  * Le filtre des marqueurs est celui du moteur (`isEchangeable`) : le CHAMP d'exclusion, jamais un id.
+ * Le catalogue est une collection à clé `id` (`grammaire/collection-cle.ts`).
  *
  * @param marchand schéma d'une cargaison échangeable (doit porter `label` et `avail`)
  * @param marqueur schéma d'un marqueur de colonne Production/Produits (`echangeable: false`)
@@ -924,7 +933,7 @@ export function catalogueSaisonnier<A extends EntreeMarchande, B extends EntreeM
   marqueur: z.ZodType<B>,
   options: { site: string },
 ): z.ZodType<(A | B)[]> {
-  return z.array(z.union([marchand, marqueur])).superRefine((entrees: (A | B)[], ctx) => {
+  const catalogue = z.array(z.union([marchand, marqueur])).superRefine((entrees: (A | B)[], ctx) => {
     const marchandes = entrees.filter((e): e is A => !('echangeable' in e) || e.echangeable !== false);
     for (const saison of SAISONS_DE_DISPO) {
       const ecarts = ecartsDeCouverture(
@@ -941,6 +950,7 @@ export function catalogueSaisonnier<A extends EntreeMarchande, B extends EntreeM
       }
     }
   });
+  return marquerCollection(catalogue, marqueDeListe<EntreeMarchande | EntreeMarqueur>('id'));
 }
 
 /**

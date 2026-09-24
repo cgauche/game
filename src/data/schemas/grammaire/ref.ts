@@ -1,19 +1,17 @@
 /**
- * FABRIQUE DE RÉFÉRENCE (#1466 L1a) — la seule façon de désigner une entité par son id.
+ * FABRIQUE DE RÉFÉRENCE (#1466) — la seule façon de désigner une entité par son id.
  *
  * `ref(type)` construit ET ENREGISTRE le nœud FINAL : l'id est refiné AU PARSE contre le registre
  * généré `IDS_PAR_DATASET` (`npm run gen`), si bien qu'une référence morte casse au chargement, en
  * test et à la sauvegarde du Compendium — sans qu'aucune garde nominative n'ait à l'énumérer
  * (clause B absorbée de #1473). La fabrique n'expose aucun nœud extensible : zod 4.4.3 perd le
  * registre et la `.meta()` au `.extend`, la composition se fait donc ICI via `extra`.
- *
- * Ce lot POSE la fabrique ; l'adoption par les defs et la migration des graphies historiques
- * (`{ref:{id}}`, `{wildcard}`, `{talentId, spec}`…) sont les lots L2/L3 (#1463).
  */
 import { z } from 'zod';
 import './locale-fr';
 import { IDS_PAR_DATASET, IDS_PAR_DISCRIMINANT, IDS_PAR_MARQUEUR, SPECS_PAR_DATASET } from '../_ids.generated';
 import { idsVivants, idsVivantsDuDiscriminant, idsVivantsDuMarqueur, specsVivantesDe } from './idsVivants';
+import type { MarqueDeCollection } from './collection-cle';
 
 declare const marqueDeType: unique symbol;
 /** Id BRANDÉ par son type — frappé à la porte zod, jamais par un `as` d'appelant. */
@@ -191,8 +189,18 @@ const REPERE: unique symbol = Symbol('repère de parse de mesure');
 /** Clé du repère de NŒUD D'OP : même régime que `REPERE`, émis par `marquerOpAtteinte`. */
 const REPERE_OP: unique symbol = Symbol('repère de nœud d’op');
 
-/** Vrai le temps SYNCHRONE d'un `mesureDuParse`, qui seul l'écrit, et jamais ailleurs : aucun export n'expose l'état. */
-let parseDeMesure = false;
+/** Clé du repère de COLLECTION À CLÉ : même régime que `REPERE`, émis par `marquerCollectionAtteinte`. */
+const REPERE_COLLECTION: unique symbol = Symbol('repère de collection à clé');
+
+/**
+ * MODE d'un parse de mesure : `slots` relève les feuilles `idDe` et les nœuds d'op ; `espaces` relève
+ * les collections à clé (`grammaire/collection-cle.ts`). Un mode ne relève QUE ses repères : un repère
+ * fait avorter le `pipe` qui le porte, si bien qu'un repère de l'autre mode masquerait les siens.
+ */
+export type ModeDeMesure = 'slots' | 'espaces';
+
+/** Le mode du `mesureDuParse` en cours, le temps SYNCHRONE de l'appel, qui seul l'écrit, et jamais ailleurs : aucun export n'expose l'état. */
+let parseDeMesure: ModeDeMesure | undefined;
 
 /** Les feuilles construites par `idDe`, avec le type qu'elles référencent — ce que la garde du masquage
  *  (`parse-de-mesure.test.ts`) instrumente. */
@@ -208,7 +216,7 @@ export const estFeuilleDId = (noeud: unknown): boolean => typeDeFeuilleDId(noeud
 /**
  * Schéma d'un id NU de `type` : refiné contre le registre, brandé `Id<type>` à la sortie. C'est la
  * FEUILLE porteuse de la référence, et la SEULE vérification d'un id contre le registre sous
- * `src/data/schemas` : au parse de mesure (`mesureDuParse`), chaque validation réussie y émet un
+ * `src/data/schemas` : au parse de mesure en mode `slots` (`mesureDuParse`), chaque validation réussie y émet un
  * REPÈRE, que le volet SLOTS de `docs/structures-donnees.md` lit comme le côté DÉCLARÉ.
  *
  * La liste admise se LIT À CHAQUE VALIDATION, parce que le registre a deux régimes déclarés
@@ -227,7 +235,7 @@ export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<
     .string()
     .superRefine((v, ctx) => {
       if (admis().has(v)) {
-        if (parseDeMesure) ctx.addIssue({ code: 'custom', message: `repère de ${site}`, params: { [REPERE]: type }, continue: true });
+        if (parseDeMesure === 'slots') ctx.addIssue({ code: 'custom', message: `repère de ${site}`, params: { [REPERE]: type }, continue: true });
         return;
       }
       ctx.addIssue({
@@ -249,7 +257,17 @@ export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<
  * gagne aucun chemin.
  */
 export function marquerOpAtteinte(ctx: z.RefinementCtx): void {
-  if (parseDeMesure) ctx.addIssue({ code: 'custom', message: 'repère de nœud d’op', params: { [REPERE_OP]: true }, continue: true });
+  if (parseDeMesure === 'slots') ctx.addIssue({ code: 'custom', message: 'repère de nœud d’op', params: { [REPERE_OP]: true }, continue: true });
+}
+
+/**
+ * Marque la valeur en cours de validation comme une COLLECTION À CLÉ atteinte par le parse
+ * (`marquerCollection`, `grammaire/collection-cle.ts`). Hors du parse de mesure en mode `espaces`,
+ * l'appel ne fait rien.
+ */
+export function marquerCollectionAtteinte(ctx: z.RefinementCtx, marque: MarqueDeCollection): void {
+  if (parseDeMesure === 'espaces')
+    ctx.addIssue({ code: 'custom', message: 'repère de collection à clé', params: { [REPERE_COLLECTION]: marque }, continue: true });
 }
 
 /** Une référence validée par `idDe` au parse de mesure : son path de DONNÉE et son type. `parCle` :
@@ -265,29 +283,39 @@ type IssueLue = {
   readonly code: string;
   readonly path: readonly PropertyKey[];
   readonly message: string;
-  readonly params?: { readonly [REPERE]?: TypeEntite; readonly [REPERE_OP]?: true };
+  readonly params?: { readonly [REPERE]?: TypeEntite; readonly [REPERE_OP]?: true; readonly [REPERE_COLLECTION]?: MarqueDeCollection };
   readonly errors?: readonly (readonly IssueLue[])[];
   readonly issues?: readonly IssueLue[];
 };
 
 const typeDuRepere = (issue: IssueLue): TypeEntite | undefined => issue.params?.[REPERE];
 const estRepereDOp = (issue: IssueLue): boolean => issue.params?.[REPERE_OP] === true;
+const marqueDuRepere = (issue: IssueLue): MarqueDeCollection | undefined => issue.params?.[REPERE_COLLECTION];
 
 /** L'issue n'est-elle faite QUE de repères (union dont une branche l'est, clé/élément dont toutes les issues le sont) ? */
 const estPropre = (issue: IssueLue): boolean =>
   typeDuRepere(issue) !== undefined ||
   estRepereDOp(issue) ||
+  marqueDuRepere(issue) !== undefined ||
   (issue.code === 'invalid_union' && (issue.errors ?? []).some((b) => b.length > 0 && b.every(estPropre))) ||
   ((issue.code === 'invalid_key' || issue.code === 'invalid_element') && (issue.issues ?? []).length > 0 && issue.issues!.every(estPropre));
 
-/** Ce que rend le parse de mesure : les références validées par `idDe`, et le path de DONNÉE de
- *  chaque nœud d'op que `gameOpSchema` a validé (`marquerOpAtteinte`). */
+/** Une collection à clé atteinte par le parse de mesure : son path de DONNÉE et sa marque. */
+export interface CollectionDeMesure {
+  readonly path: readonly PropertyKey[];
+  readonly marque: MarqueDeCollection;
+}
+
+/** Ce que rend le parse de mesure, selon son mode : en `slots`, les références validées par `idDe` et
+ *  le path de DONNÉE de chaque nœud d'op que `gameOpSchema` a validé (`marquerOpAtteinte`) ; en
+ *  `espaces`, les collections à clé (`marquerCollectionAtteinte`). */
 export interface MesureDuParse {
   readonly reperes: readonly RepereDeMesure[];
   readonly ops: readonly (readonly PropertyKey[])[];
+  readonly collections: readonly CollectionDeMesure[];
 }
 
-type Recueil = { reperes: RepereDeMesure[]; ops: (readonly PropertyKey[])[] };
+type Recueil = { reperes: RepereDeMesure[]; ops: (readonly PropertyKey[])[]; collections: CollectionDeMesure[] };
 
 function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[], parCle: boolean, out: Recueil): void {
   for (const issue of issues) {
@@ -301,6 +329,11 @@ function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[]
       out.ops.push(path);
       continue;
     }
+    const marque = marqueDuRepere(issue);
+    if (marque !== undefined) {
+      out.collections.push({ path, marque });
+      continue;
+    }
     // La PREMIÈRE branche propre est celle que le parse normal choisit : la première sans issue.
     const branche = issue.code === 'invalid_union' ? issue.errors?.find((b) => b.length > 0 && b.every(estPropre)) : undefined;
     if (branche) recueillir(branche, path, parCle, out);
@@ -308,24 +341,25 @@ function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[]
     else if (issue.code === 'invalid_element' && estPropre(issue)) recueillir(issue.issues!, path, parCle, out);
     else
       throw new Error(
-        `parse de mesure : issue « ${issue.code} » à « ${path.map(String).join('.') || '(racine)'} » (${issue.message}) — ni repère d'\`idDe\`, ni union, clé ou élément fait de repères : le document est invalide au parse normal.`,
+        `parse de mesure : issue « ${issue.code} » à « ${path.map(String).join('.') || '(racine)'} » (${issue.message}) — ni repère, ni union, clé ou élément fait de repères : le document est invalide au parse normal.`,
       );
   }
 }
 
 /**
- * PARSE DE MESURE d'une donnée par son schéma RÉEL : les références que `idDe` y valide, et les nœuds
- * d'op que `gameOpSchema` y valide, à leur path de DONNÉE. Le mode est borné par construction : `parseDeMesure` n'est vrai que pendant l'appel
- * SYNCHRONE à `safeParse` (zod lève sur tout nœud async), et le `finally` le rend à sa valeur
- * précédente, y compris quand le recueil lève. Les seuls parses exécutés dans cette fenêtre sont
- * ceux que ce `safeParse` imbrique (payload d'une op, `grammaire/mecanique.ts › gameOpSchema`).
+ * PARSE DE MESURE d'une donnée par son schéma RÉEL, au `mode` donné : en `slots`, les références que
+ * `idDe` y valide et les nœuds d'op que `gameOpSchema` y valide ; en `espaces`, les collections à clé
+ * qu'il y atteint — chacun à son path de DONNÉE. Le mode est borné par construction : `parseDeMesure`
+ * n'est posé que pendant l'appel SYNCHRONE à `safeParse` (zod lève sur tout nœud async), et le
+ * `finally` le rend à sa valeur précédente, y compris quand le recueil lève. Les seuls parses exécutés
+ * dans cette fenêtre sont ceux que ce `safeParse` imbrique (payload d'une op,
+ * `grammaire/mecanique.ts › gameOpSchema`).
  * La donnée doit être VALIDE au parse normal, et c'est ce parse, exécuté HORS de la fenêtre de mesure,
- * qui en juge : dans la fenêtre, le repère d'une feuille `idDe` fait avorter le `pipe` qui la porte, et
- * un raffinement posé EN SORTIE de la feuille (`.transform`, `.pipe`) ne s'y exécute pas. Un échec du
- * parse normal LÈVE en nommant sa première issue ; dans la fenêtre, une issue qui n'est pas un repère
- * LÈVE aussi.
+ * qui en juge : dans la fenêtre, un repère fait avorter le `pipe` qui le porte, et un raffinement posé
+ * EN SORTIE (`.transform`, `.pipe`) ne s'y exécute pas. Un échec du parse normal LÈVE en nommant sa
+ * première issue ; dans la fenêtre, une issue qui n'est pas un repère LÈVE aussi.
  */
-export function mesureDuParse(schema: z.ZodType, donnee: unknown): MesureDuParse {
+export function mesureDuParse(schema: z.ZodType, donnee: unknown, mode: ModeDeMesure = 'slots'): MesureDuParse {
   const normal = schema.safeParse(donnee);
   if (!normal.success) {
     const [premiere] = normal.error.issues;
@@ -334,10 +368,10 @@ export function mesureDuParse(schema: z.ZodType, donnee: unknown): MesureDuParse
     );
   }
   const precedent = parseDeMesure;
-  parseDeMesure = true;
+  parseDeMesure = mode;
   try {
     const resultat = schema.safeParse(donnee);
-    const out: Recueil = { reperes: [], ops: [] };
+    const out: Recueil = { reperes: [], ops: [], collections: [] };
     if (!resultat.success) recueillir(resultat.error.issues as unknown as readonly IssueLue[], [], false, out);
     return out;
   } finally {

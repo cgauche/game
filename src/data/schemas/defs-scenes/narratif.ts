@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { sourceRefSchema, entityAppearanceSchema } from '../grammaire/valeurs';
 import { conditionCondCtxSchema } from './worldmap';
 import { idDe } from '../grammaire/ref';
-import { listeCle } from '../grammaire/liste-cle';
+import { listeCle } from '../grammaire/collection-cle';
 import { proseDeScene } from '../grammaire/prose';
 import { entreePartielle as creatureEntreePartielle, type CreatureProfilPartiel } from '../defs/creatures';
 import { findCreatureById, findTrappingById, byId, findTalentById, specResolves } from '../../index';

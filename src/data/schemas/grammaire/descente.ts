@@ -25,6 +25,7 @@ export type DefZod = {
   rest?: unknown;
   keyType?: unknown;
   valueType?: unknown;
+  checks?: readonly unknown[];
 };
 
 type Noeud = { _zod?: { def?: DefZod; innerType?: unknown }; def?: DefZod };

@@ -17,6 +17,7 @@ import { sourceRefSchema, secondarySourceRefSchema, variantOf } from './valeurs'
 import { noyauEnum, type MetaChamp, type MetaDesChamps } from './meta';
 import { exigeSource } from './sans-livre';
 import { champsProse, refineProse } from './prose';
+import { marquerCollection, marqueDeListe, marqueDeRecord } from './collection-cle';
 
 /** Les 3 EMBALLAGES de fichier d'un document : liste d'entrées, entrée seule, record clé → valeur.
  *  La CHARGE d'un document (ses rangées, `options.rangee`) est orthogonale à son emballage. */
@@ -151,10 +152,11 @@ export interface OptionsDocument {
   /**
    * Schéma d'une RANGÉE du document — admissible dans TOUTE famille : la charge est orthogonale à
    * l'emballage du fichier. Même mécanique que `valeurRecord` : la fabrique pose
-   * `entries: z.array(rangee)` sur l'entrée, avec sa méta FR (`META_CHARGE`) — un def à rangées
-   * ne redéclare donc jamais sa charge, `die` compris (`options.deDeTirage`).
+   * `entries` sur l'entrée, en collection à clé `id` (`marquerCollection`, `grammaire/collection-cle.ts`),
+   * avec sa méta FR (`META_CHARGE`) — un def à rangées ne redéclare donc jamais sa charge, `die` compris
+   * (`options.deDeTirage`).
    */
-  readonly rangee?: z.ZodType;
+  readonly rangee?: z.ZodType<{ id: string }>;
   /**
    * Le document porte un DÉ DE TIRAGE : la fabrique pose `die` (requis) avec sa méta FR
    * (`META_CHARGE`). Sans cette déclaration, `die` n'existe pas sur le document — le poser à tous
@@ -222,13 +224,14 @@ export interface DocumentHandle<T extends string> {
    * LE DATASET tel qu'il vit dans son fichier, emballé PAR FAMILLE (#1467) : `entite` →
    * `z.array(entrée)`, `config` → l'entrée seule, `record` → enveloppe + `entries`. Un def n'écrit
    * plus jamais son `z.array` à la main. Un fichier qui porte PLUSIEURS documents-tables est une
-   * famille `entite` dont chaque entrée a sa charge `entries` (`options.rangee`).
+   * famille `entite` dont chaque entrée a sa charge `entries` (`options.rangee`). En `entite` et en
+   * `record`, le nœud rendu est une collection à clé marquée ESPACE DE NOMS (`grammaire/collection-cle.ts`).
    */
   readonly schema: z.ZodType<unknown>;
   /**
    * L'ENTRÉE SCELLÉE seule — pour l'EMBARQUEMENT (statblocks, table posée dans un autre fichier),
    * jamais pour l'UI, qui consomme le dataset. En famille `record`, l'entrée EST le document entier
-   * (enveloppe + `entries`), donc `entree` et `schema` y coïncident. Sur un document à `rangee`,
+   * (enveloppe + `entries`) : `schema` y est `entree`, marquée collection à clé de ses `entries`. Sur un document à `rangee`,
    * l'entrée porte l'enveloppe ET ses rangées.
    */
   readonly entree: z.ZodType<unknown>;
@@ -458,7 +461,7 @@ export function document<T extends string, C extends Record<string, z.ZodType>>(
         ? (z.strictObject({
             ...complet.shape,
             ...(deDeTirage ? { die: z.string().min(1) } : {}),
-            entries: z.array(rangee),
+            entries: marquerCollection(z.array(rangee), marqueDeListe<{ id: string }>('id')),
           }) as z.ZodObject<z.ZodRawShape>)
         : complet;
   const entreePartielle: z.ZodType<unknown> = corps.partial().pipe(z.transform((v) => v));
@@ -495,7 +498,15 @@ export function document<T extends string, C extends Record<string, z.ZodType>>(
   // EMBALLAGE par FAMILLE (#1467) : le dataset est ce que le FICHIER porte — une LISTE d'entrées
   // (`entite`), ou l'entrée elle-même (`config`, `record`).
   const dataset: z.ZodType<unknown> = famille === 'entite' ? z.array(entreeScellee) : entreeScellee;
-  const schema: z.ZodType<unknown> = affinerDataset ? affinerDataset(dataset) : dataset;
+  const affineDataset: z.ZodType<unknown> = affinerDataset ? affinerDataset(dataset) : dataset;
+  // ESPACE DE NOMS de racine : la liste `entite` (ses `id`) ou la carte `entries` du `record`, marquée
+  // sur le nœud FINAL — `affinerDataset` clone le nœud qu'il reçoit (#1463).
+  const schema: z.ZodType<unknown> =
+    famille === 'entite'
+      ? marquerCollection(affineDataset, marqueDeListe<{ id: string }>('id', {}))
+      : famille === 'record'
+        ? marquerCollection(affineDataset, marqueDeRecord({ sous: 'entries', espace: {} }))
+        : affineDataset;
   const metaPubliee = { ...(meta as Record<string, MetaChamp>), ...Object.fromEntries(clesPosees.map((k) => [k, META_CHARGE[k]])) };
   return {
     schema,

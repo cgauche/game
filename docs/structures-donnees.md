@@ -511,6 +511,17 @@ dataset atteint n’est pas celui que le site vise — c’est là qu’une coll
 | `arene-projet.json` | `entities` | `ref` | `serpent` | `creatures.json` `groups.json` | `props.json` | 4 |
 | `creatures.json` | `skills` | `spec` | `escrime` | `weaponGroups.json` | `skills.json` | 4 |
 
+### 1ter. Collections à clé (déclarées au schéma, mesurées au parse)
+
+Termes : source UNIQUE `TERMES_COLLECTION_A_CLE` (`scripts/docs/lib/structures-lexique.mts`).
+
+- **collection à clé** — collection dont chaque élément a une IDENTITÉ déclarée au nœud du schéma qui la porte (`marquerCollection`, `src/data/schemas/grammaire/collection-cle.ts`) : une LISTE, dont la clé se lit dans chaque élément (`listeCle`), ou un RECORD, dont les ids sont les noms de propriété.
+- **espace de noms** — les ids d’une collection à clé dont la marque porte `espace` : la racine d’un document `entite`/`record` (`document()`) et les `specs` d’une Compétence ou d’un Talent. Une collection dont la clé d’élément est une feuille `idDe` (une liste de RÉFÉRENCES) n’en ouvre jamais.
+- **clé de collection** — le nom d’une collection à clé, mesuré au parse (`collectionsDuParse`, `CollectionMesuree.cle`, `scripts/docs/lib/slots-registre.mts`) : `fichier` pour une racine, `fichier#…` pour une collection nichée, où un élément d’une collection à clé s’écrit `[clé]` et un rang de liste non marquée `[]` (`criticals.json#[criticals-ldb-tete].entries`, `skills.json#[art].specs`).
+- **clé d’espace** — la clé de collection d’une collection à clé dont la marque porte `espace` : le nom d’un espace de noms (`skills.json`, `skills.json#[art].specs`).
+
+Collections à clé relevées dans les documents des deux racines : **663**, dont **308** espaces de noms.
+
 ## 2. Enveloppe des documents
 
 ### 2.1 Un document, sa racine, ses clés de premier niveau
@@ -3821,7 +3832,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `water-exposure.ts` | 23 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
 | `water-exposure.ts` | 24 | — | — | hors lexique | `kind,op,value` | `conditionSchema` |
 | `water-exposure.ts` | 34 | `test` | test | historique | `difficulty,skill` | — |
-| `weather.ts` | 76 | `resistanceTest` | test | divergente | `difficulty+…` | — |
+| `weather.ts` | 78 | `resistanceTest` | test | divergente | `difficulty+…` | — |
 
 ## 5. Ops en donnée (strate Ops)
 
@@ -4769,4 +4780,4 @@ Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`).
 - Une occurrence dont AUCUNE case ne porte de chaîne n’est jamais ATTEINTE, quel que soit le schéma : aucune n’est un slot, et son couple reste au stock `SLOTS_SANS_DECLARATION`. Mesuré le 2026-09-23 : 14 `{choice:[…]}` de `careerLevels.json | trappings` (les feuilles comptent sous `careerLevels.json | choice`), 19 `{random:N}` de `species.json | talents`, 2 `{random:N}` de `species.json | of`, et 1 occurrence de `creatures.json | spec` dont la seule case est une clé de `CLES_DE_SPECIALISATION`. Stock nominatif `SLOTS_INATTEIGNABLES`, qui ne fait que décroître.
 - Une référence portée par une CLÉ de record (`z.record(idDe(…), …)`) est un slot `{}` du §6.1, jamais une case du scan, qui n’observe que des valeurs : mesuré le 2026-09-23, 6 slots `ship-criticals.json › tablesDeChute[].bandes[].hauteurs{}` (`shipStation`), sans couple touché.
 
-<!-- sources-empreinte: cb8374c627e3574281c6a12f37ecfb0148a0cbae (388 fichiers, 10 dossiers) corps: 0275051e3af016f423f6d1220e21fb3c7c2ec84d -->
+<!-- sources-empreinte: 61ed303e76a8c540ec3f9aed0597085b95a77b30 (388 fichiers, 10 dossiers) corps: f3f47bc3c4e54fa192d1a388e915cac5a25b0c6b -->

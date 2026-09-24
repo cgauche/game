@@ -285,11 +285,11 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     // l'emballage : la même option sert ici une famille `entite` (le fichier porte une LISTE de
     // documents-tables) et, plus bas, une famille `config` (le fichier EST le document).
     rangees: document('table-jouet', 'entite', {}, {}, EXPOSITION, {
-      rangee: z.strictObject({ min: z.number(), max: z.number(), label: z.string() }),
+      rangee: z.strictObject({ id: z.string(), min: z.number(), max: z.number(), label: z.string() }),
       deDeTirage: true,
     }),
     rangeesConfig: document('config-table-jouet', 'config', {}, {}, EXPOSITION, {
-      rangee: z.strictObject({ min: z.number(), max: z.number(), label: z.string() }),
+      rangee: z.strictObject({ id: z.string(), min: z.number(), max: z.number(), label: z.string() }),
     }),
   };
   const ENV = (type: string) => ({ id: 'x', type, label: 'X', source: SOURCE_REELLE });
@@ -321,7 +321,7 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
 
   it('document à `rangee` : `entries` POSÉE par la fabrique, et `die` REQUIS dès `deDeTirage`', () => {
     const { schema } = REPLIQUES.rangees;
-    const t = { ...ENV('table-jouet'), die: '1d100', entries: [{ min: 1, max: 10, label: 'Rien' }] };
+    const t = { ...ENV('table-jouet'), die: '1d100', entries: [{ id: 'rien', min: 1, max: 10, label: 'Rien' }] };
     expect(schema.safeParse([t]).success).toBe(true);
     // `deDeTirage` déclaré : le dé est REQUIS, et une chaîne vide ne le satisfait pas.
     expect(schema.safeParse([{ ...t, die: undefined }]).success).toBe(false);
@@ -332,12 +332,16 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     expect(schema.safeParse([{ ...t, entries: {} }]).success).toBe(false);
     // Chaque rangée est validée par `rangee`, et le sceau refuse la clé en trop.
     expect(schema.safeParse([{ ...t, entries: [{ min: 1, max: 10 }] }]).success).toBe(false);
-    expect(schema.safeParse([{ ...t, entries: [{ min: 1, max: 10, label: 'Rien', inconnu: 1 }] }]).success).toBe(false);
+    expect(schema.safeParse([{ ...t, entries: [{ id: 'rien', min: 1, max: 10, label: 'Rien', inconnu: 1 }] }]).success).toBe(false);
+    // Les rangées sont une collection à clé `id` : un id en double est refusé, l'id NOMMÉ.
+    const double = schema.safeParse([{ ...t, entries: [...t.entries, { ...t.entries[0], min: 11, max: 20 }] }]);
+    expect(double.success).toBe(false);
+    expect(double.error?.issues.map((i) => i.message)).toContain('« rien » dupliqué : « id » identifie l’élément dans sa liste, il y est unique.');
   });
 
   it('`rangee` en famille `config` : le document EST son fichier, et porte sa charge', () => {
     const { schema } = REPLIQUES.rangeesConfig;
-    const t = { ...ENV('config-table-jouet'), entries: [{ min: 1, max: 10, label: 'Rien' }] };
+    const t = { ...ENV('config-table-jouet'), entries: [{ id: 'rien', min: 1, max: 10, label: 'Rien' }] };
     expect(schema.safeParse(t).success).toBe(true);
     // SANS `deDeTirage`, `die` n'existe pas sur le document : le sceau le refuse comme clé en trop.
     expect(schema.safeParse({ ...t, die: '1d10' }).success).toBe(false);
@@ -356,7 +360,7 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
     // rangées parsait en map, sans un mot. Le `deDeTirage` du même appel est couvert par le refus
     // ci-dessus : il exige une `rangee`, que `record` n'admet pas.
     expect(() =>
-      document('record-a-rangees', 'record', {}, {}, EXPOSITION, { valeurRecord: z.string(), rangee: z.number() }),
+      document('record-a-rangees', 'record', {}, {}, EXPOSITION, { valeurRecord: z.string(), rangee: z.strictObject({ id: z.string() }) }),
     ).toThrow(/document\('record-a-rangees'\) : `rangee` et la famille « record » sont EXCLUSIVES/);
     expect(() =>
       document('record-a-de', 'record', {}, {}, EXPOSITION, { valeurRecord: z.string(), deDeTirage: true }),
@@ -366,12 +370,12 @@ describe('document() — emballage du DATASET par famille (#1467 L1b)', () => {
   it('un def à `rangee` qui redéclare `entries` ou `die` dans ses `champs` est REFUSÉ (la fabrique les pose)', () => {
     expect(() =>
       document('table-doublon', 'entite', { entries: z.array(z.number()) }, { entries: { label: 'Rangées' } }, EXPOSITION, {
-        rangee: z.number(),
+        rangee: z.strictObject({ id: z.string() }),
       }),
     ).toThrow(/document\('table-doublon'\) : la fabrique pose « entries » \(charge du document\)/);
     expect(() =>
       document('table-de-doublon', 'config', { die: z.string() }, { die: { label: 'Dé' } }, EXPOSITION, {
-        rangee: z.number(),
+        rangee: z.strictObject({ id: z.string() }),
       }),
     ).toThrow(/document\('table-de-doublon'\) : la fabrique pose « die » \(charge du document\)/);
     // SANS `rangee`, `die` n'est pas une clé de charge : un def qui n'a pas de rangées peut le déclarer.

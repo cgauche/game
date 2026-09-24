@@ -22,7 +22,7 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { refs } from '../grammaire/ref';
-import { listeCle } from '../grammaire/liste-cle';
+import { listeCle } from '../grammaire/collection-cle';
 import { sceneSchema } from './scene';
 import { worldMapSchema } from './worldmap';
 import { narratifSchema } from './narratif';

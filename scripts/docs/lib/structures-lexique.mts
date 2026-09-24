@@ -151,6 +151,28 @@ export const ANGLES_MORTS_SLOTS: readonly string[] = [
 ];
 
 /**
+ * TERMES de la COLLECTION À CLÉ (#1463) — SOURCE UNIQUE : le doc les émet (§1ter), le code y renvoie.
+ */
+export const TERMES_COLLECTION_A_CLE: readonly (readonly [terme: string, definition: string])[] = [
+  [
+    'collection à clé',
+    'collection dont chaque élément a une IDENTITÉ déclarée au nœud du schéma qui la porte (`marquerCollection`, `src/data/schemas/grammaire/collection-cle.ts`) : une LISTE, dont la clé se lit dans chaque élément (`listeCle`), ou un RECORD, dont les ids sont les noms de propriété.',
+  ],
+  [
+    'espace de noms',
+    'les ids d’une collection à clé dont la marque porte `espace` : la racine d’un document `entite`/`record` (`document()`) et les `specs` d’une Compétence ou d’un Talent. Une collection dont la clé d’élément est une feuille `idDe` (une liste de RÉFÉRENCES) n’en ouvre jamais.',
+  ],
+  [
+    'clé de collection',
+    'le nom d’une collection à clé, mesuré au parse (`collectionsDuParse`, `CollectionMesuree.cle`, `scripts/docs/lib/slots-registre.mts`) : `fichier` pour une racine, `fichier#…` pour une collection nichée, où un élément d’une collection à clé s’écrit `[clé]` et un rang de liste non marquée `[]` (`criticals.json#[criticals-ldb-tete].entries`, `skills.json#[art].specs`).',
+  ],
+  [
+    'clé d’espace',
+    'la clé de collection d’une collection à clé dont la marque porte `espace` : le nom d’un espace de noms (`skills.json`, `skills.json#[art].specs`).',
+  ],
+];
+
+/**
  * DÉCLARÉ-AVANT-POSÉ ASSUMÉ (`cible-declaree`) — une famille de formes que le schéma déclare et que
  * la donnée ne porte pas ENCORE, avec le LOT qui la peuplera. Ce n'est PAS un stock : un stock ne
  * fait que décroître, une cible déclarée se solde en PEUPLANT la donnée (elle quitte alors la mesure

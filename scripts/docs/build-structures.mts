@@ -26,9 +26,10 @@ import {
   LOTS_DE_PEUPLEMENT,
   MANDAT_SLOTS,
   ROLES_ENVELOPPE,
+  TERMES_COLLECTION_A_CLE,
   clesDuRole,
 } from './lib/structures-lexique.mjs';
-import { champsJoints, champsSansSlot, registreDesSlots, slotsDuParse } from './lib/slots-registre.mjs';
+import { champsJoints, champsSansSlot, collectionsDuParse, registreDesSlots, slotsDuParse } from './lib/slots-registre.mjs';
 import { effectSchema } from '../../src/data/schemas/defs-scenes/effets';
 import { defDe, descendre, enfantsDe } from '../../src/data/schemas/grammaire/descente';
 
@@ -166,6 +167,14 @@ out += '#### Résolutions AMBIGUËS (la collision qui MORD)\n\n';
 }
 
 // ---------------------------------------------------------------------------
+out += '### 1ter. Collections à clé (déclarées au schéma, mesurées au parse)\n\n';
+{
+  const collections = collectionsDuParse(scan, DEFS);
+  out += 'Termes : source UNIQUE `TERMES_COLLECTION_A_CLE` (`scripts/docs/lib/structures-lexique.mts`).\n\n';
+  out += TERMES_COLLECTION_A_CLE.map(([terme, definition]) => `- **${terme}** — ${definition}`).join('\n');
+  out += `\n\nCollections à clé relevées dans les documents des deux racines : **${collections.length}**, dont **${collections.filter((c) => c.marque.espace).length}** espaces de noms.\n\n`;
+}
+
 out += '## 2. Enveloppe des documents\n\n';
 out += '### 2.1 Un document, sa racine, ses clés de premier niveau\n\n';
 out += 'Racine JSON = forme réelle du fichier ; famille déclarée = ce que dit son schéma zod (vide si le\n';

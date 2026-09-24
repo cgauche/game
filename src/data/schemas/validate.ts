@@ -8,7 +8,7 @@
  *    fichier — `parseProject` sert du JSON committé, du localStorage et de l'import utilisateur.
  * Le format d'une faute a UNE source (`rapportDeFautes`) : `validateDataset` en dérive pour la porte
  * par fichier, `validateDocument` rend les fautes elles-mêmes (`Faute`). credo.md:7, 2ᵉ phrase.
- * Le LIEU d'une faute a UNE source aussi (`fautesDe`) : un élément de liste à clé (`listeCle`) s'y
+ * Le LIEU d'une faute a UNE source aussi (`fautesDe`) : un élément d'une LISTE à clé (`grammaire/collection-cle.ts`) s'y
  * nomme par sa clé, lue sur la valeur ; aucun message de schéma ne nomme son propre emplacement.
  */
 import type { z } from 'zod';
@@ -16,7 +16,7 @@ import { SCHEMA_DEFS } from './_registry.generated';
 import { SCHEMA_DEFS_SCENES } from './_registry-scenes.generated';
 import type { SchemaDef } from './types';
 import { defDe, descendre, enfantsDe } from './grammaire/descente';
-import { cleDe } from './grammaire/liste-cle';
+import { collectionDe } from './grammaire/collection-cle';
 import { valeursDe, type MetaChamp } from './grammaire/meta';
 
 /** Le registre des DEUX racines de documents (`src/data` + `src/scenes`). */
@@ -70,8 +70,8 @@ function lieuDe(schema: unknown, valeur: unknown, chemin: readonly (string | num
   for (const segment of chemin) {
     const traverses = ouverts(noeuds);
     const element = typeof segment === 'number' && Array.isArray(ici) ? ici[segment] : undefined;
-    const marque = typeof segment === 'number' ? traverses.map(cleDe).find((m) => m !== undefined) : undefined;
-    const cle = marque?.de(element);
+    const marque = typeof segment === 'number' ? traverses.map(collectionDe).find((m) => m !== undefined) : undefined;
+    const cle = marque?.forme === 'liste' ? marque.de(element) : undefined;
     if (cle === undefined) lieu.push(segment);
     else {
       const precedent = lieu[lieu.length - 1];
