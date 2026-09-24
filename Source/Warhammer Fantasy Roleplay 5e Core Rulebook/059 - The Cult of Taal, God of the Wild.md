@@ -2,17 +2,15 @@
 
 # **THE CULT OF TAAL, GOD OF THE WILD**
 
-**Seat of Power:** Talabheim, Talabecland **Head of the Cult:** Niav, Hierarch of Taal
+**Seat of Power:** Talabheim, Talabecland
+
+**Head of the Cult:** Niav, Hierarch of Taal
 
 **Primary Orders:** Order of the Antler, the Longshanks
 
-**Major Festivals:** Spring Equinox, with other equinoxes also
+**Major Festivals:** Spring Equinox, with other equinoxes also celebrated
 
-celebrated
-
-**Important Holy Texts:** *The Book of Green*, *Rites of the Ancient* 
-
-*Grove*, *Tome of Summer's Path*
+**Important Holy Texts:** *The Book of Green*, *Rites of the Ancient Grove*, *Tome of Summer's Path*
 
 **Common Holy Symbols:** Antlers, oaks, stone axes
 

@@ -16,9 +16,7 @@ Scavenging in the forest, boars are reclusive creatures, but when cornered will 
 
 **Hooves and Tusks:** (40/+6)
 
-**Horns (Tusks):** (40/+7) Free Attack
-
-only when Charging
+**Horns (Tusks):** (40/+7) Free Attack only when Charging
 
 #### **Armour**
 
@@ -72,9 +70,9 @@ Dodge 35, Perception 40, Track 45
 
 **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
-**Size (Small):** See page 360 for implications of size **Skittish:** Receive +3 Broken Conditions if affected by
+**Size (Small):** See page 360 for implications of size
 
-loud noise or magic
+**Skittish:** Receive +3 Broken Conditions if affected by loud noise or magic
 
 **Tracker:** The creature has the Track Skill at Int +10
 
@@ -114,7 +112,11 @@ Melee (Brawling) 30, Perception 45, Stealth 40
 
 **Bestial:** Animal behaviour is simple and predictable, see page 356
 
-**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards **Size (Small):** See page 360 for implications of size **Skittish:** Receive +3 *Broken* Condition if affected by loud noise or magic
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
+
+**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards **Size (Small):** See page 360 for implications of size
+
+**Skittish:** Receive +3 *Broken* Condition if affected by loud noise or magic
 
 #### **Optional Traits**
 
@@ -148,7 +150,9 @@ Dodge 40, Melee (Brawling) 40, Stealth 40
 
 **Size (Small):** See page 360 for implications of size
 
-**Wallcrawler:** Can move at full Movement across appropriate surfaces and automatically passes Climb Tests **Web 40:** On a successful hit, opponents gain 1 *Entangled*
+**Wallcrawler:** Can move at full Movement across appropriate surfaces and automatically passes Climb Tests
+
+**Web 40:** On a successful hit, opponents gain 1 *Entangled*
 
 Condition, with a Strength of 40
 
@@ -173,7 +177,9 @@ Horses are bred for many jobs, including speedy mounts for messengers, sturdy de
 
 **Toughness Bonus:** 3
 
-**Optional Light Armour:** +1 AP **Optional Medium Armour:** +3 AP
+**Optional Light Armour:** +1 AP
+
+**Optional Medium Armour:** +3 AP
 
 **Skills**
 

@@ -46,9 +46,7 @@ Human civilisations have existed in distant lands for thousands of years, but th
 
 **Height:** 4'9"+2d10"
 
-**Eye colour:** Ice Blue, Green, Pale Blue, Blue, Pale Grey, Grey,
-
-Brown, Hazel, Dark Brown, Black
+**Eye colour:** Ice Blue, Green, Pale Blue, Blue, Pale Grey, Grey, Brown, Hazel, Dark Brown, Black
 
 **Hair colour:** White Blond, Golden Blond, Red Blond, Golden Brown, Light Brown, Dark Brown, Black, Auburn, Red, Grey
 

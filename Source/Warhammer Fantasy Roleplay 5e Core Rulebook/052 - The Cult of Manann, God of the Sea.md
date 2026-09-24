@@ -6,7 +6,9 @@
 
 **Head of the Cult:** Camille Dauphina, Matriarch of the Sea
 
-**Primary Orders:** Order of the Albatross, Order of the Mariner **Major Festivals:** Spring Equinox, Autumn Equinox
+**Primary Orders:** Order of the Albatross, Order of the Mariner
+
+**Major Festivals:** Spring Equinox, Autumn Equinox
 
 **Important Holy Texts:** *The 1000 Shanties*, *Tales of the Albatross*,
 

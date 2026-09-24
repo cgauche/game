@@ -19,8 +19,9 @@ export function estP5(ligne) {
   return !!m && !/[:,;]\s*$/.test(m[1]) && !/^[A-Z0-9]{1,2}\)$/.test(m[1]) && !suiteDeProse(m[2])
 }
 
-/** Ligne de titre à DEUX groupes gras — deux titres soudés sur une ligne. PURE. */
-export const estTitreADeuxGras = (ligne) => /^#{1,6}\s+\*\*[^*]+\*\*\s*\*\*/.test(ligne)
+/** Ligne de titre à DEUX groupes gras — deux titres soudés sur une ligne ; un second groupe en gras
+ *  ITALIQUE (`***x***`) est l'accompagnement du même titre (CRB 071 l.97, `**Purple Pall of** ***Shyish***`). PURE. */
+export const estTitreADeuxGras = (ligne) => /^#{1,6}\s+\*\*[^*]+\*\*\s*\*\*(?!\*)/.test(ligne)
 
 /** Sites d'un texte : `{ ligne, classe: 'p5' | 'deux-gras', texte }`. PURE. */
 export function sitesDeTitresSoudes(texte) {
@@ -45,9 +46,15 @@ export function prosePrecedenteCoupee(lignes, i) {
  *  l'étiquette qui le suit (`**T Skills:** …`), que la coupe referme des deux côtés. PURE. */
 export const grasOuvert = (texte) => (texte.match(/\*\*/g) ?? []).length % 2 === 1
 
-/** Deux morceaux d'un paragraphe recollés : une espace, et le gras que le saut coupait refait UN seul
- *  (`**A** ` + `**B** x` → `**A B** x`). PURE. */
+/** Deux morceaux d'un paragraphe recollés : une espace — aucune après un trait d'union ou une barre de
+ *  fin de ligne, gardés (`Nimble-` + `fingered` → `Nimble-fingered`, `Read/` + `Write` → `Read/Write` ;
+ *  la sonde n'émet pas le joint d'une césure) —, et l'emphase que le saut coupait
+ *  refaite UNE seule, de même marque des deux côtés (`**A** ` + `**B** x` → `**A B** x`, `*A*` + `*B*` →
+ *  `*A B*`). PURE. */
 export function recoller(avant, apres) {
   const a = avant.trimEnd()
-  return a.endsWith('**') && apres.startsWith('**') ? `${a.slice(0, -2)} ${apres.slice(2)}` : `${a} ${apres}`
+  const marque = /(?<!\*)(\*{1,3})$/.exec(a)?.[1] ?? ''
+  const refondue = marque && apres.startsWith(marque) && apres[marque.length] !== '*'
+  const [gauche, droite] = refondue ? [a.slice(0, -marque.length), apres.slice(marque.length)] : [a, apres]
+  return `${gauche}${/\p{L}[-/]$/u.test(gauche) ? '' : ' '}${droite}`
 }

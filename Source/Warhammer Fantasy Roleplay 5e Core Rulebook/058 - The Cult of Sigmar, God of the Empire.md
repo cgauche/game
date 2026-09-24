@@ -6,13 +6,11 @@
 
 **Head of the Cult:** Yorri XV, the Grand Theogonist
 
-**Primary Orders:** Order of the Anvil, Order of the Cleansing
+**Primary Orders:** Order of the Anvil, Order of the Cleansing Flame, Order of the Silver Hammer, Order of the Torch
 
-Flame, Order of the Silver Hammer, Order of the Torch **Major Festivals:** Sigmarday (28th Sigmarzeit)
+**Major Festivals:** Sigmarday (28th Sigmarzeit)
 
-**Important Holy Texts:** *The Life of Sigmar*, *Deus Sigmar*, *The* 
-
-*Geistbuch*
+**Important Holy Texts:** *The Life of Sigmar*, *Deus Sigmar*, *The Geistbuch*
 
 **Common Holy Symbols:** Ghal Maraz (Sigmar's warhammer), twin-tailed comets, griffons
 

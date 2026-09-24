@@ -2,13 +2,17 @@
 
 # **THE CULT OF RHYA, GODDESS OF FERTILITY**
 
-**Seat of Power:** None officially **Head of the Cult:** None
+**Seat of Power:** None officially
+
+**Head of the Cult:** None
 
 **Primary Orders:** No orders, but tendencies include the Bringers of Bounty, Daughters of Rhya, and Corn Mothers
 
 **Major Festivals:** Summer Solstice, with equinoxes also celebrated
 
-**Important Holy Texts:** None, though many oral traditions exist **Common Holy Symbols:** Sheaf of wheat, fruit, spirals
+**Important Holy Texts:** None, though many oral traditions exist
+
+**Common Holy Symbols:** Sheaf of wheat, fruit, spirals
 
 Bountiful Rhya is the goddess of fertility, domesticity, and summer, widely known as the Earth Mother and She Who Sustains Life. Though typically depicted as the wife of Taal, myths connect her to many gods, and she has children from many of those relationships. Most commonly portrayed as a tall, beautiful woman wreathed in leaves and bedecked in fruit, Rhya's statues are normally nude, pregnant, and surrounded by her children.
 

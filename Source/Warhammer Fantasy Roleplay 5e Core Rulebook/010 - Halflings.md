@@ -42,15 +42,13 @@ The first records of halflings come from the fertile lands where the Blue Reach 
 
 ### **Halfling Physical Characteristics**
 
-**Age:** 15 + 5d10 **Height:** 3'1" + 1d10"
+**Age:** 15 + 5d10
 
-**Eye colour:** Light Grey, Grey, Pale Blue, Blue, Green, Hazel,
+**Height:** 3'1" + 1d10"
 
-Brown, Copper, Dark Brown
+**Eye colour:** Light Grey, Grey, Pale Blue, Blue, Green, Hazel, Brown, Copper, Dark Brown
 
-**Hair colour:** Grey, Flaxen, Russet, Honey, Chestnut, Ginger,
-
-Mustard, Almond, Chocolate, Liquorice
+**Hair colour:** Grey, Flaxen, Russet, Honey, Chestnut, Ginger, Mustard, Almond, Chocolate, Liquorice
 
 #### **Fluent Languages**
 

@@ -6,9 +6,7 @@
 
 **Head of the Cult:** Lisegund, Grande Matriarche
 
-**Primary Orders:** Order of the Bleeding Heart, Order of the
-
-Chalice
+**Primary Orders:** Order of the Bleeding Heart, Order of the Chalice
 
 **Major Festivals:** None
 
@@ -16,9 +14,7 @@ Chalice
 
 *The Testament of Pergunda*
 
-**Common Holy Symbols:** White doves, keys, heart with a drop
-
-of blood
+**Common Holy Symbols:** White doves, keys, heart with a drop of blood
 
 Shallya is the goddess of healing, mercy, and compassion. She is the daughter of Verena and Morr, and the sister of Myrmidia. Shallya is normally portrayed as a young, beautiful maiden whose eyes are perpetually welling with tears as she weeps for the world's pain. It is said Shallya's compassion knows no bounds, and in some myths — such as the stories of Ranald tricking her into granting him immortality, or Manann trapping her at the bottom of the sea — she seems trusting to the point of foolishness. However, her cultists maintain her mercy is available to all, without judgment. True foolishness consists of presuming to judge who is worthy of Shallya's grace and who is not.
 

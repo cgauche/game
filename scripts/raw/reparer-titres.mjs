@@ -13,13 +13,19 @@
 //  — S′ : la ligne de titre restaurée posée devant `cible` ;
 //  — O : l'entrée entière (sa ligne de titre jusqu'au titre suivant) posée devant `devant` ;
 //  — doublon : le débris `texteMd` retiré de la tête de sa ligne ;
+//  — A : les appels de figure `jeton` retirés de la queue de leur ligne ;
+//  — G : `texteMd` (`*x*`) devient `***x***` dans sa ligne, APRÈS les P : dans celle où un P l'a recollée ;
+//  — T : `avant apres` devient `avant — apres` dans sa ligne ;
+//  — E : la ligne coupée avant son `etiquette`, qui ouvre un paragraphe ;
+//  — J : `avant apres` devient `avantapres` dans sa ligne (`Read/ Write` → `Read/Write`) ;
 //  — P : la ligne recollée à la ligne de prose `avec` (`lib/titres-soudes.mjs#recoller`), les lignes
-//    entre elles ôtées ; de la plus basse à la plus haute, une chaîne de morceaux se recolle entière.
+//    entre elles ôtées ; avec une `etiquette`, seule la tête qui la précède se recolle, la ligne repart
+//    à l'étiquette ; de la plus basse à la plus haute, une chaîne de morceaux se recolle entière.
 // La ligne de titre posée est `ligneTitre` de la sonde (texte du `.md`, niveau du frère typographique).
 // Un titre posé est un bloc : une ligne vide avant et après, jamais deux vides de suite.
 // REFUS D'ÉCRIRE : un site dont la ligne ne porte plus ce que la sonde a vu (rejeu d'un JSON périmé),
 // deux gestes sur une ligne, ou un MULTI-ENSEMBLE DES MOTS du livre qui gagne autre chose que les mots
-// des S′ ou perd autre chose que les débris.
+// des S′ ou perd autre chose que les débris et les appels de figure.
 //
 // Usage : node scripts/raw/reparer-titres.mjs <id du livre> [--sites <json> | --boites <json>] [--apply]
 // Sans `--apply`, rend ce qu'il ferait. Idempotent : rejoué sur un livre réparé, il n'écrit rien.
@@ -105,7 +111,40 @@ export function reparerLivre(textes, sites) {
     }
     if (refus.length === avant) appliques.push(`${site.forme} ${site.site ?? '---'}${site.cible ? ` → ${site.cible}` : site.devant ? ` → ${site.devant}` : ''} « ${site.titre} »${site.ligneTitre ? ` = « ${site.ligneTitre} »` : ''}`)
   }
+  const enPlace = (site, faire) => {
+    const { nnn, i } = lieu(site.site)
+    const s = slots.get(nnn)?.[i]
+    const neuf = s && typeof s.texte === 'string' ? faire(s.texte) : null
+    if (neuf == null) return refus.push(`${site.site} ${site.forme} « ${site.titre} » : la ligne ne porte plus ce que la sonde a vu`)
+    s.texte = neuf
+    return appliques.push(`${site.forme} ${site.site} « ${site.titre} »`)
+  }
+  const echappe = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const appels = new Map()
+  for (const site of sites.filter((x) => x.forme === 'A')) appels.set(site.site, [...(appels.get(site.site) ?? []), site])
+  for (const groupe of appels.values()) {
+    enPlace(groupe[0], (t) => {
+      const m = /(?:\s+\d+)+\s*$/.exec(t)
+      const dits = (m?.[0].trim().split(/\s+/) ?? []).sort().join(' ')
+      return m && dits === groupe.map((g) => g.jeton).sort().join(' ') ? t.slice(0, m.index) : null
+    })
+  }
+  for (const site of sites.filter((x) => x.forme === 'T')) {
+    const re = new RegExp(`(^|[^\\p{L}*])(\\**${echappe(site.avant)}) (${echappe(site.apres)})(?!\\p{L})`, 'u')
+    enPlace(site, (t) => (re.test(t) ? t.replace(re, '$1$2 — $3') : null))
+  }
+  for (const site of sites.filter((x) => x.forme === 'J')) {
+    const mal = `${site.avant} ${site.apres}`
+    enPlace(site, (t) => (t.split(mal).length === 2 ? t.replace(mal, `${site.avant}${site.apres}`) : null))
+  }
+  for (const site of sites.filter((x) => x.forme === 'E')) {
+    enPlace(site, (t) => {
+      const k = t.indexOf(site.etiquette, 1)
+      return k > 0 && t.split(site.etiquette).length === 2 ? `${t.slice(0, k).trimEnd()}\n\n${t.slice(k)}` : null
+    })
+  }
   const recolles = []
+  const fusions = new Map()
   const parLeBas = sites.filter((x) => x.forme === 'P').sort((x, y) => {
     const [a, b] = [rang(x.site), rang(y.site)]
     return a[0] === b[0] ? b[1] - a[1] : a[0] < b[0] ? -1 : 1
@@ -116,9 +155,25 @@ export function reparerLivre(textes, sites) {
     const ss = slots.get(nnn)
     if (lignes.get(nnn)?.[i] !== site.ligneMd) { refus.push(`${site.site} P : la ligne n'est plus « ${site.ligneMd} »`); continue }
     if (ss.slice(j, i + 1).some((s) => s.touche)) { refus.push(`${site.site} P : ligne déjà retouchée`); continue }
-    ss[j].texte = recoller(ss[j].texte, ss[i].texte)
-    for (let r = j + 1; r <= i; r += 1) ss[r].texte = null
+    const texte = ss[i].texte
+    const coupe = site.etiquette ? texte.indexOf(site.etiquette, 1) : -1
+    if (site.etiquette && coupe < 0) { refus.push(`${site.site} P : l'étiquette « ${site.etiquette} » n'est plus dans la ligne`); continue }
+    ss[j].texte = recoller(ss[j].texte, coupe < 0 ? texte : texte.slice(0, coupe).trimEnd())
+    for (let r = j + 1; r < i; r += 1) ss[r].texte = null
+    if (coupe < 0) ss[i].texte = null
+    else {
+      ss[i].texte = texte.slice(coupe)
+      ss[i].avant.push([])
+    }
     recolles.push({ nnn, ligne: i + 1, avec: j + 1 })
+    fusions.set(`${nnn}:${i}`, j)
+  }
+  for (const site of sites.filter((x) => x.forme === 'G')) {
+    const re = new RegExp(`(?<!\\*)${echappe(site.texteMd)}(?!\\*)`)
+    const { nnn, i: i0 } = lieu(site.site)
+    let i = i0
+    while (!re.test(slots.get(nnn)?.[i]?.texte ?? '') && fusions.has(`${nnn}:${i}`)) i = fusions.get(`${nnn}:${i}`)
+    enPlace({ ...site, site: `${nnn}:${i + 1}` }, (t) => (re.test(t) ? t.replace(re, `**${site.texteMd}**`) : null))
   }
   const out = new Map()
   for (const [nnn, ss] of slots) {
@@ -144,7 +199,8 @@ export function infidelite(avant, apres, sites) {
   const attendus = (formes, champ) => motsDe(sites.filter((s) => formes.includes(s.forme)).map((s) => s[champ]).join('\n'))
   const dit = (m) => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([k, n]) => `${k}×${n}`).join(' ') || '∅'
   if (dit(ajoutes) !== dit(attendus(["S'"], 'ligneTitre'))) return `mots ajoutés ${dit(ajoutes)} ≠ mots des S′ ${dit(attendus(["S'"], 'ligneTitre'))}`
-  if (dit(retires) !== dit(attendus(['doublon'], 'texteMd'))) return `mots retirés ${dit(retires)} ≠ mots des débris ${dit(attendus(['doublon'], 'texteMd'))}`
+  const retirables = motsDe(sites.flatMap((s) => (s.forme === 'doublon' ? [s.texteMd] : s.forme === 'A' ? [s.jeton] : [])).join('\n'))
+  if (dit(retires) !== dit(retirables)) return `mots retirés ${dit(retires)} ≠ mots des débris et des appels ${dit(retirables)}`
   return null
 }
 

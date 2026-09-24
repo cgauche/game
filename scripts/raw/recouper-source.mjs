@@ -322,10 +322,18 @@ export function entreesScindees(entrees, racine, scindees) {
   })
 }
 
-/** Un suivi de diff est BLOQUÉ tant qu'un titre est rapporté, qu'une entrée keyée par section reste
- *  sans section porteuse, ou qu'une entrée est keyée sur une section scindée : rien n'est deviné,
- *  donc rien n'est écrit. PUR. */
-export const suiviBloque = (rapportees, stocks, scindees = []) => rapportees.length > 0 || scindees.length > 0 || stocks.some((s) => s.orphelines.length > 0)
+/** Un suivi de diff est BLOQUÉ tant qu'une entrée keyée par section reste sans section porteuse — dont
+ *  toute entrée keyée sur un titre RAPPORTÉ — ou qu'une entrée est keyée sur une section scindée : rien
+ *  n'est deviné, donc rien n'est écrit. Un titre rapporté qu'aucune entrée ne keye ne bloque pas. PUR. */
+export const suiviBloque = (stocks, scindees = []) => scindees.length > 0 || stocks.some((s) => s.orphelines.length > 0)
+
+/** Un titre RAPPORTÉ (`fichier :: slug#occ (…) — raison`, ou `fichier — raison`) en ligne de rapport :
+ *  « aucun stock keyé » quand aucune entrée orpheline ne pointe sa section (ou son fichier). PUR. */
+export function rapporteeEnLigne(rapportee, racine, orphelines) {
+  const cle = rapportee.split(/ \(l\.| — /)[0]
+  const keyee = orphelines.some((o) => o.startsWith(`${racine}/${cle} `))
+  return `${rapportee}${keyee ? '' : ' — aucun stock keyé'}`
+}
 
 /**
  * `--suivre-diff` : les `.md` du livre ont été ÉDITÉS EN PLACE (aucun fichier renommé) ; chaque
@@ -351,11 +359,12 @@ function suivreLeDiff(dir, racine, DRY) {
     return Array.isArray(brut.entrees) ? entreesScindees(brut.entrees, racine, scindees).map((e) => `${chemin} : ${e}`) : []
   })
   console.log(`${racine} : carte de slugs par diff — ${carte.size} section(s) portée(s), ${rapportees.length} rapportée(s), ${scindees.length} section(s) scindée(s).`)
-  for (const r of rapportees) console.log(`  RAPPORTÉE : ${r}`)
+  const orphelines = stocks.flatMap((s) => s.orphelines)
+  for (const r of rapportees) console.log(`  RAPPORTÉE : ${rapporteeEnLigne(r, racine, orphelines)}`)
   for (const e of surScindees) console.log(`  SECTION SCINDÉE : ${e}`)
   afficherStocks(stocks)
-  if (suiviBloque(rapportees, stocks, surScindees)) {
-    console.log('BLOQUÉ — titre(s) rapporté(s) ou entrée(s) sans section porteuse : à trancher à la main ; rien n\'est écrit.')
+  if (suiviBloque(stocks, surScindees)) {
+    console.log('BLOQUÉ — entrée(s) sans section porteuse ou keyée(s) sur une section scindée : à trancher à la main ; rien n\'est écrit.')
     process.exitCode = 1
     return
   }

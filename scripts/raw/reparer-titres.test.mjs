@@ -105,3 +105,96 @@ test('S soudé DANS le gras de l’étiquette, blanc de tête (CRB 018 l.108) : 
   assert.equal(textes.get('018'), ['Read/Write **Trappings:** Writing Kit', '', '#### **Adviser — Silver 3**', '', '**Skills:** Consume Alcohol, Cool', ''].join('\n'))
   assert.equal(infidelite(avant, textes, sites), null)
 })
+
+const TEXTE_018 = new Map([['018', [
+  '#### **SOLDIER ADVANCE SCHEME** 2', '',
+  '- **Recruit Brass 5** 1 6',
+  '- **Skills:** Athletics, *Melee (Any One)*, Melee (Basic) 3', '',
+  '**Talents:** Beneath Notice, Gregarious,', '',
+  'Read/Write **Trappings:** Writing', '',
+  'Kit', '',
+].join('\n')]])
+const SITES_018 = [
+  { forme: 'A', site: '018:1', jeton: '2', titre: '2' },
+  { forme: 'A', site: '018:3', jeton: '1', titre: '1' },
+  { forme: 'A', site: '018:3', jeton: '6', titre: '6' },
+  { forme: 'A', site: '018:4', jeton: '3', titre: '3' },
+  { forme: 'T', site: '018:3', avant: 'Recruit', apres: 'Brass', titre: 'Recruit — Brass 5' },
+  { forme: 'G', site: '018:4', texteMd: '*Melee (Any One)*', titre: 'Melee (Any One)' },
+  { forme: 'P', site: '018:10', avec: '018:8', ligneMd: 'Kit', etiquette: null, titre: 'Kit' },
+  { forme: 'P', site: '018:8', avec: '018:6', ligneMd: 'Read/Write **Trappings:** Writing', etiquette: '**Trappings:**', titre: 'Read/Write' },
+]
+
+test('A, T, G, P (CRB 018 p.43-46) : appels retirés, tiret rendu, gras italique rendu, ligne coupée recollée et coupée à l’étiquette', () => {
+  const { textes, refus } = reparerLivre(TEXTE_018, SITES_018)
+  assert.deepEqual(refus, [])
+  assert.equal(textes.get('018'), [
+    '#### **SOLDIER ADVANCE SCHEME**', '',
+    '- **Recruit — Brass 5**',
+    '- **Skills:** Athletics, ***Melee (Any One)***, Melee (Basic)', '',
+    '**Talents:** Beneath Notice, Gregarious, Read/Write', '',
+    '**Trappings:** Writing Kit', '',
+  ].join('\n'))
+  assert.equal(infidelite(TEXTE_018, textes, SITES_018), null)
+  assert.match(infidelite(TEXTE_018, textes, SITES_018.filter((s) => s.forme !== 'A')), /mots retirés 1×1 2×1 3×1 6×1/)
+})
+
+test('A, T, G PÉRIMÉS : rejoués sur le livre réparé, chacun est REFUSÉ, nommé', () => {
+  const { textes } = reparerLivre(TEXTE_018, SITES_018)
+  const { refus } = reparerLivre(textes, SITES_018.filter((s) => s.forme !== 'P'))
+  assert.equal(refus.length, 5)
+  assert.ok(refus.every((r) => / : la ligne ne porte plus ce que la sonde a vu$/.test(r)), refus.join('\n'))
+})
+
+const TEXTE_060 = new Map([['060', [
+  '**Seat of Power:** Middenheim, Middenland **Head of the Cult:** Jarrick Valgeir, Ar-Ulric', '',
+  '**Primary Orders:** Order of the Howling Wolf, Order of the', '',
+  'White Wolf **Major Festivals:** Campaign Start, Hochwinter, Campaign End **Important Holy Texts:** *Liber Lupus*, *Teutognengeschichte*, *The* ', '',
+  '*Ulric Creed* **Common Holy Symbols:** White wolves',
+].join('\n')]])
+const SITES_060 = [
+  { forme: 'E', site: '060:1', etiquette: '**Head of the Cult:**', titre: 'Head of the Cult:' },
+  { forme: 'E', site: '060:5', etiquette: '**Important Holy Texts:**', titre: 'Important Holy Texts:' },
+  { forme: 'P', site: '060:5', avec: '060:3', ligneMd: TEXTE_060.get('060').split('\n')[4], etiquette: '**Major Festivals:**', titre: 'White Wolf' },
+  { forme: 'P', site: '060:7', avec: '060:5', ligneMd: TEXTE_060.get('060').split('\n')[6], etiquette: '**Common Holy Symbols:**', titre: 'Ulric Creed' },
+]
+
+test('E, P (CRB 060 p.213) : libellés soudés coupés, paragraphes recollés, emphase `*The*` + `*Ulric Creed*` refaite une', () => {
+  const { textes, refus } = reparerLivre(TEXTE_060, SITES_060)
+  assert.deepEqual(refus, [])
+  assert.equal(textes.get('060'), [
+    '**Seat of Power:** Middenheim, Middenland', '',
+    '**Head of the Cult:** Jarrick Valgeir, Ar-Ulric', '',
+    '**Primary Orders:** Order of the Howling Wolf, Order of the White Wolf', '',
+    '**Major Festivals:** Campaign Start, Hochwinter, Campaign End', '',
+    '**Important Holy Texts:** *Liber Lupus*, *Teutognengeschichte*, *The Ulric Creed*', '',
+    '**Common Holy Symbols:** White wolves',
+  ].join('\n'))
+  assert.equal(infidelite(TEXTE_060, textes, SITES_060), null)
+  const { refus: perimes } = reparerLivre(textes, SITES_060.filter((s) => s.forme === 'E'))
+  assert.equal(perimes.length, 2)
+})
+
+test('G APRÈS P (CRB 018 p.84) : le gras italique se rend dans la ligne recollée — celle de son site, ou celle où un P l’a recollée —, l’emphase refaite une', () => {
+  const texte = new Map([['018', ['**Skills:** Athletics, Intimidate, *Melee* ', '', '*(Basic)* Melee (Brawling), *Cool*'].join('\n')]])
+  const sites = [
+    { forme: 'G', site: '018:1', texteMd: '*Melee (Basic)*', titre: 'Melee (Basic)' },
+    { forme: 'G', site: '018:3', texteMd: '*Cool*', titre: 'Cool' },
+    { forme: 'P', site: '018:3', avec: '018:1', ligneMd: '*(Basic)* Melee (Brawling), *Cool*', etiquette: null, titre: '(Basic) Melee (Brawling), Cool' },
+  ]
+  const { textes, refus } = reparerLivre(texte, sites)
+  assert.deepEqual(refus, [])
+  assert.equal(textes.get('018'), '**Skills:** Athletics, Intimidate, ***Melee (Basic)*** Melee (Brawling), ***Cool***')
+})
+
+test('J et P au joint `/` (CRB 018 p.50, p.107) : `Read/ Write` et `Read/` + `Write` rendent `Read/Write`', () => {
+  const texte = new Map([['018', ['**Talents:** Kingpin, Read/ Write', '', '**Talents:** Petty Magic, Read/', '', 'Write, Second Sight'].join('\n')]])
+  const sites = [
+    { forme: 'J', site: '018:1', avant: 'Read/', apres: 'Write', titre: 'Read/ Write' },
+    { forme: 'P', site: '018:5', avec: '018:3', ligneMd: 'Write, Second Sight', etiquette: null, titre: 'Write, Second Sight' },
+  ]
+  const { textes, refus } = reparerLivre(texte, sites)
+  assert.deepEqual(refus, [])
+  assert.equal(textes.get('018'), ['**Talents:** Kingpin, Read/Write', '', '**Talents:** Petty Magic, Read/Write, Second Sight'].join('\n'))
+  assert.equal(infidelite(texte, textes, sites), null)
+})

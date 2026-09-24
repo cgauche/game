@@ -34,7 +34,9 @@ Climb 65, Melee (Brawling) 40, Stealth (Rural) 65, Swim 90
 
 **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
-**Size (Large):** See page 360 for implications of size **Striding Gait (Wetlands):** Suffer no penalties for moving through wetland and +1 SL to all Athletics and Stealth Tests in wetland
+**Size (Large):** See page 360 for implications of size
+
+**Striding Gait (Wetlands):** Suffer no penalties for moving through wetland and +1 SL to all Athletics and Stealth Tests in wetland
 
 **Venom (Difficult):** Wounded opponents must pass an **Difficult (-1 SL) Endurance** Test or gain a *Poisoned* Condition
 
@@ -73,7 +75,9 @@ Athletics 60, Dodge 60
 
 **Bounce:** When Charging, Leaping, or Sprinting, the creature doubles their Movement Attribute and can ignore all intervening terrain and creatures
 
-**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
+
+**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
 #### **Optional Traits**
 
@@ -103,7 +107,9 @@ Free Attack, and has the Penetrating
 
 **Hide:** +1 AP
 
-**Optional Light Armour:** +1 AP **Optional Medium Armour:** +3 AP
+**Optional Light Armour:** +1 AP
+
+**Optional Medium Armour:** +3 AP
 
 #### **Skills**
 
@@ -113,7 +119,9 @@ Athletics 55, Endurance 45, Melee (Brawling) 50
 
 **Bestial:** Animal behaviour is simple and predictable, see page 356
 
-**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards **Size (Large):** See page 360 for implications of size
+**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
+
+**Size (Large):** See page 360 for implications of size
 
 #### **Optional Traits**
 
@@ -165,9 +173,7 @@ Melee (Brawling) 70, Perception 70, Tracking 70
 
 #### **Optional Traits**
 
-*Immunity (Any), Infestation, Magical, Mental Corruption, Mutation, Size (Monstrous), Spellcaster (Various), Stealthy, Striding Gait (Wetlands, Woodland),* 
-
-*Undead, Venom (Difficult)*
+*Immunity (Any), Infestation, Magical, Mental Corruption, Mutation, Size (Monstrous), Spellcaster (Various), Stealthy, Striding Gait (Wetlands, Woodland), Undead, Venom (Difficult)*
 
 # **Fenbeast**
 
@@ -191,9 +197,7 @@ Endurance 65, Melee (Brawling) 40
 
 #### **Traits**
 
-**Construct:** Never Test Int, WP, or Fel; use T for WP if
-
-needed, see page 357 for details
+**Construct:** Never Test Int, WP, or Fel; use T for WP if needed, see page 357 for details
 
 **Dark Vision:** See in the dark as daylight
 
@@ -260,9 +264,7 @@ With the forequarters and wings of an eagle and the hindquarters of a great cat,
 
 **Talons:** (60/+14), Fast
 
-**Bite:** (60/+8) Lose Momentum to make
-
-this Free Attack, *Penetrating*
+**Bite:** (60/+8) Lose Momentum to make this Free Attack, *Penetrating*
 
 #### **Armour**
 
@@ -368,7 +370,9 @@ There are a number of species of trolls so you should feel free to customise the
 
 **Hand Weapon:** (45/+14)
 
-**Bite:** (40/+8) Lose Momentum to make this Free Attack **Vomit:** (55/+8) Must start turn Engaged and give up Move and Action, affects all targets within 2 yards, who oppose using **Challenging (+0 SL) Dodge**. On hit, inflicts *Stunned* Condition and 1 Damage to victim's weapons and armour. May only use again after 12 hours.
+**Bite:** (40/+8) Lose Momentum to make this Free Attack
+
+**Vomit:** (55/+8) Must start turn Engaged and give up Move and Action, affects all targets within 2 yards, who oppose using **Challenging (+0 SL) Dodge**. On hit, inflicts *Stunned* Condition and 1 Damage to victim's weapons and armour. May only use again after 12 hours.
 
 #### **Armour**
 
@@ -384,7 +388,13 @@ Melee (Brawling) 40, Melee (Basic) 45, Endurance 55
 
 #### **Traits**
 
-**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound **Regeneration:** Regain 1d10 Wounds at start of round. A roll of 10 heals a Critical Wound. At 0 Wounds, roll 8+ to regain one Wound. Cannot Regenerate Wounds or Critical Wounds caused by Fire. **Size (Large):** See page 360 for implications of size **Stupid:** Must pass an **Easy (+4 SL) Intelligence** Test before acting, unless they are directed by a creature
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
+
+**Regeneration:** Regain 1d10 Wounds at start of round. A roll of 10 heals a Critical Wound. At 0 Wounds, roll 8+ to regain one Wound. Cannot Regenerate Wounds or Critical Wounds caused by Fire.
+
+**Size (Large):** See page 360 for implications of size
+
+**Stupid:** Must pass an **Easy (+4 SL) Intelligence** Test before acting, unless they are directed by a creature
 
 #### **Optional Traits**
 

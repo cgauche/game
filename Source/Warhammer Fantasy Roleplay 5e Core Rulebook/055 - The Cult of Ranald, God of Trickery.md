@@ -10,9 +10,7 @@
 
 **Major Festivals:** The Day of Folly
 
-**Important Holy Texts:** *The Riddles Ten*, *Midnight and the Black* 
-
-*Cat*, *The Great Joke*
+**Important Holy Texts:** *The Riddles Ten*, *Midnight and the Black Cat*, *The Great Joke*
 
 **Common Holy Symbols:** Crossed fingers, cats, magpies
 

@@ -28,7 +28,9 @@ Ungors bear only vestigial or stunted horns, and so are not considered true gors
 
 **Toughness Bonus:** 4
 
-**Optional Light Armour:** +1 AP **Optional Medium Armour:** +3 AP
+**Optional Light Armour:** +1 AP
+
+**Optional Medium Armour:** +3 AP
 
 **Optional Shield:** +2 AP when Opposing an attack with
 
@@ -118,7 +120,13 @@ Cool 40, Endurance 50, Melee (Basic) 55
 
 #### **Traits**
 
-**Hungry:** If they incapacitate an opponent or encounter a fresh body, they must pass an Average (+2 SL) Cool Test or feast, losing their next Move and Action **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards **Size (Large):** See page 360 for implications of size **Striding Gait (Woodland):** Suffer no penalties for moving through woodland and +1 SL to all Athletics and Stealth Tests in woodland
+**Hungry:** If they incapacitate an opponent or encounter a fresh body, they must pass an Average (+2 SL) Cool Test or feast, losing their next Move and Action
+
+**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
+
+**Size (Large):** See page 360 for implications of size
+
+**Striding Gait (Woodland):** Suffer no penalties for moving through woodland and +1 SL to all Athletics and Stealth Tests in woodland
 
 #### **Optional Traits**
 

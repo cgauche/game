@@ -44,15 +44,13 @@ Elves use their forename and an epithet translated into Reikspiel when travellin
 
 #### **High Elf Physical Characteristics**
 
-**Age:** 30 + 10d10 **Height:** 5'11" + 1d10"
+**Age:** 30 + 10d10
 
-**Eye colour:** Jet, Amethyst, Aquamarine, Sapphire, Turquoise,
+**Height:** 5'11" + 1d10"
 
-Emerald, Amber, Copper, Citrine, Gold
+**Eye colour:** Jet, Amethyst, Aquamarine, Sapphire, Turquoise, Emerald, Amber, Copper, Citrine, Gold
 
-**Hair colour:** Silver, White, Pale Blond, Blond, Yellow Blond,
-
-Copper Blond, Red Blond, Auburn, Red, Black
+**Hair colour:** Silver, White, Pale Blond, Blond, Yellow Blond, Copper Blond, Red Blond, Auburn, Red, Black
 
 ## **Fluent Languages**
 

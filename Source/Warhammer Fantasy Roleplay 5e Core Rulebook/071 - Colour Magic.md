@@ -6,9 +6,7 @@ The following provides eight lists of eight Spells, with one list for each Colou
 
 # **Lore of Beasts**
 
-**Lore Attribute:** The Amber Wind, *Ghur*, carries with it a chill, primal ferocity that is unnerving to beasts and sapient creatures alike. Whenever you cast a Spell from the
-
-Lore of Beasts, you may also cause *Fear* (see page 183) for the next Willpower Bonus Rounds.
+**Lore Attribute:** The Amber Wind, *Ghur*, carries with it a chill, primal ferocity that is unnerving to beasts and sapient creatures alike. Whenever you cast a Spell from the Lore of Beasts, you may also cause *Fear* (see page 183) for the next Willpower Bonus Rounds.
 
 **Ingredients:** Shamans use animal fur, skin, bone, and pelt, wrapped in sinews and daubed with blood runes to focus the Amber Wind. Often claws are scrimshawed, organs dried, and feathers dipped in rare humours, and it's not uncommon to find excrement, urine, and other excretions also used.
 
@@ -96,7 +94,7 @@ Reaching out an ebon hand, you draw out your target's soulstuff. This is a *magi
 
 Touching the body of a recently departed soul (one that passed away within the last day), you call its soul back briefly. For the Spell's duration, you can communicate with the dead soul, though they cannot take any action other than talking. They are not compelled to answer you, but the dead do not lie.
 
-# **Purple Pall of** *Shyish*
+# **Purple Pall of** ***Shyish***
 
 **CN:** 9 **Range:** You
 
@@ -112,7 +110,7 @@ You pull about you a pall fashioned from fine strands of *Shyish*. Gain +WPB Arm
 
 Inscribing a magical circle, you ward it with *Shyish*, forming an impenetrable barrier to the undead. Creatures with the *Undead*  Creature Trait cannot enter or leave the circle.
 
-# **Scythe of** *Shyish*
+# **Scythe of** ***Shyish***
 
 **CN:** 6 **Range:** You
 
@@ -146,7 +144,7 @@ Your touch brings the release of death to a single creature standing at Morr's t
 
 **Ingredients:** Pyromancers use a wide selection of flammable materials as ingredients, which are often immolated as the spell is cast, including coal, oils, fats, and ruddy woods. Trappings immune to fire are also common, such as iron keys, carved sections of fire grate, and small oven stones.
 
-# *Aqshy's* **Aegis**
+# ***Aqshy's*** **Aegis**
 
 **CN:** 5 **Range:** You
 
@@ -437,7 +435,7 @@ A lattice of *Hysh* overlays your mind, allowing you to think rapidly. Gain +20 
 
 **Ingredients:** Heavy metals of all types, esoterically inlaid or carved, comprise the majority of ingredients, though many spells also use trappings associated with a forge, including sections of a bellows marked with mathematical formula, inscribed chunks of an anvil, or fragments of a furnace.
 
-# **Crucible of** *Chamon*
+# **Crucible of** ***Chamon***
 
 **CN:** 7 **Range:** Willpower Bonus yards
 
@@ -476,7 +474,7 @@ You weave *Chamon* into a non-magical object made of metal, fundamentally alteri
 
 Gold is easier to work than steel. Though this Spell is unsuitable for forging new Trappings, it makes smaller projects faster and easier. Examples include repairing armour, adjusting fittings, engraving, embossing, or creating ornate finishes that would normally take a great deal of time. The details depend on the project and are up to the GM.
 
-# **Forge of** *Chamon*
+# **Forge of** ***Chamon***
 
 **CN:** 9 **Range:** Willpower Bonus yards **Target:** Special **Duration:** Willpower minutes
 
@@ -498,7 +496,7 @@ You conjure a shimmering, luminous cloak of scales that dazzles the enemy. The r
 
 You touch a non-magical object made of metal, which instantly becomes warm to the touch as you squeeze *Chamon* into it. You may bend and mangle the object with your bare hands. If you wish to make a more complex alteration and the GM agrees, you may attempt a pertinent **Average (+2 SL) Art** or **Trade** Test instead, depending on what you are trying to achieve.
 
-#### **Transmutation of** *Chamon*
+#### **Transmutation of** ***Chamon***
 
 **CN:** 12 **Range:** Willpower yards **Target:** AoE (Willpower Bonus yards) **Duration:** Willpower Bonus Rounds
 
@@ -532,7 +530,7 @@ You weave a cloak of *Ulgu*, assuming the likeness of another humanoid creature 
 
 **Duration:** Intelligence minutes
 
-You spin a web of intricate strands of *Ulgu*, obfuscating the Area of Effect with an illusory image of your choosing. You automatically fool anyone without the *Second Sight* Talent. Those with that Talent must win an **Opposed Difficult (-1 SL) Intuition** Test against the Casting Test to notice the illusion. This does not let them see through the Spell or end its effects they merely understand it is an illusion. The illusion is typically unmoving. For your Action, you may make a **Hard (-2 SL) Channelling (***Ulgu***)** Test to make the illusion move within its space for that Round.
+You spin a web of intricate strands of *Ulgu*, obfuscating the Area of Effect with an illusory image of your choosing. You automatically fool anyone without the *Second Sight* Talent. Those with that Talent must win an **Opposed Difficult (-1 SL) Intuition** Test against the Casting Test to notice the illusion. This does not let them see through the Spell or end its effects — they merely understand it is an illusion. The illusion is typically unmoving. For your Action, you may make a **Hard (-2 SL) Channelling (***Ulgu***)** Test to make the illusion move within its space for that Round.
 
 # **Mindslip**
 

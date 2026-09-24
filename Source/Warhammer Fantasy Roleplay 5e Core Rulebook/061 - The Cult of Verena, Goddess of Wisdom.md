@@ -2,21 +2,17 @@
 
 # **THE CULT OF VERENA, GODDESS OF WISDOM**
 
-**Seat of Power:** None **Head of the Cult:** None
+**Seat of Power:** None
 
-**Primary Orders:** Order of Scalebearers, Order of Lorekeepers,
+**Head of the Cult:** None
 
-Order of Mysteries, Order of Everlasting Light
+**Primary Orders:** Order of Scalebearers, Order of Lorekeepers, Order of Mysteries, Order of Everlasting Light
 
 **Major Festivals:** Year Blessing
 
-**Important Holy Texts:** *Canticum Verena*, *Eulogium Verena*, *The* 
+**Important Holy Texts:** *Canticum Verena*, *Eulogium Verena*, *The Book of Swords*
 
-*Book of Swords*
-
-**Common Holy Symbols:** Scales of justice, owls, downward-
-
-pointing swords
+**Common Holy Symbols:** Scales of justice, owls, downward-pointing swords
 
 Wise Verena, the goddess of learning and justice, is the wife of dark Morr and the mother of Myrmidia and Shallya. She is generally depicted as a tall, classically beautiful woman, and usually carries a sword and a set of scales. As the patron of justice she is concerned with fairness rather than the letter of the law: she opposes tyranny and oppression as much as crime.
 

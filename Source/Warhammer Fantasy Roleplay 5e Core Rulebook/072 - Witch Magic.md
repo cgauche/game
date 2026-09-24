@@ -74,7 +74,7 @@ You imbue a charm, such as a small piece of jewellery or pocket-sized trinket, w
 
 **CN:** 0 **Range:** Special **Target:** Special **Duration:** Instant
 
-This spell is most often used to find lost livestock, but is easily put to other uses. You grab a bit of organic matter belonging to a single creature — wool, blood, a piece of their leavings and add it to a bowl of water. After scrying into the bowl for 10 - IB minutes, secret symbols appear to your sight: the GM will describe the creature's location. If you are familiar with the location, you know where they are.
+This spell is most often used to find lost livestock, but is easily put to other uses. You grab a bit of organic matter belonging to a single creature — wool, blood, a piece of their leavings — and add it to a bowl of water. After scrying into the bowl for 10 - IB minutes, secret symbols appear to your sight: the GM will describe the creature's location. If you are familiar with the location, you know where they are.
 
 # **Lore of Witchcraft**
 

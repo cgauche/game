@@ -347,7 +347,11 @@ This Trait represents animals that have been trained through the *Animal Trainin
 
 **Home:** The animal is trained to return home if it is released or lost.
 
-**Magic:** The animal is trained to ignore *Skittish* when it comes to magic, which is required for most mounts used by spellcasters. **Mount:** The animal accepts a rider. Some creatures are especially belligerent, and will not accept a rider without the correct skill. For example, to ride a griffon, you need the *Ride (Griffon)* Skill. **War:** The animal is trained for war, gaining +10 *Weapon Skill*. It can also ignore *Skittish* for loud noises.
+**Magic:** The animal is trained to ignore *Skittish* when it comes to magic, which is required for most mounts used by spellcasters.
+
+**Mount:** The animal accepts a rider. Some creatures are especially belligerent, and will not accept a rider without the correct skill. For example, to ride a griffon, you need the *Ride (Griffon)* Skill.
+
+**War:** The animal is trained for war, gaining +10 *Weapon Skill*. It can also ignore *Skittish* for loud noises.
 
 #### **Undead**
 

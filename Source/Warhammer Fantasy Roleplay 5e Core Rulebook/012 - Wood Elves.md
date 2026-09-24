@@ -52,9 +52,7 @@ Elves use their forename and an epithet translated into Reikspiel when travellin
 
 **Height:** 5'11" + 1d10"
 
-**Eye colour:** Ivory, Charcoal, Ivy Green, Mossy Green, Chestnut,
-
-Dark Brown, Tan, Sandy Brown, Violet
+**Eye colour:** Ivory, Charcoal, Ivy Green, Mossy Green, Chestnut, Dark Brown, Tan, Sandy Brown, Violet
 
 **Hair colour:** Birch Silver, Ash Blond, Rose Gold, Honey Blond, Brown, Mahogany Brown, Dark Brown, Sienna, Ebony, Blue-Black
 
@@ -70,7 +68,7 @@ Athletics, Climb, Endurance, Entertain (Sing), Intimidate, Melee (Basic), Outdoo
 
 ### **Starting Talents**
 
-*Acute Sense (Sight)*, *Hardy* or *Second Sight*, *Night Vision*, *Read/ Write* or *Very Resilient*, *Rover*
+*Acute Sense (Sight)*, *Hardy* or *Second Sight*, *Night Vision*, *Read/Write* or *Very Resilient*, *Rover*
 
 #### **Fate**
 

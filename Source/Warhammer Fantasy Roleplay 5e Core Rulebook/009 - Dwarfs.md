@@ -50,15 +50,13 @@ Dwarfs usually identify with their clan but, particularly in the case of those w
 
 #### **Dwarf Physical Characteristics**
 
-**Age:** 15+10d10 **Height:** 4'3"+1d10"
+**Age:** 15+10d10
 
-**Eye colour:** Coal, Lead, Steel, Blue, Earth Brown, Bronze,
+**Height:** 4'3"+1d10"
 
-Hazel, Green, Copper, Gold
+**Eye colour:** Coal, Lead, Steel, Blue, Earth Brown, Bronze, Hazel, Green, Copper, Gold
 
-**Hair colour:** White, Grey, Pale Blond, Golden, Copper, Bronze,
-
-Brown, Dark Brown, Reddish Brown, Black
+**Hair colour:** White, Grey, Pale Blond, Golden, Copper, Bronze, Brown, Dark Brown, Reddish Brown, Black
 
 ### **Fluent Languages**
 

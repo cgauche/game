@@ -245,29 +245,81 @@ test('#1739 : un titre imprimé sur DEUX lignes (même gabarit, même colonne, i
   assert.deepEqual(r.sites, [])
 })
 
-test('#1739 : P — paragraphe scindé, PROUVÉ au PDF par un gras CONTINU d’une ligne à l’autre (CRB p.338) ; un repère de liste ou un libellé ne l’est pas (CRB p.36)', () => {
-  const G = (colonne, y0, ...morceaux) => ({ colonne, x0: 58, y0, texte: morceaux.map(([t]) => t).join(' '), spans: morceaux.map(([texte, gras]) => ({ texte, police: gras ? 'ACaslonPro-Bold' : 'ACaslonPro-Regular', taille: 9 })) })
-  const pages = [{
-    page: 10,
-    lignes: [
-      G(0, 384, ['see page 356']),
-      G(0, 371, ['Infected:', true], ['Wounded opponents must take an']),
-      G(0, 358, ['Easy (+4 SL)', true]),
-      G(0, 345, ['Endurance', true], ['Test to avoid a Festering Wound']),
-      G(1, 580, ['A)', true], ['Choose a Class and Career available']),
-      G(1, 567, ['or']),
-      G(1, 554, ['B)', true], ['Roll on your Species table']),
-      G(1, 400, ['Skills: Charm, Gossip', true]),
-      G(1, 387, ['Talents:', true], ['Craftsman, Strong Back']),
-    ],
-  }]
+/** Ligne du PDF forgée : morceaux `[texte, gras]`, `x1` à 4,5 pt par caractère ; `marge` (bord droit de
+ *  la boîte) = `x1` par défaut — la ligne remplit sa boîte. */
+const G = (colonne, y0, morceaux, { x0 = 58, marge = null, police = 'ACaslonPro' } = {}) => {
+  const texte = morceaux.map(([t]) => t).join(' ')
+  const x1 = x0 + 4.5 * texte.length
+  return { colonne, x0, x1, y0, marge: marge ?? x1, texte, spans: morceaux.map(([t, gras]) => ({ texte: t, police: `${police}-${gras === 'i' ? 'Italic' : gras === 'bi' ? 'BoldItalic' : gras ? 'Bold' : 'Regular'}`, taille: 9 })) }
+}
+const formesDe = (lignes, md, formes, cercles = []) =>
+  classer([{ page: 10, lignes, cercles }], [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes: md }], GABARIT).sites.filter((s) => formes.includes(s.forme))
+
+test('#1739 : P — paragraphe scindé, PROUVÉ au PDF : lignes consécutives, typographie continue, 1er mot qui ne tenait pas (CRB p.338, p.46, p.45)', () => {
   const lignes = [
-    'see page 356', '', '**Infected:** Wounded opponents must take an', '', '**Easy (+4 SL)**', '', '**Endurance** Test to avoid a Festering Wound', '',
-    '**A)** Choose a Class and Career available *or*', '', '**B)** Roll on your Species table', '',
-    '**Skills: Charm, Gossip**', '', '**Talents:** Craftsman, Strong Back',
+    G(0, 384, [['see page 356']]),
+    G(0, 371, [['Infected:', true], ['Wounded opponents must take an']]),
+    G(0, 358, [['Easy (+4 SL)', true]]),
+    G(0, 345, [['Endurance', true], ['Test to avoid a Festering Wound']]),
+    G(1, 300, [['Trappings:', true], ['Hammer and Nails, Pile of Leaflets, Writing']]),
+    G(1, 287, [['Kit']]),
+    G(1, 200, [['Talents:', true], ['Beneath Notice, Gregarious,']]),
+    G(1, 187, [['Read/Write']]),
+    G(1, 174, [['Trappings:', true], ['Writing Kit']]),
   ]
-  const p = classer(pages, [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes }], GABARIT).sites.filter((s) => s.forme === 'P')
-  assert.deepEqual(p.map((s) => [s.site, s.avec, s.preuve]), [['001:5', '001:3', 'p.10 col.0 y371→358'], ['001:7', '001:5', 'p.10 col.0 y358→345']])
+  const md = [
+    'see page 356', '', '**Infected:** Wounded opponents must take an', '', '**Easy (+4 SL)**', '', '**Endurance** Test to avoid a Festering Wound', '',
+    '**Trappings:** Hammer and Nails, Pile of Leaflets, Writing', '', 'Kit', '',
+    '**Talents:** Beneath Notice, Gregarious,', '', 'Read/Write **Trappings:** Writing Kit',
+  ]
+  assert.deepEqual(formesDe(lignes, md, ['P']).map((s) => [s.site, s.avec, s.etiquette, s.preuve]), [
+    ['001:5', '001:3', null, 'p.10 col.0 y371→358'],
+    ['001:7', '001:5', null, 'p.10 col.0 y358→345'],
+    ['001:11', '001:9', null, 'p.10 col.1 y300→287'],
+    ['001:15', '001:13', '**Trappings:**', 'p.10 col.1 y200→187'],
+  ])
+  assert.deepEqual(formesDe(lignes, md, ['E']), [], 'le libellé qu’un P coupe n’est pas un E')
+})
+
+test('#1739 : P — pas de preuve, pas de site : repère de liste (CRB p.36), libellé, ligne FINIE avant la marge, retrait (citation, CRB p.26), typographie rompue', () => {
+  const lignes = [
+    G(0, 580, [['A)', true], ['Choose a Class and Career available']]),
+    G(0, 567, [['or', 'i']]),
+    G(0, 554, [['B)', true], ['Roll on your Species table']]),
+    G(0, 400, [['Skills: Charm, Gossip', true]]),
+    G(0, 387, [['Talents:', true], ['Craftsman, Strong Back']]),
+    G(1, 300, [['Duration:', true], ['6 rounds']], { marge: 290 }),
+    G(1, 287, [['Your target gains +10 Toughness']]),
+    G(1, 200, [['On Dwarfs', true]]),
+    G(1, 191, [['When High King Ironbeard made a gift', 'bi']], { x0: 64, police: 'CaslonAntique' }),
+    G(1, 178, [['of Ghal Maraz to Sigmar it was more', 'bi']], { x0: 64, police: 'CaslonAntique' }),
+  ]
+  const md = [
+    '**A)** Choose a Class and Career available *or*', '', '**B)** Roll on your Species table', '',
+    '**Skills: Charm, Gossip**', '', '**Talents:** Craftsman, Strong Back', '',
+    '**Duration:** 6 rounds', '', 'Your target gains +10 Toughness', '',
+    '**On Dwarfs**', '', '*When High King Ironbeard made a gift of Ghal Maraz to Sigmar it was more*',
+  ]
+  assert.deepEqual(formesDe(lignes, md, ['P']), [])
+})
+
+test('#1739 : A — un nombre imprimé DANS une pastille est un appel de figure, mêlé en queue de la ligne voisine (CRB p.43)', () => {
+  const lignes = [G(1, 252, [['SOLDIER ADVANCE SCHEME', true]]), G(1, 100, [['Seven words and']]), { ...G(1, 239, [['2']], { x0: 304 }), x1: 310 }, G(1, 169, [['Recruit — Brass 5', true]], { x0: 319 }), { ...G(1, 169, [['1']], { x0: 304 }), x1: 310 }, { ...G(1, 169, [['6']], { x0: 412 }), x1: 418 }, { ...G(1, 100, [['7']], { x0: 304 }), x1: 310 }]
+  const cercles = [{ x0: 299, y0: 234, x1: 314, y1: 249 }, { x0: 299, y0: 164, x1: 314, y1: 179 }, { x0: 407, y0: 164, x1: 422, y1: 179 }]
+  const md = ['#### **SOLDIER ADVANCE SCHEME** 2', '', '- **Recruit Brass 5** 1 6', '', 'Seven words and 7']
+  assert.deepEqual(formesDe(lignes, md, ['A'], cercles).map((s) => [s.site, s.jeton]).sort(), [['001:1', '2'], ['001:3', '1'], ['001:3', '6']])
+})
+
+test('#1739 : G — gras italique du PDF rendu `*x*` (CRB p.46), jamais sur une ligne qui porte le mot sous deux emphases (CRB p.254) ; T — tiret cadratin du PDF perdu (CRB p.43, p.131)', () => {
+  const lignes = [
+    G(0, 300, [['Skills:', true], ['Art (Writing),'], ['Charm', 'bi'], [', Consume Alcohol']]),
+    G(0, 200, [['Difficulty — set by the GM, with easier tasks']]),
+    G(0, 100, [['Recruit — Brass 5', true]]),
+    G(1, 300, [['make a Hard (-2 SL) Channelling (', true], ['Ulgu', 'bi'], [') Test to make', true]]),
+  ]
+  const md = ['**Skills:** Art (Writing), *Charm*, Consume Alcohol', '', '- Difficulty set by the GM, with easier tasks', '', '- **Recruit Brass 5**', '', 'Lore (*Charm*) elsewhere', '', 'Strands of *Ulgu*, obfuscating. You may make a **Hard (-2 SL) Channelling (***Ulgu***)** Test to make it move']
+  const sites = formesDe(lignes, md, ['G', 'T'])
+  assert.deepEqual(sites.map((s) => [s.forme, s.site, s.texteMd ?? `${s.avant}|${s.apres}`]), [['G', '001:1', '*Charm*'], ['T', '001:3', 'Difficulty|set'], ['T', '001:5', 'Recruit|Brass']])
 })
 
 test('#1739 : famille « intertitre » (CRB p.46, p.92, p.171, p.193) — F soudé au corps de son jumeau, S soudé DANS le gras de l’étiquette, B à blanc de tête, titre sur deux lignes ; niveau du frère intertitre', () => {
@@ -296,4 +348,115 @@ test('#1739 : famille « intertitre » (CRB p.46, p.92, p.171, p.193) — F soud
   assert.deepEqual([de('B', 'Explorer — Silver 5')?.site, de('B', 'Explorer — Silver 5')?.ligneTitre], ['001:17', '#### **Explorer — Silver 5**'])
   assert.equal(r.titres.find((t) => t.texte === 'Inflicting Critical Wounds on an Opponent with 0 Wounds')?.forme, 'ok')
   assert.deepEqual(r.sites.map((s) => s.forme).sort(), ['B', 'F', 'S'])
+})
+
+test('#1739 : P — un gras de tête qui porte `:` ouvre un libellé, jamais une suite (CRB p.337)', () => {
+  const lignes = [G(0, 522, [['Hand Weapon: (40/+7)', true]]), G(0, 509, [['Optional Bow and Arrows: (35/+7) 50 yards,', true]])]
+  assert.deepEqual(formesDe(lignes, ['**Hand Weapon: (40/+7)**', '', '**Optional Bow and Arrows: (35/+7) 50 yards,** *Impale*'], ['P']), [])
+})
+
+test('#1739 : P — deux preuves au texte égal : l’emphase du `.md` départage (CRB p.338) ; deux lignes qui n’ont que la même preuve ne l’ont ni l’une ni l’autre (CRB p.336-337)', () => {
+  const deux = [
+    G(0, 371, [['Infected:', true], ['Wounded opponents must take an'], ['Easy (+4 SL)', true]]),
+    G(0, 358, [['Endurance', true], ['Test to avoid a Festering Wound']]),
+    G(1, 271, [['Infected:', true], ['Wounded opponents must take an'], ['Easy (+4 SL)', 'i']]),
+    G(1, 258, [['Endurance', 'i'], ['Test to avoid a Festering Wound']]),
+  ]
+  const md = ['**Infected:** Wounded opponents must take an *Easy (+4 SL)*', '', '*Endurance* Test to avoid a Festering Wound']
+  assert.deepEqual(formesDe(deux, md, ['P']).map((s) => s.preuve), ['p.10 col.1 y271→258'])
+  const une = [G(0, 341, [['Optional Shield:', true], ['+2 AP when Opposing']]), G(0, 328, [['an attack with Dodge']])]
+  const md2 = ['**Optional Shield:** +2 AP when Opposing', '', 'an attack with Dodge', '', '**Optional Shield:** +2 AP when Opposing', '', 'an attack with Dodge']
+  assert.equal(formesDe(une, md2, ['P']).length, 0)
+  assert.equal(formesDe(une, md2.slice(0, 3), ['P']).length, 1)
+  const cedee = [
+    G(0, 371, [['Wounded opponents must take an', 'i']]), G(0, 358, [['Easy test to avoid', 'i']]),
+    G(1, 271, [['Wounded opponents must take an', 'bi']]), G(1, 258, [['Easy test to avoid', 'bi']]),
+  ]
+  const md3 = ['*Wounded opponents must take an*', '', '*Easy test to avoid*', '', '***Wounded opponents must take an***', '', '***Easy test to avoid***']
+  assert.deepEqual(formesDe(cedee, md3, ['P']).map((s) => [s.site, s.preuve]).sort(), [['001:3', 'p.10 col.0 y371→358'], ['001:7', 'p.10 col.1 y271→258']], 'la preuve prise par une ligne est retirée aux autres')
+})
+
+test('#1739 : une ligne du `.md` ne répond qu’au PDF de SA plage de pages, bornée par les titres à leur place', () => {
+  const pages = [
+    { page: 10, lignes: [T(0, 700, 'Alpha'), L(0, 690, 'Alpha body words go here')], cercles: [] },
+    { page: 11, lignes: [T(0, 700, 'Beta'), L(0, 690, 'Beta body words go here')], cercles: [] },
+    { page: 12, lignes: [T(0, 700, 'Gamma'), L(0, 690, 'Gamma body words go here'), G(0, 600, [['Recruit — Brass 5', true]])], cercles: [] },
+  ]
+  const md = ['### **Alpha**', '', 'Alpha body words go here', '', '- **Recruit Brass 5**', '', '### **Beta**', '', 'Beta body words go here', '', '### **Gamma**', '', 'Gamma body words go here', '', '#### **Recruit — Brass 5**']
+  const { sites } = classer(pages, [{ nom: '001 - Forge.md', page: 10, pageFin: 12, lignes: md }], GABARIT)
+  assert.deepEqual(sites.filter((s) => s.forme === 'T'), [])
+})
+
+test('#1739 : E — un libellé soudé en milieu de ligne OUVRE sa ligne au PDF, son 1er mot tenait sur la précédente, ou le livre ne l’imprime jamais en milieu de ligne — rare, après une ligne close (CRB p.213, p.308) ; pas après une ligne pleine pour un libellé imprimé aussi en milieu de ligne (CRB p.257), ni sur une ligne du PDF qui n’est pas celle du `.md` (CRB p.257), ni sur une preuve que deux lignes réclament', () => {
+  const lignes = [
+    G(0, 645, [['Seat of Power:', true], ['Middenheim, Middenland']], { marge: 290 }),
+    G(0, 632, [['Head of the Cult:', true], ['Jarrick Valgeir, Ar-Ulric']], { marge: 290 }),
+    G(0, 593, [['Major Festivals:', true], ['Campaign Start, Hochwinter, Campaign End']]),
+    G(0, 580, [['Important Holy Texts:', true], ['Liber Lupus']]),
+    G(0, 520, [['Target:', true], ['Special'], ['Duration:', true], ['Willpower days']]),
+    G(0, 500, [['Wounded opponents must take an Easy Test to avoid a wound']]),
+    G(0, 487, [['Duration:', true], ['Instant']]),
+    G(0, 450, [['Traits:', true], ['Armour 2, Bite,']]),
+    G(0, 437, [['Night Vision:', true], ['See clearly']]),
+    G(1, 593, [['CN:', true], ['8']], { marge: 540 }),
+    G(1, 580, [['Target:', true], ['Special']], { marge: 540 }),
+    G(1, 400, [['CN:', true], ['4']], { marge: 540 }),
+    G(1, 387, [['Range:', true], ['You']], { marge: 540 }),
+  ]
+  const md = ['**Seat of Power:** Middenheim, Middenland **Head of the Cult:** Jarrick Valgeir, Ar-Ulric', '', '**Major Festivals:** Campaign Start, Hochwinter, Campaign End **Important Holy Texts:** Liber Lupus', '', 'Wounded opponents must take an Easy Test to avoid a wound **Duration:** Instant', '', '**Traits:** Armour 2, Bite, **Night Vision:** See clearly', '', '**CN:** 8 **Target:** 1', '', '**CN:** 4 **Range:** You', '', '**CN:** 4 **Range:** You']
+  assert.deepEqual(formesDe(lignes, md, ['E']).map((s) => [s.site, s.etiquette, s.preuve]), [['001:1', '**Head of the Cult:**', 'p.10 col.0 y645→632 tenait'], ['001:3', '**Important Holy Texts:**', 'p.10 col.0 y593→580 jamais en milieu de ligne, ouvre 1 ligne(s), ligne précédente close']])
+  assert.deepEqual(formesDe(lignes, md, ['libelle-non-prouve']).map((s) => [s.site, s.etiquette, s.motif]), [['001:7', '**Night Vision:**', 'ouvre 1 ligne(s) < 6, ligne précédente ouverte']], 'un libellé rare après une ligne ouverte (`,`) : rapporté, jamais coupé')
+})
+
+test('#1739 : T — le tiret cadratin qui FERME une ligne du PDF, ou qui ouvre la suivante (CRB p.254, p.158)', () => {
+  const lignes = [
+    G(0, 567, [['see through the Spell or end its effects —']]),
+    G(0, 554, [['they merely understand it is an illusion']]),
+    G(1, 300, [['to match the fastest Pursuer']]),
+    G(1, 287, [['— the one with the highest Movement']]),
+  ]
+  const md = ['see through the Spell or end its effects they merely understand it is an illusion', '', 'to match the fastest Pursuer the one with the highest Movement']
+  assert.deepEqual(formesDe(lignes, md, ['T']).map((s) => [s.site, s.avant, s.apres]), [['001:1', 'effects', 'they'], ['001:3', 'Pursuer', 'the']])
+})
+
+test('#1739 : G — un gras italique coupé par un paragraphe scindé se lit dans la ligne que le P recolle (CRB p.84)', () => {
+  const lignes = [
+    G(0, 353, [['Skills:', true], ['Athletics, Consume Alcohol, Cool, Dodge,']]),
+    G(0, 340, [['Endurance, Entertain (Taunt), Gossip, Intimidate,'], ['Melee', 'bi']]),
+    G(0, 327, [['(Basic)', 'bi'], ['Melee (Brawling)']]),
+  ]
+  const md = ['**Skills:** Athletics, Consume Alcohol, Cool, Dodge, Endurance, Entertain (Taunt), Gossip, Intimidate, *Melee* ', '', '*(Basic)* Melee (Brawling)']
+  assert.deepEqual(formesDe(lignes, md, ['P', 'G']).map((s) => [s.forme, s.site, s.avec ?? s.texteMd]), [['P', '001:3', '001:1'], ['G', '001:1', '*Melee (Basic)*']])
+})
+
+test('#1739 : P — la ligne qui TENAIT mais dont le texte continue (`,` final, suite en minuscule) est une suite (CRB p.337, p.352) ; sans preuve, rapportée', () => {
+  const lignes = [
+    G(0, 260, [['Infected:', true], ['Wounded opponents must take']], { marge: 290 }),
+    G(0, 247, [['an Easy (+4 SL) Endurance Test to']], { marge: 290 }),
+    G(0, 200, [['Leadership 25,']], { marge: 290 }),
+    G(0, 187, [['Melee (Basic 60, Polearm 60)']], { marge: 290 }),
+    G(0, 150, [['Wounded opponents must take an']], { marge: 290 }),
+    G(0, 137, [['Easy (+4 SL) test']], { marge: 290 }),
+  ]
+  const md = ['**Infected:** Wounded opponents must take', '', 'an Easy (+4 SL) Endurance Test to', '', 'Climb 50, Leadership 25,', '', 'Melee (Basic 60, Polearm 60)', '', 'Wounded opponents must take an', '', 'Easy (+4 SL) test']
+  assert.deepEqual(formesDe(lignes, md, ['P']).map((s) => [s.site, s.par]), [['001:3', 'suite'], ['001:7', 'suite']])
+  assert.deepEqual(formesDe(lignes, md, ['paragraphe-non-prouve']).map((s) => [s.site, s.avec]), [['001:11', '001:9']])
+})
+
+test('#1739 : joint de fin de ligne — `Read/` + `Write` : P recollé sans espace ; J pour `Read/ Write` déjà recollé avec l’espace ; la CÉSURE (`Xy` seul au livre) est rapportée ; `X- y` sans `X-y` au livre n’est pas un joint (trait suspendu), ni `X/ y` que le PDF imprime au milieu d’une ligne (CRB p.50, p.107, p.259)', () => {
+  const lignes = [
+    G(0, 300, [['Talents:', true], ['Argumentative, Kingpin, Read/']]),
+    G(0, 287, [['Write']]),
+    G(1, 300, [['Talents:', true], ['Petty Magic, Read/']]),
+    G(1, 287, [['Write, Second Sight']]),
+    G(1, 200, [['a masterful demon-']]),
+    G(1, 187, [['stration of power']]),
+    G(0, 100, [['make an Unopposed Acid-']]),
+    G(0, 87, [['and Poison-type attack']]),
+    G(0, 60, [['shown on the Character Sheet and/or the entry']]),
+    G(0, 47, [['or the relevant rule']]),
+  ]
+  const md = ['**Talents:** Argumentative, Kingpin, Read/ Write', '', '**Talents:** Petty Magic, Read/', '', 'Write, Second Sight', '', 'a masterful demon-', '', 'stration of power', '', 'the demonstration ends', '', 'make an Unopposed Acid- and Poison-type attack', '', 'shown on the Character Sheet and/ or the entry']
+  assert.deepEqual(formesDe(lignes, md, ['J']).map((s) => [s.site, s.avant, s.apres]), [['001:1', 'Read/', 'Write']])
+  assert.deepEqual(formesDe(lignes, md, ['P', 'cesure']).map((s) => [s.forme, s.site]), [['P', '001:5'], ['cesure', '001:9']])
 })

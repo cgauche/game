@@ -24,8 +24,18 @@ Trappings can be packed into backpacks, sacks, and pouches, making them easier t
 
 **Backpack:** Counts as 'worn' when strapped to your back
 
-**Barrel:** Capacity: 32 gallons of liquid **Cask:** Capacity: 10 gallons of liquid **Flask:** Capacity: 1 pint of liquid **Jug:** Capacity: 1 gallon of liquid **Sack:** Requires 1 hand to carry
+**Barrel:** Capacity: 32 gallons of liquid
 
-**Sack, Large:** Requires 1 hand to carry (or 2 hands if full) **Sling Bag:** Counts as 'worn' when slung over your shoulder
+**Cask:** Capacity: 10 gallons of liquid
+
+**Flask:** Capacity: 1 pint of liquid
+
+**Jug:** Capacity: 1 gallon of liquid
+
+**Sack:** Requires 1 hand to carry
+
+**Sack, Large:** Requires 1 hand to carry (or 2 hands if full)
+
+**Sling Bag:** Counts as 'worn' when slung over your shoulder
 
 **Waterskin:** Capacity: 1 gallon of liquid

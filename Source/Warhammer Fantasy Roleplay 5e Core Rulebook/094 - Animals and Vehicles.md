@@ -36,6 +36,8 @@ Animals are used at all levels of society in the Empire. See **Chapter 12: Besti
 
 **Destrier:** Destriers are large warhorses ridden by knights.
 
-**River Barge:** Three crew are standard. **Row Boat:** One rower is standard.
+**River Barge:** Three crew are standard.
+
+**Row Boat:** One rower is standard.
 
 **Wagon:** One driver and two horses are standard.

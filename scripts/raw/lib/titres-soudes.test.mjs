@@ -20,6 +20,7 @@ test('P5 : un gras de tête que suit un texte qui n’en est pas la prose, `:` i
 test('titre à deux groupes gras', () => {
   assert.equal(estTitreADeuxGras('#### **Bounce** **Cold-blooded**'), true)
   assert.equal(estTitreADeuxGras('#### **Bounce**'), false)
+  assert.equal(estTitreADeuxGras('# **Purple Pall of** ***Shyish***'), false)
   assert.deepEqual(sitesDeTitresSoudes('x\n#### **A** **B**\n**Names** Add').map((s) => [s.ligne, s.classe]), [[2, 'deux-gras'], [3, 'p5']])
 })
 
@@ -32,6 +33,11 @@ test('gras ouvert : un nombre impair de `**` (CRB 018 l.108, `**Adviser — Silv
 test('recoller : une espace ; le gras coupé par le saut redevient UN gras', () => {
   assert.equal(recoller('Your target must pass an **Average (+2 SL)** ', '**Cool** Test to break'), 'Your target must pass an **Average (+2 SL) Cool** Test to break')
   assert.equal(recoller('must take an', '**Easy (+4 SL)** x'), 'must take an **Easy (+4 SL)** x')
+  assert.equal(recoller('*Liber Lupus*, *The*', '*Ulric Creed* **Common Holy Symbols:**'), '*Liber Lupus*, *The Ulric Creed* **Common Holy Symbols:**')
+  assert.equal(recoller('**Talents:** Etiquette, Nimble-', 'fingered, Read/Write'), '**Talents:** Etiquette, Nimble-fingered, Read/Write')
+  assert.equal(recoller('Scales of justice, owls, downward-', 'pointing swords'), 'Scales of justice, owls, downward-pointing swords')
+  assert.equal(recoller('a cost of 1d10 -', '2 XP'), 'a cost of 1d10 - 2 XP')
+  assert.equal(recoller('**Talents:** Petty Magic, Read/', 'Write, Second Sight'), '**Talents:** Petty Magic, Read/Write, Second Sight')
 })
 
 test('prose coupée (CRB 107 l.147-151) : la ligne de prose précédente, blanc sauté, si elle ne finit pas une phrase', () => {

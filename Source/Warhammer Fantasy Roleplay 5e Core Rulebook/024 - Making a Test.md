@@ -53,8 +53,8 @@ Advantage and Disadvantage cancel each other out. If you have multiple sources o
 
 Not all Tests are as simple as the one above. The Success Level of a Test can be modified by how difficult it is to succeed, or by the Character's abilities and equipment:
 
-- Difficulty set by the GM, with easier tasks giving an SL bonus and harder ones giving a penalty (see **Difficulty Table**).
-- Character's modifiers come from Talents, equipment, Spells, and other effects. These will be clear on the player's Character Sheet.
+- Difficulty — set by the GM, with easier tasks giving an SL bonus and harder ones giving a penalty (see **Difficulty Table**).
+- Character's modifiers — come from Talents, equipment, Spells, and other effects. These will be clear on the player's Character Sheet.
 
 Combine any SL bonuses or penalties from the Difficulty with the Character's modifiers to arrive at the final SL modifier for the roll. This could turn a success into a failure, or prise victory from the jaws of defeat!
 
@@ -141,4 +141,4 @@ With the GM's permission, two or more characters can work together on a Test. Th
 
 To help, a character must logically be able to meaningfully assist. Characters cannot normally help resist disease, poison, fear, hazards, or physically assist if they aren't close enough. A Character cannot assist with an Advanced Skill Test unless they have at least one Advance in the Skill being tested.
 
-*Example*: *Brokk and Salundra are trying to force open the barred door to a noble's cellar. The GM calls for a Challenging (+0 SL) Strength Test. Brokk has the higher Strength rating, at 53, so he makes the Test. He rolls a 61, but with Salundra helping he has Advantage. This allows him to reverse the roll to a 16, resulting in a +3 SL. Together they force the door open, and descend the darkened stairs with care.*
+***Example***: *Brokk and Salundra are trying to force open the barred door to a noble's cellar. The GM calls for a Challenging (+0 SL) Strength Test. Brokk has the higher Strength rating, at 53, so he makes the Test. He rolls a 61, but with Salundra helping he has Advantage. This allows him to reverse the roll to a 16, resulting in a +3 SL. Together they force the door open, and descend the darkened stairs with care.*

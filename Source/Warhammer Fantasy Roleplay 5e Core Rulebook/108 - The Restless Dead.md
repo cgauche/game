@@ -30,9 +30,7 @@ Melee (Brawling) 35, Stealth 40, Track 40
 
 #### **Traits**
 
-**Infected:** Wounded opponents must take an *Easy (+4 SL)* 
-
-*Endurance* Test to avoid a Festering Wound
+**Infected:** Wounded opponents must take an *Easy (+4 SL) Endurance* Test to avoid a Festering Wound
 
 **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
@@ -58,7 +56,9 @@ Skeletons are the fleshless bones of those long dead, reanimated by dark magic t
 
 **Toughness Bonus:** 3
 
-**Optional Light Armour:** +1 AP **Optional Medium Armour:** +3 AP
+**Optional Light Armour:** +1 AP
+
+**Optional Medium Armour:** +3 AP
 
 **Optional Shield:** +2 AP when Opposing an attack with
 
@@ -70,9 +70,7 @@ Melee (Basic) 30
 
 #### **Traits**
 
-**Construct:** Never Test Int, WP, or Fel; use T for WP if
-
-needed, see page 357 for details
+**Construct:** Never Test Int, WP, or Fel; use T for WP if needed, see page 357 for details
 
 **Dark Vision:** See in the dark as daylight
 
@@ -250,7 +248,9 @@ Cairn wraiths are especially potent spirits, the spectral remains of aspiring ne
 
 #### **Attacks**
 
-**Scythe:** (45/+7) *Defensive, Hack, Impale, Magical* **Chill Grasp:** (40) Lose Momentum and Action, engaged target may oppose using **Dodge** or **Melee**. If the creature wins, the target loses 1d10 + SL Wounds ignoring Toughness Bonus and Armour Points. This attack is *Magical*.
+**Scythe:** (45/+7) *Defensive, Hack, Impale, Magical*
+
+**Chill Grasp:** (40) Lose Momentum and Action, engaged target may oppose using **Dodge** or **Melee**. If the creature wins, the target loses 1d10 + SL Wounds ignoring Toughness Bonus and Armour Points. This attack is *Magical*.
 
 #### **Armour**
 

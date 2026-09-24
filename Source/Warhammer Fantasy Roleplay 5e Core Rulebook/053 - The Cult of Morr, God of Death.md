@@ -6,9 +6,7 @@
 
 **Head of the Cult:** Kirste, Custode del Portale
 
-**Primary Orders:** Order of the Shroud, Order of the Black
-
-Guard, Order of the Augurs
+**Primary Orders:** Order of the Shroud, Order of the Black Guard, Order of the Augurs
 
 **Major Festivals:** Hexensnacht, Geheimnisnacht
 

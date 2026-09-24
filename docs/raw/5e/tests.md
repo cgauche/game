@@ -638,9 +638,9 @@ Le CRB porte **trois** occurrences de `lose Advantage` — recensement exhaustif
 
 | Occurrence verbatim | Où | Réf |
 |---|---|---|
-| `all within the Area of Effect except you lose Advantage at the start of each Round` | Miracle **Heart of Winter** (Ulric) | `CRB 067 l.412` |
+| `all within the Area of Effect except you lose Advantage at the start of each Round` | Miracle **Heart of Winter** (Ulric) | `CRB 067 l.410` |
 | `if you have the *Disarm* Talent, you can lose Advantage to catch it in a free hand` | Weapon Quality **Trap Blade** | `CRB 086 l.272` |
-| `if creature hits opponent in melee, they may lose Advantage to make an extra attack` | Creature Trait **Furious Assault** (Ungrakk's Brayherd) | `CRB 114 l.79` |
+| `if creature hits opponent in melee, they may lose Advantage to make an extra attack` | Creature Trait **Furious Assault** (Ungrakk's Brayherd) | `CRB 114 l.87` |
 
 L'**Appendix I** les réécrit toutes trois en Momentum, dans la même phrase qui établit la conversion :
 
@@ -665,7 +665,7 @@ Constat, non arbitrage : la clause de `CRB 116 l.15` vise « older materials »,
 - `CRB 025 l.9-10` — dépenses de Fortune : gagner Advantage sur un Test **avant** de lancer (l.9) ; relancer un Test en gardant le nouveau résultat (l.10).
 - `CRB 076 l.91-99` — **THE GM'S TEST TOOLKIT** : tous les modificateurs de SL s'appliquent après le lancer (l.91) ; l'inversion vient de Momentum, de certains Talents, Spells et Miracles, et de la dépense de Fortune, et le GM ne devrait presque jamais l'accorder hors des cas prévus (l.95) ; **Reroll** = on garde obligatoirement le second résultat (l.97) ; **Rolling a Double** = même chiffre sur le dé des dizaines et celui des unités (l.99).
 - `CRB 116 l.13-15` — **Appendix I, Advantage and Momentum** : l'Advantage des matériels 4e se lit Momentum, y compris à la perte et à la dépense ; l'Advantage 5e est l'échange des chiffres du dé quand il profite.
-- `CRB 067 l.412`, `CRB 086 l.272`, `CRB 114 l.79` — les **trois** occurrences résiduelles de `lose Advantage` dans le CRB 5e (Miracle *Heart of Winter*, Weapon Quality *Trap Blade*, Creature Trait *Furious Assault*).
+- `CRB 067 l.410`, `CRB 086 l.272`, `CRB 114 l.87` — les **trois** occurrences résiduelles de `lose Advantage` dans le CRB 5e (Miracle *Heart of Winter*, Weapon Quality *Trap Blade*, Creature Trait *Furious Assault*).
 
 > « Sometimes a rule, ability, or circumstance will grant you Advantage or Disadvantage on a Test. When making a Test with Advantage, you may reverse the digits of a roll if that would improve your result, so a 71 could become a 17. When making a Test with Disadvantage, you must reverse the digits if the result would be worse, so a 19 becomes a 91. » — `CRB 024 l.48`
 
@@ -832,7 +832,7 @@ circumstances**, or from a Character's Talents, equipment, and abilities.* » (`
 - la première famille **absorbe aussi les *circumstances*** — un modificateur peut venir de la
   situation sans passer par un degré nommé de la **DIFFICULTY TABLE** ;
 
-**Ce que recouvre concrètement *Character's modifiers*.** Le livre en fournit des occurrences dans les trois catégories qu'il nomme, toujours exprimées en SL — Talents *Hatred (Group)* et *Strong Back* (`CRB 021 l.310`, `l.648`), Spell *Beast Tongue* (`CRB 071 l.45`), consommable *Digestive Tonic* (`CRB 097 l.31`) —, et un modificateur peut être **négatif** et venir d'un tiers : Talent *Argumentative* (`CRB 021 l.47`). Aires `talents`, `magie`, `equipement` (fiches à extraire). Le RAW précise que ces modificateurs figurent sur la Character Sheet
+**Ce que recouvre concrètement *Character's modifiers*.** Le livre en fournit des occurrences dans les trois catégories qu'il nomme, toujours exprimées en SL — Talents *Hatred (Group)* et *Strong Back* (`CRB 021 l.310`, `l.648`), Spell *Beast Tongue* (`CRB 071 l.43`), consommable *Digestive Tonic* (`CRB 097 l.31`) —, et un modificateur peut être **négatif** et venir d'un tiers : Talent *Argumentative* (`CRB 021 l.47`). Aires `talents`, `magie`, `equipement` (fiches à extraire). Le RAW précise que ces modificateurs figurent sur la Character Sheet
 (`CRB 024 l.57`, porteur : topic **DIFFICULTY AND CHARACTER MODIFIERS**).
 
 **Moment d'application — APRÈS le jet.** C'est la règle propre de ce topic, et elle est explicite :
@@ -906,7 +906,7 @@ appartient à l'aire `conversion` (fiche à extraire) ; elle n'est pas recopiée
 - `CRB 024 l.13` — le d100 se compare à la valeur nue du Skill (topic **ROLL DICE**) : c'est ce que confirme l'application des modificateurs après le jet.
 - `CRB 024 l.116` — exemple **Typical Test** : la GM fixe elle-même la Difficulty de l'action décrite, et l'ordre SL brut → ajout de la Difficulty y est explicite (déroulé chiffré au topic **ROLL DICE**).
 - `CRB 024 l.50` — cumul d'Advantage / Disadvantage : seules les sources au-delà de la première valent ±1 SL, et c'est par là seulement qu'elles alimentent la composition (règle et citation au topic **ADVANTAGE AND DISADVANTAGE**).
-- `CRB 021 l.47`, `CRB 021 l.310`, `CRB 021 l.648`, `CRB 071 l.45`, `CRB 097 l.31` — exemples de modificateurs du personnage cités ci-dessus (Talent, Spell, équipement) — aires `talents`, `magie`, `equipement`
+- `CRB 021 l.47`, `CRB 021 l.310`, `CRB 021 l.648`, `CRB 071 l.43`, `CRB 097 l.31` — exemples de modificateurs du personnage cités ci-dessus (Talent, Spell, équipement) — aires `talents`, `magie`, `equipement`
 - `CRB 076 l.109` — **Extended Tests**, *Choose the Test* : Skill et Difficulty ou autres modificateurs de SL fixés **pour chaque tentative** (topic **EXTENDED TESTS**).
 - `CRB 116 l.19` — **Test Difficulty** (Appendix I) : retirer le « 0 » — aire `conversion`
 - `CRB 086 l.208` · `CRB 086 l.272` · `CRB 090 l.26` · `CRB 097 l.28` — les quatre occurrences résiduelles de l'ancienne notation (table ci-dessus).
@@ -1397,7 +1397,7 @@ Le livre donne une liste fermée de trois dépenses, sous l'intitulé **Spend a 
 
 **3. Remove one Condition.** Un point retire **une** Condition (`CRB 025 l.11`, renvoi à la page 184). L'empilement des Conditions identiques, leur non-cumul entre elles et la rechute d'*Unconscious* quand la cause demeure sont portés par l'aire `etats` (fiche à extraire) — `CRB 042 l.7-13`, `CRB 042 l.33`, `CRB 042 l.133-137`.
 
-**Autres consommateurs et homonymes.** D'autres capacités consomment de la Fortune — Talent *Well-prepared* (`CRB 021 l.742-744`, aire `talents`), Spell *Starcrossed* (`CRB 071 l.263`, aire `magie`) ; deux homonymes ne touchent pas la réserve — **Blessing of Fortune** (`CRB 066 l.95-101`, aire `religion`), Character Event *A Good Day's Work* (`CRB 047 l.25`, aire `activites`). Fiches à extraire.
+**Autres consommateurs et homonymes.** D'autres capacités consomment de la Fortune — Talent *Well-prepared* (`CRB 021 l.742-744`, aire `talents`), Spell *Starcrossed* (`CRB 071 l.261`, aire `magie`) ; deux homonymes ne touchent pas la réserve — **Blessing of Fortune** (`CRB 066 l.95-101`, aire `religion`), Character Event *A Good Day's Work* (`CRB 047 l.25`, aire `activites`). Fiches à extraire.
 
 ### Reconstituer la Fortune
 
@@ -1433,7 +1433,7 @@ Le chapitre GM n'ajoute aucune restriction mécanique, seulement un cadrage de d
 - `CRB 021 l.388-390`, `CRB 021 l.742-744` — aire `talents`
 - `CRB 066 l.95-101`, `CRB 067 l.169-175`, `CRB 065 l.67` — aire `religion`
 - `CRB 047 l.25`, `CRB 047 l.37-39`, `CRB 047 l.71-77` — aire `activites`
-- `CRB 070 l.203-206`, `CRB 071 l.221`, `CRB 071 l.249-279`, `CRB 072 l.120-130`, `CRB 074 l.69` — aire `magie`
+- `CRB 070 l.203-206`, `CRB 071 l.219`, `CRB 071 l.247-277`, `CRB 072 l.120-130`, `CRB 074 l.69` — aire `magie`
 - `CRB 116 l.36` — aire `conversion`
 
 > « Gain Advantage on a Test before rolling. » — `CRB 025 l.9`
@@ -1492,14 +1492,14 @@ Il n'existe donc, dans le socle 5e, aucune horloge de régénération du Fate : 
 
 Le chapitre du GM resserre encore la fréquence attendue et donne le barème d'appréciation : « Regaining Fate should be rare enough to feel momentous, perhaps marking the culmination of a long campaign or the achievement of an objective at considerable personal cost. » — là où, dans la même phrase, Fortune est rappelée comme « replenished at the start of every session » (`CRB 076 l.73`).
 
-**Stock de départ.** Le Fate se recopie sur la feuille à la création (`CRB 006 l.25`) ; le barème par espèce va de **1 à 4 points pour toute une campagne** — aire `creation` (fiche à extraire), `CRB 008 l.69`, `CRB 009 l.77`, `CRB 010 l.69`, `CRB 011 l.71`, `CRB 012 l.77`.
+**Stock de départ.** Le Fate se recopie sur la feuille à la création (`CRB 006 l.25`) ; le barème par espèce va de **1 à 4 points pour toute une campagne** — aire `creation` (fiche à extraire), `CRB 008 l.67`, `CRB 009 l.75`, `CRB 010 l.67`, `CRB 011 l.69`, `CRB 012 l.75`.
 
 **Autres entrées de Fate prévues par le RAW.** Hors octroi discrétionnaire du GM et hors stock d'espèce, le CRB nomme quatre sources chiffrées de Fate Points supplémentaires ; chacune est portée par une autre aire et n'est listée ici que parce qu'elle alimente le stock de Fate :
 
 - *Oh Fickle Fate* : +1 Fate si les **trois** premiers tirages (Species, Career, Characteristics) ont été acceptés — `CRB 016 l.67-69`, aire `creation` (fiche à extraire).
 - *Party Ambition* accomplie : +1 Fate Point pour **chaque** personnage, la progression ne donnant aucun XP — `CRB 017 l.66-70`, aire `avancement` (fiche à extraire).
 - Talent *Doomed* : mort conforme au Dooming → Fortune rafraîchie chez les alliés, +1 Fate Point pour le personnage **suivant** — `CRB 021 l.201-203`, aire `talents` (fiche à extraire).
-- Spell *The Third Portent of Amul* : +1 Fate Point **temporaire**, pour la durée du Spell — `CRB 071 l.287`, aire `magie` (fiche à extraire).
+- Spell *The Third Portent of Amul* : +1 Fate Point **temporaire**, pour la durée du Spell — `CRB 071 l.285`, aire `magie` (fiche à extraire).
 
 **Héritage des éditions antérieures.** « If an effect refers to Resilience, use Fate instead. » (`CRB 116 l.36`) — conversion portée par l'aire `conversion` (fiche à extraire).
 
@@ -1513,7 +1513,7 @@ Le chapitre du GM resserre encore la fréquence attendue et donne le barème d'a
 - `CRB 076 l.71` — conseil au GM : dépenser du Fate est « a Big Deal », moment dramatique à mettre en scène
 - `CRB 076 l.73` — conseil au GM : le regain de Fate doit rester assez rare pour être marquant (aboutissement d'une longue campagne, objectif atteint à grand prix personnel), par opposition à Fortune rendue à chaque séance
 - `CRB 006 l.25` — Fate fait partie des valeurs recopiées depuis l'espèce sur la feuille
-- `CRB 008 l.69`, `CRB 009 l.77`, `CRB 010 l.69`, `CRB 011 l.71`, `CRB 012 l.77`, `CRB 016 l.67-69`, `CRB 017 l.66-70`, `CRB 021 l.201-203`, `CRB 071 l.287`, `CRB 065 l.73` — entrées et dépenses de Fate hors foyer, par aire ci-dessus
+- `CRB 008 l.67`, `CRB 009 l.75`, `CRB 010 l.67`, `CRB 011 l.69`, `CRB 012 l.75`, `CRB 016 l.67-69`, `CRB 017 l.66-70`, `CRB 021 l.201-203`, `CRB 071 l.285`, `CRB 065 l.73` — entrées et dépenses de Fate hors foyer, par aire ci-dessus
 - `CRB 116 l.36` — *Resilience and Resolve* — aire `conversion`
 
 > « Fate points are far more precious than Fortune. They mark you as a Character of destiny, allowing you to Cheat Death or Achieve the Impossible. » — `CRB 025 l.19`
@@ -1604,7 +1604,7 @@ Le chapitre du GM demande que la **différence de timing** se traduise dans la f
 - aire `etats` (fiche à extraire) — Conditions *Bleeding* et *Unconscious* (`CRB 042`)
 - aire `talents` (fiche à extraire) — talent *Luck* (`CRB 021 l.388-390`)
 - aire `religion` (fiche à extraire) — *Called to Account* (`CRB 065 l.73`)
-- aire `magie` (fiche à extraire) — Lore of Heavens : *Fate's Fickle Fingers* (`CRB 071 l.249-255`), *Starcrossed* (`CRB 071 l.257-263`), les trois *Portents of Amul* (`CRB 071 l.265-287`)
+- aire `magie` (fiche à extraire) — Lore of Heavens : *Fate's Fickle Fingers* (`CRB 071 l.247-253`), *Starcrossed* (`CRB 071 l.255-261`), les trois *Portents of Amul* (`CRB 071 l.263-285`)
 - aire `conversion` (fiche à extraire) — « If an effect refers to Resilience, use Fate instead. » (`CRB 116 l.36`)
 
 **Implémente :** (non implémenté)

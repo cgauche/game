@@ -7,7 +7,7 @@
 // REFUS quand elle est rompue, l'IDEMPOTENCE, et le recalage d'une entrée de stock AVEC sa `preuve`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { aUneCleDeSection, carteDesSlugs, entreesScindees, suiviBloque, contenuDe, fluxDe, indexDe, planDe, recalerStock, recouper } from './recouper-source.mjs'
+import { aUneCleDeSection, carteDesSlugs, entreesScindees, rapporteeEnLigne, suiviBloque, contenuDe, fluxDe, indexDe, planDe, recalerStock, recouper } from './recouper-source.mjs'
 import { carteDeLignes } from './lib/carte-lignes.mjs'
 import { hunksDe } from '../guards/lib/hunks.mjs'
 
@@ -198,10 +198,21 @@ test('#1739 : --suivre-diff ne porte que les clés de SECTION — une clé de fi
   assert.deepEqual(r, { entrees, recalees: [], orphelines: [] })
 })
 
-test('#1739 : --suivre-diff est BLOQUÉ (rien écrit, sortie en échec) tant qu’un titre est rapporté ou une entrée orpheline', () => {
-  assert.equal(suiviBloque([], [{ orphelines: [] }]), false)
-  assert.equal(suiviBloque(['x.md :: a#1 (l.3) — ligne supprimée'], []), true)
-  assert.equal(suiviBloque([], [{ orphelines: ['Source/L/x.md :: a#1 :: k'] }]), true)
+test('#1739 : --suivre-diff est BLOQUÉ (rien écrit, sortie en échec) par une entrée orpheline — un titre rapporté ne bloque que si une entrée le keye', () => {
+  assert.equal(suiviBloque([{ orphelines: [] }]), false)
+  assert.equal(suiviBloque([{ orphelines: ['Source/L/x.md :: a#1 :: k'] }]), true)
+})
+
+test('#1739 : un titre RAPPORTÉ sans entrée keyée est listé « aucun stock keyé » et ne bloque pas ; keyé, son entrée orpheline BLOQUE (CRB 018, hunk ambigu)', () => {
+  const racine = 'Source/Livre forge'
+  const { carte, rapportees } = carteDesSlugs('09 - X.md', HEAD_EDITE, ARBRE_EDITE, carteDeLignes(hunksDe(DIFF_EDITE)))
+  const sans = [recalerStock([{ famille: 'br-litteral', fichier: `${racine}/09 - X.md`, ref: 'leaping#1 :: a|b', occurrence: 1 }], racine, carte, { portee: aUneCleDeSection })]
+  assert.equal(suiviBloque(sans), false)
+  assert.deepEqual(rapportees.map((r) => rapporteeEnLigne(r, racine, sans.flatMap((s) => s.orphelines))), ['09 - X.md :: alpha-beta#1 (l.8) — hunk ambigu, candidates l.7/8 — aucun stock keyé'])
+  const avec = [recalerStock([{ famille: 'br-litteral', fichier: `${racine}/09 - X.md`, ref: 'alpha-beta#1 :: a|b', occurrence: 1 }], racine, carte, { portee: aUneCleDeSection })]
+  assert.equal(suiviBloque(avec), true)
+  assert.deepEqual(rapportees.map((r) => rapporteeEnLigne(r, racine, avec.flatMap((s) => s.orphelines))), ['09 - X.md :: alpha-beta#1 (l.8) — hunk ambigu, candidates l.7/8'])
+  assert.equal(rapporteeEnLigne('10 - Y.md — absent de HEAD', racine, [`${racine}/10 - Y.md :: z#1 :: k`]), '10 - Y.md — absent de HEAD')
 })
 
 // Titres réparés (#1739, 3b-3b-2) : un titre DÉPLACÉ suit sa ligne neuve ; un titre NEUF scinde la
@@ -226,6 +237,6 @@ test('#1739 : une entrée keyée sur une section SCINDÉE est rapportée et BLOQ
   ]
   const sur = entreesScindees(entrees, racine, scindees)
   assert.deepEqual(sur, [`${racine}/036 - X.md :: melee#1 :: a|b  ← section scindée par aimed-shots#1 (l.168)`])
-  assert.equal(suiviBloque([], [], sur), true)
-  assert.equal(suiviBloque([], [], []), false)
+  assert.equal(suiviBloque([], sur), true)
+  assert.equal(suiviBloque([], []), false)
 })

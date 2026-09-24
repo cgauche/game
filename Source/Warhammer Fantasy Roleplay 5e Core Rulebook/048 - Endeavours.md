@@ -34,7 +34,7 @@ The spiritual philosophy known as *yenlui* is common to elven cultures. Masterin
 
 Because of this need to maintain a sense of spiritual and psychological balance, an elf Character must spend one of their Endeavours ensuring that they keep control of their psyches, using at least some of their time away from adventuring to meditate, pray, and attain a state of harmonious *yenlui*.
 
-The *High Elf Players Guide* gives more detailed information on maintaining *yenlui*, and what the consequences are of failing to keep it in balance. If using those rules, the elf Character does not need to spend one of their Endeavours on monitoring *yenlui*  — either they will be keeping it under control as a result of their behaviour, or suffering as a result of being imbalanced.
+The ***High Elf Players Guide*** gives more detailed information on maintaining *yenlui*, and what the consequences are of failing to keep it in balance. If using those rules, the elf Character does not need to spend one of their Endeavours on monitoring *yenlui*  — either they will be keeping it under control as a result of their behaviour, or suffering as a result of being imbalanced.
 
 # **Common Endeavours**
 
@@ -55,12 +55,12 @@ All the money remaining at the end of your 'Between Adventures' phase is lost be
 #### **Invest with Banking House**
 
 - Gold and Silver Status Characters only.
-- Determine risk and reward choose a number between 1 and 10 (or roll 1d10). This is the rate of interest you will accrue, and also how risky the investment is.
+- Determine risk and reward — choose a number between 1 and 10 (or roll 1d10). This is the rate of interest you will accrue, and also how risky the investment is.
 - Withdrawing funds requires another *Banking* Endeavour, either immediately after the initial Endeavour, or after subsequent adventures. Roll 1d100: if you roll equal to or less than the risk and reward number, the venture has failed and you have lost all of your money. If you roll over the interest rate, you receive your initial funds, plus the interest accrued.
 
 #### **Stash the Loot**
 
-- Hide/bury/give to someone for safekeeping a high risk option available to all Characters
+- Hide/bury/give to someone for safekeeping — a high risk option available to all Characters
 - Withdraw money from a stash before the start of an adventure without undertaking an Endeavour. Roll 1d100: if you roll 10 or lower, your stash has been found and you have lost all your money, otherwise you receive your initial funds. If you successfully withdraw your funds they are available for you when you start your next adventure, in addition to any funds secured via an *Income* Endeavour.
 
 **Example:** *Gerhard and Ulli's courage in the face of a horde of goblins (not to mention some judicious looting) has earned them a haul worth 10 gold crowns each. The ever-prudent Gerhard decides to place his money with the esteemed Fooger's Counting House in Marienburg. The GM rolls 1d10 with a result of 6. Gerhard will earn 6% interest on his deposit (12 silver shillings, see page 296), and the investment will fail if he rolls 6 or less on d100 when he tries to make a withdrawal.*
@@ -140,7 +140,7 @@ Once you have successfully fomented dissent, you may try to turn the mob against
 
 Most people resume their usual employment between bouts of adventuring. Bounty Hunters hunt bounties, Riverwardens ward rivers, Troll Slayers slay trolls — in the modern Empire, some even rely on a lucrative skill not featured in their job title. Wealthier Characters, such as Nobles and Merchants, might collect a stipend by (briefly) indulging their family, or collecting interest on their investments and business ventures. Roguish types have any number of means to acquire funds, though it's best not to ask for details.
 
-Take the *Income* Endeavour to represent your Character working in their chosen Career. Make an Average (+2 SL) Test using the *Earning Skill* listed in bold italics in the first Level of your Career. On a success, you earn income based on the **Status**  of your current Career Level, as shown below.
+Take the *Income* Endeavour to represent your Character working in their chosen Career. Make an Average (+2 SL) Test using the ***Earning Skill*** listed in bold italics in the first Level of your Career. On a success, you earn income based on the **Status**  of your current Career Level, as shown below.
 
 # **EARNED INCOME**
 
@@ -166,7 +166,7 @@ Inventing is a two-stage process: Plan and Build.
 
 **Build**: Complete the invention by undertaking either a *Crafting*  or *Commission* Endeavour.
 
-- Crafting: You build the invention yourself. You must possess the Skills required to create each component for example, combining Pigeons and Bombs requires Animal Training and Trade (Explosives). The Crafting Test is always Very Hard (–3 SL), modified by any bonus gained from the Plan stage. The raw materials cost twice the combined listed price of the Trappings and have an Availability equal to the rarest component.
+- Crafting: You build the invention yourself. You must possess the Skills required to create each component — for example, combining Pigeons and Bombs requires Animal Training and Trade (Explosives). The Crafting Test is always Very Hard (–3 SL), modified by any bonus gained from the Plan stage. The raw materials cost twice the combined listed price of the Trappings and have an Availability equal to the rarest component.
 - Commission: You hire someone else to build the invention. You may first need to undertake *Consult an Expert* to locate a suitable engineer. Resolve the *Commission* Endeavour as normal, except the work costs six times the combined listed price of the Trappings.
 
 The GM has the final say on the rules and capabilities of every invention.
