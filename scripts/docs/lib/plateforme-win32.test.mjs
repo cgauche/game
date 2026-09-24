@@ -146,6 +146,71 @@ test('rendu sous win32 : `process.cwd()` est en `C:\\` pour le code du dépôt, 
   }
 })
 
+/** Un dépôt jetable dont `src/entree.mjs` porte `source`, rendu sous win32 : ce qu'il imprime, parsé. */
+function vuDuDepot(source) {
+  const racine = realpathSync(mkdtempSync(path.join(tmpdir(), 'plateforme-win32-')))
+  try {
+    mkdirSync(path.join(racine, 'src'))
+    writeFileSync(path.join(racine, 'src', 'entree.mjs'), source)
+    return { racine, vu: JSON.parse(sousWin32(racine, [path.join(racine, 'src', 'entree.mjs')])) }
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+}
+
+test('rendu sous win32 : `path.posix` appelé du dépôt résout sur le cwd POSIX, comme `posixCwd` de node', () => {
+  const { racine, vu } = vuDuDepot(
+    [
+      "import path, { posix } from 'node:path'",
+      "import posixSeul from 'node:path/posix'",
+      "import win32Seul from 'node:path/win32'",
+      'console.log(JSON.stringify([',
+      "  path.posix.resolve('a'), posix.resolve('a'), posixSeul.resolve('a'), win32Seul.posix.resolve('a'),",
+      "  path.posix.relative('/', 'a'), posix.win32.resolve('a'), path.resolve('a'),",
+      ']))',
+      '',
+    ].join('\n'),
+  )
+  const posixA = path.posix.join(racine, 'a')
+  const windowsA = `C:${posixA.replaceAll('/', '\\')}`
+  assert.deepEqual(vu, [posixA, posixA, posixA, posixA, posixA.slice(1), windowsA, windowsA])
+})
+
+test('rendu sous win32 : le `cwd` d’un glob et le chemin d’`openAsBlob` en `C:\\` sont ramenés au disque', () => {
+  const { vu } = vuDuDepot(
+    [
+      "import fs from 'node:fs'",
+      "import path from 'node:path'",
+      "const src = path.join(process.cwd(), 'src')",
+      'const blob = await fs.openAsBlob(path.join(src, "entree.mjs"))',
+      'const asynchrone = []',
+      "for await (const f of fs.promises.glob('*.mjs', { cwd: src })) asynchrone.push(f)",
+      "const rappel = await new Promise((r, e) => fs.glob('*.mjs', { cwd: src }, (err, l) => (err ? e(err) : r(l))))",
+      "console.log(JSON.stringify([fs.globSync('*.mjs', { cwd: src }), asynchrone, rappel, blob.size > 0]))",
+      '',
+    ].join('\n'),
+  )
+  assert.deepEqual(vu, [['entree.mjs'], ['entree.mjs'], ['entree.mjs'], true])
+})
+
+test('rendu sous win32 : le PATH transmis à un enfant est ramené à la graphie de l’hôte, clé en toute casse, argv absent compris', () => {
+  const { racine, vu } = vuDuDepot(
+    [
+      "import { spawnSync } from 'node:child_process'",
+      "import path from 'node:path'",
+      "const bin = path.join(process.cwd(), 'node_modules', '.bin')",
+      "const lu = (env) => spawnSync(process.execPath, ['-e', 'process.stdout.write(process.env.Path ?? process.env.PATH)'], { env, encoding: 'utf8' }).stdout",
+      'console.log(JSON.stringify([',
+      "  lu({ Path: [bin, 'C:\\\\outils'].join(path.delimiter) }),",
+      "  lu({ PATH: '/usr/bin:/bin' }),",
+      "  spawnSync(process.execPath, undefined, { cwd: process.cwd(), input: 'process.stdout.write(process.cwd())', encoding: 'utf8' }).stdout,",
+      ']))',
+      '',
+    ].join('\n'),
+  )
+  assert.deepEqual(vu, [`${racine}/node_modules/.bin:/outils`, '/usr/bin:/bin', racine])
+})
+
 // Sur l'arbre réel, les deux modules de la simulation sont SOUS la racine : leurs enveloppes de `fs`
 // passent des chemins POSIX à l'hôte, qui résout le relatif par le cwd de l'hôte.
 test('rendu sous win32 : sur l’arbre réel, tsx (node_modules) trouve son `jsx` et `fs` résout le relatif sur le disque', () => {

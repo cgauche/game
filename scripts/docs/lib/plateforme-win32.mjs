@@ -7,12 +7,26 @@
 // (`plateforme-win32-hooks.mjs`), `process.cwd()` sous le lecteur `C:`. Le code de `node_modules`,
 // node lui-même et les enveloppes de ce module voient l'hôte, `process.cwd()` compris : leur `path`
 // est celui de l'hôte, et un cwd en `C:\` le rendrait incohérent (tsx ne trouvait plus
-// `tsconfig.json`, donc plus son `jsx` ; `realpathSync('.')` visait `C:\…`). Aucune
-// source ne lit le chemin du script dans `argv` (garde `src/point-d-entree-guard.test.ts`).
-// Ce qu'il touche : le disque POSIX — toute ENTRÉE de `fs` (chemins en argument) et de
-// `child_process` (exécutable, argv absolus, `cwd`) est ramenée en POSIX. La racine du dépôt rendu :
-// `WFRP_PLATEFORME_RACINE`, posée par `run()` comme la racine de l'enregistreur. Les SORTIES de `fs` et de
-// `child_process` restent celles de l'hôte.
+// `tsconfig.json`, donc plus son `jsx` ; `realpathSync('.')` visait `C:\…`). `path.posix` du dépôt
+// résout sur le cwd POSIX (`posixCwd`, lib/path.js de node). Aucune source ne lit le chemin du
+// script dans `argv` (garde `src/point-d-entree-guard.test.ts`).
+// Ce qu'il touche : le disque POSIX — les ENTRÉES de `fs` (chemins en argument, `cwd` de `glob`) et
+// de `child_process` (exécutable, argv absolus, `cwd`, PATH de `env`) sont ramenées en POSIX. La
+// racine du dépôt rendu : `WFRP_PLATEFORME_RACINE`, posée par `run()` comme la racine de
+// l'enregistreur.
+//
+// NON SIMULÉ — ce que le code du dépôt reçoit de l'hôte, et la garde qui le ferme quand il y en a une :
+//   · `import.meta.dirname`/`filename`, `require`/`createRequire`/`getBuiltinModule` de `path` ou
+//     `url` (hors hooks ESM) — garde `src/graphies-d-hote-guard.test.ts` ;
+//   · la casse des chemins — rien ;
+//   · locale et ICU (`localeCompare`, `Intl`) — rien ;
+//   · `os.EOL` — rien ;
+//   · `process.platform` — rien ;
+//   · le lancement d'un `.cmd` — rien ;
+//   · les sorties de git — rien ;
+//   · les SORTIES de `fs` et de `child_process` — rien ;
+//   · `process.env` tel que lu, PATH compris (joint par `:`) — rien ;
+//   · la chaîne de commande d'`exec`/`execSync`, passée telle quelle au shell de l'hôte — rien.
 import cp from 'node:child_process'
 import fs from 'node:fs'
 import { register, syncBuiltinESMExports } from 'node:module'
@@ -26,48 +40,61 @@ const ENTREES_FS = {
   readlink: 1, realpath: 1, rename: 2, rm: 1, rmdir: 1, stat: 1, statfs: 1, symlink: 2, truncate: 1,
   unlink: 1, utimes: 1, writeFile: 1,
 }
-const FLUX_FS = { createReadStream: 1, createWriteStream: 1, watch: 1, watchFile: 1, unwatchFile: 1 }
+/** Sans variante `Sync` ni `fs.promises`. */
+const SEULES_FS = { createReadStream: 1, createWriteStream: 1, openAsBlob: 1, watch: 1, watchFile: 1, unwatchFile: 1 }
+/** Nom → position de l'argument d'options qui porte un `cwd`. */
+const OPTIONS_FS = { glob: 1 }
+
+/** Entrée de PATH : chaque segment `;` ramené en POSIX, recollé par `:`. Un PATH POSIX passe tel quel. */
+const pathPosix = (valeur) => (typeof valeur === 'string' ? valeur.split(';').map(versPosix).join(':') : valeur)
+
+/** Options d'un appel : `cwd` et PATH de `env` (clé en toute casse) ramenés en POSIX. */
+function optionsPosix(options) {
+  if (!options || typeof options !== 'object') return options
+  const posix = { ...options }
+  if (typeof options.cwd === 'string') posix.cwd = versPosix(options.cwd)
+  if (options.env && typeof options.env === 'object') {
+    posix.env = { ...options.env }
+    for (const cle of Object.keys(posix.env)) if (cle.toUpperCase() === 'PATH') posix.env[cle] = pathPosix(posix.env[cle])
+  }
+  return posix
+}
 
 /** Propriétés d'une fonction de `fs` à porter sur son enveloppe (`realpathSync.native`, symboles). */
 const PROPRES_NON_PORTEES = new Set(['length', 'name', 'prototype', 'arguments', 'caller'])
 
-function envelopper(originale, nombre) {
+function envelopper(originale, nombre, positionOptions) {
   const enveloppe = function (...args) {
     for (let i = 0; i < nombre && i < args.length; i++) args[i] = versPosix(args[i])
+    if (positionOptions !== undefined && positionOptions < args.length) args[positionOptions] = optionsPosix(args[positionOptions])
     return originale.apply(this, args)
   }
   for (const cle of Reflect.ownKeys(originale)) {
     if (PROPRES_NON_PORTEES.has(cle)) continue
     const valeur = originale[cle]
-    enveloppe[cle] = cle === 'native' && typeof valeur === 'function' ? envelopper(valeur, nombre) : valeur
+    enveloppe[cle] = cle === 'native' && typeof valeur === 'function' ? envelopper(valeur, nombre, positionOptions) : valeur
   }
   return enveloppe
 }
 
-const envelopperSurPlace = (hote, nom, nombre) => {
-  if (typeof hote[nom] === 'function') hote[nom] = envelopper(hote[nom], nombre)
+const envelopperSurPlace = (hote, nom, nombre, positionOptions) => {
+  if (typeof hote[nom] === 'function') hote[nom] = envelopper(hote[nom], nombre, positionOptions)
 }
 
 for (const [nom, nombre] of Object.entries(ENTREES_FS)) {
-  envelopperSurPlace(fs, nom, nombre)
-  envelopperSurPlace(fs, `${nom}Sync`, nombre)
-  envelopperSurPlace(fs.promises, nom, nombre)
+  envelopperSurPlace(fs, nom, nombre, OPTIONS_FS[nom])
+  envelopperSurPlace(fs, `${nom}Sync`, nombre, OPTIONS_FS[nom])
+  envelopperSurPlace(fs.promises, nom, nombre, OPTIONS_FS[nom])
 }
-for (const [nom, nombre] of Object.entries(FLUX_FS)) envelopperSurPlace(fs, nom, nombre)
+for (const [nom, nombre] of Object.entries(SEULES_FS)) envelopperSurPlace(fs, nom, nombre)
 
 const argvPosix = (args) => args.map((a) => (estAbsoluWindows(a) ? versPosix(a) : a))
-const optionsPosix = (options) =>
-  options && typeof options === 'object' && typeof options.cwd === 'string'
-    ? { ...options, cwd: versPosix(options.cwd) }
-    : options
 
 for (const nom of ['spawn', 'spawnSync', 'execFile', 'execFileSync', 'fork']) {
   const originale = cp[nom]
   cp[nom] = function (fichier, args, options, ...reste) {
     const executable = estAbsoluWindows(fichier) ? versPosix(fichier) : fichier
-    return Array.isArray(args)
-      ? originale.call(this, executable, argvPosix(args), optionsPosix(options), ...reste)
-      : originale.call(this, executable, optionsPosix(args), options, ...reste)
+    return originale.call(this, executable, Array.isArray(args) ? argvPosix(args) : optionsPosix(args), optionsPosix(options), ...reste)
   }
 }
 for (const nom of ['exec', 'execSync']) {

@@ -1,6 +1,7 @@
 // Volet « hooks de modules » du rendu sous win32 (#1801) — enregistré par `plateforme-win32.mjs`.
-// Pour un module DU DÉPÔT (`estModuleDuDepot`), `node:path` se résout en `path.win32` et `node:url`
-// en un `fileURLToPath` qui rend la graphie Windows : c'est ce que ce code reçoit d'un hôte win32.
+// Pour un module DU DÉPÔT (`estModuleDuDepot`), `node:path` se résout en `path.win32` (son `posix`
+// sur le cwd POSIX) et `node:url` en un `fileURLToPath` qui rend la graphie Windows : c'est ce que ce
+// code reçoit d'un hôte win32.
 // Les modules de `node_modules` et node lui-même gardent leur `path` : ils ne sont pas jugés ici.
 // La RACINE du dépôt rendu est celle que `run()` donne au générateur (`initialize`).
 //
@@ -48,8 +49,29 @@ const moduleDeSource = (source) => `data:text/javascript,${encodeURIComponent(so
 const nomsExportes = (objet, redefinis = []) =>
   Object.keys(objet).filter((k) => !redefinis.includes(k) && /^[A-Za-z_$][\w$]*$/.test(k))
 
+// `posix` : ses fonctions sont appelées depuis CE module, hors du dépôt, donc sur le cwd de l'hôte —
+// celui que `posixCwd` (lib/path.js de node) tire du cwd win32.
 const PATH_WIN32 = moduleDeSource(
-  `import p from 'node:path'\nexport default p.win32\nexport const { ${nomsExportes(path.win32).join(', ')} } = p.win32\n`,
+  [
+    `import p from 'node:path'`,
+    'const posixSimule = Object.fromEntries(Object.entries(p.posix).map(([k, v]) => [k, typeof v === "function" ? (...a) => v(...a) : v]))',
+    'const win32Simule = { ...p.win32, posix: posixSimule }',
+    'win32Simule.win32 = win32Simule',
+    'posixSimule.win32 = win32Simule',
+    'posixSimule.posix = posixSimule',
+    'export default win32Simule',
+    `export const { ${nomsExportes(path.win32).join(', ')} } = win32Simule`,
+    '',
+  ].join('\n'),
+)
+
+const PATH_POSIX = moduleDeSource(
+  [
+    `import p from ${JSON.stringify(PATH_WIN32)}`,
+    'export default p.posix',
+    `export const { ${nomsExportes(path.posix).join(', ')} } = p.posix`,
+    '',
+  ].join('\n'),
 )
 
 const URL_WIN32 = moduleDeSource(
@@ -67,6 +89,10 @@ const URL_WIN32 = moduleDeSource(
 const REMPLACANTS = new Map([
   ['node:path', PATH_WIN32],
   ['path', PATH_WIN32],
+  ['node:path/win32', PATH_WIN32],
+  ['path/win32', PATH_WIN32],
+  ['node:path/posix', PATH_POSIX],
+  ['path/posix', PATH_POSIX],
   ['node:url', URL_WIN32],
   ['url', URL_WIN32],
 ])
