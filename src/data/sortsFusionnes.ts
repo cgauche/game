@@ -81,6 +81,10 @@ const CORRESPONDANCE: ReadonlyMap<string, string> = new Map(Object.entries(SORTS
 /** L'id qui désigne le sort `id` après ce lot : l'entrée absorbante d'un id fusionné, sinon `id`. */
 export const idDeSortVivant = (id: string): string => CORRESPONDANCE.get(id) ?? id;
 
+/** Une liste d'ids de sort après ce lot : chaque id par `idDeSortVivant`, dédoublonnée, ordre gardé
+ *  (deux fusionnés vers le même sort n'en font qu'un). */
+export const listeDeSortsVivants = (ids: readonly string[]): string[] => [...new Set(ids.map(idDeSortVivant))];
+
 /** Clés dont la valeur est une LISTE d'ids de sort : `spells` (profil de créature, statbloc, combat de
  *  scène, héros), `spellIds` (portée d'un modificateur de NI), `componentSpells` (`Combatant`). */
 const LISTES_DE_SORTS = new Set(['spells', 'spellIds', 'componentSpells']);
@@ -97,7 +101,7 @@ const estListeDeChaines = (v: unknown): v is string[] => Array.isArray(v) && v.e
 
 /** La valeur `v` de la clé `k`, réécrite si c'est une place d'id de sort ; `undefined` sinon. */
 function placeDeSort(k: string, v: unknown): unknown {
-  if (LISTES_DE_SORTS.has(k) && estListeDeChaines(v)) return [...new Set(v.map(idDeSortVivant))];
+  if (LISTES_DE_SORTS.has(k) && estListeDeChaines(v)) return listeDeSortsVivants(v);
   if (SCALAIRES_DE_SORT.has(k) && typeof v === 'string') return idDeSortVivant(v);
   if (k === CLE_DE_CASE && typeof v === 'string' && v.startsWith(PREFIXE_DE_CASE_DE_SORT)) {
     return PREFIXE_DE_CASE_DE_SORT + idDeSortVivant(v.slice(PREFIXE_DE_CASE_DE_SORT.length));
@@ -108,8 +112,8 @@ function placeDeSort(k: string, v: unknown): unknown {
 /**
  * Réécrit récursivement tout id FUSIONNÉ d'un document persisté (héros, projet) vers l'id qui l'a
  * absorbé, aux seules places de référence de sort, reconnues par leur FORME : une liste de chaînes sous
- * `LISTES_DE_SORTS` (dédoublonnée, ordre gardé : deux fusionnés vers le même sort n'en font qu'un), une
- * chaîne sous `SCALAIRES_DE_SORT`, la clé d'une case de console au préfixe de sort. Toute autre chaîne
+ * `LISTES_DE_SORTS` (`listeDeSortsVivants`), une chaîne sous `SCALAIRES_DE_SORT`, la clé d'une case de
+ * console au préfixe de sort. Toute autre chaîne
  * traverse INTACTE (`belier` reste une qualité). IDEMPOTENT : un id vivant n'est jamais une clé de
  * `SORTS_FUSIONNES_1897`.
  */

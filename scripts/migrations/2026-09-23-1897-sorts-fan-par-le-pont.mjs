@@ -13,7 +13,7 @@
  *  2. ENTRÉES FAN NEUVES (`NEUVES` ci-dessous) : sorts imprimés sans entrée ; `desc` = la colonne Effet
  *     de la cellule citée, VERBATIM (seul `<br>` devient une espace).
  *  3. LISTES DÉRIVÉES : `spells` de chaque créature fan jointe = `listesDerivees` du pont
- *     (`scripts/data/lib/pontSortsFan.ts`) ; toute autre créature voit ses ids fusionnés remplacés.
+ *     (`scripts/data/lib/pontSortsFan.ts`) ; toute autre créature passe par `listeDeSortsVivants`.
  *
  * Entrées : `src/data/spells.json` et `src/data/creatures.json` (écrits), `src/data/books.json`
  * (registre des livres, via `scripts/raw/_lib.mjs`), le dossier d'extraction
@@ -28,7 +28,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SORTS_FUSIONNES_1897 } from '../../src/data/sortsFusionnes.ts';
+import { SORTS_FUSIONNES_1897, listeDeSortsVivants } from '../../src/data/sortsFusionnes.ts';
 import { cellulesDeSortsFan, normCellule, LIVRE_FAN } from '../data/lib/cellulesDeSortsFan.ts';
 import { ligneDeCellule, listesDerivees } from '../data/lib/pontSortsFan.ts';
 
@@ -41,27 +41,40 @@ const NOM = path.basename(fileURLToPath(import.meta.url));
  *  rangée dont la colonne Effet devient `desc` et dont le pied de page devient `source.page`. */
 const NEUVES = [
   {
-    cellule: '56 - Clan Skryre.md:145',
-    entree: { id: 'bouclier-ruine', type: 'spells', label: 'Bouclier', ecole: 'du Domaine de la Ruine', subType: null, cn: 6, range: { kind: 'self' }, target: { kind: 'self' }, duration: { kind: 'rounds', value: 2, plus: true } },
-    effects: { kind: 'seq', steps: [
-      { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'ap', amount: 10 }] } },
-      { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'narrative', text: 'Bouclier : un adversaire qui attaque le sorcier à mains nues ou avec une arme métallique encaisse 7 Points de Dégâts (pas de PA d’armure métallique).' }] } },
-    ] },
-    fin: { family: 'arcane' },
-  },
-  {
     cellule: '71 - Necromanciens.md:260',
-    entree: { id: 'invocation-d-un-colosses-necrofex', type: 'spells', label: 'Invocation d’un Colosses Necrofex', ecole: 'Magie des Arcanes & de Nécromancie', subType: null, cn: 180, range: { kind: 'distance', value: 70, unit: 'm' }, target: { kind: 'special', text: '1 Cimetière / Charnier / Champ de Bataille' }, duration: { kind: 'special', text: 'jusqu’à l’aube suivante' } },
+    entree: { id: 'invocation-d-un-colosses-necrofex', type: 'spells', label: 'Invocation d’un Colosses Necrofex', ecole: 'Magie des Arcanes & de Nécromancie', subType: null, cn: 180, range: { kind: 'distance', value: 70, unit: 'm' }, target: { kind: 'special', text: '1 Cimetère / Charnier / Champ de Bataille' }, duration: { kind: 'special', text: 'jusqu’à l’aube suivante' } },
     fin: { family: 'arcane' },
   },
   {
     cellule: '71 - Necromanciens.md:259',
     entree: { id: 'invitation-a-la-danse-macabre-de-vanhel', type: 'spells', label: 'Invitation à la Danse Macabre de Vanhel', ecole: 'Magie des Arcanes & de Nécromancie', subType: null, cn: 14, range: { kind: 'self' }, target: { kind: 'area', span: 'diameter', meters: 700 }, duration: { kind: 'special', text: 'jusqu’à l’aube suivante' } },
+    effects: { kind: 'seq', steps: [
+      { kind: 'do', effect: { type: 'ops', on: 'caster', ops: [
+        { op: 'narrative', text: 'Tous les corps décédés dans la zone se dressent s’ils n’ont pas été correctement enterrés et bénis.' },
+        { op: 'narrative', text: 'Pour chaque rayon de 100 mètres, le mage gagne 1 Point de Corruption.' },
+        { op: 'narrative', text: 'Si le mage est tué ou inconscient, les morts s’écroulent.' },
+      ] } },
+    ] },
     fin: { family: 'arcane' },
   },
   {
     cellule: '50 - Demons de Nurgle.md:217',
     entree: { id: 'putrefaction-2', type: 'spells', label: 'Putréfaction', ecole: 'Magie des Arcanes', subType: null, cn: 8, range: { kind: 'distance', value: 85, unit: 'm' }, target: { kind: 'area', span: 'diameter', meters: 8 }, duration: { kind: 'instant' } },
+    effects: { kind: 'seq', steps: [
+      { kind: 'do', effect: { type: 'ops', on: 'caster', ops: [
+        { op: 'narrative', text: 'Le démon fait pourrir ou tourner toute la nourriture et toutes les boissons dans la zone d’effet.' },
+        { op: 'narrative', text: 'Toute créature qui consomme ces aliments attrape automatiquement une Foirade (_Galloping_ _Trots_).' },
+      ] } },
+    ] },
+    fin: { family: 'arcane' },
+  },
+  {
+    cellule: '56 - Clan Skryre.md:145',
+    entree: { id: 'bouclier-ruine', type: 'spells', label: 'Bouclier', ecole: 'du Domaine de la Ruine', subType: null, cn: 6, range: { kind: 'self' }, target: { kind: 'self' }, duration: { kind: 'rounds', value: 2, plus: true } },
+    effects: { kind: 'seq', steps: [
+      { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'ap', amount: 10 }] } },
+      { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'narrative', text: 'Si un adversaire attaque à mains nues ou avec une arme métallique, il encaisse 7 Points de Dégâts à cause des interférences (pas de PA d’armure métallique).' }] } },
+    ] },
     fin: { family: 'arcane' },
   },
 ];
@@ -138,7 +151,7 @@ for (const e of neuves) if (!parId.has(e.id)) { docSorts.push(e); parId.set(e.id
 for (const c of creatures.doc) {
   if (!Array.isArray(c.spells)) continue;
   const derivee = c.source?.book === LIVRE_FAN ? parCreature.get(c.id)?.spells : undefined;
-  const cible = derivee ?? c.spells.map((id) => SORTS_FUSIONNES_1897[id] ?? id);
+  const cible = derivee ?? listeDeSortsVivants(c.spells);
   if (JSON.stringify(cible) !== JSON.stringify(c.spells)) { c.spells = [...cible]; changes++; }
 }
 

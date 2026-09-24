@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { sitesNarratifs, FICHIER_DES_SORTS } from '../../scripts/data/lib/sortsNarratifs';
-import { SPELL_NARRATIF_STOCK } from '../../scripts/guards/lib/spellNarratifStock.mjs';
+import { sitesNarratifs, sitesNarratifsParaphrases, FICHIER_DES_SORTS } from '../../scripts/data/lib/sortsNarratifs';
+import { SPELL_NARRATIF_PARAPHRASE_STOCK, SPELL_NARRATIF_STOCK } from '../../scripts/guards/lib/spellNarratifStock.mjs';
 import { ecartDuVolet, remedeNomme } from '../../scripts/guards/lib/stock.mjs';
 
 /**
@@ -40,5 +40,25 @@ describe('cliquet — tout sort NARRATIF est au stock, toute entrée du stock es
     const ecart = ecartDuVolet({ sites, stock: substitue, ou: STOCK });
     expect(remedeNomme(ecart.neuves, ` :: ${SPELL_NARRATIF_STOCK[0].ref} :: `), 'la découverte doit ressortir NEUVE').toBe(true);
     expect(remedeNomme(ecart.perimees, ' :: sort-qui-n-existe-pas :: 1'), "l'entrée bidon doit ressortir SOLDÉE").toBe(true);
+  });
+});
+
+describe('cliquet — une op `narrative` recopie sa `desc` VERBATIM (règle 5 de `CLAUDE.md`)', () => {
+  const sites = sitesNarratifsParaphrases();
+  const { neuves, perimees } = ecartDuVolet({ sites, stock: SPELL_NARRATIF_PARAPHRASE_STOCK, ou: STOCK });
+  console.info(`ops narrative paraphrasées mesurées : ${sites.length} · stock : ${SPELL_NARRATIF_PARAPHRASE_STOCK.length}`);
+
+  it('aucune paraphrase NEUVE hors du stock — recopier la `desc`, jamais la reformuler', () => {
+    expect(neuves, `op(s) \`narrative\` hors stock dont le \`text\` n'est pas dans la \`desc\` :\n${neuves.join('\n')}`).toEqual([]);
+  });
+
+  it('le stock ne peut que DÉCROÎTRE — toute op redevenue verbatim en sort', () => {
+    expect(perimees, `entrée(s) du stock soldées — retirer leur ligne (ou :\n` +
+      `npx tsx scripts/data/regen-spell-narratif-stock.mts) :\n${perimees.join('\n')}`).toEqual([]);
+  });
+
+  it('la mesure MORD : `putrefaction` (paraphrase) est vue, `bouclier-ceruleen` (verbatim) ne l’est pas', () => {
+    expect(sites.some((s) => s.ref === 'bouclier-ceruleen'), 'bouclier-ceruleen recopie sa desc : il ne doit pas être mesuré').toBe(false);
+    expect(sites.some((s) => s.ref === 'putrefaction'), 'putrefaction paraphrase sa desc : la mesure doit le voir').toBe(true);
   });
 });

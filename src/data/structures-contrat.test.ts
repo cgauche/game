@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   classerValeur,
+  listerDocuments,
   mesurerEnveloppe,
   scanDuCorpus,
   scannerDonnees,
@@ -1669,52 +1670,19 @@ describe('l’enveloppe : ce qu’un document doit porter (contrats positifs)', 
   });
 
   it('§5 : les Conditions retirées du compte d’ops sont celles qui PORTAIENT un `op`', () => {
-    // #862 : +3 ops authorées (re-ciblage `[removeTrait, grantTrait]` de Haine sporadique, État Exténué
-    // du réveil du Désespoir).
-    // #674 : +2 ops authorées (`aggravateSymptom` + son échelon `grantSymptom`, cycle quotidien de la
-    // Pneumonie, EDOC 08 l.104-108).
-    // #1657 B2a : +70 ops authorées — la colonne « Blessures » d'Aux Armes (AA 07 l.40) était
-    // construite en TypeScript (`{op:'wounds', amount}` fabriqué au vol par l'ancien lecteur AA) ;
-    // elle descend en DONNÉE avec sa mitigation écrite. 70 rangées la portent (les 6 autres valent
-    // « T » et ne posent aucune op).
-    // #1657 B3-2b-a : +6 ops authorées — les 6 rangées MDG dont le Test ne vivait qu'en prose `note`
-    // (MDG 13 l.730/734/736/738/751/756) posent chacune l'État À Terre de leur échec ; le coup certain
-    // du Gouvernail fluvial (MSRC 07 l.86) troque son `shrapnel: 1` contre une op `wounds`, à somme
-    // nulle sur ce compte (l'op naît, l'Indice n'en était pas une).
-    // #1657 B3-2b-c : +5 ops `fall` (MDG 13 l.678-688) — les 5 rangées du gréement font TOMBER, et la
-    // hauteur se lit dans la table par (Taille de coque × station), jamais authorée au site.
-    // #1653 train A : +1 op authorée — la CAUSE récurrente de « Purifier la chair » (LDB 40 l.75) est une
-    // seconde op `condition` de la même rangée, pas un champ de plus sur la première.
-    // #1661 : +1 op authorée — le 2ᵉ État Hémorragique de Taillade (`AA 08 l.87`), MÊME op `condition`
-    // que l'État automatique du Critique, portée par la branche `yes` du choix.
-    // #1599 : +2 ops authorées — les États PORTÉS par un canal passif s'écrivent en DONNÉE : l'État
-    // *Inconscient* du palier Grave de la Fièvre (LDB 20 l.170) et l'État *Exténué* du Malaise (l.188),
-    // qui cessent d'être des drapeaux nommés dans le moteur. Le palier S'AJOUTANT à `passive` au lieu de
-    // le remplacer, aucune pénalité n'est recopiée : les 6 charMod de `severePassive` se DÉPLACENT vers
-    // `passiveBySeverity.moderee`, le total ne les compte pas deux fois.
-    // #1612 (2026-09-06) : 2272 → 2279 — +7 objets à `op`, tous posés par Mendier et sa table MAISON.
-    // Côté `activities.json` : 2 `money` (le gain horaire, le sou de consolation), 1 `rollTable` (la
-    // bande d'Échec Stupéfiant renvoie aux ennuis), 1 `statusMod` (« surpris à mendier », `l.99`).
-    // Côté `tables.json` : 1 `money` (l'AMENDE des gardes locaux — `LDB 09 l.97` nomme l'ennui sans le
-    // chiffrer, le montant vit en règle optionnelle `mendier-amende-sous`), 1 `condition` et 1 `wounds`
-    // (la rançon des autres mendiants).
-    // #1678 (2026-09-20) : 2279 → 2280 — le verrou de TYPE d'À Terre (`LDB 18 l.15`) descend en DONNÉE
-    // (`etats.json › lockedUntil`) : c'est un `compare`, et son `op` compte ici.
-    // #1897 (2026-09-23) : 2280 → 2281 — le Bouclier skaven (`frenchy.bzh 56` l.145) naît avec 1 `ap` et
-    // 1 `narrative` ; « Projectile Mineur » fusionne dans Fléchette et emporte son `wounds`.
-    expect(scan.totalConditionsAvecOp + scan.totalOps, 'objets portant un `op` = ops de jeu + Conditions à `op`.').toBe(2281);
-    // #684 L4+solde : +2 Conditions sans `op` — le MÊME drapeau de révélation d'Altdorf porté par ses
-    // deux axes sur la carte du chapitre 1 : le `when` du LIEU et le `when` de la ROUTE.
-    // #717 : +1 Condition sans `op` — le `when` de la CLÔTURE du chapitre 1 (`narratif.cloture`), le
-    // MÊME drapeau de révélation d'Altdorf que les deux axes de carte ci-dessus, sur un troisième
-    // porteur : le fait de donnée qui dit « le chapitre se ferme ».
-    // #684+#717 sur « La Barge du Sel » : +3 Conditions sans `op` — les MÊMES trois porteurs, un
-    // chapitre plus loin (le `when` du LIEU de l'îlot et celui de sa ROUTE, sur le drapeau du cap ;
-    // le `when` de la CLÔTURE, sur le drapeau d'accostage).
-    // #1612 (2026-09-06) : +3 Conditions sans `op` — celles de l'Activité Mendier : le `when`
-    // `visiblePassive` de son modificateur d'apparence, et les DEUX nœuds de l'exemption de son dé de
-    // monde (`not` + le `status` qu'il enveloppe, `LDB 09 l.99`).
-    expect(scan.totalConditionsSansOp, 'des Conditions sans `op` n’ont jamais été comptées en op : elles ne se « retirent » pas.').toBe(194);
+    let objetsAOp = 0;
+    const marche = (v: unknown): void => {
+      if (Array.isArray(v)) { v.forEach(marche); return; }
+      if (!v || typeof v !== 'object') return;
+      if (typeof (v as { op?: unknown }).op === 'string') objetsAOp += 1;
+      Object.values(v).forEach(marche);
+    };
+    for (const d of listerDocuments(ROOT)) marche(JSON.parse(readFileSync(join(ROOT, d.chemin), 'utf8')));
+    expect(objetsAOp, 'la marche brute ne voit aucun `op` : l’égalité ci-dessous ne mesurerait rien.').toBeGreaterThan(0);
+    expect(
+      scan.totalConditionsAvecOp + scan.totalOps,
+      'ops de jeu + Conditions à `op` = objets portant un `op` chaîne (marche brute des documents du scan) : une Condition sans `op` comptée en op, ou un `op` qui échappe aux deux, rompt l’égalité.',
+    ).toBe(objetsAOp);
   });
 });
 

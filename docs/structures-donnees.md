@@ -1155,7 +1155,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **884** (cible 417 · declaree 6 · historique 131 · divergente 330). Objets JSON parcourus : **48931**, dont **31738** portent une forme
+Lignes concept × dataset × champ × forme : **884** (cible 417 · declaree 6 · historique 131 · divergente 330). Objets JSON parcourus : **48941**, dont **31738** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **87**.
 
 Entrées de racine sans concept de valeur : **4089** sur **4176** —
@@ -2413,7 +2413,7 @@ sont le narratif irréductible que la forme `text` DÉCLARE (#1463, #624).
 | Signature de l’objet | Occurrences | Résolvables |
 |---|---|---|
 | `text` | 577 | — |
-| `op,text` | 508 | — |
+| `op,text` | 514 | — |
 | `kind,text` | 193 | — |
 | `count,text` | 26 | — |
 | `kind,plus,text` | 4 | — |
@@ -2533,7 +2533,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13319** objets sur **48931** ne sont portés par AUCUNE
+Au-delà des orphelines, **13329** objets sur **48941** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -2548,12 +2548,12 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | Dataset | Champ | Signature | Occurrences |
 |---|---|---|---|
 | `diligence-projet.json` | `tiles` | `x,y` | 673 |
-| `spells.json` | `effect` | `on,ops,type` | 552 |
+| `spells.json` | `effect` | `on,ops,type` | 554 |
 | `spells.json` | `effects` | `kind,steps` | 531 |
 | `creatures.json` | `char` | `B,M,agilite,capacite-de-combat,capacite-de-tir,dexterite,endurance,force,force-mentale,initiative,intelligence,sociabilite` | 488 |
-| `spells.json` | `steps` | `effect,kind` | 476 |
+| `spells.json` | `steps` | `effect,kind` | 478 |
 | `arene-projet.json` | `pos` | `x,y` | 446 |
-| `spells.json` | `ops` | `op,text` | 379 |
+| `spells.json` | `ops` | `op,text` | 385 |
 | `progression-schemas.derived.json` | `1` | `characteristic,col,mark,x` | 333 |
 | `diligence-projet.json` | `edges` | `side,x,y` | 305 |
 | `props.json` | `center` | `hM,xM,yM` | 297 |
@@ -3820,11 +3820,11 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 ## 5. Ops en donnée (strate Ops)
 
 `gameOpSchema` est un `looseObject` (`src/data/schemas/grammaire/mecanique.ts`) : seul `op` est contraint.
-Mesure : **2281** objets portent un `op` = **2222** ops de jeu + **59**
+Mesure : **2287** objets portent un `op` = **2228** ops de jeu + **59**
 Conditions dont l’`op` est un COMPARATEUR (`kind` reconnu par `conditionSchema`, kinds lus par AST).
 **253** Conditions au total, dont **194** sans `op` :
 celles-là n’ont jamais été comptées en op — le retrait des Conditions du compte d’ops vaut
-2281 → 2222, jamais 2281 → 2028.
+2287 → 2228, jamais 2287 → 2034.
 Noms d’op distincts : **106**, signatures distinctes : **238**.
 
 | `kind` de Condition | Avec `op` | Sans `op` |
@@ -4135,7 +4135,7 @@ union discriminée générée d’`OP_DEFS`, à refs EMBOÎTÉES (`skill: {id, s
 | `moveScale` | `den,durationRounds,num,op` | `criticals.json` | 1 | — |
 | `moveScale` | `den,num,op` | `naval-traits.json` | 1 | — |
 | `moveScale` | `den,num,op` | `trappings.json` | 1 | — |
-| `narrative` | `op,text` | `spells.json` | 379 | — |
+| `narrative` | `op,text` | `spells.json` | 385 | — |
 | `narrative` | `op,text` | `tables.json` | 119 | — |
 | `narrative` | `op,text` | `trappings.json` | 10 | — |
 | `noBreath` | `op` | `spells.json` | 5 | — |
@@ -5126,4 +5126,4 @@ pèse **2990** slots sur 3470.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: c836875c208305be90fa49250622f9e52c28440e (388 fichiers, 10 dossiers) corps: 31811272d3aa9b35081bc8ee33ac100750635104 -->
+<!-- sources-empreinte: 9839a916ef3bc44bdd46ab1bf98e14a1b8011f4c (388 fichiers, 10 dossiers) corps: b40fc2b9fcf18f5306b3e1fe199fcd64e328a757 -->

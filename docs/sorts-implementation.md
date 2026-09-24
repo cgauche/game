@@ -8,7 +8,7 @@
 **Périmètre mesuré / angles morts** — la classification (État/Curé/Reste) lit `s.effects` (le `Flow` authoré) via `spellOps(s.effects, on)`, appelé seulement pour `on: 'target'` et `on: 'caster'`. `EffectOp.on` admet aussi `'party'` et `'hero'` (`src/engine/flowCore.ts`) : un effet authoré sur ces deux cibles est invisible ici — ni compté dans État/Curé, ni listé dans « Reste à mécaniser ». Mesuré sur `src/data/spells.json` : 0 occurrence de `party`/`hero` aujourd'hui (angle mort inerte). Second angle mort, DISTINCT : `spellOps` ne descend jamais dans les `Flow` imbriqués d'un `GameOp.onHitEffects` (`augmentWeapon`/`grantWeapon`, ex. Serres d'ambre → « En flammes » à la touche) — ces ops ciblent la victime touchée via `TriggeredEffect.on: 'victim'` (un champ DIFFÉRENT d'`EffectOp.on`, cf. `EffectTargeting`). Mesuré : 5 sorts / 6 occurrences (`serres-d-ambre`, `l-epee-ardente-de-rhuin`, `marteau-ardent-de-sigmar`, `morsure-de-l-hiver`, `epee-de-justice`) — mais chacun porte déjà un autre op non-narratif au premier niveau (`augmentWeapon`/`grantWeapon`), donc la classification affichée n'est PAS sous-évaluée par ce trou aujourd'hui ; seul le détail « Reste à mécaniser » de ces 5 lignes est incomplet. Troisième angle mort : la mesure est STRUCTURELLE (le `Flow` authoré existe), pas une preuve d'exécution — une op comptée « mécanique » ici peut rester « inerte au switch » d'`applyOps` (cf. `docs/vocabulaire-mecanique.md`).
 
 ## Bénédiction (1)
-**Synthèse** : 526 sorts — ✅ 92 mécaniques · 🟡 212 partiels · 📜 222 narratifs (arbitrage MJ) · 438 specs curées.
+**Synthèse** : 526 sorts — ✅ 92 mécaniques · 🟡 178 partiels · 📜 256 narratifs (arbitrage MJ) · 438 specs curées.
 
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
@@ -43,7 +43,7 @@
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
-| Brume Acide | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Brume Acide | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Contamination | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Immuno - Déficience | 📜 | repli | Non curé : desc journalisée telle quelle. |
 
@@ -51,13 +51,13 @@
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
-| Bouclier | 🟡 | repli | Bouclier : un adversaire qui attaque le sorcier à mains nues ou avec une arme métallique encaisse 7 Points de Dégâts (pas de PA d’armure métallique). |
+| Bouclier | 🟡 | repli | Si un adversaire attaque à mains nues ou avec une arme métallique, il encaisse 7 Points de Dégâts à cause des interférences (pas de PA d’armure métallique). |
 | Crépitement Funeste | ✅ | repli |  |
-| Crevasse | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Crevasse | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Dépeçage | 🟡 | repli | Non curé : desc journalisée telle quelle. |
 | Flamme Verdâtre | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Hébètement | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Rafale Hurlante | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Rafale Hurlante | 📜 | repli | Non curé : desc journalisée telle quelle. |
 
 ## du Domaine des Ombres (9)
 
@@ -120,8 +120,8 @@
 | Commander la Légion | 📜 | oui | Commander la Légion : un ordre à un allié à vue ; votre prochain Test de Commandement lié bénéficie de +10 — arbitrage MJ. |
 | Connais Ton Ennemi | 📜 | oui | Connais Ton Ennemi : profil, Traits, Compétences et Talents d’un ennemi à portée sont révélés (panneau d’inspection). |
 | Dévotion de la Vierge Guerrière | 🟡 | oui | Dévotion de la Vierge Guerrière : +1 rang Sans peur visant un ennemi précis (individu ou espèce) — arbitrage MJ. |
-| En Bon Ordre | 🟡 | oui | En Bon Ordre : les cibles retenues peuvent rompre le combat (Fuite) sans céder d’Avantage ni subir d’attaque gratuite — dispense de Fuite non modélisée. |
-| En Terrain Dangereux | 🟡 | oui | En Terrain Dangereux : les cibles retenues ne reçoivent pas l’État Brisé tant que le Miracle est actif — immunité à l’État Brisé non modélisée. |
+| En Bon Ordre | 📜 | oui | En Bon Ordre : les cibles retenues peuvent rompre le combat (Fuite) sans céder d’Avantage ni subir d’attaque gratuite — dispense de Fuite non modélisée. |
+| En Terrain Dangereux | 📜 | oui | En Terrain Dangereux : les cibles retenues ne reçoivent pas l’État Brisé tant que le Miracle est actif — immunité à l’État Brisé non modélisée. |
 | Frappe Rapide | 📜 | oui | Frappe Rapide : au début de chaque Round, un Test d’Initiative Intermédiaire (+0) réussi octroie une attaque gratuite immédiate (main principale) — arbitrage MJ. |
 | Fureur Vengeresse | 📜 | oui | Fureur Vengeresse : vous devez Charger l’ennemi impénitent le plus proche et pouvez relancer tous vos jets de Corps à corps tant que le Miracle est actif — arbitrage MJ. |
 | Inspirant | 🟡 | oui | Inspirant : +1 Talent Coude-à-coude (bonus de surnombre coopératif) — arbitrage MJ si non câblé. |
@@ -225,7 +225,7 @@
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
 | Agressivité de la Maresang | ✅ | oui |  |
-| Algues Cruelles | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Algues Cruelles | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Argile fertile | 📜 | oui | Argile fertile : pendant la Durée du Sort, la bête des marais se régénère du double de Points de Blessures qu'elle devrait normalement obtenir — doublement d'une Régénération non modélisé, arbitrage MJ. |
 | Arme aethyrique | ✅ | oui |  |
 | Armure Aethyrique | ✅ | oui |  |
@@ -234,14 +234,14 @@
 | Berceuse Soporifique UA II | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Bouclier anti-flèches | ✅ | oui |  |
 | Bouclier magique | 📜 | oui | Bouclier magique : +BFM DR à vos tentatives de Dissipation tant que le Sort est actif (la Dissipation n’est pas encore modélisée). |
-| Cacophonie Scabreuse | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Cacophonie Scabreuse | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Carreau | ✅ | oui |  |
 | Chute | 📜 | oui | Chute : l’objet tenu tombe (arme au sol — arbitrage MJ). |
 | Crue Mortelle | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Décharge Cérébrale | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Décrypter une malédiction | 🟡 | oui | Décrypter une malédiction : l'objet révèle s'il est maudit, le détail de ses bienfaits et méfaits, et la manière dont la malédiction se déclenche ; même décryptée elle reste active, seul le Rituel Lever une malédiction l'élimine — révélation des propriétés d'un objet non modélisée, arbitrage MJ. |
 | Déplacement d'objet | 📜 | oui | Déplacement d’objet : déplace un objet inanimé (Force = votre FM) de BFM mètres. |
-| Désarroi | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Désarroi | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Dôme | ✅ | oui |  |
 | Duplicité de Tzeentch | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Effondrement de Fabriqué | 📜 | oui | Effondrement de Fabriqué : les énergies magiques qui maintiennent le Fabriqué en bloc se défont, il devient inerte et sans vie — mise hors service d'un Fabriqué non modélisée, arbitrage MJ. |
@@ -249,7 +249,7 @@
 | Enchevêtrement | ✅ | oui |  |
 | Envol | ✅ | oui |  |
 | Explosion | ✅ | oui |  |
-| Fêlure AEthyrique | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Fêlure AEthyrique | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Haleine Fétide | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Langue Acérée | ✅ | repli |  |
 | Maîtrise du Destin | 📜 | repli | Non curé : desc journalisée telle quelle. |
@@ -257,20 +257,20 @@
 | Perturbant | ✅ | oui |  |
 | Perturber la Magie | 📜 | oui | Perturber la Magie : le Sort ou le Rituel que la cible focalisait échoue et elle subit une Incantation Imparfaite Mineure — interruption d'une incantation adverse non modélisée, arbitrage MJ. |
 | Pierre de Souffrance | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Pont | 🟡 | oui | Pont : pont d’énergie de BFM mètres (long./larg.), +BFM mètres par +2 DR (arbitrage MJ). |
+| Pont | 📜 | oui | Pont : pont d’énergie de BFM mètres (long./larg.), +BFM mètres par +2 DR (arbitrage MJ). |
 | Poussée | ✅ | oui |  |
 | Protection | ✅ | oui |  |
-| Putréfaction | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Putréfaction | 📜 | repli | Le démon fait pourrir ou tourner toute la nourriture et toutes les boissons dans la zone d’effet. Toute créature qui consomme ces aliments attrape automatiquement une Foirade (_Galloping_ _Trots_). |
 | Rejeton de Slaanesh | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Sang corrosif | ✅ | oui |  |
 | Secourir un serviteur magique | ✅ | oui |  |
-| Secousse Tellurique | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Secousse Tellurique | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Silence | 🟡 | oui | Silence : aucun bruit ne traverse la zone, on n'y entend aucun son et les personnes situées en dehors n'en perçoivent rien ; l'incantation menée à l'intérieur subit une pénalité de −3 DR — propagation du son et pénalité de DR portée par une zone non modélisées, arbitrage MJ. |
 | Souffle | ✅ | oui |  |
 | Téléportation | ✅ | oui |  |
 | Terrifiant | ✅ | oui |  |
 | Trouble | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Vague Scélérate | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Vague Scélérate | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Varech avarié | ✅ | oui |  |
 | Vision dans l'obscurité | ✅ | oui |  |
 
@@ -282,7 +282,7 @@
 | Armure d’AEthyr | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Forme Spectrale | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Frénésie Artificielle | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Invitation à la Danse Macabre de Vanhel | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Invitation à la Danse Macabre de Vanhel | 📜 | repli | Tous les corps décédés dans la zone se dressent s’ils n’ont pas été correctement enterrés et bénis. Pour chaque rayon de 100 mètres, le mage gagne 1 Point de Corruption. Si le mage est tué ou inconscient, les morts s’écroulent. |
 | Invocation d’un Colosses Necrofex | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Mouchard | 📜 | repli | Non curé : desc journalisée telle quelle. |
 
@@ -345,11 +345,11 @@
 | Arc de T'Essla | ✅ | oui |  |
 | Arche de saphir | 📜 | oui | Arche de saphir : l'arche de 4 mètres de largeur et 3 mètres de hauteur envoie tout objet ou créature qui passe dessous dans les limbes d'une autre dimension, d'où ils ressortent à votre prochaine incantation du Sort sans avoir vu le temps passer ; si vous êtes tué avant, les occupants reviennent à leur emplacement initial avec 1 État Sonné et 1 État À Terre — mise en limbes extra-dimensionnelle non modélisée, arbitrage MJ. |
 | Bienfait de Bel Shanaar | ✅ | oui |  |
-| Bouclier céruléen | 📜 | oui | Bouclier céruléen : +DR PA à toutes les Localisations contre les attaques de Corps à corps ; un attaquant à l’arme métallique subit BFM Dégâts — arbitrage MJ. |
+| Bouclier céruléen | 📜 | oui | Pour la durée du Sort, gagnez + DR PA à toutes les Localisations contre les Attaques de Corps à corps. Si vous êtes attaqué par une arme en métal –dagues, épées ou lances avec une pointe métal – votre attaquant subit un nombre de Dégâts égal à votre Bonus de Force Mentale. |
 | Comète de Cassandora | 🟡 | oui | Comète de Cassandora : impact à la fin du prochain Round ; un Test de Perception ajuste (ou un échec fait dériver) le point de chute de BInit m par DR — arbitrage MJ. |
 | Destin éclairci | 📜 | oui | Destin éclairci : vous posez au MJ une question fermée sur les intentions de la cible au cours de la prochaine heure, plus une question par +2 DR ; au contact, vous pouvez à la place connaître sa Destinée ainsi que les présages ou malédictions qui la visent, symboles d'Augure actifs compris — divination et lecture de Destinée non modélisées, arbitrage MJ. |
 | Ennemi prévisible | 📜 | oui | Ennemi prévisible : vous ne pouvez pas être Surpris et le MJ doit vous alerter d'une embuscade ou d'une situation similaire (Bonus d'Initiative) Rounds à l'avance, temps dont vous disposez pour fuir ou préparer votre propre guet-apens — immunité à un État et alerte anticipée non modélisées, arbitrage MJ. |
-| Ironie du Destin | 🟡 | oui | Ironie du Destin : les cibles retenues partagent une réserve unique de Points de Chance pour la durée du Sort, réallouée à la fin — réserve commune de Points de Chance non modélisée. |
+| Ironie du Destin | 📜 | oui | Ironie du Destin : les cibles retenues partagent une réserve unique de Points de Chance pour la durée du Sort, réallouée à la fin — réserve commune de Points de Chance non modélisée. |
 | Lames d'Azur | 📜 | oui | Lames d'Azur : un adversaire au corps à corps subit 3 frappes faisant 8 Dégâts à des Localisations déterminées aléatoirement à chaque Round lors de son tour, sans pouvoir les esquiver ni les parer ; une arme d'allonge Très longue ou Considérable passe à travers les lames, une arme Longue frappe simultanément, une arme plus courte encaisse les Dégâts avant d'attaquer — représailles automatiques contre l'adversaire engagé non modélisées, arbitrage MJ. |
 | Le Premier Signe d'Amul | ✅ | oui |  |
 | Le Second Signe d'Amul | 🟡 | oui | Le Second Signe d’Amul : +1 Point de Chance supplémentaire par tranche de +2 DR (en plus du +DR de base) — arbitrage MJ. |
@@ -377,7 +377,7 @@
 | Destruction de Démon Mineur | 🟡 | oui | Destruction de Démon Mineur : ne draine que les Démons de Force Mentale inférieure à la vôtre ; vous gagnez alors +10 à une Caractéristique de votre choix pour la durée — arbitrage MJ. |
 | Détection de démon | 📜 | oui | Détection de démon : vous percevez toute influence démoniaque à portée (invoquée, liée à un artefact, en possession…) — arbitrage MJ. |
 | Manifestation de Démon mineur | 🟡 | oui | Manifestation de Démon mineur : Test opposé de Focalisation (Dhar)/Force Mentale — sur un succès il vous obéit puis disparaît ; sur un échec il se retourne contre vous (passez-le hostile) — arbitrage MJ. |
-| Octogramme | 🟡 | oui | Octogramme : un cercle protecteur (diamètre BFM m) qu’aucune créature Démoniaque ne peut franchir, sauf si sa Force Mentale dépasse le double de la vôtre — arbitrage MJ. |
+| Octogramme | 📜 | oui | Octogramme : un cercle protecteur (diamètre BFM m) qu’aucune créature Démoniaque ne peut franchir, sauf si sa Force Mentale dépasse le double de la vôtre — arbitrage MJ. |
 
 ## Magie des Arcanes — Feu (24)
 
@@ -417,7 +417,7 @@
 | Festin des Damnés | 🟡 | oui | Festin des Damnés : seules les créatures de votre choix dans la ZdE sont affectées (résistance : Test de Résistance Difficile) ; à la fin du Sort, un non-ogre ayant blessé un ennemi teste Calme (+0) ou gagne Sonné — arbitrage MJ. |
 | Goinfre costaud | 🟡 | oui | Goinfre costaud : à la fin du Sort, la cible doit se gaver d’un repas conséquent ou gagner un État Exténué (résistance initiale : Test de Calme Complexe) — arbitrage MJ. |
 | Goûtemort | 📜 | oui | Goûtemort : en consommant une partie d’un cadavre, vous apprenez de façon générale comment la créature est morte (poison, lame, magie, mort naturelle…) — arbitrage MJ. |
-| La Gueule | 🟡 | oui | La Gueule : un gouffre denté s’ouvre dans la ZdE. Test d’Esquive (+0) — réussite : +8 Dégâts (−1/DR) en se dégageant ; échec : chute dans la Gueule (+10 Dégâts + 3 Empêtré opposés à Force 60, +10 Dégâts/round, Critique si encore dedans à la fin) — arbitrage MJ. |
+| La Gueule | 📜 | oui | La Gueule : un gouffre denté s’ouvre dans la ZdE. Test d’Esquive (+0) — réussite : +8 Dégâts (−1/DR) en se dégageant ; échec : chute dans la Gueule (+10 Dégâts + 3 Empêtré opposés à Force 60, +10 Dégâts/round, Critique si encore dedans à la fin) — arbitrage MJ. |
 | Trollboyaux | 🟡 | oui | Trollboyaux : un non-ogre qui récupère des Blessures sous ce Sort teste Résistance (+20) ou voit sa chair verdir comme une peau de troll (cosmétique, pas une mutation) — arbitrage MJ. |
 
 ## Magie des Arcanes — Lumière (24)
@@ -431,7 +431,7 @@
 | Collet d'Abulla | 🟡 | oui | Collet d'Abulla : chaque +1 DR fait léviter la cible de 2 mètres de plus, jusqu'à 10 mètres — altitude non modélisée, arbitrage MJ. Collet d'Abulla : le collet soulève la cible à 2 mètres du sol, l'attire au round suivant à 5 mètres au-dessus de vous et la fait se déplacer avec vous ; elle subit des Dégâts de chute quand elle est relâchée (LDB p.166) — arbitrage MJ. |
 | Compréhension parfaite | 📜 | oui | Compréhension parfaite : vous comprenez toute langue parlée, écrite ou transmise, ainsi que les messages codés et les échanges peu clairs, sans pouvoir vous exprimer dans les langues que vous ne connaissez pas — compréhension de langue non modélisée, arbitrage MJ. |
 | Crevasse | 🟡 | oui | Crevasse : un Échec Minime permet à la cible de s'accrocher au bord ; chevaux et véhicules y tombent automatiquement et les structures touchées peuvent s'effondrer en partie — arbitrage MJ. Crevasse : la cible évite la crevasse de 3 mètres de large, de long et de profondeur, allongée et approfondie d'1 mètre par +2 DR jusqu'à 10 mètres. |
-| Distorsion temporelle | 🟡 | oui | Distorsion temporelle : les cibles retenues reçoivent une Action supplémentaire (sans Mouvement supplémentaire), résolue par ordre d'Initiative en ignorant ennemis et neutres, puis l'initiative reprend au personnage qui vous suit — Action supplémentaire non modélisée. |
+| Distorsion temporelle | 📜 | oui | Distorsion temporelle : les cibles retenues reçoivent une Action supplémentaire (sans Mouvement supplémentaire), résolue par ordre d'Initiative en ignorant ennemis et neutres, puis l'initiative reprend au personnage qui vous suit — Action supplémentaire non modélisée. |
 | Édifice érigé | 🟡 | oui | Édifice érigé : le mur fait 1 mètre de haut et 15 centimètres d'épaisseur et vaut couverture totale (LDB p.161) ; chaque +2 DR permet aussi 1 mètre de hauteur (et 15 centimètres d'épaisseur) de plus, une ouverture par section de 2 mètres, ou une forme courbe ou inclinée ; lancé plusieurs fois il bâtit un squelette de bâtiment qui s'effondre en (Bonus de Force Mentale + DR) jours sans Savoir (Ingénierie) ni Métier (Maçonnerie) — arbitrage MJ. |
 | Édifice illuminé | 🟡 | oui | Édifice illuminé : l'emprise éclairée vaut l'intérieur d'une maison (une tour ou un grand manoir à +2 DR, un château à +4 DR) — le rayon est l'arbitrage éditable de cette emprise. Démons et morts-vivants doivent réussir un Test de Force Mentale Intermédiaire (+0) pour entrer et subissent alors un nombre de Dégâts égal au total de vos DR d'Incantation, ignorant Bonus d'Endurance et Points d'Armure ; les créatures sans Force Mentale ne peuvent pas entrer — arbitrage MJ. |
 | Fauche-démon | 🟡 | oui | Fauche-démon : les témoins (hors Magie des Arcanes (Lumière)) reçoivent +DR Aveuglé — arbitrage MJ. |
@@ -455,7 +455,7 @@
 |---|---|---|---|
 | Bourbier d'abattement | 🟡 | oui | Bourbier d'abattement : le Sort s'achève une fois que tous les États Empêtré ont été retirés, et le Test de Calme (+20) sous peine d'un État Exténué se répète à CHAQUE Round durant lequel la cible reste empêtrée — répétition d'un Test par Round non modélisée, arbitrage MJ. |
 | Brume mystique | 🟡 | oui | Brume mystique : mêmes effets que Miasme mystifiant — les porteurs du Talent Magie des Arcanes (Ombre) y échappent, se déplacer dans la brume exige un Test de Perception (+0) sous peine d'À Terre, et à la dissipation un Test d'Initiative (+40) sous peine de Sonné — arbitrage MJ. |
-| De la boue jusqu'au bout ! | 🟡 | oui | De la boue jusqu'au bout ! : pour lancer ce Sort vous devez vous trouver au bord d'un marais, un pied dans l'eau, l'autre sur la terre ferme ; le marais déborde alors de ses frontières sur une distance égale à la Zone d'Effet — condition de lancement et extension durable d'un terrain non modélisées, arbitrage MJ. |
+| De la boue jusqu'au bout ! | 📜 | oui | De la boue jusqu'au bout ! : pour lancer ce Sort vous devez vous trouver au bord d'un marais, un pied dans l'eau, l'autre sur la terre ferme ; le marais déborde alors de ses frontières sur une distance égale à la Zone d'Effet — condition de lancement et extension durable d'un terrain non modélisées, arbitrage MJ. |
 | Empreint de bruine | 🟡 | oui | Empreint de bruine : les fimirs trouvent cette atmosphère relaxante ; tant que le crachin persiste, les Tests effectués pour tirer avec des armes à poudre, lancer des Sorts du Domaine du Feu ou entrer en Frénésie subissent un malus de −2 DR — malus de DR qualifié par type d'arme, par Domaine de Sort et par entrée en Frénésie non modélisé, arbitrage MJ. |
 | Piqûres de moustiques | 🟡 | oui | Piqûres de moustiques : la nuée ne s'en prend qu'aux créatures à sang chaud, ses +2 Dégâts de fin de Round comptent comme un Projectile magique, et le Test de Résistance (+20) sous peine d'un État Aveuglé et d'un État Exténué vaut tant qu'elles demeurent dans la Zone d'Effet — filtre « à sang chaud » et répétition d'un Test par Round non modélisés, arbitrage MJ. |
 | Tourner en rond | 🟡 | oui | Tourner en rond : le Sort ne fonctionne que si la cible n'a pas conscience qu'il a été lancé, et le malus de −3 DR ne vaut que sur les Tests d'Orientation effectués tant qu'elle se trouve dans l'enceinte d'un marais — ignorance de la cible et restriction au marais non modélisées, arbitrage MJ. |
@@ -464,7 +464,7 @@
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
-| Bonne Volonté | 🟡 | oui | Bonne Volonté : dans la ZdE (BSoc m), tous les Tests de Sociabilité gagnent +10 et les Traits Psychologiques Animosité et Haine sont neutralisés — arbitrage MJ. |
+| Bonne Volonté | 📜 | oui | Bonne Volonté : dans la ZdE (BSoc m), tous les Tests de Sociabilité gagnent +10 et les Traits Psychologiques Animosité et Haine sont neutralisés — arbitrage MJ. |
 | Charme protecteur | 📜 | oui | Charme protecteur : la breloque imprégnée confère le Talent Résistance à la magie à qui la porte, pour la durée (jours) — arbitrage MJ. |
 | Chevaucher l'Obscurité | 📜 | oui | Chevaucher l’Obscurité : votre esprit quitte votre corps (qui reste immobile et insensible) et explore les environs en témoin invisible, traversant les obstacles non magiques — arbitrage MJ. |
 | Nepenthès | 📜 | oui | Nepenthès : un philtre qui, bu tant que le Sort est actif, permet à la cible d’oublier définitivement un individu de son choix — arbitrage MJ. |
@@ -479,7 +479,7 @@
 | Armure de fer blanc | 🟡 | oui | Armure de fer blanc : seuls les porteurs d'une armure MÉTALLIQUE sont touchés — arbitrage MJ. |
 | Bouclier en acier doré | 🟡 | oui | Bouclier en acier doré : la surface couverte gagne +4 d'Armure et devient insensible aux phénomènes naturels ; s'abriter derrière elle confère +1 DR aux Tests de Dissipation contre les Sorts qui vous ciblent ; le Sort n'a aucun effet sur les tissus organiques — arbitrage MJ. |
 | Boussole d'argent de Puchta | 📜 | oui | Boussole d'argent de Puchta : la boussole ciblée fonctionne comme une Boussole d'argent météorique pendant la Durée — arbitrage MJ. |
-| Cage dorée | 🟡 | oui | Cage dorée : des barreaux dorés enferment la Zone d'Effet — on en sort par un Test de Force Difficile (−20) ou en les sciant, les Tailles Minuscule et Très Petite passent entre les barres, les armes et projectiles aussi — arbitrage MJ. |
+| Cage dorée | 📜 | oui | Cage dorée : des barreaux dorés enferment la Zone d'Effet — on en sort par un Test de Force Difficile (−20) ou en les sciant, les Tailles Minuscule et Très Petite passent entre les barres, les armes et projectiles aussi — arbitrage MJ. |
 | Contact doré | 🟡 | oui | Contact doré : la cible résiste à la pétrification. Contact doré : la cible se transforme en statue dorée — elle ne voit, n'entend ni ne sent rien, son Bonus d'Endurance est considéré comme 10, la Durée est déterminée secrètement par le MJ, et le Sort prend fin dès qu'elle subit des Blessures. |
 | Creuset de Chamon | 🟡 | oui | Creuset de Chamon : un objet métallique non magique fond (lâché s’il est tenu, conserve sa valeur de matière première) ; la frappe ne touche que si l’objet est PORTÉ — arbitrage MJ. |
 | Défaut | 🟡 | oui | Défaut : l'arme ciblée doit être au moins partiellement en métal ; ses Défauts empirent (Dangereuse sur 9, 8 ou double ; Recharge doublée ; Lente à +2 DR pour les défenseurs) ; les armes magiques ne sont pas modifiées, mais à +4 DR leurs enchantements sont temporairement annulés — arbitrage MJ. |
@@ -493,7 +493,7 @@
 | Malédiction de la rouille | 📜 | oui | Malédiction de la rouille : l'objet métallique non magique ciblé (Encombrement 1, +1 par +2 DR) tombe en rouille et devient définitivement inutilisable ; à +4 DR, un objet non métallique devient fragile comme du verre pendant (Bonus de Force Mentale) minutes — arbitrage MJ. |
 | Métal changeant | 📜 | oui | Métal changeant : un objet métallique non magique devient malléable (Test de Force ou de Métier pour le façonner) — arbitrage MJ. |
 | Méthode essai-erreur | 🟡 | oui | Méthode essai-erreur : la Compétence choisie au moment de l'incantation reçoit +2 DR la prochaine fois que la cible s'en sert — arbitrage MJ. |
-| Plume de plomb | 🟡 | oui | Plume de plomb : dans la ZdE, choisissez — les biens sont alourdis de +2 paliers de Surcharge, ou n’imposent plus de Surcharge — arbitrage MJ. |
+| Plume de plomb | 📜 | oui | Plume de plomb : dans la ZdE, choisissez — les biens sont alourdis de +2 paliers de Surcharge, ou n’imposent plus de Surcharge — arbitrage MJ. |
 | Protections de fer météorique | 🟡 | oui | Protections de fer météorique : l'armure magique est très légère et s'ajoute à celle portée en temps normal. |
 | Réfraction prismatique de Habermas | 🟡 | oui | Réfraction prismatique de Habermas : tous les Tests de Focalisation et d'Incantation dans la Zone d'Effet subissent −1 DR ; à la fin du Sort, une couleur de magie au choix devient un fluide aethyrique qui ajoute +1 DR à un seul Test d'Incantation du Domaine lié, et s'évapore au bout de 2 rounds s'il n'est pas utilisé — arbitrage MJ. |
 | Réparer du métal | 📜 | oui | Réparer du métal : l'objet en métal abîmé est restauré dans son état d'origine (trois quarts de l'objet requis) ; autrement, le Sort fritte deux objets en métal — aide aux Tests de Métier (Forgeron), ou fusion des pièces d'armure d'un ennemi qui gagnent les Défauts Peu fiable et Volumineux — arbitrage MJ. |
@@ -522,7 +522,7 @@
 | Mort rapide | 📜 | oui | Mort rapide : une cible à 0 Blessure et ≥ 2 Blessures Critiques meurt au contact (et ne peut être ranimée en mort-vivant) — arbitrage MJ. |
 | Parent sauvage de Zandox | 📜 | oui | Parent sauvage de Zandox : deux chiens de chasse d'ombres violettes, de Capacité de Combat 50 et de Trait Arme (Morsure) +8, attaquent lors de votre Round les ennemis situés dans un rayon de 4 mètres ; on ne les voit qu'en réussissant un Test de Perception Difficile (−20), et ils ne peuvent être ni attaqués ni gagner d'Avantage — invocation d'un statbloc AD HOC (donné par le Sort, absent du bestiaire) non modélisée, arbitrage MJ. |
 | Poids des années | 🟡 | oui | Poids des années : un objet non magique d'Encombrement 2 (+1 par +2 DR) vieillit instantanément et s'effrite en poussière ; un objet portant l'Atout Solide ne s'effrite pas mais perd tous ses Atouts — destruction d'objet non modélisée, arbitrage MJ. Poids des années : les créatures végétales sont elles aussi immunisées à ce vieillissement — aucun Groupe de créatures végétales en donnée, arbitrage MJ. |
-| Sanctifier | 🟡 | oui | Sanctifier : un cercle de Shyish (diamètre BFM m) qu’aucun Mort-vivant ne peut franchir, pour la durée — arbitrage MJ. |
+| Sanctifier | 📜 | oui | Sanctifier : un cercle de Shyish (diamètre BFM m) qu’aucun Mort-vivant ne peut franchir, pour la durée — arbitrage MJ. |
 | Shyish à découvert | 📜 | oui | Shyish à découvert : vous percevez toutes les créatures mortes dans la Zone d'Effet au cours du dernier mois (+1 mois par +1 DR) — nombre, race et date de leur mort, ni nom ni cause ; en nommant un mort de la zone, vous lui posez une question par +2 DR supplémentaire, à laquelle il répond par des coups — divination non modélisée, arbitrage MJ. |
 | Télépathie | 📜 | oui | Télépathie : vous envoyez un message télépathique à un autre sorcier d'Améthyste par le plan des esprits (Âme emprisonnée annule toute limite de portée) ; tout autre destinataire doit réussir un Test d'Intuition Intermédiaire (+0) pour le comprendre — communication télépathique non modélisée, arbitrage MJ. Télépathie : au lieu de cela, vous lisez les pensées superficielles d'un autre sorcier d'Améthyste, qui peut s'en rendre compte par un Test d'Intelligence Intermédiaire (+0) puis contrer l'intrusion par un Test opposé de Force Mentale — lecture de pensées non modélisée, arbitrage MJ. |
 | Vitesse de Lykos | 📜 | oui | Vitesse de Lykos : la cible peut se déplacer de 100 mètres lors de son prochain tour tout en effectuant une Action, les obstacles et le terrain la gênant comme d'habitude ; tuée sous cet effet, elle effectue immédiatement une action supplémentaire avant de mourir — distance de déplacement à valeur ABSOLUE et action posthume non modélisées, arbitrage MJ. |
@@ -543,16 +543,16 @@
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
 | Ailes grises | 🟡 | oui | Ailes grises : la cible réticente évite la téléportation. Ailes grises : la cible peut passer au travers d'objets solides et la destination n'a pas besoin d'être dans votre Ligne de Vue — traversée des solides et destination hors Ligne de Vue non modélisées, arbitrage MJ. |
-| Bosquet d'Ombre | 🟡 | oui | Bosquet d'Ombre : toutes les ombres de la Zone d'Effet deviennent visibles, y compris celles des créatures invisibles et des manifestations aethyriques (les possédés en projettent plusieurs) ; les attaques contre les opposants ainsi découverts ont une pénalité de −10, et le Sort ne fonctionne pas dans le noir total — invisibilité et pénalité contre une cible découverte non modélisées, arbitrage MJ. |
+| Bosquet d'Ombre | 📜 | oui | Bosquet d'Ombre : toutes les ombres de la Zone d'Effet deviennent visibles, y compris celles des créatures invisibles et des manifestations aethyriques (les possédés en projettent plusieurs) ; les attaques contre les opposants ainsi découverts ont une pénalité de −10, et le Sort ne fonctionne pas dans le noir total — invisibilité et pénalité contre une cible découverte non modélisées, arbitrage MJ. |
 | Charme changeant | 🟡 | oui | Charme changeant : la cible semble morte, même à un examen minutieux ; ses sens continuent de fonctionner, mais elle ne peut ni bouger ni parler — arbitrage MJ. Charme changeant : la cible devient méconnaissable pour ceux qui la connaissaient ; si elle souhaite qu'on la reconnaisse, les personnages ciblés peuvent lancer des Tests de Force Mentale — arbitrage MJ. |
 | Chut ! | 📜 | oui | Chut ! : une aura d'Ulgu étouffe les sons et suit la cible, sous l'une des trois formes choisies à l'incantation — aucun son ne sort de la Zone d'Effet, aucun son n'y entre, ou aucun son n'y est produit ; le Sort ne peut pas être lancé sur une cible qui ne le souhaite pas, mais un objet ciblé peut être récupéré après coup — propagation du son non modélisée, arbitrage MJ. |
 | Corne d'Andar | 🟡 | oui | Corne d'Andar : les ennemis à portée doivent également réussir immédiatement un Test de Peur (1), et les cibles neutres ne sont pas affectées — Test de Peur immédiat sans source de Peur persistante non modélisé, arbitrage MJ. |
 | Danse du désespoir | 🟡 | oui | Danse du désespoir : la cible peut agir malgré tout en réussissant d'abord un Test d'Athlétisme Difficile (−20) ou de Représentation (Danse) Intermédiaire (+0) — arbitrage MJ. Danse du désespoir : la cible résiste à la danse. |
 | Désorientation | 🟡 | oui | Désorientation : la cible garde ses esprits. |
 | Destrier d'Ombre | 🟡 | oui | Destrier d’Ombre : chevauchez-le (règles de monture) ; la nuit, il gagne aussi Éthéré/Infravision/Insensible à la douleur/Furtif/Foulée/Protection 9+ — arbitrage MJ. |
-| Horreurs noires | 🟡 | oui | Horreurs noires : une ombre fantomatique hante la Zone d'Effet et provoque la Peur (1) sans attaquer — +1 d'indice par +2 DR, jusqu'à 4 — puis la zone devient magique et reste dans l'obscurité même éclairée — ombre hantant une zone non modélisée, arbitrage MJ. |
-| Illusion | 🟡 | oui | Illusion : masque la ZdE d’une image illusoire ; seul le Talent Seconde vue (Test de Perception Complexe) permet de la remarquer — arbitrage MJ. |
-| Illusion grandiose | 🟡 | oui | Illusion grandiose : l'illusion couvre tous les sens (toucher, ouïe, odorat, goût, vue) et paraît réelle à qui y croit — un pont illusoire se franchit vraiment tant qu'on n'a pas compris — illusions sensorielles non modélisées, arbitrage MJ. |
+| Horreurs noires | 📜 | oui | Horreurs noires : une ombre fantomatique hante la Zone d'Effet et provoque la Peur (1) sans attaquer — +1 d'indice par +2 DR, jusqu'à 4 — puis la zone devient magique et reste dans l'obscurité même éclairée — ombre hantant une zone non modélisée, arbitrage MJ. |
+| Illusion | 📜 | oui | Illusion : masque la ZdE d’une image illusoire ; seul le Talent Seconde vue (Test de Perception Complexe) permet de la remarquer — arbitrage MJ. |
+| Illusion grandiose | 📜 | oui | Illusion grandiose : l'illusion couvre tous les sens (toucher, ouïe, odorat, goût, vue) et paraît réelle à qui y croit — un pont illusoire se franchit vraiment tant qu'on n'a pas compris — illusions sensorielles non modélisées, arbitrage MJ. |
 | Illusion rétroactive de Ribauld | 📜 | oui | Illusion rétroactive de Ribauld : un élément de l'environnement (au plus la taille d'une maison, jamais de la terre ferme) est téléporté jusqu'à (Force Mentale) mètres avec les personnages qui s'y trouvent, à condition de ne pas être un point de repère connu et d'atterrir dans un lieu rationnel — déplacement d'un élément de décor non modélisé, arbitrage MJ. |
 | Jumeau maléfique | 📜 | oui | Jumeau maléfique : vous prenez l’apparence d’un humanoïde familier (seul Seconde vue peut le percer) — arbitrage MJ. |
 | Linceul d'Invisibilité | 📜 | oui | Linceul d’Invisibilité : la cible devient invisible aux sens ordinaires (Seconde vue la situe vaguement) ; le Sort cesse si elle fait du bruit ou attaque — arbitrage MJ. |
@@ -623,7 +623,7 @@
 | Explosion de Corruption | ✅ | oui |  |
 | Obsession | 📜 | oui | Obsession : via un objet cher à la Cible, vous l’obsédez (Tests de Résistance horaires, de plus en plus durs, une Maladresse la rend totalement obsédée 1d10−BFM heures) ; à la fin, Test de Résistance (+0) ou +1 Corruption — arbitrage MJ. |
 | Odieux messager | 📜 | oui | Odieux messager : un essaim de démons mineurs invisibles porte un message (~25 mots, doublé par +2 DR) à votre Cible, presque instantanément — arbitrage MJ. |
-| Pouvoir du Chaos | 🟡 | oui | Pouvoir du Chaos : dans la ZdE, le NI des Sorts est réduit de moitié (et l’incantation s’y fait en Difficulté Accessible +20) ; quiconque y reste teste Résistance (+0) à chaque fin de Round ou gagne +1 Corruption — arbitrage MJ. |
+| Pouvoir du Chaos | 📜 | oui | Pouvoir du Chaos : dans la ZdE, le NI des Sorts est réduit de moitié (et l’incantation s’y fait en Difficulté Accessible +20) ; quiconque y reste teste Résistance (+0) à chaque fin de Round ou gagne +1 Corruption — arbitrage MJ. |
 
 ## Magie du Chaos — Nurgle (1)
 
@@ -661,7 +661,7 @@
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
-| Brume Mystique | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Brume Mystique | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Éclat | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Langue des Gors | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Ouverture | 📜 | repli | Non curé : desc journalisée telle quelle. |
@@ -776,12 +776,12 @@
 | Démangeaison Agaçante | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Douces Paroles | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Furoncle Infecté | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Lune de Malheur | 🟡 | repli | Non curé : desc journalisée telle quelle. |
-| Malveillance Absolue | 🟡 | repli | Non curé : desc journalisée telle quelle. |
-| Nuée de Mouches | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Lune de Malheur | 📜 | repli | Non curé : desc journalisée telle quelle. |
+| Malveillance Absolue | 📜 | repli | Non curé : desc journalisée telle quelle. |
+| Nuée de Mouches | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Prise de Tête | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| Soleil Noir | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| Soleil Noir | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Vol | 📜 | repli | Non curé : desc journalisée telle quelle. |
-| WAAAGH ! | 🟡 | repli | Non curé : desc journalisée telle quelle. |
+| WAAAGH ! | 📜 | repli | Non curé : desc journalisée telle quelle. |
 | Z’Oeils de Mork | 📜 | repli | Non curé : desc journalisée telle quelle. |
-<!-- sources-empreinte: 05a6b55fc07a1bdf98d832c32919cfdae06e3410 (216 fichiers, 0 dossiers) corps: d72e0baa4ce6cefe29dbb323d31db20ea25014f3 -->
+<!-- sources-empreinte: 4a0ec20be1e4edfc6e534fd6ba59d2e898dc817f (216 fichiers, 0 dossiers) corps: 51363497852589d4e25cb7bc9bf1d38ca3ee1afa -->

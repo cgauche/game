@@ -200,7 +200,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `money` | `montant` | exécutée | `engine/flowCore.ts` | 3 — `activities.json:mendier`, `activities.json:mendier` … | Crédite (positif) ou débite (négatif) la bourse PERSONNELLE de la cible, en SOUS DE CUIVRE (`brass` — unité de compte unique, `engine/money.ts`). |
 | `moveMod` | `mod` | exécutée | `engine/navalTraits.ts`, `engine/traits/dispatch.ts`, `engine/trauma.ts` | 19 — `maneuvers.json:forme-hybride-ulric`, `mutations.json:pattes-d-animaux` … | Modificateur ADDITIF de Mouvement (trait Brutal −1 / Rapide +1, mutation ±1, encombrement) — distinct de `moveScale` (multiplicatif). |
 | `moveScale` | `num`, `den`, `durationRounds?` | exécutée | `engine/navalTraits.ts`, `engine/trauma.ts` | 17 — `criticals.json:souffle-coupe`, `criticals.json:genou-demis` … | Échelle MULTIPLICATIVE du Mouvement — GÉNÉRALISE le drapeau `movementHalved` (= 1/2). |
-| `narrative` | `text` | exécutée | `engine/polymorph.ts`, `engine/spellspec.ts` | 508 — `spells.json:benediction-de-conscience`, `spells.json:alerte` … | Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). |
+| `narrative` | `text` | exécutée | `engine/polymorph.ts`, `engine/spellspec.ts` | 514 — `spells.json:benediction-de-conscience`, `spells.json:alerte` … | Effet non modélisé : journalisé verbatim, arbitrage MJ (rien d'inventé). |
 | `noBreath` | — | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 5 — `spells.json:benediction-de-souffle`, `spells.json:respiration-aquatique` … | « N'a pas besoin de respirer et ignore les règles de suffocation » (B. |
 | `noHunger` | — | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 1 — `spells.json:graisse-de-la-terre` | « N'a pas besoin de manger ou de boire » (Graisse de la terre, LDB 48) : exempte de la Faim (système de provisions) tant que le Sort dure. |
 | `offTerrainMod` | `terrain`, `mSet?`, `testDR?`, `suffocates?` | **inerte au switch** | — | 3 — `traits.json:amphibie`, `traits.json:creature-marine` … | HORS de son terrain d'élection (`terrain` = type de tuile de la case occupée, ex. `eau`), le porteur est diminué : `mSet` REMPLACE son Mouvement (Créature marine : « son M tombe à 1 », MDG 16 l.17 ; Aquatique : « ne peut pas se déplacer sur la terre ferme », MSRC 15 l.139 → `mSet: 0`) et `testDR` s'applique à TOUS ses Tests (Créature marine : « tous les Tests qu'elle effectue subissent –2 DR »). |
@@ -356,4 +356,4 @@ Valeurs du champ `on` d'un `TriggeredEffect`.
 | `{ pick … }` | `sizeAtMost?`, `max` | — |
 
 _6 entrées — dérivées de `src/engine/flowCore.ts`._
-<!-- sources-empreinte: f506fc94a5e240c73edb8d53c50612a394f17387 (671 fichiers, 16 dossiers) corps: 1dd19f7ecfc8f2dd433c35a3ed2443eb9b9d3e87 -->
+<!-- sources-empreinte: 33e7f3b5949cab2a08665e09228d3e807ecd8839 (671 fichiers, 16 dossiers) corps: d450ad629b0972758246167582c925e120b04381 -->

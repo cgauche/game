@@ -4103,7 +4103,11 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "Bouclier céruléen : +DR PA à toutes les Localisations contre les attaques de Corps à corps ; un attaquant à l’arme métallique subit BFM Dégâts — arbitrage MJ."
+                "text": "Pour la durée du Sort, gagnez + DR PA à toutes les Localisations contre les Attaques de Corps à corps."
+              },
+              {
+                "op": "narrative",
+                "text": "Si vous êtes attaqué par une arme en métal –dagues, épées ou lances avec une pointe métal – votre attaquant subit un nombre de Dégâts égal à votre Bonus de Force Mentale."
               }
             ]
           }
@@ -28843,7 +28847,7 @@
     },
     "target": {
       "kind": "special",
-      "text": "1 Cimetière / Charnier / Champ de Bataille"
+      "text": "1 Cimetère / Charnier / Champ de Bataille"
     },
     "duration": {
       "kind": "special",
@@ -28882,7 +28886,29 @@
     "desc": "Sort issu du terrible_Liber Mortis_. Tous les corps décédés dans la zone se dressent s’ils n’ont pas été correctement enterrés et bénis. Pour chaque rayon de 100 mètres, le mage gagne 1 Point de Corruption. Si le mage est tué ou inconscient, les morts s’écroulent.",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Tous les corps décédés dans la zone se dressent s’ils n’ont pas été correctement enterrés et bénis."
+              },
+              {
+                "op": "narrative",
+                "text": "Pour chaque rayon de 100 mètres, le mage gagne 1 Point de Corruption."
+              },
+              {
+                "op": "narrative",
+                "text": "Si le mage est tué ou inconscient, les morts s’écroulent."
+              }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "frenchy-bzh",
@@ -28913,7 +28939,25 @@
     "desc": "Le démon fait pourrir ou tourner toute la nourriture et toutes les boissons dans la zone d’effet. Toute créature qui consomme ces aliments attrape automatiquement une Foirade (_Galloping_ _Trots_).",
     "effects": {
       "kind": "seq",
-      "steps": []
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Le démon fait pourrir ou tourner toute la nourriture et toutes les boissons dans la zone d’effet."
+              },
+              {
+                "op": "narrative",
+                "text": "Toute créature qui consomme ces aliments attrape automatiquement une Foirade (_Galloping_ _Trots_)."
+              }
+            ]
+          }
+        }
+      ]
     },
     "source": {
       "book": "frenchy-bzh",
@@ -28964,7 +29008,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "Bouclier : un adversaire qui attaque le sorcier à mains nues ou avec une arme métallique encaisse 7 Points de Dégâts (pas de PA d’armure métallique)."
+                "text": "Si un adversaire attaque à mains nues ou avec une arme métallique, il encaisse 7 Points de Dégâts à cause des interférences (pas de PA d’armure métallique)."
               }
             ]
           }

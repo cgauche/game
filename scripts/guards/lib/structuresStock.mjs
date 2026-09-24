@@ -1330,7 +1330,7 @@ export const STRUCTURES_OPS = [
   { op: "moveScale", signature: "den,durationRounds,num,op", dataset: "criticals.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "moveScale", signature: "den,num,op", dataset: "naval-traits.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
   { op: "moveScale", signature: "den,num,op", dataset: "trappings.json", occurrences: 1, lot: "L1c #1468", date: "2026-08-23" },
-  { op: "narrative", signature: "op,text", dataset: "spells.json", occurrences: 379, lot: "L1c #1468", date: "2026-08-23" },
+  { op: "narrative", signature: "op,text", dataset: "spells.json", occurrences: 385, lot: "L1c #1468", date: "2026-08-23" },
   { op: "narrative", signature: "op,text", dataset: "tables.json", occurrences: 119, lot: "L1c #1468", date: "2026-08-23" },
   { op: "narrative", signature: "op,text", dataset: "trappings.json", occurrences: 10, lot: "L1c #1468", date: "2026-08-23" },
   { op: "noBreath", signature: "op", dataset: "spells.json", occurrences: 5, lot: "L1c #1468", date: "2026-08-23" },

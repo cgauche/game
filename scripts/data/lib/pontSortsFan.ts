@@ -7,8 +7,8 @@
  * (#1900), un même sort s'imprime à plusieurs NI.
  *
  * `statut` dit ce qu'est le sort imprimé : `officiel` (le sort d'un livre VF, résolu à SON entrée),
- * `variante` (un sort officiel que le livre fan réécrit, résolu à l'entrée fan tant que l'arbitrage de la
- * variante est ouvert — commit B de #1897), `fan` (propre au livre fan). Consommé par la migration
+ * `variante` (un sort officiel que le livre fan réécrit, résolu à l'entrée fan, #1897), `fan` (propre au
+ * livre fan). Consommé par la migration
  * `scripts/migrations/2026-09-23-1897-sorts-fan-par-le-pont.mjs` (listes `spells` des créatures fan
  * DÉRIVÉES) et par la garde `src/data/sorts-du-livre-fan.test.ts`.
  */

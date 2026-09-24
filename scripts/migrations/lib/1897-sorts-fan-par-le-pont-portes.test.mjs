@@ -6,8 +6,9 @@
  * COPIÉES de l'arbre (`COPIES` : le relevé des cellules et le pont, le registre des livres et ses
  * lecteurs, la table `SORTS_FUSIONNES_1897`, le dossier d'extraction du livre fan) ; `spells.json` et
  * `creatures.json` sont FABRIQUÉS par-dessus, depuis l'état d'arrivée de l'arbre : migration réelle
- * (une fusion défaite, puis refaite), idempotence, et un rouge d'avant-écriture par porte FAIL-FAST de
- * son en-tête — sortie 1, message NOMINATIF, ZÉRO fichier posé touché.
+ * (une fusion défaite, puis refaite), idempotence, entrées neuves recréées à l'octet de la donnée
+ * committée, et un rouge d'avant-écriture par porte FAIL-FAST de son en-tête — sortie 1, message
+ * NOMINATIF, ZÉRO fichier posé touché.
  *
  * Ce banc vit sous `lib/` : `replay.mjs` scanne le dossier des migrations à PLAT et n'y admet que
  * des `.mjs` à préfixe DATÉ.
@@ -29,6 +30,9 @@ const COPIES = [
   'scripts/data/lib', 'scripts/raw', 'scripts/guards/lib', 'scripts/source', 'scripts/port-dev.mjs',
   'src/data/source', 'src/data/hash.ts', 'src/data/books.json', F_FUSIONS, DOSSIER_FAN,
 ];
+
+/** Les entrées fan NEUVES de la migration (`NEUVES`), dernières de `spells.json`. */
+const NAISSANTS = new Set(['invocation-d-un-colosses-necrofex', 'invitation-a-la-danse-macabre-de-vanhel', 'putrefaction-2', 'bouclier-ruine']);
 
 /** La fusion défaite puis refaite par (a) : l'entrée fan `alarme`, absorbée par `alerte`. */
 const FAN = 'alarme';
@@ -133,13 +137,12 @@ test(`${MIGRATION} (h) cellule que le pont ne RÉSOUT pas → sortie 1 NOMINATIV
 });
 
 test(`${MIGRATION} (i) id du pont ABSENT du catalogue → sortie 1 NOMINATIVE, rien d'écrit`, () => {
-  const naissants = new Set(['bouclier-ruine', 'invocation-d-un-colosses-necrofex', 'invitation-a-la-danse-macabre-de-vanhel', 'putrefaction-2']);
   const cibles = new Set(Object.values(SORTS_FUSIONNES_1897));
   const creatures = creaturesArbre();
   const id = creatures
     .filter((c) => c.source?.book === LIVRE_FAN)
     .flatMap((c) => c.spells ?? [])
-    .find((s) => !naissants.has(s) && !cibles.has(s));
+    .find((s) => !NAISSANTS.has(s) && !cibles.has(s));
   assert.ok(id, 'aucun sort de créature fan hors fusions et entrées neuves');
   refuse(MIGRATION, posesDe(sortsArbre().filter((s) => s.id !== id), creatures), `→ ${id}, absent de spells.json`, COPIES);
 });
@@ -152,4 +155,15 @@ test(`${MIGRATION} (j) DOUBLON non déclaré dans une liste dérivée → sortie
       '| Alarme bis | _Warning_ | 4 | Vous | Vous | 1 heure | Deux. |',
     ]),
   }, `doublon non déclaré — mage-fixture : ${CIBLE} imprimé par « Alarme|Warning|3 » puis « Alarme bis|Warning|4 » (99 - Fixture.md l.8)`, COPIES);
+});
+
+test(`${MIGRATION} (k) ENTRÉES NEUVES retirées : la migration rend la donnée committée À L'OCTET`, (t) => {
+  const sorts = sortsArbre();
+  assert.deepEqual(sorts.slice(-NAISSANTS.size).map((s) => s.id), [...NAISSANTS], 'les entrées neuves ferment `spells.json`, dans l’ordre de `NEUVES`');
+  const d = depot(posesDe(sorts.filter((s) => !NAISSANTS.has(s.id)), creaturesArbre()), COPIES);
+  t.after(() => efface(d.racine));
+  const { code, sortie } = joue(d.racine, MIGRATION);
+  assert.equal(code, 0, `sortie ${code} : ${sortie.slice(0, 1200)}`);
+  assert.equal(lireDans(d.racine, F_SORTS), lireArbre(F_SORTS));
+  assert.equal(lireDans(d.racine, F_CREATURES), lireArbre(F_CREATURES));
 });

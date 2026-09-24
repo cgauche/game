@@ -147,9 +147,9 @@ Rituel (`ritual`) — 17 entrées aujourd'hui :
 
 ## 5. Classification mécanique — `spellSupportOf`
 
-`spellSupportOf(spell)` (`src/engine/spellspec.ts:51`) est le point d'entrée : il rend l'une des
+`spellSupportOf(spell)` (`src/engine/spellspec.ts:48`) est le point d'entrée : il rend l'une des
 3 issues `mecanique` / `partiel` / `narratif` d'un sort de la donnée. Elle alimente le tableau de
-bord et le badge affiché en jeu. Il compose `spellSupport(ops, spell, missile)` (`src/engine/spellspec.ts:33`) :
+bord et le badge affiché en jeu. Il compose `spellSupport(ops, spell, missile)` (`src/engine/spellspec.ts:31`) :
 `ops` est l'union des feuilles du Flow pour la cible ET pour le lanceur (`spellEffectOps`) — un
 effet de lanceur (téléportation, poussée, chaîne, invocation, zone, vol de vie) compte autant qu'un
 effet de cible —, `missile` vient d'`isMagicMissile`.
@@ -183,4 +183,4 @@ effet de cible —, `missile` vient d'`isMagicMissile`.
 
 `npm run typecheck` en plus : les unions de portée/cible/durée et `Formula` sont strictement
 typées — une valeur mal formée casse la compilation avant le runtime.
-<!-- sources-empreinte: 8e36c292c85395cb5053628b74ffa1497ccef006 (16 fichiers, 0 dossiers) corps: ecae67b62ff64cda12e2c2f06d89a38314d207f1 -->
+<!-- sources-empreinte: f15728f42a98fe029e29ab062c609e35669caeb9 (16 fichiers, 0 dossiers) corps: d83457d4fa3c2cc3ef5ec080ec36173701339b61 -->
