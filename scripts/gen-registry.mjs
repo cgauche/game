@@ -10,7 +10,8 @@
  * dans le `defs/` correspondant, puis relancer (auto en dev via le plugin Vite).
  */
 import { readdirSync, writeFileSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { estFichierVitest } from './guards/lib/fichierVitest.mjs';
 import { SOURCES_DE_SPECS, universDeSource } from '../src/data/schemas/grammaire/sourcesDeSpecs.ts';
 import { porteLeChampMarqueur } from '../src/data/schemas/grammaire/idsVivants.ts';
@@ -873,6 +874,5 @@ export function genAll(verbose = false) {
 }
 
 // Exécution directe (node scripts/gen-registry.mjs) : détail complet (audit manuel).
-if (import.meta.url === `file://${join(process.cwd(), 'scripts/gen-registry.mjs').replace(/\\/g, '/')}` || process.argv[1]?.endsWith('gen-registry.mjs')) {
-  genAll(true);
-}
+const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMain) genAll(true);
