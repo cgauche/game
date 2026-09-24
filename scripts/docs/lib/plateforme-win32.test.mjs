@@ -230,7 +230,7 @@ test('rendu sous win32 : le PATH transmis à un enfant est ramené à la graphie
       "const bin = path.join(process.cwd(), 'node_modules', '.bin')",
       "const lu = (env) => spawnSync(process.execPath, ['-e', 'process.stdout.write(process.env.Path ?? process.env.PATH)'], { env, encoding: 'utf8' }).stdout",
       'console.log(JSON.stringify([',
-      "  lu({ Path: [bin, 'C:\\\\outils'].join(path.delimiter) }),",
+      "  lu({ Path: [bin, path.join(path.parse(process.cwd()).root, 'outils')].join(path.delimiter) }),",
       "  lu({ PATH: '/usr/bin:/bin' }),",
       "  spawnSync(process.execPath, undefined, { cwd: process.cwd(), input: 'process.stdout.write(process.cwd())', encoding: 'utf8' }).stdout,",
       ']))',
