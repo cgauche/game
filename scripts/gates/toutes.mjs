@@ -35,6 +35,7 @@
 //
 // `--liste` n'imprime que le plan (ce qui serait joué) sans rien jouer ; `--serie` joue tout en une
 // lane ; `--gates a,b` restreint la liste.
+import '../node-requis.mjs'
 import { spawn, spawnSync } from 'node:child_process'
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -170,10 +171,11 @@ export const ECRIT_LU = {
   },
   'test:runner': {
     ecrit: [],
-    lit: ['scripts/', 'package.json'],
+    lit: ['scripts/', 'package.json', '.npmrc'],
     raison:
       'chaque cas fabrique son arbre sous os.tmpdir() (`mkdtempSync`), y compris son node_modules/.cache ; ' +
-      'LIT package.json (les scripts que le runner relaie)',
+      'LIT package.json (les scripts que le runner relaie) et .npmrc (copié par scripts/node-requis.test.mjs ' +
+      'dans son faux arbre, le 2026-09-24, #1801)',
   },
   'test:docs': {
     ecrit: [],
