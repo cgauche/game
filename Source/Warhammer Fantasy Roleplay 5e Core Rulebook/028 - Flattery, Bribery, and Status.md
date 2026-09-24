@@ -212,6 +212,8 @@ When carousing, make a Consume Alcohol Test, with the Difficulty determined by t
 
 These effects last for two hours after you cease drinking, at which time they end, and you become hungover, suffering a *Fatigued*  Condition that lasts 12 - TB (Toughness Bonus) hours.
 
+#### **STINKING DRUNK**
+
 | 1d10 | Outcome                                                                                                                                                                                                                                                                                           |
 |------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1–2  | 'Marienburger's Courage!': Gain a bonus of +2 SL to resist Fear.                                                                                                                                                                                                                               |
@@ -242,7 +244,7 @@ These effects last for two hours after you cease drinking, at which time they en
 
 # **Public Speaking**
 
-**STINKING DRUNK** Whether stirring up an audience or persuading an angry mob not to hand you over to a Witch Hunter, public speaking can be a powerful tool.
+Whether stirring up an audience or persuading an angry mob not to hand you over to a Witch Hunter, public speaking can be a powerful tool.
 
 > Use Entertain (Acting) to garner the attention of a crowd, while Charm can persuade them to act. Crowds respond best to simple, direct messages, such as *'Burn down the tavern!'* or *'Do not trust the false prophet!'* The *Public Speaking* Talent lets you convey more complex ideas and use other appropriate Skills, such as Lore (Theology), instead of Charm. Gossip (page 112) can achieve similar results, though more slowly and with less control.
 

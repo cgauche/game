@@ -38,7 +38,9 @@ Marrisith's envoys reveal little of their purpose, and strike the Reikland's hum
 
 — Cynwrawn Fartrack, Hunter from the Laurelorn
 
-**Names** Elves use their forename and an epithet translated into Reikspiel when travelling, as they usually consider it a futile task to explain the deeper meanings of their names to non-elves.
+### **Names**
+
+Elves use their forename and an epithet translated into Reikspiel when travelling, as they usually consider it a futile task to explain the deeper meanings of their names to non-elves.
 
 **Forenames:** Aeslornoc, Athmarddu, Dornilstra, Farsorhan, Gynferth, Imilanhu, Linerianryn, Malmarstra, Morandrilwyth, Ullifinarha
 
@@ -50,9 +52,7 @@ Marrisith's envoys reveal little of their purpose, and strike the Reikland's hum
 
 **Height:** 5'11" + 1d10"
 
-**Eye colour:** Ivory, Charcoal, Ivy Green, Mossy Green, Chestnut,
-
-Dark Brown, Tan, Sandy Brown, Violet
+**Eye colour:** Ivory, Charcoal, Ivy Green, Mossy Green, Chestnut, Dark Brown, Tan, Sandy Brown, Violet
 
 **Hair colour:** Birch Silver, Ash Blond, Rose Gold, Honey Blond, Brown, Mahogany Brown, Dark Brown, Sienna, Ebony, Blue-Black
 
@@ -68,7 +68,7 @@ Athletics, Climb, Endurance, Entertain (Sing), Intimidate, Melee (Basic), Outdoo
 
 ### **Starting Talents**
 
-*Acute Sense (Sight)*, *Hardy* or *Second Sight*, *Night Vision*, *Read/ Write* or *Very Resilient*, *Rover*
+*Acute Sense (Sight)*, *Hardy* or *Second Sight*, *Night Vision*, *Read/Write* or *Very Resilient*, *Rover*
 
 #### **Fate**
 

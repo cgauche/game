@@ -478,9 +478,8 @@ const tailBack = (p: QuadProps): string => quadArt(quadTailDef(p.tail).art.back,
 // les lames dressées en permanence lisaient « feuilles plantées ») / DÉPLOYÉES (vol/attaque).
 // PROFIL replié : l'aile se couche vers l'arrière (-x), couvre le haut du flanc, pointe au-delà
 // de la croupe. FACE/DOS : déployée vers +x (aile gauche miroitée scale(-1,1) au dispatch).
-// Couleur d'AILE : famille de jetons dédiée `@aile*`, repliée sur la ROBE (`@corps*`) quand la
-// def ne stocke pas de base `aile` (cf. resolveQuadFromProps) — permet une aile d'une AUTRE
-// teinte que le corps (pégase : robe blanche, ailes brun/doré, artwork LDB 79 p.325).
+// Couleur d'AILE : clé `aile` (`clesDePalette.ts`) — pégase : robe blanche, ailes brun/doré,
+// artwork LDB 79 p.325.
 function wingFoldedProfile(p: QuadProps, far: boolean): string {
   const c = far ? '@aileO' : '@aile';
   const L = 46 * p.bodyLen; // longueur du pli (suit l'allongement du corps)

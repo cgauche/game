@@ -14,7 +14,7 @@
  */
 import { z } from 'zod';
 import { proseDeScene } from '../grammaire/prose';
-import { chaosAlignSchema, enumNomme, exposureLevelSchema, hitLocationSchema, moneyPartialSchema, refTestDeCorruption } from '../grammaire/valeurs';
+import { chaosAlignSchema, enumNomme, exposureLevelSchema, hitLocationSchema, moneyPartialSchema, refTestDeCorruption, surchargePaletteSchema } from '../grammaire/valeurs';
 import { conditionSchema, effectOpSchema, extendedTestSchema, gameOpSchema, noeudTest } from '../grammaire/mecanique';
 import { idDe, refOuSpec } from '../grammaire/ref';
 import { listeCle } from '../grammaire/liste-cle';
@@ -138,7 +138,7 @@ export const giveTrappingSchema = z.strictObject({
   heroId: z.string().optional(),
   qualities: z.array(z.string()).optional(),
   identified: z.boolean().optional(),
-  skin: z.record(z.string(), z.string()).optional(),
+  skin: surchargePaletteSchema.optional(),
   /** Aura détectée / Détection déjà tentée (Talent Détection d'artefact, `LDB 10`) / jour de la
    *  dernière Évaluation ratée — posés par la fenêtre de loot AVANT attribution, propagés sur
    *  l'ItemInstance à la remise. */

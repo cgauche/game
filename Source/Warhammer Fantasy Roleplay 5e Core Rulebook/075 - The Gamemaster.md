@@ -29,7 +29,7 @@ A large part of being the GM is deciding when to bring in the rules to decide th
 
 # **FAILING FORWARD**
 
-One common mistake first-time GMs make is asking a player to roll a Test when failing that Test will stop the adventure in its tracks. If the party needs to get past that door to find the cult's lair, don't make them roll to unlock it unless you have a plan for what happens if they fail perhaps a cultist hears them fiddling with the lock and opens it to see what's happening, getting the party inside but losing the element of surprise. If the vital next clue to the mystery is hidden in a dusty library, only call for a Test to determine how quickly it is uncovered, not *if* it is.
+One common mistake first-time GMs make is asking a player to roll a Test when failing that Test will stop the adventure in its tracks. If the party needs to get past that door to find the cult's lair, don't make them roll to unlock it unless you have a plan for what happens if they fail — perhaps a cultist hears them fiddling with the lock and opens it to see what's happening, getting the party inside but losing the element of surprise. If the vital next clue to the mystery is hidden in a dusty library, only call for a Test to determine how quickly it is uncovered, not *if* it is.
 
 Every time you call for a Test, have a plan for both success and failure. Failure should move the story on, but with some negative consequences.
 

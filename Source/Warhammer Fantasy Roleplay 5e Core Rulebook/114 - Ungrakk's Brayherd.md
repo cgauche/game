@@ -16,11 +16,15 @@ Skrakk is the lieutenant of Ungrakk, the beastlord, though he grows impatient lo
 
 #### **Attacks**
 
-**Greataxe:** (65/+11) *Damaging, Hack, Unbalanced* **Horns:** (35/+9) Free Attack only when Charging
+**Greataxe:** (65/+11) *Damaging, Hack, Unbalanced*
+
+**Horns:** (35/+9) Free Attack only when Charging
 
 #### **Armour**
 
-**Toughness Bonus:** 5 **Light Armour:** +1 AP
+**Toughness Bonus:** 5
+
+**Light Armour:** +1 AP
 
 #### **Traits**
 
@@ -32,7 +36,9 @@ Cool 60, Dodge 50, Intimidate 60, Leadership 15, Melee (Basic 65, Two-Handed 65)
 
 #### **Talents**
 
-**Combat Aware:** Take a Challenging (+0 SL) Perception Test to ignore the *Surprised* Condition from an ambush **Combat Reflexes:** Combat Initiative counts as 65
+**Combat Aware:** Take a Challenging (+0 SL) Perception Test to ignore the *Surprised* Condition from an ambush
+
+**Combat Reflexes:** Combat Initiative counts as 65
 
 **Resolute:** On gaining a Condition, retain Advantage on a **Challenging (+0 SL) Cool** Test
 
@@ -58,7 +64,9 @@ Ungrakk is a mighty warrior who inspires fear and respect in his fellow beastmen
 
 #### **Armour**
 
-**Toughness Bonus:** 5 **Medium Armour:** +3 AP
+**Toughness Bonus:** 5
+
+**Medium Armour:** +3 AP
 
 #### **Traits**
 
@@ -82,9 +90,7 @@ Cool 70, Dodge 65, Intimidate 75, Leadership 50, Lore (Warfare) 40, Melee (Basic
 
 **Luck:** May make 1 reroll per session
 
-**Resolute:** On gaining a Condition, retain Advantage on a
-
-Challenging (+0 SL) Cool Test
+**Resolute:** On gaining a Condition, retain Advantage on a Challenging (+0 SL) Cool Test
 
 **Unshakeable:** No need to test to avoid Broken Conditions when shot at by Blackpowder weapons
 
@@ -136,7 +142,9 @@ Channelling (*Ghur*) 50, Cool 50, Dodge 45, Intuition 50, Language (Magick) 45, 
 
 #### **Spells**
 
-**Petty Magic:** Animal Friend, Dart, Sounds **Lore of Beasts:** Arrow Shield, Beast Form, Blast
+**Petty Magic:** Animal Friend, Dart, Sounds
+
+**Lore of Beasts:** Arrow Shield, Beast Form, Blast
 
 #### **Trappings**
 

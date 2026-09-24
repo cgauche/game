@@ -38,6 +38,7 @@ const SCRIPT_1715 = '2026-09-09-1715-roof-defaults-scenes.mjs';
 const SCRIPT_1687 = '2026-09-10-1687-usable-sieges.mjs';
 const SCRIPT_1687_ACTIONS = '2026-09-11-1687-actions-authorees.mjs';
 const SCRIPT_877 = '2026-09-21-877-ref-de-decor-nommee.mjs';
+const SCRIPT_1882 = '2026-09-23-1882-fiche-de-personnage-nommee.mjs';
 const SCRIPT_1897 = '2026-09-23-1897-projet-sorts-de-preset-ids-nus.mjs';
 const SCRIPT_1897_FUSIONS = '2026-09-24-1897-projet-sorts-fusionnes.mjs';
 
@@ -69,12 +70,13 @@ const CIBLE = 'src/scenes/camp/camp-projet.json';
 
 /** Joue `script` sur un dépôt jetable portant `doc` (`scripts/migrations/lib/joue.mjs`) ; rend le code
  *  de sortie, la sortie (le MOTIF d'un refus : deux refus distincts sortent tous deux 1) et l'état
- *  APRÈS. `src/data/props.json` (les TYPES de décor à places, lus par `2026-09-10-1687-usable-sieges.mjs`)
+ *  APRÈS. `src/data/props.json` (les TYPES de décor à places, lus par `2026-09-10-1687-usable-sieges.mjs`),
+ *  `src/data/species.json` (les PROFILS STANDARD lus par `2026-09-23-1882-fiche-de-personnage-nommee.mjs`)
  *  et `src/data/sortsFusionnes.ts` (la primitive importée par `2026-09-24-1897-projet-sorts-fusionnes.mjs`)
  *  sont des ENTRÉES déclarées de la chaîne : le dépôt les porte, sinon le script mourrait sur un fichier
  *  absent au lieu de rendre le refus qu'on mesure. */
 function joue(script: string, doc: Record<string, unknown>): { code: number | null; err: string; avant: string; apres: string } {
-  const d = depot({ [CIBLE]: serialise(doc, FORME_PROJET) }, ['src/data/props.json', 'src/data/sortsFusionnes.ts']);
+  const d = depot({ [CIBLE]: serialise(doc, FORME_PROJET) }, ['src/data/props.json', 'src/data/species.json', 'src/data/sortsFusionnes.ts']);
   try {
     const { code, sortie } = jouerDans(d.racine, script);
     return { code, err: sortie, avant: d.avant.get(CIBLE) ?? '', apres: lireDans(d.racine, CIBLE) };
@@ -126,7 +128,7 @@ describe(`${SCRIPT_13} — le bump de forme 4 → 5 (aplatissement de la poche \
   it('t6. RATTRAPAGE : un `schema` FUTUR, avalé par TOUTES les amont, est REFUSÉ par la DERNIÈRE de la chaîne', () => {
     // La DÉRIVATION couvre la chaîne connue : un script qui perdrait sa marque sortirait du banc en
     // silence, et la « dernière » dérivée mentirait.
-    expect(CHAINE).toEqual(expect.arrayContaining([SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552, SCRIPT_1691, SCRIPT_1715, SCRIPT_1687, SCRIPT_1687_ACTIONS, SCRIPT_877, SCRIPT_1897, SCRIPT_1897_FUSIONS]));
+    expect(CHAINE).toEqual(expect.arrayContaining([SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552, SCRIPT_1691, SCRIPT_1715, SCRIPT_1687, SCRIPT_1687_ACTIONS, SCRIPT_877, SCRIPT_1882, SCRIPT_1897, SCRIPT_1897_FUSIONS]));
     const schemaFutur = SCHEMA_PROJET + 1;
     // Un TYPE de décor à places, LU au catalogue : sans entité à places, `SCRIPT_1687` s'arrête sur
     // un périmètre vide au lieu de mesurer sa borne.

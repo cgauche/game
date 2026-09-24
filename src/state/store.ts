@@ -65,6 +65,16 @@ import type { CodexFocus } from './codexFocus';
 /** Onglets de la fiche de personnage (`CharacterSheet.tsx`) — id STABLE, jamais un libellé. */
 export type SheetTab = 'etat' | 'possessions' | 'competences' | 'magie' | 'avancement' | 'histoire';
 
+/** Paquet de campagne snapshotté (#766) : RÉ-ENREGISTRE toutes ses scènes (le `sceneRegistry` en mémoire
+ *  module ne connaît sinon que l'Arène + la scène courante → transitions/portes vers les AUTRES scènes du
+ *  paquet échoueraient en silence) et RE-DÉRIVE la couche narrative runtime (`HORS_SAVE`, `saves.ts`).
+ *  Lue par la reprise de save et par le snapshot coop de l'invité (`netFlow.applyNetSnapshot`). */
+export function reposerPaquetDeCampagne(doc: CampaignDoc | null | undefined): Partial<GameState> {
+  if (!doc) return {};
+  for (const s of doc.scenes) registerScene(s);
+  return { campaignNarratif: doc.narratif };
+}
+
 /** Charge une save (Jalon 5) : reset zéro-maintenance (état de création sans les actions — le
  *  JSON round-trip écarte les fonctions) + données de la save par-dessus, écran campagne.
  *  Le merge partiel de zustand préserve les actions du store. */
@@ -90,14 +100,7 @@ function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): 
     ? { ...chargee, seatAssignments: pruneSeatAssignments(chargee, (data.party ?? []).length) }
     : chargee;
   set({ ...base, ...data, ...(chargee ? { scene } : {}), screen: 'campaign', camEdge: false, net: useGame.getState().net });
-  // Paquet de campagne snapshotté (#766) : RÉ-ENREGISTRE toutes ses scènes (le `sceneRegistry` en mémoire
-  // module ne connaît sinon que l'Arène + la scène courante → transitions/portes vers les AUTRES scènes du
-  // paquet échoueraient en silence) et RE-DÉRIVE la couche narrative runtime (non persistée, `saves.ts`).
-  const doc = data.campaignDoc as CampaignDoc | null | undefined;
-  if (doc) {
-    for (const s of doc.scenes) registerScene(s);
-    set({ campaignNarratif: doc.narratif });
-  }
+  set(reposerPaquetDeCampagne(data.campaignDoc as CampaignDoc | null | undefined));
   // Règles maison de la save : on les applique au registre (parité avec la partie sauvegardée).
   // Save d'avant ce champ (rules absent) → on garde les règles courantes de la machine.
   if (save.rules) loadRuleOverrides(save.rules);
@@ -920,7 +923,9 @@ export interface GameState extends RollFlowActionsMap {
   trainProsthesis: (heroId: string, uid: string) => void;
   /** Change de Carrière/Niveau (validation LDB 07 l.137 / LDB 08 : complétion, +100 hors Classe). */
   changeCareer: (heroId: string, newCareer: string, newLevel: number) => void;
-  startScene: (scene: Scene) => void;
+  /** `narratif` : couche narrative du projet, posée AVANT l'entrée en scène — la Psychologie à la
+   *  rencontre y résout les presets de PNJ (#1882). Absente = couche vidée. */
+  startScene: (scene: Scene, narratif?: NarratifBlock) => void;
   /** Enregistre plusieurs scènes (projet multi-scènes) puis démarre l'entrée. `worldMap` = carte du
    *  monde du projet (#T2, projet v2) — null/absent : pas de voyage dans ce projet. */
   loadProject: (scenes: Scene[], entryId: string, worldMap?: import('./worldMap').WorldMap | null, narratif?: NarratifBlock) => void;
@@ -2166,7 +2171,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   setParty: (p) => set({ party: p }),
 
-  startScene: (scene) => {
+  startScene: (scene, narratif) => {
     registerScene(scene);
     const start = scene.entities.find((e) => e.kind === 'heroStart');
     const pos = start ? { ...start.pos } : findFreeTile(scene);
@@ -2190,6 +2195,7 @@ export const useGame = create<GameState>((set, get) => ({
       flags: { ...scene.flags },
       campaignSceneId: scene.id,
       journal: scene.startMessage ? [scene.startMessage] : [],
+      campaignNarratif: narratif ?? null,
     });
     // Gestes VIVANTS de la frontière (`stageGestes`) : la carte s'ouvre à son cran, CENTRÉE, et sans
     // qu'aucune marche tenue de l'écran précédent n'y commette de pas.
@@ -2215,15 +2221,12 @@ export const useGame = create<GameState>((set, get) => ({
     const entry = scenes.find((s) => s.id === entryId);
     if (!entry) throw new Error(`loadProject : scène d’entrée « ${entryId} » absente (${scenes.map((s) => s.id).join(', ')})`);
     for (const s of scenes) registerScene(s);
-    get().startScene(entry);
+    get().startScene(entry, narratif);
     // La carte du PROJET remplace celle de la campagne (restaurée par le reset de startScene) ;
     // un projet sans carte n'offre pas de voyage.
     if (worldMap !== undefined) set({ worldMap });
-    // Couche NARRATIVE du paquet posée APRÈS startScene (qui remet l'état à l'init, donc null) — lue
-    // par id via `campaignData.ts` ; absente = couche vidée (campagne sans narratif).
-    set({ campaignNarratif: narratif ?? null });
-    // Ouverture cérémonielle du chapitre (#717) : MÊME raison d'être posée ICI que le narratif —
-    // `startScene` vient de remettre l'état à l'init. Absente du paquet = démarrage direct.
+    // Ouverture cérémonielle du chapitre (#717) : posée ICI, `startScene` vient de remettre l'état à
+    // l'init. Absente du paquet = démarrage direct.
     set({ pendingOuverture: narratif?.ouverture ?? null });
     // Document SOURCE de la partie (#766) : snapshot AUTO-SUFFISANT du paquet, embarqué au save par
     // `stateFields` → au chargement, `applyLoadedSave` ré-enregistre ces scènes et re-dérive le narratif.

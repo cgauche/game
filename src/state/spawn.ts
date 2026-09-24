@@ -12,7 +12,7 @@ import { hullArmourBonus, hullNavalTraits } from '../engine/navalTraits';
 import { requiredTerrains } from '../engine/ops';
 import { CustomStatblock, type Scene, heightAt, tileAt } from './scene';
 import { terrainAbsent } from './terrain';
-import { randomizeChars } from '../engine/statblock';
+import { randomizeChars, type PorteurDeFiche } from '../engine/statblock';
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import { emptyArmour, buildWeapon, hydratePoste, loadWeapon } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
@@ -376,24 +376,10 @@ export function refEntiteResolue(ref: string): boolean {
   return !!(findCreatureById(ref) || findVehicleById(ref)?.hull || findTrappingById(ref)?.siegeRig);
 }
 
-export function spawnEnemy(
-  ref: string | undefined,
-  statblock: CustomStatblock | undefined,
-  id: string,
-  pos: { x: number; y: number; z?: number }, // z (étage) conservé sur c.pos via les spreads/shorthands
-  opts?: { appearance?: EntityAppearance; weapon?: string; presetCreature?: CreatureData } & SpawnExtras,
-): Combatant {
+/** La fiche d'une `ref` du faisceau `refEntiteResolue` : créature, coque, affût — ou le mannequin `RÉF ?`. */
+function ficheDeRef(ref: string, id: string, pos: { x: number; y: number; z?: number }, opts?: SpawnExtras): Combatant {
   let c: Combatant;
-  // Preset de PNJ nommé (#671) : la CreatureData est déjà mergée (base globale + surcharges du preset)
-  // par le call-site (`resolvePresetCreature`, couche campagne) — `spawn.ts` n'importe PAS `campaignData`.
-  if (opts?.presetCreature) c = creatureToCombatant(opts.presetCreature, id, pos, opts);
-  else if (statblock) c = statblockToCombatant(statblock, id, pos, opts?.appearance);
-  else if (!ref) {
-    // ref ABSENTE (ni statbloc) : PNJ scénique générique légitime (apparence authorée par l'entité, rendu
-    // marche) — repli SILENCIEUX (comportement historique d'avant #223 : le repli bruyant ne visait que la
-    // réf. FOURNIE-mais-fausse, jamais l'absence de réf.).
-    c = statblockToCombatant({ type: 'statblock', label: 'Ennemi', char: { B: 10 } }, id, pos);
-  } else if (!refEntiteResolue(ref)) {
+  if (!refEntiteResolue(ref)) {
     // Repli BRUYANT (#223) : réf. FOURNIE mais irrésoluble — le VERDICT est celui de `refEntiteResolue`,
     // le même que lit `validateScene` → console.error + mannequin PORTANT le marqueur au nom (affiché tel
     // quel au token/frise).
@@ -417,6 +403,19 @@ export function spawnEnemy(
     c.pos = { ...pos };
     c.species = t.siegeRig; // espèce DÉRIVÉE de la ref → rig engin au combat (parité avec l'explo/éditeur)
   }
+  return c;
+}
+
+export function spawnEnemy(
+  porteur: PorteurDeFiche,
+  id: string,
+  pos: { x: number; y: number; z?: number }, // z (étage) conservé sur c.pos via les spreads/shorthands
+  opts?: { appearance?: EntityAppearance; weapon?: string } & SpawnExtras,
+): Combatant {
+  const c = porteur.presetCreature ? creatureToCombatant(porteur.presetCreature, id, pos, opts)
+    : porteur.statblock ? statblockToCombatant(porteur.statblock, id, pos, opts?.appearance)
+    : ficheDeRef(porteur.ref, id, pos, opts);
+  c.porteurDeFiche = porteur;
   if (opts?.crewIds) c.crewIds = opts.crewIds;
   if (opts?.postes) c.postes = opts.postes.map(hydratePoste); // #222 — réf catalogue → base HYDRATÉE (couture unique)
   if (opts?.upgrades) c.upgrades = opts.upgrades;

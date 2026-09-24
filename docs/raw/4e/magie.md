@@ -233,7 +233,7 @@ cibles supplémentaires (`LDB 47 l.28`).
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 41` (l.21-27) → `BLESSING_STEP`, `effectiveRangeMetres`, `effectiveSpellRangeTiles` — `src/engine/magic.ts`, `src/engine/overcast.ts`
 - `LDB 42` (l.7-13) → `src/engine/overcast.ts`
-- `LDB 47` (l.13-17, l.28) → `CastingNumberRounding`, `SpellTarget`, `overcastBudget`, `OP_DEFS`, `CastModal`, `zoneDiameterMultiplier`, `carriedGrimoire`, `SpellbookSection`, `zdeDiameterMeters`, `bestAreaCenter`, +22 — `src/data/index.ts`, `src/data/schemas/grammaire/mecanique.ts`, `src/engine/castingNumber.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, +12 fichiers
+- `LDB 47` (l.13-17, l.28) → `CastingNumberRounding`, `SpellTarget`, `overcastBudget`, `CastModal`, `zoneDiameterMultiplier`, `OP_DEFS`, `carriedGrimoire`, `SpellbookSection`, `zdeDiameterMeters`, `bestAreaCenter`, +22 — `src/data/index.ts`, `src/data/schemas/grammaire/mecanique.ts`, `src/engine/castingNumber.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, +12 fichiers
 
 ---
 
@@ -634,7 +634,7 @@ Double effet : (1) rider optionnel `+1 État Aveuglé` sur chaque cible (sauf po
 Bypass des PA en métal **et** bonus de dégâts égal aux PA bypassés (Métal = arme qui inflige les PA qu'elle pénètre).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 48` (l.398) → `gainCorruption`, `isProfane`, `GameOp`, `clarte-d-esprit`, `fauche-demon`, `filet-d-amyntok`, `lumiere-aveuglante`, `lumiere-de-guerison`, `pensee-rapide`, `castContextMods`, +3 — `src/data/spells.json`, `src/engine/corruption.ts`, `src/engine/domainAttributes.ts`, `src/engine/ops.ts`, `src/state/combatFlow.ts`, `src/state/corruptionFlow.ts`
+- `LDB 48` (l.398) → `gainCorruption`, `isProfane`, `GameOp`, `clarte-d-esprit`, `fauche-demon`, `filet-d-amyntok`, `lumiere-aveuglante`, `lumiere-de-guerison`, `pensee-rapide`, `protection-de-pha`, +3 — `src/data/spells.json`, `src/engine/corruption.ts`, `src/engine/domainAttributes.ts`, `src/engine/ops.ts`, `src/state/combatFlow.ts`, `src/state/corruptionFlow.ts`
 
 ---
 
@@ -690,7 +690,7 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 > **Verbatim** (LDB 47 l.28) : « les Sorts marqués ZdE affectent tous les individus à l'intérieur de ce DIAMÈTRE ».
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 47` (l.28) → `CastingNumberRounding`, `SpellTarget`, `OP_DEFS`, `CastModal`, `carriedGrimoire`, `SpellbookSection`, `zdeDiameterMeters`, `bestAreaCenter`, `overcastAffordance`, `TIER`, +18 — `src/data/index.ts`, `src/data/schemas/grammaire/mecanique.ts`, `src/engine/castingNumber.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, +11 fichiers
+- `LDB 47` (l.28) → `CastingNumberRounding`, `SpellTarget`, `CastModal`, `OP_DEFS`, `carriedGrimoire`, `SpellbookSection`, `zdeDiameterMeters`, `bestAreaCenter`, `overcastAffordance`, `TIER`, +18 — `src/data/index.ts`, `src/data/schemas/grammaire/mecanique.ts`, `src/engine/castingNumber.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, +11 fichiers
 
 ---
 

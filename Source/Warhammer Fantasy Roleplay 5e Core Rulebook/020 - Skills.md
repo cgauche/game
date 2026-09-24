@@ -22,9 +22,9 @@ Advanced Skills require specialist knowledge, training, or firsthand experience 
 
 Grouped Skills are an array of related Skills gathered together under one heading. Each related Skill is called a Specialisation. When a Specialisation is mentioned in the rules, it is marked in brackets.
 
-*Example:* Language *is a Grouped Skill that represents many related Language Skills under a single Skill heading. Its Specialisations include* Language (Bretonnian)*,* Language (Magick)*, and*  Language (Mootish)*.* 
+***Example:*** Language *is a Grouped Skill that represents many related Language Skills under a single Skill heading. Its Specialisations include* Language (Bretonnian)*,* Language (Magick)*, and*  Language (Mootish)*.* 
 
-When you gain an Advance in a Grouped Skill, you must allocate the Advance to an appropriate Specialisation. Sometimes the Specialisation options will be marked clearly in your Career, so you simply select one of the options on offer. In other cases such as when a Specialisation is marked as 'Any One', meaning you can choose one Specialisation — you will need to select a Specialisation yourself.
+When you gain an Advance in a Grouped Skill, you must allocate the Advance to an appropriate Specialisation. Sometimes the Specialisation options will be marked clearly in your Career, so you simply select one of the options on offer. In other cases — such as when a Specialisation is marked as 'Any One', meaning you can choose one Specialisation — you will need to select a Specialisation yourself.
 
 **Example:** *Theodora has a choice of* Lore (Any One) *in her Career. When she allocates an Advance to that Skill, she has to decide which*  Lore *Specialisation to take. After some deliberation, she chooses to Advance her* Lore (Theology)*, showing she has improved her understanding of religious matters.*
 
@@ -92,7 +92,9 @@ Makes people think favourably of you, your opinions, and actions you propose. Pe
 
 Your aptitude for befriending, quickly calming, or subjugating animals. A Charm Animal Test can convince a wild animal to back off, or a guard dog to devour a proffered scrap of meat rather than your arm.
 
-**Climb (S)** *basic* The ability to ascend steep or vertical surfaces, like a perilous mountainside or the rain-slick wall of a tumbledown townhouse. Climbing can sometimes be used in combat when facing especially monstrous foes — see page 162 for combat movement.
+### **Climb (S)** *basic*
+
+The ability to ascend steep or vertical surfaces, like a perilous mountainside or the rain-slick wall of a tumbledown townhouse. Climbing can sometimes be used in combat when facing especially monstrous foes — see page 162 for combat movement.
 
 ### **Consume Alcohol (T)** *basic*
 
@@ -206,7 +208,9 @@ While there is some overlap between the Skills of Entertain, Perform, and Play, 
 
 You should choose carefully when determining whether your chosen Specialisation belongs to Entertain, Perform, or Play; consider how the Character will physically enact the Skill, and whether an untrained beginner could do so with any success. After all, someone without any musical training could feasibly sing beautifully, but hand them a set of bagpipes…
 
-**Pray (Fel)** *advanced* Invoke, appeal to, or otherwise commune with a deity. For more information on using the Pray Skill to seek divine intervention, see **Chapter 7: Religion and Belief**.
+### **Pray (Fel)** *advanced*
+
+Invoke, appeal to, or otherwise commune with a deity. For more information on using the Pray Skill to seek divine intervention, see **Chapter 7: Religion and Belief**.
 
 ### **Ranged (BS)** *advanced, grouped*
 

@@ -98,12 +98,12 @@ describe('une RÉF de créature que le spawn ne résout pas est une erreur, pas 
         const s = scene();
         s.entities.push({ id: 'e-1', kind: 'personnage', pos: { x: 2, y: 2 }, ref });
         expect(validateScene([s]).filter((w) => w.level === 'error'), ref).toEqual([]);
-        expect(spawnEnemy(ref, undefined, 'e-1', { x: 2, y: 2 }).label, ref).not.toContain('RÉF ?');
+        expect(spawnEnemy({ ref: ref }, 'e-1', { x: 2, y: 2 }).label, ref).not.toContain('RÉF ?');
       }
       const faux = scene();
       faux.entities.push({ id: 'e-1', kind: 'personnage', pos: { x: 2, y: 2 }, ref: 'ref-qui-nexiste-nulle-part' });
       expect(validateScene([faux]).filter((w) => w.level === 'error')).toHaveLength(1);
-      expect(spawnEnemy('ref-qui-nexiste-nulle-part', undefined, 'e-1', { x: 2, y: 2 }).label).toContain('RÉF ?');
+      expect(spawnEnemy({ ref: 'ref-qui-nexiste-nulle-part' }, 'e-1', { x: 2, y: 2 }).label).toContain('RÉF ?');
     } finally {
       cri.mockRestore();
     }
@@ -150,6 +150,30 @@ describe('une RÉF de créature que le spawn ne résout pas est une erreur, pas 
     expect(validateScene([nomme]).filter((w) => w.level === 'error')).toEqual([
       expect.objectContaining({ scope: 'entity', refId: 'p-1', message: 'Tonneau › ref : « ref » absente — un décor NOMME son type au catalogue (props.json)' }),
     ]);
+  });
+
+  it('un PERSONNAGE sans fiche est une erreur nommée ; chaque porteur SEUL (réf, statbloc, preset) la lève (#1882)', () => {
+    const sansFiche = scene();
+    sansFiche.entities.push({ id: 'e-1', kind: 'personnage', pos: { x: 2, y: 2 }, label: 'Aubergiste' });
+    expect(validateScene([sansFiche]).filter((w) => w.level === 'error').map((w) => `${w.refId} ${w.message}`))
+      .toEqual(['e-1 Aubergiste › ref : « ref », « statblock », « presetId » absents — un personnage NOMME sa fiche (bestiaire, statbloc ou preset de PNJ)']);
+
+    for (const porteur of [
+      { ref: REF_CREATURE },
+      { statblock: { type: 'statblock' as const, label: 'Brigand', char: { B: 10 } } },
+      { presetId: 'pnj-de-la-campagne' },
+    ]) {
+      const s = scene();
+      s.entities.push({ id: 'e-1', kind: 'personnage', pos: { x: 2, y: 2 }, ...porteur });
+      expect(validateScene([s]).filter((w) => w.level === 'error'), Object.keys(porteur)[0]).toEqual([]);
+    }
+  });
+
+  it('une réf de personnage VIDE est présente mais irrésoluble : le faisceau du spawn la NOMME', () => {
+    const vide = scene();
+    vide.entities.push({ id: 'e-1', kind: 'personnage', pos: { x: 2, y: 2 }, ref: '' });
+    expect(validateScene([vide]).filter((w) => w.level === 'error').map((w) => w.message))
+      .toEqual(['e-1 → créature inexistante «  »']);
   });
 });
 

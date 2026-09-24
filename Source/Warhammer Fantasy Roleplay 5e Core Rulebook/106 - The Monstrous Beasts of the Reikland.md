@@ -34,7 +34,9 @@ Climb 65, Melee (Brawling) 40, Stealth (Rural) 65, Swim 90
 
 **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
-**Size (Large):** See page 360 for implications of size **Striding Gait (Wetlands):** Suffer no penalties for moving through wetland and +1 SL to all Athletics and Stealth Tests in wetland
+**Size (Large):** See page 360 for implications of size
+
+**Striding Gait (Wetlands):** Suffer no penalties for moving through wetland and +1 SL to all Athletics and Stealth Tests in wetland
 
 **Venom (Difficult):** Wounded opponents must pass an **Difficult (-1 SL) Endurance** Test or gain a *Poisoned* Condition
 
@@ -73,7 +75,9 @@ Athletics 60, Dodge 60
 
 **Bounce:** When Charging, Leaping, or Sprinting, the creature doubles their Movement Attribute and can ignore all intervening terrain and creatures
 
-**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
+
+**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
 #### **Optional Traits**
 
@@ -103,7 +107,9 @@ Free Attack, and has the Penetrating
 
 **Hide:** +1 AP
 
-**Optional Light Armour:** +1 AP **Optional Medium Armour:** +3 AP
+**Optional Light Armour:** +1 AP
+
+**Optional Medium Armour:** +3 AP
 
 #### **Skills**
 
@@ -113,7 +119,9 @@ Athletics 55, Endurance 45, Melee (Brawling) 50
 
 **Bestial:** Animal behaviour is simple and predictable, see page 356
 
-**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards **Size (Large):** See page 360 for implications of size
+**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
+
+**Size (Large):** See page 360 for implications of size
 
 #### **Optional Traits**
 
@@ -165,9 +173,7 @@ Melee (Brawling) 70, Perception 70, Tracking 70
 
 #### **Optional Traits**
 
-*Immunity (Any), Infestation, Magical, Mental Corruption, Mutation, Size (Monstrous), Spellcaster (Various), Stealthy, Striding Gait (Wetlands, Woodland),* 
-
-*Undead, Venom (Difficult)*
+*Immunity (Any), Infestation, Magical, Mental Corruption, Mutation, Size (Monstrous), Spellcaster (Various), Stealthy, Striding Gait (Wetlands, Woodland), Undead, Venom (Difficult)*
 
 # **Fenbeast**
 
@@ -191,15 +197,11 @@ Endurance 65, Melee (Brawling) 40
 
 #### **Traits**
 
-**Construct:** Never Test Int, WP, or Fel; use T for WP if
-
-needed, see page 357 for details
+**Construct:** Never Test Int, WP, or Fel; use T for WP if needed, see page 357 for details
 
 **Dark Vision:** See in the dark as daylight
 
-**Infected:** Wounded opponents must take an **Easy (+4** 
-
-**SL) Endurance** Test to avoid a Festering Wound
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
 
 **Regeneration:** Regain 1d10 Wounds at start of round. A roll of 10 heals a Critical Wound. At 0 Wounds, roll 8+ to regain one Wound. Cannot Regenerate Wounds or Critical Wounds caused by Fire.
 
@@ -248,6 +250,8 @@ Consume Alcohol 60, Melee (Basic) 35
 
  *Hungry, Infected, Infestation, Night Vision, Size (Monstrous), Stupid*
 
+# **Griffon**
+
 With the forequarters and wings of an eagle and the hindquarters of a great cat, griffons are elegant creatures with a proud, regal bearing. Perhaps because of this perceived nobility, the griffon has become one of the Empire's foremost symbols, appearing on heraldry, religious iconography, and imperial regalia. Griffons are also among the most intelligent of beasts. If captured young and properly trained, they become fiercely loyal companions, capable of understanding and obeying a remarkable range of commands. So prized are they that hunters regularly die attempting to steal griffon eggs.
 
 #### **GRIFFON**
@@ -260,9 +264,7 @@ With the forequarters and wings of an eagle and the hindquarters of a great cat,
 
 **Talons:** (60/+14), Fast
 
-**Bite:** (60/+8) Lose Momentum to make
-
-this Free Attack, *Penetrating*
+**Bite:** (60/+8) Lose Momentum to make this Free Attack, *Penetrating*
 
 #### **Armour**
 
@@ -344,7 +346,9 @@ Pegasi are handsome white horses with great swan-like wings. They are dogged and
 
 > — Berthold Bruner, Farmer and Pegasus-watcher
 
-**Troll** Trolls are filthy, foul creatures that infest every corner of the Old World. Quick to adapt to their surroundings, they come in many forms, but all are huge and imposing. Dim-witted and driven by an endless hunger, they nevertheless hoard anything that catches their eye, making their lairs a trove of valuable treasures... and the grisly remains of previous meals. There are many species of troll, all of which share several common traits: they are exceptionally stupid, allowing cunning foes to outwit them; they regenerate, making them notoriously difficult to kill; and they can regurgitate their last meal at will, vomiting acrid bile over astonishing distances — although they are loath to do this as it leaves them extremely hungry.
+# **Troll**
+
+Trolls are filthy, foul creatures that infest every corner of the Old World. Quick to adapt to their surroundings, they come in many forms, but all are huge and imposing. Dim-witted and driven by an endless hunger, they nevertheless hoard anything that catches their eye, making their lairs a trove of valuable treasures... and the grisly remains of previous meals. There are many species of troll, all of which share several common traits: they are exceptionally stupid, allowing cunning foes to outwit them; they regenerate, making them notoriously difficult to kill; and they can regurgitate their last meal at will, vomiting acrid bile over astonishing distances — although they are loath to do this as it leaves them extremely hungry.
 
 ### **TROLL TYPES**
 
@@ -366,7 +370,9 @@ There are a number of species of trolls so you should feel free to customise the
 
 **Hand Weapon:** (45/+14)
 
-**Bite:** (40/+8) Lose Momentum to make this Free Attack **Vomit:** (55/+8) Must start turn Engaged and give up Move and Action, affects all targets within 2 yards, who oppose using **Challenging (+0 SL) Dodge**. On hit, inflicts *Stunned* Condition and 1 Damage to victim's weapons and armour. May only use again after 12 hours.
+**Bite:** (40/+8) Lose Momentum to make this Free Attack
+
+**Vomit:** (55/+8) Must start turn Engaged and give up Move and Action, affects all targets within 2 yards, who oppose using **Challenging (+0 SL) Dodge**. On hit, inflicts *Stunned* Condition and 1 Damage to victim's weapons and armour. May only use again after 12 hours.
 
 #### **Armour**
 
@@ -382,7 +388,13 @@ Melee (Brawling) 40, Melee (Basic) 45, Endurance 55
 
 #### **Traits**
 
-**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound **Regeneration:** Regain 1d10 Wounds at start of round. A roll of 10 heals a Critical Wound. At 0 Wounds, roll 8+ to regain one Wound. Cannot Regenerate Wounds or Critical Wounds caused by Fire. **Size (Large):** See page 360 for implications of size **Stupid:** Must pass an **Easy (+4 SL) Intelligence** Test before acting, unless they are directed by a creature
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
+
+**Regeneration:** Regain 1d10 Wounds at start of round. A roll of 10 heals a Critical Wound. At 0 Wounds, roll 8+ to regain one Wound. Cannot Regenerate Wounds or Critical Wounds caused by Fire.
+
+**Size (Large):** See page 360 for implications of size
+
+**Stupid:** Must pass an **Easy (+4 SL) Intelligence** Test before acting, unless they are directed by a creature
 
 #### **Optional Traits**
 

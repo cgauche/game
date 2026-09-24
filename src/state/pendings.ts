@@ -5,6 +5,7 @@
  */
 import type { CharKey, Difficulty, HitLocation, Weapon, FireArc, Combatant } from '../engine/types';
 import type { DiceSpec } from '../engine/dice';
+import type { PorteurDeFiche } from '../engine/statblock';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { Pt } from './path';
 import type { Dir8 } from './dir8';
@@ -49,12 +50,12 @@ export interface PendingLoot {
   gear: LootGear[];
 }
 /** Reconstitution DIFFÉRÉE programmée à la mort (Gardien éternel) : à l'échéance d'un `ScheduledEffect`,
- *  ré-invoque la créature `summon.ref` près de `caster.pos`, dans le camp de `caster.kind`
- *  (cf. `summonFlow.applySummon`). `caster` est un INSTANTANÉ minimal du défunt — les seuls champs lus
- *  par `applySummon` (id/name/kind/pos). */
+ *  ré-invoque la fiche `summon.porteur` (celle du défunt pour `ref:'self'`, #1882) près de `caster.pos`,
+ *  dans le camp de `caster.kind` (cf. `summonFlow.applySummon`). `caster` est un INSTANTANÉ minimal du
+ *  défunt — les seuls champs lus par `applySummon` (id/name/kind/pos). */
 export interface ScheduledRespawn {
   caster: { id: string; label: string; kind: Combatant['kind']; pos: Pt };
-  summon: { ref: string; count: number; allyOfCaster?: boolean };
+  summon: { porteur: PorteurDeFiche; count: number; allyOfCaster?: boolean };
 }
 /** Entrée de la file d'effets PROGRAMMÉS (runtime, Lot 0), déclenchée quand l'horloge atteint `executeAt`
  *  (minute absolue `gameTime`), sauf si `cancelFlag` a été posé entre-temps. Deux charges possibles : un

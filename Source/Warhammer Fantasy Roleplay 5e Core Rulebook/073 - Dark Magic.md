@@ -70,4 +70,4 @@ You shriek the high-pitched words of the spell and a large, black skull wreathed
 
 **CN:** 6 **Range:** Willpower yards **Target:** Special **Duration:** Instant
 
-You manipulate complicated flows of *Dhar* into your targets, filling them with overwhelming energy. Intelligence Bonus targets with the *Undead* Trait gain a free Move or Action choose one to affect all targets — taken the moment the Spell is cast. For each +2 SL, you may invigorate an extra Intelligence Bonus targets.
+You manipulate complicated flows of *Dhar* into your targets, filling them with overwhelming energy. Intelligence Bonus targets with the *Undead* Trait gain a free Move or Action — choose one to affect all targets — taken the moment the Spell is cast. For each +2 SL, you may invigorate an extra Intelligence Bonus targets.

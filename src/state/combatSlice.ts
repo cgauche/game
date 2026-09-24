@@ -59,7 +59,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
 import { weaponLoaded, reloadProgressOf } from '../engine/weaponLoad';
 import { recomputeLoadout, itemFromGive, loadedAmmo, loadWeapon, unloadWeapon, setReloadProgress, setAmmoChoice, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon, autoStowNewItem } from '../engine/items';
-import { trappingById, resolvePresetCreature } from './campaignData';
+import { trappingById } from './campaignData';
 import { canPushback, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
@@ -75,6 +75,7 @@ import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill, soutienDetail } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy, placeCombatant } from './spawn';
+import { ficheDEntite } from './sceneNpc';
 import { applyShipPostes, autoFormCrews, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef, isPosteManned } from './shipPostes';
 import { posteHullOf, pushEligible, pushCrewOk, pushReachable } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
@@ -2835,22 +2836,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const roster = (enc.members ?? [])
         .map((m) => ({ m, ent: byEntity.get(m.entityId) }))
         .filter((r): r is { m: typeof r.m; ent: SceneEntity } => !!r.ent);
-      const enemies = roster.map(({ ent }) => {
-        // Preset de PNJ nommé (#671) : résolu ICI (couche campagne, `campaignData` déjà importé #767) →
-        // CreatureData mergée + apparence embarquée passées au spawn. Résolution `undefined` (couche non
-        // chargée / preset absent) → repli SILENCIEUX sur ref/statblock (comportement inchangé).
-        const preset = ent.presetId ? resolvePresetCreature(ent.presetId) : undefined;
-        // z (étage) propagé depuis la SceneEntity → Combatant.pos.z (omis au sol pour rester byte-identique)
-        return spawnEnemy(ent.ref, ent.statblock, ent.id, ent.z ? { ...ent.pos, z: ent.z } : { ...ent.pos }, {
-          presetCreature: preset?.creature,
-          appearance: preset?.apparence ?? ent.appearance, weapon: ent.weapon,
-          optionals: ent.combat?.optionals, spells: ent.combat?.spells, randomChars: ent.combat?.randomChars, // LDB 76/78
-          skills: ent.combat?.skills, // compétences d'auteur (servant de pièce : Projectiles du Groupe de l'engin, AA 10 l.142-146)
-          crewIds: ent.crewIds, // navire → équipage exposé (MDG 14)
-          postes: ent.postes, // navire → pièces d'artillerie montées (MDG 12-13)
-          upgrades: ent.upgrades, // navire → Améliorations d'instance (MDG 12 : Blindage, Lissage…)
-        });
-      });
+      const enemies = roster.map(({ ent }) => ficheDEntite(ent));
       // #30 — Blessures de COQUE persistantes : une coque spawnée qui EST le navire de campagne
       // (creatureId = vehicleId) repart de l'état persisté (writeback symétrique dans finalizeBattle).
       const vessel0 = get().vessel;
@@ -2899,8 +2885,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const mp = heroCombatMount(hero, get().possessions);
         if (!mp) continue;
         const mount = spawnEnemy(
-          'creatureId' in mp.ref ? mp.ref.creatureId : undefined,
-          'custom' in mp.ref ? mp.ref.custom : undefined,
+          'creatureId' in mp.ref ? { ref: mp.ref.creatureId } : { statblock: mp.ref.custom },
           mp.uid,
           hero.pos ? { ...hero.pos } : { x: 0, y: 0 },
           { charsRolled: mp.charsRolled, learnedTraits: mp.learnedTraits },

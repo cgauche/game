@@ -30,11 +30,11 @@ Scrawny, spiteful, nimble, and possessed of a degree of mean cunning, a goblin's
 
 **Toughness Bonus:** 3
 
-**Optional Light Armour:** +1 AP **Optional Helmet:** +2 AP to Head
+**Optional Light Armour:** +1 AP
 
-**Optional Shield:** +2 AP when Opposing
+**Optional Helmet:** +2 AP to Head
 
-an attack with *Dodge* or *Melee*
+**Optional Shield:** +2 AP when Opposing an attack with *Dodge* or *Melee*
 
 #### **Skills**
 
@@ -44,17 +44,11 @@ Dodge 35, Melee (Basic) 30, Perception 25, Ranged (Bow) 35, Stealth (Rural) 35, 
 
 **Afraid (Elves):** Elves cause *Fear* against this creature, see page 183 for details
 
-**Animosity (Orcs and Goblins):** The creature
+**Animosity (Orcs and Goblins):** The creature dislikes orcs and goblins, see page 183
 
-dislikes orcs and goblins, see page 183
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
 
-**Infected:** Wounded opponents must take an **Easy (+4** 
-
-**SL) Endurance** Test to avoid a Festering Wound
-
-**Night Vision:** See clearly for 20 yards and extend the
-
-illumination distance of light sources by 20 yards
+**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
 #### **Optional Traits**
 
@@ -80,11 +74,13 @@ Orcs are nasty, brutal, belligerent, and almost immune to pain. Muscular and bro
 
 **Toughness Bonus:** 4
 
-**Optional Light Armour:** +1 AP **Optional Medium Armour:** +3 AP **Optional Helmet:** +2 AP to Head
+**Optional Light Armour:** +1 AP
 
-**Optional Shield:** +2 AP when Opposing
+**Optional Medium Armour:** +3 AP
 
-an attack with *Dodge* or *Melee*
+**Optional Helmet:** +2 AP to Head
+
+**Optional Shield:** +2 AP when Opposing an attack with *Dodge* or *Melee*
 
 #### **Skills**
 
@@ -96,19 +92,11 @@ Endurance 50, Melee (Basic) 40, Ranged (Bow) 35
 
 The creature dislikes orcs and goblins, see page 183
 
-**Belligerent:** As long as they possess Advantage and their opponent does
+**Belligerent:** As long as they possess Advantage and their opponent does not, they are immune to *Fear*
 
-not, they are immune to *Fear*
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
 
-**Infected:** Wounded opponents must take
-
-an **Easy (+4 SL) Endurance** Test to
-
-avoid a Festering Wound
-
-**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources
-
-by 20 yards
+**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
 #### **Optional Traits**
 
@@ -140,15 +128,9 @@ Pea-brained creatures akin to enthusiastic, uncontrolled puppies, snotlings are 
 
 #### **Traits**
 
-**Bestial:** Animal behaviour is simple and predictable,
+**Bestial:** Animal behaviour is simple and predictable, see page 356
 
-see page 356
-
-**Infected:** Wounded opponents must take an
-
-**Easy (+4 SL)**
-
-**Endurance** Test to avoid a Festering Wound
+**Infected:** Wounded opponents must take an **Easy (+4 SL) Endurance** Test to avoid a Festering Wound
 
 **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 

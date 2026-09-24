@@ -1414,6 +1414,13 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const uid = addPossession(env.get, env.set, input);
       env.log(t('eff.recover', { name: owner.label, item: possessionLabel({ ...input, uid } as Possession) }));
     },
+    // La bête ou le serviteur donné est une RÉFÉRENCE : sa fiche (monture de combat, `spawnEnemy`) s'y lit (#1882).
+    refs: (e) => {
+      const r = e.ref;
+      if ('creatureId' in r && !findCreatureById(r.creatureId)) return [{ level: 'error', message: `Possession → créature inexistante « ${r.creatureId || '(aucune)'} »` }];
+      if ('vehicleId' in r && !findVehicleById(r.vehicleId)) return [{ level: 'error', message: `Possession → véhicule inexistant « ${r.vehicleId || '(aucun)'} »` }];
+      return [];
+    },
   },
   giveMoney: {
     group: 'Récompenses', label: 'Donner/retirer de l’argent', icon: 'resource/gold-purse',

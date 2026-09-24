@@ -18,7 +18,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
-import { detailRecipeSchema, enumNomme } from '../grammaire/valeurs';
+import { couleurHexSchema, detailRecipeSchema, enumNomme } from '../grammaire/valeurs';
 import { type MaterialDomain } from '../../materials.types';
 
 export const file = 'materials.json';
@@ -80,7 +80,7 @@ const doc = document(
   {
     domain: enumNomme(LIBELLES_DE_DOMAINE),
     // ── domaine `prop`
-    color: z.string().regex(/^#[0-9a-f]{6}$/).optional(),
+    color: couleurHexSchema.optional(),
     roughness: z.number().min(0).max(1).optional(),
     metalness: z.number().min(0).max(1).optional(),
     // ── domaine `roof`

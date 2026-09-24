@@ -25,7 +25,9 @@ To those untouched by the blight of Chaos, its corruption appears horrifyingly a
 
 **Toughness Bonus:** 3
 
-**Optional Light Armour:** +1 AP **Optional Medium Armour:** +3 AP
+**Optional Light Armour:** +1 AP
+
+**Optional Medium Armour:** +3 AP
 
 **Optional Shield:** +2 AP when Opposing an attack with
 
@@ -59,7 +61,9 @@ Melee (Basic) 35, Stealth (Rural) 40, Stealth (Urban) 40
 
 **Corruption (Minor):** Is a Corrupting Influence with a
 
-Strength of Minor **Mutation:** Roll on the **Physical Corruption Table**
+Strength of Minor
+
+**Mutation:** Roll on the **Physical Corruption Table**
 
 ### **Optional Traits**
 
@@ -81,7 +85,9 @@ Heavily armoured hulking brutes adorned with ornate spikes and eye-watering symb
 
 #### **Armour**
 
-**Toughness Bonus:** 4 **Heavy Armour:** +5 AP
+**Toughness Bonus:** 4
+
+**Heavy Armour:** +5 AP
 
 **Optional Shield:** +2 AP when Opposing an attack with
 

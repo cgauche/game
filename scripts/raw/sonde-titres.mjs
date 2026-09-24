@@ -7,22 +7,35 @@
 // FAMILLES : `entree` (le run de tête contient la typographie `titre`), `encadre` (le run commence par
 // la typographie `encadre`, corps en prose), `tableau` (même typographie, corps en ligne de tableau `|`),
 // `capitales` (le run est de la typographie `capitales` : titres de section en petites capitales, noms
-// de créature compris).
-// FORMES, pour les entrées : S soudé à son corps · F gras de tête (hors étiquette `X:`) soudé à un corps
-// ÉTRANGER, souvent celui de son JUMEAU (titre imprimé au même y de la même page) · M migré (ligne de
-// titre isolée, gras seul, ou groupe d'un titre composite avec son jumeau, ailleurs) · S′ absent du livre
-// comme titre et comme fragment (restauré verbatim ; les MENTIONS en prose sont rapportées, elles ne
-// valent pas fragment) · B gras sans `#` · O entrée hors de l'ordre du PDF, à poser `devant` le titre qui
-// la suit au PDF · N niveau différent du frère de même famille qui précède (rapporté) ·
-// `corps-introuvable`, avec sa cause (`sans-ligne` : suivi d'un autre titre ; `cle-courte` : aucune
-// ligne de corps de deux mots ; `hors-md` : corps absent des `.md` de sa page). Pour les encadrés, les
-// tableaux et les capitales, seules S et F sont rendues : leur place dans le `.md` suit la mise en page,
-// pas l'ordre du PDF.
-// DÉBRIS devant un corps dont le titre est à sa place (toutes familles) : `doublon` (un titre imprimé
-// UNE fois au PDF, porté une seconde fois par le `.md` — preuve : les deux comptes), `numero-de-page`
-// (des nombres de la plage de pages du fichier).
-// Toute CIBLE (`cible`, `devant`) est le DÉBUT d'un bloc Markdown ; sinon le site sort en
-// `cible-invalide`, avec sa forme visée et la ligne visée.
+// de créature compris), `intertitre` (le run commence par la typographie `intertitre` : titres du fil du
+// texte d'un corps plus petit, événements et niveaux de carrière compris). `entree` et `intertitre` sont
+// les familles d'ENTRÉE (`ENTREES`).
+// FORMES (`FORMES`) :
+//  — S : titre soudé à son corps ;
+//  — F : gras de tête (hors étiquette `X:`) soudé à un corps ÉTRANGER, souvent celui de son JUMEAU
+//    (titre imprimé au même y de la même page) ;
+//  — M : titre migré (ligne de titre isolée, gras seul, ou groupe d'un titre composite avec son jumeau,
+//    ailleurs) ;
+//  — S′ : titre absent du livre comme titre et comme fragment, restauré ; les MENTIONS en prose sont
+//    rapportées, elles ne valent pas fragment ;
+//  — B : gras sans `#` ;
+//  — O : entrée hors de l'ordre du PDF, à poser `devant` le titre qui la suit au PDF ;
+//  — P, E, A, G, T, J : les formes du TEXTE (`formesDuTexte`) — paragraphe scindé, libellé soudé, appel
+//    de figure mêlé, gras italique perdu, tiret cadratin perdu, joint `X/ Y` —, chacune PROUVÉE au PDF
+//    site par site ; `paragraphe-non-prouve`, `libelle-non-prouve` et `cesure` sont rapportés, avec leur motif ;
+//  — N : niveau différent du frère de même famille qui précède (rapporté) ;
+//  — `corps-introuvable`, avec sa cause (`sans-ligne` : suivi d'un autre titre ; `cle-courte` : aucune
+//    ligne de corps de deux mots ; `hors-md` : corps absent des `.md` de sa page) ;
+//  — `cible-invalide` : une cible qui n'est pas le DÉBUT d'un bloc Markdown ;
+//  — `doublon` : DÉBRIS devant un corps dont le titre est à sa place (toutes familles), un titre imprimé
+//    UNE fois au PDF et porté une seconde fois par le `.md` — preuve : les deux comptes.
+// Pour les encadrés, les tableaux et les capitales, seules S et F sont rendues (leur place dans le `.md`
+// suit la mise en page, pas l'ordre du PDF), et, des capitales, le S′ par COMPTAGE : un titre que les
+// pages de son fichier impriment PLUS de fois que son `.md` ne le porte (une fois au moins).
+// Toute CIBLE (`cible`, `devant`) est le DÉBUT d'un bloc Markdown ; une ligne de tableau se remonte à
+// l'en-tête de son bloc ; sinon le site sort en `cible-invalide`, avec sa forme visée et la ligne visée.
+// `titreMd` : le texte EXACT du titre dans le `.md` (S, F, M, B, O), ce que la réparation déplace.
+// Les ancres `<span id="page-…"></span>` ne comptent pas (`stripSpans`, `src/data/source/decoupe.ts`).
 //
 // Usage :
 //   node scripts/raw/sonde-titres.mjs <id> [--boites <boites.json>] [--json <sortie.json>]
@@ -35,6 +48,8 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { decoupeDe, gabaritTitreDe, livreExtraitDe, nomsDeLaListe, normalize, readText } from './_lib.mjs'
 import { lignes } from './lib/colonnes.mjs'
+import { stripSpans } from '../../src/data/source/decoupe.ts'
+import { grasOuvert, prosePrecedenteCoupee, recoller } from './lib/titres-soudes.mjs'
 import { canoniser, relatifSousRacine } from '../docs/lib/chemin-mesure.mjs'
 
 const PDF_LIGNES = join(dirname(fileURLToPath(import.meta.url)), 'lib', 'pdf-lignes.py')
@@ -43,7 +58,7 @@ const PDF_LIGNES = join(dirname(fileURLToPath(import.meta.url)), 'lib', 'pdf-lig
  *  remplacement que l'extraction PDF rend pour l'apostrophe, l'échappement Markdown, les préfixes de
  *  ligne (`#`, `>`, puce `-`) et les séparateurs de cellule de tableau (`|`). PURE. */
 export const cle = (s) =>
-  normalize(String(s).replace(/^(?:#{1,6}|>|-)\s+/, '').replace(/\\(.)/g, '$1').replace(/[\ufffd‘]/g, "'").replace(/\|/g, ' '))
+  normalize(stripSpans(String(s)).replace(/^(?:#{1,6}|>|-)\s+/, '').replace(/\\(.)/g, '$1').replace(/[\ufffd‘]/g, "'").replace(/\|/g, ' '))
 
 const cleDeTitre = (s) => cle(s).replace(/:$/, '')
 
@@ -55,10 +70,12 @@ const memeTypo = (s, t) => s.police === t.police && (t.taille == null || Math.ab
 /**
  * Les TITRES imprimés d'une page, dans l'ordre de lecture : une ligne dont le RUN de tête (spans
  * consécutifs aux typographies du gabarit) CONTIENT la typographie `titre` (entrée), COMMENCE par
- * `encadre` (encadré ou tableau) ou par `capitales`, et dont aucun span n'est d'une typographie
+ * `encadre` (encadré ou tableau), par `capitales` ou par `intertitre`, et dont aucun span n'est d'une typographie
  * `exclusions`. `texte` = la ligne quand le run la couvre (espacement lu par pdfminer : `T`+`roll` =
- * `Troll`), sinon les spans du run séparés d'une espace. PURE.
- * @returns {{ index: number, texte: string, gabarit: 'entree' | 'encadre' | 'capitales' }[]}
+ * `Troll`), sinon les spans du run séparés d'une espace. Un titre imprimé sur DEUX lignes (lignes de
+ * titre consécutives, même gabarit, même colonne, interligne < 1,4 × la taille) est UN titre ; `fin` =
+ * l'indice de sa dernière ligne. PURE.
+ * @returns {{ index: number, fin: number, texte: string, gabarit: 'entree' | 'encadre' | 'capitales' | 'intertitre' }[]}
  */
 export function titresDeLaPage(lignesDeLaPage, gabarit) {
   const out = []
@@ -66,6 +83,7 @@ export function titresDeLaPage(lignesDeLaPage, gabarit) {
     ['entree', [gabarit.titre, ...gabarit.accompagnement], gabarit.titre],
     ['encadre', [gabarit.encadre], gabarit.encadre],
     ['capitales', [gabarit.capitales], gabarit.capitales],
+    ['intertitre', [gabarit.intertitre], gabarit.intertitre],
   ]
   lignesDeLaPage.forEach((l, index) => {
     if (l.spans.some((s) => gabarit.exclusions.some((t) => memeTypo(s, t)))) return
@@ -74,7 +92,12 @@ export function titresDeLaPage(lignesDeLaPage, gabarit) {
       while (n < l.spans.length && typos.some((t) => memeTypo(l.spans[n], t))) n++
       const run = l.spans.slice(0, n)
       if (run.some((s) => memeTypo(s, tete))) {
-        out.push({ index, texte: n === l.spans.length ? l.texte : run.map((s) => s.texte).join(' '), gabarit: nom })
+        const texte = n === l.spans.length ? l.texte : run.map((s) => s.texte).join(' ')
+        const p = out.at(-1)
+        const q = lignesDeLaPage[index - 1]
+        if (p && p.fin === index - 1 && p.gabarit === nom && q.colonne === l.colonne && q.y0 - l.y0 > 0 && q.y0 - l.y0 < 1.4 * l.spans[0].taille) {
+          Object.assign(p, { fin: index, texte: `${p.texte} ${texte}` })
+        } else out.push({ index, fin: index, texte, gabarit: nom })
         return
       }
     }
@@ -98,23 +121,44 @@ export function clesDeCorps(suivantes) {
 
 /** Ligne de titre Markdown : `{ niveau, texte, groupes }` (groupes gras), ou null. PURE. */
 export function enTete(ligne) {
-  const m = /^(#{1,6})\s+(.*)$/.exec(ligne)
+  const m = /^(#{1,6})\s+(.*)$/.exec(stripSpans(ligne))
   if (!m) return null
   return { niveau: m[1].length, texte: cleDeTitre(m[2]), groupes: [...m[2].matchAll(/\*\*([^*]+)\*\*/g)].map((g) => cleDeTitre(g[1])) }
 }
 
 /** Ligne FAITE d'un seul groupe gras (titre sans `#`) : son texte, ou null. PURE. */
 export const grasSeul = (ligne) => {
-  const m = /^\*\*([^*]+)\*\*\s*$/.exec(ligne)
+  const m = /^\*\*([^*]+)\*\*\s*$/.exec(stripSpans(ligne).trimStart())
   return m ? cleDeTitre(m[1]) : null
 }
 
 /** Groupe gras de TÊTE d'une ligne (après `#` éventuels) : `{ texte, reste, etiquette }` —
  *  `etiquette` : le groupe finit par `:` (étiquette en ligne, `**Combat Reflexes:** …`) —, ou null. PURE. */
 export const grasDeTete = (ligne) => {
-  const m = /^(?:#{1,6}\s+)?\*\*([^*]+)\*\*\s*(.*)$/.exec(ligne)
+  const m = /^(?:#{1,6}\s+)?\*\*([^*]+)\*\*\s*(.*)$/.exec(stripSpans(ligne).trimStart())
   return m ? { texte: cleDeTitre(m[1]), reste: m[2], etiquette: /:\s*$/.test(m[1]) } : null
 }
+
+/** Le texte EXACT d'un titre de clé `k` dans sa ligne `.md` : le plus court préfixe (`#` compris)
+ *  de clé `k`, sinon le groupe gras de clé `k` (titre composite), sinon null. PURE. */
+export function texteExact(ligne, k) {
+  for (const m of ligne.matchAll(/\s|$/g)) {
+    const p = ligne.slice(0, m.index).trim()
+    if (p && cleDeTitre(p) === k) return p
+  }
+  return [...ligne.matchAll(/\*\*[^*]+\*\*/g)].find((g) => cleDeTitre(g[0]) === k)?.[0] ?? null
+}
+
+/** La casse d'un titre du `.md` : `titre` (chaque mot capitalisé), `majuscules`, ou `autre`. PURE. */
+export const casseDe = (texte) => {
+  const mots = texte.match(/\p{L}+/gu) ?? []
+  if (mots.length && mots.every((m) => m === m.toUpperCase()) && mots.some((m) => m.length > 1)) return 'majuscules'
+  return mots.length && mots.every((m) => m[0] === m[0].toUpperCase() && m.slice(1) === m.slice(1).toLowerCase()) ? 'titre' : 'autre'
+}
+
+/** Le texte `texte` dans la casse `casse` (`casseDe`), ou null pour `autre`. PURE. */
+export const enCasse = (texte, casse) =>
+  casse === 'majuscules' ? texte.toUpperCase() : casse === 'titre' ? texte.toLowerCase().replace(/(^|[\s(-])(\p{L})/gu, (_, a, b) => a + b.toUpperCase()) : null
 
 /** Indices de la plus longue sous-suite croissante de `vals` (ordre du PDF tenu par le `.md`). PURE. */
 export function plusLongueCroissante(vals) {
@@ -151,9 +195,9 @@ export function classer(pages, fichiers, gabarit) {
     n += p.lignes.length
   }
   const titres = pages.flatMap((p) =>
-    titresDeLaPage(p.lignes, gabarit).map((t) => ({ ...t, index: debutDePage.get(p.page) + t.index, page: p.page })),
+    titresDeLaPage(p.lignes, gabarit).map((t) => ({ ...t, index: debutDePage.get(p.page) + t.index, fin: debutDePage.get(p.page) + t.fin, page: p.page })),
   )
-  const estTitre = new Set(titres.map((t) => t.index))
+  const estTitre = new Set(titres.flatMap((t) => Array.from({ length: t.fin - t.index + 1 }, (_, k) => t.index + k)))
   const cles = fichiers.map((f) => f.lignes.map(cle))
   const fichiersDeLaPage = (p) => [...fichiers.keys()].filter((i) => fichiers[i].page <= p + 1 && p <= fichiers[i].pageFin)
   const precedente = (fi, li) => {
@@ -164,12 +208,10 @@ export function classer(pages, fichiers, gabarit) {
   }
   const tousTitres = new Set(titres.map((t) => cleDuPdf(t.texte)))
   const clesDuFlux = flux.map((l) => ({ page: l.page, cle: cleDuPdf(l.texte) }))
-  // DÉBRIS `k` devant un corps du fichier `f` : nombres de sa plage de pages (à une page près), ou texte
-  // imprimé au PDF sur ses pages et porté plus de fois par son `.md` (doublon). Un autre texte n'est pas
-  // un débris : la clé de corps a été trouvée plus loin dans sa ligne.
+  // DÉBRIS `k` devant un corps du fichier `f` : texte imprimé au PDF sur ses pages et porté plus de fois
+  // par son `.md` (doublon). Un autre texte n'est pas un débris : la clé de corps a été trouvée plus
+  // loin dans sa ligne.
   const debris = (k, f) => {
-    const nombres = k.split(' ')
-    if (nombres.every((x) => /^\d{1,4}$/.test(x) && fichiers[f].page - 1 <= +x && +x <= fichiers[f].pageFin + 1)) return { forme: 'numero-de-page', texte: k }
     const auPdf = clesDuFlux.filter((l) => fichiers[f].page <= l.page && l.page <= fichiers[f].pageFin && l.cle.startsWith(k))
     const auMd = cles[f].flatMap((c, j) => (c.startsWith(k) ? [adresse(f, j)] : []))
     if (auPdf.length && auMd.length > auPdf.length) return { forme: 'doublon', texte: k, auMd, auPdf: auPdf.map((l) => `p.${l.page} « ${l.cle} »`) }
@@ -182,11 +224,16 @@ export function classer(pages, fichiers, gabarit) {
   for (const t of titres) {
     const l = flux[t.index]
     Object.assign(t, { colonne: l.colonne, x0: l.x0, y0: l.y0, cle: cleDuPdf(t.texte), famille: t.gabarit })
-    const suivantes = []
-    for (let i = t.index + 1; i < flux.length && suivantes.length < 6 && flux[i].page <= t.page + 1; i++) {
+    // Une ligne IMPRIMÉE que pdfminer rend en plusieurs boîtes (même page, colonne et y) est UNE ligne,
+    // ses morceaux de gauche à droite.
+    const morceaux = []
+    for (let i = t.fin + 1; i < flux.length && morceaux.length < 6 && flux[i].page <= t.page + 1; i++) {
       if (estTitre.has(i)) break
-      suivantes.push(flux[i].texte)
+      const p = morceaux.at(-1)?.[0]
+      if (p && p.page === flux[i].page && p.colonne === flux[i].colonne && Math.abs(p.y0 - flux[i].y0) < 1) morceaux.at(-1).push(flux[i])
+      else morceaux.push([flux[i]])
     }
+    const suivantes = morceaux.map((m) => m.sort((x, y) => x.x0 - y.x0).map((x) => x.texte).join(' '))
     t.corpsPdf = suivantes[0] ?? null
     t.cles = clesDeCorps(suivantes)
     t.corps = null
@@ -224,7 +271,10 @@ export function classer(pages, fichiers, gabarit) {
       const h = p && enTete(fichiers[p.f].lignes[p.l])
       if (h && h.texte === t.cle) {
         t.forme = 'ok'
-        if (pos > 0 && !tousTitres.has(prefixe) && !/^\s*\|/.test(fichiers[f].lignes[li])) t.debris = debris(prefixe, f)
+        if (pos > 0 && !tousTitres.has(prefixe) && !/^\s*\|/.test(fichiers[f].lignes[li])) {
+          t.debris = debris(prefixe, f)
+          if (t.debris) t.debris.texteMd = texteExact(fichiers[f].lignes[li], prefixe)
+        }
         t.titreMd = { ...p, niveau: h.niveau }
         pris.add(`titre ${p.f}:${p.l}`)
         continue
@@ -243,11 +293,19 @@ export function classer(pages, fichiers, gabarit) {
   // livre). Ne vaut titre ou fragment qu'une ligne de titre isolée, un gras seul, un groupe d'un titre
   // composite avec son JUMEAU, ou un gras de TÊTE de ligne qui n'est pas une étiquette (`X:`) : soudé au
   // corps de son jumeau ou à un autre corps. Le reste est MENTION.
+  // Règle du DOUBLON inversée : les pages du fichier de son corps impriment le titre PLUS de fois que
+  // ce `.md` ne le porte, une fois au moins (le `.md` a gardé l'en-tête de profil, perdu le titre).
+  const comptage = (t) => {
+    const f = t.corps.f
+    const auPdf = clesDuFlux.filter((l) => fichiers[f].page <= l.page && l.page <= fichiers[f].pageFin && l.cle === t.cle).length
+    const auMd = cles[f].filter((c) => c === t.cle).length
+    return auMd && auPdf > auMd ? { auPdf, auMd } : null
+  }
   const jumeaux = (t) => titres.filter((u) => u !== t && u.page === t.page && Math.abs(u.y0 - t.y0) <= 2)
   const ordreDeRecherche = (p) => [...new Set([...fichiersDeLaPage(p), ...fichiers.keys()])]
   for (const t of titres.filter((x) => x.forme === 'absent')) {
     const siens = jumeaux(t)
-    const entree = t.famille === 'entree'
+    const entree = ENTREES.has(t.famille)
     let vu = null
     for (const fi of ordreDeRecherche(t.page)) {
       for (let li = 0; li < fichiers[fi].lignes.length && !vu; li++) {
@@ -272,12 +330,13 @@ export function classer(pages, fichiers, gabarit) {
     } else {
       t.forme = "S'"
       t.mentions = fichiers.flatMap((fx, fi) => fx.lignes.flatMap((x, li) => (cles[fi][li].includes(t.cle) ? [adresse(fi, li)] : [])))
+      if (t.famille === 'capitales' && t.corps) t.comptage = comptage(t)
     }
   }
 
   // O : l'entrée (titre et corps) hors de la plus longue sous-suite qui tient l'ordre du PDF, parmi les
-  // ENTRÉES seules (encadrés, tableaux et capitales suivent la mise en page).
-  const places = titres.filter((t) => t.corps && t.famille === 'entree')
+  // ENTRÉES seules (`ENTREES` ; encadrés, tableaux et capitales suivent la mise en page).
+  const places = titres.filter((t) => t.corps && ENTREES.has(t.famille))
   const tenus = plusLongueCroissante(places.map((t) => t.corps.f * 1e6 + t.corps.l))
   places.forEach((t, i) => {
     if (!tenus.has(i)) t.hors = true
@@ -296,42 +355,336 @@ export function classer(pages, fichiers, gabarit) {
   }
 
   // Toute CIBLE (`cible`, `devant`) est le DÉBUT d'un bloc Markdown : ligne non vide, en tête de fichier
-  // ou après une ligne vide ou un titre (d'un tableau, c'est donc son en-tête). Sinon le site sort en
-  // `cible-invalide`, avec la forme visée : poser un titre là casserait le bloc.
+  // ou après une ligne vide ou un titre. Une ligne de tableau se remonte d'abord au DÉBUT de son bloc
+  // contigu (l'en-tête). Sinon le site sort en `cible-invalide`, avec la forme visée : poser un titre là
+  // casserait le bloc.
   const debutDeBloc = ({ f, l }) => {
     const x = fichiers[f].lignes
-    return !!x[l]?.trim() && (l === 0 || !x[l - 1].trim() || !!enTete(x[l - 1]))
+    if (/^\s*\|/.test(x[l] ?? '')) while (l > 0 && /^\s*\|/.test(x[l - 1])) l--
+    return x[l]?.trim() && (l === 0 || !x[l - 1].trim() || enTete(x[l - 1])) ? { f, l } : null
   }
   const sites = []
   const emettre = (s, cibles) => {
-    const faux = Object.entries(cibles).find(([, v]) => v && !debutDeBloc(v))
-    if (!faux) return sites.push(s)
-    const [champ, v] = faux
-    sites.push({ ...s, forme: 'cible-invalide', formeVisee: s.forme, champ, [champ]: adresse(v.f, v.l), ligneCible: fichiers[v.f].lignes[v.l] })
+    const poses = {}
+    for (const [champ, v] of Object.entries(cibles)) {
+      if (!v) continue
+      const d = debutDeBloc(v)
+      if (!d) return sites.push({ ...s, forme: 'cible-invalide', formeVisee: s.forme, champ, [champ]: adresse(v.f, v.l), ligneCible: fichiers[v.f].lignes[v.l] })
+      poses[champ] = adresse(d.f, d.l)
+    }
+    sites.push({ ...s, ...poses })
   }
   const cible = (t) => (t.corps ? adresse(t.corps.f, t.corps.l) : null)
   const ouEst = (t) => t.titreMd ?? t.corps
+  const exact = (t) => (t.titreMd ? texteExact(fichiers[t.titreMd.f].lignes[t.titreMd.l], t.cle) : null)
+  // La LIGNE DE TITRE à poser : niveau du FRÈRE TYPOGRAPHIQUE précédent (titre du PDF de même gabarit, à
+  // sa place dans le MÊME fichier que son corps ; le suivant pour le premier du fichier), gras comme lui ;
+  // texte = celui du `.md` (`titreMd`), ou, restauré (S′), le texte imprimé — des capitales, dans la
+  // casse du frère (le span SC700 n'en porte pas).
+  const poser = (t, i, texteMd) => {
+    let u = null
+    const frere = (j) => titres[j].gabarit === t.gabarit && titres[j].forme === 'ok' && titres[j].titreMd.f === t.corps.f
+    for (let j = i - 1; j >= 0 && !u; j--) if (frere(j)) u = titres[j]
+    for (let j = i + 1; j < titres.length && !u; j++) if (frere(j)) u = titres[j]
+    if (!u) return { ligneTitre: null, frere: null }
+    const ligneU = stripSpans(fichiers[u.titreMd.f].lignes[u.titreMd.l]).replace(/^#{1,6}\s+/, '')
+    const nu = texteMd ? texteMd.replace(/^#{1,6}\s+/, '') : ENTREES.has(t.famille) ? t.texte : enCasse(t.texte, casseDe(ligneU.replace(/\*/g, '')))
+    const texte = nu && /^\*\*[^*]+\*\*/.test(ligneU) && !nu.startsWith('**') ? `**${nu}**` : nu && grasOuvert(nu) ? `${nu}**` : nu
+    return { ligneTitre: texte ? `${'#'.repeat(u.titreMd.niveau)} ${texte}` : null, frere: `${adresse(u.titreMd.f, u.titreMd.l)} « ${u.texte} »` }
+  }
+  // Un titre DÉPLACÉ vers un autre fichier (F, M, O) : sa page doit tenir dans la découpe de celui-ci.
+  const decoupe = (t, vers) => {
+    const de = t.titreMd?.f
+    if (vers == null || de == null || de === vers.f) return {}
+    const ok = fichiers[vers.f].page <= t.page && t.page <= fichiers[vers.f].pageFin
+    return { interFichiers: `${fichiers[de].nom.slice(0, 3)} → ${fichiers[vers.f].nom.slice(0, 3)}, p.${t.page} ${ok ? 'dans' : 'HORS de'} ${fichiers[vers.f].page}-${fichiers[vers.f].pageFin}`, horsDecoupe: !ok }
+  }
   titres.forEach((t, i) => {
     const base = { famille: t.famille, page: t.page, colonne: t.colonne, x0: t.x0, y0: t.y0, titre: t.texte }
     const site = t.titreMd ? adresse(t.titreMd.f, t.titreMd.l) : null
     if (t.debris) sites.push({ ...t.debris, site: cible(t), ...base })
-    if (t.famille !== 'entree') {
-      if (t.forme === 'S') sites.push({ forme: 'S', site, ...base })
-      else if (t.forme === 'F') emettre({ forme: 'F', site, cible: cible(t), comment: t.comment, ...base }, { cible: t.corps })
+    const pose = () => poser(t, i, t.forme === "S'" ? null : exact(t))
+    if (!ENTREES.has(t.famille)) {
+      if (t.forme === 'S') sites.push({ forme: 'S', site, titreMd: exact(t), ...pose(), ...base })
+      else if (t.forme === 'F') emettre({ forme: 'F', site, titreMd: exact(t), cible: cible(t), ...pose(), ...decoupe(t, t.corps), comment: t.comment, ...base }, { cible: t.corps })
+      else if (t.forme === "S'" && t.comptage) emettre({ forme: "S'", site: null, cible: cible(t), ...pose(), mentions: t.mentions, comptage: t.comptage, ...base }, { cible: t.corps })
       return
     }
-    if (t.forme === 'S' || t.forme === 'B') sites.push({ forme: t.forme, site, ...base })
-    else if (t.forme === 'F' || t.forme === 'M') emettre({ forme: t.forme, site, cible: cible(t), comment: t.comment, ...base }, { cible: t.corps })
-    else if (t.forme === "S'") emettre({ forme: "S'", site: null, cible: cible(t), verbatim: t.texte, mentions: t.mentions, ...base }, { cible: t.corps })
+    if (t.forme === 'S' || t.forme === 'B') sites.push({ forme: t.forme, site, titreMd: exact(t), ...pose(), ...base })
+    else if (t.forme === 'F' || t.forme === 'M') emettre({ forme: t.forme, site, titreMd: exact(t), cible: cible(t), ...pose(), ...decoupe(t, t.corps), comment: t.comment, ...base }, { cible: t.corps })
+    else if (t.forme === "S'") emettre({ forme: "S'", site: null, cible: cible(t), ...pose(), mentions: t.mentions, ...base }, { cible: t.corps })
     else if (t.forme === 'corps-introuvable') sites.push({ forme: 'corps-introuvable', site: null, cause: t.cause, corpsPdf: t.corpsPdf, ...base })
     if (t.hors) {
-      const suivant = titres.slice(i + 1).find((u) => u.famille === 'entree' && ouEst(u))
+      const suivant = titres.slice(i + 1).find((u) => ENTREES.has(u.famille) && ouEst(u))
       const devant = suivant && ouEst(suivant)
-      emettre({ forme: 'O', site, corps: cible(t), devant: devant ? adresse(devant.f, devant.l) : null, titreSuivant: suivant?.texte ?? null, ...base }, { devant })
+      emettre({ forme: 'O', site, titreMd: exact(t), corps: cible(t), devant: devant ? adresse(devant.f, devant.l) : null, titreSuivant: suivant?.texte ?? null, ...decoupe(t, devant), ...base }, { devant })
     }
     if (t.niveauErratique) sites.push({ forme: 'N', site, ...t.niveauErratique, ...base })
   })
+
+  sites.push(...formesDuTexte({ pages, flux, fichiers, cles, adresse, estTitre, titres }))
   return { sites, titres }
+}
+
+/**
+ * Les formes du TEXTE (#1739) : la prose que l'extraction a coupée, mêlée ou dépouillée de sa
+ * typographie, chacune PROUVÉE au PDF site par site. PURE.
+ *  — P : paragraphe scindé — la ligne `i` du `.md`, que précède une prose coupée `j`
+ *    (`lib/titres-soudes.mjs#prosePrecedenteCoupee`), commence par la ligne `b` du PDF qui SUIT `a`, fin
+ *    de `j`, dans la même colonne, sans retrait de `b` sur `a` ; `b` n'ouvre pas un libellé (gras de tête qui porte `:`), le 1er mot
+ *    de `b` ne tenait pas sur `a` (`marge` de `lib/colonnes.mjs#lignes`) — ou le texte CONTINUE : `a` finit
+ *    sur `,`, `-` ou `/`, ou `b` s'ouvre en minuscule (`par`) —, et la typographie CONTINUE de `a` à
+ *    `b` (même police, ou `b` tout en gras poursuivi en gras). Sans aucune des deux preuves, la ligne à
+ *    candidat unique est rapportée (`paragraphe-non-prouve`) ; le joint `X-`/`X/` + `y` d'une CÉSURE (le
+ *    livre imprime `Xy`, jamais `X-y`/`X/y`) aussi (`cesure`). Si `i` porte ensuite un libellé `**X:**`
+ *    qui ouvre une ligne du PDF après `b`, la ligne se COUPE avant lui (`etiquette`). Entre deux preuves,
+ *    l'emphase du `.md` de part et d'autre de la coupure (`*`, `**`) départage ; sans elle, pas de site ;
+ *  — A : appel de figure — un nombre imprimé dans une pastille (`cercles` de `lib/pdf-lignes.py`), MÊLÉ
+ *    en queue de la ligne du `.md` qui porte les mots d'une ligne voisine (même colonne, 16 pt) ;
+ *  — G : gras italique perdu — un run `BoldItalic` du PDF rendu `*x*` par la ligne du `.md` qui porte
+ *    la ligne du PDF où il commence — à défaut, la ligne qu'un P recolle, qui le porte recollé ; si elle porte `x` sous deux emphases, l'occurrence n'est pas
+ *    désignée : pas de site ;
+ *  — T : tiret cadratin perdu — `X — Y` au PDF, dans une ligne ou à sa jointure (tiret qui ferme la
+ *    ligne, ou qui ouvre la suivante), `X Y` dans la ligne du `.md` qui porte la ligne du tiret ;
+ *  — E : libellé soudé — un libellé `**X:**` au milieu d'une ligne du `.md` OUVRE sa ligne au PDF (la
+ *    ligne du `.md` porte, dès lui, cette ligne) après la ligne dont la ligne du `.md` porte la fin avant
+ *    lui, et son 1er mot TENAIT sur cette ligne — ou ce libellé est absent de `enMilieu` (mesuré sur les
+ *    lignes du PDF) et son compte en tête de ligne atteint `OUVERTURES_PROBANTES`, ou moins
+ *    mais la ligne précédente CLÔT son élément (ni `,`, ni `-`, ni `/` final) — sinon rapporté
+ *    (`libelle-non-prouve`) : la ligne se coupe avant lui. Le libellé qu'un P coupe déjà (`etiquette`) n'en est pas un.
+ *  — J : joint mal fait — `X/ Y` (ou `X- Y`) dans une ligne du `.md` qui porte une ligne du PDF finie
+ *    par `X/` (`X-`) que suit une ligne ouverte par `Y` ; le livre imprime `X/Y` (`X-Y`) ailleurs — pour
+ *    `/`, ou ni `XY` ni `X/Y` —, jamais `XY` seul.
+ * Une ligne du `.md` ne répond qu'à une ligne du PDF de SA plage de pages : de la page du titre à sa
+ * place qui la précède dans son fichier à celle du titre à sa place qui la suit.
+ */
+// Mesure #1739 (CRB) : ouvertures de ligne des libellés que la preuve typographique de E porte — 1, 2, 3, 5 | 7, 10, 29, 257, 259.
+const OUVERTURES_PROBANTES = 6
+
+function formesDuTexte({ pages, flux, fichiers, cles, adresse, estTitre, titres }) {
+  const sites = []
+  const reperes = fichiers.map((_, f) => titres.filter((t) => t.forme === 'ok' && t.titreMd.f === f).map((t) => ({ l: t.titreMd.l, page: t.page })).sort((x, y) => x.l - y.l))
+  const surSaPage = (f, i, page) => {
+    const avant = reperes[f].filter((x) => x.l <= i).at(-1)?.page ?? fichiers[f].page
+    const apres = reperes[f].find((x) => x.l > i)?.page ?? fichiers[f].pageFin
+    return Math.min(avant, apres) <= page && page <= Math.max(avant, apres)
+  }
+  const gras = (span) => /Bold/.test(span?.police ?? '')
+  const suit = (a, b) => !!a && !!b && a.page === b.page && a.colonne === b.colonne && a.y0 - b.y0 > 0 && a.y0 - b.y0 < 16
+  const libelle = (l) => gras(l.spans[0]) && l.spans[0].texte.includes(':')
+  const nePasTenir = (a, b) => {
+    const mot = b.texte.trim().split(/\s+/)[0]
+    return a.x1 + ((b.x1 - b.x0) / Math.max(1, b.texte.length)) * (mot.length + 1) > a.marge
+  }
+  const emphaseDe = (span) => (/BoldItalic/.test(span.police) ? 'gras-italique' : /Bold/.test(span.police) ? 'gras' : /Italic/.test(span.police) ? 'italique' : 'romain')
+  const emphaseMd = (bout) => (/^\*\*\*/.test(bout) ? 'gras-italique' : /^\*\*/.test(bout) ? 'gras' : /^\*/.test(bout) ? 'italique' : 'romain')
+  const accord = (md, span) => md === emphaseDe(span) || (md === 'italique' && emphaseDe(span) === 'gras-italique')
+  const continu = (a, b, c) => memeTypo(a.spans.at(-1), b.spans[0]) || (b.spans.every(gras) && suit(b, c) && gras(c.spans[0]))
+  const prefixes = (x, y) => x.length > 0 && y.length > 0 && (x.startsWith(y) || y.startsWith(x))
+  const suffixes = (x, y) => x.length > 0 && y.length > 0 && (x.endsWith(y) || y.endsWith(x))
+  const surSesPages = (fx, page) => fx.page <= page && page <= fx.pageFin
+  const mots = (t) => new Set(normalize(stripSpans(String(t))).match(/[\p{L}\p{N}]{3,}/gu) ?? [])
+  const porte = (ligneMd, l) => {
+    const m = mots(ligneMd)
+    const n = [...mots(l.texte)]
+    return n.length >= 2 && n.every((x) => m.has(x))
+  }
+  const jetons = (t) => normalize(stripSpans(String(t))).match(/[\p{L}\p{N}]+/gu) ?? []
+  const echappe = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const lignesMd = (page, garde) => fichiers.flatMap((fx, f) => (surSesPages(fx, page) ? fx.lignes.flatMap((ligne, i) => (surSaPage(f, i, page) && garde(ligne) ? [{ f, i, ligne }] : [])) : []))
+  const clot = (l) => !/[,\-/]$/.test(l.texte.trim())
+  const enchaine = (a, b) => !clot(a) || /^\p{Ll}/u.test(b.texte.trim())
+  const formesDuLivre = new Set(fichiers.flatMap((fx) => fx.lignes.flatMap((l) => (stripSpans(l).match(/[\p{L}\p{N}]+(?:[-/][\p{L}\p{N}]+)*/gu) ?? []).flatMap((t) => {
+    const p = t.toLowerCase().match(/[\p{L}\p{N}]+|[-/]/gu)
+    return [t.toLowerCase(), ...p.flatMap((x, k) => (k % 2 === 0 && p[k + 2] ? [`${x}${p[k + 1]}${p[k + 2]}`] : []))]
+  }))))
+  const joint = (x, sep, y) => (formesDuLivre.has(`${x}${sep}${y}`.toLowerCase()) ? 'compose' : formesDuLivre.has(`${x}${y}`.toLowerCase()) ? 'cesure' : 'inconnu')
+
+  // P — chaque ligne candidate reçoit ses preuves ; une preuve ne sert qu'une ligne : les lignes à preuve
+  // UNIQUE la prennent, et la retirent aux autres, jusqu'au point fixe ; deux lignes qui n'ont que la même
+  // preuve ne l'ont ni l'une ni l'autre. Reste ambigu : pas de site.
+  const demandes = []
+  fichiers.forEach((fx, f) => {
+    fx.lignes.forEach((ligne, i) => {
+      if (!ligne.trim() || /^(#|\||- |>)/.test(ligne) || /^\*\*[^*]*:\*\*/.test(ligne)) return
+      const j = prosePrecedenteCoupee(fx.lignes, i)
+      if (j < 0) return
+      const [ci, cj] = [cles[f][i], cles[f][j]]
+      const finGrasse = /\*\*\s*$/.test(fx.lignes[j])
+      const bases = flux.flatMap((b, n) => {
+        const a = flux[n - 1]
+        return n > 0 && surSaPage(f, i, b.page) && !estTitre.has(n) && suit(a, b) && b.x0 <= a.x0 + 2 && !libelle(b)
+          && prefixes(cleDuPdf(b.texte), ci) && suffixes(cleDuPdf(a.texte), cj) && (!finGrasse || gras(a.spans.at(-1)))
+          && continu(a, b, flux[n + 1]) ? [n] : []
+      })
+      const candidats = bases.filter((n) => nePasTenir(flux[n - 1], flux[n]) || enchaine(flux[n - 1], flux[n]))
+      const finMd = [...fx.lignes[j].trimEnd()].reverse().join('')
+      const accordes = candidats.filter((n) => accord(emphaseMd(finMd), flux[n - 1].spans.at(-1)) && accord(emphaseMd(ligne), flux[n].spans[0]))
+      const preuves = candidats.length === 1 ? candidats : accordes
+      if (preuves.length) demandes.push({ f, i, j, ligne, preuves: new Set(preuves) })
+      else if (bases.length === 1) {
+        const [a, b] = [flux[bases[0] - 1], flux[bases[0]]]
+        sites.push({ forme: 'paragraphe-non-prouve', site: adresse(f, i), avec: adresse(f, j), motif: '1er mot qui tenait, ligne close, suite en capitale', famille: 'paragraphe', page: b.page, colonne: b.colonne, x0: b.x0, y0: b.y0, titre: b.texte, preuve: `p.${b.page} col.${b.colonne} y${Math.round(a.y0)}→${Math.round(b.y0)}` })
+      }
+    })
+  })
+  for (let change = true; change;) {
+    change = false
+    const seules = demandes.filter((x) => x.preuves.size === 1 && x.k == null)
+    for (const d of seules) {
+      if (seules.some((o) => o !== d && o.preuves.has([...d.preuves][0]))) continue
+      d.k = [...d.preuves][0]
+      for (const autre of demandes) if (autre !== d) autre.preuves.delete(d.k)
+      change = true
+    }
+  }
+  const jointures = []
+  for (const { f, i, j, ligne, k } of demandes.filter((d) => d.k != null)) {
+    const b = flux[k]
+    const apres = flux.slice(k + 1, k + 9).filter((c) => c.page === b.page && c.colonne === b.colonne)
+    const etiquette = [...ligne.matchAll(/\*\*([^*]+:)\*\*/g)].find((m) => m.index > 0 && apres.some((c) => cleDuPdf(c.texte).startsWith(cleDuPdf(m[1]))))?.[0] ?? null
+    const coupe = /(\p{L}+)([-/])\**\s*$/u.exec(fichiers[f].lignes[j])
+    const ouverture = /^\**(\p{L}+)/u.exec(ligne)
+    const preuve = `p.${b.page} col.${b.colonne} y${Math.round(flux[k - 1].y0)}→${Math.round(b.y0)}`
+    if (coupe && ouverture && joint(coupe[1], coupe[2], ouverture[1]) === 'cesure') {
+      sites.push({ forme: 'cesure', site: adresse(f, i), avec: adresse(f, j), motif: `le livre imprime « ${coupe[1]}${ouverture[1]} », jamais « ${coupe[1]}${coupe[2]}${ouverture[1]} »`, famille: 'paragraphe', page: b.page, colonne: b.colonne, x0: b.x0, y0: b.y0, titre: b.texte, preuve })
+      continue
+    }
+    jointures.push({ f, i: j, ligne: recoller(fichiers[f].lignes[j], etiquette ? ligne.slice(0, ligne.indexOf(etiquette, 1)).trimEnd() : ligne) })
+    sites.push({ forme: 'P', site: adresse(f, i), avec: adresse(f, j), ligneMd: ligne, etiquette, par: nePasTenir(flux[k - 1], b) ? 'marge' : 'suite', famille: 'paragraphe', page: b.page, colonne: b.colonne, x0: b.x0, y0: b.y0, titre: b.texte, preuve })
+  }
+
+  // E — une preuve que deux libellés réclament ne sert aucun des deux
+  const enMilieu = new Set()
+  const ouvertures = new Map()
+  for (const l of flux) l.spans.forEach((sp, k) => {
+    if (!gras(sp) || !sp.texte.includes(':')) return
+    const cleL = cleDuPdf(sp.texte.slice(0, sp.texte.indexOf(':')))
+    if (/[a-z]/i.test(l.spans.slice(0, k).map((x) => x.texte).join(''))) enMilieu.add(cleL)
+    else ouvertures.set(cleL, (ouvertures.get(cleL) ?? 0) + 1)
+  })
+  const typo = (a, cleL) => !enMilieu.has(cleL) && ((ouvertures.get(cleL) ?? 0) >= OUVERTURES_PROBANTES || clot(a))
+  const faibles = []
+  const libelles = []
+  fichiers.forEach((fx, f) => {
+    fx.lignes.forEach((ligne, i) => {
+      if (!ligne.trim() || /^(#|\||- |>)/.test(ligne)) return
+      for (const m of ligne.matchAll(/\*\*([^*]+:)\*\*/g)) {
+        if (m.index === 0 || ligne.split(m[0]).length !== 2) continue
+        if (sites.some((s) => s.forme === 'P' && s.site === adresse(f, i) && s.etiquette === m[0])) continue
+        const tete = cle(ligne.slice(0, m.index))
+        const queue = jetons(ligne.slice(m.index))
+        const bases = flux.flatMap((c, n) => {
+          const a = flux[n - 1]
+          return n > 0 && surSaPage(f, i, c.page) && !estTitre.has(n) && suit(a, c) && libelle(c)
+            && jetons(c.texte).every((x, k) => x === queue[k]) && suffixes(cleDuPdf(a.texte), tete) ? [n] : []
+        })
+        const preuves = bases.filter((n) => !nePasTenir(flux[n - 1], flux[n]) || typo(flux[n - 1], cleDuPdf(m[1])))
+        if (preuves.length) libelles.push({ f, i, ligne, m, preuves })
+        else if (bases.length === 1 && !enMilieu.has(cleDuPdf(m[1]))) faibles.push({ f, i, m, n: bases[0] })
+      }
+    })
+  })
+  for (const { f, i, ligne, m, preuves } of libelles) {
+    if (preuves.length !== 1 || libelles.filter((x) => x.preuves.includes(preuves[0])).length !== 1) continue
+    const [a, c] = [flux[preuves[0] - 1], flux[preuves[0]]]
+    sites.push({ forme: 'E', site: adresse(f, i), ligneMd: ligne, etiquette: m[0], famille: 'paragraphe', page: c.page, colonne: c.colonne, x0: c.x0, y0: c.y0, titre: m[1], preuve: `p.${c.page} col.${c.colonne} y${Math.round(a.y0)}→${Math.round(c.y0)} ${!nePasTenir(a, c) ? 'tenait' : `jamais en milieu de ligne, ouvre ${ouvertures.get(cleDuPdf(m[1])) ?? 0} ligne(s)${(ouvertures.get(cleDuPdf(m[1])) ?? 0) < OUVERTURES_PROBANTES ? ', ligne précédente close' : ''}`}` })
+  }
+  for (const { f, i, m, n } of faibles) {
+    const [a, c] = [flux[n - 1], flux[n]]
+    sites.push({ forme: 'libelle-non-prouve', site: adresse(f, i), etiquette: m[0], motif: `ouvre ${ouvertures.get(cleDuPdf(m[1])) ?? 0} ligne(s) < ${OUVERTURES_PROBANTES}, ligne précédente ouverte`, famille: 'paragraphe', page: c.page, colonne: c.colonne, x0: c.x0, y0: c.y0, titre: m[1], preuve: `p.${c.page} col.${c.colonne} y${Math.round(a.y0)}→${Math.round(c.y0)}` })
+  }
+
+  // A
+  const centreDans = (l, c) => {
+    const x = (l.x0 + l.x1) / 2
+    const y = l.y0 + l.spans[0].taille / 2
+    return c.x0 <= x && x <= c.x1 && c.y0 <= y && y <= c.y1
+  }
+  for (const p of pages) {
+    for (const c of p.cercles ?? []) {
+      for (const l of p.lignes.filter((x) => /^\d+$/.test(x.texte.trim()) && centreDans(x, c))) {
+        const jeton = l.texte.trim()
+        const voisines = p.lignes.filter((x) => x !== l && x.colonne === l.colonne && Math.abs(x.y0 - l.y0) <= 16 && !/^\d+$/.test(x.texte.trim()))
+        const vus = lignesMd(p.page, (ligne) => (/(?:\s\d+)+\s*$/.exec(ligne)?.[0].trim().split(/\s+/) ?? []).includes(jeton) && voisines.some((v) => porte(ligne, v)))
+        if (vus.length !== 1) continue
+        const { f, i, ligne } = vus[0]
+        sites.push({ forme: 'A', site: adresse(f, i), ligneMd: ligne, jeton, famille: 'paragraphe', page: p.page, colonne: l.colonne, x0: l.x0, y0: l.y0, titre: jeton, preuve: `p.${p.page} col.${l.colonne} y${Math.round(l.y0)} pastille x${Math.round(c.x0)}-${Math.round(c.x1)}` })
+      }
+    }
+  }
+
+  // G
+  const runs = []
+  let ouvert = null
+  flux.forEach((l, n) => {
+    l.spans.forEach((sp, k) => {
+      const bi = /BoldItalic/.test(sp.police)
+      if (bi && ouvert && k === 0 && ouvert.fin === n - 1 && suit(flux[n - 1], l)) {
+        ouvert.texte += ` ${sp.texte}`
+        ouvert.fin = k === l.spans.length - 1 ? n : -1
+      } else if (bi) {
+        ouvert = { n, texte: sp.texte, police: sp.police, fin: k === l.spans.length - 1 ? n : -1 }
+        runs.push(ouvert)
+      } else ouvert = null
+    })
+    if (ouvert && ouvert.fin !== n) ouvert = null
+  })
+  const parLigne = new Map()
+  for (const r of runs) {
+    const l = flux[r.n]
+    const t = r.texte.replace(/\s+/g, ' ').trim().replace(/’/g, "'")
+    const re = new RegExp(`(?<!\\*)\\*${echappe(t)}\\*(?!\\*)`, 'g')
+    const porteLe = (ligne) => (ligne.match(re) ?? []).length > 0 && porte(ligne, l)
+    const seules = lignesMd(l.page, porteLe)
+    const vus = seules.length ? seules : jointures.filter((x) => surSesPages(fichiers[x.f], l.page) && surSaPage(x.f, x.i, l.page) && porteLe(x.ligne))
+    if (vus.length !== 1) continue
+    const { f, i, ligne } = vus[0]
+    const emphases = new Set([...ligne.matchAll(new RegExp(`(?<![\\p{L}*])(\\**)${echappe(t)}\\**(?![\\p{L}*])`, 'gu'))].map((m) => m[1].length))
+    if (emphases.size > 1) continue
+    const cleSite = `${f}:${i}:${t}`
+    const n = parLigne.get(cleSite) ?? 0
+    if (n >= ligne.match(re).length) continue
+    parLigne.set(cleSite, n + 1)
+    sites.push({ forme: 'G', site: adresse(f, i), ligneMd: ligne, texteMd: `*${t}*`, famille: 'paragraphe', page: l.page, colonne: l.colonne, x0: l.x0, y0: l.y0, titre: t, preuve: `p.${l.page} col.${l.colonne} y${Math.round(l.y0)} ${r.police}` })
+  }
+
+  // T
+  const tirets = flux.flatMap((l, n) => {
+    const [a, b] = [flux[n - 1], flux[n + 1]]
+    const fin = /(\S+)\s+—$/.exec(l.texte.trim())
+    const tete = /^—\s+(\S+)/.exec(l.texte.trim())
+    return [
+      ...[...l.texte.matchAll(/(\S+)\s+—\s+(\S+)/g)].map((m) => [l, m[1], m[2]]),
+      ...(fin && suit(l, b) ? [[l, fin[1], b.texte.trim().split(/\s+/)[0]]] : []),
+      ...(tete && suit(a, l) ? [[l, a.texte.trim().split(/\s+/).at(-1), tete[1]]] : []),
+    ]
+  })
+  for (const [l, avant, apres] of tirets) {
+    if (!/\p{L}/u.test(avant) || !/\p{L}/u.test(apres)) continue
+    const re = new RegExp(`(^|[^\\p{L}])${echappe(avant)} ${echappe(apres)}(?!\\p{L})`, 'u')
+    const vus = lignesMd(l.page, (ligne) => re.test(stripSpans(ligne).replace(/\*/g, '')) && porte(ligne, l))
+    if (vus.length !== 1) continue
+    const { f, i, ligne } = vus[0]
+    sites.push({ forme: 'T', site: adresse(f, i), ligneMd: ligne, avant, apres, famille: 'paragraphe', page: l.page, colonne: l.colonne, x0: l.x0, y0: l.y0, titre: l.texte, preuve: `p.${l.page} col.${l.colonne} y${Math.round(l.y0)} « ${avant} — ${apres} »` })
+  }
+
+  // J — une preuve que deux joints réclament ne sert aucun des deux
+  const joints = []
+  fichiers.forEach((fx, f) => fx.lignes.forEach((ligne, i) => {
+    for (const m of ligne.matchAll(/(\p{L}+)([-/]) (\p{L}+)/gu)) {
+      const verdict = joint(m[1], m[2], m[3])
+      if (ligne.split(m[0]).length !== 2 || verdict === 'cesure' || (m[2] === '-' && verdict !== 'compose')) continue
+      const preuves = flux.flatMap((l, n) => surSaPage(f, i, l.page) && suit(l, flux[n + 1]) && l.texte.trim().endsWith(`${m[1]}${m[2]}`) && flux[n + 1].texte.trim().startsWith(m[3]) && porte(ligne, l) ? [n] : [])
+      if (preuves.length) joints.push({ f, i, ligne, m, preuves })
+    }
+  }))
+  for (const { f, i, ligne, m, preuves } of joints) {
+    if (preuves.length !== 1 || joints.filter((x) => x.preuves.includes(preuves[0])).length !== 1) continue
+    const l = flux[preuves[0]]
+    sites.push({ forme: 'J', site: adresse(f, i), ligneMd: ligne, avant: `${m[1]}${m[2]}`, apres: m[3], famille: 'paragraphe', page: l.page, colonne: l.colonne, x0: l.x0, y0: l.y0, titre: m[0], preuve: `p.${l.page} col.${l.colonne} y${Math.round(l.y0)} « …${m[1]}${m[2]} » ↵ « ${m[3]}… »` })
+  }
+  return sites
 }
 
 /** Le livre `id` sur le disque : ses fichiers `.md` (liste de découpe) et son gabarit. */
@@ -349,6 +702,14 @@ function livre(id) {
   return { fichiers, gabarit: gabaritTitreDe(id) }
 }
 
+/** Les sites d'un livre sur le disque : `boites` = le JSON de `pdf-lignes.py` (sinon lu au PDF). */
+export function sondeDuLivre(id, boites = null) {
+  const { fichiers, gabarit } = livre(id)
+  if (!gabarit) return null
+  const brut = boites ?? boitesDuPdf(id)
+  return classer(brut.map((p) => ({ page: p.page, lignes: lignes(p.boites), cercles: p.cercles ?? [] })), fichiers, gabarit)
+}
+
 function boitesDuPdf(id) {
   const dir = mkdtempSync(join(tmpdir(), 'sonde-titres-'))
   try {
@@ -361,9 +722,10 @@ function boitesDuPdf(id) {
 }
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'N', 'corps-introuvable', 'cible-invalide', 'doublon', 'numero-de-page']
-const FAMILLES = ['entree', 'encadre', 'tableau', 'capitales']
-
+const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'P', 'E', 'A', 'G', 'T', 'J', 'paragraphe-non-prouve', 'libelle-non-prouve', 'cesure', 'N', 'corps-introuvable', 'cible-invalide', 'doublon']
+const FAMILLES = ['entree', 'encadre', 'tableau', 'capitales', 'intertitre']
+/** Les familles d'ENTRÉE : titres du fil du texte, dans l'ordre du PDF, sondés dans toutes leurs formes. */
+const ENTREES = new Set(['entree', 'intertitre'])
 
 function main() {
   const args = process.argv.slice(2)
@@ -383,14 +745,12 @@ function main() {
     process.exitCode = 2
     return
   }
-  const { fichiers, gabarit } = livre(id)
-  if (!gabarit) {
+  const sonde = sondeDuLivre(id, opt('--boites') ? JSON.parse(readFileSync(opt('--boites'), 'utf8')) : null)
+  if (!sonde) {
     console.error(`sonde-titres : ${id} déclare \`gabaritTitre: null\` — aucun titre à sonder`)
     return
   }
-  const brut = opt('--boites') ? JSON.parse(readFileSync(opt('--boites'), 'utf8')) : boitesDuPdf(id)
-  const pages = brut.map((p) => ({ page: p.page, lignes: lignes(p.boites) }))
-  const { sites, titres } = classer(pages, fichiers, gabarit)
+  const { sites, titres } = sonde
   for (const fam of FAMILLES) {
     const de = titres.filter((t) => t.famille === fam)
     console.log(`${id} [${fam}] : ${de.length} titres au PDF, ${de.filter((t) => t.forme === 'ok').length} à leur place`)
@@ -406,8 +766,8 @@ function main() {
     console.log(`== ${f} : ${de.length} (${parFamille})  ${Object.entries(parFichier).map(([k, v]) => `${k}×${v}`).join(' ')}`)
     for (const s of de) {
       const ou = `p.${s.page} col.${s.colonne} x=${s.x0.toFixed(1)} y=${s.y0.toFixed(1)}`
-      const extra = s.devant ? ` -> devant ${s.devant} (« ${s.titreSuivant} »)` : s.cible ? ` -> devant ${s.cible}` : ''
-      const v = s.verbatim ? ` verbatim « ${s.verbatim} »${s.mentions.length ? ` mentions ${s.mentions.join(',')}` : ''}` : ''
+      const extra = s.avec ? ` -> recollée à ${s.avec} [${s.preuve}]` : s.devant ? ` -> devant ${s.devant} (« ${s.titreSuivant} »)` : s.cible ? ` -> devant ${s.cible}` : ''
+      const v = `${s.titreMd ? ` titreMd « ${s.titreMd} »` : ''}${s.ligneTitre !== undefined ? ` → « ${s.ligneTitre} » (frère ${s.frere})` : ''}${s.comptage ? ` (PDF ${s.comptage.auPdf} / .md ${s.comptage.auMd})` : ''}${s.interFichiers ? ` [${s.interFichiers}]` : ''}${s.mentions?.length ? ` mentions ${s.mentions.slice(0, 5).join(',')}…` : ''}${s.texteMd ? ` texteMd « ${s.texteMd} »` : ''}`
       const nv = s.forme === 'N' ? ` niveau ${s.niveau} ≠ ${s.niveauFrere} de « ${s.frere} »` : ''
       const c = s.cause ? ` (${s.cause}) corps PDF « ${String(s.corpsPdf ?? '').slice(0, 50)} »` : ''
       const d = s.texte ? ` débris « ${s.texte} »${s.auMd ? ` .md ${s.auMd.join(',')} / PDF ${s.auPdf.join(',')}` : ''}` : ''

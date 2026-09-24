@@ -11,11 +11,11 @@ import { join } from 'node:path'
 import {
   sitesDuDossier, scanDossier, scanAll, dossiersFR, formeDeLigne1, estNomDeSignet,
   comptesDeTables, balisesResiduelles, liensDIndex, entreesDe, stockDe, ecartDuStock, comptesParFamille,
-  ecartsAuGrain, mobilierAll, rougesDuMobilier,
+  ecartsAuGrain, mobilierAll, rougesDuMobilier, titresSoudesAll, titresSoudesDuDossier,
   FAMILLES, STOCK_PATH, PREFIXES_FR,
 } from './check-source-format.mjs'
 import { readStock } from './stockNominatif.mjs'
-import { BOOKS, decoupeDe, livreExtraitDe, livresDecoupes, nomsDeLaListe, ongletsDe, readText } from './_lib.mjs'
+import { BOOKS, decoupeDe, gabaritTitreDe, livreExtraitDe, livresDecoupes, nomsDeLaListe, ongletsDe, readText } from './_lib.mjs'
 import { chiffresDes, fenetreDe, mobilierDuDossier } from './lib/mobilier.mjs'
 import { EXEMPTIONS_MOBILIER } from '../guards/lib/mobilierExemptions.mjs'
 import { estSeparateur, ligne1DePlage, titreDuFichier } from '../../src/data/source/decoupe.ts'
@@ -479,5 +479,27 @@ test('mobilier : un chiffre d’onglet AJOUTÉ à une ligne EXEMPTÉE rougit —
     const rouges = rougesDuMobilier(mobilierAvec(id, retouche))
     assert.equal(rouges.length, 1, `${id} : ${JSON.stringify(rouges)}`)
     assert.ok(rouges[0].file === cible.fichier && rouges[0].ref.startsWith(`l.${cible.ligne} mot « ${cible.jeton} »`))
+  }
+})
+
+// --- TITRES SOUDÉS (#1739) : la famille `titre-soude`, rouge nommé sans stock ---
+
+const LIVRES_A_GABARIT = livresDecoupes().filter((id) => gabaritTitreDe(id))
+
+test('titre-soude : l’arbre est VERT — aucun titre soudé ni titre à deux gras dans un livre à gabarit', () => {
+  assert.ok(LIVRES_A_GABARIT.length, 'aucun livre à gabarit de titre : la famille serait muette')
+  assert.deepEqual(titresSoudesAll(), [])
+})
+
+test('titre-soude : un titre RE-SOUDÉ à son corps ROUGIT, nommé à sa ligne', () => {
+  for (const id of LIVRES_A_GABARIT) {
+    const dir = livreExtraitDe(id).dir.split('\\').join('/')
+    const liste = decoupeDe(id)
+    const nom = nomsDeLaListe(liste).find((n) => /^# \*\*[^*]+\*\*\n\n[A-Z]/m.test(readText(`${dir}/${n}`)))
+    const resoude = (n, t) => (n === nom ? t.replace(/^# (\*\*[^*]+\*\*)\n\n(?=[A-Z])/m, '$1 ') : t)
+    const rouges = titresSoudesDuDossier(dir, (n) => resoude(n, readText(`${dir}/${n}`)), liste)
+    assert.equal(rouges.length, 1, id)
+    assert.match(rouges[0].ref, /^l\.\d+ p5 : \*\*/)
+    assert.equal(rouges[0].file, `${dir}/${nom}`)
   }
 })

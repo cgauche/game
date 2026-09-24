@@ -54,7 +54,9 @@ You have a natural talent for art. You may always advance the Art Skill, even if
 
 Whether it is your piercing eyes or the flash of your perfect teeth, you know how to make the best use of what the gods gave you. When you successfully use Charm to influence those attracted to you, you can choose to either use your rolled SL, or the number rolled on your units die.
 
-**Battle Rage** You are always on the edge of self-control, ready to slip into a violent *Frenzy* at any moment (see page 184). If another ability would allow you to enter a state of *Frenzy*, you may do so without making a Test. Furthermore, when you exit the *Frenzy*  state, you do not incur a *Fatigued* Condition.
+### **Battle Rage**
+
+You are always on the edge of self-control, ready to slip into a violent *Frenzy* at any moment (see page 184). If another ability would allow you to enter a state of *Frenzy*, you may do so without making a Test. Furthermore, when you exit the *Frenzy*  state, you do not incur a *Fatigued* Condition.
 
 ### **Beat Blade**
 
@@ -134,6 +136,8 @@ You are used to scanning the battlefield to make snap decisions informed by the 
 
 You are adept at making your presence felt on the battlefield, using your size or speed to corner your opponents. You count as two people for the purposes of outnumbering an opponent, or when determining if your side is outnumbered. See page 167 for the rules for outnumbering.
 
+### **Combat Reflexes**
+
 You react quickly to danger, leaping to attack your enemy without pause. When you roll for Combat Initiative, roll twice and choose your prefered result.
 
 ### **Commanding Presence**
@@ -156,7 +160,9 @@ Gain +5 Willpower. This does not count toward Advances.
 
 You know how to get the most out of your animals. Assuming you have the Drive Skill, you can direct your vehicle's animals to take an Action, as well as a Move, without a Test. When a Drive Test is required, make it with Advantage. When driving a vehicle in a Pursuit, add +1 to the animals' Movement Attributes.
 
-**Craftsman (Trade)** You are a true creative talent, sufficiently skilled in a craft to have the potential to elevate it to an art form. Choose a Trade Specialisation. You gain Advantage on Tests of this skill, and may Advance it even if it is not part of your current Career. You may purchase this Talent more than once, choosing a new Trade Specialisation each time you do.
+### **Craftsman (Trade)**
+
+You are a true creative talent, sufficiently skilled in a craft to have the potential to elevate it to an art form. Choose a Trade Specialisation. You gain Advantage on Tests of this skill, and may Advance it even if it is not part of your current Career. You may purchase this Talent more than once, choosing a new Trade Specialisation each time you do.
 
 ### **Criminal**
 
@@ -217,6 +223,8 @@ At the age of 10, you underwent the Dooming, a coming-of-age ritual observed by 
 | 45–47 | The Twisted Puppeteer doth pull thy strings and thus conjure up the end of things. | 95–97 | Rise not before Cacklefax's calling, for thine death is early indeed.             |
 | 48–50 | Ottokar dared to court the divine, but to do so is no right of thine.              | 98–00 | Morr sends a maiden.                                                              |
 
+### **Drilled**
+
 You have been trained to fight shoulder-to-shoulder with other soldiers as a single unit. Allies may freely Disengage from an opponent you are also Engaged with as you cover their retreat. Additionally, on your Turn you may lose Momentum in order to grant Momentum to any allies you are standing shoulder to shoulder with, so long as they also have this Talent.
 
 ### **Dual Wielder**
@@ -243,7 +251,7 @@ You can move your hands with surprising dexterity. You can use Sleight of Hand t
 
 #### **Fast Shot**
 
-**Drilled** You can draw and fire a pistol with lightning speed, attacking before the Combat Initiative sequence begins. If you are not Engaged, you may make a single attack with a loaded weapon with the *Pistol* Trait before the first turn of the Round. This attack uses your Action for the Round. If multiple Characters use *Fast Shot*, resolve their attacks in Combat Initiative order. When your turn arrives, you act as normal, but cannot make another attack.
+You can draw and fire a pistol with lightning speed, attacking before the Combat Initiative sequence begins. If you are not Engaged, you may make a single attack with a loaded weapon with the *Pistol* Trait before the first turn of the Round. This attack uses your Action for the Round. If multiple Characters use *Fast Shot*, resolve their attacks in Combat Initiative order. When your turn arrives, you act as normal, but cannot make another attack.
 
 ### **Fearless (Enemy)**
 
@@ -525,6 +533,8 @@ You know all the tricks for navigating dangerous rivers. You need not Test to na
 
 You are as tough as old boots and quickly recover from injury. Whenever you test to heal Wounds you may heal an additional 2 Wounds.
 
+#### **Roughrider**
+
 You are at home in the saddle in even the most difficult of circumstances and know how to protect your mount from harm during poor conditions. Assuming you have the Ride Skill, you can direct your mount to take an Action, as well as a Move, without a Ride Test. If a Ride Test is required, you may make it with Advantage. Furthermore, when mounted in a Pursuit, add +1 to the animal's Movement Attribute.
 
 #### **Rover**
@@ -557,7 +567,7 @@ You are an inquisitive soul who has travelled far and wide, and quickly pick up 
 
 #### **Second Sight**
 
-**Roughrider** You can perceive the shifting Winds of Magic that course from the Chaos Gates at the poles of the world. You now have the ability to percieve the Winds of Magic (see page 236).
+You can perceive the shifting Winds of Magic that course from the Chaos Gates at the poles of the world. You now have the ability to percieve the Winds of Magic (see page 236).
 
 #### **Secret Identity**
 
@@ -649,7 +659,9 @@ You are the epitome of determination and resolve. Once per session, before takin
 
 You are an accomplished swimmer, able to fight a strong current and outpace other swimmers. You gain Advantage on Swim Tests, and receive a +2 SL Bonus to swimming Pursuits.
 
-**Sturdy** You have a brawny physique, or are very used to carrying things. When calculating the number of Encumbrance Points you can carry, count your Strength Bonus twice.
+#### **Sturdy**
+
+You have a brawny physique, or are very used to carrying things. When calculating the number of Encumbrance Points you can carry, count your Strength Bonus twice.
 
 #### **Suave**
 

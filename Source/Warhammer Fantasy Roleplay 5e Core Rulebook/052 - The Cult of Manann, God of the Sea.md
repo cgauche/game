@@ -6,7 +6,9 @@
 
 **Head of the Cult:** Camille Dauphina, Matriarch of the Sea
 
-**Primary Orders:** Order of the Albatross, Order of the Mariner **Major Festivals:** Spring Equinox, Autumn Equinox
+**Primary Orders:** Order of the Albatross, Order of the Mariner
+
+**Major Festivals:** Spring Equinox, Autumn Equinox
 
 **Important Holy Texts:** *The 1000 Shanties*, *Tales of the Albatross*,
 
@@ -29,6 +31,8 @@ The cult is prevalent in coastal regions and communities relying on the sea. It 
 #### **Penances**
 
 Penances from Manann often involve hazardous, maritime pilgrimages, tests of sailing skills, or expeditions against the sea god's enemies, especially followers of the heretical Cult of Stromfels, god of predators.
+
+#### **Strictures**
 
 - No whistling or swearing when at sea or on holy ground.
 - Never harm an albatross.

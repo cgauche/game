@@ -28,7 +28,9 @@ Those who do survive the Black Plague rarely ever contract it again — a small 
 
 **Contraction:** Enact an **Average (+2 SL) Endurance** Test for each hour, or part thereof, spent in an area infested with infected fleas, or when exposed to infected fluids. Those who have already survived a bout of the Black Plague Test only once each day, and then with Advantage.
 
-**Incubation:** 1d10 hours **Duration:** 3d10 days
+**Incubation:** 1d10 hours
+
+**Duration:** 3d10 days
 
 **Symptoms:** Blight, Buboes, Fever
 
@@ -36,9 +38,11 @@ Those who do survive the Black Plague rarely ever contract it again — a small 
 
 Your very blood is diseased, and your heart now pumps sickness through your body. Leeching the rot is the accepted cure, but some doktors instead cut careful incisions near the neck to free the contaminated blood, demanding the patient ingest vast quantities of healthy blood to replace what is lost. Whether the patient accepts such remedies or not, without treatment, Blood Rot is deadly, and often ends in a visit from the Mourners Guild and the Cult of Morr.
 
-**Contraction:** As a development of another disease or a
+**Contraction:** As a development of another disease or a Critical Wound.
 
-Critical Wound. **Incubation:** Instant **Duration:** 1d10 days
+**Incubation:** Instant
+
+**Duration:** 1d10 days
 
 **Symptoms:** Blight, Fever, Malaise
 
@@ -58,9 +62,11 @@ Infected cuts and abrasions are commonplace, meaning many superstitions exist ex
 
 **Contraction:** If you fail an **Average (+2 SL) Endurance** Test after a combat with a creature with the Infected trait (see **Chapter 12: Bestiary**). You can also develop a Festering Wound from an *Infection* (page 182).
 
-**Incubation:** 1d10 days, or instantly if developed from another
+**Incubation:** 1d10 days, or instantly if developed from another disease or *Infection*.
 
-disease or *Infection*. **Duration:** 1d10 days **Symptoms:** Fever, Malaise
+**Duration:** 1d10 days
+
+**Symptoms:** Fever, Malaise
 
 # **Galloping Trots**
 
@@ -78,13 +84,13 @@ Annual outbreaks of Itching Pox afflict most towns and cities of the Empire. The
 
 **Contraction:** If you fail an **Average (+2 SL) Endurance** Test when contact is made with an infected individual.
 
-**Incubation:** 1d10 days **Duration:** 1d10 + 7 days
+**Incubation:** 1d10 days
+
+**Duration:** 1d10 + 7 days
 
 **Symptoms:** Pox
 
-**Permanent:** Once the disease is contracted, you become
-
-immune to catching it again.
+**Permanent:** Once the disease is contracted, you become immune to catching it again.
 
 #### **Packer's Pox**
 
@@ -92,7 +98,11 @@ A common infection amongst hunters, furriers, and traders, Packer's Pox is contr
 
 **Contraction:** If you fail an **Easy (+4 SL) Endurance** Test after any contact with infected animals, hides, or bodies.
 
-**Incubation:** 1d10 days **Duration:** 5d10 days **Symptoms:** Pox, Infection
+**Incubation:** 1d10 days
+
+**Duration:** 5d10 days
+
+**Symptoms:** Pox, Infection
 
 #### **Ratte Fever**
 
@@ -100,7 +110,13 @@ Contracted from infected rodents, dreaded Ratte Fever brings inflamed rashes and
 
 **Contraction:** If you fail an **Average (+2 SL) Endurance** Test after any combat when wounded by rodents (including skaven) with the *Infected* Trait, or you fail an **Easy (+4 SL) Endurance** Test after an infected source enters your mouth.
 
-**Incubation:** 3d10 + 5 days **Duration:** 3d10 + 10 days **Symptoms:** Fever, Malaise, Pox
+**Incubation:** 3d10 + 5 days
+
+**Duration:** 3d10 + 10 days
+
+**Symptoms:** Fever, Malaise, Pox
+
+#### **Sea Sickness**
 
 Many folk feel queasy when they first spend time aboard a vessel at sea. Once they get used to the motion of the ocean, Sea Sickness only tends to be a problem when there are high winds or a vigorous swell. Elves are immune to Sea Sickness.
 
@@ -116,7 +132,9 @@ Tiny mites that infest stores of hay, wheat, or flour can bring about a persiste
 
 **Contraction:** If you fail an **Average (+2 SL) Endurance** Test when contact is made with infected hay, wheat, or flour or fail the same Test when an infected individual coughs in your immediate vicinity (at a rate of about one Test per hour of exposure).
 
-**Incubation:** 1d10 days **Duration:** 1d10 days
+**Incubation:** 1d10 days
+
+**Duration:** 1d10 days
 
 **Symptoms:** Coughs and Sneezes, Malaise
 
@@ -130,7 +148,7 @@ You are seriously ill and perhaps close to Morr's Portal as deadly poisons flood
 
 #### **Buboes**
 
-**Sea Sickness** You have huge swellings of the lymph nodes, possibly in the groin, neck, or armpits. These are enormously painful and may bleed or seep pus. They are disgusting and stink of rot — though cultists of the Lord of Pestilence consider them a sure sign of his favour, believing they hide tiny, growing daemons. Common practice is to lance these terrible expressions of taint to remove whatever nestles within, though doing so often results in *Festering Wounds*.
+You have huge swellings of the lymph nodes, possibly in the groin, neck, or armpits. These are enormously painful and may bleed or seep pus. They are disgusting and stink of rot — though cultists of the Lord of Pestilence consider them a sure sign of his favour, believing they hide tiny, growing daemons. Common practice is to lance these terrible expressions of taint to remove whatever nestles within, though doing so often results in *Festering Wounds*.
 
 > Suffer a -1 SL penalty to all physical Tests, and to all Fellowship Tests if the buboes can be seen or smelled. A Heal Test made by a character with the *Surgery* Talent can lance your buboes, removing the penalty. If the Test is failed, gain a *Festering Wound*. If your Buboes are lanced, make a **Difficult (-1 SL) Endurance** Test once per day or more swell into place.
 

@@ -332,6 +332,8 @@ export const SLOTS_SANS_DECLARATION = [
   // mort SOUS-estimation, `ANGLES_MORTS_SLOTS`). Ce n'est pas une dette d'adoption, c'est la mesure qui
   // ne sait pas la voir.
   { dataset: "species.json", champ: "previewCareer", occurrences: 27, lot: "L2/L3 #1473", date: "2026-09-01" },
+  // NEUF (#1882) : `ref('creature')` ADOPTÉ (profil standard, LDB 77 l.7), même angle mort que `previewCareer`.
+  { dataset: "species.json", champ: "profilStandard", occurrences: 26, lot: "L2/L3 #1473", date: "2026-09-23" },
   { dataset: "species.json", champ: "of", occurrences: 80, lot: "L2/L3 #1473", date: "2026-08-31" },
   { dataset: "species.json", champ: "skills", occurrences: 315, lot: "L2/L3 #1473", date: "2026-08-26" },
   { dataset: "species.json", champ: "talents", occurrences: 96, lot: "L2/L3 #1473", date: "2026-08-26" },

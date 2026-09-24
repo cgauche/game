@@ -1,16 +1,16 @@
 /**
  * Migration #1897 — la référence de SORT d'un preset de PNJ se DÉNUDE, volet `src/scenes`.
  *
- * UN geste, et le document passe en `schema: 13` : dans `narratif.presetsPnj[].profil.spells`, tout
+ * UN geste, et le document passe en `schema: 14` au moins : dans `narratif.presetsPnj[].profil.spells`, tout
  * élément `{ id }` devient l'id NU. `profil` reprend le def créature (`creatureEntreePartielle`,
  * `src/data/schemas/defs-scenes/narratif.ts`), dont `spells` adopte `refs('spell')` au même lot
  * (`2026-09-23-1897-sorts-de-creature-ids-nus.mjs`, volet `src/data`). Les ids eux-mêmes ne bougent
  * pas : seule l'ENVELOPPE `{ id }` tombe.
  *
- * Pendant de DÉPÔT du migrateur de chargement `PROJECT_MIGRATIONS[12]` (`src/state/worldMap.ts`), qui
+ * Pendant de DÉPÔT du migrateur de chargement `PROJECT_MIGRATIONS[13]` (`src/state/worldMap.ts`), qui
  * rattrape les `.json` de bibliothèque utilisateur : ce que le chargement dénude, ce script le dénude ;
  * ce que le chargement laisse à `parseProject` pour qu'il le refuse, ce script le refuse. Parité
- * mesurée par `src/state/projet-migration-12-vers-13.test.ts`, qui joue la MÊME fixture par les deux.
+ * mesurée par `src/state/projet-migration-13-vers-14.test.ts`, qui joue la MÊME fixture par les deux.
  *
  * ENTRÉES : les `src/scenes/<campagne>/<campagne>-projet.json`.
  * FORMATAGE PRÉSERVÉ : `JSON.stringify(doc, null, 1) + '\n'`, vérifié AVANT toute écriture — non
@@ -18,11 +18,11 @@
  * PORTE DE FORME : chaque élément de `profil.spells` est la forme SOURCE (objet de clé unique `id`,
  * chaîne non vide) ou la forme CIBLE (chaîne non vide) ; sinon rien n'est écrit, sortie 1, preset nommé.
  * IDEMPOTENT : rejouée sur l'état final, la migration n'écrit rien et sort 0.
- * BORNE HAUTE OUVERTE (`schema` ∈ {12, ≥ 13}) : la DERNIÈRE migration de la chaîne dans l'ordre
+ * BORNE HAUTE OUVERTE (`schema` ∈ {13, ≥ 14}) : la DERNIÈRE migration de la chaîne dans l'ordre
  * lexical est la seule à nommer un `schema` futur (`DERNIERE`, dérivée par
  * `src/scenes/migrations-format-projet.test.ts`). Le document sort donc d'ici en `schema` =
- * max(le sien, 13) : une migration amont ne RABAISSE jamais une forme.
- * FAIL-FAST : `schema` absent, non entier ou < 12, `scenes` non-tableau, `narratif.presetsPnj`
+ * max(le sien, 14) : une migration amont ne RABAISSE jamais une forme.
+ * FAIL-FAST : `schema` absent, non entier ou < 13, `scenes` non-tableau, `narratif.presetsPnj`
  * non-tableau, périmètre vide → rien n'est écrit, sortie 1.
  */
 import fs from 'node:fs';
@@ -34,8 +34,8 @@ const NOM = '2026-09-23-1897-projet-sorts-de-preset-ids-nus';
 const RACINE = path.join(ROOT, 'src/scenes');
 
 /** Forme du document AVANT et APRÈS ce bump — la borne haute est OUVERTE (cf. en-tête). */
-const SCHEMA_AVANT = 12;
-const SCHEMA_APRES = 13;
+const SCHEMA_AVANT = 13;
+const SCHEMA_APRES = 14;
 
 const canonique = (doc) => `${JSON.stringify(doc, null, 1)}\n`;
 const estSource = (s) => !!s && typeof s === 'object' && !Array.isArray(s)

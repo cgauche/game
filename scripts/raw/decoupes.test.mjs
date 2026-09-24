@@ -186,7 +186,7 @@ test('#1739 : `gabaritOnglet` est non nul si et seulement si `onglets` l’est, 
 
 // Le GABARIT des titres d'entrée est ce que la sonde `scripts/raw/sonde-titres.mjs` lit : REQUIS,
 // `null` déclare un livre non sondé ; sinon cinq clés, chaque typographie `{ police, taille? }`.
-test('#1739 : `gabaritTitre` est déclaré — `null`, ou `{ titre, accompagnement, encadre, capitales, exclusions }` de typographies bien formées', () => {
+test('#1739 : `gabaritTitre` est déclaré — `null`, ou `{ titre, accompagnement, encadre, capitales, intertitre, exclusions }` de typographies bien formées', () => {
   const fautes = []
   const typo = (ou, t, tailleRequise) => {
     const cles = Object.keys(t ?? {}).sort().join(',')
@@ -199,10 +199,11 @@ test('#1739 : `gabaritTitre` est déclaré — `null`, ou `{ titre, accompagneme
     if (g === undefined) { fautes.push(`${id}.json — \`gabaritTitre\` absent`); continue }
     if (g === null) continue
     const cles = Object.keys(g).sort().join(',')
-    if (cles !== 'accompagnement,capitales,encadre,exclusions,titre') fautes.push(`${id}.json — clés du gabarit ${cles}, attendu accompagnement,capitales,encadre,exclusions,titre`)
+    if (cles !== 'accompagnement,capitales,encadre,exclusions,intertitre,titre') fautes.push(`${id}.json — clés du gabarit ${cles}, attendu accompagnement,capitales,encadre,exclusions,intertitre,titre`)
     typo(`${id}.json titre`, g.titre, true)
     typo(`${id}.json encadre`, g.encadre, true)
     typo(`${id}.json capitales`, g.capitales, false)
+    typo(`${id}.json intertitre`, g.intertitre, true)
     for (const k of ['accompagnement', 'exclusions']) {
       if (!Array.isArray(g[k])) { fautes.push(`${id}.json — \`${k}\` doit être un tableau`); continue }
       g[k].forEach((t, i) => typo(`${id}.json ${k}[${i}]`, t, k === 'accompagnement'))

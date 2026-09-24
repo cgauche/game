@@ -172,7 +172,7 @@ Does anything exist that cannot be seen? You riddle with Ranald, who sends a Div
 
 **Duration:** Special
 
-224 225 Crossing your fingers, you ask what, exactly, is luck? Gain +1 Fortune Point, which lasts until the end of the session. For every +2 SL, you may gain an extra +1 Fortune Point. You may not invoke this Miracle again until you reach 0 Fortune points.
+Crossing your fingers, you ask what, exactly, is luck? Gain +1 Fortune Point, which lasts until the end of the session. For every +2 SL, you may gain an extra +1 Fortune Point. You may not invoke this Miracle again until you reach 0 Fortune points.
 
 ### **Ranald's Grace**
 
@@ -363,9 +363,7 @@ Your prayers instil your chosen allies with a burning hatred for the enemies of 
 
 **Range:** Touch **Target:** 1 **Duration:** Fellowship Bonus hours
 
-You intone chants describing Taal's extraordinary senses, and call upon him for aid. While the Miracle is in effect,
-
-you gain +1 *Acute Sense (Any One)* Talent and, if you rest, you will automatically awaken should any threats come within Perception yards.
+You intone chants describing Taal's extraordinary senses, and call upon him for aid. While the Miracle is in effect, you gain +1 *Acute Sense (Any One)* Talent and, if you rest, you will automatically awaken should any threats come within Perception yards.
 
 # **King of the Wild**
 
@@ -449,9 +447,7 @@ You roar prayers concerning Blitzbeil, Ulric's ever-thirsty axe. If wielding an 
 
 **Range:** You **Target:** You **Duration:** Fellowship Bonus Rounds
 
-By calling Verena as your witness, the truth of your words shines out for
-
-all to see. For the duration of the Miracle, provided you speak only the truth, all listeners will believe you speak truly. This does not necessarily mean they will agree with your conclusions, of course.
+By calling Verena as your witness, the truth of your words shines out for all to see. For the duration of the Miracle, provided you speak only the truth, all listeners will believe you speak truly. This does not necessarily mean they will agree with your conclusions, of course.
 
 ### **Blind Justice**
 

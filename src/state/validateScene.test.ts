@@ -22,7 +22,7 @@ describe('validateScene', () => {
   it('apparence : espèce hors domaine, coiffure inconnue, sans sexe ou de l’autre sexe → erreur nominative', () => {
     const avec = (appearance: object) => {
       const s = base();
-      s.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 1, y: 1 }, appearance });
+      s.entities.push({ id: 'pnj', kind: 'personnage', ref: 'humain', pos: { x: 1, y: 1 }, appearance });
       return msgs(validateScene([s]).filter((x) => x.scope === 'entity' && x.refId === 'pnj' && x.level === 'error'));
     };
     expect(avec({ species: 'zorglub' })).toEqual(["pnj › appearance.species : espèce « zorglub » inconnue : ni espèce jouable, ni espèce dessinée — le personnage s'affiche en silhouette d'erreur."]);
@@ -36,7 +36,7 @@ describe('validateScene', () => {
 
   it("dialogueId d'entité inexistant → erreur", () => {
     const s = base();
-    s.entities.push({ id: 'e-0', kind: 'personnage', pos: { x: 1, y: 1 }, dialogueId: 'manque' });
+    s.entities.push({ id: 'e-0', kind: 'personnage', ref: 'humain', pos: { x: 1, y: 1 }, dialogueId: 'manque' });
     const w = validateScene([s]);
     expect(w.some((x) => x.scope === 'entity' && x.refId === 'e-0' && /dialogue inexistant/.test(x.message))).toBe(true);
   });
@@ -64,7 +64,7 @@ describe('validateScene', () => {
 
   it('entité sur un étage inexistant → avertissement', () => {
     const s = base(); // un seul niveau z=0
-    s.entities.push({ id: 'e-z', kind: 'personnage', pos: { x: 1, y: 1 }, z: 2 });
+    s.entities.push({ id: 'e-z', kind: 'personnage', ref: 'humain', pos: { x: 1, y: 1 }, z: 2 });
     expect(msgs(validateScene([s])).some((m) => /étage 2 inexistant/.test(m))).toBe(true);
   });
 
@@ -616,7 +616,7 @@ describe('validateScene — assise authorée (`Scene.seatAssignments`)', () => {
   function attable(seatAssignments: Record<string, Record<string, { kind: 'entity'; entityId: string } | { kind: 'party'; rang: number }>>, pnjPos = ABORD.nord) {
     const s = base();
     s.entities.push({ id: 'table-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'table-ronde-4-tabourets', facing: 'N' });
-    s.entities.push({ id: 'pnj-1', kind: 'personnage', pos: pnjPos });
+    s.entities.push({ id: 'pnj-1', kind: 'personnage', ref: 'humain', pos: pnjPos });
     s.seatAssignments = seatAssignments;
     return s;
   }

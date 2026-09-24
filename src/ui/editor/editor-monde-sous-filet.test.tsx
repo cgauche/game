@@ -57,7 +57,7 @@ describe('Éditeur — une espèce hors domaine se voit, elle ne lève pas', () 
     const initialScene: Scene = {
       ...emptyScene(6, 6),
       id: 'filet',
-      entities: [{ id: 'pnj-faute', kind: 'personnage', pos: { x: 2, y: 2 }, appearance: { species: 'espece-hors-vocabulaire' } }],
+      entities: [{ id: 'pnj-faute', kind: 'personnage', ref: 'humain', pos: { x: 2, y: 2 }, appearance: { species: 'espece-hors-vocabulaire' } }],
     };
     const container = await monter(initialScene);
 
