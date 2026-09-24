@@ -7,8 +7,11 @@ import {
   __resetAutosaveForTest,
   type EditorAutosaveBackend,
   type EditorAutosaveRecord,
+  type RepriseLocale,
 } from './editorAutosave';
+import { cheminLisible } from '../data/schemas/validate';
 import { emptyScene } from './scene';
+import { CURRENT_PROJECT_SCHEMA } from './worldMap';
 
 /** La scène d'une reprise relue — l'enregistrement est au format courant, donc repris. */
 const repris = async (sceneId: string) => {
@@ -96,5 +99,34 @@ describe('editorAutosave — filet local de crash de l’éditeur', () => {
     await expect(autosaveLoad('x')).resolves.toBeNull();
     await expect(autosaveDelete('x')).resolves.toBeUndefined();
     __setAutosaveBackendForTest(null);
+  });
+
+  describe('la scène relue passe par le SCHÉMA de scène avant la reprise', () => {
+    /** Le refus d'une relecture ÉCARTÉE, en `lieu : message` par faute. */
+    const fautesLues = (lu: RepriseLocale | null) => (lu && !lu.ok ? lu.refus.fautes.map((f) => `${cheminLisible(f.lieu)} : ${f.message}`) : null);
+    /** Ce que rend la relecture d'une scène au format COURANT portant `scene`. */
+    const relu = async (scene: object) => {
+      const backend = fakeBackend();
+      __setAutosaveBackendForTest(backend);
+      backend.store.set('s', { sceneId: 's', scene: { ...emptyScene(), id: 's', ...scene }, schema: CURRENT_PROJECT_SCHEMA, savedAt: 7 } as unknown as EditorAutosaveRecord);
+      try {
+        return await autosaveLoad('s');
+      } finally {
+        __setAutosaveBackendForTest(null);
+      }
+    };
+
+    it('un champ inconnu du schéma de scène : ÉCARTÉ, la faute nommée', async () => {
+      expect(fautesLues(await relu({ champInconnu: 1 }))).toEqual(['(racine) : Clé non reconnue : "champInconnu"']);
+    });
+
+    it('une forme que le normaliseur ne sait pas lire : ÉCARTÉE par le schéma, jamais une exception', async () => {
+      expect(fautesLues(await relu({ entities: 5 }))).toEqual(['entities : Entrée invalide : tableau attendu, nombre reçu']);
+    });
+
+    it('un `presetId` sans narratif à qui le résoudre : REPRIS, la FK reste à la porte du projet', async () => {
+      const lu = await relu({ entities: [{ id: 'e1', kind: 'personnage', pos: { x: 1, y: 1 }, presetId: 'fantome' }] });
+      expect(lu?.ok && lu.record.scene.entities[0].presetId).toBe('fantome');
+    });
   });
 });

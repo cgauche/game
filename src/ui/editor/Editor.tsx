@@ -1173,10 +1173,12 @@ export function Editor({
               La restaurer, ou l'ignorer et repartir de la version chargée ?
             </p>
           ) : (
-            <p className="hint">
-              Une sauvegarde automatique de « {autosaveRecovery.sceneId} », datée du {new Date(autosaveRecovery.savedAt).toLocaleString('fr-FR')},
-              ne peut pas être restaurée : {autosaveRecovery.refus}.
-            </p>
+            <>
+              <p className="hint">
+                Une sauvegarde automatique de « {autosaveRecovery.sceneId} » date du {new Date(autosaveRecovery.savedAt).toLocaleString('fr-FR')}.
+              </p>
+              <ChipDeRefus refus={refusDeLaPorteDuProjet(autosaveRecovery.refus, 'reprise')} />
+            </>
           )}
           <div className="modal-actions">
             <button type="button" className="btn-ghost" onClick={dismissAutosave}>

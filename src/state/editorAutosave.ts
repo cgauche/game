@@ -1,5 +1,5 @@
 import type { Scene } from './scene';
-import { CURRENT_PROJECT_SCHEMA, migreSceneDeProjet, ProjetRefuse, type ProjectDoc } from './worldMap';
+import { CURRENT_PROJECT_SCHEMA, migreSceneDeProjet, exigerUnRefus, type ProjetRefuse, type ProjectDoc } from './worldMap';
 
 /**
  * Sauvegarde locale AUTOMATIQUE de la scène en cours d'édition — un crash de rendu de l'éditeur
@@ -21,10 +21,11 @@ export interface EditorAutosaveRecord {
 }
 
 /** Ce que l'éditeur peut faire d'un enregistrement relu : le reprendre, sa scène montée au format
- *  courant, ou l'ÉCARTER en disant pourquoi. */
+ *  courant, ou l'ÉCARTER sur le refus MESURÉ de la porte (cause, fautes et leur lieu), que l'écran
+ *  traduit (`refusDeLaPorteDuProjet`, `ui/editor/ProjectModals.tsx`). */
 export type RepriseLocale =
   | { readonly ok: true; readonly record: EditorAutosaveRecord }
-  | { readonly ok: false; readonly sceneId: string; readonly savedAt: number; readonly refus: string };
+  | { readonly ok: false; readonly sceneId: string; readonly savedAt: number; readonly refus: ProjetRefuse };
 
 export interface EditorAutosaveBackend {
   get(sceneId: string): Promise<EditorAutosaveRecord | null>;
@@ -147,8 +148,8 @@ function relire(brut: EditorAutosaveRecord): RepriseLocale {
   try {
     return { ok: true, record: { ...brut, scene: migreSceneDeProjet(brut.scene, brut.schema), schema: CURRENT_PROJECT_SCHEMA } };
   } catch (e) {
-    if (!(e instanceof ProjetRefuse)) throw e;
-    return { ok: false, sceneId: brut.sceneId, savedAt: brut.savedAt, refus: e.fautes.map((f) => f.message).join(' ; ') };
+    exigerUnRefus(e);
+    return { ok: false, sceneId: brut.sceneId, savedAt: brut.savedAt, refus: e };
   }
 }
 

@@ -476,6 +476,7 @@ import { ACTION_FOUILLER } from './usable';
 import { type NarratifBlock, emptyNarratif } from './campaignNarratif';
 import { validateDocument, rapportDeFautes, type Faute } from '../data/schemas/validate';
 import { projetSchema, SCHEMA_PROJET } from '../data/schemas/defs-scenes/projet';
+import { sceneSchema } from '../data/schemas/defs-scenes/scene';
 import type { SourceRef } from '../data/schemas/grammaire/valeurs';
 
 /** Identité de campagne pour la bibliothèque (#766) — PLATE à la racine du document depuis #1467
@@ -1079,11 +1080,15 @@ function migreFormeDeProjet(data: unknown): Record<string, unknown> {
 
 /** Une scène persistée HORS de son projet (filet de crash de l'éditeur, `editorAutosave.ts`), au
  *  `schema` de projet qu'elle portait à l'écriture : montée au format courant par la MÊME chaîne que
- *  `parseProject`, puis `normalizeScene`. Sans `schema` lisible, la chaîne refuse
- *  (`version-absente`) : aucune version n'est supposée. */
+ *  `parseProject`, PROUVÉE par `sceneSchema`, puis `normalizeScene`. Sans `schema` lisible, la chaîne
+ *  refuse (`version-absente`) : aucune version n'est supposée. Les FK intra-document de `projetSchema`
+ *  (`entity.presetId` → `narratif.presetsPnj`) restent à la porte du projet : une scène seule n'a pas
+ *  de narratif. Ce qui suit le schéma est une faute du jeu, et se propage. */
 export function migreSceneDeProjet(scene: unknown, schema: unknown): Scene {
-  const doc = migreFormeDeProjet({ schema, scenes: [scene] });
-  return normalizeScene((doc.scenes as Scene[])[0]);
+  const monte = (migreFormeDeProjet({ schema, scenes: [scene] }).scenes as unknown[])[0];
+  const fautes = validateDocument(sceneSchema, monte);
+  if (fautes) throw new ProjetRefuse('schema', fautes, rapportDeFautes('Scène', fautes));
+  return normalizeScene(monte as Scene);
 }
 
 /** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (`ProjetRefuse`,

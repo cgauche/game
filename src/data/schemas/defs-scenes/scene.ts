@@ -708,7 +708,8 @@ export const encountersSchema = listeCle(encounterDefSchema, 'id');
 /**
  * `Scene` (`state/scene.ts:683`) — l'agrégat. Les collections `layers`/`entities`/`dialogues`/
  * `triggers`/`encounters`/`flags`, requises sur le type manuscrit, sont OPTIONNELLES ici : le
- * schéma voit le document AVANT `normalizeScene`, qui les comble au SEUL point d'entrée.
+ * schéma voit le document AVANT `normalizeScene`, qui les comble aux portes (`parseProject`,
+ * `migreSceneDeProjet`).
  */
 export const sceneSchema = z.strictObject({
   type: z.literal('scene'),
