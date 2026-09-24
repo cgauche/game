@@ -163,6 +163,8 @@ describe('garde de classe — le point d’entrée se lit à import.meta.main', 
       expect.objectContaining({ ligne: 3 }),
     ]);
     expect(detecte(`if (${URL_DU_MODULE}\n  === pathToFileURL(x).href) main()`)).toBe(true);
+    expect(detectionsDePointDEntree(`const lance =\n  ${ARGV}[1]`)).toEqual([expect.objectContaining({ ligne: 2 })]);
+    expect(detectionsDePointDEntree('const { mainModule:\n  m } = process')).toEqual([expect.objectContaining({ ligne: 1 })]);
     expect(detectionsDePointDEntree(`let r\nr = ${ARGV}\nconst x = 1\nif (r[1] === soi) main()`)).toEqual([
       expect.objectContaining({ ligne: 4, extrait: 'if (r[1] === soi) main()' }),
     ]);
@@ -178,6 +180,8 @@ describe('garde de classe — le point d’entrée se lit à import.meta.main', 
       "if (require('pro\\x63ess').argv[1] === soi) main()",
       "if (process['ar\\\ngv'][1] === soi) main()",
       'const p = import/* coupé */.meta.main',
+      "if (process['ar\\gv'][1] === soi) main()",
+      "if (require['m\\ain'] === module) main()",
     ];
     for (const v of variantes) expect(detecte(v), v).toBe(true);
   });
@@ -209,6 +213,44 @@ describe('garde de classe — le point d’entrée se lit à import.meta.main', 
       const source = [`const a = 1`, `if (${ARGV}[1] === soi) main()`, 'const z = 3'].join(saut);
       expect(detectionsDePointDEntree(source), JSON.stringify(saut)).toEqual([{ ligne: 2, extrait: `if (${ARGV}[1] === soi) main()` }]);
     }
+  });
+
+  it('cas plantés : un reste de déstructuration d’objet porte la base', () => {
+    const sources = [
+      'const { ...r } = process\nif (r.argv[1] === soi) main()',
+      'const { env, ...p } = process\nif (p.argv[1] === soi) main()',
+      'let r\n({ ...r } = process)\nif (r.argv[1] === soi) main()',
+      `const { ...a } = ${ARGV}\nif (a[1] === soi) main()`,
+    ];
+    for (const v of sources) expect(detecte(v), v).toBe(true);
+  });
+
+  it('cas plantés : `at`/`slice` tronquent leur argument littéral', () => {
+    const variantes = [
+      `if (${ARGV}.at(1.5) === soi) main()`,
+      `if (${ARGV}.at(1e0) === soi) main()`,
+      `if (${ARGV}.slice(1.5)[0] === soi) main()`,
+      `if (${ARGV}.at('1') === soi) main()`,
+      `if (${ARGV}.slice(1).at() === soi) main()`,
+      `if (${ARGV}.slice(1).at(-0) === soi) main()`,
+      `if (${ARGV}.slice(1).at('x') === soi) main()`,
+    ];
+    for (const v of variantes) expect(detecte(v), v).toBe(true);
+    for (const n of [`const x = ${ARGV}.slice(2.9)[0]`, `const x = ${ARGV}.at(2.5)`, `const x = ${ARGV}.at(0.9)`, `const x = ${ARGV}.slice(2).at(-1)`]) expect(detecte(n), n).toBe(false);
+  });
+
+  it('cas plantés : chaque forme d’expression du contrat mène à `argv`', () => {
+    const variantes = [
+      `if (globalThis.global.${ARGV}[1] === soi) main()`,
+      'const p = c ? process : x\nif (p.argv[1] === soi) main()',
+      `const a = x ?? ${ARGV}\nif (a[1] === soi) main()`,
+      `const a = x || ${ARGV}\nif (a[1] === soi) main()`,
+      `if ((<any>${ARGV})[1] === soi) main()`,
+      `if ((${ARGV} satisfies string[])[1] === soi) main()`,
+      "const { ['argv']: a } = process\nif (a[1] === soi) main()",
+      'let a\n({ argv: a = [] } = process)\nif (a[1] === soi) main()',
+    ];
+    for (const v of variantes) expect(detecte(v), v).toBe(true);
   });
 
   it('contrôle négatif : ni lecture de l’élément 1, ni égalité à l’identité du module', () => {

@@ -17,7 +17,9 @@
  * Formes lues : accès `.`, `?.`, crochets à clé littérale ; appels `f(…)`, `f?.(…)` ; parenthèses,
  * `!`, `as`, `satisfies`, `<T>` ; `await` ; `a ? b : c`, `a ?? b`, `a || b` (l'une ou l'autre) ;
  * identifiants, clés et spécificateurs écrits avec des séquences d'échappement (TypeScript les décode).
- * Sur `argv:<k>` : `[i]`, `.at(i)` (i littéral >= 0), `.shift()`, `.slice(s[, fin])` (s littéral).
+ * Sur `argv:<k>` : `[i]` (clé entière), `.at(i)`, `.shift()`, `.slice(s[, fin])`, où `i`, `s` est absent
+ * ou un littéral (nombre ou chaîne) tronqué comme ToIntegerOrInfinity, retenu s'il est >= 0.
+ * Reste de déstructuration d'objet (`{ ...r } = base`) : lié à la valeur de la base, qu'il porte.
  * Espaces de noms : `default` d'un espace de noms de `node:process` ou `node:module` vaut le module.
  * Acquisitions : `require`, `module.require`, `createRequire(…)`, `getBuiltinModule` (nu ou membre
  * de `process`), `import('…')` pour `process` et `module` seulement. `createRequire` se lit nu, comme
@@ -73,8 +75,11 @@ const MEMBRES = {
 /** Modules dont un espace de noms (`import`, `import()`) porte une valeur conteneur. */
 const ESPACES_DE_NOMS = new Set(['process', 'module'])
 
-/** Séquence d'échappement d'un identifiant ou d'une chaîne : TypeScript la décode, le texte brut non. */
-const ECHAPPEMENT = /\\(?:[xu0-7]|\r|\n|\u2028|\u2029)/
+/**
+ * Sans antislash, le texte décodé d'un littéral ou d'un identifiant EST son texte brut : une source
+ * sans antislash se lit donc entière dans ses termes, et une source qui en porte un est parsée.
+ */
+const ANTISLASH = '\\'
 
 /** Expression débarrassée de ce qui ne change pas sa valeur. */
 const nu = (e) => {
@@ -99,10 +104,20 @@ function cleDe(n) {
   return null
 }
 
-/** Entier >= 0 littéral. `null` sinon. */
-function entierDe(n) {
-  const cle = n ? cleDe(n) : null
-  return cle !== null && /^(?:0|[1-9]\d*)$/.test(cle) ? Number(cle) : null
+/**
+ * Argument entier d'`at`/`slice` : absent vaut 0 ; un littéral (nombre, `-` nombre, chaîne) est tronqué
+ * comme ToIntegerOrInfinity (NaN vaut 0, −0 vaut 0). `null` s'il n'est pas littéral, ou < 0.
+ * @param {ts.Expression | undefined} argument
+ */
+function entierDe(argument) {
+  if (!argument) return 0
+  const n = nu(argument)
+  let v = null
+  if (ts.isNumericLiteral(n) || ts.isStringLiteralLike(n)) v = Number(n.text)
+  else if (ts.isPrefixUnaryExpression(n) && n.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(n.operand)) v = -Number(n.operand.text)
+  if (v === null) return null
+  const entier = Number.isNaN(v) ? 0 : Math.trunc(v) + 0
+  return entier >= 0 ? entier : null
 }
 
 /** Nom de module intégré, sans préfixe `node:`, d'un premier argument littéral. `null` sinon. */
@@ -208,7 +223,7 @@ function evaluateur(liaisons) {
       const i = entierDe(n.arguments[0])
       if (methode.methode === 'at' && i !== null) out.add(elementDArgv(k + i))
       if (methode.methode === 'shift') out.add(elementDArgv(k))
-      if (methode.methode === 'slice' && (n.arguments.length === 0 || i !== null)) out.add(tranche(k + (i ?? 0)))
+      if (methode.methode === 'slice' && i !== null) out.add(tranche(k + i))
     }
     return out
   }
@@ -240,8 +255,7 @@ function lier(cible, vals, liaisons, sites) {
   }
   if (ts.isObjectBindingPattern(cible)) {
     for (const el of cible.elements) {
-      if (el.dotDotDotToken) continue
-      sous(el, el.name, membre(vals, cleDe(el.propertyName ?? el.name)))
+      sous(el, el.name, el.dotDotDotToken ? vals : membre(vals, cleDe(el.propertyName ?? el.name)))
     }
   } else if (ts.isArrayBindingPattern(cible)) {
     cible.elements.forEach((el, j) => {
@@ -251,6 +265,7 @@ function lier(cible, vals, liaisons, sites) {
     for (const p of cible.properties) {
       if (ts.isPropertyAssignment(p)) sous(p, cibleDe(p.initializer), membre(vals, cleDe(p.name)))
       else if (ts.isShorthandPropertyAssignment(p)) sous(p, p.name, membre(vals, p.name.text))
+      else if (ts.isSpreadAssignment(p)) sous(p, p.expression, vals)
     }
   } else if (ts.isArrayLiteralExpression(cible)) {
     cible.elements.forEach((el, j) => {
@@ -307,13 +322,14 @@ function pointFixe(imports, liens) {
 }
 
 /**
- * Préfiltre textuel UNIQUE des gardes : une source est parsée si elle porte un des `termes` (une
- * entrée tableau exige tous ses motifs) ou une séquence d'échappement, qu'aucun terme ne peut lire.
+ * Préfiltre textuel UNIQUE des gardes : une source est parsée si elle porte un antislash (`ANTISLASH`)
+ * ou un des `termes` (une entrée tableau exige tous ses motifs). Les `termes` d'une garde sont ceux
+ * sans lesquels aucune de ses règles ne conclut ; hors antislash, ils se lisent dans le texte brut.
  * @param {string} source
  * @param {ReadonlyArray<RegExp | readonly RegExp[]>} termes
  */
 const aParser = (source, termes) =>
-  ECHAPPEMENT.test(source) || termes.some((t) => (Array.isArray(t) ? t.every((m) => m.test(source)) : t.test(source)))
+  source.includes(ANTISLASH) || termes.some((t) => (Array.isArray(t) ? t.every((m) => m.test(source)) : t.test(source)))
 
 /**
  * Sites d'une source retenus par `retenir`, rendus en `{ ligne, extrait }` : `ligne` 1-based de la

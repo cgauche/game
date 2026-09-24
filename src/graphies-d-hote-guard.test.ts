@@ -89,6 +89,7 @@ describe('garde de classe — aucune lecture d’hôte que le rendu sous win32 n
   it('cas plantés : une lecture coupée par un saut de ligne est détectée, à sa première ligne', () => {
     expect(lecturesDHote('const a = 1\nconst ici = import.meta\n  .dirname')).toEqual([expect.objectContaining({ ligne: 2 })]);
     expect(lecturesDHote("const path = require(\n  'node:path',\n)")).toEqual([expect.objectContaining({ ligne: 1 })]);
+    expect(lecturesDHote('const ici =\n  import.meta.dirname')).toEqual([expect.objectContaining({ ligne: 2 })]);
   });
 
   it('cas plantés : une clé ou un spécificateur ÉCHAPPÉ se lit décodé', () => {
@@ -98,6 +99,9 @@ describe('garde de classe — aucune lecture d’hôte que le rendu sous win32 n
       "const path = require('pa\\x74h')",
       "const url = require('node:ur\\154')",
       'const soi = import.meta.file\\u006eame',
+      "const ici = import.meta['dirnam\\e']",
+      "const path = require('pat\\h')",
+      'const ici = import.meta[`dirn\\ame`]',
     ];
     for (const v of variantes) expect(detecte(v), v).toBe(true);
   });
@@ -119,6 +123,28 @@ describe('garde de classe — aucune lecture d’hôte que le rendu sous win32 n
     const r = spawnSync(process.execPath, ['--input-type=module', '-e', code], { encoding: 'utf8', timeout: 5000 });
     expect(r.signal, 'la garde ne rend pas de verdict sous 5 s').toBeNull();
     expect(JSON.parse(r.stdout)).toEqual([[]]);
+  });
+
+  it('cas plantés : un reste de déstructuration d’objet porte la base', () => {
+    const sources = [
+      'const { url, ...reste } = import.meta\nconst ici = reste.dirname',
+      "const { ...m } = module\nm.require('path')",
+      'let m\n({ ...m } = import.meta)\nconst ici = m.dirname',
+    ];
+    for (const v of sources) expect(detecte(v), v).toBe(true);
+  });
+
+  it('cas plantés : chaque forme d’expression du contrat mène à `import.meta` ou à un chargeur', () => {
+    const variantes = [
+      'const m = c ? import.meta : x\nconst ici = m.dirname',
+      'const m = x ?? import.meta\nconst ici = m.dirname',
+      'const m = x || import.meta\nconst ici = m.dirname',
+      'const ici = (<any>import.meta).dirname',
+      'const ici = (import.meta satisfies object).dirname',
+      "const { ['dirname']: d } = import.meta",
+      "let r\n({ getBuiltinModule: r = f } = process)\nr('path')",
+    ];
+    for (const v of variantes) expect(detecte(v), v).toBe(true);
   });
 
   it('contrôle négatif : ce que les hooks ESM couvrent, et ce qui n’est pas une lecture d’hôte', () => {
