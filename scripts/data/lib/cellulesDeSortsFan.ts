@@ -61,11 +61,12 @@ const sectionDe = (titre: string): Section => {
 const PROFIL = /^(?:#+\s*)?\*{0,2}\s*Niveau\s+\d+\s*[—–-]\s*(.+?)\s*\*{0,2}\s*$/;
 const cleDeLibelle = (s: string) => normCellule(s).replace(/\d+$/, '').replace(/[.:]$/, '').trim();
 
-/** Dossier d'extraction du livre fan, résolu au registre des livres. */
-export function dossierDuLivreFan(): string {
-  const rel = sourceDirOf(livreExtraitDe(LIVRE_FAN, REGISTRE_LIVRES, estLivreCitable));
-  if (!rel) throw new Error(`${LIVRE_FAN} : aucun dossier d'extraction au registre des livres`);
-  return join(ROOT, rel);
+/** Dossier d'extraction et sigle du livre `livre`, résolus au registre des livres. */
+function livreDuReleve(livre: string): { dir: string; abbr: string } {
+  const entree = livreExtraitDe(livre, REGISTRE_LIVRES, estLivreCitable);
+  const rel = sourceDirOf(entree);
+  if (!rel) throw new Error(`${livre} : aucun dossier d'extraction au registre des livres`);
+  return { dir: join(ROOT, rel), abbr: entree.abbr };
 }
 
 /** Folio de l'offset `pos` : le dernier marqueur de début de folio qui le précède. */
@@ -75,22 +76,26 @@ function folioA(folios: [number, number][], pos: number): number | null {
   return f;
 }
 
+/** Les cellules de sort du livre du pont (`LIVRE_FAN`), relevées par `cellulesDeSortsDuLivre`. */
+export const cellulesDeSortsFan = (creatures: readonly CreatureLue[]): CelluleDeSort[] => cellulesDeSortsDuLivre(LIVRE_FAN, creatures);
+
 /**
- * Toutes les cellules de sort du livre fan, dans l'ordre de lecture (chapitres triés, lignes).
- * `creatures` = le bestiaire (`creatures.json`), dont seules les entrées `frenchy-bzh` sont jointes :
- * même chapitre (`folder`) et même libellé que le titre de profil ; entre homonymes, le titre dont le
- * pied de page PRÉCÉDENT vaut `source.page`.
+ * Toutes les cellules de sort du livre `livre`, dans l'ordre de lecture (chapitres triés, lignes).
+ * `creatures` = le bestiaire (`creatures.json`), dont seules les entrées ancrées à `livre` sont jointes :
+ * même chapitre (`folder`, sigle du livre entre parenthèses ôté) et même libellé que le titre de
+ * profil ; entre homonymes, le titre dont le pied de page PRÉCÉDENT vaut `source.page`.
  */
-export function cellulesDeSortsFan(creatures: readonly CreatureLue[]): CelluleDeSort[] {
-  const dir = dossierDuLivreFan();
+export function cellulesDeSortsDuLivre(livre: string, creatures: readonly CreatureLue[]): CelluleDeSort[] {
+  const { dir, abbr } = livreDuReleve(livre);
   const files = readdirSync(dir).filter((f) => f.endsWith('.md')).sort();
+  const suffixeDuSigle = ` (${abbr})`;
   const fileOfFolder = (folder: string) => {
-    const k = normCellule(folder.replace(/ \(frenchy\.bzh\)$/, ''));
+    const k = normCellule(folder.endsWith(suffixeDuSigle) ? folder.slice(0, -suffixeDuSigle.length) : folder);
     return files.find((f) => normCellule(f.replace(/^\d+ - /, '').replace(/\.md$/, '')) === k);
   };
   const parFichier = new Map<string, Map<string, CreatureLue[]>>();
   for (const c of creatures) {
-    if (c.source?.book !== LIVRE_FAN || !c.folder) continue;
+    if (c.source?.book !== livre || !c.folder) continue;
     const f = fileOfFolder(c.folder);
     if (!f) continue;
     const k = cleDeLibelle(c.label.replace(/\s*\([^)]*\)\s*$/, ''));

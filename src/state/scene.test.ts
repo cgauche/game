@@ -124,6 +124,7 @@ describe('normalizeScene — une Scène d’un document ANCIEN ressort ANNONCÉE
     };
     expect(() => parseProject(projet)).not.toThrow();
     // Contre-épreuve : la MÊME scène NON normalisée est refusée, en nommant son `type`.
-    expect(() => parseProject({ ...projet, scenes: [sceneMuette()] })).toThrow(/scenes\.0\.type/);
+    const muette = sceneMuette();
+    expect(() => parseProject({ ...projet, scenes: [muette] })).toThrow(`scenes « ${muette.id} » › type`);
   });
 });

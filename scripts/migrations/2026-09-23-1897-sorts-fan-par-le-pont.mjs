@@ -15,6 +15,11 @@
  *  3. LISTES DÉRIVÉES : `spells` de chaque créature fan jointe = `listesDerivees` du pont
  *     (`scripts/data/lib/pontSortsFan.ts`) ; toute autre créature voit ses ids fusionnés remplacés.
  *
+ * Entrées : `src/data/spells.json` et `src/data/creatures.json` (écrits), `src/data/books.json`
+ * (registre des livres, via `scripts/raw/_lib.mjs`), le dossier d'extraction
+ * `Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF` (chapitres `NN - ….md`),
+ * `SORTS_FUSIONNES` (`src/data/sortsFusionnes.ts`) et la table du pont (`scripts/data/lib/pontSortsFan.ts`).
+ *
  * FAIL-FAST, rien n'est écrit (sortie 1, fautes nommées) si : forme non canonique d'un fichier, cible
  * de fusion absente ou elle-même fusionnée, fusion sans cellule imprimée, cellule que le pont ne résout
  * pas, id du pont absent du catalogue, DOUBLON non déclaré dans une liste dérivée.
