@@ -35,7 +35,7 @@ import path from 'node:path';
 import { listerDossier } from '../../guards/lib/lister.mjs';
 import { pagesDeLAtlas } from '../../raw/_lib.mjs';
 import { comparer, empreinteDe } from './empreinteRejeu.mjs';
-import { ATTENDU_ROUGE, PERIMETRE } from '../replay.mjs';
+import { PERIMETRE } from '../replay.mjs';
 
 /** Les migrations DATÉES d'un dossier — le périmètre que `replay.mjs` rejoue. */
 export function migrationsDatees(dossier) {
@@ -240,12 +240,6 @@ export function rejouerEnCroissance({ racine, ecrire = () => {} }) {
     const dit = `${r.stdout ?? ''}${r.stderr ?? ''}`.trim();
     if (r.status === 0) {
       ecrire(`  ✓ ${f} — exit 0`);
-      continue;
-    }
-    if (ATTENDU_ROUGE[f]) {
-      // Rouge DÉJÀ déclaré, avec sa raison mesurée et son échéance, chez `replay.mjs` : une seule
-      // liste pour les deux portes.
-      ecrire(`  · ${f} — exit ${r.status} [rouge ATTENDU de replay.mjs]`);
       continue;
     }
     const nus = refusSansReference(dit, porteRef);

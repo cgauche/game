@@ -14,7 +14,8 @@ export const file = 'props.json';
 export const famille = 'entite';
 /** Champs MARQUEURS (#1897) : chacun définit la SOUS-LISTE des décors qui le portent — `volume` = les
  *  décors à recette volumique, cap cardinal seul (`defs-scenes/scene.ts`). `npm run gen` en dérive
- *  `IDS_PAR_MARQUEUR` (`schemas/_ids.generated.ts`), lue par `porteLeMarqueur` (`grammaire/ref.ts`). */
+ *  `IDS_PAR_MARQUEUR` (`schemas/_ids.generated.ts`), lue par `porteLeMarqueur` (`grammaire/ref.ts`).
+ *  @generateur lu au TEXTE par `lireExports` (`scripts/gen-registry.mjs`), qu'aucun import ne dit à knip. */
 export const marqueurs = ['volume'];
 
 /** `PropPoint3` / `PropSize3` (`src/data/props.types.ts`) — repère LOCAL d'une recette de décor, en

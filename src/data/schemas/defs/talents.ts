@@ -22,7 +22,8 @@ import { refOuSpec } from '../grammaire/ref';
 export const file = 'talents.json';
 export const famille = 'entite';
 /** Champ MARQUEUR (#1897) : `specsOpen` définit la SOUS-LISTE des Talents OUVERTS, dont la `spec`
- *  admet un texte libre hors de `specs[]` — lue par `entreeOuverte` (`grammaire/ref.ts`). */
+ *  admet un texte libre hors de `specs[]` — lue par `entreeOuverte` (`grammaire/ref.ts`).
+ *  @generateur lu au TEXTE par `lireExports` (`scripts/gen-registry.mjs`), qu'aucun import ne dit à knip. */
 export const marqueurs = ['specsOpen'];
 
 // ── TestMatch / TalentTest (src/data/index.ts) ──────────────────────────────────────────────────

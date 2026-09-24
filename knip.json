@@ -15,5 +15,6 @@
     "dist/**",
     "public/**"
   ],
-  "ignoreExportsUsedInFile": true
+  "ignoreExportsUsedInFile": true,
+  "tags": ["-generateur"]
 }
