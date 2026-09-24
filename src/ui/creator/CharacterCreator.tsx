@@ -1447,7 +1447,7 @@ export function StarScreen({ d, setD }: StepProps) {
 //      présentation se restructure en sous-écrans ; la fiche vivante RÉSOUT ses chips roadmap EN
 //      DIRECT au fil des trois (`speciesSkillsDone`/`careerSkillsDone`/`talentsDone`), au lieu d'un
 //      tout-ou-rien à l'arrivée sur l'étape (#417 suite). Talents d'espèce en TROIS lots dérivés de
-//      la donnée (LDB 05 l.510, `draft.ts`) : ACQUIS D'OFFICE (fixes) / DE RACE — UN AU CHOIX
+//      la donnée (LDB 05 l.484, `draft.ts`) : ACQUIS D'OFFICE (fixes) / DE RACE — UN AU CHOIX
 //      (« A ou B ») / TIRÉS AU D100 (figés par le seed dès la race choisie, jamais relancés).
 export function SkillsScreen({ d, setD, skillsSub, setSkillsSub }: StepProps): ReactNode {
   // Contrôlé par `CharacterCreator` (pied de page par sous-onglet) quand fourni ; sinon état
@@ -1709,7 +1709,7 @@ function careerSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, att
   };
 }
 
-// ── 5c) Talents (LDB 05 l.493-510) — de race « un au choix » ⇄ de carrière « un au choix » ⇄
+// ── 5c) Talents (LDB 05 l.484, l.535) — de race « un au choix » ⇄ de carrière « un au choix » ⇄
 //      tirés au d100 (figés dès la race choisie, listés ici en lecture — jamais une relance). ──
 function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZones {
   const probe = probeHero(d, false);

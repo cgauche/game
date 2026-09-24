@@ -575,9 +575,9 @@ export const encounterDefSchema = z.strictObject({
    *  (défaut historique). Défaut résolu par `banRangedActive` (SEUL point), consommé par
    *  `resolveAttack`/`firedAttackBlock` (joueur ET IA). */
   banRanged: z.boolean().optional(),
-  /** Rencontre de SIÈGE — FOYER de l'arbitrage utilisateur du 2026-09-04 (#1680, réponses verbatim à
-   *  deux questions AskUserQuestion) : « Structures ciblables en siège seul », puis, à la question de ce
-   *  qui fait d'un combat un siège, « Un drapeau de RENCONTRE, éditable ». Les STRUCTURES destructibles de la
+  /** Rencontre de SIÈGE — #1680, commentaire 5546039260 du 2026-09-04 : « Structures ciblables en
+   *  siège seul », puis, à la question de ce qui fait d'un combat un siège, « Un drapeau de RENCONTRE,
+   *  éditable ». Les STRUCTURES destructibles de la
    *  scène (porte, mur) entrent dans le choix de cible de l'IA ennemie. Défaut LITTÉRAL `false` —
    *  absent = pas de siège, AUCUNE dérivation depuis un autre champ (une rencontre
    *  `victoryCondition: destroyStructure` ne l'active pas d'elle-même). Résolu par `siegeActif`

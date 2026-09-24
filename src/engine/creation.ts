@@ -10,7 +10,7 @@
  *    + bonus d'espèce) = 0 PX.
  *  - Richesse initiale (LDB 05 l.578-583) : Bronze 2d10 sous × Standing ; Argent 1d10 pistoles
  *    × Standing ; Or 1 couronne d'or × Standing.
- *  - Détails (LDB 05 l.691-744) : âge Humain 15+1d10, Nain 15+10d10, Halfling 15+5d10,
+ *  - Détails (LDB 05 l.701-768) : âge Humain 15+1d10, Nain 15+10d10, Halfling 15+5d10,
  *    Elfe 30+10d10 ; taille Humain 145+5d10 cm, Nain 130+3d10, Halfling 90+2d10,
  *    Elfe 180+2d10 ; yeux/cheveux : 2d10 sur les tables (eyes.json / hairs.json).
  */
@@ -74,7 +74,7 @@ export function rollSpecies(rng: RNG = defaultRNG): { roll: number; ids: string[
 }
 
 /**
- * Tire une Carrière sur le Tableau des Classes et Carrières aléatoires (LDB 05 l.197+), colonne
+ * Tire une Carrière sur le Tableau des Classes et Carrières aléatoires (LDB 05 l.214+), colonne
  * de l'espèce (`refCareer`). Les bornes des données sont les bornes HAUTES par carrière. Comme
  * pour les espèces, plusieurs carrières peuvent partager une borne : un jet désigne la borne et
  * le joueur CHOISIT librement parmi toutes ses carrières (le bonus de PX récompense le tirage).
@@ -147,8 +147,8 @@ export function rollAge(sp: SpeciesData, rng: RNG = defaultRNG): number {
   return rollDetailFormula(detailTables.ageBase, detailTables.ageRoll, sp, rng);
 }
 
-/** Taille en cm (LDB 05 l.707 — ex. Humain 145+5d10, Halfling 90+2d10).
- *  (Le dé bonus humain sur un 10 — l.705 — n'est pas simulé.) */
+/** Taille en cm (LDB 05 l.728 — ex. Humain 145+5d10, Halfling 90+2d10).
+ *  (Le dé bonus humain sur un 10 — l.724 — n'est pas simulé.) */
 export function rollHeight(sp: SpeciesData, rng: RNG = defaultRNG): number {
   return rollDetailFormula(detailTables.heightBase, detailTables.heightRoll, sp, rng);
 }

@@ -167,7 +167,7 @@ describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
   });
 });
 
-describe('Tableau des Classes et Carrières aléatoires (LDB 05 l.197+)', () => {
+describe('Tableau des Classes et Carrières aléatoires (LDB 05 l.214+)', () => {
   it('rollCareer : la borne renvoie des carrières TOUTES accessibles à l\'espèce', () => {
     const sylvain = findSpeciesById('elfes-sylvains')!;
     for (let seed = 1; seed <= 20; seed++) {
@@ -215,7 +215,7 @@ describe('Richesse initiale (LDB 05 l.578-583)', () => {
   });
 });
 
-describe('Détails (LDB 05 l.691-744)', () => {
+describe('Détails (LDB 05 l.701-768)', () => {
   it('âge/taille dans les bornes par espèce', () => {
     const human = findSpeciesById('humains-reiklander')!;
     const dwarf = findSpeciesById('nains')!;

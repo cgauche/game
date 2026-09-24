@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from '../../engine/types';
 import { makePregens } from '../../data/pregens';
-import { createHero } from '../../engine/character';
+import { createHero, competencesDeCarriere } from '../../engine/character';
+import { firstLevel } from '../../data';
 import { makeRNG } from '../../engine/dice';
 import { newDraft, withSpecies, withCareer, buildHero, careerSkillEntries, careerAdvTotal, type CreatorDraft } from './draft';
 
@@ -92,7 +93,8 @@ describe('création de personnage — golden (8 pré-tirés, 6 témoins du créa
 
 describe('40 Augmentations de carrière — plafond PAR Compétence (LDB 05 l.535)', () => {
   // Intendant : « Savoir (Région) » au Niveau 1 ; Voyageur aguerri (Talent d'espèce halfling de
-  // Basseronce) l'ajoute aussi (`grantCareerSkill`). C'est UNE Compétence.
+  // Basseronce) l'ajoute aussi (`grantCareerSkill`). C'est UNE Compétence (LDB 10 l.70, l.745, l.891 ;
+  // LDB 11 l.204).
   const choixVoyageur = { 'espece:talents:4': 1 };
   it('10 Augmentations allouées à une Compétence donnent 10, même si un Talent l\'ajoute aussi', () => {
     const hero = createHero({ speciesId: 'halflings-basseronce', careerId: 'intendant', label: 'x', rng: makeRNG(1),
@@ -103,5 +105,17 @@ describe('40 Augmentations de carrière — plafond PAR Compétence (LDB 05 l.53
     const d = { ...withCareer(withSpecies(newDraft(1), 'halflings-basseronce'), 'intendant'), speciesTalentChoices: choixVoyageur, skillAdvances: { 'savoir|region': 10 } };
     expect(careerSkillEntries(d).filter((c) => c.designee?.id === 'savoir')).toHaveLength(1);
     expect(careerAdvTotal(d)).toBe(10);
+  });
+  it('une Compétence AJOUTÉE par un Talent est acquise hors des 40 Augmentations (LDB 05 l.535)', () => {
+    const base = { speciesId: 'halflings-basseronce', careerId: 'artisan', label: 'x', speciesTalentChoices: choixVoyageur };
+    const ajout = competencesDeCarriere(firstLevel('artisan'), createHero({ ...base, rng: makeRNG(1) }), {}).filter((c) => c.ajout);
+    expect(ajout.map((c) => c.ref.id)).toContain('savoir');
+    const allocation = Object.fromEntries(ajout.map((c) => [c.cle, 10]));
+    const d = { ...withCareer(withSpecies(newDraft(1), 'halflings-basseronce'), 'artisan'), speciesTalentChoices: choixVoyageur, skillAdvances: allocation };
+    expect(careerSkillEntries(d).some((c) => c.ajout)).toBe(false);
+    expect(careerAdvTotal(d)).toBe(0);
+    const sans = createHero({ ...base, rng: makeRNG(1) });
+    const avec = createHero({ ...base, rng: makeRNG(1), skillAdvances: allocation });
+    expect(avec.skills).toEqual(sans.skills);
   });
 });

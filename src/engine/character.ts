@@ -4,11 +4,11 @@
  * Étapes implémentées :
  *  3) Attributs : Caractéristique = base d'espèce + 2d10 (ou saisie manuelle / répartition de
  *     100 Points — cf. engine/creation.ts) ; 5 Augmentations gratuites réparties sur les
- *     3 Caractéristiques de carrière (l.488) ; Destin/Résilience + points supplémentaires.
- *  4) Compétences/Talents : 3 Compétences d'espèce à +5 et 3 à +3 (l.510) ; Talents d'espèce
+ *     3 Caractéristiques de carrière (l.459) ; Destin/Résilience + points supplémentaires.
+ *  4) Compétences/Talents : 3 Compétences d'espèce à +5 et 3 à +3 (l.484) ; Talents d'espèce
  *     (choix « A ou B », fixes, « N Talent aléatoire » sur la table d100) ; 8 Compétences de
  *     carrière, 40 augmentations (max 10), 1 Talent de carrière — qui peut être un talent
- *     d'espèce déjà possédé → times 2 (l.502), dans la limite du Maxi (LDB 10).
+ *     d'espèce déjà possédé → times 2 (l.535, LDB 10 l.9), dans la limite du Maxi (LDB 10).
  *  5) Possessions : équipement de classe + de carrière (la Richesse initiale est créditée au
  *     groupe par l'appelant — cf. engine/creation.rollInitialWealth).
  *  6) Détails : âge/taille/yeux/cheveux/ambitions (cosmétique).
@@ -67,7 +67,7 @@ export const FORMAT_DES_CHOIX = 2;
  * des pré-tirés (`PregenDef`) et des options de `createHero`.
  */
 export interface ChoixDeCreation {
-  /** Talent de carrière ; peut être un talent d'espèce déjà possédé (LDB 05 l.502). Défaut : 1re entrée
+  /** Talent de carrière ; peut être un talent d'espèce déjà possédé (LDB 05 l.535, LDB 10 l.9). Défaut : 1re entrée
    *  du Niveau 1 dont le Maxi n'est pas atteint. */
   careerTalent?: RefDesignee;
   /** Spécialisation choisie (id) par ADRESSE d'emplacement (`adresseDeCreation`). */
@@ -118,12 +118,12 @@ export interface CompetenceDeCarriere {
   designee: RefDesignee | null;
   /** `cleDeCompetence` de la désignée (id seul pour un joker non désigné). */
   cle: string;
-  /** Ajout d'un Talent (`grantCareerSkill`) — reçoit 0 Augmentation par défaut. */
+  /** Ajout d'un Talent (`grantCareerSkill`) — hors des 40 Augmentations (LDB 05 l.535). */
   ajout: boolean;
 }
 
 /** Les Compétences de carrière de départ (LDB 05 l.535) : les 8 du Niveau 1 puis les ajouts des Talents
- *  (LDB 10), UNE par Compétence (`cle`). */
+ *  (LDB 10 l.70, l.745, l.891 ; LDB 11 l.204), UNE par Compétence (`cle`). */
 export function competencesDeCarriere(level: CareerLevelData | undefined, hero: Combatant, specChoices: Record<string, string> = {}): CompetenceDeCarriere[] {
   const out: CompetenceDeCarriere[] = [];
   const pousser = (adresse: string, ref: RefASpecialisation, ajout: boolean) => {
@@ -155,7 +155,7 @@ function randomTalentTable() {
  * talent tiré est groupé (« un au choix » — Sens aiguisé, Résistance, Maître artisan, Artiste),
  * on CHOISIT une Spécialisation non possédée (via `pickSpec`, défaut : la première libre) au
  * lieu de relancer ; on ne relance que si le talent est déjà possédé sur toutes ses specs
- * (Livre de base l.510 : « vous pouvez relancer »).
+ * (LDB 05 l.484 : « vous pouvez relancer »).
  */
 export function rollRandomTalent(
   rng: RNG,
@@ -181,7 +181,7 @@ export function rollRandomTalent(
 }
 
 /**
- * Résout les Talents d'espèce (LDB 05 l.510) : une entrée « A ou B » (`pick`) → l'option retenue
+ * Résout les Talents d'espèce (LDB 05 l.484) : une entrée « A ou B » (`pick`) → l'option retenue
  * (`choices`, par adresse ; défaut : la 1re) ; un Talent fixe tel quel ; `{random: n}` → n tirages
  * FIGÉS sur le Tableau des Talents aléatoires, y compris comme option d'un choix. Un joker prend la
  * spécialisation choisie (`specChoices`, par adresse), sinon la 1re non possédée.
@@ -233,7 +233,7 @@ export interface CreateHeroOptions extends ChoixDeCreation {
    *  appliqué aux attributs de départ via applyStarOps. Absent = pas de signe. */
   starId?: string;
   /** Les 5 Augmentations gratuites réparties sur les 3 Caractéristiques de carrière (LDB 05
-   * l.488). Défaut : 2/2/1 sur les 3 Caractéristiques du Niveau 1. */
+   * l.459). Défaut : 2/2/1 sur les 3 Caractéristiques du Niveau 1. */
   charAdvancesAlloc?: Partial<Record<CharKey, number>>;
   /** Répartition des points supplémentaires Destin/Résilience. */
   fateSplit?: { fate: number; resilience: number };
@@ -286,7 +286,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     chars[k] += n; // l'Augmentation s'ajoute à la valeur initiale (LDB 05 l.463)
   }
 
-  // 4a) Talents : Talents d'espèce + 1 Talent de carrière (LDB 05 l.502, Maxi respecté).
+  // 4a) Talents : Talents d'espèce + 1 Talent de carrière (LDB 05 l.535, LDB 10 l.9, Maxi respecté).
   const speciesTalents = opts.speciesTalentsResolved
     ?? resolveSpeciesTalents(sp, { rng, choices: opts.speciesTalentChoices, specChoices, pickSpec: (id, free) => (opts.randomSpecPicks?.[id] && free.includes(opts.randomSpecPicks[id]) ? opts.randomSpecPicks[id] : null) });
   const talents: TalentInstance[] = [];
@@ -318,8 +318,8 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   // d'acquisition des Talents.
   if (opts.starId) applyStarOps(opts.starId, chars, (ref, k) => addTalentRef(designer('talent', ref, specChoices[adresseDeCreation.signe(k)])));
 
-  // 4b) Compétences de carrière : 40 Augmentations (+5 par défaut sur les 8 entrées du Niveau), UNE
-  // part par Compétence (LDB 05 l.535), ajouts des Talents compris (LDB 10).
+  // 4b) Compétences de carrière : 40 Augmentations (+5 par défaut) sur les 8 entrées du Niveau, UNE
+  // part par Compétence (LDB 05 l.535) ; un ajout de Talent est acquis sans Augmentation.
   const heroSoFar: Combatant = { characteristics: chars, talents } as Combatant;
   const skills: SkillInstance[] = [];
   const addSkill = ({ id, spec }: RefDesignee, adv: number) => {
@@ -330,7 +330,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const carriere = competencesDeCarriere(level, heroSoFar, specChoices);
   const allouees: { adresse: string; designee: RefDesignee }[] = [];
   for (const c of carriere) {
-    const adv = opts.skillAdvances?.[c.cle] ?? (c.ajout ? 0 : 5);
+    const adv = c.ajout ? 0 : opts.skillAdvances?.[c.cle] ?? 5;
     const designee = c.designee ?? designer('skill', c.ref);
     addSkill(designee, adv);
     if (adv > 0) allouees.push({ adresse: c.adresse, designee });
@@ -392,7 +392,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     resolve: resilience,
     motivation: opts.motivation,
     details: opts.details,
-    // Avancement : les 5 Augmentations gratuites de la création (l.488) sont comptées dans
+    // Avancement : les 5 Augmentations gratuites de la création (LDB 05 l.459) sont comptées dans
     // charAdvances ; les PX bonus des choix aléatoires (LDB 04/05) restent à dépenser.
     xp: opts.xpBonus ?? 0,
     charAdvances,

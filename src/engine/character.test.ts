@@ -126,7 +126,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
     expect(hero.charAdvances?.sociabilite ?? 0).toBe(0);
   });
 
-  it('talent de carrière = talent d\'espèce → times 2 (LDB 05 l.502) ; Blessures avec Dur à cuire', () => {
+  it('talent de carrière = talent d\'espèce → times 2 (LDB 05 l.535, LDB 10 l.9) ; Blessures avec Dur à cuire', () => {
     const hero = createHero({
       speciesId: REIK,
       careerId: 'milicien', // Niveau 1 propose « Dur à cuire »

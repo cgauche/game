@@ -2388,7 +2388,7 @@ const traitParLabelMinuscule = indexParChamp('traits', traits, (t) => t.label.to
 /** `id` STABLE d'un Trait depuis un LIBELLÉ d'AUTHORING (statbloc saisi, migration), casse ignorée —
  *  `undefined` si le texte ne nomme aucun trait du catalogue. La couture label→id vit ICI, au
  *  CHARGEMENT de la donnée (CLAUDE.md § Pour TOUT agent) : `src/engine` délègue à ce résolveur d'ID
- *  et ne manipule que des ids ; le runtime résout par `findTraitById`. Patron `talentIdByLabel`. */
+ *  et ne manipule que des ids ; le runtime résout par `findTraitById`. */
 export const traitIdByLabel = (label: string): string | undefined => traitParLabelMinuscule(label.toLowerCase())?.id;
 const traitParId = indexParId('traits', traits);
 /** Trait par `id` STABLE (slug) — lookup runtime indépendant de la langue. */
@@ -2814,10 +2814,8 @@ export const refEstVolumique = (ref: string | undefined): boolean => ref !== und
 export const findPropMaterialById = (id: string): PropMaterialData | undefined => matieresDe('prop').find((m) => m.id === id);
 /** Domaines de magie app-owned (LDB 48) — ENTITÉ éditable au Codex (attributs en données : onHit,
  *  projectile, post-incantation). Le RUNTIME résout par `id` STABLE (= `SpellData.domainId`, cf.
- *  `findDomainById`) ; `domainByLabel`/`findDomain` restent pour l'authoring/affichage. */
+ *  `findDomainById`). */
 export const domains = domainsJson as DomainData[];
-const domaineParLabel = indexParChamp('domains', domains, (d) => d.label);
-export const findDomain: (label: string | null | undefined) => DomainData | undefined = domaineParLabel;
 /** Index des Domaines par `id` STABLE — lookup RUNTIME indépendant de la langue (sort→domaine). */
 const domaineParId = indexParId('domains', domains);
 export const findDomainById: (id: string | null | undefined) => DomainData | undefined = domaineParId;
@@ -3011,11 +3009,6 @@ export function psychologyLabel(id: string): string {
  *  après une édition au Codex. Consommée par le scan du journal (`engine/conditions.conditionIdInText`)
  *  qui itère des ids et n'obtient le libellé que pour le chercher dans un texte FRANÇAIS. */
 export const conditionIds = memoParVersion('etats', () => etats.map((e) => e.id));
-const etatParLabelMinuscule = indexParChamp('etats', etats, (e) => e.label.toLowerCase());
-/** Résout un `id` d'État depuis un LIBELLÉ (authoring : parsing de desc/texte) — insensible à la casse. */
-export function conditionIdByLabel(label: string): string | undefined {
-  return etatParLabelMinuscule(label.toLowerCase())?.id;
-}
 const especeParId = indexParId('species', species);
 /** Résout une Espèce par son `id` STABLE (slug du libellé) — réf runtime/données (Combatant.species,
  *  pregens, draft). Le libellé ne sert qu'à l'affichage (`speciesSingular`). */
@@ -3106,12 +3099,6 @@ export function findSkill(label: string): SkillData | undefined {
   // Exact d'abord, puis casse ignorée (les statblocs de campagne écrivent « Corps à Corps »).
   return skills.find((s) => s.label === label) ?? skills.find((s) => s.label.toLowerCase() === label.toLowerCase());
 }
-/** Résout un `id` de Compétence depuis un LIBELLÉ d'AUTHORING (entrée de carrière/espèce, texte
- *  saisi) — repli `slugId` si le libellé n'est pas au catalogue (dette de donnée, jamais un crash).
- *  Couture label→id (doctrine CLAUDE.md) : SEULE définition, `src/engine` délègue ici. */
-export function skillIdByLabel(label: string): string {
-  return findSkill(label)?.id ?? slugId(label);
-}
 /** REGISTRE de la porte `byId` : type d'entité de la grammaire → index de son dataset par `id`
  *  STABLE. Un type y entre AVEC le lot qui migre son concept (patron `TYPES`,
  *  `schemas/grammaire/ref.ts`) — ce qui n'y est pas déclaré ne se résout pas par la porte. */
@@ -3156,12 +3143,6 @@ export function skillRefLabel(ref: SkillRef): string {
 }
 export function findTalent(label: string): TalentData | undefined {
   return talents.find((t) => t.label === label);
-}
-/** Résout un `id` de Talent depuis un LIBELLÉ d'AUTHORING (entrée de carrière/espèce, texte saisi) —
- *  repli `slugId` si le libellé n'est pas au catalogue (dette de donnée, jamais un crash). Couture
- *  label→id (doctrine CLAUDE.md) : SEULE définition, `src/engine` délègue ici. */
-export function talentIdByLabel(label: string): string {
-  return findTalent(label)?.id ?? slugId(label);
 }
 const talentParId = indexParId('talents', talents);
 /** Résout un Talent par son `id` STABLE (référence structurée — fin du lookup par libellé parsé). */
@@ -3279,17 +3260,9 @@ export function creatureLabel(id: string): string {
 export function isNamed(c: CreatureData): boolean {
   return c.named === true;
 }
-/** Lookup par LIBELLÉ — réservé à l'AUTHORING/affichage (picker éditeur, Codex) ; le runtime résout par id. */
-export function findCreature(label: string): CreatureData | undefined {
-  return creatures.find((c) => c.label === label);
-}
 /** Sort par LIBELLÉ — bord AUTHORING/affichage ; rend l'entrée EFFECTIVE, comme `findSpellById`. */
 export function findSpell(label: string): SpellData | undefined {
   return effectiveEntry(spells.find((s) => s.label === label));
-}
-/** Signe astral par LIBELLÉ — bord AUTHORING/affichage (l'éditeur, le tirage qui produit un libellé). */
-export function findStar(label: string): StarData | undefined {
-  return stars.find((s) => s.label === label);
 }
 const signeAstralParId = indexParId('stars', stars);
 /** Signe astral par `id` STABLE — lookup RUNTIME indépendant de la langue (`Combatant.star` = id). */
@@ -3298,16 +3271,9 @@ export function findStarById(id: string | null | undefined): StarData | undefine
 }
 
 const possessionParId = indexParId('trappings', trappings);
-/** Résout une Possession par son `id` STABLE (référence structurée — ≠ `findTrapping` par libellé, authoring). */
+/** Résout une Possession par son `id` STABLE. */
 export function findTrappingById(id: string): TrappingData | undefined {
   return possessionParId(id);
-}
-const possessionParLabelNormalise = indexParChamp('trappings', trappings, (t) => norm(t.label));
-/** Résout une Possession par LIBELLÉ normalisé — bord AUTHORING (texte libre saisi par l'auteur : override
- *  de scène `weapon:'X'`, fixtures de test), JAMAIS au runtime moteur (qui reste sur `findTrappingById`,
- *  seule la couture label→id à l'authoring/chargement est tolérée, cf. CLAUDE.md règle stricte 7). */
-export function findTrappingByLabel(label: string): TrappingData | undefined {
-  return possessionParLabelNormalise(norm(label));
 }
 /** Résout une Qualité par son `id` STABLE. */
 export function findQualityById(id: string): QualityData | undefined {

@@ -481,8 +481,8 @@ import type { SourceRef } from '../data/schemas/grammaire/valeurs';
 
 /** Identité de campagne pour la bibliothèque (#766) — PLATE à la racine du document depuis #1467
  *  L1b, posée par l'enveloppe de `document()` depuis #1552. Le trio `id`/`label`/`versionContenu`
- *  est REQUIS (arbitrage utilisateur 2026-08-31 : « Un projet se NOMME avant d'être enregistré
- *  (Recommandé) ») ; la PROVENANCE l'est aussi, sous la forme `source` OU `maison`. */
+ *  est REQUIS (#1552, commentaire 5481625275 du 2026-08-31 : « Un projet se NOMME avant d'être
+ *  enregistré (Recommandé) ») ; la PROVENANCE l'est aussi, sous la forme `source` OU `maison`. */
 export interface ProjectIdentite {
   /** Type du document — l'enveloppe l'écrit dans le JSON et le schéma le vérifie au parse. */
   type: 'projet';

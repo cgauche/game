@@ -21,7 +21,8 @@ import { porteLeChampMarqueur } from '../src/data/schemas/grammaire/idsVivants.t
  * (les entrées vivent dans un sous-dossier `defs/`). Mettre `.` quand les fichiers sont à plat
  * dans le même dossier que l'index (cas des scénarios).
  * `idUnion` (option PAR registre) : émet AUSSI une union de littéraux `export type <typeName> =`
- * extraite des champs `<field>: '…'` des defs — typage RÉEL des ids côté consommateurs TS.
+ * extraite des champs `<field>` littéraux des defs (`champsLitteraux`) — typage RÉEL des ids côté
+ * consommateurs TS.
  * `fields` (option PAR registre) : quand un module de def exporte PLUSIEURS noms (pas 1 seul via
  * `exportName`), liste ces noms → chaque entrée du tableau généré devient `{ champ1, champ2, … }`
  * (ex. `src/data/schemas/defs/` : `file` + `schema`).
@@ -466,10 +467,7 @@ function genOne(r) {
   // Union de littéraux des ids déclarés dans les defs (option `idUnion`) — triée, dédupliquée.
   let unionDecl = '';
   if (r.idUnion) {
-    const ids = files.flatMap((f) =>
-      [...readFileSync(join(r.dir, f), 'utf8').matchAll(new RegExp(`\\b${r.idUnion.field}:\\s*'([^']+)'`, 'g'))].map((m) => m[1]),
-    );
-    const uniq = [...new Set(ids)].sort();
+    const uniq = unionDesIds(r.dir, files, r.idUnion.field);
     // Registre encore VIDE (socle posé avant sa première def) : l'union est `never`, pas la chaîne
     // vide — un `''` accepterait silencieusement l'id vide chez les consommateurs.
     unionDecl =
@@ -495,19 +493,33 @@ function genOne(r) {
 const lit = (v) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 
 /**
- * Valeur du champ `champ` écrit en LITTÉRAL (guillemets simples ou doubles) dans la source d'un def —
- * EXACTEMENT une occurrence, sinon la génération LÈVE en nommant le def : un id calculé, absent ou
- * doublé ne se projette pas en silence.
+ * Valeurs du champ `champ` écrites en LITTÉRAL (guillemets simples ou doubles, en tête de ligne) dans
+ * la source d'un def — SEULE règle de lecture d'un littéral du générateur (`idUnion`, `projection`).
+ * Un compte hors de la `cardinalite`, ou une mention du champ qui n'est pas un tel littéral, LÈVE en
+ * nommant le def : un id calculé, absent ou doublé ne sort pas du registre en silence.
  * @param {string} src source du def
  * @param {string} champ champ lu
  * @param {string} def chemin du def, pour le message
- * @returns {string}
+ * @param {'un' | 'auMoinsUn'} cardinalite
+ * @returns {string[]}
  */
-function champLitteralUnique(src, champ, def) {
-  const vus = [...src.matchAll(new RegExp(String.raw`^\s*${champ}:\s*(['"])([^'"\\\n]+)\1`, 'gm'))];
-  if (vus.length !== 1)
-    throw new Error(`gen-registry: ${def} : ${vus.length} champ(s) « ${champ} » littéral(aux) — la projection en exige EXACTEMENT un.`);
-  return vus[0][2];
+export function champsLitteraux(src, champ, def, cardinalite) {
+  const vus = [...src.matchAll(new RegExp(String.raw`^\s*${champ}:\s*(['"])([^'"\\\n]+)\1`, 'gm'))].map((m) => m[2]);
+  if (cardinalite === 'un' ? vus.length !== 1 : vus.length === 0)
+    throw new Error(`gen-registry: ${def} : ${vus.length} champ(s) « ${champ} » littéral(aux) — le registre en exige ${cardinalite === 'un' ? 'EXACTEMENT' : 'AU MOINS'} un.`);
+  const mentions = [...src.matchAll(new RegExp(String.raw`\b${champ}\s*:`, 'g'))].length;
+  if (mentions !== vus.length)
+    throw new Error(`gen-registry: ${def} : ${mentions - vus.length} champ(s) « ${champ} » non littéral(aux) — le registre ne lit que des littéraux.`);
+  return vus;
+}
+
+/**
+ * Union des `field` littéraux déclarés par les defs `files` de `dir` (option `idUnion`) — triée, dédupliquée.
+ * @param {string} dir @param {string[]} files @param {string} field @returns {string[]}
+ */
+export function unionDesIds(dir, files, field) {
+  const ids = files.flatMap((f) => champsLitteraux(readFileSync(join(dir, f), 'utf8'), field, join(dir, f), 'auMoinsUn'));
+  return [...new Set(ids)].sort();
 }
 
 /**
@@ -520,8 +532,8 @@ function champLitteralUnique(src, champ, def) {
 export function projeterDefs(dir, projection) {
   const lignes = modulesDeDefs(dir).map((f) => {
     const src = readFileSync(join(dir, f), 'utf8');
-    const id = champLitteralUnique(src, 'id', join(dir, f));
-    return projection.champ ? [id, champLitteralUnique(src, projection.champ, join(dir, f))] : [id];
+    const [id] = champsLitteraux(src, 'id', join(dir, f), 'un');
+    return projection.champ ? [id, ...champsLitteraux(src, projection.champ, join(dir, f), 'un')] : [id];
   });
   const vus = new Set();
   for (const [id] of lignes) {

@@ -9,7 +9,7 @@
  *    les 3 = +25 PX ; sinon choix libre / « continuez à relancer » = 0 PX (relances RAW l.195).
  *  - Caractéristiques (l.381-385) : tirage gardé = +50 ; réassignation des dix jets = +25 ;
  *    relance (RAW, 0 PX) ou répartition de 100 Points = 0.
- *  - Talents d'espèce aléatoires (l.510) : résolus par un RNG seedé fixe → re-résoudre avec
+ *  - Talents d'espèce aléatoires (LDB 05 l.484, table l.514) : résolus par un RNG seedé fixe → re-résoudre avec
  *    d'autres choix « A ou B » ne re-tire pas les dés.
  *
  * AGENTIVITÉ (#393, amendement « ossature enforcée » 2026-07-15) : figé par le seed ≠ pré-affiché.
@@ -112,7 +112,7 @@ export interface CreatorDraft
   assignment: Record<CharKey, number>;
   /** Répartition manuelle de 100 Points (min 4 / max 18, l.385). */
   pointBuy: Record<CharKey, number>;
-  /** 5 Augmentations gratuites sur les 3 Caractéristiques de carrière (l.488). */
+  /** 5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.459). */
   charAdvancesAlloc: Partial<Record<CharKey, number>>;
   fateSplit: { fate: number; resilience: number };
   // 4) Compétences & Talents
@@ -440,14 +440,14 @@ export function resolvedSpeciesTalents(d: CreatorDraft): RefDesignee[] {
   return resolvedSpeciesTalentsAll(d).filter((t) => d.talentsRolled || !t.tire).map((t) => t.ref);
 }
 
-/** Geste « Tirer aux dés » des Talents d'espèce aléatoires (LDB 05 l.510 ; un doublon déjà possédé
+/** Geste « Tirer aux dés » des Talents d'espèce aléatoires (LDB 05 l.484, table l.514 ; un doublon déjà possédé
  *  est relancé D'OFFICE par `resolveSpeciesTalents`, l.484) — tirages figés par le seed, découverts
  *  ici ; RAW n'offre aucune relance au joueur. */
 export function rollDraftTalents(d: CreatorDraft): CreatorDraft {
   return d.talentsRolled ? d : { ...d, talentsRolled: true };
 }
 
-/** Talents d'espèce en TROIS lots (LDB 05 l.510, écran Talents — 5c), dérivés de la DONNÉE
+/** Talents d'espèce en TROIS lots (LDB 05 l.484, écran Talents — 5c), dérivés de la DONNÉE
  *  (`sp.talents`) : FIXES (acquis d'office) / À CHOISIR (« A ou B », par adresse) / ALÉATOIRES
  *  (nombre de tirages d100). */
 export function speciesTalentFixedEntries(d: CreatorDraft): RefDesignee[] {
@@ -459,7 +459,7 @@ export function speciesTalentChoiceEntries(d: CreatorDraft): { adresse: string; 
 export function speciesTalentRandomCount(d: CreatorDraft): number {
   return (draftSpecies(d)?.talents ?? []).reduce((n, a) => n + ('random' in a ? a.random : 0), 0);
 }
-/** Les N talents TIRÉS au d100 (LDB 05 l.510), tels que le geste 5c les découvre — VIDE tant que le
+/** Les N talents TIRÉS au d100 (LDB 05 l.484, table l.514), tels que le geste 5c les découvre — VIDE tant que le
  *  joueur n'a pas tiré (#393 agentivité). */
 export function speciesTalentRandomDrawn(d: CreatorDraft): RefDesignee[] {
   return d.talentsRolled ? resolvedSpeciesTalentsAll(d).filter((t) => t.tire).map((t) => t.ref) : [];
@@ -487,10 +487,10 @@ export function probeHero(d: CreatorDraft, withCareerTalent = true, charsAlloc =
   return { characteristics, talents, skills: [], movement: draftSpecies(d)?.movement ?? 0 } as unknown as Combatant;
 }
 
-/** Compétences de carrière allouables : les 8 du Niveau + ajouts de talents (LDB 10), une par
+/** Compétences de carrière allouables : les huit Compétences de départ (LDB 05 l.535), une par
  *  Compétence — `cle` indexe `d.skillAdvances` (`competencesDeCarriere`, la lecture de `createHero`). */
 export function careerSkillEntries(d: CreatorDraft): CompetenceDeCarriere[] {
-  return competencesDeCarriere(draftLevel(d), probeHero(d), d.specChoices);
+  return competencesDeCarriere(draftLevel(d), probeHero(d), d.specChoices).filter((c) => !c.ajout);
 }
 
 /** « Répartition simple » (étape 5) : « ajouter 5 Augmentations à chaque Compétence de Carrière »
@@ -498,7 +498,7 @@ export function careerSkillEntries(d: CreatorDraft): CompetenceDeCarriere[] {
  *  division non entière est distribué aux premières Compétences (plafond 10/Compétence) : le bouton
  *  produit TOUJOURS un total que `validateStep` accepte, jamais un état invalide. */
 export function evenCareerSkillAdvances(d: CreatorDraft): Record<string, number> {
-  const entries = careerSkillEntries(d).filter((c) => !c.ajout);
+  const entries = careerSkillEntries(d);
   if (!entries.length) return {};
   const base = Math.min(MAX_ADV_PER_SKILL, Math.floor(CAREER_SKILL_ADVANCES / entries.length));
   let rest = CAREER_SKILL_ADVANCES - base * entries.length;
@@ -809,7 +809,7 @@ function messageDesCompetencesDeRace(d: CreatorDraft): string | null {
   if (sansSpec) return `Choisissez la Spécialisation de « ${refLabel('skills', sansSpec)} ».`;
   return null;
 }
-/** Entrées d'espèce « A ou B » : un choix requis quand il y en a (LDB 05 l.510). */
+/** Entrées d'espèce « A ou B » : un choix requis quand il y en a (LDB 05 l.484). */
 function messageDesTalentsDeRace(d: CreatorDraft): string | null {
   const ouvert = speciesTalentChoiceEntries(d).find((e) => d.speciesTalentChoices[e.adresse] == null);
   if (ouvert) return `Choisissez : « ${advancementLabel('talents', ouvert.ref)} ».`;

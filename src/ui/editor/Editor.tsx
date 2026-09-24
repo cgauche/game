@@ -639,8 +639,8 @@ export function Editor({
   // --- Fichier : import/export/bibliothèque/test ---
   /**
    * L'identité du document en cours : celle du paquet chargé, ou celle que NOMME le geste
-   * d'enregistrement — le champ pré-rempli de `SaveProjectModal` (arbitrage utilisateur
-   * 2026-08-31 : « Un projet se NOMME avant d'être enregistré »). Un brouillon jamais nommé ne
+   * d'enregistrement — le champ pré-rempli de `SaveProjectModal` (#1552, commentaire 5481625275 du
+   * 2026-08-31 : « Un projet se NOMME avant d'être enregistré (Recommandé) »). Un brouillon jamais nommé ne
    * franchit plus `parseProject` : l'enveloppe exige `id`/`label` et une provenance.
    */
   function identiteCourante(nom: string, id: string): ProjectIdentite {

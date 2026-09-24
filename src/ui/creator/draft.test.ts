@@ -57,7 +57,7 @@ function carrierePrete(d: CreatorDraft): Pick<CreatorDraft, 'specChoices' | 'ski
   (draftLevel(d)?.skills ?? []).forEach((ref, i) => {
     if ('id' in ref && ref.choix != null) specChoices[adresseDeCreation.carriereCompetence(i)] = poolDuJoker('skill', ref)[0];
   });
-  const skillAdvances = Object.fromEntries(careerSkillEntries({ ...d, specChoices }).filter((c) => !c.ajout).map((c) => [c.cle, 5]));
+  const skillAdvances = Object.fromEntries(careerSkillEntries({ ...d, specChoices }).map((c) => [c.cle, 5]));
   return { specChoices, skillAdvances };
 }
 
@@ -284,17 +284,16 @@ describe('buildHero — bout en bout', () => {
     const d = readyDraft();
     expect(draftWealth(d)).toEqual(draftWealth(d));
   });
-  it('careerSkillEntries : les ajouts de talents (Maître artisan…) apparaissent', () => {
+  it('careerSkillEntries : les huit Compétences de départ du Niveau (LDB 05 l.535)', () => {
     const d = readyDraft();
-    // Les 8 entrées du Niveau sont présentes.
-    expect(careerSkillEntries(d).length).toBeGreaterThanOrEqual(8);
+    expect(careerSkillEntries(d).map((c) => c.adresse)).toEqual((draftLevel(d)?.skills ?? []).map((_, i) => adresseDeCreation.carriereCompetence(i)));
   });
-  it.each(['maitre-artisan', 'artiste'])('un ajout de Talent (%s) figure dans la grille, à son adresse d’ajout', (id) => {
+  it.each(['maitre-artisan', 'artiste'])('un ajout de Talent (%s) est hors de la grille des 40 Augmentations (LDB 05 l.535)', (id) => {
     const d = { ...readyDraft(), careerTalent: { id } };
     const adds = careerSkillAdditions(probeHero(d));
     expect(adds.length).toBeGreaterThan(0);
     const entries = careerSkillEntries(d);
-    for (const a of adds) expect(entries.some((c) => c.ajout && c.adresse === adresseDeCreation.ajout(a.id))).toBe(true);
+    for (const a of adds) expect(entries.some((c) => c.adresse === adresseDeCreation.ajout(a.id))).toBe(false);
   });
 });
 
