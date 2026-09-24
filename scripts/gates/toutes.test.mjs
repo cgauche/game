@@ -16,6 +16,7 @@ import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
   ATTENTE_VERROU,
   COEURS_SUITE_EN_LANES,
+  coeursSuiteEnLanes,
   ECRIT_LU,
   LANES,
   TIMEOUTS,
@@ -255,6 +256,16 @@ test('la SUITE est bornée pendant les lanes, par la couture qui existe déjà',
   const borne = repartitionWorkers(COEURS_SUITE_EN_LANES)
   const plein = repartitionWorkers(16)
   assert.ok(borne.node + borne.jsdom < plein.node + plein.jsdom, 'la borne ne borne rien')
+})
+
+test('la borne de la SUITE ne sert jamais plus de cœurs que la machine', () => {
+  assert.equal(coeursSuiteEnLanes(16), COEURS_SUITE_EN_LANES)
+  for (const machine of [1, 4, COEURS_SUITE_EN_LANES - 1]) {
+    assert.equal(coeursSuiteEnLanes(machine), machine, `machine de ${machine} cœurs`)
+    const servi = repartitionWorkers(coeursSuiteEnLanes(machine))
+    const mesure = repartitionWorkers(machine)
+    assert.deepEqual(servi, mesure, `machine de ${machine} cœurs : la borne change ce que la mesure servait`)
+  }
 })
 
 test('une sortie de gate porte un nom de fichier LÉGAL sous NTFS', () => {

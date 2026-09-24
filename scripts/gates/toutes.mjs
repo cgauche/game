@@ -39,6 +39,7 @@ import '../node-requis.mjs'
 import { spawn, spawnSync } from 'node:child_process'
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { availableParallelism } from 'node:os'
 import { join } from 'node:path'
 import { enteteArbre } from '../guards/lib/enteteArbre.mjs'
 import { gatesDeCi } from './gatesDeCi.mjs'
@@ -543,13 +544,20 @@ export const TIMEOUTS = { defaut: 600, test: 900 }
  * Cœurs servis à la SUITE pendant les lanes. Mesuré sur cette machine, suite SEULE et sans lane :
  * `[diag] mémoire système max : 31.2 Go / 31.2 Go (100 %)` à 16 cœurs (node 10 + jsdom 5). À
  * saturation, ajouter des lanes ne rend pas du parallélisme, cela rend du swap — la suite se borne
- * donc par la couture qui existe déjà (`coeurs`, scripts/test/partition.mjs:43), jamais par une
+ * donc par la couture qui existe déjà (`coeurs` de `scripts/test/partition.mjs`), jamais par une
  * seconde. À 10, `repartitionWorkers` sert node 6 + jsdom 3 : 9 workers au lieu de 15.
  * La RAM ne dit RIEN du point d'équilibre (100 % dans les deux régimes, mesuré) : ce qui le dit est
  * le compteur de spawns rejoués du résumé, et `worker perdu` du bloc `[diag]` de la suite.
  * `WFRP_TEST_COEURS` posé par l'appelant PRIME — c'est par lui que la valeur se re-mesure.
  */
 export const COEURS_SUITE_EN_LANES = 10
+
+/**
+ * Cœurs servis à la suite pendant les lanes sur une machine de `machine` cœurs : une BORNE ne sert
+ * jamais plus que la machine. Forcée à 10 sur un conteneur Linux de 4 cœurs (2026-09-24, #1801),
+ * elle y partageait la suite en node 6 + jsdom 3, là où la mesure de la machine en sert 4.
+ */
+export const coeursSuiteEnLanes = (machine) => Math.min(COEURS_SUITE_EN_LANES, machine)
 
 /** Dossier des sorties de gate : un fichier par gate et par PID (patron `scripts/test/run.mjs`). */
 export const dossierSorties = (racine) => join(racine, 'node_modules', '.cache', 'gates')
@@ -981,7 +989,7 @@ export async function principal({
       const debutGate = Date.now()
       // `--serie` ne borne PAS la suite : c'est le mode DIAGNOSTIC, rien ne tourne à côté d'elle, et
       // la brider fausserait la seule mesure de référence dont dispose le lanceur.
-      const r = await jouerGate(aJouerParNom.get(nom), !SERIE && nom === 'test' ? COEURS_SUITE_EN_LANES : null)
+      const r = await jouerGate(aJouerParNom.get(nom), !SERIE && nom === 'test' ? coeursSuiteEnLanes(availableParallelism()) : null)
       poser(nom, { ...r, debut: debutGate })
     }
     return { nom: lane.nom, secondes: secondesDepuis(debut) }

@@ -111,7 +111,7 @@ const ENV = envEnfant(process.env)
 // la suite. Un appelant qui pose déjà la variable garde la sienne (re-mesure à la main).
 const REGISTRE_DOM = path.join(CACHE, `dom-residu-${process.pid}.txt`)
 ENV.WFRP_DOM_RESIDU_REGISTRE = process.env.WFRP_DOM_RESIDU_REGISTRE ?? REGISTRE_DOM
-const CPUS = coeurs(process.env, () => os.availableParallelism?.() ?? os.cpus().length)
+const CPUS = coeurs(process.env, () => os.availableParallelism())
 const WORKERS = repartitionWorkers(CPUS)
 // Mode RÉELLEMENT servi : le partage se décide au-delà du seuil, mais se retire encore après coup
 // (drapeau global à un seul processus, filtre qui ne touche qu'un côté, chemin à métacaractère).
