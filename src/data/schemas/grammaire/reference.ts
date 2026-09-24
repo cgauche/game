@@ -28,8 +28,8 @@ const declarants = new Map<string, (id: string) => boolean>();
 
 /**
  * Refus de l'`arg` `arg` sur le Trait `id` quand cet `arg` n'est qu'un Indice ou qu'une Portée que la
- * def du Trait DÉCLARE — message nommé (id, valeur, champ attendu), sinon `null`. Prédicat UNIQUE : le
- * schéma d'instance ci-dessous, et la garde des `grantTrait` (op non typée, `OPS_NON_TYPEES`).
+ * def du Trait DÉCLARE — message nommé (id, valeur, champ attendu), sinon `null`. Appelé par le schéma
+ * d'instance ci-dessous.
  */
 export function refusDArgDeTrait(id: string, arg: string): string | null {
   for (const r of ARG_DECLARE_AILLEURS) {

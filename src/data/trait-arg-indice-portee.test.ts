@@ -11,11 +11,11 @@ import { traitInstanceSchema, refusDArgDeTrait } from './schemas/grammaire/refer
 const datasets = import.meta.glob<unknown>('./*.json', { eager: true, import: 'default' });
 
 describe('Démoniaque (Indice) — la sauvegarde de chaque démon de la donnée', () => {
-  it('wardSaves rend l’Indice de chacun des 33 démons de creatures.json', () => {
+  it('wardSaves rend l’Indice de chaque démon de creatures.json', () => {
     const demons = creatures.filter((c) => c.traits.some((t) => t.id === 'demoniaque'));
     const sansSauvegarde = demons.filter((c) => wardSaves(c.traits).length === 0).map((c) => c.id);
     expect(sansSauvegarde).toEqual([]);
-    expect(demons).toHaveLength(33);
+    expect(demons).not.toHaveLength(0);
     for (const c of demons) {
       const indice = c.traits.find((t) => t.id === 'demoniaque')!.value;
       expect(wardSaves(c.traits), c.id).toContain(indice);

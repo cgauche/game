@@ -1,14 +1,6 @@
 /**
- * Génération de noms de personnage (Jalon 3) — pur, RNG injecté.
- *
- * Pools : `src/data/names.json` — un DOCUMENT de banque par race, prénoms M/F + noms de famille,
- * repris du projet WarhammerV2 de l'utilisateur. Gnomes et Ogres y retombent sur les
- * pools humains ; les elfes ont des épithètes en guise de nom (« Aiglenoir », « Lande de braises »).
- *
- * Cas NAIN : la banque n'a pas de noms de famille — le canon les GÉNÈRE depuis le parent
- * (LDB 05 l.620-624) : « Les noms de famille nains sont basés sur ceux des personnes qui les ont
- * élevés » avec suffixe sexué — « –sson » fils de…, « –snev » neveu de…, « –sdottir » fille de…,
- * « –sniz » nièce de… (ex. Ariksson, Grunnasdottir, Skagsnev, Sovrissniz).
+ * Génération de noms de personnage — pur, RNG injecté. Pools : `src/data/names.json` (`NamePool`).
+ * Nain : patronyme parent + suffixe (LDB 05 l.621-633, `NamePool.lastNameSuffixes`).
  */
 import { names as POOLS, type NamePool } from '../data';
 import type { Sexe, RaceKey } from '../data/schemas/grammaire/valeurs';

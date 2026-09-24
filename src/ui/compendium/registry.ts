@@ -203,8 +203,8 @@ export interface CodexItem {
   tabs?: CodexTab[];
   /** Corps prose en **Markdown** (verbatim de la source), rendu par `<Prose>` (auto-liage des règles). */
   desc?: string;
-  /** Arbitrage MAISON de l'entrée (clé d'enveloppe `maison`, `grammaire/document.ts`) : la raison, en
-   *  clair, d'une valeur qu'aucun folio n'imprime. Projetée par `depuisEnveloppe` et rendue UNE fois
+  /** Raison MAISON de l'entrée (clé d'enveloppe `maison`, `grammaire/document.ts`) : en clair,
+   *  d'où vient une valeur qu'aucun folio n'imprime. Projetée par `depuisEnveloppe` et rendue UNE fois
    *  par `CodexEntry` — c'est la provenance des documents SANS livre (CLAUDE.md règle 7). */
   maison?: string;
   source?: CodexSource | null;

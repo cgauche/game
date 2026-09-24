@@ -2252,7 +2252,7 @@ export function DetailsScreen({ d, setD }: StepProps): ReactNode {
         <PlaqueRow
           label="Sexe"
           content={
-            <button type="button" className="btn small" onClick={() => setD({ ...d, sex: d.sex === 'M' ? 'F' : 'M' })}>
+            <button type="button" className="btn small" onClick={() => setD({ ...d, sex: sexeSchema.options[(sexeSchema.options.indexOf(d.sex) + 1) % sexeSchema.options.length] })}>
               <Icon id="ui/branch" size="sm" /> {libelleDeValeur(sexeSchema, d.sex)}
             </button>
           }

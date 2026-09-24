@@ -219,7 +219,7 @@ describe('bonus de PX (LDB 04/05)', () => {
     const d3 = rollDraftCareer(d1);
     expect(d3.careerRolls).toHaveLength(3);
     expect(careerXp(withCareer(d3, d3.careerRolls[2].ids[0]))).toBe(25);
-    const dFree = rollDraftCareer(d3); // « continuez à relancer » (l.195)
+    const dFree = rollDraftCareer(d3); // « continuez à relancer » (LDB 05 l.212)
     expect(careerXp(dFree)).toBe(0);
   });
   it('caractéristiques : +50 gardées, +25 réassignées, 0 après relance ou 100 Points — et 0 sans le GESTE', () => {
@@ -483,6 +483,6 @@ describe('5b — un joker de carrière sur une Compétence déjà tenue (LDB 05 
     const joker = careerSkillEntries(d).find((c) => c.ref.choix != null)!;
     expect(joker.libre('bagarre')).toBe(false);
     const pris = { ...d, specChoices: { [joker.adresse]: 'bagarre' } };
-    expect(skillsSubMessage(pris, 'career')).toBe('« Corps à corps (Bagarre) » : déjà pris par un autre emplacement de cette carrière.');
+    expect(skillsSubMessage(pris, 'career')).toBe('« Corps à corps (Bagarre) » : déjà pris par un autre emplacement de ce Niveau de Carrière.');
   });
 });

@@ -6,8 +6,8 @@
  * bonus de PX des tirages acceptés sont perdus dès qu'on dévie du chemin RAW :
  *  - Espèce (LDB 04 l.91) : d100 figé ; +20 PX si on le garde tel quel ; pas de relance.
  *  - Carrière (LDB 05 l.208-212) : 1er jet accepté = +50 PX ; sinon 2 jets de plus, choix parmi
- *    les 3 = +25 PX ; sinon choix libre / « continuez à relancer » = 0 PX (relances RAW l.195).
- *  - Caractéristiques (l.381-385) : tirage gardé = +50 ; réassignation des dix jets = +25 ;
+ *    les 3 = +25 PX ; sinon choix libre / « continuez à relancer » = 0 PX (relances RAW l.212).
+ *  - Caractéristiques (LDB 05 l.337-341) : tirage gardé = +50 ; réassignation des dix jets = +25 ;
  *    relance (RAW, 0 PX) ou répartition de 100 Points = 0.
  *  - Talents d'espèce aléatoires (LDB 05 l.484, table l.514) : résolus par un RNG seedé fixe → re-résoudre avec
  *    d'autres choix « A ou B » ne re-tire pas les dés.
@@ -97,7 +97,7 @@ export interface CreatorDraft
    *  AVANT de lancer les dés). Le d100 est figé par le seed : basculer re-lit le MÊME jet sur l'autre
    *  table (zéro savescum) — les jets sont donc réinitialisés au changement. */
   coastalSwap: boolean;
-  /** Jets de carrière figés (1 puis 3) ; au-delà : relances libres (0 PX, RAW l.195). Chaque jet
+  /** Jets de carrière figés (1 puis 3) ; au-delà : relances libres (0 PX, RAW l.212). Chaque jet
    *  désigne une BORNE → `ids` = toutes les carrières de cette borne (choix libre, PX conservé). */
   careerRolls: { roll: number; ids: string[] }[];
   /** Nombre de relances LIBRES effectuées (annule tout bonus). */
@@ -108,11 +108,11 @@ export interface CreatorDraft
    *  valeur de dé n'existe à l'écran (caracs à « — ») — les jets eux-mêmes restent figés par le
    *  seed (`charRollPairs`), le geste n'en découvre que l'affichage. */
   charsRolled?: boolean;
-  /** Nombre de relances des dix 2d10 (0 = tirage initial ; >0 → bonus perdus, RAW l.385). */
+  /** Nombre de relances des dix 2d10 (0 = tirage initial ; >0 → bonus perdus, RAW l.341). */
   charRerolls: number;
   /** Réassignation : pour chaque Caractéristique, l'INDEX du jet (permutation de 0..9). */
   assignment: Record<CharKey, number>;
-  /** Répartition manuelle de 100 Points (min 4 / max 18, l.385). */
+  /** Répartition manuelle de 100 Points (min 4 / max 18, l.341). */
   pointBuy: Record<CharKey, number>;
   /** 5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.459). */
   charAdvancesAlloc: Partial<Record<CharKey, number>>;
@@ -333,7 +333,7 @@ export function rollDraftCareer(d: CreatorDraft): CreatorDraft {
     if (!r2 || !r3) return d;
     return { ...d, careerRolls: [...d.careerRolls, r2, r3] };
   }
-  // « continuez à relancer jusqu'à obtenir quelque chose qui vous plaît » (l.195) — 0 PX.
+  // « continuez à relancer jusqu'à obtenir quelque chose qui vous plaît » (l.212) — 0 PX.
   const r = rollCareer(pool, sp, makeRNG(d.seed ^ (0xca3 + d.careerFreeRolls)));
   return r ? withCareer({ ...d, careerFreeRolls: d.careerFreeRolls + 1 }, r.ids[0]) : d;
 }

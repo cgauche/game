@@ -2386,7 +2386,7 @@ export const fr = {
   'ref.auChoix': '{base} (Au choix)',
   'slot.notCovered': "ce choix n'est pas couvert par cet emplacement",
   'slot.alreadyDesignated': 'emplacement déjà désigné',
-  'slot.takenByOther': 'déjà pris par un autre emplacement de cette carrière',
+  'slot.takenByOther': 'déjà pris par un autre emplacement de ce Niveau de Carrière',
   'slot.maxNone': 'Aucun',
   'slot.maxBonusOf': 'Bonus de {char}',
   'slot.darkOnlyOne': 'un seul Domaine sombre autorisé en plus des autres Domaines',

@@ -669,7 +669,7 @@ export type Sexe = z.infer<typeof sexeSchema>;
 
 /** Faute de la coiffure imposée `hairstyle` au regard du `sex` posé dans le MÊME objet, `null` sinon. Le
  *  sexe se nomme par son libellé (`libelleDeValeur(sexeSchema, …)`). */
-export function fauteDeCoiffure(hairstyle: string, sex: Sexe | undefined): string | null {
+function fauteDeCoiffure(hairstyle: string, sex: Sexe | undefined): string | null {
   const sexe = sexeDeCoiffure(hairstyle);
   if (!sexe) return `coiffure « ${hairstyle} » inconnue : absente du catalogue des coiffures.`;
   const libelle = libelleDeValeur(sexeSchema, sexe);
