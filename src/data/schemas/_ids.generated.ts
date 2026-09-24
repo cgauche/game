@@ -198,4 +198,8 @@ export const IDS_PAR_MARQUEUR: Readonly<Record<string, Readonly<Record<string, r
   'talents.json': {
     'specsOpen': ['bon-marcheur', 'haine', 'maitre-artisan', 'sans-peur', 'savant', 'savoir-vivre', 'travailleur-qualifie', 'vice'],
   },
+  'traits.json': {
+    'indice': ['a-distance', 'arme', 'armure', 'attaque-caudale', 'cornes', 'corruption', 'demoniaque', 'fouissement', 'langue-prehensile', 'morsure', 'mutation', 'peur', 'protection', 'redoutable', 'resistance-a-la-magie', 'souffle', 'tentacules', 'terreur', 'toile', 'venin', 'vol', 'vomissement'],
+    'range': ['a-distance', 'langue-prehensile'],
+  },
 };

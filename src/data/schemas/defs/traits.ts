@@ -11,6 +11,11 @@ import { gameOpSchema, triggeredEffectSchema } from '../grammaire/mecanique';
 
 export const file = 'traits.json';
 export const famille = 'entite';
+/** Champs MARQUEURS (#1957) : `indice` et `range` définissent les SOUS-LISTES des Traits dont la
+ *  parenthèse est un Indice ou une Portée (`LDB 85` l.94, l.209) — lues par `refusDArgDeTrait`
+ *  (`grammaire/reference.ts`).
+ *  @generateur lu au TEXTE par `lireExports` (`scripts/gen-registry.mjs`), qu'aucun import ne dit à knip. */
+export const marqueurs = ['indice', 'range'];
 
 /** `TraitCapabilities` (`src/data/index.ts`) — clés OBSERVÉES dans `traits.json` (31/54 déclarées
  *  sur l'interface ; les autres appartiennent aux capabilities de qualités/symptômes ou sont réservées

@@ -899,7 +899,11 @@ describe('structures de la donnée — stock nominatif décroissant (#1463 L0)',
       // (« surpris à mendier », `l.99`) et `condition {id, op}` dans `tables.json`. Les deux autres ops du
       // train rejoignent des signatures DÉJÀ stockées (`rollTable` 12 → 13 ; `wounds` à mitigations
       // déclarées 5 → 6). Cf. `STRUCTURES_OPS` ci-dessus.
-      'L1c #1468': 398,
+      // … puis 398 → 399 (#1957 lot 1, 2026-09-24) : la signature `grantTrait {indice, op, range,
+      // traitId}` de `tables.json` — la Langue préhensile de l'Allure démoniaque de Slaanesh porte sa
+      // Portée en `range` (`LDB 85` l.209) et non plus en `arg`. Même op, une ligne de plus
+      // (`arg,indice,op,traitId` 3 → 2 dans ce dataset), aucune occurrence en plus.
+      'L1c #1468': 399,
       // L1d #1469 : 62 → 61 (#1552) — « La Diligence » CITE désormais son folio à la racine
       // (`ennemi-dans-l-ombre` 12, la référence que son bloc narratif portait déjà en profondeur) ;
       // sa ligne « source | clé absente » est SOLDÉE.
