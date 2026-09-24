@@ -30,7 +30,9 @@ Most skaven are clanrats, hailing from one of the many complex skaven clans that
 
 **Toughness Bonus:** 3
 
-**Optional Light Armour:** +1 AP **Optional Medium Armour:** +3 AP
+**Optional Light Armour:** +1 AP
+
+**Optional Medium Armour:** +3 AP
 
 **Optional Shield:** +2 AP when Opposing an attack with
 
@@ -68,19 +70,21 @@ The Stormvermin has been created by adding the Elite template (see page 353) to 
 
 #### **Armour**
 
-**Toughness Bonus:** 4 **Heavy Armour:** +5 AP
+**Toughness Bonus:** 4
+
+**Heavy Armour:** +5 AP
 
 #### **Skills**
 
-Climb 50, Cool 50, Dodge 60, Intimidate 50, Leadership 25,
-
-Melee (Basic 60, Polearm 60), Perception 65, Track 60
+Climb 50, Cool 50, Dodge 60, Intimidate 50, Leadership 25, Melee (Basic 60, Polearm 60), Perception 65, Track 60
 
 #### **Talents**
 
-**Combat Aware:** ignore *Surprised* Condition from ambush with **Challenging (+0 SL) Perception** Test **Combat Reflexes:** Combat Initiative counts as 75 **Resolute:** On gaining a Condition, retain Advantage on
+**Combat Aware:** ignore *Surprised* Condition from ambush with **Challenging (+0 SL) Perception** Test
 
-a **Challenging (+0 SL) Cool** Test
+**Combat Reflexes:** Combat Initiative counts as 75
+
+**Resolute:** On gaining a Condition, retain Advantage on a **Challenging (+0 SL) Cool** Test
 
 #### **Traits**
 

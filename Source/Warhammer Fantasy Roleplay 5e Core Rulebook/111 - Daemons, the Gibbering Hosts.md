@@ -20,7 +20,9 @@ Daemons cannot manifest for long, because the material world itself rejects them
 
 #### **Armour**
 
-**Toughness Bonus:** 3 **Scales:** +2 AP
+**Toughness Bonus:** 3
+
+**Scales:** +2 AP
 
 #### **Skills**
 
@@ -38,15 +40,9 @@ Cool 80, Melee (Two-handed) 60, Perception 50
 
 **Fear:** The creature causes *Fear*, see page 183 for details
 
-**Frenzy:** Test WP to enter Frenzy: Free Attack each
+**Frenzy:** Test WP to enter Frenzy: Free Attack each Round, +1 Damage, may only attack or move to attack
 
-Round, +1 Damage, may only attack or move to attack
-
-**Hatred (Daemons of Slaanesh):** Must attack
-
-by fastest and most deadly means possible,
-
-+1 SL on Melee and Ranged Tests, immune to Intimidate and Fear caused by them
+**Hatred (Daemons of Slaanesh):** Must attack by fastest and most deadly means possible, +1 SL on Melee and Ranged Tests, immune to Intimidate and Fear caused by them
 
 **Mark of Chaos (Khorne):** See page 359 for details
 
@@ -90,7 +86,9 @@ Charm 55, Cool 80, Dodge 70, Melee (Brawling) 55, Perception 60
 
 **Dark Vision:** See in the dark as daylight
 
-**Fear:** The creature causes *Fear*, see page 183 for details **Frenzy:** Test WP to enter *Frenzy*: Free Attack each Round, +1 Damage, may only attack or move to attack
+**Fear:** The creature causes *Fear*, see page 183 for details
+
+**Frenzy:** Test WP to enter *Frenzy*: Free Attack each Round, +1 Damage, may only attack or move to attack
 
 **Hatred (Daemons of Khorne):** Must attack by fastest and most deadly means possible, +1 SL on Melee and Ranged Tests, immune to *Intimidate* and *Fear* caused by them
 

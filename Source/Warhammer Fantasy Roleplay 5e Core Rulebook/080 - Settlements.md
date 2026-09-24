@@ -34,8 +34,6 @@ Beneath the mud of the human city, there is a hive of verminous activity, where 
 
 Given its location beneath the Empire's capital, the skaven's Council of Thirteen are in turmoil about the fate of Under-Altdorf. Some see a marvellous opportunity to destroy the great city of men and leave the Empire vulnerable to the children of the Horned Rat. Other clan lords believe that Under-Altdorf should grow into a great skaven city, second only to Skavenblight in its eminence.
 
-288 289
-
 #### **THE IMPERIAL CALENDAR**
 
 Two moons cross the night sky. Mannslieb, the larger, governs the tides and is sacred to Manann, completing its cycle every 25 days. The smaller Morrslieb is an ill-omened moon, believed to have been forged by Morr from the wreckage of a daemonic invasion, and few willingly travel beneath its light.

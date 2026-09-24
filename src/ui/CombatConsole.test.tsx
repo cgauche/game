@@ -30,6 +30,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { baseSection, mediaBlock } from '../../scripts/guards/lib/cssCouches.mjs';
 import { hpColor, ENEMY_TINT } from '../gameIso/teamColors';
+import { srgbToLinear } from '../gameIso/shade';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -504,11 +505,7 @@ function colorsIn(value: string): RGBA[] {
 /** Couleur d'un raccourci `border` (`1px solid <couleur>`). */
 const borderColorOf = (block: string, prop = 'border') => colorsIn(decl(block, prop)!).slice(-1)[0];
 
-const lin = (c: number) => {
-  const s = c / 255;
-  return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-};
-const lum = (c: RGBA) => 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
+const lum = (c: RGBA) => 0.2126 * srgbToLinear(c[0]) + 0.7152 * srgbToLinear(c[1]) + 0.0722 * srgbToLinear(c[2]);
 /** Composition alpha (le moteur peint le premier SUR le second). */
 const over = (fg: RGBA, bg: RGBA): RGBA => [fg[0] * fg[3] + bg[0] * (1 - fg[3]), fg[1] * fg[3] + bg[1] * (1 - fg[3]), fg[2] * fg[3] + bg[2] * (1 - fg[3]), 1];
 function contrast(fg: RGBA, bg: RGBA): number {

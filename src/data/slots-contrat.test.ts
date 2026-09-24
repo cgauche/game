@@ -64,11 +64,12 @@ const CLE_DETTE = (c: { dataset: string; champ: string; occurrences: number }) =
  * MESURE : `ecarts.taille` = nombre de clés DISTINCTES `dataset | champ | occurrences` du stock
  * `SLOTS_SANS_DECLARATION` (une clé par couple `dataset | champ`). Relevé :
  * `node -e "import('./scripts/guards/lib/slotsStock.mjs').then((m) => console.log(m.SLOTS_SANS_DECLARATION.length))"`
- * → 337 (2026-09-23, #1897). Plafond = mesure, aucun mou. Répartition par lot de mort (champ `lot` du
- * stock) : 326 `L2/L3 #1473`, 9 `L1b #1467`, 2 `L3 #1473` — l'angle mort `champDuPath` (projection sur
+ * → 338 (2026-09-24, #1897 fusionné avec #1882, qui ajoute `species.json | profilStandard`). Plafond =
+ * mesure, aucun mou. Répartition par lot de mort (champ `lot` du stock) : 327 `L2/L3 #1473`, 9
+ * `L1b #1467`, 2 `L3 #1473` — l'angle mort `champDuPath` (projection sur
  * le DERNIER segment-clé, `ANGLES_MORTS_SLOTS`) retient au stock des champs dont le slot est déclaré.
  */
-const DETTE_ADOPTION_MAX = 337;
+const DETTE_ADOPTION_MAX = 338;
 
 describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', () => {
   it('l’en-tête de garde est structuré (#1475) : question A→B→C, primitive, périmètre, angles morts, baseline, ticket', () => {

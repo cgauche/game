@@ -52,7 +52,7 @@ Each Round you are being suffocated, you lose 1 Wound. Should you reach 0 Wounds
 
 #### **Exposure**
 
-Every 4 hours spent in a difficult environment — such as subzero temperatures, a hot desert, or a howling storm requires you to take an Endurance Test. Extreme environments require a Test every 2 hours.
+Every 4 hours spent in a difficult environment — such as subzero temperatures, a hot desert, or a howling storm — requires you to take an Endurance Test. Extreme environments require a Test every 2 hours.
 
 **Cold:** Your first failure inflicts Disadvantage on Tests based on Ballistic Skill, Agility, and Dexterity. The second failure inflicts Disadvantage on all Tests. Subsequent failures cause 1d10 Damage, ignoring Armour Points. If you reach 0 Wounds, you do not suffer a Critical Wound, but immediately take the *Unconscious* Condition. You will die in Toughness Bonus hours unless you are somehow warmed up. Certain Trappings may provide bonuses or penalties to these Tests, for example a coat (page 309).
 

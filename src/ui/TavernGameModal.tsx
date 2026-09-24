@@ -4,6 +4,7 @@ import { TAVERN_GAMES, findTavernGameById, tavernFastRegime, TAVERN_TEST_DIFFICU
 import { CHAR_LABELS, DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
 import { tavernGameValue, tavernPartieEnCours, tavernNpcOffers, type TavernOpponent } from '../state/tavernFlow';
 import { sceneNpc } from '../state/sceneNpc';
+import { pickActiveModalKey } from '../state/modalArbiter';
 import { Row } from './Layout';
 import { bourseOf } from '../state/bourseFlow';
 import { refLabel } from '../data/index';
@@ -26,8 +27,9 @@ const REFUS_EQUIPE = 'Sport d’équipe : tout le groupe joue dans le même camp
  * Jeux de taverne (Nuits agitées & dures journées, ch.16) — modale UNIQUE : choisir un jeu, un
  * challenger et un adversaire (compagnon OU valeur abstraite fixée par la table), puis résoudre EN
  * DEUX TEMPS (#370) : le jet du challenger s'ouvre par le seam de jet (`openRoll`, modale RollShell
- * influençable Chance/Pacte/Résilience, surfacée PAR-DESSUS) ; à son retour, le réducteur de la
- * séquence décide de la manche. Le jeu présenté ici est celui du RÉGIME en vigueur
+ * influençable Chance/Pacte/Résilience, rendue par l'arbitre `ActiveModal`) ; à son retour, le
+ * réducteur de la séquence décide de la manche. Une situation = une modale : tant que l'arbitre
+ * tient une modale, la table CÈDE (patron `CombatStartSplash.tsx:20-21`, `ActiveModal.tsx:66`). Le jeu présenté ici est celui du RÉGIME en vigueur
  * (`findTavernGameById` : complet, ou rapide sous la règle `tavern-games-rapides` — le formulaire
  * n'offre alors ni mise ni table, le jeu n'en portant plus). Affiche l'issue et la mise éventuelle. Ouverte via
  * `openTavernGames` (affordance montrée seulement si l'option `tavern-games` est active).
@@ -41,6 +43,7 @@ export function TavernGameModal() {
   // Manche EN COURS (jet du challenger surfacé par-dessus, cf. docstring) : masque le formulaire de
   // réglage — la cascade (RollShell) porte l'interaction tant qu'elle n'a pas committé.
   const rolling = useGame(tavernPartieEnCours);
+  const arbitreTientLaMain = useGame((s) => !!pickActiveModalKey(s));
 
   const heroes = party.filter((h) => !h.dead);
   const [gameId, setGameId] = useState(TAVERN_GAMES[0]?.id ?? '');
@@ -79,7 +82,7 @@ export function TavernGameModal() {
     setOppNpcId(proposeur);
   }, [proposeur]);
 
-  if (!state) return null;
+  if (!state || arbitreTientLaMain) return null;
   const result = state.result;
   const game = findTavernGameById(gameId);
   const challenger = heroes.find((h) => h.id === challengerId);

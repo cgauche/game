@@ -26,7 +26,7 @@ Cleverly crafted for ease of carrying. Reduce Encumbrance Points by 1.
 
 #### **Practical**
 
-298 299 Expertly crafted with utility in mind. A failed Test using this item receives +1 SL. If the item is a piece of armour, any penalties for wearing it are reduced by one level (for example from −3 SL to −2 SL).
+Expertly crafted with utility in mind. A failed Test using this item receives +1 SL. If the item is a piece of armour, any penalties for wearing it are reduced by one level (for example from −3 SL to −2 SL).
 
 # **Item Flaws**
 

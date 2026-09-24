@@ -3289,7 +3289,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   const hero = (): Combatant => ({ id: 'h', label: 'H', items: [], characteristics: {}, wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
   const merchantScene = () => {
     const sc = emptyScene(4, 4); sc.id = 'm';
-    sc.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 0, y: 0 }, merchant: { archetype: 'armurier' } });
+    sc.entities.push({ id: 'pnj', kind: 'personnage', ref: 'humain', pos: { x: 0, y: 0 }, merchant: { archetype: 'armurier' } });
     return sc;
   };
 
@@ -3703,7 +3703,7 @@ describe('Marché — règles optionnelles (market-mode / market-guild)', () => 
   const hero = (): Combatant => ({ id: 'h', label: 'H', items: [], characteristics: { sociabilite: 35 }, skills: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
   const merchantScene = () => {
     const sc = emptyScene(4, 4); sc.id = 'm';
-    sc.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 0, y: 0 }, merchant: { archetype: 'armurier' } });
+    sc.entities.push({ id: 'pnj', kind: 'personnage', ref: 'humain', pos: { x: 0, y: 0 }, merchant: { archetype: 'armurier' } });
     return sc;
   };
 

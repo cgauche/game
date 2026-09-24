@@ -74,7 +74,7 @@ When rolling on the **Wrath of the Gods** table, add +10 to the roll for each Si
 
 ### **DIVINE SERVANTS**
 
-Divine Servants are supernatural minions of the gods in the material realm, in the same way that Daemons serve the Dark Gods. They tend to take the form either of a favoured animal such as a white wolf for Ulric or a golden eagle for Myrmidia — or a departed devotee of the god, such as a legendary priest or templar. To construct Divine Servants appropriate to the god at hand, use the rules in **Chapter 12: Bestiary**, modifying an animal, human, or daemon as you see fit.
+Divine Servants are supernatural minions of the gods in the material realm, in the same way that Daemons serve the Dark Gods. They tend to take the form either of a favoured animal — such as a white wolf for Ulric or a golden eagle for Myrmidia — or a departed devotee of the god, such as a legendary priest or templar. To construct Divine Servants appropriate to the god at hand, use the rules in **Chapter 12: Bestiary**, modifying an animal, human, or daemon as you see fit.
 
 #### **Penance**
 

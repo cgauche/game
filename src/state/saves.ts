@@ -129,16 +129,22 @@ import type { Scene } from './scene';
 // rouvre avec des effets qui portent ces champs et plus rien ne les lit : le −10 d'Esquive du sort, le
 // demi-Mouvement et le plafond de mains d'arme disparaissent en silence. La save se jette (politique 2
 // ci-dessus).
-// 50 → 51 (#1897) : 54 ids de sort du livre fan sont FUSIONNÉS dans l'entrée qui les double
+// 50 → 51 (#1882) : le document de SCÈNE change de forme — un personnage NOMME sa fiche (`ref`,
+// `statblock` ou `presetId`, exigé par `sceneEntitySchema`). `snapshotSave` recopie le `state` ENTIER,
+// `state.scene.entities` comprise : une save de 50 rouvrirait sur une scène vivante dont les personnages
+// sans fiche sont refusés par `validateScene` et par le seam `parseProject` au prochain export/import de
+// son projet. Même bump : `ScheduledRespawn.summon` (file `scheduledEffects`, sauvée) porte le
+// `PorteurDeFiche` du défunt au lieu d'une réf. nue. La save se jette (politique 2 ci-dessus).
+// 51 → 52 (#1897) : 54 ids de sort du livre fan sont FUSIONNÉS dans l'entrée qui les double
 // (`SORTS_FUSIONNES_1897`, `src/data/sortsFusionnes.ts`) et n'existent plus. `snapshotSave` recopie le `state`
-// ENTIER, `Combatant.spells` des héros et des pions de la scène vivante comprise : une save de 50 rouvrirait
+// ENTIER, `Combatant.spells` des héros et des pions de la scène vivante comprise : une save de 51 rouvrirait
 // un héros dont `findSpellById` ne résout plus le sort appris (`grimoire.ts`) — il disparaît de son
 // grimoire EN SILENCE. La save se jette (politique 2 ci-dessus).
-// 51 → 52 (#1924) : la clé d'un emplacement de carrière (`Combatant.careerSlotChoices`,
-// `engine/careerSlots.ts`) se résume en ids, plus en libellés. Une save de 51 rouvrirait des héros dont
+// 52 → 53 (#1924) : la clé d'un emplacement de carrière (`Combatant.careerSlotChoices`,
+// `engine/careerSlots.ts`) se résume en ids, plus en libellés. Une save de 52 rouvrirait des héros dont
 // aucune désignation n'est plus appariée à son emplacement : chaque joker de carrière redevient à désigner.
 // La save se jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 52;
+export const SAVE_VERSION = 53;
 
 export interface SaveMeta {
   version: number;
@@ -189,7 +195,7 @@ function storage(): Storage | null {
 const HORS_SAVE: Record<string, string> = {
   // #767 — couche runtime posée par `loadProject` ; sa persistance (forme + golden + bump
   // `SAVE_VERSION`) est le périmètre de #766.
-  campaignNarratif: 'couche runtime de projet, repostée au chargement',
+  campaignNarratif: 'couche runtime de projet, re-dérivée de `campaignDoc` (`reposerPaquetDeCampagne`, store.ts)',
   // #1687 — état de la TOUCHE Alt à l'instant, pas une préférence : une save qui le porterait
   // rechargerait une partie aux utilisables révélés, touche relâchée.
   reveler: 'geste clavier en cours, jamais un état de partie',

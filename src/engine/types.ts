@@ -1426,6 +1426,9 @@ export interface Combatant {
   /** `id` STABLE de la créature du bestiaire dont ce combattant est une instance (posé au spawn) —
    *  clé de résolution du rig/apparence (« plus de label » : on ne re-résout plus par `name`). */
   creatureId?: string;
+  /** Le porteur de fiche dont ce combattant a été spawné (`state/spawn.spawnEnemy`, #1882) — ce qui le
+   *  re-spawne à l'identique (`scheduleRespawn ref:'self'`). Absent : un héros, né de sa création. */
+  porteurDeFiche?: import('./statblock').PorteurDeFiche;
   /** Coque/navire (`bodyShape:'vehicule'`) : `id`s des Combattants d'ÉQUIPAGE exposés à bord (MDG 14).
    *  Un Critique « Équipage » et les Éclats reviennent à ces marins (Critiques de personnage / Dégâts). */
   crewIds?: string[];

@@ -823,6 +823,9 @@ export interface SpeciesData {
    *  quand elle porte son propre Groupe (« Humains (Tiléens) » → `humain` + `tileen`). Lus tels
    *  quels par `groupsFor` (`engine/groups`), qui ne dérive plus rien du `label`. */
   grantGroups: string[];
+  /** Profil standard du PNJ de l'espèce (`LDB 77 l.7`) — réf à `creatures.json`, posée par espèce.
+   *  Absent = aucun profil standard (`gnomes`). */
+  profilStandard?: { id: string };
   /** Seuil d100 de mutation PHYSIQUE (LDB 19 l.78-81 : d100 ≤ seuil → corps, sinon esprit) :
    *  Elfe 0, Nain 5, Halfling 10, Humain 50. Ogre 10 (ADE II « Ogres et Mutations »). ABSENT = défaut
    *  Humain (50) — le Gnome y est rattaché par NADJ « Gnomes et Corruption » (« mutent comme les humains »). */
@@ -3011,6 +3014,11 @@ const especeParId = indexParId('species', species);
  *  pregens, draft). Le libellé ne sert qu'à l'affichage (`speciesSingular`). */
 export function findSpeciesById(id: string | undefined): SpeciesData | undefined {
   return especeParId(id);
+}
+/** Les profils standard (`LDB 77 l.7`) : les fiches que `species.json` désigne par `profilStandard`,
+ *  sans doublon, dans l'ordre du dataset. */
+export function profilsStandard(): string[] {
+  return [...new Set(species.flatMap((s) => (s.profilStandard ? [s.profilStandard.id] : [])))];
 }
 /** Taille CONFÉRÉE par les talents d'espèce FIXES (une référence ARRÊTÉE, jamais un `{pick}`, un
  *  `{random}` ni un `choix` résiduels — chip décoratif du créateur avant résolution complète, #572).

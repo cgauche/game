@@ -22,6 +22,8 @@ A fumbled Heal Test inflicts 1d10 Wounds, but cannot reduce the target below 1 W
 
 Characters remove one *Bleeding* Condition for each Wound they recover. While the Heal Skill can only be used to recover Wounds once per incident, you can still use it to remove *Bleeding* Conditions — simply remove one for each Wound that would have been recovered.
 
+#### **HEALING ANIMALS**
+
 When attempting to heal an animal, follow the rules for healing as laid out here but replace the Heal Skill with the Animal Care Skill.
 
 # **OPEN WOUNDS**
@@ -46,7 +48,7 @@ If Damage would reduce a character to below 0 Wounds, instead reduce them to 0 W
 
 Any Critical on a Melee or Ranged Test, whether attacking or defending, is a Critical Hit and inflicts a Critical Wound.
 
-**HEALING ANIMALS** For a Critical Wound caused by a Critical Hit, do not reverse your attack roll to find out the Location of your strike as you would do for a normal hit. Instead, roll a d100 again to work out where your hit landed (see page 164), then roll a d100 again on the relevant **Critical Wounds** table for that Location.
+For a Critical Wound caused by a Critical Hit, do not reverse your attack roll to find out the Location of your strike as you would do for a normal hit. Instead, roll a d100 again to work out where your hit landed (see page 164), then roll a d100 again on the relevant **Critical Wounds** table for that Location.
 
 > Attack Tests that both result in a Critical Hit and which inflict Damage that would reduce Wounds below zero inflict two Critical Wounds — one inflicted to a hit location determined by reversing the roll, and an additional one inflicted to a random hit location, as explained above.
 

@@ -69,6 +69,36 @@ const refDeDecor = idDe('prop');
 /** Sous-liste des décors à recette VOLUMIQUE : le marqueur `volume` de `defs/props.ts`. */
 const estVolumique = porteLeMarqueur('prop', 'volume');
 
+/** Les PORTEURS du type d'une entité, par `kind` (#877, #1882) : une entité NOMME son type, ou elle est
+ *  refusée. La PRÉSENCE se juge au parse (`superRefine` en pied) et dans `validateScene` ; la
+ *  RÉSOLUTION reste au registre `props.json` (décor) ou à `refEntiteResolue` (personnage, `state/spawn`).
+ *  L'exclusivité des porteurs d'un personnage est #1892. */
+export const PORTEURS_DU_TYPE = {
+  prop: { porteurs: ['ref'], entite: 'décor', nomme: 'son type au catalogue (props.json)' },
+  personnage: { porteurs: ['ref', 'statblock', 'presetId'], entite: 'personnage', nomme: 'sa fiche (bestiaire, statbloc ou preset de PNJ)' },
+} as const satisfies Partial<Record<z.infer<typeof entityKindSchema>, { porteurs: readonly ('ref' | 'statblock' | 'presetId')[]; entite: string; nomme: string }>>;
+
+const regleDuType = (kind: string) =>
+  (PORTEURS_DU_TYPE as Partial<Record<string, (typeof PORTEURS_DU_TYPE)[keyof typeof PORTEURS_DU_TYPE]>>)[kind];
+
+/** La faute d'une entité qui ne porte AUCUN des porteurs de son `kind`, dite SANS nommer l'entité :
+ *  au schéma, c'est le LIEU de la faute qui la nomme. `undefined` si elle porte un porteur, ou si son
+ *  `kind` n'en exige aucun. Source unique du schéma et de `typeNonNomme`. */
+export function porteurAbsent(ent: { kind: string; ref?: unknown; statblock?: unknown; presetId?: unknown }): string | undefined {
+  const regle = regleDuType(ent.kind);
+  if (!regle || regle.porteurs.some((p: 'ref' | 'statblock' | 'presetId') => ent[p] !== undefined)) return undefined;
+  const cles = regle.porteurs.map((p) => `« ${p} »`);
+  const absence = cles.length === 1 ? `${cles[0]} absente` : `${cles.join(', ')} absents`;
+  return `${absence} — un ${regle.entite} NOMME ${regle.nomme}`;
+}
+
+/** `porteurAbsent`, l'entité NOMMÉE : la faute dite hors de tout lieu (patch d'éditeur refusé, fiche
+ *  absente au spawn, migration). */
+export function typeNonNomme(ent: { id: string; kind: string; ref?: unknown; statblock?: unknown; presetId?: unknown }): string | undefined {
+  const faute = porteurAbsent(ent);
+  return faute && `${regleDuType(ent.kind)!.entite} « ${ent.id} » : ${faute}`;
+}
+
 /** Une ACTION AUTHORÉE sur une instance de décor (#1687) — le vocabulaire OUVERT des gestes qu'un
  *  auteur pose. `id` : identité STABLE et non vide, unique sur l'entité (`listeCle`) ; `label` :
  *  surcharge d'AFFICHAGE, absent le libellé vient du catalogue i18n à la clé `usable.<id>` ; `consume` : l'entité est retirée après ;
@@ -84,8 +114,8 @@ export const actionAuthoreeSchema = z.strictObject({
 });
 
 /** `SceneEntity` (`state/scene.ts:41`). `id` = identité STABLE partagée avec le `Combatant` au spawn.
- *  Le `superRefine` en pied porte le seul invariant CROSS-CHAMP de l'entité : le cap d'un décor
- *  volumique (`estVolumique`). */
+ *  Le `superRefine` en pied porte les invariants CROSS-CHAMP de l'entité : le type NOMMÉ
+ *  (`PORTEURS_DU_TYPE`) et le cap d'un décor volumique (`estVolumique`). */
 export const sceneEntitySchema = z.strictObject({
   id: z.string(),
   kind: entityKindSchema,
@@ -94,9 +124,9 @@ export const sceneEntitySchema = z.strictObject({
   z: z.number().optional(),
   facing: dir8Schema.optional(),
   label: z.string().optional(),
-  /** Réf au bestiaire (personnage) ou au catalogue de décor (prop). REQUISE et résolue au registre
-   *  pour un décor (`superRefine` en pied) : un décor se DIT ou se REFUSE, jamais ne se remplace
-   *  (#877). */
+  /** Réf au bestiaire (personnage) ou au catalogue de décor (prop). Un des porteurs du type
+   *  (`PORTEURS_DU_TYPE`, #877, #1882) : REQUISE et résolue au registre pour un décor ; pour un
+   *  personnage, elle, `statblock` ou `presetId`. */
   ref: z.string().optional(),
   statblock: customStatblockSchema.optional(),
   /** Id d'un preset de `narratif.presetsPnj` — FK intra-document (vérifiée par `projetSchema`). */
@@ -160,24 +190,21 @@ export const sceneEntitySchema = z.strictObject({
     })
     .optional(),
 }).superRefine((ent, ctx) => {
-  // CAP D'UN DÉCOR VOLUMIQUE — verrou AU PARSE (#1680 ligne 3) : un décor dont le TYPE porte une
-  // recette ne prend qu'un cap CARDINAL. Sa recette tourne (`rotatePropLocal`) là où son empreinte
-  // solide ne tourne pas (#1509) : une diagonale poserait son corps en travers de cases restées
-  // traversables. La sous-liste se lit au régime vif, sinon au registre généré (`porteLeMarqueur`).
+  // TYPE NOMMÉ — verrou AU PARSE (#877, #1882) : `PORTEURS_DU_TYPE`. L'absence se DIT ici, au lieu de
+  // l'entité ; rien ne la remplace.
+  const absence = porteurAbsent(ent);
+  if (absence) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['ref'], message: absence });
   if (ent.kind !== 'prop') return;
-  // REF DE DÉCOR — verrou AU PARSE (#877) : le type est REQUIS et résolu au registre `props.json`. Une
-  // ref absente comme une ref morte se DISENT ici ; aucune n'est remplacée.
-  if (ent.ref === undefined) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['ref'],
-      message: '« ref » absente — un décor NOMME son type au catalogue (props.json)',
-    });
-  } else {
+  // REF DE DÉCOR (#877) : résolue au registre `props.json` ; une ref morte se DIT, jamais remplacée.
+  if (ent.ref !== undefined) {
     const verdict = refDeDecor.safeParse(ent.ref);
     if (!verdict.success)
       for (const souci of verdict.error.issues) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['ref'], message: souci.message });
   }
+  // CAP D'UN DÉCOR VOLUMIQUE — verrou AU PARSE (#1680 ligne 3) : un décor dont le TYPE porte une
+  // recette ne prend qu'un cap CARDINAL. Sa recette tourne (`rotatePropLocal`) là où son empreinte
+  // solide ne tourne pas (#1509) : une diagonale poserait son corps en travers de cases restées
+  // traversables. La sous-liste se lit au régime vif, sinon au registre généré (`porteLeMarqueur`).
   if (capDecorAdmis(ent.ref !== undefined && estVolumique(ent.ref), ent.facing)) return;
   ctx.addIssue({
     code: z.ZodIssueCode.custom,

@@ -132,9 +132,7 @@ This creature is a highly capable magician and respected (or feared) by similar 
 
 #### **Skills**
 
-Channelling (Any) +20, Cool +20, Dodge +20, Intuition +20,
-
-Language (Magick) +20, Leadership +10, Melee (Basic or Polearm) +10, Perception +20
+Channelling (Any) +20, Cool +20, Dodge +20, Intuition +20, Language (Magick) +20, Leadership +10, Melee (Basic or Polearm) +10, Perception +20
 
 #### **Talents**
 

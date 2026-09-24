@@ -194,7 +194,11 @@ Animal Care 45, Charm 50, Charm Animal 40, Drive 45, Evaluate 50, Gossip 55, Hag
 
 #### **Talents**
 
-**Gregarious:** Advantage on Gossip Tests and can usually tell where in a settlement gossip is likely to be exchanged **Strong Back:** Adds +1 SL to Opposed Strength Tests, and can carry an additional Encumbrance point **Super Numerate:** Advantage on Evaluate Tests, and can keep track of the passage of time accurately while conscious
+**Gregarious:** Advantage on Gossip Tests and can usually tell where in a settlement gossip is likely to be exchanged
+
+**Strong Back:** Adds +1 SL to Opposed Strength Tests, and can carry an additional Encumbrance point
+
+**Super Numerate:** Advantage on Evaluate Tests, and can keep track of the passage of time accurately while conscious
 
 #### **Trappings**
 
@@ -216,7 +220,9 @@ Belligerent and mercenary, these NPCs represent the sort of petty criminals who 
 
 **Dagger:** (50/+6)
 
-**Hand Weapon:** (50/+8) **Knuckledusters:** (45/+6)
+**Hand Weapon:** (50/+8)
+
+**Knuckledusters:** (45/+6)
 
 #### **Armour**
 
@@ -230,7 +236,9 @@ Charm 35, Consume Alcohol 45, Cool 40, Dodge 35, Gamble 35, Gossip 35, Haggle 35
 
 #### **Talents**
 
-**Briber:** Advantage on Bribery Tests **Cardsharp:** When making an Opposed Gamble Test, if the NPC rolls a double, they may reroll their opponent's Test
+**Briber:** Advantage on Bribery Tests
+
+**Cardsharp:** When making an Opposed Gamble Test, if the NPC rolls a double, they may reroll their opponent's Test
 
 **Iron Jaw:** The first time in an encounter the NPC gains one or more *Stunned* Conditions, they gain one less
 
@@ -268,9 +276,7 @@ Athletics 45, Climb 35, Dodge 50, Intuition 60, Melee (Basic) 25, Perception 65,
 
 **Acute Sense (Taste):** May take Perception
 
-Tests to detect normally imperceptible
-
-details with the associated sense
+Tests to detect normally imperceptible details with the associated sense
 
 **Catfall:** Advantage on Athletics Tests made while falling and may make Athletics Tests to reduce Damage while falling
 
@@ -304,7 +310,9 @@ Most gnomes are acerbic and quick-tempered, standing a little taller than halfli
 
 **Toughness Bonus:** 2
 
-**Optional Leather Jerkin:** +1 AP to Body **Optional Helmet:** +2 AP to Head
+**Optional Leather Jerkin:** +1 AP to Body
+
+**Optional Helmet:** +2 AP to Head
 
 #### **Skills**
 
@@ -312,7 +320,9 @@ Charm Animal 45, Melee (Basic) 45, Stealth (Rural) 40
 
 #### **Traits**
 
-**Hatred (Orcs and Goblins):** Must attack by fastest and most deadly means possible, +1 SL on Melee and Ranged Tests, immune to *Intimidate* and *Fear* caused by them **Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
+**Hatred (Orcs and Goblins):** Must attack by fastest and most deadly means possible, +1 SL on Melee and Ranged Tests, immune to *Intimidate* and *Fear* caused by them
+
+**Night Vision:** See clearly for 20 yards and extend the illumination distance of light sources by 20 yards
 
 # **Ogre**
 
@@ -330,7 +340,9 @@ Big, loud, violent, and perpetually hungry, ogres hail from the distant east and
 
 **Toughness Bonus:** 3
 
-**Optional Gut Plate:** +2 AP to Body **Optional Helmet:** +2 AP to Head
+**Optional Gut Plate:** +2 AP to Body
+
+**Optional Helmet:** +2 AP to Head
 
 **Optional Ironfist:** +2 AP when Opposing an attack with
 

@@ -59,7 +59,7 @@ The Career Advancement Tracker tracks your progress through your Career. Each ti
 |                                                          |                                                             |                 |       |          |                   |                    |        |                                                  |       |  |  |  |  |
 |                                                          |                                                             |                 |       |          |                   |                    |        |                                                  |       |  |  |  |  |
 
-**Skills:** learned and developed abilities. A Skill starts at the value of its associated Characteristic (shown on the Character Sheet and/ or the entry for the relevant Skill in Chapter 4, page 110). **Each Advance increases it by +5**. Your starting Skills come from your Species and Career.
+**Skills:** learned and developed abilities. A Skill starts at the value of its associated Characteristic (shown on the Character Sheet and/or the entry for the relevant Skill in Chapter 4, page 110). **Each Advance increases it by +5**. Your starting Skills come from your Species and Career.
 
 #### **There are three types of Skill:**
 

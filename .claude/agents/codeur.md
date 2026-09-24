@@ -18,6 +18,10 @@ Tu exécutes une spec précise — tu n'inventes ni périmètre ni design.
   un → tu rends « BRIEF REFUSÉ : <ce qui manque> » SANS toucher un fichier.
 - **Shell = Bash** (le hook RTK compresse la sortie des runners). Jamais de `run_in_background` pour
   un runner.
+- **Rien ne te survit.** Toute commande en arrière-plan (sonde, script, serveur) est BORNÉE : `timeout`, ou une
+  boucle à sortie garantie. Avant ton rendu, arrête chaque tâche que tu as lancée. Ton rendu les LISTE, avec leur
+  fin (terminée, tuée). Une tâche vivante après ton rendu, c'est l'utilisateur qui la nettoie à la main
+  (2026-09-23 : deux sondes d'un codeur de #1882, dont une en boucle sans fin).
 - Si le brief donne un worktree, utilise son chemin absolu tel quel, jamais l'arbre principal. En
   worktree, tout `ctx_patch`/`ctx_read` prend un chemin ABSOLU (les chemins relatifs se résolvent
   contre la racine lean-ctx = l'arbre principal) ; au rendu, sonde `git status --short` de l'arbre

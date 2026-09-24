@@ -128,7 +128,8 @@ const ATTENDU = {
     // +1 le 2026-09-22 (#1873) : `joue.mjs` COPIE la migration jouée dans le dépôt jetable que lui donne
     // chaque banc de migration (`copyFileSync`, sous `os.tmpdir()`) ; l'arbre n'est jamais écrit.
     // −8 le 2026-09-23 (#1897) : les bancs de migration fabriquent leur dépôt jetable par `joue.mjs`
-    // (`depot`, `efface`), unique écrivain de la famille. +1 le 2026-09-23 (#1897) : son banc
+    // (`depot`, `efface`), unique écrivain de la famille ; −2 le 2026-09-24 (#1897) : les bancs #877
+    // et #1882 de `main` passent au même régime à la fusion. +1 le 2026-09-23 (#1897) : son banc
     // `joue.test.mjs` réécrit (`writeFileSync`) les fichiers du dépôt jetable de `depot()` pour faire
     // mordre `crees`/`rienTouche` ; ce dépôt vit sous `os.tmpdir()` (`efface` en `t.after`), l'arbre
     // n'est jamais écrit.
@@ -362,6 +363,10 @@ const ATTENDU = {
     // lit le PDF dans un dossier `mkdtempSync` d'os.tmpdir(), et son `--json` refuse tout chemin sous
     // le dépôt ; le banc n'appelle que ses fonctions PURES sur des fixtures, l'arbre n'est jamais écrit.
     'scripts/raw/sonde-titres.mjs',
+    // +1 le 2026-09-24 (#1739) : la réparation des titres d'entrée, ACQUISE par l'import de son banc —
+    // son unique `writeFileSync` vit dans `main()`, derrière `isMain` ET `--apply` ; le banc n'appelle
+    // que son cœur PUR (`reparerLivre`, `infidelite`) sur un livre forgé en mémoire.
+    'scripts/raw/reparer-titres.mjs',
   ],
   'raw:check-refs': [],
   // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE

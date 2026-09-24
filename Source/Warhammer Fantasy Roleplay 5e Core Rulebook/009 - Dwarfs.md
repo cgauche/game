@@ -38,6 +38,8 @@ Dwarfs are encountered throughout the Old World, although most reside in their h
 
 Given the long memories of dwarfs and their tendency to bear grudges, many harbour a deep resentment towards elves for their part in the War of Vengeance. As such, many dwarfs have the Animosity (Elves) Psychology trait (see page 183 and 356). Given some WFRP parties contain both elves and dwarfs, this may lead to unhelpful tensions. So, you may prefer to ignore this Talent between party members.
 
+#### **Names**
+
 Dwarfs usually identify with their clan but, particularly in the case of those who live to the north, may prefer to identify as the son (sson), daughter (dottir), niece (niz), or nephew (nev) of another dwarf. Others might choose a grand-sounding title reflecting a notable feat or deed.
 
 **Dwarf Forenames:** Alaeric, Bori, Bardlin, Belorn, Ergrim, Fenna, Galazil (Golden Haired), Gnoldok (Wise Eyes), Grufbad, Gottri, Gudrin, Kargrim, Okri (Crafter), Thymbrin, Ulfar
@@ -48,15 +50,13 @@ Dwarfs usually identify with their clan but, particularly in the case of those w
 
 #### **Dwarf Physical Characteristics**
 
-**Age:** 15+10d10 **Height:** 4'3"+1d10"
+**Age:** 15+10d10
 
-**Eye colour:** Coal, Lead, Steel, Blue, Earth Brown, Bronze,
+**Height:** 4'3"+1d10"
 
-Hazel, Green, Copper, Gold
+**Eye colour:** Coal, Lead, Steel, Blue, Earth Brown, Bronze, Hazel, Green, Copper, Gold
 
-**Hair colour:** White, Grey, Pale Blond, Golden, Copper, Bronze,
-
-Brown, Dark Brown, Reddish Brown, Black
+**Hair colour:** White, Grey, Pale Blond, Golden, Copper, Bronze, Brown, Dark Brown, Reddish Brown, Black
 
 ### **Fluent Languages**
 
@@ -68,7 +68,7 @@ Add one Advance (+5) to any five of the following Skills: Consume Alcohol, Cool,
 
 ### **Starting Talents**
 
-**Names** *Magic Resistance*, *Night Vision*, *Read/Write* or *Relentless*, *Resolute* or *Strong-minded*, *Sturdy*
+*Magic Resistance*, *Night Vision*, *Read/Write* or *Relentless*, *Resolute* or *Strong-minded*, *Sturdy*
 
 #### **Fate**
 

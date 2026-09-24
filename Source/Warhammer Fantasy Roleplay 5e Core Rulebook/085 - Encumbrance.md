@@ -48,4 +48,4 @@ Characters who exceed their Encumbrance capacity are slowed and prone to fatigue
 
 ### **Encumbrance and Travel Fatigue**
 
-298 299 *Fatigued* Conditions are accrued at the end of a day's travel and can only be removed with a long rest.
+*Fatigued* Conditions are accrued at the end of a day's travel and can only be removed with a long rest.

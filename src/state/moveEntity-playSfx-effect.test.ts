@@ -19,7 +19,7 @@ afterEach(() => { useGame.setState(useGame.getInitialState()); });
 function sceneWithNpc() {
   const sc = emptyScene(10, 10);
   sc.id = 'move-sfx-scene';
-  sc.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 2, y: 2 } });
+  sc.entities.push({ id: 'pnj', kind: 'personnage', ref: 'humain', pos: { x: 2, y: 2 } });
   return sc;
 }
 

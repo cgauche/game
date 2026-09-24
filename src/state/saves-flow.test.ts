@@ -218,7 +218,7 @@ describe('parseSave — la version DOIT être la courante', () => {
     const scene = emptyScene(12, 12);
     scene.entities = [
       { id: 'table-1', kind: 'prop', ref: 'table-ronde-4-tabourets', pos: { x: 5, y: 5 }, usable: { assise: true } },
-      { id: 'pnj-1', kind: 'personnage', pos: { x: 5, y: 6 } },
+      { id: 'pnj-1', kind: 'personnage', ref: 'humain', pos: { x: 5, y: 6 } },
     ] as typeof scene.entities;
     const ancien = { 'table-1': { 'place-nord': { kind: 'entity' as const, entityId: 'pnj-1' } } };
     expect(pruneSeatAssignments({ ...scene, seatAssignments: ancien }, 4), 'l’élagage est MUET').toEqual({});
@@ -227,13 +227,13 @@ describe('parseSave — la version DOIT être la courante', () => {
     const courant = { 'table-1': { 'place-1': { kind: 'entity' as const, entityId: 'pnj-1' } } };
     expect(pruneSeatAssignments({ ...scene, seatAssignments: courant }, 4)).toEqual(courant);
   });
-  it('MESURE du motif de bump 50 → 51 (#1897) : un sort FUSIONNÉ ne se résout plus — la save de 50 se jette', () => {
-    // Une save de 50 porte `Combatant.spells` tel quel (`snapshotSave` recopie le `state`) : un héros qui
+  it('MESURE du motif de bump 51 → 52 (#1897) : un sort FUSIONNÉ ne se résout plus — la save de 51 se jette', () => {
+    // Une save de 51 porte `Combatant.spells` tel quel (`snapshotSave` recopie le `state`) : un héros qui
     // a appris « Alarme » (frenchy-bzh, fusionnée dans « Alerte ») rouvrirait avec un id que plus rien
     // ne résout. D'où le REJET, et non une purge silencieuse du grimoire.
-    expect(SAVE_VERSION).toBeGreaterThanOrEqual(51);
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(52);
     const heros = { id: 'h', kind: 'hero', spells: ['alarme', 'alerte'] };
-    expect(parseSave({ ...cur, version: 50, data: { party: [heros] } })).toBeNull();
+    expect(parseSave({ ...cur, version: 51, data: { party: [heros] } })).toBeNull();
     expect(findSpellById('alarme'), 'l’id fusionné n’existe plus au catalogue').toBeUndefined();
     expect(idDeSortVivant('alarme')).toBe('alerte');
   });

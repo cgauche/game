@@ -371,7 +371,10 @@ export const ECRIT_LU = {
         'IMPORTE la réparation du mobilier de page (#1739), dont l’unique `writeFileSync` vit dans `main()`, ' +
         'derrière sa porte `isMain` ET `--apply` (scripts/raw/reparer-mobilier.mjs:186) — le banc n’appelle ' +
         'que ses fonctions PURES (`reparer`, `infidelite`, `motsDe`, `niveauDesFreres`, `niveauDeLegende`, ' +
-        '`texteDeBandeau`) sur des textes en mémoire',
+        '`texteDeBandeau`) sur des textes en mémoire ; `reparer-titres.test.mjs` IMPORTE la réparation des titres ' +
+        'd’entrée (#1739), dont l’unique `writeFileSync` vit dans `main()`, derrière sa porte `isMain` ET ' +
+        '`--apply` (scripts/raw/reparer-titres.mjs) — le banc n’appelle que son cœur PUR (`reparerLivre`, ' +
+        '`infidelite`) sur un livre forgé en mémoire',
       'scripts/raw/*-stock.json':
         'même porte, même module : le recalage des stocks nominatifs (`recalerStock`) rend un TEXTE, ' +
         'que le seul `main()` écrit derrière `estMain` (scripts/raw/recouper-source.mjs:397)',

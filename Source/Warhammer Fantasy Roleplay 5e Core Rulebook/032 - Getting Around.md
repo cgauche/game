@@ -76,7 +76,7 @@ Sail can also be used to tie various knots that can restrain others, come free w
 
 # **Pursuits**
 
-In a pursuit, those trying to escape are the Quarry, while those trying to catch them are the Pursuers. At the start of the chase, the fastest Pursuer — the one with the highest Movement makes an Opposed Test against the slowest member of the Quarry — the one with the lowest Movement. This is usually an Athletics Test, though it may instead be a Drive, Ride, or Swim Test, depending on the circumstances. If mounts or vehicles are involved, use their Movement values to determine the fastest Pursuer and slowest Quarry.
+In a pursuit, those trying to escape are the Quarry, while those trying to catch them are the Pursuers. At the start of the chase, the fastest Pursuer — the one with the highest Movement — makes an Opposed Test against the slowest member of the Quarry — the one with the lowest Movement. This is usually an Athletics Test, though it may instead be a Drive, Ride, or Swim Test, depending on the circumstances. If mounts or vehicles are involved, use their Movement values to determine the fastest Pursuer and slowest Quarry.
 
 If either side wins the Opposed Test by 6 or more SL, the pursuit immediately ends in their favour (see below). Likewise, if the slowest member of one side has at least double the Movement of the fastest member of the other, they automatically win the pursuit.
 

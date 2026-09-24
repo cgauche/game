@@ -209,7 +209,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       // est CELLE du spawn (`refEntiteResolue`, `state/spawn`) —
       // un statbloc ou un preset de PNJ prime sur la réf et la rend sans objet, comme au runtime. Une réf
       // fournie mais irrésoluble pose un mannequin `RÉF ?` à l'écran (#223) : l'auteur l'apprend ici.
-      if (e.kind === 'personnage' && e.ref && !e.statblock && !e.presetId && !refEntiteResolue(e.ref))
+      if (e.kind === 'personnage' && e.ref !== undefined && !e.statblock && !e.presetId && !refEntiteResolue(e.ref))
         add('error', 'entity', e.id, `${e.label ?? e.id} → créature inexistante « ${e.ref} »`);
     }
     // ASSISE AUTHORÉE (`Scene.seatAssignments`) : les règles vivent dans `state/seating`, source

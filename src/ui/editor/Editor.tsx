@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useGame } from '../../state/store';
 import { Scene, emptyScene, tileAt } from '../../state/scene';
-import { resizeGrid, editEntity } from '../../state/sceneEdit';
+import { resizeGrid, editEntity, TypeNonNomme } from '../../state/sceneEdit';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { planFocusTiles, type PlanDefectAt, type PlanDefectFamily } from '../../state/planDefects';
 import { testScene } from '../../scenes/test-fixture';
@@ -30,7 +30,7 @@ import { publierEditeur } from '../../state/editeurBridge';
 import {
   Tool, Sel, Pt, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer,
   addArchitectureBody, addArchitectureStorey, addArchitecturePart, addBuildingMass,
-  planStairFlight, applyStairFlight,
+  planStairFlight, applyStairFlight, premierOffert,
 } from './editorState';
 import { Icon } from '../Icon';
 import { Modal } from '../Modal';
@@ -212,6 +212,8 @@ export function Editor({
 
   const view = useEditorView();
   const enemyCreatures = creatures.filter((c) => typeof c.char.B === 'number');
+  // Fiche que l'outil de rencontre pose : l'élue, sinon la première offerte (`premierOffert`).
+  const encFiche = encRef || premierOffert(enemyCreatures, 'Fiche de rencontre');
 
   function clone(s: Scene): Scene {
     return JSON.parse(JSON.stringify(s));
@@ -548,7 +550,12 @@ export function Editor({
           // `undefined` vaut ABSENT : c'est la convention du modèle de scène, celle que l'inspecteur
           // applique déjà (`updateSel({ statblock: undefined })`, `Inspector.tsx`) — le champ ne part
           // pas au document (`JSON.stringify`) et le schéma le lit comme manquant.
-          setScene(editEntity(scene, entityId, patch as Partial<typeof ent>));
+          try {
+            setScene(editEntity(scene, entityId, patch as Partial<typeof ent>));
+          } catch (e) {
+            if (e instanceof TypeNonNomme) return `✗ « ${entityId} » : ${e.message}`;
+            throw e;
+          }
           const nommer = (garde: boolean) => cles.filter(([, v]) => (v !== undefined) === garde).map(([c]) => c).join(', ') || '(rien)';
           return `✓ entité « ${entityId} » patchée — posé : ${nommer(true)} | retiré : ${nommer(false)}`;
         },
@@ -942,7 +949,7 @@ export function Editor({
           setTerrainRect={setTerrainRect}
           encTarget={encTarget}
           setEncTarget={setEncTarget}
-          encRef={encRef}
+          encRef={encFiche}
           setEncRef={setEncRef}
           enemyCreatures={enemyCreatures}
           currentLayer={currentLayer}
@@ -987,7 +994,7 @@ export function Editor({
           terrainRect={terrainRect}
           encTarget={encTarget}
           setEncTarget={setEncTarget}
-          encRef={encRef || enemyCreatures[0]?.id || 'mutant'}
+          encRef={encFiche}
           layers={layers}
           sel={sel}
           planFocus={planFocus}

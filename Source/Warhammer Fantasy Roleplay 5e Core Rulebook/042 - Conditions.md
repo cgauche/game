@@ -118,6 +118,8 @@ At the end of each Round, you may attempt a **Challenging (+0 SL) Endurance** Te
 
 If you possess more *Stunned* Conditions than your Toughness Bonus, gain the *Unconscious* Condition.
 
+#### **Surprised**
+
 You have been caught unawares and you are not at all ready for what is about to hit you. You can take no Action or Move on your Turn and cannot defend yourself in Opposed Tests. Any opponent trying to strike you in melee gains a bonus of +2 SL.
 
 The *Surprised* Condition does not stack, so you do not collect multiple *Surprised* Conditions even should you be technically surprised multiple times in a Round.
