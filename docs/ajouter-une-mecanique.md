@@ -160,7 +160,7 @@ même si un second trait la déclare. C'est de la DONNÉE, jamais un chemin de c
 ### Une capacité est un marqueur de PRÉSENCE, jamais un nombre
 
 Le drapeau dit qu'une mécanique s'applique ; sa VALEUR (Salve N, Protectrice N, Solide N…) vit sur
-l'INSTANCE portée par l'objet — `QualityInstance.value` (`src/engine/types.ts:362`), que le
+l'INSTANCE portée par l'objet — `QualityInstance.value` (`src/engine/types.ts:359`), que le
 dispatcher runtime expose sous `indice` (`resolveQualities`, `src/engine/qualities/dispatch.ts:56`).
 La saisie en prose (« Solide 3 ») n'est convertie en instance qu'à l'AUTHORING, par
 `parseQuality` (`src/engine/qualities/normalize.ts:31`) — le runtime ne re-parse jamais un libellé
@@ -220,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: 5f55dfa4ed2e75f131aa3c9daf67bf6103a79b8b (158 fichiers, 1 dossiers) corps: b2d8cbe50c4f75c60a7c98ed3dca94fda6342cc5 -->
+<!-- sources-empreinte: 7e2bbef8d5e6c188aa6fab5a0208ccdb2eb9501a (158 fichiers, 1 dossiers) corps: e147d2981ba99242fddba6b4563464841e6993e9 -->

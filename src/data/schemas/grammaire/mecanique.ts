@@ -10,12 +10,29 @@ import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/
 import type { StakeRef } from '../../index';
 import { messageRecurrenceHorloge, SELF_REF, type GameOp } from '../../../engine/ops';
 import { ARG_TEMPLATE, INDICE_TEMPLATE, type Condition, type EffectOp, type EffectTrigger, type Flow } from '../../../engine/flowCore';
-import { chaosAlignSchema, charKeySchema, diceSpecSchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, ouReserve, plageSchema, reachSchema, refTestDeCorruption, sizeCategorySchema, symptomSeveritySchema } from './valeurs';
+import { chaosAlignSchema, charKeySchema, deDeTableSchema, diceSpecSchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, ouReserve, plageSchema, reachSchema, refTestDeCorruption, sizeCategorySchema, symptomSeveritySchema } from './valeurs';
 import { traitInstanceSchema } from './reference';
 import { idDe, marquerOpAtteinte, ref, refs, refOuSpec } from './ref';
 
-/** `ArmourBypass` (`src/engine/types.ts`) — PA ignorés : un nombre, ou une catégorie d'armure. */
-const armourBypassSchema = z.union([z.number(), z.enum(['all', 'metal', 'leather', 'nonMagic', 'nonMetal'])]);
+/** Catégorie d'armure ignorée d'un `ArmourBypass` (`engine/armourBypass.bypassedAP`) ; `nonMetal` : LDB 62 l.270. */
+export const armourBypassCategorieSchema = enumNomme({
+  all: "toute l'armure",
+  metal: 'le métal',
+  leather: 'le cuir',
+  nonMagic: 'le non-magique',
+  nonMetal: 'le non-métal',
+});
+
+/** `ArmourBypass` — PA ignorés : un nombre de points, ou une catégorie d'armure. Source du type moteur
+ *  (`src/engine/types.ts`). */
+export const armourBypassSchema = z.union([z.number(), armourBypassCategorieSchema]);
+export type ArmourBypass = z.infer<typeof armourBypassSchema>;
+
+/** Ce que l'op `loseTurn` retire ; absent = les deux. */
+export const loseTurnWhatSchema = enumNomme({ action: 'son Action', movement: 'son Mouvement' });
+
+/** Forme d'une `zone`. */
+export const zoneShapeSchema = enumNomme({ disc: 'disque', wall: 'mur' });
 
 /** `PerSL` (`src/engine/ops.ts:146`) — échelle « par +N DR » d'un payload d'op. */
 export const perSLSchema = z.strictObject({ every: z.number(), amount: z.number(), onFailure: z.boolean().optional() });
@@ -87,7 +104,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
   money: z.strictObject({ op: z.literal('money'), montant: z.strictObject({ brass: formulaSchema }) }),
   healCaster: z.strictObject({ op: z.literal('healCaster'), amount: formulaSchema }),
   kill: z.strictObject({ op: z.literal('kill') }),
-  loseTurn: z.strictObject({ op: z.literal('loseTurn'), what: z.enum(['action', 'movement']).optional() }),
+  loseTurn: z.strictObject({ op: z.literal('loseTurn'), what: loseTurnWhatSchema.optional() }),
   noBreath: z.strictObject({ op: z.literal('noBreath') }),
   noHunger: z.strictObject({ op: z.literal('noHunger') }),
   removeTrait: z.strictObject({ op: z.literal('removeTrait'), traitId: idDe('trait') }),
@@ -191,7 +208,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
   rollTable: z.union([
     z.strictObject({
       op: z.literal('rollTable'),
-      die: z.enum(['d10', 'd100']),
+      die: deDeTableSchema,
       mod: z.number().optional(),
       addNegativeSL: z.boolean().optional(),
       extraRollsPerStep: z.number().optional(),
@@ -199,7 +216,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     }),
     z.strictObject({
       op: z.literal('rollTable'),
-      die: z.enum(['d10', 'd100']).optional(),
+      die: deDeTableSchema.optional(),
       mod: z.number().optional(),
       addNegativeSL: z.boolean().optional(),
       extraRollsPerStep: z.number().optional(),
@@ -237,7 +254,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
   }),
   zone: z.strictObject({
     op: z.literal('zone'),
-    shape: z.enum(['disc', 'wall']),
+    shape: zoneShapeSchema,
     radiusMeters: formulaSchema.optional(),
     lengthMeters: formulaSchema.optional(),
     lengthPerSL: z.strictObject({ every: z.number(), metersFormula: formulaSchema }).optional(),

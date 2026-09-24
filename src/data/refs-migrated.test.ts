@@ -16,6 +16,7 @@ import {
 import { avancement } from './schemas/grammaire/avancement';
 import { gameOpSchema } from './schemas/grammaire/mecanique';
 import { entreeOuverte, mesureDuParse, refusDeSpec } from './schemas/grammaire/ref';
+import { IDS_PAR_DATASET } from './schemas/_ids.generated';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
@@ -1239,22 +1240,42 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     }
   });
 
-  // COUVERTURE (#1473) : un champ d'op à slot ne sort du scan que parce que le PARSE le juge. TOUT nœud
-  // `GameOp` que le scan visite est donc un nœud ATTEINT par le parse de mesure (`opsDuParse`, par
-  // IDENTITÉ d'objet), quelle que soit son op et quelle que soit la forme de ses valeurs. Un nœud non
-  // atteint pend sous un conteneur LOOSE (`OPS_NON_TYPEES`) ou hors de tout schéma : son conteneur se type.
+  // COUVERTURE (#1473) : le scan saute les champs d'op à slot (`champsDOpASlot`, dérivé d'`OP_DEFS`), que
+  // le parse juge par leur feuille `idDe`. Ce test prouve la JOINTURE : tout nœud `GameOp` que le scan
+  // visite est ATTEINT par le parse de mesure (`opsDuParse`, par IDENTITÉ d'objet). « Atteint » seul ne
+  // juge rien (`marquerOpAtteinte` précède `OP_DEFS[v.op]`) : c'est le couple « atteint » + champs sautés
+  // dérivés d'`OP_DEFS` qui couvre — un champ d'une op de `OPS_NON_TYPEES` reste au scan FK. Un nœud non
+  // atteint pend sous un conteneur que le parse ne descend pas : son conteneur se type.
   // Stock NOMINATIF, compte EXACT par document : les ops du dialecte `jsonOpSchema`
   // (`schemas/defs/miscast.ts`), lot de mort #1902.
   const HORS_PARSE: Record<string, number> = { 'miscast.json': 77 };
   const ATTEINTES = opsDuParse(CORPUS, DEFS);
+  type NoeudDOp = (typeof scan.noeudsDOp)[number];
+  /** La jointure scan ↔ parse : les nœuds d'op visités que le parse de mesure n'atteint pas. */
+  const horsDuParse = (noeuds: readonly NoeudDOp[], atteintes: ReadonlySet<object>) => noeuds.filter((n) => !atteintes.has(n.noeud));
+  const ligneHorsParse = (n: NoeudDOp) => `${n.path} : ${n.op}`;
   it('tout nœud GameOp du corpus est atteint par le parse de mesure, hors stock nominatif', () => {
     expect(scan.noeudsDOp.length, 'aucun nœud d’op visité — le scan est vide').toBeGreaterThan(500);
-    const hors = scan.noeudsDOp.filter((n) => !ATTEINTES.has(n.noeud));
+    const hors = horsDuParse(scan.noeudsDOp, ATTEINTES);
     const parDocument: Record<string, number> = {};
     for (const n of hors) parDocument[n.file] = (parDocument[n.file] ?? 0) + 1;
-    const lignes = hors.filter((n) => !(n.file in HORS_PARSE)).map((n) => `${n.path} : ${n.op}`);
+    const lignes = hors.filter((n) => !(n.file in HORS_PARSE)).map(ligneHorsParse);
     expect(lignes, `nœuds d’op hors du parse — typer leur conteneur (OP_DEFS) :\n${lignes.join('\n')}`).toEqual([]);
     expect(parDocument, 'le stock HORS_PARSE est EXACT : un compte qui baisse se reporte au stock').toEqual(HORS_PARSE);
+  });
+
+  // Conteneur OPAQUE : `seaEventDef.params`, `z.record(z.string(), z.unknown())` (`schemas/defs/sea-events.ts:35`).
+  it('une op typée sous un conteneur que le parse ne descend pas est vue du scan, absente du parse, nommée hors parse (fixture)', () => {
+    const def = DEFS.find((d) => d.file === 'sea-events.json');
+    expect(def, 'def de sea-events.json introuvable').toBeTruthy();
+    const document = structuredClone(CORPUS.brutParNom.get('sea-events.json')) as { boardEvents: { params: Record<string, unknown> }[] };
+    const op = { op: 'domeWard', traitId: IDS_PAR_DATASET['traits.json'][0], indice: 1 };
+    document.boardEvents[0].params.ops = [op];
+    const noeuds = scanGameOpRefs({ sources: [{ file: 'sea-events.json', data: document }], resolvers, champsASlot: CHAMPS_A_SLOT }).noeudsDOp;
+    expect(noeuds.map((n) => n.noeud)).toEqual([op]);
+    const atteintes = opsDuParse({ brutParNom: new Map<string, unknown>([['sea-events.json', document]]) }, [def!]);
+    expect(atteintes.has(op)).toBe(false);
+    expect(horsDuParse(noeuds, atteintes).map(ligneHorsParse)).toEqual(['sea-events.json.boardEvents[0].params.ops[0] : domeWard']);
   });
 
   // Le stock HORS_PARSE n'a pas de parse d'op : chaque chaîne de ses champs d'op à slot, que le scan

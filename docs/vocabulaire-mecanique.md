@@ -54,7 +54,7 @@ Un champ ne compte pour un canal que si son TYPE le porte : `SpellData.effects: 
 
 | Entité | Déclarée | `passive` | `effects` | Drapeaux |
 |---|---|---|---|---|
-| `ActiveEffect` | `src/engine/types.ts:759` | `passive: GameOp[]` | — | — |
+| `ActiveEffect` | `src/engine/types.ts:756` | `passive: GameOp[]` | — | — |
 | `DomainData` | `src/data/index.ts:2024` | — | `effects: TriggeredEffect[]` | — |
 | `ManeuverDef` | `src/data/index.ts:1652` | — | `effects: TriggeredEffect[]` | — |
 | `Mutation` | `src/engine/corruption.ts:58` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | — |
@@ -65,8 +65,8 @@ Un champ ne compte pour un canal que si son TYPE le porte : `SpellData.effects: 
 | `TalentData` | `src/data/index.ts:1039` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | `combat: CombatFeature` |
 | `TraitData` | `src/data/index.ts:1822` | `passive: GameOp[]` | `effects: TriggeredEffect[]` | `capabilities: TraitCapabilities` |
 | `TrappingData` | `src/data/index.ts:1155` | `passive: GameOp[]` | — | `capabilities: ItemCapabilities` |
-| `Weapon` | `src/engine/types.ts:375` | `passive: GameOp[]` | — | — |
-| `WeaponEnchant` | `src/engine/types.ts:538` | `passive: GameOp[]` | — | — |
+| `Weapon` | `src/engine/types.ts:372` | `passive: GameOp[]` | — | — |
+| `WeaponEnchant` | `src/engine/types.ts:535` | `passive: GameOp[]` | — | — |
 
 _13 entités déclarant au moins un canal. Une entité qui étend une autre HÉRITE de ses canaux — la
 table ne montre que les champs DÉCLARÉS (`EtatData`/`PsychologyData` tiennent les leurs de `StatusData`)._
@@ -356,4 +356,4 @@ Valeurs du champ `on` d'un `TriggeredEffect`.
 | `{ pick … }` | `sizeAtMost?`, `max` | — |
 
 _6 entrées — dérivées de `src/engine/flowCore.ts`._
-<!-- sources-empreinte: fa2f8e3f75ff839de9d991f74f1baec1cd41d10f (671 fichiers, 16 dossiers) corps: dbb47f30ebc3be54933a140efbb9ed0e2e14db73 -->
+<!-- sources-empreinte: e1848f25f4893830a14369d14ec38207deb7cd2c (671 fichiers, 16 dossiers) corps: d6bb85bb83ceebffffd68e1e9bb0c6c96223315d -->

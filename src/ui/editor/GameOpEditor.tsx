@@ -11,9 +11,9 @@
 import { Formula, GameOp, type ResolveWindow } from '../../engine/ops';
 import { ChaosAlign, ExposureLevel } from '../../engine/corruption';
 import { libelleDeValeur, valeursDe } from '../../data/schemas/grammaire/meta';
-import { chaosAlignSchema, exposureLevelSchema } from '../../data/schemas/grammaire/valeurs';
+import { chaosAlignSchema, deDeTableSchema, exposureLevelSchema } from '../../data/schemas/grammaire/valeurs';
 import { CHAR_LABELS, CharKey, ArmourBypass, type ConditionUnlock } from '../../engine/types';
-import { SUJETS_DE_VERROU, CHAMPS_EXCLUS_DE_CARRIED } from '../../data/schemas/grammaire/mecanique';
+import { SUJETS_DE_VERROU, CHAMPS_EXCLUS_DE_CARRIED, armourBypassCategorieSchema, zoneShapeSchema } from '../../data/schemas/grammaire/mecanique';
 import { ConditionEditor } from './ConditionEditor';
 import type { Condition } from '../../engine/flowCore';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
@@ -718,7 +718,7 @@ export function opSummary(o: GameOp): string {
     case 'perRound': return `${o.ops.length} op(s) chaque Round`;
     case 'summon': return `${formulaSummary(o.count)}× ${o.ref}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
     case 'scheduleRespawn': return `${o.ref} dans ${formulaSummary(o.delayDays)} j${o.cancelFlag ? ` (sauf « ${o.cancelFlag} »)` : ''}`;
-    case 'zone': return `${o.shape === 'wall' ? `mur ${formulaSummary(o.lengthMeters ?? 2)} m` : `disque ${formulaSummary(o.radiusMeters ?? 2)} m`}`;
+    case 'zone': return `${libelleDeValeur(zoneShapeSchema, o.shape)} ${formulaSummary((o.shape === 'wall' ? o.lengthMeters : o.radiusMeters) ?? 2)} m`;
     case 'push': return `${formulaSummary(o.meters)} m`;
     case 'teleport': return `${formulaSummary(o.meters)} m${o.perSL ? ` (+${formulaSummary(o.perSL.metersFormula)}/${o.perSL.every} DR)` : ''}`;
     case 'chain': return `${formulaSummary(o.maxBounces)} rebond(s), saut ${formulaSummary(o.hopMeters)} m`;
@@ -729,7 +729,7 @@ export function opSummary(o: GameOp): string {
     case 'loseTurn': return 'saute le tour';
     case 'removeShipPoste': return 'retire un poste de navire';
     case 'rollThreshold': return `1d${o.sides} → ${o.thresholds.length} palier(s)`;
-    case 'rollTable': return `${'tableId' in o ? `table « ${o.tableId} »` : `${o.die === 'd100' ? '1d100' : '1d10'} → ${o.rows.length} rangée(s)`}${o.addNegativeSL ? ' (+|DR néga.|)' : ''}${o.extraRollsPerStep ? ` +${o.extraRollsPerStep} jet/pas Surinc. (Durée)` : ''}`;
+    case 'rollTable': return `${'tableId' in o ? `table « ${o.tableId} »` : `${libelleDeValeur(deDeTableSchema, o.die)} → ${o.rows.length} rangée(s)`}${o.addNegativeSL ? ' (+|DR néga.|)' : ''}${o.extraRollsPerStep ? ` +${o.extraRollsPerStep} jet/pas Surinc. (Durée)` : ''}`;
     case 'rollMutation': return `mutation ← « ${o.table} »${o.duration === 'permanent' ? ' (perm.)' : ''}`;
     case 'narrative': return `${o.text ? `« ${o.text.length > 40 ? `${o.text.slice(0, 39)}…` : o.text}` + ' »' : '(vide)'}`;
     default: return `${(o as GameOp).op}`;
@@ -1146,11 +1146,9 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             <label className="dr">Matériau ignoré
               <select value={o.bypass ?? ''} onChange={(e) => upd({ bypass: (e.target.value || undefined) as ArmourBypass | undefined })}>
                 <option value="">— aucun —</option>
-                <option value="nonMetal">Non-métal (Perforante, LDB 62 l.270)</option>
-                <option value="metal">Métal</option>
-                <option value="leather">Cuir</option>
-                <option value="nonMagic">Non-magique</option>
-                <option value="all">Toute l'armure</option>
+                {Object.entries(valeursDe(armourBypassCategorieSchema) ?? {}).map(([k, l]) => (
+                  <option key={k} value={k}>{l}</option>
+                ))}
               </select>
             </label>
           </>
@@ -1187,8 +1185,9 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
               <>
                 <label className="dr">Dé
                   <select value={o.die ?? 'd10'} onChange={(e) => upd({ die: e.target.value as 'd10' | 'd100' })}>
-                    <option value="d10">1d10</option>
-                    <option value="d100">1d100</option>
+                    {Object.entries(valeursDe(deDeTableSchema) ?? {}).map(([k, l]) => (
+                      <option key={k} value={k}>{l}</option>
+                    ))}
                   </select>
                 </label>
                 <RollTableRowsField rows={o.rows ?? []} onChange={(rows) => upd({ rows })} />

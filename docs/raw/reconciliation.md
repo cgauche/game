@@ -125,7 +125,7 @@
 ### EDOC 13 — 3/9 ligne(s) code hors couverture (propriétaire : 4e/talents.md)
 - l.137 — `src/data/index.ts:1099` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
 - l.522 — `src/data/index.ts:1707` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
-- l.524 — `src/data/refs-migrated.test.ts:753` — *  sont au catalogue, sourcées à la desc verbatim de leur Trait (`EDOC 13 l.524` folio 83,
+- l.524 — `src/data/refs-migrated.test.ts:754` — *  sont au catalogue, sourcées à la desc verbatim de leur Trait (`EDOC 13 l.524` folio 83,
 
 ### MDG 15 — 3/50 ligne(s) code hors couverture (propriétaire : 4e/deplacement.md)
 - l.461 — `src/data/naval-ports.test.ts:47` — it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
@@ -207,4 +207,4 @@ _Aucun._
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, LDB, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, CRB, EDO, EDOC, LDB, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: f0ffc31392343e0ec5644770a1cec17c49ee403e (4228 fichiers, 152 dossiers) corps: a2918702bdc442b2e991c3808952218de62dcf07 -->
+<!-- sources-empreinte: 5e4d8075405e9bc3cba387e46aaddb293c1bfe9f (4228 fichiers, 152 dossiers) corps: fd5dd143c41a41e088cf42d7af1853ee4c38ac49 -->
