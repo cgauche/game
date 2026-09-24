@@ -41,10 +41,14 @@ import {
   pettySpellQuotaFor,
 } from '../../engine/creation';
 import { rule } from '../../engine/policy';
+import { t } from '../../i18n';
 import {
   createHero,
   resolveSpeciesTalentsDetail,
   competencesDeCarriere,
+  repartitionDeCarriere,
+  CAREER_SKILL_ADVANCES,
+  MAX_ADV_PER_SKILL,
   speciesSkillDefaults,
   designer,
   poolDuJoker,
@@ -66,10 +70,7 @@ export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
 export const SPECIES_SKILLS_PLUS5 = 3;
 /** « …et 3 Compétences auxquelles ajouter 3 Augmentations à chacune » (LDB 05 l.484). */
 export const SPECIES_SKILLS_PLUS3 = 3;
-/** « Répartissez 40 Points d'Augmentations entre vos huit Compétences de départ » (LDB 05 l.535). */
-export const CAREER_SKILL_ADVANCES = 40;
-/** « sans dépasser plus de 10 Points alloués à une seule Compétence à ce stade » (LDB 05 l.535). */
-export const MAX_ADV_PER_SKILL = 10;
+export { CAREER_SKILL_ADVANCES, MAX_ADV_PER_SKILL };
 /** « répartir comme bon vous semble un total de 5 Augmentations entre les Caractéristiques » (LDB 05 l.459). */
 export const CAREER_CHAR_ADVANCES = 5;
 
@@ -488,26 +489,16 @@ export function probeHero(d: CreatorDraft, withCareerTalent = true, charsAlloc =
   return { characteristics, talents, skills: [], movement: draftSpecies(d)?.movement ?? 0 } as unknown as Combatant;
 }
 
-/** Compétences de carrière allouables : les huit Compétences de départ (LDB 05 l.535), une par
- *  Compétence — `cle` indexe `d.skillAdvances` (`competencesDeCarriere`, la lecture de `createHero`). */
+/** Compétences de carrière allouables : un emplacement par entrée du Niveau 1 (LDB 05 l.535) — `cle`
+ *  indexe `d.skillAdvances` (`competencesDeCarriere`, la lecture de `createHero`). */
 export function careerSkillEntries(d: CreatorDraft): CompetenceDeCarriere[] {
   return competencesDeCarriere(draftLevel(d), probeHero(d), d.specChoices).filter((c) => !c.ajout);
 }
 
-/** « Répartition simple » (étape 5) : « ajouter 5 Augmentations à chaque Compétence de Carrière »
- *  (LDB 05 l.535 — les 40 également réparties sur les Compétences du Niveau). Le RESTE d'une
- *  division non entière est distribué aux premières Compétences (plafond 10/Compétence) : le bouton
- *  produit TOUJOURS un total que `validateStep` accepte, jamais un état invalide. */
+/** « Répartition simple » (étape 5) : la répartition par défaut de `createHero`
+ *  (`repartitionDeCarriere`). */
 export function evenCareerSkillAdvances(d: CreatorDraft): Record<string, number> {
-  const entries = careerSkillEntries(d);
-  if (!entries.length) return {};
-  const base = Math.min(MAX_ADV_PER_SKILL, Math.floor(CAREER_SKILL_ADVANCES / entries.length));
-  let rest = CAREER_SKILL_ADVANCES - base * entries.length;
-  return Object.fromEntries(entries.map((c) => {
-    const extra = rest > 0 && base < MAX_ADV_PER_SKILL ? 1 : 0;
-    rest -= extra;
-    return [c.cle, base + extra];
-  }));
+  return repartitionDeCarriere(careerSkillEntries(d));
 }
 
 /** Pose la spécialisation `spec` de la Compétence de carrière `c` (LDB 09 l.38) ; ses Augmentations
@@ -819,6 +810,8 @@ function messageDesTalentsDeRace(d: CreatorDraft): string | null {
 }
 /** 5b — les 40 Augmentations réparties, 10 au plus par Compétence, Spécialisations choisies (LDB 05 l.535). */
 function messageDesCompetencesDeCarriere(d: CreatorDraft): string | null {
+  const prise = careerSkillEntries(d).find((c) => c.ref.choix != null && c.designee?.spec != null && !c.libre(c.designee.spec));
+  if (prise?.designee) return `« ${refLabel('skills', prise.designee)} » : ${t('slot.takenByOther')}.`;
   const total = careerAdvTotal(d);
   if (total !== CAREER_SKILL_ADVANCES) return `Répartissez ${CAREER_SKILL_ADVANCES} Augmentations de carrière (actuel : ${total}).`;
   for (const c of careerSkillEntries(d)) {

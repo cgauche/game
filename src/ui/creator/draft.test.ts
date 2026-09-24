@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   newDraft,
+  skillsSubMessage,
   withSpecies,
   withCareer,
   rollDraftSpecies,
@@ -39,7 +40,7 @@ import {
 import { CHAR_KEYS } from '../../engine/types';
 import { rigSpeciesId, trappingRefLabel, type TrappingRef } from '../../data';
 import { pettySpellQuota, probeHero, type CreatorDraft } from './draft';
-import { adresseDeCreation, poolDuJoker, speciesSkillDefaults, designer } from '../../engine/character';
+import { adresseDeCreation, speciesSkillDefaults, designer } from '../../engine/character';
 import type { RefDesignee } from '../../data/schemas/grammaire/ref';
 import { careerSkillAdditions } from '../../engine/talentEffects';
 import { spells, stars, celestialHouses, species as allSpecies, careersForSpecies } from '../../data';
@@ -50,15 +51,16 @@ const DEFAULT_SPECIES = allSpecies.find((s) => s.source.book === 'livre-de-base'
 const DEFAULT_CAREER = careersForSpecies(DEFAULT_SPECIES.refCareer)[0]!;
 const draft = () => withCareer(withSpecies(newDraft(1234), DEFAULT_SPECIES.id), DEFAULT_CAREER.id);
 
-/** Spécialisation par défaut des jokers de carrière (1re du pool) + 5 Augmentations sur chaque
- *  Compétence du Niveau 1. */
+/** Spécialisation par défaut des jokers de carrière (1re du pool LIBRE) + répartition par défaut des
+ *  40 Augmentations (`evenCareerSkillAdvances`). */
 function carrierePrete(d: CreatorDraft): Pick<CreatorDraft, 'specChoices' | 'skillAdvances'> {
-  const specChoices: Record<string, string> = {};
-  (draftLevel(d)?.skills ?? []).forEach((ref, i) => {
-    if ('id' in ref && ref.choix != null) specChoices[adresseDeCreation.carriereCompetence(i)] = poolDuJoker('skill', ref)[0];
-  });
-  const skillAdvances = Object.fromEntries(careerSkillEntries({ ...d, specChoices }).map((c) => [c.cle, 5]));
-  return { specChoices, skillAdvances };
+  let specChoices: Record<string, string> = {};
+  for (const { adresse, ref } of careerSkillEntries(d)) {
+    if (ref.choix == null) continue;
+    const c = careerSkillEntries({ ...d, specChoices }).find((e) => e.adresse === adresse)!;
+    specChoices = { ...specChoices, [adresse]: designer('skill', c.ref, undefined, c.libre).spec! };
+  }
+  return { specChoices, skillAdvances: evenCareerSkillAdvances({ ...d, specChoices }) };
 }
 
 /** Brouillon minimal VALIDE jusqu'à l'étape 4 (répartitions par défaut, specs résolues). */
@@ -472,5 +474,15 @@ describe('clés des choix de Talents d’espèce : l’adresse de l’entrée', 
       const attendues = sp.talents.flatMap((a, i) => ('pick' in a ? [adresseDeCreation.especeTalent(i)] : []));
       expect(speciesTalentChoiceEntries(withSpecies(newDraft(7), sp.id)).map((e) => e.adresse)).toEqual(attendues);
     }
+  });
+});
+
+describe('5b — un joker de carrière sur une Compétence déjà tenue (LDB 05 l.535)', () => {
+  it('le bandeau nomme le refus `slot.takenByOther`, que la sélection n\'offre plus', () => {
+    const d = withCareer(withSpecies(newDraft(1), 'humains-reiklander'), 'gladiateur');
+    const joker = careerSkillEntries(d).find((c) => c.ref.choix != null)!;
+    expect(joker.libre('bagarre')).toBe(false);
+    const pris = { ...d, specChoices: { [joker.adresse]: 'bagarre' } };
+    expect(skillsSubMessage(pris, 'career')).toBe('« Corps à corps (Bagarre) » : déjà pris par un autre emplacement de cette carrière.');
   });
 });

@@ -1,11 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { findSpeciesById, talentConcrete, talents, specPoolOf } from '../data';
+import { findSpeciesById, talentConcrete, talents, specPoolOf, firstLevel, careerLevels, species } from '../data';
+import { setDataset } from '../data/overrides';
+import type { RefDesignee } from '../data/schemas/grammaire/ref';
+import type { Combatant } from './types';
 import {
   speciesSkillDefaults,
   rollRandomTalent,
   resolveSpeciesTalents,
   createHero,
+  competencesDeCarriere,
+  adresseDeCreation,
+  libreDEspece,
+  repartitionDeCarriere,
 } from './character';
 import { refKey } from './careerSlots';
 import { baseWithTalents } from './talentEffects';
@@ -211,5 +218,98 @@ describe('createHero — Trait racial + Taille par talent (#572)', () => {
   it('un héros humain (ni Massif ni Petit) a une Taille Moyenne', () => {
     const hero = createHero({ speciesId: REIK, careerId: 'soldat', label: 'T', rng: makeRNG(3) });
     expect(hero.size).toBe('moyenne');
+  });
+});
+
+describe('joker de création — une référence déjà tenue par un autre emplacement (LDB 05 l.535, l.484)', () => {
+  const sansEspece = { plus5: [], plus3: [] };
+  const gladiateur = (spec: string) =>
+    createHero({ speciesId: REIK, careerId: 'gladiateur', label: 'g', rng: makeRNG(1), speciesSkillAdvances: sansEspece, specChoices: { [adresseDeCreation.carriereCompetence(2)]: spec } });
+
+  it('gladiateur : le joker Corps à corps qui désigne Bagarre, déjà au Niveau 1, est refusé par son nom', () => {
+    expect(() => gladiateur('bagarre')).toThrow(/Compétence de carrière « corps-a-corps\|bagarre » : déjà pris par un autre emplacement/);
+  });
+
+  it('gladiateur : le joker sur Base tient 8 Compétences et 40 Augmentations', () => {
+    const h = gladiateur('base');
+    expect(h.skills).toHaveLength(8);
+    expect(h.skills.reduce((a, s) => a + s.advances, 0)).toBe(40);
+  });
+
+  const piedpaille = (plus5: RefDesignee[]) =>
+    createHero({ speciesId: 'halflings-piedpaille', careerId: 'gladiateur', label: 'h', rng: makeRNG(1), speciesSkillAdvances: { plus5, plus3: [] } });
+
+  it('Halfling Piedpaille : le joker Métier qui désigne Cuisinier, déjà dans la liste, est refusé par son nom', () => {
+    expect(() => piedpaille([{ id: 'metier', spec: 'cuisinier' }, { id: 'metier', spec: 'cuisinier' }, { id: 'charme' }])).toThrow(
+      /Compétence d'espèce « metier\|cuisinier » : déjà retenue par un autre emplacement/,
+    );
+  });
+
+  it('Halfling Piedpaille : un joker Métier sans spécialisation prend la 1re LIBRE, jamais Cuisinier', () => {
+    const libre = libreDEspece(findSpeciesById('halflings-piedpaille')!, { id: 'metier', choix: true });
+    expect(libre('cuisinier')).toBe(false);
+    const h = piedpaille([{ id: 'metier', spec: 'cuisinier' }, { id: 'metier' }, { id: 'charme' }]);
+    const metiers = h.skills.filter((s) => s.id === 'metier');
+    expect(metiers).toHaveLength(2);
+    expect(metiers.map((s) => s.spec)).toContain('cuisinier');
+    expect(metiers.every((s) => s.advances === 5)).toBe(true);
+  });
+
+  it('le libre d\'un joker de carrière exclut la référence d\'un autre emplacement et garde sa propre désignation', () => {
+    const [c] = competencesDeCarriere(firstLevel('gladiateur'), { characteristics: {}, talents: [] } as unknown as Combatant, { [adresseDeCreation.carriereCompetence(2)]: 'escrime' }).filter((e) => e.adresse === adresseDeCreation.carriereCompetence(2));
+    expect(c.libre('bagarre')).toBe(false);
+    expect(c.libre('escrime')).toBe(true);
+  });
+
+  it('Chevalier du Soleil flamboyant : Savoir (Guerre) est une entrée fixe du Niveau 1 (AA 03 l.322)', () => {
+    const entrees = competencesDeCarriere(firstLevel('chevalier-du-soleil-flamboyant'), { characteristics: {}, talents: [] } as unknown as Combatant);
+    expect(entrees.find((e) => e.designee?.id === 'savoir' && e.designee.spec === 'guerre')?.ref).toEqual({ id: 'savoir', spec: 'guerre' });
+    expect(entrees.some((e) => e.ref.choix != null && e.ref.id === 'savoir')).toBe(false);
+  });
+});
+
+describe('deux jokers de même id non désignés : chacun prend le premier LIBRE (LDB 05 l.535, l.484)', () => {
+  it('Niveau 1 : deux jokers Corps à corps prennent deux spécialisations distinctes, hors Bagarre', () => {
+    const origine = [...careerLevels];
+    const glad = origine.find((l) => l.id === 'gladiateur-1')!;
+    const fixture = { ...glad, skills: glad.skills.map((r, i) => (i === 1 ? { id: 'corps-a-corps', choix: true as const } : r)) };
+    setDataset('careerLevels', origine.map((l) => (l === glad ? fixture : l)));
+    try {
+      const h = createHero({ speciesId: REIK, careerId: 'gladiateur', label: 'g', rng: makeRNG(1), speciesSkillAdvances: { plus5: [], plus3: [] } });
+      const cac = h.skills.filter((s) => s.id === 'corps-a-corps').map((s) => s.spec);
+      expect(cac).toHaveLength(3);
+      expect(new Set(cac).size).toBe(3);
+      expect(cac).toContain('bagarre');
+    } finally {
+      setDataset('careerLevels', origine);
+    }
+  });
+
+  it('liste d\'espèce : deux jokers Métier retenus prennent deux spécialisations distinctes, hors Cuisinier', () => {
+    const origine = [...species];
+    const pp = origine.find((s) => s.id === 'halflings-piedpaille')!;
+    const fixture = { ...pp, skills: [{ id: 'metier', choix: true as const }, { id: 'metier', choix: true as const }, ...pp.skills] };
+    setDataset('species', origine.map((s) => (s === pp ? fixture : s)));
+    try {
+      const defauts = speciesSkillDefaults(fixture);
+      expect(defauts.plus5[0].spec).not.toBe(defauts.plus5[1].spec);
+      const h = createHero({ speciesId: 'halflings-piedpaille', careerId: 'gladiateur', label: 'h', rng: makeRNG(1), speciesSkillAdvances: { plus5: [{ id: 'metier' }, { id: 'metier' }, { id: 'metier', spec: 'cuisinier' }], plus3: [] } });
+      const metiers = h.skills.filter((s) => s.id === 'metier').map((s) => s.spec);
+      expect(new Set(metiers).size).toBe(3);
+    } finally {
+      setDataset('species', origine);
+    }
+  });
+});
+
+describe('répartition par défaut des 40 Augmentations de carrière (LDB 05 l.535 ; AA 02 l.134)', () => {
+  it('archer (dix Compétences) : createHero et le créateur lisent la même répartition, 8 Compétences, 40 Augmentations', () => {
+    const entrees = competencesDeCarriere(firstLevel('archer'), { characteristics: {}, talents: [] } as unknown as Combatant);
+    expect(entrees).toHaveLength(10);
+    const r = repartitionDeCarriere(entrees);
+    expect(Object.values(r)).toEqual([5, 5, 5, 5, 5, 5, 5, 5]);
+    const h = createHero({ speciesId: REIK, careerId: 'archer', label: 'a', rng: makeRNG(1), speciesSkillAdvances: { plus5: [], plus3: [] } });
+    expect(h.skills.reduce((a, s) => a + s.advances, 0)).toBe(40);
+    expect(h.skills.filter((s) => s.advances > 0)).toHaveLength(8);
   });
 });

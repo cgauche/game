@@ -38,7 +38,7 @@ import {
 import { species, careersForSpecies, levelsForCareer, spells } from '../../data';
 import type { CharKey } from '../../engine/types';
 import { talentMaxReached } from '../../engine/careerSlots';
-import { designer, speciesSkillDefaults } from '../../engine/character';
+import { designer, libreDEspece, speciesSkillDefaults } from '../../engine/character';
 
 function fillSpecies(d: CreatorDraft): CreatorDraft {
   if (draftSpecies(d)) return d;
@@ -84,14 +84,14 @@ function fillSkills(d: CreatorDraft): CreatorDraft {
   if (!sp) return d;
   let cur = d;
 
-  // 5a — Compétences de race : quotas + Spécialisations (1re du pool de l'emplacement).
+  // 5a — Compétences de race : quotas + Spécialisations (1re libre du pool de l'emplacement).
   if (cur.speciesPlus5.length !== SPECIES_SKILLS_PLUS5 || cur.speciesPlus3.length !== SPECIES_SKILLS_PLUS3) {
     const defauts = speciesSkillDefaults(sp);
     cur = { ...cur, speciesPlus5: defauts.plus5, speciesPlus3: defauts.plus3 };
   }
   for (const ref of speciesSkillRefs(cur)) {
     const retenue = speciesSkillPick(cur, ref);
-    if (retenue && attendSaSpec(retenue)) cur = withSpeciesSkillSpec(cur, ref, designer('skill', ref).spec ?? '');
+    if (retenue && attendSaSpec(retenue)) cur = withSpeciesSkillSpec(cur, ref, designer('skill', ref, undefined, libreDEspece(sp, ref, [...cur.speciesPlus5, ...cur.speciesPlus3].filter((r) => r !== retenue))).spec ?? '');
   }
 
   // Entrées d'espèce « A ou B » — première option.
@@ -101,10 +101,11 @@ function fillSkills(d: CreatorDraft): CreatorDraft {
 
   if (speciesTalentRandomCount(cur) > 0 && !cur.talentsRolled) cur = rollDraftTalents(cur);
 
-  // 5b — Compétences de carrière : répartition égale des 40 Augmentations, 1re spécialisation des jokers dotés.
+  // 5b — Compétences de carrière : répartition égale des 40 Augmentations, 1re spécialisation libre des jokers dotés.
   if (careerAdvTotal(cur) !== CAREER_SKILL_ADVANCES) cur = { ...cur, skillAdvances: evenCareerSkillAdvances(cur) };
-  for (const c of careerSkillEntries(cur)) {
-    if (!c.designee && (cur.skillAdvances[c.cle] ?? 0) > 0) cur = withCareerSkillSpec(cur, c, designer('skill', c.ref).spec ?? '');
+  for (const { adresse } of careerSkillEntries(cur)) {
+    const c = careerSkillEntries(cur).find((e) => e.adresse === adresse)!;
+    if (!c.designee && (cur.skillAdvances[c.cle] ?? 0) > 0) cur = withCareerSkillSpec(cur, c, designer('skill', c.ref, undefined, c.libre).spec ?? '');
   }
 
   // 5c — Talent de carrière : première option dont le Maxi n'est pas atteint (1re spécialisation d'un joker).

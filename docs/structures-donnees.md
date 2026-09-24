@@ -1077,8 +1077,8 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | Concept | Signature du lexique | Statut | Occurrences |
 |---|---|---|---|
 | reference | `id` | cible | 8186 |
-| reference | `id,spec` | cible | 1328 |
-| reference | `choix,id` | cible | 278 |
+| reference | `id,spec` | cible | 1329 |
+| reference | `choix,id` | cible | 277 |
 | reference | `id,type` | cible | 0 |
 | reference | `count,id,type` | cible | 0 |
 | reference | `of,pick` | cible | 0 |
@@ -1259,9 +1259,9 @@ Reconnu par : RÉSOLUTION vers l’index des ids (cible majoritaire du site), ou
 | entité | `choice` | `choice>id,spec` | historique | `careerLevels.json` | 2 | — | `trappings.json` |  |
 | entité | `of` | `id` | cible | `careerLevels.json` | 2 | — | `talents.json` |  |
 | entité | `of` | `id,spec` | cible | `careerLevels.json` | 9 | — | `activities.json` `arene-projet.json` `breath-types.json` `careers.json` `damage-types.json` `lieux-services.json` … |  |
-| entité | `skills` | `choix,id` | cible | `careerLevels.json` | 171 | — | `activities.json` `axes.json` `creatures.json` `skills.json` `talents.json` | choix borné / libre (DESIGN v2 S2) |
+| entité | `skills` | `choix,id` | cible | `careerLevels.json` | 170 | — | `activities.json` `axes.json` `creatures.json` `skills.json` `talents.json` | choix borné / libre (DESIGN v2 S2) |
 | entité | `skills` | `id` | cible | `careerLevels.json` | 1382 | — | `activities.json` `crew-test-types.json` `drunkenness.json` `maladies.json` `river-navigation.json` `sea-cargo.json` … |  |
-| entité | `skills` | `id,spec` | cible | `careerLevels.json` | 684 | — | `activities.json` `axes.json` `breath-types.json` `careers.json` `creatures.json` `crew-roles.json` … |  |
+| entité | `skills` | `id,spec` | cible | `careerLevels.json` | 685 | — | `activities.json` `axes.json` `breath-types.json` `careers.json` `creatures.json` `crew-roles.json` … |  |
 | entité | `talents` | `choix,id` | cible | `careerLevels.json` | 66 | — | `activities.json` `careers.json` `maladies.json` `psychology.json` `skills.json` `talents.json` … | choix borné / libre (DESIGN v2 S2) |
 | entité | `talents` | `id` | cible | `careerLevels.json` | 1493 | — | `actions.json` `careers.json` `crew-roles.json` `groups.json` `naval-traits.json` `psychology.json` … |  |
 | entité | `talents` | `id,spec` | cible | `careerLevels.json` | 165 | — | `activities.json` `axes.json` `breath-types.json` `careers.json` `creatures.json` `damage-types.json` … |  |
@@ -5206,4 +5206,4 @@ pèse **2990** slots sur 3554.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: 4d3674c7b650a1ef706b9f8557359a637dcb6ffb (390 fichiers, 10 dossiers) corps: 53f4cfa7493907beb67158b2bbda877f4e4e9f78 -->
+<!-- sources-empreinte: e7bf721b08424053699dbd004bca70e35398769c (390 fichiers, 10 dossiers) corps: d2843d1ca9dda98bf00b83b5be72685217eb0870 -->

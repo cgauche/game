@@ -20,6 +20,7 @@ import {
   arcaneDomainGate,
   wildcardSpecs,
   parseAdvancement,
+  prisParLesAutres,
 } from './careerSlots';
 import { CareerLevelData, levelsForCareer, specLabel } from '../data';
 
@@ -117,7 +118,7 @@ describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix)
     expect(inCareerStatus(slots1, designationsFor(h, 'C1'), 'sens-aiguise', 'ouie')).toBe(null);
   });
 
-  it('2) au niveau 2, le NOUVEAU slot ne peut pas re-désigner la spec prise au niveau 1', () => {
+  it('2) au niveau 2, le NOUVEAU slot peut désigner la spec prise au niveau 1 (LDB 08 l.140)', () => {
     const h = hero({ careerLevel: 2, talents: [{ talentId: 'sens-aiguise', spec: 'gout', times: 1 }, { talentId: 'sens-aiguise', spec: 'ouie', times: 1 }] });
     const slots1 = talentSlots(C1, 1);
     const slots2 = talentSlots(C1, 2);
@@ -125,13 +126,10 @@ describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix)
     // Niveau 1 : Ouïe avait été désignée (achat à 100 PX à l'époque).
     designateSlot(h, 'C1', slots1[0], 'sens-aiguise', 'ouie', all);
     const des = designationsFor(h, 'C1');
-    // Le slot du niveau 2 ne peut PAS reprendre Ouïe…
-    expect(designateSlot(h, 'C1', slots2[0], 'sens-aiguise', 'ouie', all).ok).toBe(false);
-    expect(inCareerStatus(slots2, des, 'sens-aiguise', 'ouie', all)).toBe(null);
-    // …mais peut désigner Goût (gratuit, déjà possédé) ou Toucher (achat 100 PX).
-    expect(inCareerStatus(slots2, des, 'sens-aiguise', 'gout', all)).toBe('free');
+    // L'exclusion ne porte que sur les emplacements du MÊME niveau : Ouïe reste libre au niveau 2.
+    expect(inCareerStatus(slots2, des, 'sens-aiguise', 'ouie', all)).toBe('free');
     expect(inCareerStatus(slots2, des, 'sens-aiguise', 'toucher', all)).toBe('free');
-    expect(designateSlot(h, 'C1', slots2[0], 'sens-aiguise', 'gout', all).ok).toBe(true);
+    expect(designateSlot(h, 'C1', slots2[0], 'sens-aiguise', 'ouie', all).ok).toBe(true);
   });
 
   it('3) changement de carrière : les désignations sont PAR carrière — tout sens redevient désignable', () => {
@@ -341,5 +339,33 @@ describe('Domaines magiques multiples (Talent Magie des Arcanes — VDM 02 l.190
   it('Domaine déjà possédé : toujours autorisé (relève de talentMaxReached, pas de ce gate)', () => {
     const h = hero({ talents: [domainTalent('feu')] });
     expect(arcaneDomainGate(h, 'feu').ok).toBe(true);
+  });
+});
+
+describe('prisParLesAutres — pool libre d\'un joker (LDB 05 l.535)', () => {
+  const levels = levelsForCareer('gladiateur');
+  const slots = skillSlots(levels, 1);
+  const joker = slots.find((s) => s.needsChoice)!;
+  const libres = (designations: Record<string, string>) => {
+    const pris = prisParLesAutres(joker, slots, designations);
+    return wildcardSpecs(joker.options[0], 'skill').filter((spec) => !pris.has(`${joker.options[0].optionId}|${spec}`));
+  };
+  it('le pool libre ne contient pas la référence d\'un autre emplacement, et CONTIENT sa propre désignation', () => {
+    const pool = libres({ [joker.key]: 'corps-a-corps|escrime' });
+    expect(pool).not.toContain('bagarre');
+    expect(pool).toContain('escrime');
+  });
+});
+
+describe('portée de l\'exclusion : les emplacements du MÊME niveau (LDB 05 l.535 ; LDB 08 l.140)', () => {
+  it('au Niveau 2, un joker désigne une spécialisation tenue au Niveau 1 ; au même niveau, il ne peut pas', () => {
+    const soldat = skillSlots(levelsForCareer('soldat'), 2);
+    const joker2 = soldat.find((s) => s.level === 2 && s.needsChoice && s.options[0].optionId === 'corps-a-corps')!;
+    expect(soldat.some((s) => s.level === 1 && !s.needsChoice && s.options[0].optionId === 'corps-a-corps' && s.options[0].spec === 'base')).toBe(true);
+    expect(designateSlot(hero({ career: 'soldat', careerSlotChoices: {} }), 'soldat', joker2, 'corps-a-corps', 'base', soldat)).toEqual({ ok: true });
+
+    const glad = skillSlots(levelsForCareer('gladiateur'), 1);
+    const joker1 = glad.find((s) => s.needsChoice)!;
+    expect(designateSlot(hero({ career: 'gladiateur', careerSlotChoices: {} }), 'gladiateur', joker1, 'corps-a-corps', 'bagarre', glad).ok).toBe(false);
   });
 });

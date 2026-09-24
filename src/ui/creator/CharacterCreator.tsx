@@ -56,7 +56,7 @@ import {
 } from '../../data';
 import { SIZE_LABEL } from '../../engine/size';
 import { refKey, splitLabel } from '../../engine/careerSlots';
-import { adresseDeCreation, poolDuJoker, speciesSkillDefaults } from '../../engine/character';
+import { adresseDeCreation, libreDEspece, poolDuJoker, speciesSkillDefaults } from '../../engine/character';
 import { emplacementOctroye } from '../../engine/creation';
 import type { RefDesignee } from '../../data/schemas/grammaire/ref';
 import { sexeSchema, type SourceRef, type Sexe } from '../../data/schemas/grammaire/valeurs';
@@ -1603,7 +1603,7 @@ function speciesSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, sp
                   meta={
                     <>
                       {ref.choix != null && retenue && (
-                        <SpecSelect category="skills" id={ref.id} options={poolDuJoker('skill', ref)} value={retenue.spec ?? ''} onChange={(spec) => setD(withSpeciesSkillSpec(d, ref, spec))} />
+                        <SpecSelect category="skills" id={ref.id} options={poolDuJoker('skill', ref).filter(libreDEspece(sp, ref, [...d.speciesPlus5, ...d.speciesPlus3].filter((r) => r !== retenue)))} value={retenue.spec ?? ''} onChange={(spec) => setD(withSpeciesSkillSpec(d, ref, spec))} />
                       )}
                       {/* Paliers 0/3/5 quota-gérés (LDB 05 l.484) : mode DISCRET de `QtyStepper` — la
                           valeur cible vient de `speciesSkillStep` (source unique), `null` grise le bouton. */}
@@ -1689,7 +1689,7 @@ function careerSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, att
                   meta={
                     <>
                       {c.ref.choix != null && adv > 0 && (
-                        <SpecSelect category="skills" id={c.ref.id} options={poolDuJoker('skill', c.ref)} value={d.specChoices[c.adresse] ?? ''} onChange={(spec) => setD(withCareerSkillSpec(d, c, spec))} />
+                        <SpecSelect category="skills" id={c.ref.id} options={poolDuJoker('skill', c.ref).filter(c.libre)} value={d.specChoices[c.adresse] ?? ''} onChange={(spec) => setD(withCareerSkillSpec(d, c, spec))} />
                       )}
                       <AllocStepper
                         value={adv}

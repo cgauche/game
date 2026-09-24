@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from '../../engine/types';
 import { makePregens } from '../../data/pregens';
-import { createHero, competencesDeCarriere } from '../../engine/character';
+import { createHero, competencesDeCarriere, repartitionDeCarriere } from '../../engine/character';
 import { firstLevel } from '../../data';
 import { makeRNG } from '../../engine/dice';
-import { newDraft, withSpecies, withCareer, buildHero, careerSkillEntries, careerAdvTotal, type CreatorDraft } from './draft';
+import { newDraft, withSpecies, withCareer, buildHero, careerSkillEntries, careerAdvTotal, evenCareerSkillAdvances, type CreatorDraft } from './draft';
 
 /** Ce que la création produit — la forme des choix (clés, désignations) n'y figure pas : seules leurs
  *  conséquences sur le héros. */
@@ -29,13 +29,11 @@ function empreinte(h: Combatant) {
   };
 }
 
-const brouillon = (seed: number, speciesId: string, careerId: string, choix: Partial<CreatorDraft>): CreatorDraft => ({
-  ...withCareer(withSpecies(newDraft(seed), speciesId), careerId),
-  charsRolled: true,
-  talentsRolled: true,
-  label: 'Témoin',
-  ...choix,
-});
+/** Un témoin sans `skillAdvances` porte la répartition par défaut (`evenCareerSkillAdvances`). */
+const brouillon = (seed: number, speciesId: string, careerId: string, choix: Partial<CreatorDraft>): CreatorDraft => {
+  const d: CreatorDraft = { ...withCareer(withSpecies(newDraft(seed), speciesId), careerId), charsRolled: true, talentsRolled: true, label: 'Témoin', ...choix };
+  return choix.skillAdvances ? d : { ...d, skillAdvances: evenCareerSkillAdvances(d) };
+};
 
 /** Témoins du créateur : un choix « A ou B » d'espèce, un joker de Métier partagé espèce × carrière,
  *  Maître artisan (ajout de Compétence de carrière), un signe astral à `grantTalent` « Au choix », la
@@ -108,14 +106,15 @@ describe('40 Augmentations de carrière — plafond PAR Compétence (LDB 05 l.53
   });
   it('une Compétence AJOUTÉE par un Talent est acquise hors des 40 Augmentations (LDB 05 l.535)', () => {
     const base = { speciesId: 'halflings-basseronce', careerId: 'artisan', label: 'x', speciesTalentChoices: choixVoyageur };
-    const ajout = competencesDeCarriere(firstLevel('artisan'), createHero({ ...base, rng: makeRNG(1) }), {}).filter((c) => c.ajout);
+    const entrees = competencesDeCarriere(firstLevel('artisan'), createHero({ ...base, rng: makeRNG(1) }), {});
+    const ajout = entrees.filter((c) => c.ajout);
     expect(ajout.map((c) => c.ref.id)).toContain('savoir');
     const allocation = Object.fromEntries(ajout.map((c) => [c.cle, 10]));
     const d = { ...withCareer(withSpecies(newDraft(1), 'halflings-basseronce'), 'artisan'), speciesTalentChoices: choixVoyageur, skillAdvances: allocation };
     expect(careerSkillEntries(d).some((c) => c.ajout)).toBe(false);
     expect(careerAdvTotal(d)).toBe(0);
     const sans = createHero({ ...base, rng: makeRNG(1) });
-    const avec = createHero({ ...base, rng: makeRNG(1), skillAdvances: allocation });
+    const avec = createHero({ ...base, rng: makeRNG(1), skillAdvances: { ...repartitionDeCarriere(entrees), ...allocation } });
     expect(avec.skills).toEqual(sans.skills);
   });
 });

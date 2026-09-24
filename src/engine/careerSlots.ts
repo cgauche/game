@@ -263,13 +263,8 @@ export function designationsFor(hero: Combatant, career: string): Record<string,
   }));
 }
 
-/**
- * Références (id+spec, encodées en `refKey`) déjà « prises » par les slots d'une carrière
- * (désignations + entrées explicites) — un nouveau slot ne peut pas reprendre l'une d'elles
- * (arbitrage : au niveau 2, un nouveau « Sens aiguisé (Au choix) » ne peut pas re-désigner la
- * spec du slot du niveau 1). Un slot explicite SANS `optionId` (tirage aléatoire, « N Talent
- * aléatoire ») n'a pas d'identité réelle → n'occupe rien (jamais repris de toute façon).
- */
+/** Références (`refKey`) tenues par des emplacements d'une carrière : désignations et entrées
+ *  explicites ; un emplacement tiré sans `optionId` n'en tient aucune (LDB 05 l.535). */
 export function takenRefs(slots: CareerSlot[], designations: Record<string, string>): Set<string> {
   const taken = new Set<string>(Object.values(designations));
   for (const s of slots) {
@@ -281,6 +276,14 @@ export function takenRefs(slots: CareerSlot[], designations: Record<string, stri
   return taken;
 }
 
+/** Références tenues par les AUTRES emplacements du niveau de `slot` (`takenRefs`) : le pool libre
+ *  d'un joker en est privé (LDB 05 l.535 ; LDB 08 l.140). */
+export function prisParLesAutres(slot: CareerSlot, allSlots: CareerSlot[], designations: Record<string, string>): Set<string> {
+  const autres = allSlots.filter((s) => s.level === slot.level && s.key !== slot.key);
+  const cles = new Set(autres.map((s) => s.key));
+  return takenRefs(autres, Object.fromEntries(Object.entries(designations).filter(([k]) => cles.has(k))));
+}
+
 export type InCareerStatus = 'explicit' | 'designated' | 'free' | null;
 
 /**
@@ -288,7 +291,7 @@ export type InCareerStatus = 'explicit' | 'designated' | 'free' | null;
  *  - 'explicit'   : une entrée sans choix le couvre exactement ;
  *  - 'designated' : un slot à choix lui est désigné ;
  *  - 'free'       : un slot à choix NON désigné peut le couvrir (l'achat désignera) et le
- *                   libellé n'est pas déjà pris par un autre slot de la carrière ;
+ *                   libellé n'est pas déjà pris par un autre slot de son niveau (`prisParLesAutres`) ;
  *  - null         : hors carrière.
  */
 export function inCareerStatus(
@@ -305,12 +308,7 @@ export function inCareerStatus(
   for (const s of slots) {
     if (s.needsChoice && designations[s.key] === key) return 'designated';
   }
-  const taken = takenRefs(allSlotsForUniqueness, designations);
-  if (taken.has(key)) return null; // pris par un AUTRE slot (sinon retourné ci-dessus)
-  for (const s of slots) {
-    if (s.needsChoice && !designations[s.key] && slotCovers(s, optionId, spec)) return 'free';
-  }
-  return null;
+  return freeSlotFor(slots, designations, optionId, spec, allSlotsForUniqueness) ? 'free' : null;
 }
 
 /** Motif pour lequel (optionId, spec) n'entre dans aucun emplacement : `absent` (aucune option de
@@ -334,20 +332,23 @@ export function statutOuRefus(
   return 'nonCouvert';
 }
 
-/** Premier slot à choix non désigné pouvant couvrir (optionId, spec) — pour l'auto-désignation. */
+/** Premier slot à choix non désigné pouvant couvrir (optionId, spec), qu'aucun autre slot de son
+ *  niveau ne tient (`prisParLesAutres`) — pour l'auto-désignation. */
 export function freeSlotFor(
   slots: CareerSlot[],
   designations: Record<string, string>,
   optionId: string,
   spec?: string,
+  allSlots: CareerSlot[] = slots,
 ): CareerSlot | undefined {
-  return slots.find((s) => s.needsChoice && !designations[s.key] && slotCovers(s, optionId, spec));
+  const key = refKey(optionId, spec);
+  return slots.find((s) => s.needsChoice && !designations[s.key] && slotCovers(s, optionId, spec) && !prisParLesAutres(s, allSlots, designations).has(key));
 }
 
 /**
  * Désigne un slot sur une (id, spec) concrète (mute le héros). Gratuit — déclare seulement ce que
  * le slot couvre. Refuse : (id, spec) non couverte par le slot, ou déjà prise par un autre slot de
- * la carrière (désignation OU entrée explicite). La désignation stockée est la clé OPAQUE
+ * son niveau (`prisParLesAutres`). La désignation stockée est la clé OPAQUE
  * `refKey(optionId, spec)` — jamais un libellé concret (i18n-safe).
  */
 export function designateSlot(
@@ -364,9 +365,7 @@ export function designateSlot(
   if (designations[slot.key] && designations[slot.key] !== key) {
     return { ok: false, reason: t('slot.alreadyDesignated') };
   }
-  const others = { ...designations };
-  delete others[slot.key];
-  if (takenRefs(allSlots, others).has(key)) {
+  if (prisParLesAutres(slot, allSlots, designations).has(key)) {
     return { ok: false, reason: t('slot.takenByOther') };
   }
   hero.careerSlotChoices = {
