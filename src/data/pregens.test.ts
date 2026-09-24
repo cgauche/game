@@ -174,9 +174,17 @@ describe('Sélection de groupe — pregen / pregenParty', () => {
       .toMatch(/benediction-de-bataille.*mineure/);
   });
 
+  /** Un pré-tiré DÉSIGNE son Talent de carrière : un `choix` (emplacement non désigné) est refusé AU PARSE,
+   *  nommément (`refOuSpec('talent')`, régime `specSeule`). */
+  it('refuse au schéma un Talent de carrière en « choix », en le nommant', () => {
+    const base = definitions.find((d) => d.seed === PREGEN.pretre)!;
+    expect(validateDataset('pregens.json', [...definitions, { ...base, id: 'essai-choix', seed: 90003, careerTalent: { id: 'beni', choix: true } }]))
+      .toMatch(/beni.*« choix ».*n'y est pas admis/);
+  });
+
   /** Un Talent de carrière sans spécialisation sur un emplacement « (Au choix) » fait écarter le pré-tiré
    *  en le NOMMANT (jamais un héros construit) — `LDB 10 l.17`. Base PRÊTRE : son Niveau 1 porte « Béni (Au choix) ». */
-  it('écarte en le nommant un pré-tiré dont le Talent de carrière est en « choix »', () => {
+  it('écarte en le nommant un pré-tiré dont le Talent de carrière est sans spécialisation', () => {
     const base = definitions.find((d) => d.seed === PREGEN.pretre)!;
     const leve = (def: typeof base, motif: RegExp) => {
       const erreurs: string[] = [];
@@ -193,7 +201,6 @@ describe('Sélection de groupe — pregen / pregenParty', () => {
       expect(erreurs.some((e) => motif.test(e)), erreurs.join('\n')).toBe(true);
     };
     leve({ ...base, id: 'essai-nu', label: 'Essai nu', seed: 90002, careerTalent: { id: 'beni' } }, /Essai nu.*Talent de carrière « beni ».*exige une spécialisation/s);
-    leve({ ...base, id: 'essai-choix', label: 'Essai choix', seed: 90003, careerTalent: { id: 'beni', choix: true } }, /Essai choix.*Talent de carrière « beni ».*exige une spécialisation/s);
   });
 
   it('makeShowcaseParty = les 4 piliers (soldat, tueur, sorcier, chasseur)', () => {

@@ -9,6 +9,9 @@ import { document } from '../grammaire/document';
 
 export const file = 'skills.json';
 export const famille = 'entite';
+/** Champ MARQUEUR (#1897) : `specsOpen` définit la SOUS-LISTE des Compétences OUVERTES, dont la `spec`
+ *  admet un texte libre hors de `specs[]` (`LDB 09 l.40`) — lue par `entreeOuverte` (`grammaire/ref.ts`). */
+export const marqueurs = ['specsOpen'];
 
 const doc = document(
   'skills',

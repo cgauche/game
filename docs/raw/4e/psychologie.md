@@ -504,7 +504,7 @@ Confère la capacité d'entrer en Frénésie (idem trait de créature Frénésie
 **Sources RAW** : `LDB 10 l.506`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.255, l.398, l.506) → `distraire-roll`, `distraire`, `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `costaud`, `coude-a-coude`, +39 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`, `src/state/combatFlow.ts`
+- `LDB 10` (l.255, l.398, l.506) → `distraire-roll`, `distraire`, `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `costaud`, `coude-a-coude`, +40 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/skills.json`, `src/data/talents.json`, `src/engine/flowCore.ts`, +1 fichiers
 
 ---
 

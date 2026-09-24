@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { props, refEstVolumique, type PropData } from './index';
+import { props, skills, domains, refEstVolumique, type PropData, type SkillData, type DomainData } from './index';
 import { setDataset } from './overrides';
-import { idDe } from './schemas/grammaire/ref';
+import { idDe, entreeOuverte, refusDeSpec } from './schemas/grammaire/ref';
 import { poserSourceDIdsVivants, type SourceDIdsVivants } from './schemas/grammaire/idsVivants';
 import { sceneEntitySchema } from './schemas/defs-scenes/scene';
 
@@ -13,7 +13,13 @@ import { sceneEntitySchema } from './schemas/defs-scenes/scene';
  */
 
 const DECORS_LIVRES: PropData[] = [...props];
-afterEach(() => setDataset('props', DECORS_LIVRES));
+const COMPETENCES_LIVREES: SkillData[] = [...skills];
+const DOMAINES_LIVRES: DomainData[] = [...domains];
+afterEach(() => {
+  setDataset('props', DECORS_LIVRES);
+  setDataset('skills', COMPETENCES_LIVREES);
+  setDataset('domains', DOMAINES_LIVRES);
+});
 
 const entite = (ref: string, facing?: string) => ({ id: 'p-1', kind: 'prop', ref, pos: { x: 1, y: 1 }, ...(facing ? { facing } : {}) });
 
@@ -37,6 +43,37 @@ describe('régime vif — `props.json` sans route d’édition', () => {
     const verdict = sceneEntitySchema.safeParse(entite(plat.id, 'NE'));
     expect(verdict.success).toBe(false);
     expect(verdict.error?.issues.map((i) => i.message).join('\n')).toMatch(/cap cardinal/);
+  });
+});
+
+describe('régime vif — l’admission d’une spécialisation suit l’ENTRÉE éditée au Codex, sans `npm run gen`', () => {
+  const ouverte = skills.find((s) => s.specsOpen === true && !!s.specs?.length)!;
+  const fermee = skills.find((s) => !s.specsOpen && !s.specsSource && !!s.specs?.length)!;
+
+  it('décocher « Spécialisation ouverte » (la case générique écrit `specsOpen: false`) FERME l’entrée', () => {
+    expect(entreeOuverte('skill', ouverte.id)).toBe(true);
+    expect(refusDeSpec('skill', ouverte.id, 'texte-libre')).toBeNull();
+    setDataset('skills', COMPETENCES_LIVREES.map((s) => (s.id === ouverte.id ? { ...s, specsOpen: false } : s)));
+    expect(entreeOuverte('skill', ouverte.id)).toBe(false);
+    expect(refusDeSpec('skill', ouverte.id, 'texte-libre')).toBe('horsCatalogue');
+  });
+
+  it('cocher « Spécialisation ouverte » OUVRE une entrée fermée', () => {
+    expect(refusDeSpec('skill', fermee.id, 'texte-libre')).toBe('horsCatalogue');
+    setDataset('skills', COMPETENCES_LIVREES.map((s) => (s.id === fermee.id ? { ...s, specsOpen: true } : s)));
+    expect(refusDeSpec('skill', fermee.id, 'texte-libre')).toBeNull();
+  });
+
+  it('une spécialisation ajoutée à `specs[]` d’une entrée fermée est admise aussitôt', () => {
+    expect(refusDeSpec('skill', fermee.id, 'spec-neuve')).toBe('horsCatalogue');
+    setDataset('skills', COMPETENCES_LIVREES.map((s) => (s.id === fermee.id ? { ...s, specs: [...s.specs!, { id: 'spec-neuve', label: 'Spec neuve' }] } : s)));
+    expect(refusDeSpec('skill', fermee.id, 'spec-neuve')).toBeNull();
+  });
+
+  it('un domaine créé est admis aussitôt dans l’univers d’une entrée à `specsSource` (Focalisation)', () => {
+    expect(refusDeSpec('skill', 'focalisation', 'domaine-neuf')).toBe('horsCatalogue');
+    setDataset('domains', [...DOMAINES_LIVRES, { ...DOMAINES_LIVRES[0], id: 'domaine-neuf', label: 'Domaine neuf' }]);
+    expect(refusDeSpec('skill', 'focalisation', 'domaine-neuf')).toBeNull();
   });
 });
 

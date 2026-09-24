@@ -267,7 +267,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 
   - `desc`/`source` — Codex, `effectiveEntry`, `src/ui/compendium/registry.ts:1490`
   - `test` — `talentTestSLBonus`, `src/engine/magic.ts:359`
-  - `max` — `talentMaxById`, `src/engine/careerSlots.ts:359`
+  - `max` — `talentMaxById`, `src/engine/careerSlots.ts:367`
   - `combat` — `featuresOf`, `src/engine/combatFeatures/dispatch.ts:52`
   - `combat` — `castingKindOf`, `src/engine/combatFeatures/dispatch.ts:18`
 
@@ -495,4 +495,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: 131e309e8fa226c00cfa2a0e37cac4eaceac4b3c (378 fichiers, 2 dossiers) corps: 2eb002893dc06ae30416242cf782277dd513b4bf -->
+<!-- sources-empreinte: da8d869b23e327720eb61694a24a63655cb08877 (379 fichiers, 2 dossiers) corps: 5b95ae77d6c9526ae5a3d74fcccab0fd83e262ef -->

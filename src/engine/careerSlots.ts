@@ -30,6 +30,7 @@
 import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
 import { byId, specPoolOf, levelsForCareer, findTalentById, findDomainById, findSpeciesById, advancementLabel, refLabel, wildcardSpecIds, talentIdByLabel, CareerLevelData, type AdvancementRef } from '../data';
+import { entreeOuverte, refusDeSpec } from '../data/schemas/grammaire/ref';
 import { domainSpellsKnown } from './grimoire';
 import { splitLabel } from './statEntry';
 import { effectiveEntry } from './variants';
@@ -116,8 +117,13 @@ export function wildcardSpecs(o: SlotOption, kind: 'skill' | 'talent'): string[]
 export function wildcardSpecs(o: Pick<SlotOption, 'label' | 'optionId' | 'specOptions'>, kind?: 'skill' | 'talent'): string[] {
   if (o.specOptions) return o.specOptions;
   if (o.optionId == null || kind == null) return wildcardSpecIds(o.label);
-  const def = kind === 'skill' ? byId('skill', o.optionId) : findTalentById(o.optionId);
+  const def = defDeJoker(kind, o.optionId);
   return def ? specPoolOf(def) : [];
+}
+
+/** Def (Compétence/Talent) d'une option par son id STABLE. */
+function defDeJoker(kind: 'skill' | 'talent', id: string) {
+  return kind === 'skill' ? byId('skill', id) : findTalentById(id);
 }
 
 /** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». AFFICHAGE seulement — ne
@@ -209,13 +215,15 @@ export function availableChars(levels: CareerLevelData[], level: number): CharKe
 }
 
 /** Une (id, spec) concrète est-elle couverte par CE slot (désignations ignorées) ? Compare par
- *  `optionId` STABLE — jamais par libellé (i18n-safe). Un joker exige une spec : Compétence `LDB 09 l.40`, Talent `LDB 10 l.17`. */
+ *  `optionId` STABLE — jamais par libellé (i18n-safe). Un joker exige une spec : Compétence `LDB 09 l.40`, Talent `LDB 10 l.17`.
+ *  La spec d'un joker doit être ADMISE par l'entrée (`refusDeSpec`, le prédicat du schéma) et, pour un
+ *  joker restreint ou une entrée FERMÉE (`entreeOuverte`), appartenir au pool du joker (`wildcardSpecs`). */
 export function slotCovers(slot: CareerSlot, optionId: string, spec?: string): boolean {
   return slot.options.some((o) => {
     if (o.optionId !== optionId) return false;
     if (!o.wildcard) return (o.spec ?? '') === (spec ?? '');
-    if (spec == null) return false;
-    return o.specOptions ? o.specOptions.includes(spec) : true;
+    if (spec == null || refusDeSpec(slot.kind, optionId, spec) !== null) return false;
+    return (!o.specOptions && entreeOuverte(slot.kind, optionId)) || wildcardSpecs(o, slot.kind).includes(spec);
   });
 }
 

@@ -24,7 +24,7 @@ import { makeRNG } from '../engine/dice';
 import { createHero } from '../engine/character';
 import { rollInitialWealth, parseStatus, pettySpellQuotaFor, fillPettySpellsToQuota } from '../engine/creation';
 import { levelsForCareer, pregens, rigSpeciesId, trappingRefLabel } from './index';
-import type { RefASpecialisation } from './schemas/grammaire/ref';
+import type { RefDesignee } from './schemas/grammaire/ref';
 import type { Appearance } from '../gameIso/rig/appearance';
 
 export interface PregenDef {
@@ -46,7 +46,7 @@ export interface PregenDef {
   /** Talent de carrière CHOISI : id de talent, et id de sa spécialisation s'il en porte une — sans
    *  lui, `createHero` prend la 1re option éligible du Niveau 1, qui n'est pas forcément le talent
    *  d'incantation requis (Magie mineure, Béni…). */
-  careerTalent?: RefASpecialisation;
+  careerTalent?: RefDesignee;
   /** Sorts de Magie mineure CHOISIS (ids de `spells.json`, famille `mineure`) — n'a de sens que
    *  si `careerTalent` porte le Talent Magie mineure. Complétés jusqu'au quota BFM exact (LDB 10
    *  l.714 : « vous mémorisez... un nombre de Sorts égal à votre Bonus de Force Mentale ») par des

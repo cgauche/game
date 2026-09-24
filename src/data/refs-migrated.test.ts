@@ -14,6 +14,7 @@ import {
   specLabel, refLabel, specEntryId, specEntryLabel, specResolves, SPEC_SOURCES, type SpecsSource, type SpecEntry, books,
 } from './index';
 import { avancement } from './schemas/grammaire/avancement';
+import { entreeOuverte, refusDeSpec } from './schemas/grammaire/ref';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
@@ -602,61 +603,30 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     });
   });
 
-  // ── GARDE EXHAUSTIVE (Phase 3 complétude) — remplace TOUTES les gardes par-domaine ci-dessus/passées.
-  // Construit AUTOMATIQUEMENT, à partir de skills.json/talents.json eux-mêmes, l'ensemble des ids valides
-  // de CHAQUE def à `specs` non vide (`specEntryId` — id inline OU id mirroré d'un `specsSource`) ; parcourt
-  // ENSUITE toutes les données (y compris skills.json/talents.json EUX-MÊMES pour les auto-références —
-  // passive/test.matches d'un talent vers un AUTRE domaine, ex. Oreille absolue → Divertissement) et les
-  // pré-tirés RUNTIME (`makePregens()`, via import). AUCUNE exception silencieuse :
-  //  - domaine FERMÉ (`specsOpen` absent/falsy) : toute instance DOIT résoudre à un id connu (ou la
-  //    sentinelle « (Au choix) ») ; sinon le test ÉCHOUE. AUCUNE exception nominative.
-  //  - domaine OUVERT (`specsOpen:true`) : une instance DOIT être soit un id connu, soit un texte
-  //    GENUINEMENT hors catalogue (texte libre toléré) — mais SI son normalisé correspond à un libellé
-  //    FR CONNU de sa `specs[]`, c'est une RÉGRESSION de migration (devrait être l'id) → le test ÉCHOUE.
-  // Ajouter un domaine à `specs[]` = automatiquement couvert ici ; plus JAMAIS besoin d'étendre une liste.
-  describe('GARDE EXHAUSTIVE — toute compétence/talent à specs[] non vide (Phase 3 complétude)', () => {
+  // ── L'ADMISSION d'une `spec` se juge au SCHÉMA, par l'ENTRÉE visée (`refusDeSpec`, `grammaire/ref.ts`),
+  // sur tout document registré de `src/data` et `src/scenes` (`schema-contract.test.ts`). Restent ici ce
+  // que le schéma ne voit pas :
+  //  - une entrée OUVERTE (`entreeOuverte`) admet un texte libre, mais un texte dont le normalisé est un
+  //    libellé FR CONNU de ses `specs[]` est une régression de migration (devrait être l'id) ;
+  //  - les pré-tirés RUNTIME (`makePregens()`), composés en mémoire, jamais parsés par un schéma.
+  describe('GARDE — libellés connus sur entrée OUVERTE, et pré-tirés runtime', () => {
     const norm = (s: string): string => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
-    const isSentinel = (s: string): boolean => norm(s) === 'au choix';
 
-    const ALL_SPEC_DEFS = [...skills, ...talents].filter((d) => d.specsSource || (Array.isArray(d.specs) && d.specs.length > 0));
-    const CLOSED = new Map<string, Set<string>>();
     const OPEN = new Map<string, { ids: Set<string>; byLabel: Map<string, string> }>();
-    // Def à `specsSource` : la VALIDITÉ d'une spéc = `SPEC_SOURCES[src].resolves(id)` (l'id existe dans le
-    // registre sous-jacent), un sur-ensemble du pool joueur `pool()` — un statbloc RAW peut porter une spéc
-    // réelle hors du pool choisissable (Triton). Séparé de CLOSED (specs[] inline énuméré).
-    const SOURCE_OF = new Map<string, keyof typeof SPEC_SOURCES>();
-    for (const def of ALL_SPEC_DEFS) {
-      if (def.specsSource) { SOURCE_OF.set(def.id, def.specsSource); continue; }
-      const ids = new Set(def.specs!.map((e) => specEntryId(e)));
-      if (def.specsOpen) OPEN.set(def.id, { ids, byLabel: new Map(def.specs!.map((e) => [norm(specEntryLabel(e)), specEntryId(e)])) });
-      else CLOSED.set(def.id, ids);
+    for (const [type, defs] of [['skill', skills], ['talent', talents]] as const) {
+      for (const def of defs as { id: string; specs?: SpecEntry[] }[]) {
+        if (!def.specs?.length || !entreeOuverte(type, def.id)) continue;
+        OPEN.set(def.id, { ids: new Set(def.specs.map(specEntryId)), byLabel: new Map(def.specs.map((e) => [norm(specEntryLabel(e)), specEntryId(e)])) });
+      }
     }
 
-    const unresolved: string[] = [];
+    const nonMigres: string[] = [];
     function checkSpec(defId: string, spec: unknown, where: string): void {
-      if (typeof spec !== 'string' || isSentinel(spec)) return;
-      const source = SOURCE_OF.get(defId);
-      if (source) {
-        // VALIDITÉ = l'id résout dans le REGISTRE de la source (⊇ pool joueur) : couvre les statblocs RAW hors
-        // pool (le Triton FOCALISE « magie-des-mers-de-triton », un domaine RÉEL non choisissable par un PC).
-        // Data-driven, plus aucune exception au cas par cas.
-        if (SPEC_SOURCES[source].resolves(spec)) return;
-        unresolved.push(`${where} : ${defId} → ${JSON.stringify(spec)} (specsSource ${source}, id inconnu du registre)`);
-        return;
-      }
-      const closedIds = CLOSED.get(defId);
-      if (closedIds) {
-        if (closedIds.has(spec)) return;
-        unresolved.push(`${where} : ${defId} → ${JSON.stringify(spec)} (FERMÉ, id inconnu de specs[])`);
-        return;
-      }
+      if (typeof spec !== 'string') return;
       const open = OPEN.get(defId);
-      if (open) {
-        if (open.ids.has(spec)) return; // déjà un id
-        const knownId = open.byLabel.get(norm(spec));
-        if (knownId) unresolved.push(`${where} : ${defId} → ${JSON.stringify(spec)} (OUVERT, libellé FR CONNU non migré — devrait être « ${knownId} »)`);
-        // sinon texte libre GENUINEMENT hors catalogue — toléré (domaine OUVERT).
-      }
+      if (!open || open.ids.has(spec)) return;
+      const knownId = open.byLabel.get(norm(spec));
+      if (knownId) nonMigres.push(`${where} : ${defId} → ${JSON.stringify(spec)} (OUVERT, libellé FR CONNU non migré — devrait être « ${knownId} »)`);
     }
     function walk(node: unknown, where: string): void {
       if (Array.isArray(node)) { node.forEach((x) => walk(x, where)); return; }
@@ -671,7 +641,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       for (const v of Object.values(node)) walk(v, where);
     }
 
-    it('creatures/careerLevels/species/stars/traits/trappings/talents/skills/crewRoles/tavernGames/seaWeather/pregens(runtime) : toute spec resout (fermé) ou id/texte-libre valide (ouvert)', () => {
+    it('creatures/careerLevels/species/stars/traits/trappings/talents/skills/crewRoles/tavernGames/seaWeather/pregens(runtime) : aucun libellé FR connu sur une entrée OUVERTE', () => {
       walk(creatures, 'creatures');
       walk(careerLevels, 'careerLevels');
       walk(species, 'species');
@@ -684,7 +654,22 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       walk(tavernGamesJson, 'tavernGames');
       walk(seaWeatherJson, 'seaWeather');
       walk(makePregens(), 'pregens(runtime — makePregens)'); // composition réelle career/species → Combatant
-      expect(unresolved, unresolved.join('\n')).toEqual([]);
+      expect(nonMigres, nonMigres.join('\n')).toEqual([]);
+    });
+
+    it('pregens(runtime — makePregens) : toute spec de Compétence/Talent est ADMISE par son entrée (`refusDeSpec`)', () => {
+      const refus: string[] = [];
+      for (const h of makePregens()) {
+        for (const [type, refs] of [['skill', h.skills], ['talent', h.talents]] as const) {
+          for (const r of refs as { id?: string; talentId?: string; spec?: string }[]) {
+            const id = r.talentId ?? r.id;
+            if (r.spec == null || id == null) continue;
+            const motif = refusDeSpec(type, id, r.spec);
+            if (motif) refus.push(`${h.id} : ${type} ${id} → ${JSON.stringify(r.spec)} (${motif})`);
+          }
+        }
+      }
+      expect(refus, refus.join('\n')).toEqual([]);
     });
   });
 });

@@ -409,7 +409,7 @@ Créatures MDG portant ce Trait : Anguille mâcheprise, Stylet, Élémentaire de
 **Voir aussi** : [Index des Traits de créature](#index-des-traits-de-créature) ; Trait *Aquatique* (MSRC) — `combat.md` § *Traits de mouvement* ; Trait *Amphibie* — `deplacement.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 16` (l.15-19, l.63-305) → `scene`, `placeCombatant`, `scenario`, `fireTurnEdgeTriggers`, `effectiveMovement`, `suffocationTick`, `OP_DEFS`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `sea-scorbut`, +34 — `src/data/creatures.json`, `src/data/domains.json`, `src/data/index.ts`, `src/data/schemas/grammaire/mecanique.ts`, `src/data/skills.json`, `src/data/voyage-stakes.json`, +14 fichiers
+- `MDG 16` (l.15-19, l.63-305) → `scene`, `placeCombatant`, `scenario`, `fireTurnEdgeTriggers`, `effectiveMovement`, `suffocationTick`, `OP_DEFS`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `sea-scorbut`, +35 — `src/data/creatures.json`, `src/data/domains.json`, `src/data/index.ts`, `src/data/schemas/grammaire/mecanique.ts`, `src/data/skills.json`, `src/data/voyage-stakes.json`, +14 fichiers
 
 ---
 

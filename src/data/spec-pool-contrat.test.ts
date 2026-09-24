@@ -43,10 +43,7 @@ const PORTES_JOUEUR: [string, unknown][] = [
  * au pool. Extinction : #1342 (3ᵉ vie de #1341). Liste FERMÉE : une clé de plus = rouge (nouvelle
  * dette), une clé PÉRIMÉE = rouge aussi (le stock a décru, la liste doit décroître avec lui).
  */
-const REFS_EN_LIBELLE = [
-  'activities|art|Dessin',
-  'talents(passive/grantCareerSkill)|savoir|Apothicaire',
-];
+const REFS_EN_LIBELLE: string[] = [];
 
 const DEF_BY_ID = new Map(DEFS.map((d) => [d.id, d]));
 /** Ids de COMPÉTENCE — le concept dont la sentinelle est ÉTEINTE (L2 #1548). */
@@ -268,13 +265,13 @@ describe('L2 #1548 — aucune `spec` de Compétence ni de Talent écrite en LIBE
 /**
  * VERROU PAR CONSTRUCTION de la sentinelle — le schéma REFUSE, il ne se contente pas d'être scanné.
  * Un contrat qui n'inspecte que les fichiers d'un dossier laisse revenir la sentinelle par TOUTE
- * donnée neuve ; `refOuSpec('skill')` est le type OUVERT (`ref.ts#TYPES.skill.specsOpen`), donc le
- * garde-fou « pool fermé » ne l'atteint pas : le refus lui est propre.
+ * donnée neuve ; `savoir` est une entrée OUVERTE (`ref.ts#entreeOuverte`), donc le garde-fou
+ * « catalogue fermé » ne l'atteint pas : le refus lui est propre.
  */
 describe('L2 #1548 — `refOuSpec` refuse la sentinelle AU PARSE (`ref.ts#SENTINELLE_DE_SPEC`)', () => {
-  /** LE nœud du statbloc de créature et de scène : `refOuSpec('skill', { value })`
-   *  (`defs/creatures.ts`, `defs-scenes/communs.ts`) — la sonde porte donc sa `value`. */
-  const skillRef = refOuSpec('skill', { value: z.number().optional() });
+  /** LE nœud du statbloc de créature : `refOuSpec('skill', { value }, 'specOuChoixFacultatifs')`
+   *  (`defs/creatures.ts`, porteur d'EMPLACEMENT) — la sonde porte donc sa `value`. */
+  const skillRef = refOuSpec('skill', { value: z.number().optional() }, 'specOuChoixFacultatifs');
 
   it('refuse le littéral « au choix » posé en `spec` d’une Compétence spécialisable', () => {
     const r = skillRef.safeParse({ id: 'savoir', spec: 'au choix', value: 65 });
@@ -417,5 +414,52 @@ describe('#1457 B2 — une spec ATTESTÉE dont le seul consommateur est un statb
       'spéc(s) attestées que seul un statbloc emploie et que le pool PROPOSE quand même — poser ' +
         `\`pool: false\` (par la migration qui les a créées, jamais à la main) :\n${manquants.join('\n')}`,
     ).toEqual([]);
+  });
+});
+
+/**
+ * #1897 — un EMPLACEMENT `choix: true` se désigne dans le pool JOUEUR de son entrée (`specPoolOf` :
+ * `wildcardSpecs` au créateur et à l'avancement, `designateSpec` au spawn). Une entrée dont le catalogue
+ * n'est fait que de specs `pool: false` rendrait l'emplacement indésignable : refusé ici, à l'authoring,
+ * sur les DEUX racines authorées. La clé de def se lit sur l'`id` du nœud porteur ; un id commun à
+ * une Compétence et à un Talent (`resistance`) n'est fautif que si AUCUNE des deux n'a de pool.
+ */
+type DefASpecs = Parameters<typeof specPoolOf>[0];
+function choixSansPoolJoueur(documents: [string, unknown][], defsDe: (id: string) => DefASpecs[]): { vus: number; fautes: string[] } {
+  let vus = 0;
+  const fautes: string[] = [];
+  const walk = (node: unknown, ou: string): void => {
+    if (Array.isArray(node)) { node.forEach((x) => walk(x, ou)); return; }
+    if (!node || typeof node !== 'object') return;
+    const n = node as Record<string, unknown>;
+    if (typeof n.id === 'string' && n.choix === true) {
+      const defs = defsDe(n.id);
+      if (defs.length) {
+        vus++;
+        if (defs.every((d) => specPoolOf(d).length === 0)) fautes.push(`${ou} : « ${n.id} » en « choix » — pool joueur VIDE`);
+      }
+    }
+    for (const v of Object.values(n)) walk(v, ou);
+  };
+  for (const [ou, doc] of documents) walk(doc, ou);
+  return { vus, fautes };
+}
+
+describe('#1897 — un `choix` ne vise jamais une entrée à pool JOUEUR vide', () => {
+  const defsDe = (id: string): DefASpecs[] => [...skills, ...talents].filter((d) => d.id === id);
+  const documents: [string, unknown][] = RACINES.flatMap(([racine, dir]) =>
+    fichiersDeDonnees(dir).map((abs): [string, unknown] => [`${racine}${abs.slice(dir.length).replace(/\\/g, '/')}`, JSON.parse(readFileSync(abs, 'utf8'))]),
+  );
+
+  it('les deux racines authorées : aucun `choix` sur une entrée sans pool joueur', () => {
+    const { vus, fautes } = choixSansPoolJoueur(documents, defsDe);
+    expect(vus, 'aucun `choix` vu : le walk ne mesurerait rien').toBeGreaterThan(0);
+    expect(fautes, fautes.join('\n')).toEqual([]);
+  });
+
+  it('la garde MORD : un catalogue fait de specs `pool: false` seules rend le `choix` fautif, nommément', () => {
+    const fixture: DefASpecs[] = [{ specs: [{ id: 'statbloc-seul', label: 'Statbloc seul', pool: false }] } as DefASpecs];
+    const { fautes } = choixSansPoolJoueur([['fixture.json', [{ id: 'x', choix: true }, { id: 'x', spec: 'statbloc-seul' }]]], (id) => (id === 'x' ? fixture : []));
+    expect(fautes).toEqual(['fixture.json : « x » en « choix » — pool joueur VIDE']);
   });
 });

@@ -14,26 +14,16 @@ import { z } from 'zod';
 import './locale-fr';
 import { IDS_PAR_DATASET, IDS_PAR_DISCRIMINANT, IDS_PAR_MARQUEUR, SPECS_PAR_DATASET } from '../_ids.generated';
 import { marque } from './slots';
-import { idsVivants, idsVivantsDuDiscriminant, idsVivantsDuMarqueur } from './idsVivants';
+import { idsVivants, idsVivantsDuDiscriminant, idsVivantsDuMarqueur, specsVivantesDe } from './idsVivants';
 
 declare const marqueDeType: unique symbol;
 /** Id BRANDÉ par son type — frappé à la porte zod, jamais par un `as` d'appelant. */
 export type Id<T extends string> = string & { readonly [marqueDeType]: T };
 
-/** Ce qu'un type d'entité déclare : son dataset cible et le régime de ses spécialisations. */
+/** Ce qu'un type d'entité déclare : son dataset cible et le nom de son catalogue. */
 export interface CibleDeType {
   /** Nom de fichier du dataset qui fait AUTORITÉ sur les ids de ce type. */
   readonly dataset: string;
-  /**
-   * Régime de la spécialisation d'une entité DÉJÀ spécialisable — la spécialisabilité, elle, est
-   * portée PAR ENTRÉE (`SPECS_PAR_DATASET`, cf. `estSpecialisable`). CONSTRUCTION du registre, et
-   * non une règle du livre : ce drapeau dit comment la DONNÉE de ce type d'entité s'écrit.
-   * `true` = spécialisations OUVERTES : pour une Compétence Groupée, le joueur peut « créer une
-   * Spécialisation unique » (`LDB 09 l.40`) — la valeur est donc un libellé libre, pas une clé
-   * étrangère. `false` = pool FERMÉ : la spec doit appartenir au catalogue de l'entrée
-   * (`specCatalogOf`).
-   */
-  readonly specsOpen: boolean;
   /** Le catalogue tel que l'AUTEUR le nomme, au pluriel (« des sorts ») : le refus d'une référence
    *  morte se lit à l'éditeur, au Compendium et à l'import d'un projet, jamais qu'en CI. */
   readonly catalogue: string;
@@ -49,35 +39,35 @@ export interface CibleDeType {
  * Un type s'ajoute avec le lot qui le migre, jamais « au cas où ».
  */
 export const TYPES = {
-  skill: { dataset: 'skills.json', specsOpen: true, catalogue: 'compétences' },
-  talent: { dataset: 'talents.json', specsOpen: false, catalogue: 'talents' },
-  trait: { dataset: 'traits.json', specsOpen: false, catalogue: 'traits' },
-  trapping: { dataset: 'trappings.json', specsOpen: false, catalogue: 'objets' },
-  spell: { dataset: 'spells.json', specsOpen: false, catalogue: 'sorts' },
-  creature: { dataset: 'creatures.json', specsOpen: false, catalogue: 'créatures' },
-  vehicle: { dataset: 'vehicles.json', specsOpen: false, catalogue: 'véhicules' },
-  structure: { dataset: 'structures.json', specsOpen: false, catalogue: 'structures' },
-  career: { dataset: 'careers.json', specsOpen: false, catalogue: 'carrières' },
-  species: { dataset: 'species.json', specsOpen: false, catalogue: 'espèces' },
-  navalTrait: { dataset: 'naval-traits.json', specsOpen: false, catalogue: 'traits navals' },
+  skill: { dataset: 'skills.json', catalogue: 'compétences' },
+  talent: { dataset: 'talents.json', catalogue: 'talents' },
+  trait: { dataset: 'traits.json', catalogue: 'traits' },
+  trapping: { dataset: 'trappings.json', catalogue: 'objets' },
+  spell: { dataset: 'spells.json', catalogue: 'sorts' },
+  creature: { dataset: 'creatures.json', catalogue: 'créatures' },
+  vehicle: { dataset: 'vehicles.json', catalogue: 'véhicules' },
+  structure: { dataset: 'structures.json', catalogue: 'structures' },
+  career: { dataset: 'careers.json', catalogue: 'carrières' },
+  species: { dataset: 'species.json', catalogue: 'espèces' },
+  navalTrait: { dataset: 'naval-traits.json', catalogue: 'traits navals' },
   // PORT du catalogue naval : `MapPlace.port.ref` résout AU PARSE, toutes les réfs mortes nommées.
-  navalPort: { dataset: 'naval-ports.json', specsOpen: false, catalogue: 'ports' },
-  shipStation: { dataset: 'ship-stations.json', specsOpen: false, catalogue: 'postes de navire' },
-  crewRole: { dataset: 'crew-roles.json', specsOpen: false, catalogue: 'rôles d’équipage' },
-  table: { dataset: 'tables.json', specsOpen: false, catalogue: 'tables' },
-  etat: { dataset: 'etats.json', specsOpen: false, catalogue: 'états' },
-  maladie: { dataset: 'maladies.json', specsOpen: false, catalogue: 'maladies' },
-  symptome: { dataset: 'symptoms.json', specsOpen: false, catalogue: 'symptômes' },
-  material: { dataset: 'materials.json', specsOpen: false, catalogue: 'matières' },
+  navalPort: { dataset: 'naval-ports.json', catalogue: 'ports' },
+  shipStation: { dataset: 'ship-stations.json', catalogue: 'postes de navire' },
+  crewRole: { dataset: 'crew-roles.json', catalogue: 'rôles d’équipage' },
+  table: { dataset: 'tables.json', catalogue: 'tables' },
+  etat: { dataset: 'etats.json', catalogue: 'états' },
+  maladie: { dataset: 'maladies.json', catalogue: 'maladies' },
+  symptome: { dataset: 'symptoms.json', catalogue: 'symptômes' },
+  material: { dataset: 'materials.json', catalogue: 'matières' },
   // RÈGLE OPTIONNELLE : cible du terme `{rule}` d'une `Formula` (#1599) — une quantité que le livre ne
   // chiffre pas se lit au registre, l'id résout donc AU PARSE comme toute autre référence.
-  regleOptionnelle: { dataset: 'reglesOptionnelles.json', specsOpen: false, catalogue: 'règles optionnelles' },
-  terrain: { dataset: 'terrains.json', specsOpen: false, catalogue: 'terrains' },
+  regleOptionnelle: { dataset: 'reglesOptionnelles.json', catalogue: 'règles optionnelles' },
+  terrain: { dataset: 'terrains.json', catalogue: 'terrains' },
   // PALIER D'ÉCLAIRAGE (#1716) : la semence d'éclairage d'une scène neuve (`semences-de-scene.json`)
   // nomme un palier — l'id résout AU PARSE, là où `Scene.ambientLight` reste une chaîne libre.
-  lightLevel: { dataset: 'lightLevels.json', specsOpen: false, catalogue: 'paliers d’éclairage' },
-  prop: { dataset: 'props.json', specsOpen: false, catalogue: 'décors' },
-  building: { dataset: 'buildings.json', specsOpen: false, catalogue: 'bâtiments' },
+  lightLevel: { dataset: 'lightLevels.json', catalogue: 'paliers d’éclairage' },
+  prop: { dataset: 'props.json', catalogue: 'décors' },
+  building: { dataset: 'buildings.json', catalogue: 'bâtiments' },
 } as const satisfies Record<string, CibleDeType>;
 
 export type TypeEntite = keyof typeof TYPES;
@@ -151,9 +141,28 @@ export function porteLeMarqueur(type: TypeEntite, marqueur: string): (id: string
   return (id) => (idsVivantsDuMarqueur(dataset, marqueur) ?? figee).has(id);
 }
 
-/** Catalogue de spécialisations d'UNE entrée (vide = l'entrée n'en déclare aucune). */
+/** Catalogue de spécialisations d'UNE entrée (vide = l'entrée n'en déclare aucune) — lu en MÉMOIRE
+ *  quand une source vivante est posée (`specsVivantesDe`), sinon au registre généré `SPECS_PAR_DATASET`. */
 function catalogueSpecs(type: TypeEntite, id: string): readonly string[] {
-  return SPECS_PAR_DATASET[cibleDe(type)]?.[id] ?? [];
+  const dataset = cibleDe(type);
+  return specsVivantesDe(dataset, id) ?? SPECS_PAR_DATASET[dataset]?.[id] ?? [];
+}
+
+/** Prédicat « entrée ouverte » par type, construit une fois. */
+const ouvertes = new Map<TypeEntite, (id: string) => boolean>();
+
+/**
+ * L'entrée `id` de `type` admet-elle une spécialisation en TEXTE LIBRE hors de son catalogue ? La
+ * DONNÉE le dit, entrée par entrée : le marqueur `specsOpen` (`export const marqueurs` du def,
+ * `LDB 09 l.40`). Un type dont le def ne déclare pas ce marqueur n'a que des entrées FERMÉES.
+ */
+export function entreeOuverte(type: TypeEntite, id: string): boolean {
+  let porte = ouvertes.get(type);
+  if (!porte) {
+    porte = IDS_PAR_MARQUEUR[cibleDe(type)]?.specsOpen ? porteLeMarqueur(type, 'specsOpen') : () => false;
+    ouvertes.set(type, porte);
+  }
+  return porte(id);
 }
 
 /**
@@ -243,36 +252,55 @@ export function typedRef(types: readonly TypeEntite[] = Object.keys(TYPES) as Ty
     });
 }
 
-/**
- * Référence À SPÉCIALISATION : `{ id, spec }` XOR `{ id, choix: true | [ids] }` — exactement UN des
- * deux régimes (une réf sans spécialisation est un `ref(type)` nu). L'entrée VISÉE doit d'abord être
- * spécialisable, c'est-à-dire déclarer un catalogue de specs (`estSpecialisable`) ; `spec`/`choix`
- * sont ensuite validés contre ce catalogue quand le type ferme ses spécialisations.
- */
 /** FORME de sortie d'un nœud de référence à spécialisation — DÉCLARÉE (et non inferée) : les `extra`
  *  du porteur n'y figurent pas, un site qui les lit redéclare son type (patron `AxesData`,
  *  `schemas/defs/axes.ts`). Sans cette déclaration, tout schéma RÉCURSIF annoté qui compose une réf
- *  (`flowSchema: ZodType<Flow<EffectOp>>`) perdrait sa forme et cesserait de typer son arbre. */
-export interface RefASpecialisation { id: string; spec?: string; choix?: true | string[] }
+ *  (`flowSchema: ZodType<Flow<EffectOp>>`) perdrait sa forme et cesserait de typer son arbre.
+ *  `RefDesignee` : la forme d'un porteur qui DÉSIGNE (régime `specSeule`) ; `RefASpecialisation` :
+ *  celle d'un porteur d'EMPLACEMENT, qui admet aussi `choix`. */
+export interface RefDesignee { id: string; spec?: string }
+export interface RefASpecialisation extends RefDesignee { choix?: true | string[] }
 
 /**
- * Le littéral que le livre imprime à la place d'une spécialisation : `LDB 09 l.40`. Ce n'est pas une
+ * Le littéral que le livre imprime à la place d'une spécialisation — Compétence : `LDB 09 l.40` ;
+ * Talent : `LDB 10 l.17`. Ce n'est pas une
  * spécialisation, c'est un EMPLACEMENT non désigné — la grammaire l'écrit `choix`. Refusé AU SCHÉMA
  * (et non par un seul contrat de dataset) : le verrou couvre du même geste `src/data` et `src/scenes`,
- * y compris les types à spécialisations OUVERTES que le pool fermé ne filtre pas.
+ * y compris les entrées OUVERTES (`entreeOuverte`) que le catalogue ne filtre pas.
  */
 const SENTINELLE_DE_SPEC = /^au[\s-]+choix$/i;
 
-/** Nœud `{ id, spec?, choix?, …extra }` + validation de la spécialisation. `exigeUnRegime` : `true`
- *  = `spec` XOR `choix` obligatoire (`specRef`), `false` = les deux peuvent manquer (`refOuSpec`). */
+/**
+ * La spécialisation `spec` de l'entrée `id` de `type` est-elle ADMISE, et sinon pourquoi — prédicat
+ * UNIQUE, lu par le nœud à spécialisation ci-dessous et par la couverture d'un emplacement
+ * (`slotCovers`, `engine/careerSlots.ts`) : `nonSpecialisable` (aucun catalogue), `sentinelle` (un
+ * emplacement non désigné), `horsCatalogue` (entrée FERMÉE, spec absente de son catalogue), ou
+ * `null` (admise).
+ */
+export function refusDeSpec(type: TypeEntite, id: string, spec: string): 'nonSpecialisable' | 'sentinelle' | 'horsCatalogue' | null {
+  if (!estSpecialisable(type, id)) return 'nonSpecialisable';
+  if (SENTINELLE_DE_SPEC.test(spec)) return 'sentinelle';
+  if (entreeOuverte(type, id)) return null;
+  return catalogueSpecs(type, id).includes(spec) ? null : 'horsCatalogue';
+}
+
+/**
+ * RÉGIME d'une référence à spécialisation — ce que le PORTEUR admet :
+ *  - `specOuChoix` : exactement un de `spec` / `choix` (`specRef`, option d'un `pick`) ;
+ *  - `specSeule` : `{ id }` ou `{ id, spec }` — un porteur qui DÉSIGNE ; `choix` refusé (défaut de
+ *    `refOuSpec`) ;
+ *  - `specOuChoixFacultatifs` : `{ id }`, `{ id, spec }` ou `{ id, choix }` — un porteur d'EMPLACEMENT.
+ */
+export type RegimeDeSpec = 'specOuChoix' | 'specSeule' | 'specOuChoixFacultatifs';
+
+/** Nœud `{ id, spec?, choix?, …extra }` + validation de la spécialisation, au `regime` du porteur. */
 function noeudASpecialisation<T extends TypeEntite>(
   type: T,
   extra: Record<string, z.ZodTypeAny> | undefined,
-  exigeUnRegime: boolean,
+  regime: RegimeDeSpec,
 ): z.ZodType<RefASpecialisation> {
   const dataset = cibleDe(type);
   const catalogue = TYPES[type].catalogue;
-  const ouvert = TYPES[type].specsOpen;
   const unRegime = (id: unknown): string =>
     `« ${String(id)} » : une spécialisation se désigne par « spec » OU par « choix », exactement un des deux (catalogue des ${catalogue}).`;
   return z
@@ -286,8 +314,16 @@ function noeudASpecialisation<T extends TypeEntite>(
       const aSpec = v.spec != null;
       const aChoix = v.choix != null;
       if (!aSpec && !aChoix) {
-        if (!exigeUnRegime) return;
+        if (regime !== 'specOuChoix') return;
         ctx.addIssue({ code: 'custom', message: unRegime(v.id) });
+        return;
+      }
+      if (aChoix && regime === 'specSeule') {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['choix'],
+          message: `« ${String(v.id)} » : ce champ DÉSIGNE une spécialisation — « choix » (emplacement non désigné) n'y est pas admis, seul « spec » l'est (catalogue des ${catalogue}, ${dataset}).`,
+        });
         return;
       }
       if (!estSpecialisable(type, String(v.id))) {
@@ -302,25 +338,18 @@ function noeudASpecialisation<T extends TypeEntite>(
         return;
       }
       const candidats = aSpec ? [v.spec as string] : Array.isArray(v.choix) ? (v.choix as string[]) : [];
-      let sentinelle = false;
-      for (const c of candidats) {
-        if (!SENTINELLE_DE_SPEC.test(c)) continue;
-        sentinelle = true;
+      const refus = candidats.map((c) => [c, refusDeSpec(type, String(v.id), c)] as const);
+      // Une sentinelle masque le reste : l'auteur a écrit un emplacement là où il désignait.
+      const motif = refus.some(([, r]) => r === 'sentinelle') ? 'sentinelle' : 'horsCatalogue';
+      for (const [c, r] of refus) {
+        if (r !== motif) continue;
         ctx.addIssue({
           code: 'custom',
           path: [aSpec ? 'spec' : 'choix'],
-          message: `« ${c} » n'est pas une spécialisation mais un EMPLACEMENT non désigné de « ${String(v.id)} » (catalogue des ${catalogue}, ${dataset}) — s'écrit « choix » (LDB 09 l.40).`,
-        });
-      }
-      if (sentinelle) return;
-      if (ouvert) return;
-      const pool = catalogueSpecs(type, String(v.id));
-      for (const c of candidats) {
-        if (pool.includes(c)) continue;
-        ctx.addIssue({
-          code: 'custom',
-          path: [aSpec ? 'spec' : 'choix'],
-          message: `« ${c} » est absente des spécialisations de « ${String(v.id)} » au catalogue des ${catalogue} (${dataset}).`,
+          message:
+            r === 'sentinelle'
+              ? `« ${c} » n'est pas une spécialisation mais un EMPLACEMENT non désigné de « ${String(v.id)} » (catalogue des ${catalogue}, ${dataset}) — s'écrit « choix ».`
+              : `« ${c} » est absente des spécialisations de « ${String(v.id)} » au catalogue des ${catalogue} (${dataset}).`,
         });
       }
     });
@@ -331,27 +360,37 @@ function noeudASpecialisation<T extends TypeEntite>(
  * deux régimes (une réf sans spécialisation est un `ref(type)` nu, ou un `refOuSpec(type)` quand le
  * site accepte les deux). L'entrée VISÉE doit d'abord être spécialisable, c'est-à-dire déclarer un
  * catalogue de specs (`estSpecialisable`) ; `spec`/`choix` sont ensuite validés contre ce catalogue
- * quand le type ferme ses spécialisations.
+ * quand l'entrée est FERMÉE (`entreeOuverte`).
  */
 export function specRef<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
   type: T,
   extra?: E,
 ): z.ZodType<unknown> {
-  return noeudASpecialisation(type, extra, true);
+  return noeudASpecialisation(type, extra, 'specOuChoix');
 }
 
 /**
  * Référence dont la spécialisation est FACULTATIVE : `{ id }` (aucune spécialisation visée) OU
- * `{ id, spec }` / `{ id, choix }`. MÊME nœud que `specRef`, seul le régime obligatoire tombe — donc
- * UNE seule marque de slot par site (jamais une union, qui en poserait deux) : c'est la forme à
- * écrire dès qu'une donnée désigne une entrée « toute spécialisation comprise » aussi bien qu'une
- * spécialisation précise.
+ * `{ id, spec }` — et `{ id, choix }` pour un porteur d'EMPLACEMENT, qui ouvre le régime
+ * `specOuChoixFacultatifs`. MÊME nœud que `specRef`, seul le régime change — donc UNE seule marque de
+ * slot par site (jamais une union, qui en poserait deux) : c'est la forme à écrire dès qu'une donnée
+ * désigne une entrée « toute spécialisation comprise » aussi bien qu'une spécialisation précise.
  */
 export function refOuSpec<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
   type: T,
   extra?: E,
+): z.ZodType<RefDesignee>;
+export function refOuSpec<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
+  type: T,
+  extra: E | undefined,
+  regime: 'specOuChoixFacultatifs',
+): z.ZodType<RefASpecialisation>;
+export function refOuSpec<T extends TypeEntite, E extends Record<string, z.ZodTypeAny> = Record<string, never>>(
+  type: T,
+  extra?: E,
+  regime: 'specSeule' | 'specOuChoixFacultatifs' = 'specSeule',
 ): z.ZodType<RefASpecialisation> {
-  return noeudASpecialisation(type, extra, false);
+  return noeudASpecialisation(type, extra, regime);
 }
 
 /**

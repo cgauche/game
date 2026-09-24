@@ -12,6 +12,8 @@
 import { readdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { estFichierVitest } from './guards/lib/fichierVitest.mjs';
+import { SOURCES_DE_SPECS, universDeSource } from '../src/data/schemas/grammaire/sourcesDeSpecs.ts';
+import { porteLeChampMarqueur } from '../src/data/schemas/grammaire/idsVivants.ts';
 
 /**
  * `importDir` : chemin (relatif au fichier `out`) d'où importer chaque entrée. Défaut `./defs`
@@ -332,7 +334,7 @@ export const REGISTRIES = [
     type: 'SchemaDef',
     typeFrom: './types',
     fields: ['file', 'schema', 'famille', 'exposition'],
-    optionalFields: ['meta', 'discriminant', 'chargeParDiscriminant', 'marqueurs'],
+    optionalFields: ['meta', 'discriminant', 'chargeParDiscriminant'],
     constFields: { root: "'src/data'" },
   },
   {
@@ -356,40 +358,102 @@ export const REGISTRIES = [
 // dans le même dossier `src/data/schemas/defs/` que le registre SCHEMA_DEFS ci-dessus — un fichier
 // déposé y est déjà repris par le générateur générique (aucune entrée REGISTRIES supplémentaire).
 
+/**
+ * FORME CANONIQUE de chaque export de premier niveau qu'un def porte et que CE générateur lit :
+ * `chaine` = `export const X = '…';`, `liste` = `export const X = ['…', '…'];` (une ligne), `presence`
+ * = seule l'existence de `export const X` compte (la valeur n'est lue qu'à la compilation du registre).
+ * Un nom lu hors de cette table est une faute du générateur, pas du def.
+ */
+const FORMES_D_EXPORT = {
+  file: 'chaine',
+  famille: 'chaine',
+  discriminant: 'chaine',
+  marqueurs: 'liste',
+  meta: 'presence',
+  chargeParDiscriminant: 'presence',
+};
+
+const CHAINE = "'([^'\\\\\\n]+)'";
+const VALEUR_CANONIQUE = {
+  chaine: new RegExp(`^ = ${CHAINE};$`),
+  liste: new RegExp(`^ = \\[((?:${CHAINE}(?:, ${CHAINE})*)?)\\];$`),
+};
+
+/**
+ * LECTEUR UNIQUE des exports de premier niveau d'un def — la seule lecture textuelle d'un export du
+ * générateur. Règle unique, par nom lu : export absent → `undefined` ; `export const X` à sa forme
+ * canonique (`FORMES_D_EXPORT`) → sa valeur (`true` pour une forme `presence`) ; tout autre export du
+ * nom (commentaire en fin de ligne, `as const`, annotation de type, guillemets doubles, `export { … }`,
+ * `export let`…) → la génération LÈVE en nommant le def et le champ.
+ * @param {string} src source du def
+ * @param {readonly string[]} noms exports lus
+ * @param {string} def chemin du def, pour le message
+ * @returns {Record<string, string | string[] | true | undefined>}
+ */
+export function lireExports(src, noms, def) {
+  const lu = {};
+  for (const nom of noms) {
+    const forme = FORMES_D_EXPORT[nom];
+    if (!forme) throw new Error(`gen-registry: lireExports : « ${nom} » n'a aucune forme à FORMES_D_EXPORT.`);
+    const declaration = new RegExp(`^export const ${nom}\\b(.*)$`, 'm').exec(src);
+    const autreForme = new RegExp(`^export\\s+(?:(?:let|var|function\\*?|async\\s+function|class)\\s+${nom}\\b|const\\s*\\{[^}]*\\b${nom}\\b)|^export\\s*\\{[^}]*\\b${nom}\\s*[,}]`, 'm').test(src);
+    const hors = (attendu) =>
+      new Error(`gen-registry: ${def} : export « ${nom} » hors de sa forme canonique (${attendu}) — le générateur est textuel, il ne lit que cette forme.`);
+    const attendu = forme === 'chaine' ? `export const ${nom} = '…';` : forme === 'liste' ? `export const ${nom} = ['…', …];` : `export const ${nom}`;
+    if (autreForme && !declaration) throw hors(attendu);
+    if (!declaration) { lu[nom] = undefined; continue; }
+    if (forme === 'presence') { lu[nom] = true; continue; }
+    const m = VALEUR_CANONIQUE[forme].exec(declaration[1]);
+    if (!m) throw hors(attendu);
+    lu[nom] = forme === 'chaine' ? m[1] : [...(m[1] ?? '').matchAll(new RegExp(CHAINE, 'g'))].map((x) => x[1]);
+  }
+  return lu;
+}
+
+/** Modules de def d'un dossier — la population de tout registre ; lève si le dossier manque. */
+function modulesDeDefs(dir) {
+  return readdirSync(dir)
+    .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !estFichierVitest(f) && !f.endsWith('.ascii.ts') && f !== 'index.ts')
+    .sort();
+}
+
+/** Les exports `noms` de chaque def d'un dossier, par `lireExports` : `{ module, …exports }`. */
+export function lireDefs(dir, noms) {
+  return modulesDeDefs(dir).map((f) => ({ module: f, ...lireExports(readFileSync(join(dir, f), 'utf8'), noms, join(dir, f)) }));
+}
+
 function genOne(r) {
   const importDir = r.importDir ?? './defs';
-  let entries;
   try {
-    entries = readdirSync(r.dir);
+    readdirSync(r.dir);
   } catch {
     return { arrayName: r.arrayName, dir: r.dir, files: 0, changed: false, missing: true };
   }
-  const files = entries
-    .filter((f) => /\.tsx?$/.test(f) && !f.startsWith('_') && !estFichierVitest(f) && !f.endsWith('.ascii.ts') && f !== 'index.ts')
-    // Registre à champ `file` : un module du dossier qui ne DÉCLARE pas de document (modules de
-    // FORME partagés entre defs) n'est pas une entrée — critère STRUCTUREL, jamais une liste de noms.
-    .filter((f) => !r.fields?.includes('file') || /^export const file = '/m.test(readFileSync(join(r.dir, f), 'utf8')))
-    .sort();
+  // Registre à champ `file` : un module du dossier qui ne DÉCLARE pas de document (modules de
+  // FORME partagés entre defs) n'est pas une entrée — critère STRUCTUREL, jamais une liste de noms.
+  const lus = r.fields
+    ? lireDefs(r.dir, [...(r.fields.includes('file') ? ['file'] : []), ...(r.optionalFields ?? [])])
+      .filter((d) => !r.fields.includes('file') || d.file !== undefined)
+    : modulesDeDefs(r.dir).map((module) => ({ module }));
+  const files = lus.map((d) => d.module);
   // `fields` (option PAR registre) : un module de def exporte PLUSIEURS noms (ex. `file`+`schema`,
   // cf. src/data/schemas/defs/) → une entrée `{ champ1, champ2, … }` par fichier, au lieu du
   // tableau plat d'un seul export (`exportName`) des registres « 1 def = 1 valeur ».
   // Alias suffixé (`e0_champ`) UNIQUEMENT pour les registres multi-champs : les registres
   // « 1 def = 1 valeur » gardent `e0` — leur sortie générée reste byte-identique.
-  // `optionalFields` : champ qu'un module de def exporte OU NON (`meta`, #1466 — posée par
-  // `document()`, absente des defs sans export `meta` ; adoption par def : lot L1b #1467).
-  // Détection par CONVENTION D'EXPORT NOMMÉ,
-  // comme `file`/`schema`/`famille` : le générateur est TEXTUEL (readdirSync + regex, jamais d'import
-  // runtime), donc un export absent doit être vu AVANT d'être importé, sinon le module généré ne compile pas.
-  const presents = (f) => (r.optionalFields ?? []).filter((fn) => new RegExp(`^export const ${fn}\\b`, 'm').test(readFileSync(join(r.dir, f), 'utf8')));
+  // `optionalFields` : champ qu'un module de def exporte OU NON (`meta`, #1466). Le générateur est
+  // TEXTUEL (readdirSync + regex, jamais d'import runtime), donc un export absent doit être vu AVANT
+  // d'être importé, sinon le module généré ne compile pas.
+  const presents = (i) => (r.optionalFields ?? []).filter((fn) => lus[i][fn] !== undefined);
   const imports = files.map((f, i) => {
     const names = r.fields
-      ? [...r.fields, ...presents(f)].map((fn) => `${fn} as e${i}_${fn}`).join(', ')
+      ? [...r.fields, ...presents(i)].map((fn) => `${fn} as e${i}_${fn}`).join(', ')
       : `${r.exportName} as e${i}`;
     return `import { ${names} } from '${importDir}/${f.replace(/\.tsx?$/, '')}';`;
   });
   const constParts = Object.entries(r.constFields ?? {}).map(([k, v]) => `${k}: ${v}`);
   const arr = r.fields
-    ? files.map((f, i) => `{ ${[...r.fields, ...presents(f)].map((fn) => `${fn}: e${i}_${fn}`).concat(constParts).join(', ')} }`)
+    ? files.map((_, i) => `{ ${[...r.fields, ...presents(i)].map((fn) => `${fn}: e${i}_${fn}`).concat(constParts).join(', ')} }`)
     : files.map((_, i) => `e${i}`);
   // Union de littéraux des ids déclarés dans les defs (option `idUnion`) — triée, dédupliquée.
   let unionDecl = '';
@@ -429,36 +493,11 @@ function genOne(r) {
  * `docs/structures-donnees.md` §2.3) n'ouvrent aucun espace d'ids : les inscrire ferait résoudre une
  * référence contre une clé de réglage.
  *
- * `SPECS_PAR_DATASET` = les ids de SPÉCIALISATION déclarés par une entrée (`specs[].id`), par
- * dataset puis par entrée : c'est le POOL de VALIDITÉ d'une spec (tout ce que le catalogue déclare),
- * jamais le pool de PROPOSITION d'un choix joueur (`pool: false` reste proposable-ou-non côté
- * `specPoolOf`, `src/data/index.ts`).
+ * `SPECS_PAR_DATASET` = le catalogue de SPÉCIALISATIONS d'une entrée, par dataset puis par entrée :
+ * ses `specs[].id` inline (pool ou non), ou l'UNIVERS de sa `specsSource` (`universDeSource`, sur la
+ * déclaration unique `SOURCES_DE_SPECS`) — jamais le pool de PROPOSITION d'un choix joueur
+ * (`specPoolOf`, `src/data/index.ts`).
  */
-/**
- * Pools de spécialisations DÉRIVÉS d'un registre partagé (`specsSource`) — miroir OUTILLAGE du
- * catalogue `SPEC_SOURCES` de `src/data/index.ts`, que ce script `.mjs` ne peut pas importer (TS +
- * dépendances moteur). L'égalité des deux tables, source par source, est TENUE par le test
- * `src/data/schemas/grammaire/pool-specs.test.ts` : une divergence rougit la CI.
- */
-const POOLS_DERIVES = {
-  weaponGroupsMelee:  (lit) => lit('weaponGroups.json').filter((g) => g.combat === 'melee').map((g) => g.id),
-  weaponGroupsRanged: (lit) => lit('weaponGroups.json').filter((g) => g.combat === 'ranged').map((g) => g.id),
-  winds:         (lit) => lit('domains.json').filter((d) => d.wind).map((d) => d.id),
-  arcaneDomains: (lit) => lit('domains.json').filter((d) => d.arcane).map((d) => d.id),
-  cultBlessings: (lit) => lit('gods.json').filter((g) => g.blessings?.length).map((g) => g.id),
-  cultMiracles:  (lit) => lit('gods.json').filter((g) => g.miracles?.length).map((g) => g.id),
-  cultChaos:     (lit) => lit('gods.json').filter((g) => g.chaosSpells?.length).map((g) => g.id),
-  seaShanties:   (lit) => lit('sea-shanties.json').map((s) => s.id),
-  groups:        (lit) => lit('groups.json').map((g) => g.id),
-  diseases:      (lit) => lit('maladies.json').map((m) => m.id),
-  sizes:         (lit) => Object.keys(lit('sizes.json').rangedMod),
-  mutations:     (lit) => lit('mutations.json').map((m) => m.id),
-  breathTypes:   (lit) => lit('breath-types.json').map((b) => b.id),
-  damageTypes:   (lit) => lit('damage-types.json').map((t) => t.id),
-  weaponsMelee:  (lit) => lit('trappings.json').filter((t) => t.categorie === 'melee').map((t) => t.id),
-  weaponsRanged: (lit) => lit('trappings.json').filter((t) => t.categorie === 'ranged').map((t) => t.id),
-};
-
 /** Clé de racine-objet qui a la FORME d'un id (`ids internes, labels à l'affichage`). */
 const cleIdish = (k) => /^[a-z0-9][a-z0-9-]*$/.test(k);
 const genreDe = (v) => (Array.isArray(v) ? 'liste' : v === null ? 'nul' : typeof v);
@@ -525,36 +564,27 @@ export function idsDuDataset(racine, famille) {
   return [...new Set(entrees.map((e) => e.id))].sort();
 }
 
+/** Projection de `lireDefs` : dataset (`file`) → valeur de l'export `nom`, pour les defs qui le portent. */
+function parDataset(dir, nom) {
+  return new Map(lireDefs(dir, ['file', nom]).filter((d) => d.file !== undefined && d[nom] !== undefined).map((d) => [d.file, d[nom]]));
+}
+
 /**
  * Champ DISCRIMINANT déclaré par un def (`export const discriminant`), dataset par dataset — aucun
- * dataset n'est nommé ici : le def possède son discriminant, le générateur ne fait que le lire (même
- * lecture TEXTUELLE que `file`/`famille`). Un dataset sans cet export n'ouvre aucune sous-liste.
+ * dataset n'est nommé ici : le def possède son discriminant, le générateur ne fait que le lire
+ * (`lireExports`). Un dataset sans cet export n'ouvre aucune sous-liste.
  */
 export function discriminantsDeclares(dir = 'src/data/schemas/defs') {
-  const parDataset = new Map();
-  for (const f of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts'))) {
-    const src = readFileSync(join(dir, f), 'utf8');
-    const dataset = src.match(/^export const file = '([^']+)';$/m)?.[1];
-    const champ = src.match(/^export const discriminant = '([^']+)';$/m)?.[1];
-    if (dataset && champ) parDataset.set(dataset, champ);
-  }
-  return parDataset;
+  return parDataset(dir, 'discriminant');
 }
 
 /**
  * Champs MARQUEURS déclarés par un def (`export const marqueurs = ['<champ>', …];`), dataset par
- * dataset — même lecture TEXTUELLE que `discriminant` : le def possède ses marqueurs, aucun dataset
- * n'est nommé ici. Un marqueur définit une SOUS-LISTE : les entrées qui PORTENT ce champ.
+ * dataset (`lireExports`) : le def possède ses marqueurs, aucun dataset n'est nommé ici. Un marqueur
+ * définit une SOUS-LISTE : les entrées qui PORTENT ce champ (`porteLeChampMarqueur`, `grammaire/idsVivants.ts`).
  */
 export function marqueursDeclares(dir = 'src/data/schemas/defs') {
-  const parDataset = new Map();
-  for (const f of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts'))) {
-    const src = readFileSync(join(dir, f), 'utf8');
-    const dataset = src.match(/^export const file = '([^']+)';$/m)?.[1];
-    const liste = src.match(/^export const marqueurs = \[([^\]]*)\];$/m)?.[1];
-    if (dataset && liste !== undefined) parDataset.set(dataset, [...liste.matchAll(/'([^']+)'/g)].map((m) => m[1]));
-  }
-  return parDataset;
+  return parDataset(dir, 'marqueurs');
 }
 
 /**
@@ -571,7 +601,7 @@ export function idsParMarqueur(racine, champs, dataset) {
     throw new Error(`gen-registry: ${dataset} déclare des marqueurs mais sa racine n'est pas une LISTE d'entrées.`);
   const parChamp = {};
   for (const champ of [...champs].sort()) {
-    const ids = racine.filter((e) => e && typeof e === 'object' && typeof e.id === 'string' && e[champ] !== undefined).map((e) => e.id);
+    const ids = racine.filter((e) => e && typeof e === 'object' && typeof e.id === 'string' && porteLeChampMarqueur(e, champ)).map((e) => e.id);
     if (!ids.length) throw new Error(`gen-registry: ${dataset} déclare le marqueur « ${champ} » mais aucune entrée ne le porte.`);
     parChamp[champ] = [...new Set(ids)].sort();
   }
@@ -605,17 +635,11 @@ export function idsParDiscriminant(racine, champ, dataset) {
 }
 
 /** Familles DÉCLARÉES par les defs de schéma (`export const famille`), dataset par dataset. */
-function famillesDeclarees() {
-  const dir = 'src/data/schemas/defs';
-  const parDataset = new Map();
-  for (const f of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts'))) {
-    const src = readFileSync(join(dir, f), 'utf8');
-    const dataset = src.match(/^export const file = '([^']+)';$/m)?.[1];
-    const famille = src.match(/^export const famille = '([^']+)';$/m)?.[1];
-    if (!dataset || !famille) throw new Error(`gen-registry: defs/${f} : \`file\`/\`famille\` de premier niveau manquant — chaque def déclare sa famille.`);
-    parDataset.set(dataset, famille);
-  }
-  return parDataset;
+function famillesDeclarees(dir = 'src/data/schemas/defs') {
+  const defs = lireDefs(dir, ['file', 'famille']);
+  const muet = defs.find((d) => d.file === undefined || d.famille === undefined);
+  if (muet) throw new Error(`gen-registry: ${join(dir, muet.module)} : \`file\`/\`famille\` de premier niveau manquant — chaque def déclare sa famille.`);
+  return new Map(defs.map((d) => [d.file, d.famille]));
 }
 
 /**
@@ -670,9 +694,9 @@ function genIds() {
     const entrees = racine.filter((e) => e && typeof e === 'object' && typeof e.id === 'string');
     const catalogueDe = (e) => {
       if (e.specsSource) {
-        const derive = POOLS_DERIVES[e.specsSource];
-        if (!derive) throw new Error(`gen-registry: ${f} « ${e.id} » : specsSource « ${e.specsSource} » inconnue de POOLS_DERIVES.`);
-        return derive(litJson);
+        const source = SOURCES_DE_SPECS[e.specsSource];
+        if (!source) throw new Error(`gen-registry: ${f} « ${e.id} » : specsSource « ${e.specsSource} » inconnue de SOURCES_DE_SPECS.`);
+        return universDeSource(source, litJson(source.dataset));
       }
       return Array.isArray(e.specs) ? e.specs.filter((s) => s && typeof s.id === 'string').map((s) => s.id) : [];
     };
@@ -702,8 +726,9 @@ function genIds() {
     ids.map(([f, l]) => `  ${lit(f)}: [${l.map(lit).join(', ')}],\n`).join('') +
     `};\n\n` +
     `/**\n` +
-    ` * Pool de VALIDITÉ des spécialisations déclarées par une entrée (\`specs[].id\`), par dataset puis\n` +
-    ` * par id d'entrée — la cible du refine de \`spec\` pour un type à pool FERMÉ (\`specsOpen: false\`).\n` +
+    ` * Catalogue de SPÉCIALISATIONS d'une entrée, par dataset puis par id d'entrée : ses \`specs[].id\`, ou\n` +
+    ` * l'UNIVERS de sa \`specsSource\` (\`grammaire/sourcesDeSpecs.ts\`) — la cible du refine de \`spec\` pour\n` +
+    ` * une entrée FERMÉE (sans le marqueur \`specsOpen\`).\n` +
     ` */\n` +
     `export const SPECS_PAR_DATASET: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {\n` +
     specs

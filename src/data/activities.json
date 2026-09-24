@@ -126,7 +126,7 @@
       },
       {
         "id": "art",
-        "spec": "Dessin"
+        "spec": "dessin"
       }
     ],
     "difficulty": "intermediaire",

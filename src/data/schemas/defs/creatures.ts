@@ -36,11 +36,12 @@ const optionalSwapSchema = z.strictObject({
 });
 const optionalEntrySchema = z.union([traitInstanceSchema, optionalWildcardSchema, optionalSwapSchema]);
 
-/** `SkillRef` (`src/data/index.ts`) — la réf de Compétence de la GRAMMAIRE (`refOuSpec`, régimes
- *  `spec` XOR `choix`) composée avec la charge utile du statbloc : `value`, le nombre IMPRIMÉ
- *  (#1463, « `value` = le seul nom du NOMBRE IMPRIMÉ au statbloc »). MÊME nœud que `swapGrantSchema`
- *  ci-dessus — une seule graphie de Compétence dans ce document. */
-const skillRefSchema = refOuSpec('skill', { value: z.number() });
+/** `SkillRef` (`src/data/index.ts`) — la réf de Compétence de la GRAMMAIRE (`refOuSpec`, régime
+ *  `specOuChoixFacultatifs` : un statbloc porte des EMPLACEMENTS, désignés au spawn) composée avec la
+ *  charge utile du statbloc : `value`, le nombre IMPRIMÉ (#1463, « `value` = le seul nom du NOMBRE
+ *  IMPRIMÉ au statbloc »). MÊME nœud que `swapGrantSchema` ci-dessus, dont l'octroi DÉSIGNE (régime
+ *  par défaut) — une seule graphie de Compétence dans ce document. */
+const skillRefSchema = refOuSpec('skill', { value: z.number() }, 'specOuChoixFacultatifs');
 
 
 /** `HarvestDanger` (`src/data/index.ts`). */

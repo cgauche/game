@@ -10,6 +10,8 @@ import type { RigSpeciesId } from '../gameIso/rig/appearance';
 import type { SourceRef, SecondaryRef, RaceKey, RefCareerId, DescRef } from './schemas/grammaire/valeurs';
 import { porteLeMarqueur, type TypeEntite } from './schemas/grammaire/ref';
 import { symptomSeveritySchema } from './schemas/grammaire/valeurs';
+import { SOURCES_DE_SPECS, poolDeSource, sourceAdmet, type DatasetDeSource } from './schemas/grammaire/sourcesDeSpecs';
+import sizesJson from './sizes.json';
 import { libelleDeValeur } from './schemas/grammaire/meta';
 import type { MerchantArchetypeDef } from '../state/merchants/types';
 // Types de la SCÈNE, en TYPE seul (aucun cycle runtime) : les semences d'une scène neuve portent
@@ -3464,32 +3466,49 @@ export function findById(category: string, id: string): { label: string } | unde
     default: return undefined;
   }
 }
-/** CATALOGUE des sources de spéc partagées (SSOT) : `pool()` = ids DÉRIVÉS du registre (énumérés par
- *  `wildcardSpecs`, fin des `specs[]` maintenues à la main), `label(id)` = leur rendu FR. Chaque
- *  `SpecsSource` a exactement UNE entrée — ajouter une source = l'ajouter ICI, jamais un `if` par-source. */
-/** UNE source de spéc : `pool()` = ids CHOISISSABLES par un joueur (registre FILTRÉ — 8 Vents+Dhar, Groupes
- *  de mêlée…) ; `label()` = affichage d'un id ; `resolves()` = l'id existe-t-il dans le REGISTRE sous-jacent
- *  (que `label` interroge). VALIDITÉ (resolves) ⊇ POOL : un statbloc de créature RAW peut porter une spéc HORS
- *  du pool joueur mais RÉELLE — ex. le Triton FOCALISE « Magie des mers de Triton » (un domaine, hors des Vents
- *  canalisables par un PC). Le pool borne le CHOIX joueur ; resolves borne la VALIDITÉ des données. */
-export const SPEC_SOURCES: Record<SpecsSource, { pool(): string[]; label(id: string): string; resolves(id: string): boolean }> = {
-  weaponGroupsMelee:  { pool: () => weaponGroups.filter((g) => g.combat === 'melee').map((g) => g.id),  label: (id) => weaponGroupLabel(id), resolves: (id) => !!findWeaponGroupById(id) },
-  weaponGroupsRanged: { pool: () => weaponGroups.filter((g) => g.combat === 'ranged').map((g) => g.id), label: (id) => weaponGroupLabel(id), resolves: (id) => !!findWeaponGroupById(id) },
-  winds:         { pool: () => domains.filter((d) => d.wind).map((d) => d.id),   label: (id) => findDomainById(id)?.wind ?? findDomainById(id)?.label ?? id, resolves: (id) => !!findDomainById(id) },
-  arcaneDomains: { pool: () => domains.filter((d) => d.arcane).map((d) => d.id), label: (id) => findDomainById(id)?.label ?? id, resolves: (id) => !!findDomainById(id) },
-  cultBlessings: { pool: () => gods.filter((g) => g.blessings.length).map((g) => g.id).sort(),  label: (id) => godLabel(id), resolves: (id) => !!findGodById(id) },
-  cultMiracles:  { pool: () => gods.filter((g) => g.miracles.length).map((g) => g.id).sort(),   label: (id) => godLabel(id), resolves: (id) => !!findGodById(id) },
-  cultChaos:     { pool: () => gods.filter((g) => (g.chaosSpells?.length ?? 0) > 0).map((g) => g.id).sort(), label: (id) => godLabel(id), resolves: (id) => !!findGodById(id) },
-  seaShanties:   { pool: () => seaShanties.map((s) => s.id), label: (id) => findSeaShantyById(id)?.label ?? id, resolves: (id) => !!findSeaShantyById(id) },
-  groups:        { pool: () => groups.map((g) => g.id),       label: (id) => groupLabel(id),       resolves: (id) => !!findGroupById(id) },
-  diseases:      { pool: () => maladies.map((m) => m.id),     label: (id) => diseaseLabel(id),     resolves: (id) => !!findDiseaseById(id) },
-  sizes:         { pool: () => Object.keys(SIZE_LABEL),       label: (id) => (SIZE_LABEL as Record<string, string>)[id] ?? id, resolves: (id) => id in SIZE_LABEL },
-  mutations:     { pool: () => mutations.map((m) => m.id),    label: (id) => mutationLabel(id),    resolves: (id) => !!findMutationById(id) },
-  breathTypes:   { pool: () => breathTypes.map((b) => b.id),  label: (id) => breathTypeLabel(id),  resolves: (id) => !!findBreathTypeById(id) },
-  damageTypes:   { pool: () => damageTypes.map((t) => t.id),  label: (id) => damageTypeLabel(id),  resolves: (id) => !!findDamageTypeById(id) },
-  weaponsMelee:  { pool: () => trappings.filter((t) => t.categorie === 'melee').map((t) => t.id),  label: (id) => findTrappingById(id)?.label ?? id, resolves: (id) => findTrappingById(id)?.categorie === 'melee' },
-  weaponsRanged: { pool: () => trappings.filter((t) => t.categorie === 'ranged').map((t) => t.id), label: (id) => findTrappingById(id)?.label ?? id, resolves: (id) => findTrappingById(id)?.categorie === 'ranged' },
+/** Racine de chaque dataset lu par une source de spéc (`SOURCES_DE_SPECS`) — les bindings VIVANTS. */
+const RACINE_DE_SOURCE: Record<DatasetDeSource, () => unknown> = {
+  'weaponGroups.json': () => weaponGroups,
+  'domains.json': () => domains,
+  'gods.json': () => gods,
+  'sea-shanties.json': () => seaShanties,
+  'groups.json': () => groups,
+  'maladies.json': () => maladies,
+  'sizes.json': () => sizesJson,
+  'mutations.json': () => mutations,
+  'breath-types.json': () => breathTypes,
+  'damage-types.json': () => damageTypes,
+  'trappings.json': () => trappings,
 };
+/** Libellé d'affichage d'un id, par source de spéc. */
+const LIBELLE_DE_SOURCE: Record<SpecsSource, (id: string) => string> = {
+  weaponGroupsMelee: (id) => weaponGroupLabel(id),
+  weaponGroupsRanged: (id) => weaponGroupLabel(id),
+  winds: (id) => findDomainById(id)?.wind ?? findDomainById(id)?.label ?? id,
+  arcaneDomains: (id) => findDomainById(id)?.label ?? id,
+  cultBlessings: (id) => godLabel(id),
+  cultMiracles: (id) => godLabel(id),
+  cultChaos: (id) => godLabel(id),
+  seaShanties: (id) => findSeaShantyById(id)?.label ?? id,
+  groups: (id) => groupLabel(id),
+  diseases: (id) => diseaseLabel(id),
+  sizes: (id) => (SIZE_LABEL as Record<string, string>)[id] ?? id,
+  mutations: (id) => mutationLabel(id),
+  breathTypes: (id) => breathTypeLabel(id),
+  damageTypes: (id) => damageTypeLabel(id),
+  weaponsMelee: (id) => findTrappingById(id)?.label ?? id,
+  weaponsRanged: (id) => findTrappingById(id)?.label ?? id,
+};
+/** UNE source de spéc, lue sur sa déclaration (`SOURCES_DE_SPECS`) : `pool()` = ids CHOISISSABLES par un
+ *  joueur ; `resolves()` = l'id appartient-il à l'UNIVERS de la source (⊇ pool) ; `label()` = affichage.
+ *  Le pool borne le CHOIX joueur ; l'univers borne la VALIDITÉ des données (le Triton, MDG 16 l.283). */
+export const SPEC_SOURCES = Object.fromEntries(
+  (Object.keys(SOURCES_DE_SPECS) as SpecsSource[]).map((src) => {
+    const decl = SOURCES_DE_SPECS[src];
+    const racine = RACINE_DE_SOURCE[decl.dataset];
+    return [src, { pool: () => poolDeSource(decl, racine()), label: LIBELLE_DE_SOURCE[src], resolves: (id: string) => sourceAdmet(decl, racine(), id) }];
+  }),
+) as Record<SpecsSource, { pool(): string[]; label(id: string): string; resolves(id: string): boolean }>;
 /** POOL d'une def (Compétence/Talent) — ce qu'un choix joueur PROPOSE d'office (`LDB 09 l.40`) :
  *  pool DÉRIVÉ du registre partagé si `specsSource` (SSOT `SPEC_SOURCES`), sinon les entrées `specs[]`
  *  inline SANS `pool: false`. Consommé par `wildcardSpecs` (créateur), l'avancement et l'Entraînement.

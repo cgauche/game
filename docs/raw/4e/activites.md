@@ -594,7 +594,7 @@ Note sur les Revenus en voyage : l'Activité *Revenus* (LDB 23) n'est **pas adap
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 9` (l.558-565) → `shelter`, `ForageMethod`, `forageYield`, `survie-en-exterieur`, `voile` — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/travelStages.ts`
-- `EDOC 8` (l.129-180) → `plein-air`, `printemps`, `approvisionnement`, `doc`, `gatherInnInfo`, `ete`, `recueillir-informations`, `EncounterCategory`, `rester-aux-aguets`, `automne`, +28 — `src/data/activities.json`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/maladies.ts`, `src/data/weather.json`, `src/engine/activities.ts`, +9 fichiers
+- `EDOC 8` (l.129-180) → `plein-air`, `printemps`, `approvisionnement`, `doc`, `gatherInnInfo`, `dessin`, `ete`, `recueillir-informations`, `EncounterCategory`, `rester-aux-aguets`, +29 — `src/data/activities.json`, `src/data/maladies.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/maladies.ts`, `src/data/skills.json`, `src/data/weather.json`, +10 fichiers
 
 ---
 

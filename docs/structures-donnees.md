@@ -56,9 +56,9 @@ troncature se COMPTE ici, elle ne se tait pas.
 
 ### 1bis. Index des ids (le cœur du détecteur)
 
-Identités indexées : **5919** (entrées de racine + documents embarqués) ; libellés
-normalisés : **5155**. Un id vu dans PLUSIEURS datasets rend la résolution
-AMBIGUË (jamais fausse) : **398** collisions, et **3422** ids
+Identités indexées : **5920** (entrées de racine + documents embarqués) ; libellés
+normalisés : **5156**. Un id vu dans PLUSIEURS datasets rend la résolution
+AMBIGUË (jamais fausse) : **398** collisions, et **3423** ids
 sont aussi le libellé d’une entité (faux positif possible sur la résolvabilité d’un `{text}`).
 
 | Id | Datasets |
@@ -732,7 +732,7 @@ dialogue) n’est sommé de rien : on n’y compte que les clés DIVERGENTES.
 | méta libre | `__livres` | divergente | 0 | — |
 
 Groupes mesurés : **128** jeux d’ENTRÉES DE RACINE et **136** chemins de
-DOCUMENTS EMBARQUÉS (**2186** objets). **42** divergences
+DOCUMENTS EMBARQUÉS (**2188** objets). **42** divergences
 (rôle × clé × document × chemin) au stock `STRUCTURES_ENVELOPPE` (`scripts/guards/lib/structuresStock.mjs`,
 garde `src/data/structures-contrat.test.ts`) — une ligne se solde en migrant l’enveloppe, la ligne part
 dans le MÊME commit :
@@ -877,7 +877,7 @@ Documents EMBARQUÉS mesurés, par chemin :
 | `ship-criticals.json` | `tables.greement` | 10 | `crewHit`(5) `id`(10) `label`(10) `max`(10) `min`(10) `note`(10) `shrapnel`(4) |
 | `ship-criticals.json` | `tables.greement.crewHit.test.fail.effect.ops.hauteur.table` | 5 | `id`(5) |
 | `ship-criticals.json` | `tablesDeChute` | 1 | `bandes`(1) `id`(1) `label`(1) |
-| `skills.json` | `specs` | 254 | `alsoIn`(2) `id`(254) `label`(254) `pool`(32) `source`(49) |
+| `skills.json` | `specs` | 256 | `alsoIn`(2) `id`(256) `label`(256) `pool`(32) `source`(51) |
 | `species.json` | `traits` | 1 | `id`(1) |
 | `structure-criticals.json` | `entries` | 8 | `destroyed`(1) `id`(8) `label`(8) `max`(8) `min`(8) `note`(8) `trivial`(1) `wounds`(8) |
 | `surincantation.json` | `entries` | 7 | `damage`(7) `dr`(7) `duration`(7) `id`(7) `label`(7) `range`(7) `targets`(7) `zone`(7) |
@@ -1128,7 +1128,7 @@ Une CIBLE à `0` est une forme visée que rien n’écrit encore — elle se lit
 | formule | `sinPoints` | cible | 10 |
 | formule | `minimum,of` | cible | 2 |
 | source | `book,page` | cible | 3224 |
-| source | `book,note,page` | cible | 1255 |
+| source | `book,note,page` | cible | 1257 |
 | source | `book,page,quote` | cible | 121 |
 | source | `book,note,page,quote` | cible | 4 |
 | source | `book,chapter` | historique | 0 |
@@ -1155,7 +1155,7 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **884** (cible 417 · declaree 6 · historique 131 · divergente 330). Objets JSON parcourus : **48927**, dont **31736** portent une forme
+Lignes concept × dataset × champ × forme : **884** (cible 417 · declaree 6 · historique 131 · divergente 330). Objets JSON parcourus : **48931**, dont **31738** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **87**.
 
 Entrées de racine sans concept de valeur : **4089** sur **4176** —
@@ -1845,7 +1845,7 @@ Reconnu par : son noyau `sum` `sinPoints` `minimum` (≥ 1)
 
 ### 3.9 référence de source (livre/folio) — `source` (strate Valeur)
 
-120 ligne(s), 4715 occurrence(s).
+120 ligne(s), 4717 occurrence(s).
 Reconnu par : son noyau `book`
 
 | Famille | Champ | Forme | Statut | Dataset | Occurrences | Cibles résolues | Note |
@@ -1935,7 +1935,7 @@ Reconnu par : son noyau `book`
 | config | `source` | `book,page` | cible | `ship-criticals.json` | 1 | — |  |
 | entité | `source` | `book,note,page` | cible | `ship-stations.json` | 5 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | entité | `alsoIn` | `book,note,page,quote` | cible | `skills.json` | 2 | — | idem, avec la précision `note` |
-| entité | `source` | `book,note,page` | cible | `skills.json` | 51 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
+| entité | `source` | `book,note,page` | cible | `skills.json` | 53 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
 | entité | `source` | `book,page` | cible | `skills.json` | 46 | — |  |
 | entité | `alsoIn` | `book,page,quote` | cible | `species.json` | 1 | — | emplacement secondaire + sa preuve verbatim (`secondarySourceRefSchema`) |
 | entité | `source` | `book,note,page` | cible | `species.json` | 5 | — | note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`) |
@@ -2533,7 +2533,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13319** objets sur **48927** ne sont portés par AUCUNE
+Au-delà des orphelines, **13319** objets sur **48931** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -3808,7 +3808,7 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `spells.ts` | 54 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `spells.ts` | 57 | — | — | hors lexique | `kind` | `conditionSchema` |
 | `steam-breakdown.ts` | 28 | `restart` | test | divergente | `char,difficulty,skill+…` | — |
-| `talents.ts` | 74 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
+| `talents.ts` | 77 | `max` | — | hors lexique | `bonusOf` | `formulaSchema` |
 | `tavernGames.ts` | 76 | `options` | test | divergente | `char,difficulty,skill+…` | — |
 | `tavernGames.ts` | 103 | `rows` | plage | cible | `max,min+…` | — |
 | `tavernGames.ts` | 140 | `throwerPenalty` | test | divergente | `difficulty+…` | — |
@@ -5126,4 +5126,4 @@ pèse **2990** slots sur 3470.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: f43609edb53008e0facf343948e1e06db38e498c (387 fichiers, 10 dossiers) corps: e4b32d4be02eea30293520dfea1797be35cdd721 -->
+<!-- sources-empreinte: c836875c208305be90fa49250622f9e52c28440e (388 fichiers, 10 dossiers) corps: 31811272d3aa9b35081bc8ee33ac100750635104 -->

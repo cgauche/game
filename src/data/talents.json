@@ -935,7 +935,7 @@
         {
           "skill": {
             "id": "savoir",
-            "spec": "Apothicaire"
+            "spec": "apothicaire"
           }
         }
       ]

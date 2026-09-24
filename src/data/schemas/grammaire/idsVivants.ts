@@ -6,7 +6,7 @@
  * à l'atelier — sans lui, une entité neuve est invalide pour toute donnée qui la référence tant que
  * le générateur n'a pas tourné.
  *
- * Ce module est une FEUILLE : il n'importe RIEN. C'est ce qui le rend consommable par `ref.ts`, que
+ * Ce module est une FEUILLE : il n'importe que la feuille `sourcesDeSpecs.ts`. C'est ce qui le rend consommable par `ref.ts`, que
  * le registre généré ne peut pas atteindre (`_registry.generated.ts` importe les defs, qui appellent
  * `idDe` à l'initialisation — lire le registre depuis `ref.ts` fermerait le cycle). La couche DONNÉE
  * (`src/data/overrides.ts`, propriétaire des bindings mutés en place) POSE sa source ici ; sans
@@ -17,6 +17,8 @@
  * (`SourceDIdsVivants.version`), seul témoin d'une écriture au seam — un binding muté en place garde
  * son identité. Poser une source vide le mémo.
  */
+
+import { SOURCES_DE_SPECS, universDeSource, type SourceDeSpecs } from './sourcesDeSpecs.ts';
 
 /** Ce que la couche donnée fournit : les entrées VIVES d'un document, sa version, et son champ discriminant. */
 export interface SourceDIdsVivants {
@@ -41,6 +43,7 @@ export function poserSourceDIdsVivants(s: SourceDIdsVivants | undefined): Source
   const precedente = source;
   source = s;
   memo.clear();
+  memoSpecs.clear();
   return precedente;
 }
 
@@ -72,8 +75,49 @@ export function idsVivantsDuDiscriminant(fichier: string, valeur: string): Reado
   return memorise(fichier, `${fichier}\u0000=${valeur}`, (e) => e[champ] === valeur);
 }
 
+/**
+ * Une entrée PORTE-t-elle le champ marqueur `champ` ? Présent, et autre que `false` : la case à cocher
+ * générique du Codex (`editFields.ts`, `CodexEdit.tsx`) écrit `false` au décochage. SEUL prédicat du
+ * marqueur, lu ici (mémoire) et par `npm run gen` (`scripts/gen-registry.mjs › idsParMarqueur`).
+ */
+export function porteLeChampMarqueur(e: Readonly<Record<string, unknown>>, champ: string): boolean {
+  const v = e[champ];
+  return v !== undefined && v !== false;
+}
+
 /** Ids d'une SOUS-LISTE MARQUÉE telle que la mémoire la porte : les entrées qui portent le champ
  *  `marqueur` (`props.json` × `volume`) — `undefined` si aucune source ou aucun binding mutable. */
 export function idsVivantsDuMarqueur(fichier: string, marqueur: string): ReadonlySet<string> | undefined {
-  return memorise(fichier, `${fichier}\u0000?${marqueur}`, (e) => e[marqueur] !== undefined);
+  return memorise(fichier, `${fichier}\u0000?${marqueur}`, (e) => porteLeChampMarqueur(e, marqueur));
+}
+
+/** Mémo des catalogues de spécialisations vivants : (fichier, id) → (versions lues, catalogue). */
+const memoSpecs = new Map<string, { readonly versions: string; readonly specs: readonly string[] }>();
+
+/**
+ * Catalogue de SPÉCIALISATIONS de l'entrée `id` du document `fichier` tel que la mémoire le porte : ses
+ * `specs[].id`, ou l'UNIVERS de sa `specsSource` (`sourcesDeSpecs.ts`) — même calcul que
+ * `SPECS_PAR_DATASET` (`npm run gen`). `undefined` si aucune source, si le document (ou le dataset de la
+ * source) n'a pas de binding-liste mutable : l'appelant lit alors le registre généré.
+ */
+export function specsVivantesDe(fichier: string, id: string): readonly string[] | undefined {
+  if (!source) return undefined;
+  const entrees = source.entrees(fichier);
+  if (!entrees) return undefined;
+  const e = entrees.find((x) => x.id === id);
+  const declaration: SourceDeSpecs | undefined =
+    typeof e?.specsSource === 'string' ? (SOURCES_DE_SPECS as Record<string, SourceDeSpecs>)[e.specsSource] : undefined;
+  const racine = declaration ? source.entrees(declaration.dataset) : undefined;
+  if (declaration && !racine) return undefined;
+  const versions = `${source.version(fichier)}/${declaration ? source.version(declaration.dataset) : ''}`;
+  const cle = `${fichier}\u0000#${id}`;
+  const connu = memoSpecs.get(cle);
+  if (connu && connu.versions === versions) return connu.specs;
+  const specs = declaration
+    ? universDeSource(declaration, racine)
+    : Array.isArray(e?.specs)
+      ? (e.specs as unknown[]).flatMap((x) => (x && typeof (x as { id?: unknown }).id === 'string' ? [(x as { id: string }).id] : []))
+      : [];
+  memoSpecs.set(cle, { versions, specs });
+  return specs;
 }
