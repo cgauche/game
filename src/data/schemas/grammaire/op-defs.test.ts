@@ -68,6 +68,20 @@ describe('OP_DEFS — payload strict par op, repli nominatif, rouge au SITE', ()
     expect(JSON.stringify(res.error!.issues)).toMatch(/zzz/);
   });
 
+  it('`skillDRBonus` : cible EXCLUSIVE — `skill` OU `testType`, jamais les deux, jamais aucune, refus NOMMÉ', () => {
+    expect(gameOpSchema.safeParse({ op: 'skillDRBonus', skill: { id: 'calme' }, bonus: 1 }).success).toBe(true);
+    expect(gameOpSchema.safeParse({ op: 'skillDRBonus', testType: 'poursuite', bonus: 1 }).success).toBe(true);
+    for (const cible of [{ skill: { id: 'calme' }, testType: 'poursuite' }, {}]) {
+      const res = gameOpSchema.safeParse({ op: 'skillDRBonus', ...cible, bonus: 1 });
+      expect(res.success).toBe(false);
+      expect(res.error!.issues.map((i) => i.code)).toEqual(['invalid_union']);
+      expect(res.error!.issues[0].message).toMatch(/GameOp « skillDRBonus » : cible EXCLUSIVE : « skill » .* OU « testType »/);
+    }
+    // Une cible UNIQUE mais fausse garde le refus de sa FEUILLE, pas celui de l'exclusivité.
+    const fantome = gameOpSchema.safeParse({ op: 'skillDRBonus', skill: { id: 'id-fantome' }, bonus: 1 });
+    expect(fantome.error!.issues.map((i) => i.path.join('.'))).toEqual(['skill.id']);
+  });
+
   it('la clé `op` SURCHARGÉE d’une `Condition` (comparateur) ne passe pas par ce rouge', () => {
     for (const comparateur of ['>=', '<=', '>', '<', '==']) {
       const cond = { kind: 'slThreshold', op: comparateur, value: 2 };

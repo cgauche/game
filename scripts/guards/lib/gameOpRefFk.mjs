@@ -101,8 +101,8 @@ export const GAMEOP_FIELD_TARGETS = {
   'grantTalent.talentId': { registry: 'talents' },
   'grantCareerTalent.talentId': { registry: 'talents' },
   // `skill` d'op = RÉFÉRENCE EMBOÎTÉE `{ id, spec? }` — hors de portée de ce filet (aveugle aux réfs
-  // OBJET, angle mort déclaré :23-33). Op typée dans `OP_DEFS` : `refOuSpec('skill')` refuse au parse
-  // (`src/data/schemas/grammaire/mecanique.ts`) ; op non typée : `refs-migrated.test.ts` § ops à réf de Compétence.
+  // OBJET, angle mort déclaré :23-33) : `refOuSpec('skill')` de `OP_DEFS` la refuse au parse
+  // (`src/data/schemas/grammaire/mecanique.ts`).
   'testMod.exceptSkills': { registry: 'skills' },
   'skillDRBonus.testType': { registry: 'crewTestTypes' },
   // Spécialisations : résolution assurée par la GARDE EXHAUSTIVE Phase 3 de

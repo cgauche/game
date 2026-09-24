@@ -221,7 +221,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `scheduleRespawn` | `ref`, `delayDays`, `count?`, `allyOfCaster?`, `cancelFlag?` | **inerte au switch** | `state/combatFlow.ts` | 1 — `traits.json:gardien-eternel` | RECONSTITUTION DIFFÉRÉE (Gardien éternel, Middenheim — « se reconstitue au bout de d10 jours »). |
 | `senseLoss` | `sense` | exécutée | `engine/trauma.ts`, `state/targetingModes.ts` | 2 — `traumas.json:oeil-perdu`, `traumas.json:oreille-perdue` | Perte d'un organe sensoriel PAIRÉ (œil/oreille). |
 | `sinMod` | `amount` | exécutée | `state/combatEffects.ts` | 2 — `activities.json:penitence`, `activities.json:penitence` | Points de PÉCHÉ ±N (LDB 40 l.36 : sanction du prêtre fautif ; ACE Annexe I « Pénitence » : « enlevez 1 point de Péché, ou 2 sur un Succès Impressionnant ») — jamais sous 0. |
-| `skillDRBonus` | `skill?`, `bonus`, `testType?` | exécutée | `engine/navalTraits.ts`, `state/targetingModes.ts` | 60 — `naval-traits.json:peu-maniable`, `naval-traits.json:peu-maniable` … | +N DR à un Test de Compétence nommé (Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85 p.339 ; chanson « Jacques Bret » : +1 DR sur tout Test de Corps à corps réussi, MDG 09 l.228). |
+| `skillDRBonus` | `skill`, `bonus` \| `testType`, `bonus` | exécutée | `engine/navalTraits.ts`, `state/targetingModes.ts` | 60 — `naval-traits.json:peu-maniable`, `naval-traits.json:peu-maniable` … | +N DR à un Test de Compétence nommé (Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85 p.339 ; chanson « Jacques Bret » : +1 DR sur tout Test de Corps à corps réussi, MDG 09 l.228). |
 | `skillMod` | `skill`, `mod`, `sense?` | exécutée | `engine/skills.ts`, `engine/trauma.ts`, `engine/wearPenalty.ts` +1 | 26 — `drunkenness.json:bravoure-marienburgher`, `mutations.json:langue-pendante` … | Modificateur (pénalité/bonus) à UNE Compétence nommée — GÉNÉRALISE les pénalités de séquelle `skillPenalty` (Langue −100 « auto-échec parole ») ET `dodgePenalty` (Esquive −20, mobilité). |
 | `spendAdvantage` | `amount` | exécutée | — | **0** | Dépense `amount` Points d'Avantage du RÉFÉRENT (Déstabilisante : coût d'un Test de renversement). |
 | `statusMod` | `amount` | exécutée | `state/interludeFlow.ts` | 1 — `activities.json:surpris` | Modificateur TEMPORAIRE de Standing (LDB 23 l.228-234 « Réputation » : +1 sur succès, +2 sur Succès Stupéfiant, −1 sur Échec Stupéfiant) — durée `{scale:'adventure'}` (« pour la prochaine aventure »), composé par `heroStatus` (interludeFlow.ts), purgé à l'interlude SUIVANT (`purgeAdventureEffects`). |
@@ -239,7 +239,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `wounds` | `amount`, `perSL?`, `onlyGroups?`, `ignoreTB?`, `ignoreAP?`, `bypassArmour?`, `apFrom?`, `min?`, `extraAP?`, `weaponHit?` | exécutée | `engine/critical.ts`, `engine/disease.ts`, `engine/miscast.ts` +9 | 226 — `criticals.json:blessure-spectaculaire`, `criticals.json:coupure-mineure` … | Blessures subies DIRECTEMENT. |
 | `zone` | `shape`, `radiusMeters?`, `lengthMeters?`, `lengthPerSL?`, `blocksLoS?`, `onCross?`, `perRound?`, `crossTest?`, `barrier?`, `gate?`, `noCorruption?` | **inerte au switch** | `engine/overcast.ts`, `state/combatFlow.ts`, `state/zones.ts` | 13 — `spells.json:vol-du-destin`, `spells.json:grands-feux-d-u-zhul` … | ZONE PERSISTANTE posée par le sort (Mur de feu, Grands feux d'U'Zhul, Vol du Destin). |
 
-_110 ops (111 membres d'union avant fusion des formes) — 87 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
+_110 ops (112 membres d'union avant fusion des formes) — 87 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
 
 ### Ops à ZÉRO usage en donnée (7)
 
@@ -356,4 +356,4 @@ Valeurs du champ `on` d'un `TriggeredEffect`.
 | `{ pick … }` | `sizeAtMost?`, `max` | — |
 
 _6 entrées — dérivées de `src/engine/flowCore.ts`._
-<!-- sources-empreinte: 0e2ddf96a22fcfe649f34634f9e2686f364c268d (668 fichiers, 16 dossiers) corps: 4f3605f39a7f6dc0e317afe2cd66e8149f3dee07 -->
+<!-- sources-empreinte: 83fd7527ca92d8013c9e75db1526bb5d7d38aea3 (668 fichiers, 16 dossiers) corps: 08df37992b75e363544abb31ade696cdc262b914 -->

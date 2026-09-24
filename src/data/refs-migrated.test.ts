@@ -14,7 +14,6 @@ import {
   specLabel, refLabel, specEntryId, specEntryLabel, specResolves, SPEC_SOURCES, type SpecsSource, type SpecEntry, books,
 } from './index';
 import { avancement } from './schemas/grammaire/avancement';
-import { OPS_NON_TYPEES } from './schemas/grammaire/mecanique';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
@@ -45,18 +44,7 @@ import { extractedBooks, frenchSourceDirs, isSentinel, sourceDirOf, walkSkillRef
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x != null;
 
-/** Les DEUX racines authiorées, pour les filets qui doivent être EXHAUSTIFS par construction plutôt
- *  que par liste de datasets (une liste se périme en silence).
- *
- *  PÉRIMÈTRE — ce sont les documents **JSON** des deux racines, et EUX SEULS. Les scènes écrites en
- *  TypeScript (`src/scenes/test-scenarios/*.ts` — `opera.ts`, `piege-caveau.ts`…) n'y entrent pas :
- *  leurs références ne sont couvertes que par `tsc`, via le TYPAGE des slots (`FlowTest.skill`,
- *  payloads d'op). Une graphie plate y serait rouge au typecheck, jamais ici. */
 const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const DOCUMENTS_AUTHORES = [
-  ...collectJsonFiles(fileURLToPath(new URL('.', import.meta.url)), REPO_ROOT),
-  ...collectJsonFiles(fileURLToPath(new URL('../scenes', import.meta.url)), REPO_ROOT),
-].map((s) => s.data);
 
 describe('refs migrées — refs structurées par id, zéro libellé résiduel', () => {
   it('trappings.qualities = QualityRef[] {id} qui résout (id stable)', () => {
@@ -381,39 +369,6 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
         expect(findQualityById(q as string), String(q)).toBeTruthy();
       }
     });
-  });
-
-  // FILET SUR LE WALK des ops de `OPS_NON_TYPEES` à référence de Compétence : leur payload est loose,
-  // et `gameOpRefFk.mjs` est aveugle aux réfs OBJET (angle mort déclaré :23-33). Une op TYPÉE dans
-  // `OP_DEFS` (`grammaire/mecanique.ts`) quitte cette liste : son `refOuSpec('skill')` refuse au parse.
-  const OPS_A_REF_DE_COMPETENCE = ['grantReverseToken'];
-
-  /** VERDICT PUR du filet, sur un corpus quelconque : la liste des graphies fautives rencontrées.
-   *  L'extraire permet de MESURER que le filet mord (contrôle positif ci-dessous) au lieu de le
-   *  croire sur un vert. */
-  const echecsDeRefDeCompetence = (corpus: unknown): string[] => {
-    const echecs: string[] = [];
-    walk(corpus, (o) => {
-      if (typeof o.op !== 'string' || !OPS_A_REF_DE_COMPETENCE.includes(o.op) || o.skill == null) return;
-      if (!isObj(o.skill)) { echecs.push(`${o.op} sans réf emboîtée { skill: { id } } : ${JSON.stringify(o)}`); return; }
-      if (o.spec !== undefined) echecs.push(`${o.op} : « spec » FRÈRE de « skill » — la spécialisation vit DANS la référence : ${JSON.stringify(o)}`);
-      if (!byId('skill', (o.skill as { id: string }).id)) echecs.push(`${o.op} : id de Compétence qui ne résout pas : ${JSON.stringify(o)}`);
-    });
-    return echecs;
-  };
-
-  it('ops à référence de Compétence NON TYPÉES (grantReverseToken) = `skill: { id, spec? }` qui résout', () => {
-    // PÉRIMÈTRE EXHAUSTIF PAR CONSTRUCTION (`DOCUMENTS_AUTHORES`), jamais une liste de datasets.
-    expect(OPS_A_REF_DE_COMPETENCE.filter((op) => !OPS_NON_TYPEES.includes(op)), 'op typée dans OP_DEFS : elle sort du filet').toEqual([]);
-    expect(echecsDeRefDeCompetence(DOCUMENTS_AUTHORES)).toEqual([]);
-  });
-
-  it('CONTRÔLE POSITIF — le filet MORD sur les trois graphies fautives (corpus EN MÉMOIRE)', () => {
-    const op = (x: Record<string, unknown>) => [{ op: 'grantReverseToken', ...x }];
-    expect(echecsDeRefDeCompetence(op({ skill: { id: 'calme' } }))).toEqual([]);
-    expect(echecsDeRefDeCompetence(op({ skill: 'calme' }))[0]).toContain('sans réf emboîtée');
-    expect(echecsDeRefDeCompetence(op({ skill: { id: 'calme' }, spec: 'bagarre' }))[0]).toContain('« spec » FRÈRE');
-    expect(echecsDeRefDeCompetence(op({ skill: { id: 'id-fantome' } }))[0]).toContain('ne résout pas');
   });
 
   it('ops grantCareerTalent (→ carrière) = réf par id qui résout (jamais un libellé)', () => {

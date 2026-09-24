@@ -518,7 +518,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
     case 'light': return { op: 'light', radiusM: 10 };
     case 'skillMod': return { op: 'skillMod', skill: { id: '' }, mod: -10 };
-    case 'skillDRBonus': return { op: 'skillDRBonus', bonus: 1 };
+    case 'skillDRBonus': return { op: 'skillDRBonus', skill: { id: '' }, bonus: 1 };
     case 'charDRBonus': return { op: 'charDRBonus', char: 'sociabilite', bonus: 1 };
     case 'crewTestMod': return { op: 'crewTestMod', mod: 10 };
     // Aucun id EN DUR : la table se choisit, comme une table référencée de `rollTable` (`tableId: ''`).
@@ -629,6 +629,12 @@ export function opsMissingRefs(value: unknown): string[] {
 // Résumé
 // ---------------------------------------------------------------------------
 
+/** Libellé d'une réf PRÉSENTE dans une op : id vide = choix non fait, jamais un libellé vide. Le sens
+ *  d'une réf ABSENTE appartient à l'op, testé par l'appelant. Précédent : `fall`, « — table à choisir — ». */
+function refOuChoix(category: DatasetKey, ref: { id: string; spec?: string }, quoi: string): string {
+  return ref.id ? refLabel(category, ref) : `— ${quoi} à choisir —`;
+}
+
 export function opSummary(o: GameOp): string {
   // Une op dont la réf REQUISE n'est pas élue n'a pas de résumé à donner : elle porte son état, et la
   // rangée affiche la raison détaillée (`opsMissingRefs`).
@@ -645,7 +651,7 @@ export function opSummary(o: GameOp): string {
     case 'incomingSpellDRMod': return `${typeof o.amount === 'number' && o.amount >= 0 ? '+' : ''}${formulaSummary(o.amount)} DR de Sort / point`;
     case 'charMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'skillMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', o.skill)}`;
-    case 'skillDRBonus': return `+${formulaSummary(o.bonus)} DR ${o.skill ? refLabel('skills', o.skill) : (findCrewTestTypeById(o.testType ?? '')?.label ?? o.testType)}`;
+    case 'skillDRBonus': return `+${formulaSummary(o.bonus)} DR ${o.skill ? refOuChoix('skills', o.skill, 'compétence') : o.testType ? (findCrewTestTypeById(o.testType)?.label ?? o.testType) : '— compétence ou test à choisir —'}`;
     case 'charDRBonus': return `+${formulaSummary(o.bonus)} DR ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'crewTestMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} (Tests d’équipage)`;
     case 'fall': return `hauteur lue dans « ${findFallTable(o.hauteur.table.id)?.label ?? (o.hauteur.table.id || '— table à choisir —')} »`;
@@ -662,11 +668,11 @@ export function opSummary(o: GameOp): string {
     case 'gainResource': return `${o.amount >= 0 ? '+' : '−'}${Math.abs(o.amount)} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
     case 'corruption': return `${o.amount >= 0 ? '+' : ''}${o.amount}${o.align ? ` (${libelleDeValeur(chaosAlignSchema, o.align)})` : ''}`;
     case 'sinMod': return `${o.amount >= 0 ? '+' : ''}${o.amount}`;
-    case 'corruptionExposure': return o.easeSteps != null ? `abri : −${o.easeSteps} cran(s) d’Influence` : `${libelleDeValeur(exposureLevelSchema, o.level ?? '')}${o.skill ? ` (${refLabel('skills', o.skill)})` : ''}`;
-    case 'castPenalty': return `${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill ? refLabel('skills', o.skill) : 'toute magie'}`}`;
+    case 'corruptionExposure': return o.easeSteps != null ? `abri : −${o.easeSteps} cran(s) d’Influence` : `${libelleDeValeur(exposureLevelSchema, o.level ?? '')}${o.skill ? ` (${refOuChoix('skills', o.skill, 'compétence')})` : ''}`;
+    case 'castPenalty': return `${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill ? refOuChoix('skills', o.skill, 'compétence de magie') : 'toute magie'}`}`;
     case 'money': return `bourse ${typeof o.montant.brass === 'number' && o.montant.brass < 0 ? '' : '+'}${formulaSummary(o.montant.brass)} sc`;
     case 'statusMod': return `Standing ${formulaSummary(o.amount)} (prochaine aventure)`;
-    case 'grantReverseToken': return `inverser ${o.skill ? refLabel('skills', o.skill) : 'un Test (cible)'}`;
+    case 'grantReverseToken': return `inverser ${o.skill ? refOuChoix('skills', o.skill, 'compétence') : 'un Test (cible)'}`;
     case 'castWard': return `−20 Langue, rayon ${formulaSummary(o.radius)} m`;
     case 'arrowWard': return 'projectiles organiques détruits (ZdE du sort)';
     case 'domeWard': return `${formatWardSave(o.traitId, formulaSummary(o.indice))} (ZdE du sort)`;
@@ -688,8 +694,8 @@ export function opSummary(o: GameOp): string {
       o.passive?.length ? 'maniement altéré' : '',
     ].filter(Boolean).join(', ') || '(vide)'}`;
     case 'cureDisease': return `${o.count ?? 1} maladie(s)`;
-    case 'reduceDiseaseDays': return `−${o.dice ? `${o.dice.n}d${o.dice.sides}` : (o.days ?? 1)} jour(s)${o.disease ? ` (${refLabel('maladies', { id: o.disease })})` : ''}`;
-    case 'diseaseTestMod': return `${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie${o.diseases?.length ? ` (${o.diseases.map((d) => refLabel('maladies', { id: d })).join(', ')})` : ''}`;
+    case 'reduceDiseaseDays': return `−${o.dice ? `${o.dice.n}d${o.dice.sides}` : (o.days ?? 1)} jour(s)${o.disease != null ? ` (${refOuChoix('maladies', { id: o.disease }, 'maladie')})` : ''}`;
+    case 'diseaseTestMod': return `${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie${o.diseases?.length ? ` (${o.diseases.map((d) => refOuChoix('maladies', { id: d }, 'maladie')).join(', ')})` : ''}`;
     case 'suppressSymptom': return `${refLabel('symptoms', { id: o.symptomId })} suspendu`;
     case 'aggravateSymptom': return `${refLabel('symptoms', { id: o.symptomId })} → ${o.severity} (${refLabel('maladies', { id: o.disease })})`;
     case 'attenuateSymptom': return `${refLabel('symptoms', { id: o.symptomId })} → échelon inférieur (${refLabel('maladies', { id: o.disease })})`;

@@ -105,14 +105,20 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     suffocates: z.boolean().optional(),
   }),
   skillMod: z.strictObject({ op: z.literal('skillMod'), skill: refOuSpec('skill'), mod: z.number(), sense: senseSchema.optional() }),
-  /** `testType` : id de `crew-test-types.json`, document `config` dont les ids vivent sous `types[]` —
-   *  hors du registre `IDS_PAR_DATASET` (`scripts/gen-registry.mjs`, `idsDuDataset`) ; clé étrangère
-   *  tenue par `scripts/guards/lib/gameOpRefFk.mjs`. */
-  skillDRBonus: z.strictObject({
-    op: z.literal('skillDRBonus'),
-    skill: refOuSpec('skill').optional(),
-    bonus: formulaSchema,
-    testType: z.string().optional(),
+  /** Cible EXCLUSIVE, `skill` OU `testType` (`engine/ops.ts`, union `skillDRBonus`). `testType` : id de
+   *  `crew-test-types.json`, document `config` dont les ids vivent sous `types[]` — hors du registre
+   *  `IDS_PAR_DATASET` (`scripts/gen-registry.mjs`, `idsDuDataset`) ; clé étrangère tenue par
+   *  `scripts/guards/lib/gameOpRefFk.mjs` pour les sous-listes à ids des documents `config` (#1473). */
+  skillDRBonus: z.union([
+    z.strictObject({ op: z.literal('skillDRBonus'), skill: refOuSpec('skill'), bonus: formulaSchema }),
+    z.strictObject({ op: z.literal('skillDRBonus'), testType: z.string(), bonus: formulaSchema }),
+  ], {
+    error: (iss) => {
+      const v = (iss.input ?? {}) as { skill?: unknown; testType?: unknown };
+      return (v.skill === undefined) === (v.testType === undefined)
+        ? 'cible EXCLUSIVE : « skill » (Compétence) OU « testType » (type de Test d’équipage, crew-test-types.json) — exactement une des deux.'
+        : undefined;
+    },
   }),
   castPenalty: z.strictObject({
     op: z.literal('castPenalty'),
@@ -126,6 +132,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     days: formulaSchema.optional(),
   }),
   grantCareerSkill: z.strictObject({ op: z.literal('grantCareerSkill'), skill: refOuSpec('skill') }),
+  grantReverseToken: z.strictObject({ op: z.literal('grantReverseToken'), skill: refOuSpec('skill').optional() }),
 };
 
 /**
@@ -142,7 +149,7 @@ export const OPS_NON_TYPEES: readonly string[] = [
   'condition', 'contractDisease', 'crewTestMod', 'critOnRoll', 'critTwice', 'cureCriticalWound', 'cureDisease',
   'damageArmour', 'delayed', 'disarm', 'diseaseTestMod', 'endPsych', 'endTransform', 'exposeDisease',
   'freeReroll', 'gainAdvantage', 'gainResource', 'giveTrapping', 'grantCareerTalent',
-  'grantFreeAttack', 'grantNaturalWeapon', 'grantPsychTrait', 'grantReverseToken', 'grantTalent', 'grantTrait',
+  'grantFreeAttack', 'grantNaturalWeapon', 'grantPsychTrait', 'grantTalent', 'grantTrait',
   'grantWeapon', 'handGate', 'ignoreAnimosity', 'ignoreStatePenalties', 'incomingAdvantage', 'incomingAttackMod',
   'incomingSpellDRMod', 'interruptFocus', 'intoxicate', 'lifeSteal', 'light', 'martyr', 'maxWeaponHands',
   'mitigateIncoming', 'moveMod', 'moveScale', 'narrative', 'perRound', 'polymorph',

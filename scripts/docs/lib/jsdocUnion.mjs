@@ -71,6 +71,12 @@ export function aliasDoc(text, alias, sf) {
   return jsdocBody(text.slice(alias.getFullStart(), alias.getStart(sf)))
 }
 
+/** Le champ est-il une EXCLUSION (`champ?: never`) — l'interdit d'un membre d'union exclusive, jamais
+ *  un champ qu'il porte ? */
+function estExclusion(prop) {
+  return prop.type?.kind === ts.SyntaxKind.NeverKeyword
+}
+
 /**
  * Membres d'une union discriminée, avec leur JSDoc.
  * `discriminant` : nom de la propriété littérale qui NOMME le membre (`type`, `op`, `kind`).
@@ -97,6 +103,7 @@ export function readUnionMembers(sf, text, alias, discriminant, tool, opts = {})
         name = prop.type.literal.text
         continue
       }
+      if (estExclusion(prop)) continue
       fields.push(pname + (prop.questionToken ? '?' : ''))
     }
     if (!name) {

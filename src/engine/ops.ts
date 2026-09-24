@@ -553,7 +553,7 @@ export type GameOp =
   /** Pénalité/blocage d'incantation temporisé (contrecoups, LDB 46/40) : −N à une
    *  Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. Durée en
    *  Rounds (combat + entretien hors combat) OU en minutes/jours d'horloge.
-   *  `skill` absent = TOUTE magie (même idiome d'absence que `grantReverseToken` ci-dessus). */
+   *  `skill` absent = TOUTE magie (même idiome d'absence que `grantReverseToken` ci-dessous). */
   | { op: 'castPenalty'; skill?: SkillRef; mod?: number; blocked?: boolean; maxZeroDR?: boolean; rounds?: Formula; minutes?: Formula; hours?: Formula; days?: Formula }
   /** Modificateur TEMPORAIRE de Standing (LDB 23 l.228-234 « Réputation » : +1 sur succès, +2 sur Succès
    *  Stupéfiant, −1 sur Échec Stupéfiant) — durée `{scale:'adventure'}` (« pour la prochaine aventure »),
@@ -953,11 +953,12 @@ export type GameOp =
    *  l'op est EXÉCUTÉE par un sort/une chanson (`applyOps`), depuis un `ActiveEffect.drBonus` temporisé.
    *  DISTINCT de `skillMod` (qui modifie la VALEUR du Test, pas le DR obtenu). La `spec` de la référence
    *  restreint à une spécialisation (Aura de Dhar → Langue (Magick) seulement) ; absente = toute spéc.
-   *  `testType` OPTIONNEL (#221, traits navals `naval-traits.json` uniquement) : cible un TYPE de Test
-   *  d'équipage (`crew-test-types.json`) plutôt qu'une compétence — `skill` devient alors optionnel (une
-   *  Poursuite se court à la Voile OU aux avirons, le bonus est agnostique de la compétence) ; lu par
-   *  `navalTestTypeDR`, JAMAIS par `skillDRBonus` (personnage) ni `navalSkillTestDR` (coque). */
-  | { op: 'skillDRBonus'; skill?: SkillRef; bonus: Formula; testType?: string }
+   *  CIBLE EXCLUSIVE : SOIT `skill`, SOIT `testType` (#221, traits navals `naval-traits.json` uniquement),
+   *  un TYPE de Test d'équipage (`crew-test-types.json`) agnostique de la compétence (une Poursuite se
+   *  court à la Voile OU aux avirons) ; `testType` est lu par `navalTestTypeDR`, JAMAIS par `skillDRBonus`
+   *  (personnage) ni `navalSkillTestDR` (coque). */
+  | { op: 'skillDRBonus'; skill: SkillRef; bonus: Formula; testType?: never }
+  | { op: 'skillDRBonus'; testType: string; bonus: Formula; skill?: never }
   /** +N DR aux Tests d'une CARACTÉRISTIQUE (chanson « Camarades d'équipage » : +1 DR sur tout Test de
    *  Sociabilité, MDG 09 l.236) — variante par carac de `skillDRBonus`. Exécutée → `ActiveEffect.drBonus`
    *  temporisé ; lisible aussi en PASSIF (trait/aura). Consommée par `charDRBonusOf` sur un Test RÉUSSI. */
