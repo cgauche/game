@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildTokenMap, applyTokenMap } from './palette';
+import { buildTokenMap, applyTokenMap, tableDObjet, versHsl, chroma, clarte8, CHROMA_DE_TEINTE } from './palette';
+import { palettesDeclarees } from '../../../scripts/guards/lib/palettesDeclarees';
 import { CLES, COUCHE_DEFAUT, defautDe, propagerSuiveuses } from './clesDePalette';
 import { couchesDuRig } from './parts/career';
 
@@ -19,12 +20,57 @@ describe('palette — buildTokenMap', () => {
     expect(m.vet1H).toBe('#767676'); // 100*1.18 = 118 = 0x76
   });
 
-  it('clé surchargée par le joueur : TOUTE la gamme dérive du choix (ignore les ombres déclarées)', () => {
+  it('clé surchargée : la base est le choix, l’écart de la gamme de couche s’y reporte en HSL (D3 point 3)', () => {
     const declaree = { vet1: '#82724f', vet1O: '#112233', vet1H: '#ffeedd' };
     const m = buildTokenMap([declaree], { vet1: '#646464' });
     expect(m.vet1).toBe('#646464');
-    expect(m.vet1O).toBe('#4e4e4e');
-    expect(m.vet1H).toBe('#767676');
+    expect(m.vet1O).toBe('#212121');
+    expect(m.vet1H).toBe('#ededed');
+  });
+
+  it('surcharge saturée : sa lumière reste plus claire qu’elle', () => {
+    const m = buildTokenMap([], { vet1: '#ff0000' });
+    expect(m.vet1H).not.toBe('#ff0000');
+    expect(versHsl(m.vet1H)[2]).toBeGreaterThan(versHsl('#ff0000')[2]);
+  });
+
+  it('ombre recoloriée : garde la teinte de la surcharge et la PROPORTION de chroma de l’écart (peau #5d7a42)', () => {
+    const defaut = buildTokenMap([]);
+    const o = buildTokenMap([], { peau: '#5d7a42' }).peauO;
+    expect(o).not.toBe('#494949');
+    expect(Math.abs(versHsl(o)[0] - versHsl('#5d7a42')[0])).toBeLessThan(3);
+    expect(chroma(o) / chroma('#5d7a42')).toBeCloseTo(chroma(defaut.peauO) / chroma(defaut.peau), 1);
+  });
+
+  it('base de couche sans teinte (chroma < CHROMA_DE_TEINTE) : ni ΔH ni rapport de chroma reportés', () => {
+    const m = buildTokenMap([{ corps: '#c6cac5', corpsO: '#7b838c' }], { corps: '#b03030' });
+    expect(chroma('#c6cac5')).toBeLessThan(CHROMA_DE_TEINTE);
+    expect(Math.abs(versHsl(m.corpsO)[0] - versHsl('#b03030')[0])).toBeLessThan(3);
+    expect(chroma(m.corpsO)).toBeCloseTo(chroma('#b03030'), 1);
+  });
+
+  it('écart d’art d’un pas sous une surcharge sombre : ombre et lumière sortent d’une clarté 8 bits distincte', () => {
+    const m = buildTokenMap([{ vet1: '#808080', vet1O: '#7f7f7f', vet1H: '#818181' }], { vet1: '#101010' });
+    expect(clarte8(m.vet1O)).toBeLessThan(clarte8('#101010'));
+    expect(clarte8(m.vet1H)).toBeGreaterThan(clarte8('#101010'));
+  });
+
+  it('garde d’arrondi en clarté ENTIÈRE : lumière d’un pas d’art (gamme `chasseur`) sous trois surcharges du juge', () => {
+    for (const s of ['#feadac', '#d3bd56', '#78ba5d'])
+      expect(clarte8(buildTokenMap([{ vet1: '#3f5020', vet1H: '#46521f' }], { vet1: s }).vet1H), s).toBeGreaterThan(clarte8(s));
+  });
+
+  it('lumière déclarée `#ffffff` (Pégase, Hippogriffe `corpsH`) : reste blanche sous surcharge', async () => {
+    const blanches = (await palettesDeclarees()).flatMap(({ ou, palette }) =>
+      Object.entries(palette).filter(([k, v]) => /H$/.test(k) && v === '#ffffff' && palette[k.slice(0, -1)] != null).map(([k]) => ({ ou, palette, k })));
+    expect(blanches.length).toBeGreaterThanOrEqual(2);
+    for (const { ou, palette, k } of blanches)
+      for (const s of ['#3a2a1a', '#b03030', '#5d7a42']) expect(buildTokenMap([palette], { [k.slice(0, -1)]: s })[k], `${ou} ${k} sous ${s}`).toBe('#ffffff');
+  });
+
+  it('lumière d’une surcharge : jamais plus colorée que la surcharge quand l’art perd de la couleur', () => {
+    const m = buildTokenMap([{ corps: '#8fa4b6', corpsH: '#dcebf5' }], { corps: '#3a2a1a' });
+    expect(chroma(m.corpsH)).toBeLessThanOrEqual(chroma('#3a2a1a'));
   });
 
   it('clé déclarée nulle part : la couche défaut de la table la donne', () => {
@@ -82,6 +128,50 @@ describe('palette — buildTokenMap', () => {
     expect(applyTokenMap('<path fill="@vet1"/>', m)).toBe('<path fill="#abcdef"/>');
     expect(applyTokenMap('<path fill="@inconnu"/>', m)).toBe('<path fill="@inconnu"/>');
     expect(applyTokenMap('<path fill="#123456"/>', m)).toBe('<path fill="#123456"/>'); // hex en dur intact
+  });
+
+  it('dégradé dérivé : `dg-` résolu réécrit par son contenu, `<defs>` préfixé une fois par id', () => {
+    const m = buildTokenMap([{ vet1: '#aabbcc', vet1O: '#112233', vet1H: '#ddeeff' }], {});
+    const svg = applyTokenMap('<path fill="url(#dg-v-@vet1H-@vet1O)"/><path fill="url(#dg-v-@vet1H-@vet1O)"/>', m);
+    expect(svg).toBe('<defs><linearGradient id="dg-v-ddeeff-112233" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#ddeeff"/><stop offset="100%" stop-color="#112233"/></linearGradient></defs>' +
+      '<path fill="url(#dg-v-ddeeff-112233)"/><path fill="url(#dg-v-ddeeff-112233)"/>');
+  });
+
+  it('dégradé dérivé : forme `v3` à trois arrêts verticaux ; un arrêt littéral se résout sans jeton', () => {
+    const m = buildTokenMap([{ metal: '#8899aa', metalO: '#223344', metalH: '#ccddee' }], {});
+    expect(applyTokenMap('<path fill="url(#dg-v3-@metalH-@metal-@metalO)"/>', m)).toContain(
+      '<linearGradient id="dg-v3-ccddee-8899aa-223344" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#ccddee"/><stop offset="55%" stop-color="#8899aa"/><stop offset="100%" stop-color="#223344"/>');
+    const litteral = applyTokenMap('<path fill="url(#dg-v3-#5A3D22-#3e2917-#241509)"/>', {});
+    expect(litteral).toBe('<defs><linearGradient id="dg-v3-5a3d22-3e2917-241509" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#5a3d22"/><stop offset="55%" stop-color="#3e2917"/><stop offset="100%" stop-color="#241509"/>' +
+      '</linearGradient></defs><path fill="url(#dg-v3-5a3d22-3e2917-241509)"/>');
+  });
+
+  it('dégradé dérivé : un `dg-` qui garde un `@` n’est ni réécrit ni préfixé ; la passe suivante le résout', () => {
+    const objet = applyTokenMap('<path fill="url(#dg-v-@peauH-@peauO)" stroke="@metal"/>', tableDObjet([{ metal: '#8899aa' }]));
+    expect(objet).toBe('<path fill="url(#dg-v-@peauH-@peauO)" stroke="#8899aa"/>');
+    const porteur = buildTokenMap([{ peau: '#3a2a1a' }]);
+    expect(applyTokenMap(objet, porteur)).toBe(`<defs><linearGradient id="dg-v-${porteur.peauH.slice(1)}-${porteur.peauO.slice(1)}" x1="0" y1="0" x2="0" y2="1">` +
+      `<stop offset="0%" stop-color="${porteur.peauH}"/><stop offset="100%" stop-color="${porteur.peauO}"/></linearGradient></defs>` +
+      `<path fill="url(#dg-v-${porteur.peauH.slice(1)}-${porteur.peauO.slice(1)})" stroke="#8899aa"/>`);
+  });
+
+  it('dégradé dérivé : une seconde passe ne réémet pas un id déjà défini dans le fragment', () => {
+    const m = buildTokenMap([{ vet1: '#aabbcc' }], {});
+    const une = applyTokenMap('<path fill="url(#dg-v-@vet1H-@vet1O)" stroke="@peau"/>', tableDObjet([{ vet1: '#aabbcc' }]));
+    const deux = applyTokenMap(une + '<path fill="url(#dg-v-@vet1H-@vet1O)"/>', m);
+    expect(deux.match(/<linearGradient id="dg-v-/g)).toHaveLength(1);
+  });
+
+  it('table d’objet : aucune clé de sorte porteur (suiveuses d’une clé porteur comprises), le reste identique', () => {
+    const porteur = buildTokenMap([{ metal: '#8899aa' }], { cuir: '#00ff00' });
+    const objet = tableDObjet([{ metal: '#8899aa' }], { cuir: '#00ff00' });
+    for (const k of ['peau', 'cheveux', 'yeux', 'voilure']) for (const suf of ['', 'O', 'H']) expect(objet[k + suf], k + suf).toBeUndefined();
+    const sansPorteur = Object.fromEntries(Object.entries(porteur).filter(([k]) => !/^(peau|cheveux|yeux|voilure)(O|H)?$/.test(k)));
+    expect(objet).toEqual(sansPorteur);
+    expect(objet.aile).toBe(porteur.aile);
   });
 
   it('clés hors table déclarées par un def (ex. navire) : base + ombre/lumière dérivées, table intacte', () => {

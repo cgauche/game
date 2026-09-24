@@ -37,6 +37,7 @@ const CLES_DE_PALETTE = {
   } satisfies Record<Slot, LigneRecoloriable>,
   communes: communes({
     or: { defaut: '#c9a23c' },
+    acier: { defaut: '#9aa6b8', ombre: '#5a6376', lumiere: '#e8edf5' },
     botte: { defaut: '#3a2614', ombre: '#1f1408' },
     semelle: { defaut: '#241608', suit: 'botte' },
     botteDos: { defaut: '#2e1f10', ombre: '#1a1208', suit: 'botte' },

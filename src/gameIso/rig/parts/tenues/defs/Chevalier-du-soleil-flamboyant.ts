@@ -14,7 +14,7 @@ export const tenue: TenueDef = {
     metal: '#cdab4c', metalO: '#71561c', metalH: '#f2e4a8',
     or: '#e3ba3c', orO: '#9c7714', orH: '#f7e9ab',
     vet1: '#d6b85c', vet1O: '#93732a', vet1H: '#f0e3b2',
-    vet2: '#cf9f45', vet2O: '#8a621c', vet2H: '#e8c67c',
+    vet2: '#cf9f45', vet2O: '#8a621c', 
     plume: '#372a1c', plumeO: '#1d130a', plumeH: '#5c4930',
     cuir: '#3c2d1e', cuirO: '#211609', cuirH: '#5d4a34',
   },

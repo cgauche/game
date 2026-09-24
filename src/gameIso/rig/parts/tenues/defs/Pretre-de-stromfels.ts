@@ -16,7 +16,7 @@ export const tenue: TenueDef = {
     vet1: '#5d8074', vet1O: '#375149', vet1H: '#8fb2a3',
     vet2: '#6d764a', vet2O: '#454d2b', vet2H: '#8b9463',
     os: '#e8e0ca', osO: '#b0a380', osH: '#f6f1e2',
-    gemme: '#3f9061', gemmeO: '#1f5837', gemmeH: '#7fcd97',
+    gemme: '#3f9061', gemmeH: '#7fcd97',
     metal: '#7c7566', metalO: '#403a30', metalH: '#b6ac94',
     sceau: '#9c3c2b', sceauO: '#5c1e15', sceauH: '#c05a44',
     fourrure: '#7e8b5b', fourrureO: '#4d5735', fourrureH: '#a6b280',

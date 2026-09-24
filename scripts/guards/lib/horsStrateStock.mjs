@@ -730,7 +730,7 @@ export const HORS_STRATE_RATCHET = [
   { fichier: 'src/data/spells.json', ref: 'ritual | components,conditions,consequences,domains,reduced,sacrifices,type,xp', occurrence: 1 },
   { fichier: 'src/data/spells.json', ref: 'ritual | components,conditions,consequences,domains,sacrifices,type,xp', occurrence: 1 },
   { fichier: 'src/data/spells.json', ref: 'rounds | bonusOf', occurrence: 1 },
-  { fichier: 'src/data/spells.json', ref: 'skin | accent,accentH,accentO,cuir,cuirH,cuirO,metal,metalH,metalO', occurrence: 1 },
+  { fichier: 'src/data/spells.json', ref: 'skin | accent,cuir,metal', occurrence: 1 },
   { fichier: 'src/data/spells.json', ref: 'steps | cond,else,kind,then', occurrence: 1 },
   { fichier: 'src/data/spells.json', ref: 'steps | cond,kind,then', occurrence: 1 },
   { fichier: 'src/data/spells.json', ref: 'steps | effect,kind', occurrence: 1 },

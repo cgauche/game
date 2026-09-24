@@ -10,7 +10,7 @@ import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/
 import type { StakeRef } from '../../index';
 import { messageRecurrenceHorloge, type GameOp } from '../../../engine/ops';
 import { INDICE_TEMPLATE, type Condition, type EffectOp, type EffectTrigger, type Flow } from '../../../engine/flowCore';
-import { chaosAlignSchema, charKeySchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption, sizeCategorySchema, symptomSeveritySchema } from './valeurs';
+import { chaosAlignSchema, charKeySchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, plageSchema, reachSchema, refTestDeCorruption, sizeCategorySchema, surchargePaletteSchema, symptomSeveritySchema } from './valeurs';
 import { traitInstanceSchema } from './reference';
 import { marque } from './slots';
 import { idDe, ref, refs, refOuSpec } from './ref';
@@ -79,6 +79,28 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
    *  étalée parmi les clés de l'op (garde `src/data/monnaie-forme-unique.test.ts`, sonde A). La seule
    *  dénomination chiffrable est `brass`, l'unité de compte de `engine/money.ts`. */
   money: z.strictObject({ op: z.literal('money'), montant: z.strictObject({ brass: formulaSchema }) }),
+  giveTrapping: z.strictObject({
+    op: z.literal('giveTrapping'),
+    trappingId: idDe('trapping').optional(),
+    custom: z.string().optional(),
+    count: z.number().optional(),
+    perSL: perSLSchema.optional(),
+  }),
+  grantWeapon: z.strictObject({
+    op: z.literal('grantWeapon'),
+    label: z.string(),
+    damage: formulaSchema,
+    damagePlus: z.number().optional(),
+    plusBF: z.boolean().optional(),
+    qualities: z.array(z.string()).optional(),
+    subType: z.string().optional(),
+    reach: reachSchema.optional(),
+    hands: z.union([z.literal(1), z.literal(2)]).optional(),
+    onHitEffects: z.array(z.lazy(() => triggeredEffectSchema)).optional(),
+    skin: surchargePaletteSchema.optional(),
+    form: idDe('trapping').optional(),
+    chooseForm: z.boolean().optional(),
+  }),
   healCaster: z.strictObject({ op: z.literal('healCaster'), amount: formulaSchema }),
   kill: z.strictObject({ op: z.literal('kill') }),
   loseTurn: z.strictObject({ op: z.literal('loseTurn'), what: z.enum(['action', 'movement']).optional() }),
@@ -129,9 +151,9 @@ export const OPS_NON_TYPEES: readonly string[] = [
   'beginPsych', 'breakBlade', 'castPenalty', 'castWard', 'chain', 'charDRBonus', 'charDamage', 'charMod',
   'condition', 'contractDisease', 'crewTestMod', 'critOnRoll', 'critTwice', 'cureCriticalWound', 'cureDisease',
   'damageArmour', 'delayed', 'disarm', 'diseaseTestMod', 'endPsych', 'endTransform', 'exposeDisease',
-  'freeReroll', 'gainAdvantage', 'gainResource', 'giveTrapping', 'grantCareerSkill', 'grantCareerTalent',
+  'freeReroll', 'gainAdvantage', 'gainResource', 'grantCareerSkill', 'grantCareerTalent',
   'grantFreeAttack', 'grantNaturalWeapon', 'grantPsychTrait', 'grantReverseToken', 'grantTalent', 'grantTrait',
-  'grantWeapon', 'handGate', 'ignoreAnimosity', 'ignoreStatePenalties', 'incomingAdvantage', 'incomingAttackMod',
+  'handGate', 'ignoreAnimosity', 'ignoreStatePenalties', 'incomingAdvantage', 'incomingAttackMod',
   'incomingSpellDRMod', 'interruptFocus', 'intoxicate', 'lifeSteal', 'light', 'martyr', 'maxWeaponHands',
   'mitigateIncoming', 'moveMod', 'moveScale', 'narrative', 'perRound', 'polymorph',
   'preventInfection', 'push', 'reduceDiseaseDays', 'reduceToZero', 'removeCondition', 'removePsychTrait',

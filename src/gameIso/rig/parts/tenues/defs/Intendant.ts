@@ -8,9 +8,9 @@ export const tenue: TenueDef = {
   set: {
     pied: BOTTE_CUIR,
     torse: { front: `<!-- Intendant: pourpoint creme matelasse bouffant, echarpe verte, rosettes rouges, large ceinture d'intendant garnie d'etuis a parchemin -->
-<defs><linearGradient id="g_int_cream" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="@vet1H"/><stop offset="55%" stop-color="@vet1H"/><stop offset="100%" stop-color="@vet1O"/></linearGradient><linearGradient id="g_int_belt" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="@vet1O"/><stop offset="100%" stop-color="@vet1O"/></linearGradient></defs>
+
 <!-- corps du pourpoint, ventre rebondi -->
-<path d="M-15 -27 Q0 -32 15 -27 L14 6 Q15 24 11 33 Q0 39 -11 33 Q-15 24 -14 6 Z" fill="url(#g_int_cream)" stroke="@vet1O" stroke-width="0.8"/>
+<path d="M-15 -27 Q0 -32 15 -27 L14 6 Q15 24 11 33 Q0 39 -11 33 Q-15 24 -14 6 Z" fill="url(#dg-v3-@vet1H-@vet1H-@vet1O)" stroke="@vet1O" stroke-width="0.8"/>
 <!-- epaules bouffantes matelassees (puff) -->
 <path d="M-15 -27 Q-22 -24 -19 -14 Q-13 -16 -10 -22 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>
 <path d="M15 -27 Q22 -24 19 -14 Q13 -16 10 -22 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>
@@ -26,7 +26,7 @@ export const tenue: TenueDef = {
 <!-- petite rosette rouge centre-poitrine -->
 <g transform="translate(-3,-4)"><circle r="2.3" fill="@vet2"/><circle r="0.9" fill="@metalH"/></g>
 <!-- large ceinture d'intendant -->
-<rect x="-14" y="5" width="28" height="7" rx="2" fill="url(#g_int_belt)" stroke="@cuirO" stroke-width="0.7"/>
+<rect x="-14" y="5" width="28" height="7" rx="2" fill="@vet1O" stroke="@cuirO" stroke-width="0.7"/>
 <rect x="-3" y="5.5" width="6" height="6" rx="1" fill="@metal" stroke="@metalO" stroke-width="0.6"/>
 <!-- etuis a parchemin / rouleaux pendus a la ceinture (attribut de l'intendant) -->
 <g stroke="@cuir" stroke-width="0.6"><rect x="-11" y="11" width="3.4" height="13" rx="1.4" fill="@vet1H"/><rect x="-6.7" y="11" width="3.4" height="15" rx="1.4" fill="@vet1H"/><rect x="-2.4" y="11" width="3.4" height="12" rx="1.4" fill="@vet1"/></g>
@@ -35,9 +35,9 @@ export const tenue: TenueDef = {
 <!-- basque matelassee rouge sous la ceinture -->
 <path d="M-13 12 Q0 16 13 12 L11 33 Q0 38 -11 33 Z" fill="@vet2" stroke="@vet2O" stroke-width="0.7"/>
 <path d="M-7 14 L-7 32 M0 15 L0 35 M7 14 L7 32" stroke="@vet2O" stroke-width="0.7"/>`, back: `<!-- Intendant DOS: pourpoint creme matelasse, echarpe verte nouee dans le dos, ceinture d'intendant, basque rouge, etuis a parchemin de cote -->
-<defs><linearGradient id="g_int_cream" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#efe4c4"/><stop offset="55%" stop-color="#d9c79c"/><stop offset="100%" stop-color="#b39d6e"/></linearGradient><linearGradient id="g_int_belt" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a07840"/><stop offset="100%" stop-color="#5e4322"/></linearGradient></defs>
+
 <!-- corps du pourpoint vu de dos, meme silhouette -->
-<path d="M-15 -27 Q0 -32 15 -27 L14 6 Q15 24 11 33 Q0 39 -11 33 Q-15 24 -14 6 Z" fill="url(#g_int_cream)" stroke="#8a734a" stroke-width="0.8"/>
+<path d="M-15 -27 Q0 -32 15 -27 L14 6 Q15 24 11 33 Q0 39 -11 33 Q-15 24 -14 6 Z" fill="url(#dg-v3-#efe4c4-#d9c79c-#b39d6e)" stroke="#8a734a" stroke-width="0.8"/>
 <!-- epaules bouffantes matelassees (puff) -->
 <path d="M-15 -27 Q-22 -24 -19 -14 Q-13 -16 -10 -22 Z" fill="#e7dab6" stroke="#9c855a" stroke-width="0.7"/>
 <path d="M15 -27 Q22 -24 19 -14 Q13 -16 10 -22 Z" fill="#e7dab6" stroke="#9c855a" stroke-width="0.7"/>
@@ -51,7 +51,7 @@ export const tenue: TenueDef = {
 <!-- echarpe verte croisant le haut du dos -->
 <path d="M-13 -24 Q0 -19 13 -25 L12 -19 Q0 -13 -13 -18 Z" fill="#356b34" stroke="#234f1d" stroke-width="0.6"/>
 <!-- ceinture d'intendant (dos, sans boucle) -->
-<rect x="-14" y="5" width="28" height="7" rx="2" fill="url(#g_int_belt)" stroke="#3e2c15" stroke-width="0.7"/>
+<rect x="-14" y="5" width="28" height="7" rx="2" fill="url(#dg-v-#a07840-#5e4322)" stroke="#3e2c15" stroke-width="0.7"/>
 <path d="M-14 8.5 L14 8.5" stroke="#7a5a2c" stroke-width="0.5" opacity="0.6"/>
 <!-- noeud de l'echarpe verte pendant dans le dos -->
 <path d="M-2 6 Q-5 10 -3 16 Q0 12 0 8 Q0 12 3 16 Q5 10 2 6 Z" fill="#3f7a3c" stroke="#27521f" stroke-width="0.6"/>
@@ -61,7 +61,7 @@ export const tenue: TenueDef = {
 <path d="M-13 12 Q0 16 13 12 L11 33 Q0 38 -11 33 Z" fill="#a23230" stroke="#6e1d1c" stroke-width="0.7"/>
 <path d="M-6 14 L-6 32 M0 15 L0 35 M6 14 L6 32" stroke="#7d2120" stroke-width="0.7"/>`, profile: `<!-- Intendant PROFIL (tourne a droite): torse etroit vu de cote, une epaule bouffante, echarpe verte en diagonale, ceinture laterale, basque rouge drapee -->
 <!-- corps du pourpoint, silhouette etroite de profil, ventre proeminent vers l'avant (droite) -->
-<path d="M-7 -27 Q2 -31 9 -26 Q12 -10 11 6 Q12 22 9 33 Q1 38 -6 33 Q-8 22 -7 6 Z" fill="url(#g_int_cream)" stroke="#8a734a" stroke-width="0.8"/>
+<path d="M-7 -27 Q2 -31 9 -26 Q12 -10 11 6 Q12 22 9 33 Q1 38 -6 33 Q-8 22 -7 6 Z" fill="url(#dg-v3-@vet1H-@vet1H-@vet1O)" stroke="#8a734a" stroke-width="0.8"/>
 <!-- epaule bouffante matelassee unique (de profil) -->
 <path d="M-6 -27 Q-13 -24 -10 -14 Q-3 -16 1 -23 Z" fill="#e7dab6" stroke="#9c855a" stroke-width="0.7"/>
 <!-- bras de profil le long du flanc -->
@@ -72,7 +72,7 @@ export const tenue: TenueDef = {
 <path d="M-6 -25 Q3 -20 9 -23 L8 -17 Q2 -14 -6 -19 Z" fill="#3f7a3c" stroke="#27521f" stroke-width="0.6"/>
 <path d="M-5 -17 Q1 -11 6 -4 L4 0 Q-1 -7 -6 -12 Z" fill="#356b34" stroke="#234f1d" stroke-width="0.5"/>
 <!-- ceinture d'intendant vue de cote -->
-<path d="M-7 5 Q2 4 11 6 L11 12 Q2 11 -7 12 Z" fill="url(#g_int_belt)" stroke="#3e2c15" stroke-width="0.7"/>
+<path d="M-7 5 Q2 4 11 6 L11 12 Q2 11 -7 12 Z" fill="@vet1O" stroke="#3e2c15" stroke-width="0.7"/>
 <!-- un etui a parchemin pendu au flanc -->
 <rect x="-3" y="11" width="3.2" height="14" rx="1.4" fill="#d7c28e" stroke="#6a4a22" stroke-width="0.6"/>
 <!-- basque matelassee rouge, drapee de cote -->

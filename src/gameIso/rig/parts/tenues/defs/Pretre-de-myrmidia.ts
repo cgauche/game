@@ -13,7 +13,7 @@ export const tenue: TenueDef = {
     aigle: '#8a3a2e', aigleO: '#5a1f16',
     chapelet: '#8a3a2e', chapeletO: '#5a1f16',
     vet1: '#e9e4d6', vet1O: '#a89d85', vet1H: '#faf7ee',
-    vet2: '#7fa9c4', vet2O: '#4c7590', vet2H: '#b6d3e4',
+    vet2: '#7fa9c4', vet2O: '#4c7590', 
     metal: '#9aa4b4', metalO: '#4a5162', metalH: '#dde3ec',
     or: '#c9a23c', orO: '#8a6a1e', orH: '#e8cd7a',
     cuir: '#6b4a2b', cuirO: '#3a2412', cuirH: '#916a42',
