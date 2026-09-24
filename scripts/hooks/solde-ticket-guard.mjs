@@ -68,6 +68,7 @@ import {
 } from '../guards/budget-contexte.mjs'
 import { GitIndisponible, estDansHead, estRepertoire, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
 import { hunksDe } from '../guards/lib/hunks.mjs'
+import { estFichierVitest } from '../guards/lib/fichierVitest.mjs'
 import { motifRattachement, numerosDeLaChaine, numerosFermes } from '../guards/lib/fermetures.mjs'
 import {
   DOSSIERS_DE_SUBSTANCE, estCheminDeSubstance, fenetreDeRevue, memeSha, mesureDuPalier,
@@ -1747,7 +1748,7 @@ function pathMatchesPathspec(path, ps) {
  *  tests d'écran n'a pas davantage de capture à montrer. */
 export function estFichierEcran(path) {
   const p = String(path ?? '').replace(/\\/g, '/')
-  if (/\.(test|spec)\./.test(p)) return false
+  if (estFichierVitest(p)) return false
   if (/^src\/ui\/styles\/.+\.css$/.test(p)) return true
   return /^src\/(ui|gameIso)\/.+\.tsx$/.test(p)
 }
