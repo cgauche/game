@@ -16,7 +16,7 @@ import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 import {
   ATTENTE_VERROU,
   COEURS_SUITE_EN_LANES,
-  coeursSuiteEnLanes,
+  lanesPortees,
   ECRIT_LU,
   LANES,
   TIMEOUTS,
@@ -114,7 +114,7 @@ test('un plafond par gate, jamais un défaut muet', () => {
   assert.equal(limiteDe('gate-inconnue'), TIMEOUTS.defaut * 1000)
   assert.equal(limiteDe('test'), TIMEOUTS.test * 1000)
   assert.ok(TIMEOUTS.test > TIMEOUTS.defaut)
-  assert.ok(limiteDe('docs:check:tout') >= 404 * 1000, 'docs:check:tout vaut 134,5 s au pire observé — ×3 = 404 s au moins')
+  assert.ok(limiteDe('docs:check:tout') >= 423 * 1000, 'docs:check:tout vaut 141 s au pire observé — ×3 = 423 s au moins')
 })
 
 test('un enfant qui dépasse son plafond est EXPIRÉ, et son ARBRE tombe avec lui', async () => {
@@ -258,14 +258,10 @@ test('la SUITE est bornée pendant les lanes, par la couture qui existe déjà',
   assert.ok(borne.node + borne.jsdom < plein.node + plein.jsdom, 'la borne ne borne rien')
 })
 
-test('la borne de la SUITE ne sert jamais plus de cœurs que la machine', () => {
-  assert.equal(coeursSuiteEnLanes(16), COEURS_SUITE_EN_LANES)
-  for (const machine of [1, 4, COEURS_SUITE_EN_LANES - 1]) {
-    assert.equal(coeursSuiteEnLanes(machine), machine, `machine de ${machine} cœurs`)
-    const servi = repartitionWorkers(coeursSuiteEnLanes(machine))
-    const mesure = repartitionWorkers(machine)
-    assert.deepEqual(servi, mesure, `machine de ${machine} cœurs : la borne change ce que la mesure servait`)
-  }
+test('les LANES ne tournent que sur une machine AU-DELÀ de la borne de la suite', () => {
+  assert.equal(lanesPortees(16), true)
+  assert.equal(lanesPortees(COEURS_SUITE_EN_LANES + 1), true)
+  for (const machine of [1, 4, COEURS_SUITE_EN_LANES]) assert.equal(lanesPortees(machine), false, `machine de ${machine} cœurs`)
 })
 
 test('une sortie de gate porte un nom de fichier LÉGAL sous NTFS', () => {
@@ -322,6 +318,9 @@ function depotDeGates(gatesFactices) {
   return { racine, git }
 }
 
+/** Machine qui porte les lanes : les cas ci-dessous décrivent les LANES, quel que soit l'hôte du test. */
+const MACHINE_A_LANES = COEURS_SUITE_EN_LANES + 1
+
 const LENTE = "setTimeout(() => { console.log('fini'); process.exit(0) }, 2500)\n"
 
 const ROUGE = (mot, code) => `console.error(${JSON.stringify(mot)})\nprocess.exit(${code})\n`
@@ -337,6 +336,7 @@ test('un ROUGE ne coupe RIEN : ce qui le suit dans sa lane est JOUÉ, et le rés
     const lignes = []
     const code = await principal({
       racine,
+      machine: MACHINE_A_LANES,
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
       // `rouge` et `apres` dans la MÊME lane : la première tombe, la seconde lit le MÊME arbre propre
@@ -373,6 +373,7 @@ test('DEUX rouges dans DEUX lanes distinctes sont rendus par UN SEUL run', async
     const lignes = []
     const code = await principal({
       racine,
+      machine: MACHINE_A_LANES,
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
       lanes: [
@@ -392,6 +393,40 @@ test('DEUX rouges dans DEUX lanes distinctes sont rendus par UN SEUL run', async
   }
 })
 
+test('une machine qui ne porte pas les lanes joue en SÉRIE, et le dit', async () => {
+  const { racine } = depotDeGates([
+    { nom: 'alpha', corps: "console.log('alpha')\n" },
+    { nom: 'beta', corps: "console.log('beta')\n" },
+  ])
+  try {
+    const jouer = async (machine) => {
+      const lignes = []
+      const code = await principal({
+        racine,
+        machine,
+        argv: ['node', 'toutes.mjs'],
+        journal: (t) => lignes.push(t),
+        lanes: [
+          { nom: 'a', gates: ['alpha'] },
+          { nom: 'b', gates: ['beta'] },
+        ],
+        ecritLu: { alpha: { ecrit: [], lit: ['src/'] }, beta: { ecrit: [], lit: ['src/'] } },
+      })
+      return { code, sortie: lignes.join('') }
+    }
+    const petite = await jouer(COEURS_SUITE_EN_LANES)
+    assert.equal(petite.code, 0, petite.sortie)
+    assert.match(petite.sortie, /machine de 10 cœur\(s\), pas au-delà des 10 de la suite : une seule lane/)
+    assert.match(petite.sortie, /lanes : serie /)
+    const grande = await jouer(MACHINE_A_LANES)
+    assert.equal(grande.code, 0, grande.sortie)
+    assert.doesNotMatch(grande.sortie, /une seule lane/)
+    assert.match(grande.sortie, /lanes : a .* · b /)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
 test('--serie rend les MÊMES verdicts que les lanes : deux rouges, deux lignes, exit 1', async () => {
   // La morsure de `lanesAJouer` (l.139) ne mesure que l'ensemble et l'ORDRE des gates ; elle ne dit
   // rien des VERDICTS. Ici c'est `principal` entier qui est rejoué en `--serie` sur le même cas que
@@ -405,6 +440,7 @@ test('--serie rend les MÊMES verdicts que les lanes : deux rouges, deux lignes,
     const lignes = []
     const code = await principal({
       racine,
+      machine: MACHINE_A_LANES,
       argv: ['node', 'toutes.mjs', '--serie'],
       journal: (t) => lignes.push(t),
       lanes: [
@@ -434,6 +470,7 @@ test('DEUX rouges dans la MÊME lane sont tous deux JOUÉS et rendus', async () 
     const lignes = []
     const code = await principal({
       racine,
+      machine: MACHINE_A_LANES,
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
       lanes: [{ nom: 'a', gates: ['rouge1', 'rouge2'] }],
@@ -460,6 +497,7 @@ test('le RÉSUMÉ s’imprime même si la photo de fin devient impossible', asyn
     const lignes = []
     const code = await principal({
       racine,
+      machine: MACHINE_A_LANES,
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
       lanes: [{ nom: 'a', gates: ['saborde'] }],
@@ -487,6 +525,7 @@ test('une gate qui réécrit l’arbre fait REFUSER le run à la photo de fin', 
     const lignes = []
     const code = await principal({
       racine,
+      machine: MACHINE_A_LANES,
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
       lanes: [{ nom: 'a', gates: ['ecrivain', 'lecteur'] }],
@@ -518,6 +557,7 @@ test('pré-vol : un registre périmé est un REFUS nommé, avant toute gate, et 
     const lignes = []
     const code = await principal({
       racine,
+      machine: MACHINE_A_LANES,
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
       lanes: [{ nom: 'a', gates: ['lente'] }],
@@ -557,6 +597,7 @@ const jouerAvecPrerequis = (racine, prerequis, lignes, argv) =>
   principal({
     racine,
     argv,
+    machine: MACHINE_A_LANES,
     journal: (t) => lignes.push(t),
     lanes: [{ nom: 'a', gates: ['serveur'] }],
     ecritLu: { serveur: { ecrit: [], lit: ['deps/'], prerequis } },
@@ -594,6 +635,7 @@ test('un PRÉREQUIS absent ne fait sauter AUCUNE gate — ni sa lane, ni les aut
     const lignes = []
     const code = await principal({
       racine,
+      machine: MACHINE_A_LANES,
       argv: ['node', 'toutes.mjs'],
       journal: (t) => lignes.push(t),
       // `serveur` (prérequis absent) et `suivante` dans la MÊME lane ; `voisine` dans une AUTRE.
@@ -699,6 +741,7 @@ const lanceParGates = async (racine, argv, lignes) =>
   principal({
     racine,
     argv,
+    machine: MACHINE_A_LANES,
     journal: (t) => lignes.push(t),
     lanes: [{ nom: 'a', gates: ['alpha', 'beta'] }],
     ecritLu: { alpha: { ecrit: [], lit: ['src/'] }, beta: { ecrit: [], lit: ['src/'] } },

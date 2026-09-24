@@ -5,7 +5,8 @@
 // `main`, `scripts/ops/ruleset-main.mjs`).
 //
 // `--serie` change le MUR, jamais le VERDICT : il joue exactement les mêmes gates en une lane
-// unique, dans l'ordre de ci.yml (morsure d'équivalence, `scripts/gates/toutes.test.mjs`).
+// unique, dans l'ordre de ci.yml (morsure d'équivalence, `scripts/gates/toutes.test.mjs`). Une
+// machine qui ne porte pas les lanes (`lanesPortees`) joue en série sans qu'on le demande.
 // `--gates a,b` n'en joue que celles-là — c'est ainsi qu'on rejoue le rouge d'un run CI sans
 // repayer les vingt autres.
 //
@@ -473,8 +474,9 @@ export const ECRIT_LU = {
 }
 
 /**
- * Les LANES, nominatives. Une lane est une SÉRIE ; les lanes tournent ensemble. Elles ne portent que
- * des LECTEURS, et la morsure `conflitsEntreLanes` le verrouille. Une gate de `ci.yml` qui n'est dans
+ * Les LANES, nominatives. Une lane est une SÉRIE ; les lanes tournent ensemble, sur une machine qui
+ * les porte (`lanesPortees`). Elles ne portent que des LECTEURS, et la morsure `conflitsEntreLanes` le
+ * verrouille. Une gate de `ci.yml` qui n'est dans
  * aucune lane fait REFUSER le run, avec son nom : le classement est une décision, pas un silence
  * (patron `CI_SEULEMENT`).
  *
@@ -482,12 +484,10 @@ export const ECRIT_LU = {
  * Windows `STATUS_DLL_INIT_FAILED` sur quatre spawns concurrents. Une lane de moins, c'est −25 % de
  * processus simultanés au pire moment, pour un mur inchangé.
  *
- * QUI EST LE MUR, MESURÉ LE 2026-09-08 (durées du dernier run, `node_modules/.cache/gates/durees.json`,
- * en secondes) : phase série 6,99 + max(suite 133,10 ; types 198,29 ; docs 93,24) = 205,3 s. Ce n'est
- * plus la suite : `test` est tombé à 133,1 s, et c'est la lane `types` qui tient le mur, à 198,3 s.
- * La composition ci-dessous reste juste — aucune lane ne dépasse la somme des autres — mais la marge
- * qui la justifiait a changé de côté : c'est `types` qu'on remesure avant d'y ajouter quoi que ce
- * soit, et c'est en l'ALLÉGEANT, non en allégeant la suite, qu'on ferait bouger le mur.
+ * QUI EST LE MUR : chaque run le mesure et l'imprime au résumé (`lanes : suite … · types … · docs …`),
+ * et pose la durée de chaque gate dans `node_modules/.cache/gates/durees.json`. La composition tient
+ * tant qu'aucune lane ne dépasse la somme des deux autres : c'est cette ligne qu'on relit avant
+ * d'ajouter une gate à une lane.
  */
 export const LANES = [
   {
@@ -495,7 +495,7 @@ export const LANES = [
     gates: ['test'],
     raison:
       'la seule à saturer la machine — seule dans sa lane, et BORNÉE par `WFRP_TEST_COEURS` pendant que ' +
-      'les deux autres tournent. Elle n’est pas le mur (133,1 s le 2026-09-08) — voir « QUI EST LE MUR » ci-dessus',
+      'les deux autres tournent',
   },
   {
     nom: 'types',
@@ -504,13 +504,9 @@ export const LANES = [
       'test:runner', 'test:recette', 'test:hooks',
     ],
     raison:
-      'lectures du même graphe TypeScript et gates courtes, aucune écriture d’arbre. Somme du dernier run ' +
-      '(durees.json, 2026-09-08) : typecheck 65,7 + lint 59,7 + test:hooks 37,7 + deps:unused 19,9 + ' +
-      'test:recette 6,8 + test:ops 3,3 + test:runner 2,4 + server:typecheck 2,2 + test:agents 0,8 = ' +
-      '198,3 s. C’est ELLE le mur (suite 133,1 s, docs 93,2 s) : rien ne s’y ajoute sans la remesurer, et ' +
-      'toute seconde qu’on lui retire est une seconde de moins avant push. `test:hooks` y est admis parce ' +
-      'qu’il ne fait aucune écriture d’arbre SUIVIE (registre d’écrans injectable ; sa seule écriture ' +
-      'réelle, le journal gitignoré, est en `ecritFerme`)',
+      'lectures du même graphe TypeScript et gates courtes, aucune écriture d’arbre. `test:hooks` y est ' +
+      'admis parce qu’il ne fait aucune écriture d’arbre SUIVIE (registre d’écrans injectable ; sa seule ' +
+      'écriture réelle, le journal gitignoré, est en `ecritFerme`)',
   },
   {
     nom: 'docs',
@@ -522,10 +518,8 @@ export const LANES = [
     ],
     raison:
       'tous les LECTEURS de docs/ et docs/raw/ — aucun n’y écrit : `docs:check:tout` vérifie chaque dérivé ' +
-      'sans l’écrire. `build` y tient parce que c’est une des gates les moins chères (22,5 s au ' +
-      'dernier run : il ne joue plus que `gen && vite build`) et que cette lane est la plus courte — 70,8 s ' +
-      'sans lui, 93,2 s avec (durees.json, 2026-09-08), loin sous le mur de `types` ; il n’écrit ni docs/ ' +
-      'ni docs/raw/ : ses écritures sont celles de son entrée `build`',
+      'sans l’écrire, rendu sur l’hôte ET sous win32. `build` y tient parce qu’il ne joue que ' +
+      '`gen && vite build` et n’écrit ni docs/ ni docs/raw/ : ses écritures sont celles de son entrée `build`',
   },
 ]
 
@@ -535,7 +529,8 @@ export const LANES = [
  * 33 434 s (9 h 17). Une gate EXPIRÉE est un ROUGE nommé, pas un silence.
  * Mesures de référence : pire gate hors `test` = `typecheck` 77,8 s (série du 2026-09-07 ; ×3 = 233,
  * largement sous les 600) ; `docs:check:tout`, chaque générateur rendu sur l'hôte ET sous win32 :
- * 134,5 s au pire de deux runs SEULS (133,7 s l'autre, 2026-09-23, #1801) ; ×3 = 404, sous les 600 ;
+ * 141 s au pire de trois runs SEULS (133,7 et 134,5 s le 2026-09-23, 141 s le 2026-09-24 sur un
+ * conteneur Linux de 4 cœurs, #1801) ; ×3 = 423, sous les 600 ;
  * `test` 275,1 s et il RALENTIT sous bornage (×3 = 825).
  */
 export const TIMEOUTS = { defaut: 600, test: 900 }
@@ -553,11 +548,15 @@ export const TIMEOUTS = { defaut: 600, test: 900 }
 export const COEURS_SUITE_EN_LANES = 10
 
 /**
- * Cœurs servis à la suite pendant les lanes sur une machine de `machine` cœurs : une BORNE ne sert
- * jamais plus que la machine. Forcée à 10 sur un conteneur Linux de 4 cœurs (2026-09-24, #1801),
- * elle y partageait la suite en node 6 + jsdom 3, là où la mesure de la machine en sert 4.
+ * La machine porte-t-elle les LANES ? La suite en prend `COEURS_SUITE_EN_LANES` : les autres lanes
+ * n'ont de place qu'AU-DELÀ. Jusqu'à la borne, la suite prend la machine entière, et tout ce qui
+ * tourne à côté d'elle ne rend plus un verdict mais une expiration. Mesuré le 2026-09-24 (#1801) sur
+ * un conteneur Linux de 4 cœurs et 15,6 Go : la suite SEULE y monte à 14,9 Go (95 %, bloc `[diag]`
+ * du run CI 35986843571, même gabarit) ; deux runs en lanes y ont fait EXPIRER `test`, `test:hooks`
+ * et `build` (1 817 s pour `build`, 18 s seul) sous une pression mémoire pleine (PSI `full` à 90 %
+ * sur 5 min). En deçà, le run est une SÉRIE, dite au journal.
  */
-export const coeursSuiteEnLanes = (machine) => Math.min(COEURS_SUITE_EN_LANES, machine)
+export const lanesPortees = (machine) => machine > COEURS_SUITE_EN_LANES
 
 /** Dossier des sorties de gate : un fichier par gate et par PID (patron `scripts/test/run.mjs`). */
 export const dossierSorties = (racine) => join(racine, 'node_modules', '.cache', 'gates')
@@ -825,9 +824,10 @@ export async function principal({
   journal = (t) => process.stderr.write(t),
   lanes: lanesDeclarees = LANES,
   ecritLu = ECRIT_LU,
+  machine = availableParallelism(),
 } = {}) {
   const LISTE = argv.includes('--liste')
-  const SERIE = argv.includes('--serie')
+  const SERIE = argv.includes('--serie') || !lanesPortees(machine)
   // `--gates a,b` : la liste NOMMÉE, dans l'ordre de ci.yml. Un nom inconnu du fichier fait REFUSER
   // — une faute de frappe qui jouerait zéro gate en s'annonçant verte serait le pire des verdicts.
   const iGates = argv.indexOf('--gates')
@@ -867,6 +867,11 @@ export async function principal({
   }
 
   const aJouer = gates
+  if (!argv.includes('--serie') && SERIE)
+    journal(
+      `[gates] machine de ${machine} cœur(s), pas au-delà des ${COEURS_SUITE_EN_LANES} de la suite : ` +
+        'une seule lane, dans l’ordre de ci.yml (`lanesPortees`)\n',
+    )
   for (const gate of aJouer) journal(`[gates] ${gate.nom} — à jouer : ${gate.commande}\n`)
   if (LISTE) return 0
   if (!aJouer.length) {
@@ -987,9 +992,9 @@ export async function principal({
     const debut = Date.now()
     for (const nom of lane.gates) {
       const debutGate = Date.now()
-      // `--serie` ne borne PAS la suite : c'est le mode DIAGNOSTIC, rien ne tourne à côté d'elle, et
-      // la brider fausserait la seule mesure de référence dont dispose le lanceur.
-      const r = await jouerGate(aJouerParNom.get(nom), !SERIE && nom === 'test' ? coeursSuiteEnLanes(availableParallelism()) : null)
+      // En série (`--serie`, ou machine qui ne porte pas les lanes) la suite n'est PAS bornée : rien ne
+      // tourne à côté d'elle, et la brider fausserait la seule mesure de référence du lanceur.
+      const r = await jouerGate(aJouerParNom.get(nom), !SERIE && nom === 'test' ? COEURS_SUITE_EN_LANES : null)
       poser(nom, { ...r, debut: debutGate })
     }
     return { nom: lane.nom, secondes: secondesDepuis(debut) }
