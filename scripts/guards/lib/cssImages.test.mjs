@@ -13,16 +13,20 @@ const IMPORTEURS = ['A', 'B'].map((n) => `src/ui/Ecran${n}.tsx`)
 const MODULE = 'src/ui/styles/rs.css'
 const PRIMITIVE = { id: 'rs', fichier: COMPOSANT, css: MODULE }
 
-/** Un arbre en mémoire : `textes` = `{ chemin: texte }` hors manifeste ; `contenus` rend ENTIER tout texte
- *  dont une ligne porte le motif, comme `grepDe(…, { entiers: true })`. */
-const sourceDe = (textes, fichiers = [...IMPORTEURS, COMPOSANT]) => ({
-  lire: (rel) => (rel === CHEMIN_MANIFESTE ? JSON.stringify([PRIMITIVE]) : textes[rel] ?? null),
-  contenus: (motif) => {
-    const re = new RegExp(motif)
-    return new Map(Object.entries(textes).filter(([f, t]) => f.startsWith('src/') && t.split('\n').some((l) => re.test(l))))
-  },
-  lister: () => fichiers,
-})
+/** Un arbre en mémoire : `textes` = `{ chemin: texte }` hors manifeste ; `citants` rend TOUT chemin de
+ *  `src/` dont une ligne porte le motif, sans filtre de module : c'est `coteCss` qui les écarte. */
+const sourceDe = (textes, fichiers = [...IMPORTEURS, COMPOSANT]) => {
+  const lire = (rel) => (rel === CHEMIN_MANIFESTE ? JSON.stringify([PRIMITIVE]) : textes[rel] ?? null)
+  return {
+    lire,
+    lireTout: (rels) => new Map(rels.map((rel) => [rel, lire(rel)])),
+    citants: (motif) => {
+      const re = new RegExp(motif)
+      return Object.entries(textes).filter(([f, t]) => f.startsWith('src/') && t.split('\n').some((l) => re.test(l))).map(([f]) => f)
+    },
+    lister: () => fichiers,
+  }
+}
 const importeursDe = (...textes) => Object.fromEntries(IMPORTEURS.map((f, i) => [f, textes[i]]))
 const reutilises = (source) => [...coteCss(source, { racine: RACINE }).reutilises]
 
@@ -51,4 +55,14 @@ test('coteCss : l’alias se lit dans le `tsconfig.json` de l’arbre JUGÉ, cib
   assert.deepEqual(reutilises(sourceDe({ ...par('~/ui/RollShell'), 'tsconfig.json': tsconfig('~') })), [COMPOSANT],
     'un alias que seul l’arbre jugé déclare')
   assert.deepEqual(reutilises(sourceDe(par('@/ui/RollShell'))), [], 'l’arbre jugé sans `tsconfig.json` n’a aucun alias, quoi qu’en dise le disque')
+})
+
+test('coteCss : un fichier qui n’est pas un MODULE de code (`.md`, `.json`, `.css`, `.snap`) n’importe jamais', () => {
+  const reel = "import { RollShell } from './RollShell'\n"
+  for (const [f, t] of [
+    ['src/ui/NOTES.md', "```ts\nimport { RollShell } from './RollShell'\n```\n"],
+    ['src/ui/__snapshots__/x.test.tsx.snap', "exports[`a`] = `\"import { RollShell } from './RollShell'\"`;\n"],
+    ['src/ui/data.json', '{ "exemple": "import X from \'./RollShell\'" }\n'],
+    ['src/ui/b.css', "@import './RollShell.tsx';\n"],
+  ]) assert.deepEqual(reutilises(sourceDe({ [IMPORTEURS[0]]: reel, [f]: t })), [], f)
 })

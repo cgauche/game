@@ -13,10 +13,10 @@
 // (`scripts/hooks/solde-ticket-guard.mjs`), la porte de plage au push (`plageStock.mjs`), chaque
 // commit contre son parent (#1806 D3″).
 import {
-  CHEMIN_COUCHES, CHEMIN_MANIFESTE, RACINE_DES_MODULES, modulesDePrimitive, modulesExemptes, ventiler,
+  CHEMIN_COUCHES, CHEMIN_MANIFESTE, RACINE_DES_MODULES, manifesteDe, modulesDePrimitive, modulesExemptes, ventiler,
 } from './cssCouches.mjs'
-import { motifDeCitation, nomsDImport, nomsDImportDe } from './cssImages.mjs'
-import { hunksDe } from './hunks.mjs'
+import { RACINE_DES_SOURCES, importsDansLArbre, nomsDImport, nomsDImportDe } from './cssImages.mjs'
+import { CHEMIN_TSCONFIG, estModule } from './importGraph.mjs'
 import { MOTIF_MIN, declarationsDuMessage, mesuresNonCouvertes } from './stocksNominatifs.mjs'
 
 /** Le mot-clé de la ligne de message. */
@@ -46,30 +46,32 @@ export function franchisDesCotes(parent, commit) {
 }
 
 /**
- * Un geste peut-il déplacer la frontière (#1806 E) ? Il touche le manifeste ou `FEUILLES_PARTAGEES`
- * (`cssCouches.mjs`) ; ou il AJOUTE ou SUPPRIME (`nesOuMorts`, chemins `--diff-filter=AD`) un module de
- * code qui porte un nom d'import d'un `fichier` (`nomsDImportDe`) — vide compris : l'ordre de repli de
- * `resolveImport` (`importGraph.mjs`) peut alors faire changer de cible un import que rien ne réécrit,
- * ce qu'une simple MODIFICATION ne fait pas ; ou une ligne retirée ou ajoutée d'un hunk de son diff
- * `-U0` (`hunksDe`) cite un `fichier` du manifeste (`motifDeCitation`, la présélection de `coteCss`).
- * `nesOuMorts`, `diff` et `manifeste` (celui du parent) ne sont lus qu'à défaut des chemins.
- * @param {{ chemins: Iterable<string>, nesOuMorts: () => readonly string[], diff: () => string,
- *   manifeste: () => readonly { fichier?: string }[] }} p
+ * Le geste déplace-t-il la frontière (#1806 E) ? Il touche le manifeste, `FEUILLES_PARTAGEES`
+ * (`cssCouches.mjs`) ou les alias (`tsconfig.json`) ; ou il AJOUTE ou SUPPRIME (`nesOuMorts`, chemins
+ * `--diff-filter=AD`) un module de code qui porte un nom d'import d'un `fichier` (`nomsDImportDe`) — vide
+ * compris : l'ordre de repli de `resolveImport` (`importGraph.mjs`) peut alors faire changer de cible un
+ * import que rien ne réécrit ; ou un module de `src/` qu'il touche n'importe pas les mêmes `fichier`s
+ * du manifeste au parent et au commit (`importsDansLArbre`, chaque côté résolu dans son arbre). Le manifeste
+ * est celui du parent ; `nesOuMorts` et les côtés ne sont lus qu'à défaut des chemins.
+ * @param {{ chemins: Iterable<string>, nesOuMorts: () => readonly string[],
+ *   parent: import('./cssImages.mjs').SourceCss, commit: import('./cssImages.mjs').SourceCss, racine?: string }} p
  * @returns {boolean}
  */
-export function deplaceLaFrontiere({ chemins, nesOuMorts, diff, manifeste }) {
-  if ([...chemins].some((f) => f === CHEMIN_COUCHES || f === CHEMIN_MANIFESTE)) return true
-  const lu = manifeste()
-  const motif = motifDeCitation(lu)
-  if (!motif) return false
-  const noms = nomsDImport(lu)
-  if (nesOuMorts().some((f) => MODULE_DE_CODE.test(f) && nomsDImportDe(f).some((n) => noms.has(n)))) return true
-  const cite = new RegExp(motif)
-  return hunksDe(diff()).some(({ retirees, ajoutees }) => [...retirees, ...ajoutees].some((l) => cite.test(l)))
+export function deplaceLaFrontiere({ chemins, nesOuMorts, parent, commit, racine = '.' }) {
+  const touches = [...chemins]
+  if (touches.some((f) => f === CHEMIN_COUCHES || f === CHEMIN_MANIFESTE || f === CHEMIN_TSCONFIG)) return true
+  const manifeste = manifesteDe(parent.lire(CHEMIN_MANIFESTE))
+  const noms = nomsDImport(manifeste)
+  if (!noms.size) return false
+  if (nesOuMorts().some((f) => estModule(f) && nomsDImportDe(f).some((n) => noms.has(n)))) return true
+  const modules = touches.filter((f) => f.startsWith(`${RACINE_DES_SOURCES}/`) && estModule(f))
+  if (!modules.length) return false
+  const fichiers = new Set(manifeste.flatMap(({ fichier }) => (typeof fichier === 'string' ? [fichier] : [])))
+  const arcs = (cote) => importsDansLArbre(cote, modules, { racine }).map(([, cibles]) => cibles.filter((c) => fichiers.has(c)).sort().join('\n'))
+  const avant = arcs(parent)
+  const apres = arcs(commit)
+  return avant.some((a, i) => a !== apres[i])
 }
-
-/** Un chemin de MODULE de code, que `resolveImport` peut désigner. */
-const MODULE_DE_CODE = /\.[cm]?[jt]sx?$/
 
 /** Les lignes `RECLASSEMENT:` d'un message dont le motif porte son `#<ticket>`. */
 export const lignesDeReclassement = (message) =>

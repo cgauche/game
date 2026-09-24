@@ -80,12 +80,13 @@ test('estPlacement : les propriétés nommées et les familles à préfixe place
   }
 })
 
-test('estPlacement : un RACCOURCI dont un membre peint ne place que sur une valeur de MOTS-CLÉS seuls ; une valeur indécidable peint', () => {
-  for (const v of ['none', 'disc inside', 'square outside', 'decimal', 'none !important', ' inherit ']) {
+test('estPlacement : un RACCOURCI dont un membre peint peint dès que sa valeur APPELLE une fonction — `var()` compris ; une chaîne reste le marqueur, qui place', () => {
+  for (const v of ['none', 'disc inside', 'square outside', 'decimal', 'none !important', ' inherit ', '"→"', 'none /* puce (x) */', "'(' inside"]) {
     assert.equal(estPlacement('list-style', v), true, `list-style: ${v}`)
+    assert.equal(estPlacement('list-style', v), estPlacement('list-style-type', v), `list-style: ${v} se classe comme son membre list-style-type`)
   }
   for (const v of ['url(puce.svg)', 'disc url("x.png") inside', 'linear-gradient(red, blue)', 'image-set("a.png" 1x)',
-    'var(--puce)', 'disc var(--img)', 'paint(puce)', '-webkit-gradient(linear, 0 0, 0 100%)', 'URL(a.png)', '"→"', 'disc 0']) {
+    'var(--puce)', 'disc var(--img)', 'paint(puce)', '-webkit-gradient(linear, 0 0, 0 100%)', 'URL(a.png)']) {
     assert.equal(estPlacement('list-style', v), false, `list-style: ${v} PEINT`)
   }
   assert.equal(estPlacement('list-style-image', 'none'), false, 'le membre qui peint reste de l’identité, valeur comprise')

@@ -5,13 +5,18 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { typescript } from './dialecte.mjs';
 
 // Extensions de MODULE que le dépôt écrit réellement : les libs de garde et les générateurs vivent en
 // `.mjs` (109 imports relatifs de `src/**` vers `scripts/**` mesurés le 2026-09-02), donc `.mjs`/`.cjs`
 // font partie de ce qu'un spécificateur relatif peut désigner ici.
 const EXTS = ['.ts', '.tsx', '.mts', '.mjs', '.cjs', '.js'];
+
+/** Un MODULE de code : un chemin qu'`EXTS` termine — le seul que lit `IMPORT_RE` en importeur. */
+export const estModule = (chemin) => EXTS.some((ext) => chemin.endsWith(ext));
+
+/** Les pathspecs git des modules de code sous `dossier` (`EXTS`). @param {string} dossier */
+export const pathspecsDeModules = (dossier) => EXTS.map((ext) => `${dossier}/*${ext}`);
 
 /** Capture les imports/réexports statiques (`from '…'`), dynamiques (`import('…')`, ex. `lazy`) et À
  *  EFFET DE BORD (`import './x'`, sans `from` — il n'en existe aucun dans la clôture aujourd'hui,
@@ -20,16 +25,18 @@ const EXTS = ['.ts', '.tsx', '.mts', '.mjs', '.cjs', '.js'];
  *  @type {RegExp} */
 export const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)|\bimport\s+['"](\.[^'"]+)['"]/g;
 
-/** Options de compilation du DÉPÔT (`tsconfig.json`), converties par le compilateur lui-même : c'est
- *  d'elles (`isolatedModules`, `verbatimModuleSyntax`, `preserveValueImports`…) que dépend l'effacement
- *  d'un import. Lues au PREMIER `sourceALExecution`, comme le compilateur (`typescript()`) : la
+/** Le `tsconfig.json` d'un dépôt, à sa racine. */
+export const CHEMIN_TSCONFIG = 'tsconfig.json';
+
+/** Options de compilation du dépôt du répertoire courant (`CHEMIN_TSCONFIG`), converties par le
+ *  compilateur lui-même : c'est d'elles (`isolatedModules`, `verbatimModuleSyntax`,
+ *  `preserveValueImports`…) que dépend l'effacement d'un import. Lues au PREMIER `sourceALExecution`, comme le compilateur (`typescript()`) : la
  *  clôture sans `typesEffaces` ne charge aucun paquet npm. */
-const TSCONFIG_URL = new URL('../../../tsconfig.json', import.meta.url);
 let compilerOptions = null;
 const optionsDuDepot = () =>
   (compilerOptions ??= typescript().convertCompilerOptionsFromJson(
-    JSON.parse(readFileSync(TSCONFIG_URL, 'utf8')).compilerOptions,
-    dirname(fileURLToPath(TSCONFIG_URL)),
+    JSON.parse(readFileSync(resolve(CHEMIN_TSCONFIG), 'utf8')).compilerOptions,
+    resolve('.'),
   ).options);
 
 /**
@@ -47,9 +54,6 @@ export function sourceALExecution(fichier, texte) {
   if (!/\.[cm]?tsx?$/.test(fichier)) return texte;
   return typescript().transpileModule(texte, { fileName: fichier, compilerOptions: optionsDuDepot() }).outputText;
 }
-
-/** Le `tsconfig.json` d'un dépôt, à sa racine. */
-export const CHEMIN_TSCONFIG = 'tsconfig.json';
 
 /**
  * Les ALIAS de chemin que déclare le texte d'un `tsconfig.json` (`compilerOptions.paths`, forme
@@ -106,13 +110,13 @@ export function resolveImport(fromFile, spec, existe = existsSync, alias = alias
 
 /**
  * Enfants d'un module : TOUS ses imports relatifs résolus, sans borne. `null` = fichier absent (hors
- * closure) ; `[]` = membre sans graphe à lire (`.json`, #487) ou illisible.
+ * closure) ; `[]` = membre qui n'est pas un module (`estModule` : `.json`, #487) ou illisible.
  * `typesEffaces` lit le source À L'EXÉCUTION (`sourceALExecution`) : les arcs effacés n'y sont plus.
  * @param {string} abs @param {string} rel @param {boolean} typesEffaces @returns {string[]|null}
  */
 function enfantsDe(abs, rel, typesEffaces) {
   if (!existsSync(abs)) return null;
-  if (rel.endsWith('.json')) return [];
+  if (!estModule(rel)) return [];
   let text;
   try {
     text = readFileSync(abs, 'utf8');

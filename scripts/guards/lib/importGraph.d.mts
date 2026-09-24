@@ -1,4 +1,6 @@
 export const IMPORT_RE: RegExp;
+export function estModule(chemin: string): boolean;
+export function pathspecsDeModules(dossier: string): string[];
 export function sourceALExecution(fichier: string, texte: string): string;
 /** Un alias de chemin : préfixe du spécificateur → dossier cible absolu. */
 export interface Alias {

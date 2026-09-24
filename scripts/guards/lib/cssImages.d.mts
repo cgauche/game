@@ -1,11 +1,12 @@
 import type { EntreeManifeste, ImageCss, ventiler } from './cssCouches.mjs';
 import type { EntreeNominative } from './stock.mjs';
 
-/** Un arbre lisible : ses fichiers d'un dossier, le texte d'un chemin, le contenu entier des fichiers de `src/` qui portent un motif. */
+/** Un arbre lisible : ses fichiers d'un dossier, le texte d'un chemin ou d'un lot, les modules de `src/` qui portent un motif. */
 export interface SourceCss {
   lister: (dossier: string) => readonly string[];
   lire: (rel: string) => string | null;
-  contenus: (motif: string) => Map<string, string>;
+  lireTout: (rels: readonly string[]) => Map<string, string | null>;
+  citants: (motif: string) => readonly string[];
 }
 export interface CoteCss {
   manifeste: EntreeManifeste[];
@@ -17,12 +18,15 @@ export const RACINE_DES_SOURCES: string;
 export function nomsDImportDe(chemin: string): string[];
 export function nomsDImport(manifeste: readonly EntreeManifeste[]): Set<string>;
 export function motifDeCitation(manifeste: readonly EntreeManifeste[]): string | null;
+export function importsDansLArbre(source: SourceCss, rels: readonly string[], options?: { racine?: string }): [string, string[]][];
+export function citantsDe(git: (args: string[]) => string | null, portee: string[], motif: string): string[];
+export function lireDuTravail(cwd: string, rel: string): string | null;
 export function coteCss(source: SourceCss, options?: { racine?: string }): CoteCss;
 export function imageCss(source: SourceCss, options?: { racine?: string }): ImageCss;
 export function sourceGit(p: {
   cwd?: string;
   arbre: string;
-  git?: (args: string[]) => string | null;
+  git?: (args: string[], opts?: { entree?: string }) => string | null;
 }): SourceCss & { existe: () => boolean };
 export function renommagesDe(git: (args: string[]) => string | null, bornes: string[]): Map<string, string>;
 export const CHEMIN_STOCK_CSS: string;
@@ -30,5 +34,5 @@ export function ventilationDeGit(p: {
   cwd?: string;
   base: string;
   tete?: string;
-  git?: (args: string[]) => string | null;
+  git?: (args: string[], opts?: { entree?: string }) => string | null;
 }): ReturnType<typeof ventiler> & { stockAvant: Record<'identite' | 'espacement', EntreeNominative[]> };

@@ -22,6 +22,7 @@
 //
 // `fetchOrigin` est à part, et NOMMÉE : elle ÉCRIT des refs. Une lecture et une mutation ne
 // partagent pas un hôte « fail-closed » sans que l'appelant sache laquelle il a jouée.
+import { Buffer } from 'node:buffer'
 import { spawnSync } from 'node:child_process'
 import { statSync } from 'node:fs'
 import { normaliserRacine } from '../../port-dev.mjs'
@@ -96,9 +97,10 @@ export function tenter(fn) {
 }
 
 /** Lancement avec rejeu du processus qui n'a pas démarré. `spawn`/`attendre` injectables (mesure). */
-function lancer(commande, args, { cwd, spawn = spawnSync, attendre = attendreSync, site = 'gitPorte', journal = process.stderr, timeout } = {}) {
+function lancer(commande, args, { cwd, spawn = spawnSync, attendre = attendreSync, site = 'gitPorte', journal = process.stderr, timeout, entree } = {}) {
   for (let essai = 0; ; essai += 1) {
-    const vu = spawn(commande, args, { cwd, encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'pipe'], timeout })
+    const stdio = [entree === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe']
+    const vu = spawn(commande, args, { cwd, encoding: 'utf8', maxBuffer: 1 << 28, stdio, timeout, input: entree })
     if (!estEchecDeChargement(vu?.status) || essai >= BACKOFFS_MS.length) return vu
     rejeux.total += 1
     journal.write(`${MARQUE_REJEU} : ${site} — ${commande} (essai ${essai + 2}/${BACKOFFS_MS.length + 1})\n`)
@@ -166,9 +168,9 @@ export function classer(vu, { cwd, nature = natureDuChemin } = {}) {
 }
 
 /**
- * `git <args>` dans `cwd`, rendu en union à trois issues.
+ * `git <args>` dans `cwd`, rendu en union à trois issues. `entree` : l'entrée standard du processus.
  * @param {string[]} args
- * @param {{cwd?:string, spawn?:Function, attendre?:Function, site?:string, timeout?:number,
+ * @param {{cwd?:string, spawn?:Function, attendre?:Function, site?:string, timeout?:number, entree?:string,
  *   nature?:(p:string)=>'repertoire'|'fichier'|'absent'}} [opts]
  */
 export function lireGit(args, opts = {}) {
@@ -219,20 +221,16 @@ export function enfantsDirects(chemins, dossier) {
 }
 
 /**
- * Les lignes qui portent le motif `-E` `motif` sous `dossiers`, PAR FICHIER (texte des lignes, `\n`
+ * Les lignes qui portent le motif `-E` `motif` sous `pathspecs`, PAR FICHIER (texte des lignes, `\n`
  * final) — l'unique lecture `git grep` des portes. `portee` : `[]` (arbre de travail suivi),
  * `['--untracked']`, `['--cached']` (index) ou `[<ref>]`, dont git préfixe alors chaque chemin.
  * `git` (args → sortie, `null` = rien) est le lecteur de l'appelant : aucun match (sortie 1) est vide.
- * `entiers` rend le CONTENU ENTIER de chaque fichier texte dont une ligne porte le motif, lu dans la
- * même passe (`--all-match` avec le motif `^`, que toute ligne porte).
  * @param {(args: string[]) => string | null} git @param {string[]} portee @param {string} motif
- * @param {readonly string[]} dossiers @param {{ entiers?: boolean }} [options]
- * @returns {Map<string, string>}
+ * @param {readonly string[]} pathspecs @returns {Map<string, string>}
  */
-export function grepDe(git, portee, motif, dossiers, { entiers = false } = {}) {
+export function grepDe(git, portee, motif, pathspecs) {
   const prefixe = portee.length === 1 && !portee[0].startsWith('-') ? `${portee[0]}:` : ''
-  const motifs = entiers ? ['-I', '--all-match', '-e', motif, '-e', '^'] : ['-e', motif]
-  const sortie = git(['grep', '-z', '-E', ...motifs, ...portee, '--', ...dossiers]) ?? ''
+  const sortie = git(['grep', '-z', '-E', '-e', motif, ...portee, '--', ...pathspecs]) ?? ''
   /** @type {Map<string, string[]>} */
   const lignes = new Map()
   for (const l of sortie.split('\n')) {
@@ -244,6 +242,37 @@ export function grepDe(git, portee, motif, dossiers, { entiers = false } = {}) {
     else lignes.set(rel, [l.slice(at + 1)])
   }
   return new Map([...lignes].map(([rel, ls]) => [rel, `${ls.join('\n')}\n`]))
+}
+
+/**
+ * Le texte de chaque chemin de `rels` dans l'image `arbre` (une ref ou `INDEX`), `null` s'il y est
+ * absent — l'unique lecture PAR LOT des portes : un seul `git cat-file --batch`. `git` (args,
+ * `{ entree }` → sortie, `null` = rien) est le lecteur de l'appelant.
+ * @param {(args: string[], opts?: { entree?: string }) => string | null} git @param {string} arbre
+ * @param {readonly string[]} rels @returns {Map<string, string | null>}
+ * @throws {Error} sortie de `cat-file` qui ne suit pas sa forme `<objet> <type> <taille>`.
+ */
+export function lireEnLot(git, arbre, rels) {
+  /** @type {Map<string, string | null>} */
+  const textes = new Map()
+  if (!rels.length) return textes
+  const prefixe = arbre === INDEX ? ':' : `${arbre}:`
+  const sortie = Buffer.from(git(['cat-file', '--batch'], { entree: rels.map((rel) => `${prefixe}${rel}\n`).join('') }) ?? '', 'utf8')
+  let p = 0
+  for (const rel of rels) {
+    const fin = sortie.indexOf(10, p)
+    const tete = fin < 0 ? '' : sortie.subarray(p, fin).toString('utf8')
+    if (tete.endsWith(' missing')) {
+      textes.set(rel, null)
+      p = fin + 1
+      continue
+    }
+    const taille = Number(tete.split(' ')[2])
+    if (!Number.isInteger(taille) || sortie[fin + 1 + taille] !== 10) throw new Error(`git cat-file --batch illisible à ${prefixe}${rel} : « ${tete} »`)
+    textes.set(rel, sortie.subarray(fin + 1, fin + 1 + taille).toString('utf8'))
+    p = fin + 2 + taille
+  }
+  return textes
 }
 
 /**

@@ -8,6 +8,8 @@ import {
   deplaceLaFrontiere, ecartsDeReclassement, franchisDesCotes, raisonDeRefusDeReclassement, reclassementsNonDeclares,
 } from './reclassementCss.mjs'
 import { motifDeCitation } from './cssImages.mjs'
+import { CHEMIN_COUCHES, CHEMIN_MANIFESTE } from './cssCouches.mjs'
+import { CHEMIN_TSCONFIG } from './importGraph.mjs'
 
 const Q = 'src/ui/styles/ecran-q.css'
 const P = 'src/ui/styles/prim-p.css'
@@ -79,64 +81,58 @@ test('franchisDesCotes ne lit que les candidats — exemptés au commit, pas au 
 const COMPOSANT_CONSOLE = 'src/ui/Console.tsx'
 const MODULE_CONSOLE = 'src/ui/styles/console.css'
 const MANIFESTE_CONSOLE = [{ id: 'a' }, { id: 'console', fichier: COMPOSANT_CONSOLE, css: MODULE_CONSOLE }]
+const ECRAN = 'src/ui/Ecran.tsx'
 const jamais = (quoi) => () => { throw new Error(`${quoi} lu alors que les chemins suffisent`) }
-const diffDEcran = (ligne) =>
-  `diff --git a/src/ui/Ecran.tsx b/src/ui/Ecran.tsx\n--- a/src/ui/Ecran.tsx\n+++ b/src/ui/Ecran.tsx\n${ligne.startsWith('-') ? '@@ -1 +0,0 @@' : '@@ -0,0 +1 @@'}\n${ligne}\n`
-const deplace = (chemins, diff, nesOuMorts = []) =>
-  deplaceLaFrontiere({ chemins, nesOuMorts: () => nesOuMorts, diff: () => diff, manifeste: () => MANIFESTE_CONSOLE })
-const sansLecture = { nesOuMorts: jamais('nesOuMorts'), diff: jamais('diff'), manifeste: jamais('manifeste') }
+/** Un côté en mémoire : le manifeste, `textes` (`{ chemin: texte }`) et le composant cité. */
+const arbreDe = (textes, manifeste = MANIFESTE_CONSOLE) => {
+  const lire = (rel) => (rel === CHEMIN_MANIFESTE ? JSON.stringify(manifeste) : textes[rel] ?? null)
+  return {
+    lire,
+    lireTout: (rels) => new Map(rels.map((rel) => [rel, lire(rel)])),
+    citants: jamais('citants'),
+    lister: () => [...Object.keys(textes).filter((f) => f.startsWith('src/')), COMPOSANT_CONSOLE],
+  }
+}
+/** `avant` et `apres` : les textes du parent et du commit ; les chemins touchés sont leurs clés. */
+const deplace = (avant, apres, nesOuMorts = []) => deplaceLaFrontiere({
+  chemins: [...new Set([...Object.keys(avant), ...Object.keys(apres)])],
+  nesOuMorts: () => nesOuMorts, parent: arbreDe(avant), commit: arbreDe(apres), racine: '/r',
+})
+const sansLecture = { nesOuMorts: jamais('nesOuMorts'), parent: { lire: jamais('parent') }, commit: { lire: jamais('commit') } }
+const IMPORT = "import { Console } from './Console'\n"
 
-test('deplaceLaFrontiere : le MANIFESTE touché suffit, sans rien lire d’autre', () => {
-  assert.equal(deplaceLaFrontiere({ chemins: ['src/data/primitives.manifest.json'], ...sansLecture }), true)
+test('deplaceLaFrontiere : le MANIFESTE, `cssCouches.mjs` ou `tsconfig.json` touché suffit, sans rien lire d’autre', () => {
+  for (const f of [CHEMIN_MANIFESTE, CHEMIN_COUCHES, CHEMIN_TSCONFIG]) {
+    assert.equal(deplaceLaFrontiere({ chemins: [f], ...sansLecture }), true, f)
+  }
 })
 
-test('deplaceLaFrontiere : `cssCouches.mjs` (FEUILLES_PARTAGEES) touché suffit, sans rien lire d’autre', () => {
-  assert.equal(deplaceLaFrontiere({ chemins: ['scripts/guards/lib/cssCouches.mjs'], ...sansLecture }), true)
+test('deplaceLaFrontiere : un import d’un `fichier` du manifeste GAGNÉ ou PERDU relit la frontière', () => {
+  assert.equal(deplace({ [ECRAN]: 'const a = 1\n' }, { [ECRAN]: IMPORT }), true, 'gagné')
+  assert.equal(deplace({ [ECRAN]: "import { Console } from './Console.tsx'\n" }, { [ECRAN]: 'const a = 1\n' }), true, 'perdu')
+  assert.equal(deplace({ [ECRAN]: IMPORT }, {}), true, 'importeur SUPPRIMÉ en entier')
 })
 
-test('deplaceLaFrontiere : une ligne AJOUTÉE qui importe un `fichier` du manifeste', () => {
-  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+import { Console } from './Console'")), true)
+test('deplaceLaFrontiere : un import sur PLUSIEURS lignes dont seule la ligne qui ne cite rien change relit la frontière', () => {
+  assert.equal(deplace({ [ECRAN]: "const M = await charger(\n  './Console')\n" }, { [ECRAN]: "const M = await import(\n  './Console')\n" }), true)
 })
 
-test('deplaceLaFrontiere : une ligne RETIRÉE qui importait un `fichier` du manifeste', () => {
-  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("-import { Console } from './Console.tsx'")), true)
-})
-
-test('deplaceLaFrontiere : un diff `src/` sans import d’un `fichier` du manifeste ne relit rien — un simple LITTÉRAL non plus', () => {
-  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+import { Autre } from './ConsoleBis'")), false)
-  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+const onglet = 'Console'")), false, 'un littéral qui porte le nom n’est pas un import')
-  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+import { C } from 'Console'")), false, 'un spécificateur NU n’est pas relatif')
-  assert.equal(deplace(['src/ui/Console.tsx'], diffDEcran('+export const Console = 2')), false, 'l’en-tête `+++ b/src/ui/Console.tsx` n’est pas une ligne')
-  assert.equal(deplaceLaFrontiere({ chemins: ['src/ui/Ecran.tsx'], ...sansLecture, manifeste: () => [{ id: 'sans-fichier' }] }), false,
-    'un manifeste sans `fichier` n’a rien à importer : ni les chemins nés ou morts ni le diff ne sont lus')
-})
-
-test('deplaceLaFrontiere : un importeur SUPPRIMÉ en entier relit la frontière', () => {
-  const suppr = [
-    'diff --git a/src/ui/Ecran2.tsx b/src/ui/Ecran2.tsx', 'deleted file mode 100644', '--- a/src/ui/Ecran2.tsx', '+++ /dev/null',
-    '@@ -1 +0,0 @@', "-import { Console } from './Console'",
-  ].join('\n')
-  assert.equal(deplace(['src/ui/Ecran2.tsx'], suppr, ['src/ui/Ecran2.tsx']), true)
+test('deplaceLaFrontiere : des arcs vers le manifeste INCHANGÉS ne relisent rien — littéral, autre module, import déplacé', () => {
+  assert.equal(deplace({ [ECRAN]: 'const a = 1\n' }, { [ECRAN]: "const p = './Console'\nimport { B } from './ConsoleBis'\nimport { t } from 'Console'\n" }), false)
+  assert.equal(deplace({ [ECRAN]: IMPORT }, { [ECRAN]: `const a = 1\n${IMPORT}` }), false, 'le même arc')
+  assert.equal(deplace({ 'src/ui/NOTES.md': 'a' }, { 'src/ui/NOTES.md': IMPORT }), false, 'un fichier qui n’est pas un module n’importe pas')
+  assert.equal(deplaceLaFrontiere({ chemins: [ECRAN], nesOuMorts: jamais('nesOuMorts'), parent: arbreDe({}, [{ id: 'sans-fichier' }]), commit: sansLecture.commit }),
+    false, 'un manifeste sans `fichier` n’a rien à importer : ni les chemins nés ou morts ni le commit ne sont lus')
 })
 
 test('deplaceLaFrontiere : un module HOMONYME ajouté ou supprimé relit la frontière, VIDE compris — `./Console` peut changer de cible', () => {
-  const vide = (mode) => `diff --git a/src/ui/Console.ts b/src/ui/Console.ts\n${mode} file mode 100644\nindex 0000000..e69de29\n`
-  assert.equal(deplace(['src/ui/Console.ts'], vide('new'), ['src/ui/Console.ts']), true, '`Console.ts` VIDE ajouté passe avant `Console.tsx`')
-  assert.equal(deplace(['src/ui/Console.ts'], vide('deleted'), ['src/ui/Console.ts']), true, 'le retirer, vide, rend `./Console` à `Console.tsx`')
-  assert.equal(deplace(['src/ui/Console/index.ts'], '', ['src/ui/Console/index.ts']), true, 'repli `index.*`')
-  assert.equal(deplace(['src/ui/Console.css'], '', ['src/ui/Console.css']), false, 'une feuille n’est pas un module de code')
-  assert.equal(deplace(['src/ui/Autre.ts'], '', ['src/ui/Autre.ts']), false, 'témoin : un autre nom')
-  assert.equal(deplace(['src/ui/Console.tsx'], diffDEcran('+export const Console = 2'), []), false,
+  assert.equal(deplace({}, { 'src/ui/Console.ts': '' }, ['src/ui/Console.ts']), true, '`Console.ts` VIDE ajouté passe avant `Console.tsx`')
+  assert.equal(deplace({ 'src/ui/Console.ts': '' }, {}, ['src/ui/Console.ts']), true, 'le retirer, vide, rend `./Console` à `Console.tsx`')
+  assert.equal(deplace({}, { 'src/ui/Console/index.ts': '' }, ['src/ui/Console/index.ts']), true, 'repli `index.*`')
+  assert.equal(deplace({}, { 'src/ui/Console.css': '' }, ['src/ui/Console.css']), false, 'une feuille n’est pas un module de code')
+  assert.equal(deplace({}, { 'src/ui/Autre.ts': '' }, ['src/ui/Autre.ts']), false, 'témoin : un autre nom')
+  assert.equal(deplace({ [COMPOSANT_CONSOLE]: 'export const Console = 1\n' }, { [COMPOSANT_CONSOLE]: 'export const Console = 2\n' }), false,
     'une simple MODIFICATION de l’homonyme ne change aucune résolution')
-})
-
-test('deplaceLaFrontiere : toute ligne de hunk qui CITE un `fichier` relit — spécificateur seul, commentaire, `/` final, littéral compris', () => {
-  for (const l of ["+  './Console'", "-  '@/ui/Console';", "+  './Console' // primitive", "+import X from './Console/'",
-    "+  './Console').then((m) => m.Console)", "+const p = './Console'"]) {
-    assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran(l)), true, l)
-  }
-  const entete = 'diff --git a/src/ui/Console.tsx b/src/ui/Console.tsx\n--- a/src/ui/Console.tsx\n+++ b/src/ui/Console.tsx\n@@ -1 +1 @@\n-export const A = 1\n+export const A = 2\n'
-  assert.equal(deplace(['src/ui/Console.tsx'], entete), false, 'les en-têtes `---`/`+++` ne sont pas des lignes de hunk')
 })
 
 test('motifDeCitation : un nom du manifeste en mot entier après `/`, ou un spécificateur fini par `.`, `..` ou `/`', () => {

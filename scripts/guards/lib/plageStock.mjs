@@ -28,7 +28,6 @@ import { lireGit, sortieOuNull } from './gitPorte.mjs'
 import { croissanceDesStocks, croissancesNonCouvertes } from './stocksNominatifs.mjs'
 import { deplaceLaFrontiere, ecartsDeReclassement, franchisDesCotes, lignesDeReclassement } from './reclassementCss.mjs'
 import { coteCss, renommagesDe, sourceGit } from './cssImages.mjs'
-import { CHEMIN_MANIFESTE, manifesteDe } from './cssCouches.mjs'
 
 /** Le sha nul que git écrit sur stdin du pre-push pour une branche NEUVE. */
 export const SHA_NUL = '0'.repeat(40)
@@ -109,8 +108,8 @@ export function raisonDeRefusDePlage(refus) {
  */
 export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } = {}) {
   const pannes = []
-  const lire = git ?? ((args) => {
-    const vu = lireGit(args, { cwd })
+  const lire = git ?? ((args, { entree } = {}) => {
+    const vu = lireGit(args, { cwd, entree })
     if (!vu.disponible) {
       pannes.push(vu.raison)
       return null
@@ -137,7 +136,7 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
   const shas = liste.split('\n').map((l) => l.trim()).filter(Boolean)
   const commits = shas.map((sha) => {
     const diff = lire(['show', '--format=', '-U0', '--no-renames', sha]) ?? ''
-    const cote = (arbre) => coteCss(sourceGit({ cwd, arbre, git: lire }), { racine: cwd })
+    const source = (arbre) => sourceGit({ cwd, arbre, git: lire })
     return {
       sha,
       message: lire(['show', '-s', '--format=%B', sha]) ?? '',
@@ -151,9 +150,10 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
         chemins: cheminsDuDiff(diff),
         nesOuMorts: () => (lire(['show', '--format=', '--name-only', '--no-renames', '--diff-filter=AD', sha]) ?? '')
           .split('\n').map((l) => l.trim()).filter(Boolean),
-        diff: () => diff,
-        manifeste: () => manifesteDe(lire(['show', `${sha}^:${CHEMIN_MANIFESTE}`])),
-      }) ? { parent: cote(`${sha}^`), commit: cote(sha) } : null),
+        parent: source(`${sha}^`),
+        commit: source(sha),
+        racine: cwd,
+      }) ? { parent: coteCss(source(`${sha}^`), { racine: cwd }), commit: coteCss(source(sha), { racine: cwd }) } : null),
     }
   })
   const cumule = lire(['diff', '-U0', '--no-renames', `${base}..${apres}`]) ?? ''

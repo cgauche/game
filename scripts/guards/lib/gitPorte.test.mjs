@@ -11,9 +11,10 @@ import { join } from 'node:path'
 import { STATUS_DLL_INIT_FAILED } from './spawnResilient.mjs'
 import {
   INDEX, TRAVAIL, arbrePrincipal, classer, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin, lireGit,
-  grepDe, listerImage, natureDuChemin, raisonCourte, sortieOuNull,
+  lireEnLot, listerImage, natureDuChemin, raisonCourte, sortieOuNull,
 } from './gitPorte.mjs'
 import { envDeDepotForge, instanceDeDepot } from './depotGabarit.mjs'
+import { sourceGit } from './cssImages.mjs'
 
 const ZERO = '0'.repeat(40)
 
@@ -304,15 +305,37 @@ test('listerImage : l’unique listeur d’image — ref, INDEX et TRAVAIL rende
   }
 })
 
-test('grepDe `entiers` : le contenu ENTIER de chaque fichier dont une ligne porte le motif, pour une ref, l’index et le travail', () => {
-  const texte = 'import {\n  X,\n} from\n  \'./cible\'\n\nconst y = 1\n'
-  const { racine, sha } = instanceDeDepot({ fichiers: { 'src/a.ts': texte, 'src/b.ts': 'const z = 2\n' }, message: 'un' })
+test('lireEnLot : un seul `cat-file --batch` rend le texte de chaque chemin, multi-octet compris, `null` pour un absent — ref et INDEX', () => {
+  const textes = { 'src/a.ts': 'const é = "→"\n\nexport {}\n', 'src/b.ts': 'const z = 2' }
+  const { racine, sha } = instanceDeDepot({ fichiers: textes, message: 'un' })
   try {
-    const git = (args) => sortieOuNull(lireGit(args, { cwd: racine }))
-    for (const portee of [[sha], ['--cached'], []]) {
-      assert.deepEqual([...grepDe(git, portee, '/cible', ['src'], { entiers: true })], [['src/a.ts', texte]], portee.join(' ') || 'travail')
+    const appels = []
+    const git = (args, opts) => { appels.push(args[0]); return sortieOuNull(lireGit(args, { cwd: racine, ...opts })) }
+    for (const arbre of [sha, INDEX]) {
+      assert.deepEqual([...lireEnLot(git, arbre, ['src/a.ts', 'src/absent.ts', 'src/b.ts'])],
+        [['src/a.ts', textes['src/a.ts']], ['src/absent.ts', null], ['src/b.ts', textes['src/b.ts']]], arbre)
     }
-    assert.deepEqual([...grepDe(git, [], '/cible', ['src'])], [['src/a.ts', "  './cible'\n"]], 'sans `entiers` : les seules lignes qui le portent')
+    assert.deepEqual(appels, ['cat-file', 'cat-file'], 'une lecture par lot, pas une par chemin')
+    assert.deepEqual([...lireEnLot(git, sha, [])], [], 'lot vide : aucun processus')
+    assert.equal(appels.length, 2)
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('sourceGit : `citants` ne rend que les MODULES de code de `src/`, `lireTout` leur texte par lot — ref, INDEX et travail', () => {
+  const texte = "import {\n  C,\n} from\n  './Cible'\n"
+  const { racine, sha } = instanceDeDepot({
+    fichiers: { 'src/a.ts': texte, 'src/n.md': "from './Cible'\n", 'src/d.json': '"./Cible"\n', 'src/z.ts': 'const z = 1\n' },
+    message: 'un',
+  })
+  try {
+    for (const arbre of [sha, INDEX, TRAVAIL]) {
+      const source = sourceGit({ cwd: racine, arbre })
+      const citants = source.citants('/Cible')
+      assert.deepEqual(citants, ['src/a.ts'], arbre)
+      assert.deepEqual([...source.lireTout(citants)], [['src/a.ts', texte]], arbre)
+    }
   } finally {
     jeter(racine)
   }

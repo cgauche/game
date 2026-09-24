@@ -57,15 +57,14 @@
 // PORTEURS de stock) : `git commit -a` 1,8 s, `git commit -- .` 2,2 s, le rejeu de `429b9a1a2`
 // (23 734 insertions, 5 porteurs) 1,1 s ; `git show <sha> -U0` sur ce commit 0,15 s ; le chargement
 // du compilateur `typescript` (portée de module, à la demande) 0,20 s et le parse de ses 5 porteurs
-// 0,06 s. La porte `RECLASSEMENT:` (mesuré 2026-09-24, `.wt-1806`, 3 passes, 4 cœurs) : un commit qui
-// ne déplace pas la frontière (`deplaceLaFrontiere` faux) paie le `-U0` de `src/` et le manifeste de
-// HEAD, 20-35 ms ; un commit qui la déplace relit les deux côtés en ENTIER — les ~1 450 fichiers de
-// `src/` qui citent un nom du manifeste (`motifDeCitation`), ~34 Mo de `git grep` par côté —, 2,6-3,1 s
-// sous une charge de 8 (`/proc/loadavg`) et 2,2-4,4 s sous une charge de 13 à 16 ; `deplaceLaFrontiere`
-// est vrai sur 199 des 300 derniers commits touchant `src/`. Cumulée au pire cas de 2,2 s, la
-// relecture chargée donne 6,6 s : la marge sur le `timeout` n'est plus que d'un facteur 1,5 — un hook
-// expiré ne bloque pas, donc ce chiffre se re-mesure quand la porte s'alourdit, il ne se gonfle pas
-// par précaution.
+// 0,06 s. La porte `RECLASSEMENT:` (mesuré 2026-09-24, `.wt-1806`, 3 passes, 4 cœurs, charge 10 à 12 à
+// `/proc/loadavg`) : `deplaceLaFrontiere` compare les imports vers le manifeste des modules touchés,
+// parent et commit lus par lot (`lireEnLot`), 80-200 ms pour un module et 2,5-3,0 s au pire cas des
+// 3 686 modules de `src/` touchés ; il est vrai sur 60 des 300 derniers commits touchant `src/`. Un
+// commit qui déplace la frontière relit en plus les deux côtés (`coteCss` : `git grep` des ~1 420
+// modules citants, lus par lot), 1,7-2,4 s. Au pire cas cumulé — 2,2 s, 3,0 s, 2,4 s — le hook prend
+// 7,6 s : la marge sur le `timeout` n'est plus que d'un facteur 1,3 — un hook expiré ne bloque pas,
+// donc ce chiffre se re-mesure quand la porte s'alourdit, il ne se gonfle pas par précaution.
 import { Buffer } from 'node:buffer'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -75,13 +74,12 @@ import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../gu
 import {
   deplaceLaFrontiere, lignesDeReclassement, raisonDeRefusDeReclassement, reclassementsNonDeclares,
 } from '../guards/lib/reclassementCss.mjs'
-import { CHEMIN_MANIFESTE, manifesteDe } from '../guards/lib/cssCouches.mjs'
-import { RACINE_DES_SOURCES, coteCss, renommagesDe, sourceGit } from '../guards/lib/cssImages.mjs'
+import { citantsDe, coteCss, renommagesDe, sourceGit } from '../guards/lib/cssImages.mjs'
 import {
   PORTEUR_DU_PLAFOND, estCheminDuBudget, importsDe, mesurerBudget, plafondDeLaSource, refusDeBudget,
 } from '../guards/budget-contexte.mjs'
 import {
-  GitIndisponible, INDEX, enfantsDirects, estDansHead, estRepertoire, grepDe, lireGit, listerImage, sortieOuNull,
+  GitIndisponible, INDEX, enfantsDirects, estDansHead, estRepertoire, grepDe, lireEnLot, lireGit, listerImage, sortieOuNull,
 } from '../guards/lib/gitPorte.mjs'
 import { hunksDe } from '../guards/lib/hunks.mjs'
 import { motifRattachement, numerosDeLaChaine, numerosFermes } from '../guards/lib/fermetures.mjs'
@@ -1850,10 +1848,11 @@ export function formeDuCommit(command) {
  */
 export function diffDuCommit(command, dir = process.cwd()) {
   const { forme, pathspecs } = formeDuCommit(command)
-  const lire = (args) => {
+  const lire = (args, { entree } = {}) => {
     try {
       return execFileSync('git', args, {
-        encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1 << 28,
+        encoding: 'utf8', cwd: dir, stdio: [entree === undefined ? 'ignore' : 'pipe', 'pipe', 'ignore'],
+        maxBuffer: 1 << 28, input: entree,
       })
     } catch { return null }
   }
@@ -1887,29 +1886,37 @@ export function diffDuCommit(command, dir = process.cwd()) {
       chemins,
       nesOuMorts: () => (lire(['diff', ...rev(), '--name-only', '--no-renames', '--diff-filter=AD', ...borne]) ?? '')
         .split('\n').map((l) => l.trim()).filter(Boolean),
-      diff: () => lire(['diff', ...rev(), '-U0', '--no-renames', ...(borne.length ? borne : ['--', RACINE_DES_SOURCES])]) ?? '',
-      manifeste: () => manifesteDe(contreIndex() ? lire(['show', `:${CHEMIN_MANIFESTE}`]) : lire(['show', `HEAD:${CHEMIN_MANIFESTE}`])),
+      parent: sourceDuParent(),
+      commit: sourceDuCommit(),
+      racine: dir,
     }),
     cotesCss: () => ({
-      parent: coteCss(sourceGit({ cwd: dir, arbre: 'HEAD', git: lire }), { racine: dir }),
-      commit: coteCss({
-        lire: contenu,
-        contenus: (motif) => contenusDuCommit(motif),
-        lister: (dossier) => listerImage(lire, INDEX, dossier),
-      }, { racine: dir }),
+      parent: coteCss(sourceDuParent(), { racine: dir }),
+      commit: coteCss(sourceDuCommit(), { racine: dir }),
     }),
   }
-  /** Le contenu entier des fichiers du commit qui portent `motif`, lus comme `contenu` : index, arbre
-   *  de travail, ou l'arbre de travail des seuls chemins du pathspec et `HEAD` pour les autres. */
-  function contenusDuCommit(motif) {
-    const contenus = (portee) => grepDe(lire, portee, motif, [RACINE_DES_SOURCES], { entiers: true })
-    if (contreIndex()) return contenus(['--cached'])
-    if (forme !== 'pathspec') return contenus([])
+  function sourceDuParent() {
+    return sourceGit({ cwd: dir, arbre: 'HEAD', git: lire })
+  }
+  /** L'arbre du commit, lu comme `contenu` : index, arbre de travail, ou l'arbre de travail des seuls
+   *  chemins du pathspec et `HEAD` pour les autres. */
+  function sourceDuCommit() {
     const dans = (f) => pathspecs.some((ps) => pathMatchesPathspec(f, ps))
-    return new Map([
-      ...[...contenus(['HEAD'])].filter(([f]) => !dans(f)),
-      ...[...contenus([])].filter(([f]) => dans(f)),
-    ])
+    return {
+      lire: contenu,
+      lister: (dossier) => listerImage(lire, INDEX, dossier),
+      lireTout: (rels) => {
+        if (contreIndex()) return lireEnLot(lire, INDEX, rels)
+        if (forme !== 'pathspec') return new Map(rels.map((f) => [f, fichierDeTravail(f)]))
+        const deHead = lireEnLot(lire, 'HEAD', rels.filter((f) => !dans(f)))
+        return new Map(rels.map((f) => [f, dans(f) ? fichierDeTravail(f) : deHead.get(f) ?? null]))
+      },
+      citants: (motif) => {
+        if (contreIndex()) return citantsDe(lire, ['--cached'], motif)
+        if (forme !== 'pathspec') return citantsDe(lire, [], motif)
+        return [...citantsDe(lire, ['HEAD'], motif).filter((f) => !dans(f)), ...citantsDe(lire, [], motif).filter(dans)]
+      },
+    }
   }
 }
 

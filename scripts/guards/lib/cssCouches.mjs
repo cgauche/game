@@ -290,20 +290,21 @@ export const physique = (prop) => EQUIVALENT_PHYSIQUE.get(prop) ?? prop;
  *  `container`, `gap`, `white-space`) n'ont aucun membre qui peigne. */
 const RACCOURCIS_A_MEMBRE_PEINT = new Set(['list-style']);
 
-/** Une valeur faite de MOTS-CLÉS seuls (`!important` compris) : aucune fonction — `var()` compris —,
- *  aucune chaîne, aucun nombre. */
-const MOTS_CLES_SEULS = /^-?[a-z_][\w-]*(\s+-?[a-z_][\w-]*)*(\s*!\s*important)?$/i;
+/** Vrai si la valeur APPELLE une fonction (`url()`, `var()`, `image-set()`, un dégradé…), chaînes et
+ *  commentaires ôtés : le seul moyen d'y poser une image. */
+const appelleUneFonction = (valeur) =>
+  valeur.replace(/\/\*[\s\S]*?\*\/|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, '').includes('(');
 
 /** Vrai si la DÉCLARATION place : sa propriété, classée sous son nom physique (`physique`), est nommée
- *  ou d'une famille à préfixe ; un raccourci dont un membre peint (`RACCOURCIS_A_MEMBRE_PEINT`) ne place
- *  que si sa `valeur` est faite de mots-clés seuls (`MOTS_CLES_SEULS`) — une valeur indécidable peint.
- *  Une variable CSS (`--x`) est un PARAMÈTRE de primitive (patron `.swatch`), jamais une matière — elle
- *  reste hors du stock d'identité.
+ *  ou d'une famille à préfixe ; un raccourci dont un membre peint (`RACCOURCIS_A_MEMBRE_PEINT`) peint dès
+ *  que sa `valeur` appelle une fonction (`appelleUneFonction`), `var()` compris : une valeur
+ *  indécidable peint. Une variable CSS (`--x`) est un PARAMÈTRE de primitive (patron `.swatch`), jamais
+ *  une matière — elle reste hors du stock d'identité.
  *  @param {string} prop @param {string} valeur */
 export const estPlacement = (prop, valeur) => {
   if (prop.startsWith('--')) return true;
   const p = physique(prop);
-  if (RACCOURCIS_A_MEMBRE_PEINT.has(p) && !MOTS_CLES_SEULS.test(valeur.trim())) return false;
+  if (RACCOURCIS_A_MEMBRE_PEINT.has(p) && appelleUneFonction(valeur)) return false;
   return PROPRIETES_DE_PLACEMENT.has(p) || PREFIXES_DE_PLACEMENT.some((x) => p.startsWith(x));
 };
 

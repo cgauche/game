@@ -2,18 +2,22 @@
 // devient l'image `{ fichiers, manifeste, partagees, reutilises }` que mesure `cssCouches.mjs`, et le
 // CÔTÉ `{ manifeste, partagees, reutilises, lire }` qu'en lit la garde `RECLASSEMENT:`. Les imports
 // qui fixent `reutilises` sont ceux de `directImportsOf` (`importGraph.mjs`) sur le contenu entier des
-// fichiers que `git grep` (`grepDe`, `gitPorte.mjs`) présélectionne (`motifDeCitation`), résolus contre
-// l'arbre lu. Appelants : `cssCouchesAudit.ts` (disque), `ventilationDeGit` (le régénérateur), le garde
+// modules que `git grep` (`grepDe`, `gitPorte.mjs`) présélectionne (`motifDeCitation`), lus par lot
+// (`lireEnLot`) et résolus contre l'arbre lu. Appelants : `cssCouchesAudit.ts` (disque), `ventilationDeGit` (le régénérateur), le garde
 // de solde au commit, la porte de plage au push.
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { CHEMIN_TSCONFIG, aliasDe, directImportsOf } from './importGraph.mjs'
-import { INDEX, TRAVAIL, grepDe, lireGit, listerImage, sortieOuNull } from './gitPorte.mjs'
+import { CHEMIN_TSCONFIG, aliasDe, directImportsOf, estModule, pathspecsDeModules } from './importGraph.mjs'
+import { INDEX, TRAVAIL, grepDe, lireEnLot, lireGit, listerImage, sortieOuNull } from './gitPorte.mjs'
 import { entreesEcrites } from './stock.mjs'
 import {
   CHEMIN_COUCHES, CHEMIN_MANIFESTE, RACINE_DES_MODULES, feuillesPartageesDe, fichiersReutilises,
   manifesteDe, modulesDePrimitive, ventiler,
 } from './cssCouches.mjs'
+
+/** @typedef {{ lister: (dossier: string) => readonly string[], lire: (rel: string) => string | null,
+ *   lireTout: (rels: readonly string[]) => Map<string, string | null>,
+ *   citants: (motif: string) => readonly string[] }} SourceCss */
 
 /** Racine où cherchent les importeurs. */
 export const RACINE_DES_SOURCES = 'src'
@@ -55,26 +59,38 @@ export function motifDeCitation(manifeste) {
 }
 
 /**
+ * Les imports DIRECTS (`directImportsOf`, `importGraph.mjs`) de chaque chemin de `rels` dans l'arbre
+ * `source`, lus par lot (`lireTout`) et résolus contre les SEULS fichiers (`lister`) et les alias
+ * (`tsconfig.json`, `aliasDe`) de cet arbre : le disque n'est pas l'arbre jugé (#1806). Un chemin absent
+ * de l'arbre, ou qui n'est pas un module de code (`estModule`), n'importe rien.
+ * @param {SourceCss} source @param {readonly string[]} rels @param {{ racine?: string }} [options]
+ * @returns {[string, string[]][]}
+ */
+export function importsDansLArbre(source, rels, { racine = '.' } = {}) {
+  const modules = rels.filter(estModule)
+  if (!modules.length) return rels.map((rel) => [rel, []])
+  const racineAbs = resolve(racine).split('\\').join('/')
+  const arbre = new Set(source.lister(RACINE_DES_SOURCES).map((rel) => `${racineAbs}/${rel}`))
+  const options = { racine, existe: (abs) => arbre.has(abs), alias: aliasDe(source.lire(CHEMIN_TSCONFIG), racineAbs) }
+  const textes = source.lireTout(modules)
+  return rels.map((rel) => {
+    const texte = textes.get(rel)
+    return [rel, typeof texte === 'string' ? directImportsOf(rel, texte, options) : []]
+  })
+}
+
+/**
  * Le CÔTÉ d'un arbre : manifeste, `FEUILLES_PARTAGEES`, `fichier`s RÉUTILISÉS et lecteur de texte. Les
- * fichiers de `src/` qui citent le manifeste (`motifDeCitation`) sont lus ENTIERS par `directImportsOf`
- * (`importGraph.mjs`), contre les SEULS fichiers (`lister`) et les alias (`tsconfig.json`, `aliasDe`) de
- * cet arbre : le disque n'est pas l'arbre jugé (#1806).
- * @param {{ lire: (rel: string) => string | null, contenus: (motif: string) => Map<string, string>,
- *   lister: (dossier: string) => readonly string[] }} source
- * @param {{ racine?: string }} [options] le dépôt où les imports se résolvent
+ * importeurs sont les modules de `src/` qui citent le manifeste (`citants`, `motifDeCitation`), lus
+ * ENTIERS (`importsDansLArbre`).
+ * @param {SourceCss} source @param {{ racine?: string }} [options] le dépôt où les imports se résolvent
  * @throws {Error} manifeste ou `cssCouches.mjs` illisible.
  */
 export function coteCss(source, { racine = '.' } = {}) {
   const manifeste = manifesteDe(source.lire(CHEMIN_MANIFESTE))
   const partagees = feuillesPartageesDe(source.lire(CHEMIN_COUCHES))
   const motif = motifDeCitation(manifeste)
-  const racineAbs = resolve(racine).split('\\').join('/')
-  const imports = []
-  if (motif) {
-    const arbre = new Set(source.lister(RACINE_DES_SOURCES).map((rel) => `${racineAbs}/${rel}`))
-    const options = { racine, existe: (abs) => arbre.has(abs), alias: aliasDe(source.lire(CHEMIN_TSCONFIG), racineAbs) }
-    for (const [rel, contenu] of source.contenus(motif)) imports.push([rel, directImportsOf(rel, contenu, options)])
-  }
+  const imports = motif ? importsDansLArbre(source, source.citants(motif), { racine }) : []
   return { manifeste, partagees, reutilises: fichiersReutilises(manifeste, imports), lire: source.lire }
 }
 
@@ -95,17 +111,20 @@ export function imageCss(source, options) {
 }
 
 /** Le lecteur git par défaut dans `cwd` : une indisponibilité LÈVE en nommant ce qu'elle lisait. */
-const lecteurGit = (cwd, quoi) => (args) => {
-  const vu = lireGit(args, { cwd })
+const lecteurGit = (cwd, quoi) => (args, { entree } = {}) => {
+  const vu = lireGit(args, { cwd, entree })
   if (!vu.disponible) throw new Error(`git indisponible pour lire ${quoi} : ${vu.raison}`)
   return sortieOuNull(vu)
 }
 
+/** Les modules de code de `src/` qu'un `git grep` de `portee` trouve portant `motif` (`grepDe`). */
+export const citantsDe = (git, portee, motif) => [...grepDe(git, portee, motif, pathspecsDeModules(RACINE_DES_SOURCES)).keys()]
+
 /**
- * Une source lue par git dans `cwd` : `arbre` = une ref, `INDEX` ou `TRAVAIL`. `git` (args → sortie,
- * `null` = objet absent) est le lecteur de l'appelant ; par défaut `lireGit`, dont une indisponibilité
- * LÈVE en se nommant : une image vide jugerait sur rien.
- * @param {{ cwd?: string, arbre: string, git?: (args: string[]) => string | null }} p
+ * Une source lue par git dans `cwd` : `arbre` = une ref, `INDEX` ou `TRAVAIL`. `git` (args,
+ * `{ entree }` → sortie, `null` = objet absent) est le lecteur de l'appelant ; par défaut `lireGit`,
+ * dont une indisponibilité LÈVE en se nommant : une image vide jugerait sur rien.
+ * @param {{ cwd?: string, arbre: string, git?: (args: string[], opts?: { entree?: string }) => string | null }} p
  */
 export function sourceGit({ cwd = process.cwd(), arbre, git }) {
   const lire = git ?? lecteurGit(cwd, arbre)
@@ -116,12 +135,15 @@ export function sourceGit({ cwd = process.cwd(), arbre, git }) {
     lire: arbre === TRAVAIL
       ? (rel) => lireDuTravail(cwd, rel)
       : (rel) => lire(['show', `${arbre === INDEX ? '' : arbre}:${rel}`]),
-    contenus: (motif) => grepDe(lire, portee, motif, [RACINE_DES_SOURCES], { entiers: true }),
+    lireTout: arbre === TRAVAIL
+      ? (rels) => new Map(rels.map((rel) => [rel, lireDuTravail(cwd, rel)]))
+      : (rels) => lireEnLot(lire, arbre, rels),
+    citants: (motif) => citantsDe(lire, portee, motif),
   }
 }
 
 /** Le texte d'un fichier de l'arbre de travail, `null` s'il n'existe pas. */
-function lireDuTravail(cwd, rel) {
+export function lireDuTravail(cwd, rel) {
   try {
     return readFileSync(join(cwd, rel), 'utf8')
   } catch {
