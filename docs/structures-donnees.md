@@ -2539,7 +2539,7 @@ documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{�
 (`{x,y}` d’une tuile, bloc de caractéristiques, `{flat,plusBF}` de dégâts), les objets d’un `Flow`
 ou d’une `Formula` (`{kind,steps}`, `{bonusOf}`) et les objets à `op`, dont la grammaire est mesurée en §5.
 Ils ne sont pas au stock — ils se lisent ici, EN ENTIER : les
-**1179** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
+**1181** signatures hors strate, triées par occurrences décroissantes. Le diff de cette
 table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 `src/data/structures-contrat.test.ts` (plafond sur le COMPTE, liste de référence = cette table).
 
@@ -2633,13 +2633,13 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `naval-traits.json` | `install` | `installation,weightEnc` | 20 |
 | `criticals.json` | `ops` | `op` | 19 |
 | `loup-et-saumure-projet.json` | `flow` | `kind,steps` | 19 |
-| `raceAppearance.json` | `palette` | `cheveux,cheveuxH,cheveuxO,peau,peauH,peauO` | 19 |
 | `arene-projet.json` | `dimensions` | `h,w` | 18 |
 | `arene-projet.json` | `flags` | `` | 18 |
 | `etats.json` | `effect` | `on,ops,type` | 18 |
 | `maladies.json` | `incubation` | `dice,unit` | 18 |
 | `maladies.json` | `duration` | `dice,unit` | 18 |
 | `spells.json` | `times` | `factor,of` | 18 |
+| `raceAppearance.json` | `palette` | `cheveux,cheveuxH,cheveuxO,peau,peauH,peauO` | 17 |
 | `spells.json` | `steps` | `cond,kind,then` | 17 |
 | `spells.json` | `ops` | `bonus,op,skill` | 17 |
 | `vehicles.json` | `sail` | `crew,m` | 17 |
@@ -2923,7 +2923,7 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `ship-criticals.json` | `bandes` | `hauteurs,tailles` | 3 |
 | `ship-criticals.json` | `hauteurs` | `greement,nid-de-pie` | 3 |
 | `ship-criticals.json` | `greement` | `dice` | 3 |
-| `spells.json` | `skin` | `accent,accentH,accentO,cuir,cuirH,cuirO,metal,metalH,metalO` | 3 |
+| `spells.json` | `skin` | `accent,cuir,metal` | 3 |
 | `spells.json` | `cond` | `kind,of` | 3 |
 | `spells.json` | `perRound` | `amount,ignoreAP,ignoreTB,op` | 3 |
 | `spells.json` | `of` | `is,kind,who` | 3 |
@@ -3414,7 +3414,9 @@ table EST la revue de toute signature neuve ; le CLIQUET qui la garde vit dans
 | `qualities.json` | `then` | `effect,kind` | 1 |
 | `qualities.json` | `capabilities` | `fumbleDigits` | 1 |
 | `raceAppearance.json` | `gabaritOverride` | `sl,st` | 1 |
+| `raceAppearance.json` | `palette` | `cheveux,cheveuxH,peau,peauH,peauO` | 1 |
 | `raceAppearance.json` | `palette` | `cheveux,cheveuxH,cheveuxO,peau` | 1 |
+| `raceAppearance.json` | `palette` | `cheveux,cheveuxO,peau,peauO` | 1 |
 | `raceAppearance.json` | `paletteF` | `cheveux,cheveuxH,peau,peauO` | 1 |
 | `raceAppearance.json` | `tirageIndividuel` | `cheveux,peau` | 1 |
 | `raceAppearance.json` | `parts` | `cheveux,visage` | 1 |
@@ -3789,8 +3791,8 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `miscast.ts` | 82 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
 | `oups.ts` | 41 | — | plage | cible | `max,min+…` | — |
 | `psychology.ts` | 54 | `test` | test | historique | `difficulty,skill` | — |
-| `raceAppearance.ts` | 33 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
-| `raceAppearance.ts` | 35 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
+| `raceAppearance.ts` | 34 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
+| `raceAppearance.ts` | 36 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
 | `river-navigation.ts` | 39 | `rowingAgility` | test | divergente | `difficulty+…` | — |
 | `river-navigation.ts` | 54 | `temporaryRepair` | test | divergente | `difficulty+…` | — |
 | `sea-cargo.ts` | 97 | `producesGossip` | test | divergente | `difficulty+…` | — |
@@ -5032,4 +5034,4 @@ pèse **2990** slots sur 3369.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: 83cc02cc17b762ecf408d901bc91eac1e8727b1e (386 fichiers, 10 dossiers) corps: 47ba324ff6796edb992dbefd3619efe6a7104a7a -->
+<!-- sources-empreinte: 7f9590604fe4ef5e1f6a313b986c31f5a1a400bb (386 fichiers, 10 dossiers) corps: 25cbbf9a8f3669213fe4ea43943f5cba65bcefda -->
