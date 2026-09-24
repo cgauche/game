@@ -123,6 +123,7 @@ export const SPECS_PAR_DATASET: Readonly<Record<string, Readonly<Record<string, 
   },
   'talents.json': {
     'artiste': ['calligraphie', 'cartographie', 'ecriture', 'gravure', 'icones', 'mosaique', 'peinture', 'sculpture', 'tatouage', 'tissage'],
+    'attirant': ['mutants-et-hommes-betes'],
     'beni': ['asuryan', 'atharti', 'bogenauer', 'borchbach', 'clio', 'deesse-araignee', 'dyrath', 'esmeralda', 'evawn', 'grand-pere-reik', 'grimnir', 'grungni', 'handrich', 'hoeth', 'hyacinthe', 'isha', 'josias', 'katya', 'khaine', 'khorne', 'kurnous', 'mabyn', 'manann', 'mathlann', 'morai-heg', 'morr', 'myrmidia', 'nurgle', 'quinsberry', 'ranald', 'rhya', 'ringil', 'shallya', 'sigmar', 'slaanesh', 'stromfels', 'taal', 'tzeentch', 'ulric', 'valaya', 'verena'],
     'bon-marcheur': ['deserts', 'foret', 'littoral', 'marais', 'marecages', 'montagnes', 'regions-boisees', 'rocailleux', 'toundra'],
     'chanson-de-marin': ['camarades-d-equipage-rassemblez-vous', 'de-toutes-les-terreurs-sur-les-mers', 'jacques-bret-a-rencontre-notre-acier', 'les-dames-de-l-anguille', 'naviguons-tous-ensemble', 'suivez-le-capitaine', 'tous-a-la-vigie'],
