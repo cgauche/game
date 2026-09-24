@@ -59,7 +59,7 @@ import { refKey, splitLabel } from '../../engine/careerSlots';
 import { adresseDeCreation, poolDuJoker, speciesSkillDefaults } from '../../engine/character';
 import { emplacementOctroye } from '../../engine/creation';
 import type { RefDesignee } from '../../data/schemas/grammaire/ref';
-import { sexeSchema, type SourceRef } from '../../data/schemas/grammaire/valeurs';
+import { sexeSchema, type SourceRef, type Sexe } from '../../data/schemas/grammaire/valeurs';
 import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics, Combatant } from '../../engine/types';
 import { damageString, itemFromTrappingById, itemLabel } from '../../engine/items';
@@ -228,7 +228,7 @@ const TalentRef = ({ talent }: { talent: RefDesignee }) => <TalentChip talent={{
  *  le `React.memo` de CharacterPreview ne prend jamais et les ~25 lignes du rail re-résolvent le rig
  *  à chaque rendu de l'étape. */
 const PICK_APPEARANCES = new Map<string, Appearance>();
-function pickAppearance(speciesId: string, sex: 'M' | 'F', variantId?: string): Appearance {
+function pickAppearance(speciesId: string, sex: Sexe, variantId?: string): Appearance {
   const key = `${speciesId}|${sex}|${variantId ?? ''}`;
   let a = PICK_APPEARANCES.get(key);
   if (!a) {

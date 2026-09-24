@@ -4,13 +4,8 @@
  * possèdent la déclaration, la donnée en reçoit la projection sans importer le rendu. Le rendu importe
  * ces prédicats (sens permis) : UNE computation du domaine, pour le schéma comme pour `resolveRender`.
  */
-import type { z } from 'zod';
 import { idDe } from './ref';
-import { libelleDeValeur } from './meta';
-import { sexeSchema } from './valeurs';
 import { ESPECES_DE_CREATURE, FORMES_DE_NUEE, SEXE_DE_COIFFURE } from '../_art.generated';
-
-type Sexe = z.infer<typeof sexeSchema>;
 
 /** Espèces DESSINÉES : celles dont le code déclare le corps — defs de créature et formes de nuée. */
 const ESPECES_DESSINEES: ReadonlySet<string> = new Set([...ESPECES_DE_CREATURE, ...FORMES_DE_NUEE]);
@@ -31,17 +26,6 @@ export function estFormeDeNuee(id: string): boolean {
 }
 
 /** Sexe d'une coiffure dessinée (`hairstyles/defs`), `undefined` pour un id inconnu. */
-export function sexeDeCoiffure(id: string): Sexe | undefined {
+export function sexeDeCoiffure(id: string): (typeof SEXE_DE_COIFFURE)[string] | undefined {
   return Object.prototype.hasOwnProperty.call(SEXE_DE_COIFFURE, id) ? SEXE_DE_COIFFURE[id] : undefined;
-}
-
-/** Faute de la coiffure imposée `hairstyle` au regard du `sex` posé dans le MÊME objet, `null` sinon. Le
- *  sexe se nomme par son libellé (`libelleDeValeur(sexeSchema, …)`). */
-export function fauteDeCoiffure(hairstyle: string, sex: Sexe | undefined): string | null {
-  const sexe = sexeDeCoiffure(hairstyle);
-  if (!sexe) return `coiffure « ${hairstyle} » inconnue : absente du catalogue des coiffures.`;
-  const libelle = libelleDeValeur(sexeSchema, sexe);
-  if (!sex) return `coiffure « ${hairstyle} » (sexe : ${libelle}) imposée sans sexe posé — poser le sexe ${libelle}, ou retirer la coiffure.`;
-  if (sex !== sexe) return `coiffure « ${hairstyle} » (sexe : ${libelle}) imposée sur le sexe ${libelleDeValeur(sexeSchema, sex)}.`;
-  return null;
 }

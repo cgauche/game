@@ -7,7 +7,7 @@ import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { PlayerText } from '../i18n/playerText';
 import { t } from '../i18n';
 import type { RigSpeciesId } from '../gameIso/rig/appearance';
-import type { SourceRef, SecondaryRef, RaceKey, RefCareerId, DescRef } from './schemas/grammaire/valeurs';
+import type { Sexe, SourceRef, SecondaryRef, RaceKey, RefCareerId, DescRef } from './schemas/grammaire/valeurs';
 import { porteLeMarqueur, type TypeEntite } from './schemas/grammaire/ref';
 import { symptomSeveritySchema } from './schemas/grammaire/valeurs';
 import { SOURCES_DE_SPECS, poolDeSource, sourceAdmet, type DatasetDeSource } from './schemas/grammaire/sourcesDeSpecs';
@@ -2307,7 +2307,7 @@ export interface RaceAppearanceData {
   pose?: Record<string, number>;
   tenue?: string;
   colors?: Record<string, string>;
-  sex?: 'M' | 'F';
+  sex?: Sexe;
   parts?: { cheveux?: number; visage?: number };
   scale?: number;
   eyes?: { G?: string; D?: string };
@@ -2321,10 +2321,8 @@ export interface NamePool {
   maleFirstNames: string[];
   femaleFirstNames: string[];
   lastNames: string[];
-  /** Suffixes de patronyme par sexe du PERSONNAGE (Nain, LDB 05 l.627-633 : « –sson » fils de…, « –snev »
-   *  neveu de…, « –sdottir » fille de…, « –sniz » nièce de…) — le nom de famille est généré depuis le
-   *  parent + suffixe quand `lastNames` est vide. Absent = pas de génération par suffixe. */
-  lastNameSuffixes?: { M: string[]; F: string[] };
+  /** Suffixes de patronyme par sexe du personnage (LDB 05 l.627-633). */
+  lastNameSuffixes?: Record<Sexe, string[]>;
 }
 
 import { indexParChamp, indexParId, memoParVersion } from './versionDataset';
@@ -3073,12 +3071,12 @@ export function findCareerById(id: string | undefined): CareerData | undefined {
 }
 /** Choix d'AFFICHAGE masculin/féminin (source unique) : `labelF` si sexe F et disponible, sinon
  *  `label`. Le sexe vit dans l'apparence cosmétique (`Combatant.appearance.sex`), jamais dans le moteur. */
-export function displayLabelForSex(sex: 'M' | 'F' | undefined, label: string, labelF?: string): string {
+export function displayLabelForSex(sex: Sexe | undefined, label: string, labelF?: string): string {
   return sex === 'F' && labelF ? labelF : label;
 }
 /** Libellé de Carrière à AFFICHER pour un personnage (forme féminine si sexe F). Bord UI — le
  *  retour est du texte d'affichage, JAMAIS une clé. */
-export function careerLabelFor(c: { career?: string; appearance?: { sex?: 'M' | 'F' } }): string {
+export function careerLabelFor(c: { career?: string; appearance?: { sex?: Sexe } }): string {
   const career = findCareerById(c.career);
   if (!career) return c.career ?? '';
   return displayLabelForSex(c.appearance?.sex, career.label, career.labelF);

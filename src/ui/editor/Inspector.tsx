@@ -21,7 +21,6 @@ import type { Settlement } from '../../engine/disponibilite';
 import { hashSeed } from '../../engine/dice';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { tokenBodyKind } from '../../gameIso/tokenBodyKind';
-import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { coiffureChoisie, coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { buildingsMeta } from '../../state/buildings';
@@ -41,7 +40,7 @@ import { entityKindSchema, facadeFeatureKindSchema, roofProfileSchema, sceneWeat
  *  espace : une ancre qui en nomme une est ignorée sans un mot (#841). */
 const battleAnchorTargets = (): { id: string; label: string }[] =>
   activitiesFor('bataille-round').map((def) => ({ id: def.id, label: def.label }));
-import { MonsterPartsFields } from './MonsterPartsFields';
+import { MonsterPartsFields, ReglagesApparence } from './MonsterPartsFields';
 import { effectCtxOf } from './EffectList';
 import { GameOpEditor } from './GameOpEditor';
 import { FlowEditor, TestFields } from './FlowEditor';
@@ -1351,20 +1350,21 @@ function EntityPanel({
       {ent.kind === 'personnage' && (
         <>
           <Fold title="Apparence" open>
-            <label className="ed-field">
-              Espèce (rig)
-              {/* Espèce EXPLICITE de rendu (`appearance.species`) — découple l'apparence du nom/ref
-                  (cf. scene.ts). Vide = bipède Humain par défaut. Le profil de stats se choisit via la
-                  réf de créature (fold Rôle/Combat), distincte de l'apparence. */}
-              <select value={ent.appearance?.species ?? ''} onChange={(e) => updateSel({ appearance: { ...ent.appearance, species: e.target.value || undefined } })}>
-                <option value="">(par défaut : Humain)</option>
-                {creatureSpeciesOptions().map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            {/* Espèce EXPLICITE de rendu (`appearance.species`) — découple l'apparence du nom/ref
+                (cf. scene.ts). Vide = bipède Humain par défaut. Le profil de stats se choisit via la
+                réf de créature (fold Rôle/Combat), distincte de l'apparence. */}
+            <div className="ed-field">
+              <ReglagesApparence
+                species={ent.appearance?.species}
+                sex={ent.appearance?.sex}
+                build={ent.appearance?.build}
+                hairstyle={ent.appearance?.hairstyle}
+                onSpecies={(id) => updateSel({ appearance: { ...ent.appearance, species: id } })}
+                onSex={(s) => updateSel({ appearance: coiffureRetombee({ ...ent.appearance, sex: s }) })}
+                onBuild={(b) => updateSel({ appearance: { ...ent.appearance, build: b } })}
+                onHairstyle={(id) => updateSel({ appearance: { ...ent.appearance, ...coiffureChoisie(id) } })}
+              />
+            </div>
             <label className="ed-field">
               Animation d'ambiance
               <select value={ent.anim ?? ''} onChange={(e) => updateSel({ anim: e.target.value || undefined })}>
@@ -1388,16 +1388,10 @@ function EntityPanel({
               monster={ent.appearance?.monster}
               weapon={ent.weapon}
               colors={ent.appearance?.colors}
-              sex={ent.appearance?.sex}
-              build={ent.appearance?.build}
-              hairstyle={ent.appearance?.hairstyle}
               tenue={ent.appearance?.tenue}
               onMonster={(patch) => updateSel({ appearance: { ...ent.appearance, monster: { ...(ent.appearance?.monster ?? {}), ...patch } } })}
               onWeapon={(w) => updateSel({ weapon: w })}
               onColors={(patch) => updateSel({ appearance: { ...ent.appearance, colors: { ...(ent.appearance?.colors ?? {}), ...patch } } })}
-              onSex={(s) => updateSel({ appearance: coiffureRetombee({ ...ent.appearance, sex: s }) })}
-              onBuild={(b) => updateSel({ appearance: { ...ent.appearance, build: b } })}
-              onHairstyle={(id) => updateSel({ appearance: { ...ent.appearance, ...coiffureChoisie(id) } })}
               onTenue={(c) => updateSel({ appearance: { ...ent.appearance, tenue: c } })}
               eyes={ent.appearance?.eyes}
               onEyes={(patch) => updateSel({ appearance: { ...ent.appearance, eyes: { ...(ent.appearance?.eyes ?? {}), ...patch } } })}

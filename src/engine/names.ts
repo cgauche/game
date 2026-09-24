@@ -11,7 +11,7 @@
  * « –sniz » nièce de… (ex. Ariksson, Grunnasdottir, Skagsnev, Sovrissniz).
  */
 import { names as POOLS, type NamePool } from '../data';
-import type { RaceKey } from '../data/schemas/grammaire/valeurs';
+import type { Sexe, RaceKey } from '../data/schemas/grammaire/valeurs';
 import type { RNG } from './dice';
 
 /**
@@ -30,7 +30,7 @@ const pick = <T>(arr: T[], rng: RNG): T => arr[rng.int(0, arr.length - 1)];
  * « Prénom Nom » aléatoire pour l'espèce et le sexe — null si l'espèce n'a pas de pool.
  * `refChar` = `RaceKey` porté par `species.refChar` (l'appelant a l'objet species).
  */
-export function generateName(refChar: RaceKey, sex: 'M' | 'F', rng: RNG): string | null {
+export function generateName(refChar: RaceKey, sex: Sexe, rng: RNG): string | null {
   const pool = poolOf(refChar);
   if (!pool) return null;
   const first = pick(sex === 'F' ? pool.femaleFirstNames : pool.maleFirstNames, rng);

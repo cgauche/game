@@ -6,6 +6,7 @@ import { hairstylesForSex, type HairArt } from './hairstyles';
 import { MISSING_ART } from '../viewArt';
 import { diagOnce, diagSubject } from '../devDiag';
 import { sexeDeCoiffure } from '../../../data/schemas/grammaire/art';
+import type { Sexe } from '../../../data/schemas/grammaire/valeurs';
 // Têtes (visage + coiffure défaut) en heads/defs, coiffures en hairstyles/defs — CHAQUE chevelure
 // porte ses 3 vues + composantes `behind` (masse qui épouse le crâne) et `drop` (chute qui dépasse
 // la tête) éventuelles PAR vue (HairArt), pliées ici dans la chaîne de vue (dépliées par composeRig :
@@ -91,14 +92,14 @@ const PROFILE_FACE =
 /** Pool de coiffures d'une espèce×sexe : [coiffure par défaut de la tête (si présente), ...coiffures du
  *  sexe (hairstyles/defs, triées par `order`)]. CHAQUE entrée porte ses 3 vues + `behind`/`drop` (HairArt).
  *  SOURCE UNIQUE consommée par `cosmeticPart` (choix par idx) ET `hairIndexById` (imposition par id). */
-export function hairPool(species: string, sex: 'M' | 'F'): HairArt[] {
+export function hairPool(species: string, sex: Sexe): HairArt[] {
   const head = HEADS_BY_KEY[`${baseSpeciesOf(species)}:${sex}`];
   return [...(head?.cheveux != null ? [head.cheveux] : []), ...hairstylesForSex(sex)];
 }
 
 /** Position de la coiffure NOMMÉE `id` dans le pool espèce×sexe, `-1` hors du pool. La coiffure par
  *  DÉFAUT de la tête (HairArt sans `id`) ne matche jamais : imposer vise les coiffures NOMMÉES. */
-function rangDeCoiffure(species: string, sex: 'M' | 'F', id: string): number {
+function rangDeCoiffure(species: string, sex: Sexe, id: string): number {
   return hairPool(species, sex).findIndex((h) => (h as { id?: string }).id === id);
 }
 
@@ -109,7 +110,7 @@ export const COIFFURE_HORS_POOL: string = MISSING_ART.profile!();
 /** Index dans le pool de la coiffure d'`id` — IMPOSITION par id (#637, `appearance.hairstyle`, donnée
  *  d'AUTEUR). Hors du pool espèce×sexe : `undefined` et un diagnostic qui nomme l'id ; l'appelant rend
  *  `COIFFURE_HORS_POOL`. */
-export function hairIndexById(species: string, sex: 'M' | 'F', id: string): number | undefined {
+export function hairIndexById(species: string, sex: Sexe, id: string): number | undefined {
   const i = rangDeCoiffure(species, sex, id);
   if (i >= 0) return i;
   // `?.` : le rig est importé par les scripts tsx (galeries QC), où `import.meta.env` n'existe pas.
@@ -121,7 +122,7 @@ export function hairIndexById(species: string, sex: 'M' | 'F', id: string): numb
 /** Apparence d'AUTEUR dont la coiffure imposée RETOMBE (champ retiré) quand le sexe posé n'est plus
  *  le sien (`sexeDeCoiffure`) — patron `propRefPatch` : un geste d'édition ne crée pas de faute. Une
  *  coiffure inconnue ou sans sexe posé reste : le schéma la nomme. PURE. */
-export function coiffureRetombee<T extends { sex?: 'M' | 'F'; hairstyle?: string }>(a: T): T {
+export function coiffureRetombee<T extends { sex?: Sexe; hairstyle?: string }>(a: T): T {
   if (a.hairstyle == null || a.sex == null) return a;
   const sexe = sexeDeCoiffure(a.hairstyle);
   if (sexe === undefined || sexe === a.sex) return a;
@@ -132,7 +133,7 @@ export function coiffureRetombee<T extends { sex?: 'M' | 'F'; hairstyle?: string
 
 /** Patch d'auteur du CHOIX d'une coiffure : elle pose son sexe avec elle (`sexeDeCoiffure`) ; aucune
  *  coiffure choisie la retire. PURE. */
-export function coiffureChoisie(id: string | undefined): { hairstyle?: string; sex?: 'M' | 'F' } {
+export function coiffureChoisie(id: string | undefined): { hairstyle?: string; sex?: Sexe } {
   const sex = id === undefined ? undefined : sexeDeCoiffure(id);
   return sex ? { hairstyle: id, sex } : { hairstyle: undefined };
 }
@@ -140,7 +141,7 @@ export function coiffureChoisie(id: string | undefined): { hairstyle?: string; s
 /** Part cosmétique (toujours espèce×sexe). slot ∈ {visage, cheveux}.
  *  Priorité à la tête dédiée (heads/defs, art LDB) ; sinon visage de repli générique.
  *  CHEVEUX : choix dans le pool partagé (`hairPool`) via idx (pins.cheveux / seed / id résolu). */
-export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: 'M' | 'F', idx: number): PartArt {
+export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: Sexe, idx: number): PartArt {
   const head = HEADS_BY_KEY[`${baseSpeciesOf(species)}:${sex}`];
   if (slot === 'cheveux') {
     const entries = hairPool(species, sex);

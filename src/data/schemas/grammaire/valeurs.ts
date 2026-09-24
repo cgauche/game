@@ -7,7 +7,8 @@
 import { z } from 'zod';
 import { AVAILABILITIES, COUVERT_DIFFICULTES, STAKE_FORMS } from '../../../engine/types';
 import { refOuSpec, idDe, refs } from './ref';
-import { fauteDEspece, fauteDeCoiffure } from './art';
+import { fauteDEspece, sexeDeCoiffure } from './art';
+import { libelleDeValeur } from './meta';
 import { estGraphieDeChapitre } from '../../source/decoupe';
 
 /**
@@ -648,6 +649,18 @@ export const countSpecSchema = z.union([
  *  (ci-dessous), `defs/pregens.ts` et `defs/raceAppearance.ts`. Chaque affichage lit le libellé par
  *  `libelleDeValeur(sexeSchema, v)`. */
 export const sexeSchema = enumNomme({ M: 'Masculin', F: 'Féminin' });
+export type Sexe = z.infer<typeof sexeSchema>;
+
+/** Faute de la coiffure imposée `hairstyle` au regard du `sex` posé dans le MÊME objet, `null` sinon. Le
+ *  sexe se nomme par son libellé (`libelleDeValeur(sexeSchema, …)`). */
+export function fauteDeCoiffure(hairstyle: string, sex: Sexe | undefined): string | null {
+  const sexe = sexeDeCoiffure(hairstyle);
+  if (!sexe) return `coiffure « ${hairstyle} » inconnue : absente du catalogue des coiffures.`;
+  const libelle = libelleDeValeur(sexeSchema, sexe);
+  if (!sex) return `coiffure « ${hairstyle} » (sexe : ${libelle}) imposée sans sexe posé — poser le sexe ${libelle}, ou retirer la coiffure.`;
+  if (sex !== sexe) return `coiffure « ${hairstyle} » (sexe : ${libelle}) imposée sur le sexe ${libelleDeValeur(sexeSchema, sex)}.`;
+  return null;
+}
 
 /** `EntityAppearance` (`src/engine/authoringAppearance.ts`) — apparence d'entité, composée par
  *  `creatures`, `traits`, `mutations`, la scène (`SceneEntity.appearance`) et le narratif. */

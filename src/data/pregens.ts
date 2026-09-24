@@ -25,6 +25,7 @@ import { createHero, type ChoixDeCreation } from '../engine/character';
 import { rollInitialWealth, parseStatus, pettySpellQuotaFor, fillPettySpellsToQuota } from '../engine/creation';
 import { levelsForCareer, pregens, rigSpeciesId, trappingRefLabel } from './index';
 import type { Appearance } from '../gameIso/rig/appearance';
+import type { Sexe } from './schemas/grammaire/valeurs';
 
 export interface PregenDef extends Pick<ChoixDeCreation, 'careerTalent' | 'pettySpells'> {
   /** `id` STABLE app-owned (kebab-case) — identité de navigation/Codex, découplée du `label`. */
@@ -49,7 +50,7 @@ export interface PregenDef extends Pick<ChoixDeCreation, 'careerTalent' | 'petty
    *  Niveau 1 des carrières actuelles n'en porte). */
   weaponChoice?: string;
   /** Sexe visuel (cosmétique ; aucune incidence de règles). Défaut 'M'. */
-  sex?: 'M' | 'F';
+  sex?: Sexe;
   /** Morphologie 0..1 (cosmétique). Défaut 0.5. */
   build?: number;
 }

@@ -4,6 +4,7 @@ import { hairPool, hairIndexById, cosmeticPart, coiffureRetombee, coiffureChoisi
 import { hairstylesForSex } from './hairstyles';
 import { resolveRig } from '../composeRig';
 import { asRigSpeciesId, type Appearance } from '../appearance';
+import type { Sexe } from '../../../data/schemas/grammaire/valeurs';
 
 /**
  * Imposer une coiffure par ID stable (#637) — `appearance.hairstyle`. On MANIPULE des ids : forcer une
@@ -39,7 +40,7 @@ describe('coiffure imposée par id (#637)', () => {
  *  pas, il montre la chevelure d'ERREUR (#223) à la place de la part `cheveux`. */
 describe('coiffure imposée hors du pool : chevelure d’erreur visible, aucune levée', () => {
   const coiffureM = hairstylesForSex('M')[0].id;
-  const apparence = (sex: 'M' | 'F'): Appearance => ({ species: asRigSpeciesId('humain'), sex, build: 0.5, seed: 1, hairstyle: coiffureM });
+  const apparence = (sex: Sexe): Appearance => ({ species: asRigSpeciesId('humain'), sex, build: 0.5, seed: 1, hairstyle: coiffureM });
   const svgDuRig = (a: Appearance) => resolveRig(a, { weapons: [], armour: [] }, {}, 'nu', 'front').flatMap((b) => b.parts.map((p) => p.svg)).join('');
 
   it('coiffure M sur un rig F : le rig se compose et porte la chevelure d’erreur', () => {

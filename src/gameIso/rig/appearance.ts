@@ -6,6 +6,7 @@ import { creatureSpeciesOptions } from './creatures';
 import { SWARM_FORMS } from './swarm/forms';
 import type { MonsterParts } from './parts/monstrous';
 import type { Palette } from './palette';
+import type { Sexe } from '../../data/schemas/grammaire/valeurs';
 
 /** Vocabulaire (marque NOMINALE, #406) : id RIG (slug d'espèce `species.json`, id de créature/race/
  *  véhicule/affût-de-siège) — jamais un `SpeciesData.label` (« Humains (Reiklander) »). UNE seule
@@ -44,7 +45,7 @@ export function asRigSpeciesId(id: string): RigSpeciesId {
 export interface Appearance {
   species: RigSpeciesId;
   gabarit?: string;                                 // id de carrure résolu (sinon dérivé de l'espèce)
-  sex: 'M' | 'F';
+  sex: Sexe;
   build: number;                                   // 0..1
   legs?: number;                                   // multiplicateur de longueur de jambes (mutation Court sur pattes)
   faceFlip?: boolean;                              // visage retourné tête en bas (mutation Visage inversé)

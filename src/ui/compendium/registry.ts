@@ -1865,7 +1865,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     })),
   },
   {
-    key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables', cluster: 'Création de personnage',
+    key: 'raceAppearance', label: 'Apparences', group: 'Tables', cluster: 'Création de personnage',
     build: () => raceAppearance.map((r) => ({
       id: r.id, label: r.label, sub: r.gabarit, appearance: { species: r.id },
       meta: facts(fact('Gabarit', r.gabarit), fact('Tenue', r.tenue), fact('Tête', r.head), fact('Jambes', r.legs)),

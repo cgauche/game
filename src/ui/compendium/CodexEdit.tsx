@@ -30,13 +30,13 @@ import { NumberField } from '../NumberField';
 import { PlageField, type PlageValue } from '../PlageField';
 import { GatedAction } from '../GatedAction';
 import { raceKeySchema } from '../../data/schemas/grammaire/valeurs';
-import { MonsterPartsFields } from '../editor/MonsterPartsFields';
+import { MonsterPartsFields, ReglagesApparence } from '../editor/MonsterPartsFields';
 import { FlowEditor, NoeudTestField, type NoeudTest } from '../editor/FlowEditor';
 import { GameOpEditor, FormulaField, opsMissingRefs } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
 import type { ConsumableDuration } from '../../engine/consumables';
 import { JsonField } from '../editor/JsonField';
-import { creatureSpeciesOptions, QUAD_SPECIES, WINGED_SPECIES } from '../../gameIso/rig/creatures';
+import { QUAD_SPECIES, WINGED_SPECIES } from '../../gameIso/rig/creatures';
 import { coiffureChoisie, coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
 import { CreaturePreview } from './CreaturePreview';
 import { porteurDApercu } from './apercuPorteur';
@@ -873,8 +873,9 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   );
 }
 
-/** Éditeur d'apparence par défaut d'une créature (bloc `appearance` UNIFIÉ) — réutilise la brique
- *  partagée `MonsterPartsFields` (espèce + parts/couleurs/coiffure/tenue/harnachement/yeux). Édite le VRAI record
+/** Éditeur d'apparence par défaut d'une créature (bloc `appearance` UNIFIÉ) — réutilise les briques
+ *  partagées `ReglagesApparence` (espèce/sexe/carrure/coiffure) et `MonsterPartsFields` (parts/couleurs/
+ *  tenue/harnachement/yeux). Édite le VRAI record
  *  `creatures.json` ; le rig le lit comme couche de défaut → l'apparence en jeu reflète l'édition. */
 function AppearanceField({ label, porteur, value, onChange }: { label: string; porteur?: string; value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
   const a = value ?? {};
@@ -884,22 +885,19 @@ function AppearanceField({ label, porteur, value, onChange }: { label: string; p
   const quadrupede = !!a.species && (a.species in QUAD_SPECIES || a.species in WINGED_SPECIES);
   return (
     <div className="ed-field ed-appearance">
-      <span>apparence par défaut (rig) — éditée sur le record, reflétée en jeu</span>
+      <span>apparence par défaut — éditée sur le record, reflétée en jeu</span>
       <CreaturePreview label={label} appearance={a} porteur={porteur} />{/* aperçu LIVE : se met à jour à chaque modification */}
-      <label className="ed-subfield">
-        Espèce
-        <select value={a.species ?? ''} onChange={(e) => patch({ species: e.target.value || undefined })}>
-          <option value="">(par défaut : Humain)</option>
-          {creatureSpeciesOptions().map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-        </select>
-      </label>
-      <MonsterPartsFields
-        monster={a.monster} colors={a.colors} sex={a.sex} build={a.build} hairstyle={a.hairstyle} tenue={a.tenue} harnais={a.harnais} eyes={a.eyes} features={a.features}
-        onMonster={(p) => patch({ monster: { ...(a.monster ?? {}), ...p } })}
-        onColors={(p) => patch({ colors: { ...(a.colors ?? {}), ...p } })}
+      <ReglagesApparence
+        species={a.species} sex={a.sex} build={a.build} hairstyle={a.hairstyle}
+        onSpecies={(id) => patch({ species: id })}
         onSex={(s) => patch({ sex: s })}
         onBuild={(b) => patch({ build: b })}
         onHairstyle={(id) => patch(coiffureChoisie(id))}
+      />
+      <MonsterPartsFields
+        monster={a.monster} colors={a.colors} tenue={a.tenue} harnais={a.harnais} eyes={a.eyes} features={a.features}
+        onMonster={(p) => patch({ monster: { ...(a.monster ?? {}), ...p } })}
+        onColors={(p) => patch({ colors: { ...(a.colors ?? {}), ...p } })}
         onTenue={(c) => patch({ tenue: c })}
         onHarnais={quadrupede ? (id) => patch({ harnais: id }) : undefined}
         onEyes={(p) => patch({ eyes: { ...(a.eyes ?? {}), ...p } })}

@@ -57,6 +57,7 @@ import { refKey, talentMaxReached, skillSlots, talentSlots, statutOuRefus } from
 import { findSpeciesById, rigSpeciesId, careers, levelsForCareer, advancementLabel, refLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData, trappingRefLabel, type TrappingRef, type AdvancementRef } from '../../data';
 import { estSpecialisable, type RefDesignee, type RefASpecialisation } from '../../data/schemas/grammaire/ref';
 import type { Appearance } from '../../gameIso/rig/appearance';
+import type { Sexe } from '../../data/schemas/grammaire/valeurs';
 
 export type CharMode = 'rolled' | 'reassigned' | 'pointBuy';
 
@@ -150,7 +151,7 @@ export interface CreatorDraft
    *  effet mécanique (l.492 : « pas directement liés aux mécaniques de jeu »). */
   ascendant?: string;
   dwellings?: { house: string; sign: string }[];
-  sex: 'M' | 'F';
+  sex: Sexe;
   build: number;
   appSeed: number;
   colors?: Appearance['colors'];
