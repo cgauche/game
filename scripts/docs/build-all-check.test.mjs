@@ -257,14 +257,16 @@ const BUILD_ALL = pathToFileURL(path.join(ICI, 'build-all.mjs')).href
 
 /** Un générateur RÉEL : lit ses DEUX sources (`SEUIL_SOURCES`), rend un doc qui CITE un chemin, et
  *  passe par la primitive. `cliquet` : sous `BANC_CLIQUET_ROUGE`, il pose son rouge AVANT la
- *  primitive, comme `reconcile.mjs` — les deux rouges doivent alors se dire. */
-const generateurReel = (nom, { cliquet = false } = {}) => [
+ *  primitive, comme `reconcile.mjs` — les deux rouges doivent alors se dire. `separateur` : le
+ *  chemin cité est bâti par `path.join`, donc rendu dans la graphie de la plateforme. */
+const generateurReel = (nom, { cliquet = false, separateur = false } = {}) => [
   "import { readFileSync } from 'node:fs'",
+  "import path from 'node:path'",
   `import { ecrireOuVerifier } from ${JSON.stringify(PRIMITIVE)}`,
   `const lu = readFileSync('src/${nom}.ts', 'utf8') + readFileSync('src/commun.ts', 'utf8')`,
   cliquet ? "if (process.env.BANC_CLIQUET_ROUGE) { console.log('CLIQUET ROUGE'); process.exitCode = 1 }" : '',
   'ecrireOuVerifier({',
-  `  out: \`# ${nom}\\n\\nSource : \\\`src/${nom}.ts\\\` (\${lu.length} octets)\\n\`,`,
+  `  out: \`# ${nom}\\n\\nSource : \\\`${separateur ? `\${path.join('src', '${nom}.ts')}` : `src/${nom}.ts`}\\\` (\${lu.length} octets)\\n\`,`,
   `  path: 'docs/${nom}.md',`,
   "  check: process.argv.includes('--check'),",
   `  staleMsg: 'docs/${nom}.md PÉRIMÉ', rerunMsg: 'relancer',`,
@@ -291,7 +293,7 @@ function executer(racine, argv, env = {}, verificateurs = []) {
 }
 
 /** Dépôt jetable RÉGÉNÉRÉ par `executer` lui-même (docs, pieds, `.sources-lues.json`), puis stagé. */
-function depotReel() {
+function depotReel({ separateur = false } = {}) {
   const { racine } = instanceDeDepot({
     commit: false,
     fichiers: {
@@ -299,7 +301,7 @@ function depotReel() {
       'src/a.ts': 'export const a = 1\n',
       'src/b.ts': 'export const b = 1\n',
       'src/commun.ts': 'export const commun = 1\n',
-      'g/a.mjs': generateurReel('a'),
+      'g/a.mjs': generateurReel('a', { separateur }),
       'g/b.mjs': generateurReel('b', { cliquet: true }),
     },
   })
@@ -335,6 +337,50 @@ test('ANGLE MORT de la fraîcheur : un corps « rendu sous une autre plateforme 
       assert.ok(tout.sortie.includes(`docs:check — g/a.mjs — rendu sous ${p} — corps périmé\n`), tout.sortie)
     }
     assert.match(tout.sortie, /committé : "Source : `src\\\\a\.ts`/, 'la divergence nomme la graphie committée')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+const AUTRES_PLATEFORMES = Object.keys(PLATEFORMES).filter((p) => p !== process.platform)
+
+test('`--check --tout` : corps committé périmé ET rendu propre à la plateforme — `docs:build` ne guérit pas l’écart de la plateforme, sortie 1', { skip: !AUTRES_PLATEFORMES.length && 'hôte sans autre plateforme à rendre' }, () => {
+  const { racine, git } = depotReel({ separateur: true })
+  try {
+    const cible = path.join(racine, DOC_A)
+    writeFileSync(cible, readFileSync(cible, 'utf8').replace('# a\n', '# a édité à la main\n'))
+    git('add', DOC_A)
+    const rouge = executer(racine, ['--check', '--tout'])
+    assert.equal(rouge.status, 1, `le corps rendu sous une autre plateforme n'est pas celui que \`docs:build\` écrit : ${rouge.sortie}`)
+    assert.match(rouge.sortie, /docs:check — g\/a\.mjs — corps périmé\n/)
+    for (const p of AUTRES_PLATEFORMES) {
+      assert.ok(rouge.sortie.includes(`docs:check — g/a.mjs — rendu sous ${p} — corps périmé\n`), rouge.sortie)
+    }
+
+    // `docs:build` régénère : le rouge de l'hôte guérit, celui de la plateforme SUBSISTE.
+    assert.equal(executer(racine, []).status, 0)
+    git('add', '-A')
+    const apres = executer(racine, ['--check', '--tout'])
+    assert.equal(apres.status, 1, apres.sortie)
+    assert.doesNotMatch(apres.sortie, /docs:check — g\/a\.mjs — corps périmé\n/)
+    for (const p of AUTRES_PLATEFORMES) {
+      assert.ok(apres.sortie.includes(`docs:check — g/a.mjs — rendu sous ${p} — corps périmé\n`), apres.sortie)
+    }
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('`--check --tout` : corps committé = rendu d’une AUTRE plateforme — le rouge de l’hôte ne guérit pas, sortie 1', { skip: !AUTRES_PLATEFORMES.length && 'hôte sans autre plateforme à rendre' }, () => {
+  const { racine, git } = depotReel({ separateur: true })
+  try {
+    const cible = path.join(racine, DOC_A)
+    writeFileSync(cible, readFileSync(cible, 'utf8').replace('`src/a.ts`', '`src\\a.ts`'))
+    git('add', DOC_A)
+    const rouge = executer(racine, ['--check', '--tout'])
+    assert.equal(rouge.status, 1, `\`docs:build\` écrirait le rendu de l'hôte et ferait naître le rouge de l'autre plateforme : ${rouge.sortie}`)
+    assert.match(rouge.sortie, /docs:check — g\/a\.mjs — corps périmé\n/)
+    for (const p of AUTRES_PLATEFORMES) assert.ok(!rouge.sortie.includes(`rendu sous ${p} — corps périmé`), rouge.sortie)
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }

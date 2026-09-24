@@ -45,7 +45,7 @@ import { MOTIF_CATALOGUES } from '../raw/motif-catalogues.mjs'
 import { SORTIES as SORTIES_DU_REGISTRE } from '../gen-registry.mjs'
 import { execFileResilient, reessayerAuChargement } from '../guards/lib/spawnResilient.mjs'
 import {
-  avecPied, CODE_CORPS_PERIME, deltaSourcesLues, empreinteDeLIndex, empreinteDuDisque, existeFichier,
+  avecPied, CODE_CORPS_PERIME, deltaSourcesLues, empreinteDeLIndex, empreinteDuDisque, ENV_CORPS_RENDUS, existeFichier,
   fusionnerLectures, hashBlobDisque, ignoresGit, indexGit, lirePied, motifDeRejeu, estUnDocMarkdown,
   serialiserSourcesLues, sha1Corps,
 } from './lib/empreinte-sources.mjs'
@@ -158,9 +158,9 @@ export function ciblesSurDisque(cibles, cwd) {
 /**
  * Argv et env d'un générateur. Un seul `--import` en `NODE_OPTIONS` : l'enregistreur (rendu de l'hôte,
  * mesuré) ou la plateforme (rendu vérifié, jamais mesuré), puis `tsx/esm` (argv, joué après
- * `NODE_OPTIONS`). `plateforme` : `null` = l'hôte.
+ * `NODE_OPTIONS`). `plateforme` : `null` = l'hôte. `corps` : le fichier de `ENV_CORPS_RENDUS`.
  */
-function commandeDe({ runner, script }, { cwd, check, tsxEsm, lectures, cibles, plateforme }) {
+function commandeDe({ runner, script }, { cwd, check, tsxEsm, lectures, cibles, plateforme, corps }) {
   const args = [
     ...(runner === 'tsx' ? ['--import', pathToFileURL(tsxEsm).href] : []),
     script,
@@ -170,6 +170,7 @@ function commandeDe({ runner, script }, { cwd, check, tsxEsm, lectures, cibles, 
   const module = lectures ? ENREGISTREUR : plateforme ? PLATEFORMES[plateforme] : null
   if (module) env.NODE_OPTIONS = `${env.NODE_OPTIONS ?? ''} --import ${module}`.trim()
   if (plateforme) env.WFRP_PLATEFORME_RACINE = cwd
+  env[ENV_CORPS_RENDUS] = corps
   if (lectures) {
     env.WFRP_LECTURES_RACINE = cwd
     env.WFRP_LECTURES_SORTIE = path.join(lectures, 'l')
@@ -208,6 +209,13 @@ function lancer(g, options) {
       }),
     { site: `build-all/${g.script} (${options.plateforme})` },
   )
+}
+
+/** sha1 des corps rendus qu'un rendu a déclarés périmés (`ENV_CORPS_RENDUS`), triés : un multiset. */
+function corpsRendus(fichier) {
+  let texte
+  try { texte = readFileSync(fichier, 'utf8') } catch { texte = '' }
+  return texte.split('\n').filter(Boolean).sort().join('\n')
 }
 
 /** `--quiet` capture les deux flux au lieu de les jeter : le diagnostic d'un rouge (le cliquet parle
@@ -647,6 +655,8 @@ export async function executer({
   const parGenerateur = {}
   // Verdicts de `--check`, TOUS collectés : un générateur rouge ne masque pas les suivants.
   const rouges = []
+  // Par générateur : chaque plateforme rendue a-t-elle déclaré les mêmes corps périmés que l'hôte ?
+  const memesPerimes = new Map()
   // Chaque refus dit s'il se GUÉRIT en régénérant (`docs:build`) : c'est le code de sortie.
   const refus = []
   const refuser = (message, { guerit = false } = {}) => {
@@ -669,14 +679,18 @@ export async function executer({
     }
     const dossier = path.join(racineLectures, String(rang))
     mkdirSync(dossier, { recursive: true })
-    const autres = enPlus.map((plateforme) => ({ plateforme, rendu: lancer(g, { cwd, check, tsxEsm, plateforme }) }))
+    const corpsDe = (plateforme) => path.join(dossier, `corps-rendus.${plateforme ?? 'hote'}`)
+    const autres = enPlus.map((plateforme) => ({
+      plateforme,
+      rendu: lancer(g, { cwd, check, tsxEsm, plateforme, corps: corpsDe(plateforme) }),
+    }))
     let rougePrincipal = false
     // Un générateur relit ce qu'il écrit (sa cible en `--check`, le fichier où il injecte un champ) :
     // rien de tout cela n'est une de ses sources. Seule une cible SIGNÉE — un doc écrit EN ENTIER —
     // reçoit le pied : `build-implemente` n'écrit qu'un champ des fiches docs/raw, fichiers manuscrits
     // qu'aucune empreinte ne peut signer, et un registre `*.generated.ts` est du code.
     try {
-      run(g, { cwd, quiet, check, tsxEsm, lectures: dossier, cibles: [...new Set([...ecrites, ...injectees])].sort() })
+      run(g, { cwd, quiet, check, tsxEsm, lectures: dossier, cibles: [...new Set([...ecrites, ...injectees])].sort(), corps: corpsDe(null) })
     } catch (e) {
       transmettreDiagnostic(e, quiet)
       const issue = issueDe(e)
@@ -693,6 +707,8 @@ export async function executer({
       process.stderr.write(`docs:check — ${g.script} — rendu sous ${plateforme} :\n${sortie}`)
       rouges.push({ script: g.script, issue, plateforme })
     }
+    const perimesHote = corpsRendus(corpsDe(null))
+    memesPerimes.set(g.script, enPlus.every((plateforme) => corpsRendus(corpsDe(plateforme)) === perimesHote))
     if (rougePrincipal) continue
     const lues = fusionnerLectures(dossier)
     // Un chemin lu hors racine sort de la mesure : dit ici, il cesse d'être indiscernable d'une
@@ -779,14 +795,12 @@ export async function executer({
     process.stderr.write(diagnosticSourcesLues(actuel, rendu, mesure))
     refuser(`docs:check — ${SOURCES_LUES} est PÉRIMÉ (les sources MESURÉES d'au moins un générateur ont changé) — npm run docs:build`, { guerit: true })
   }
-  // `docs:build` réécrit docs/ par le rendu de l'HÔTE : un rouge d'une autre plateforme ne guérit que
-  // si le rendu de l'hôte du même générateur est lui aussi un corps périmé ; hôte vert, l'écart est
-  // propre à la plateforme et aucune régénération ne le touche.
-  const hotePerime = new Set(rouges.filter((r) => !r.plateforme && guerissable(r.issue)).map((r) => r.script))
+  // `docs:build` écrit le rendu de l'HÔTE : un corps périmé, rendu sur l'hôte ou sous une autre
+  // plateforme, n'y guérit que si chaque plateforme déclare les MÊMES corps périmés que l'hôte.
   for (const { script, issue, plateforme } of rouges) {
     refus.push({
       message: `docs:check — ${script}${plateforme ? ` — rendu sous ${plateforme}` : ''} — ${natureDuRouge(issue)}`,
-      guerit: guerissable(issue) && (!plateforme || hotePerime.has(script)),
+      guerit: guerissable(issue) && memesPerimes.get(script),
     })
   }
   if (refus.length) {

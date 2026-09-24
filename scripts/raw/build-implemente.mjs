@@ -748,7 +748,7 @@ function main() {
       console.error(`raw:implemente — ${touched.length} fiche(s) PÉRIMÉE(s) (champ Implémente divergent du code) :`)
       for (const r of touched) console.error(`  docs/raw/${r.doc}`)
       console.error('  → relancer `npm run raw:implemente` et committer.')
-      declarerCorpsPerime()
+      declarerCorpsPerime(...touched.map((r) => r.content))
     }
     if (orphans.length) printOrphans(orphans)
     if (sansObjet.length) printSansObjet(sansObjet)

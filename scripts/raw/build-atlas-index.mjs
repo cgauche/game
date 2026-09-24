@@ -114,7 +114,7 @@ function regenerer() {
       console.log(`build-atlas-index — OK (bloc des ${bloc.quoi} à jour dans ${bloc.chemin})`)
       continue
     }
-    perimes.push(bloc)
+    perimes.push(attendu)
     if (check) {
       console.error(`build-atlas-index — ${bloc.chemin} PÉRIMÉ (bloc des ${bloc.quoi})`)
       continue
@@ -124,7 +124,7 @@ function regenerer() {
   }
   if (check && perimes.length) {
     console.error('build-atlas-index — relancer `node scripts/raw/build-atlas-index.mjs` et committer.')
-    declarerCorpsPerime()
+    declarerCorpsPerime(...perimes)
   }
 }
 

@@ -14,7 +14,7 @@
 // graphie de fin de ligne — mesuré 2026-09-02 : 6 526 fichiers `i/lf w/lf`, 34 binaires, 0 mixte.
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { readFileSync, statSync, writeFileSync } from 'node:fs'
+import { appendFileSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { listerDossier } from '../../guards/lib/lister.mjs'
 import path from 'node:path'
 
@@ -105,9 +105,17 @@ export function ecrireDoc(chemin, contenu) {
  */
 export const CODE_CORPS_PERIME = 2
 
+/** Variable d'env posée par build-all.mjs : le fichier où `declarerCorpsPerime` APPEND le sha1 de
+ *  chaque corps rendu qu'il déclare périmé, une ligne par corps. */
+export const ENV_CORPS_RENDUS = 'WFRP_CORPS_RENDUS'
+
 /** Déclare un corps périmé au code de sortie SANS quitter le processus : un cliquet posé avant garde
- *  son bit, et ce qui suit l'appel peut encore parler. */
-export function declarerCorpsPerime() {
+ *  son bit, et ce qui suit l'appel peut encore parler. `corps` : le(s) corps RENDU(S) — ce que
+ *  `docs:build` écrirait — au moins un, consignés sous `ENV_CORPS_RENDUS` (#1801). */
+export function declarerCorpsPerime(...corps) {
+  if (!corps.length) throw new Error('declarerCorpsPerime : aucun corps rendu déclaré')
+  const fichier = process.env[ENV_CORPS_RENDUS]
+  if (fichier) appendFileSync(fichier, corps.map((c) => `${sha1(c)}\n`).join(''))
   process.exitCode = (Number(process.exitCode) || 0) | CODE_CORPS_PERIME
 }
 
@@ -136,7 +144,7 @@ export function ecrireOuVerifier({ out, path: chemin, check, staleMsg, rerunMsg,
   console.error(staleMsg)
   console.error(apercuDivergences(out, actuel))
   console.error(rerunMsg)
-  declarerCorpsPerime()
+  declarerCorpsPerime(out)
   return false
 }
 
