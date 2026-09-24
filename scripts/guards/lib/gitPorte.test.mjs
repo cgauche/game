@@ -488,10 +488,9 @@ test('ceQueFaitLeCommit : une fusion « maléfique » apporte la ligne qu’aucu
 test('ceQueFaitLeCommit : une fusion SANS ANCÊTRE COMMUN se lit comme `git show --remerge-diff` — chemins et patch', () => {
   const { racine, g } = depot()
   try {
-    const entree = (texte) => ({ cwd: racine, env: envDeDepotForge(), encoding: 'utf8', input: texte })
-    const blob = execFileSync('git', ['hash-object', '-w', '--stdin'], entree('o\n')).trim()
-    const arbre = execFileSync('git', ['mktree'], entree(`100644 blob ${blob}\to.txt\n`)).trim()
-    const racineEtrangere = execFileSync('git', ['commit-tree', arbre, '-m', 'autre histoire'], entree('')).trim()
+    const blob = execFileSync('git', ['hash-object', '-w', '--stdin'], { cwd: racine, env: envDeDepotForge(), encoding: 'utf8', input: 'o\n' }).trim()
+    const arbre = execFileSync('git', ['mktree'], { cwd: racine, env: envDeDepotForge(), encoding: 'utf8', input: `100644 blob ${blob}\to.txt\n` }).trim()
+    const racineEtrangere = execFileSync('git', ['commit-tree', arbre, '-m', 'autre histoire'], { cwd: racine, env: envDeDepotForge(), encoding: 'utf8', input: '' }).trim()
     g('merge', '-q', '--no-commit', '--allow-unrelated-histories', racineEtrangere)
     writeFileSync(join(racine, 'mal.txt'), 'MAL\n'); g('add', 'mal.txt'); g('commit', '-q', '-m', 'fusion sans ancêtre')
     const fusion = g('rev-parse', 'HEAD').trim()

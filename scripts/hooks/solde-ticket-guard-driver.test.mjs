@@ -173,6 +173,34 @@ test('DRIVER : un stock nominatif qui GRANDIT dans l\'index est refusé, sauf CL
   }
 })
 
+// Le palier compte le commit en cours par ce qu'il EMPORTE : le DRIVER lui passe la liste de la porte
+// du ticket (`revuePalier.mjs`, `DOSSIERS_DE_SUBSTANCE`).
+test('DRIVER : le palier compte le commit en cours par ce qu’il emporte -- `-a` non indexé le franchit, `-- <note>` non', () => {
+  const { racine: repo, sha: socle } = instanceDeDepot({ fichiers: { 'scripts/a.txt': 'a\n', 'notes/d.md': 'd\n' }, message: 'socle' })
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    const revue = `# PALIER (2026-09-24)\n\nverdict: CONFIRMÉ\n${'A'.repeat(90)}\n\n\`0000000..${socle}\`\n`
+    mkdirSync(join(repo, '.claude', 'soldes'), { recursive: true })
+    writeFileSync(join(repo, '.claude', 'soldes', `revue-palier-2026-09-24-0000000-${socle}.md`), revue)
+    git('add', '-A'); git('commit', '-q', '-m', 'revue')
+    for (let i = 0; i < 9; i += 1) {
+      writeFileSync(join(repo, 'scripts', `s${i}.txt`), `${i}\n`); git('add', '-A'); git('commit', '-q', '-m', `s${i}`)
+    }
+    writeFileSync(join(repo, 'scripts', 'a.txt'), 'a modifié\n')
+    const tout = decisionOf('git commit -a -m "feat: x (corrige #7)"', repo)
+    assert.match(tout?.reason ?? '', /Palier atteint : au moins 10 commits de substance/, '9 publiés + le -a qui emporte scripts/a.txt')
+
+    writeFileSync(join(repo, 'scripts', 'a.txt'), 'a\n')
+    writeFileSync(join(repo, 'scripts', 'indexe.txt'), 'i\n'); git('add', 'scripts/indexe.txt')
+    writeFileSync(join(repo, 'notes', 'd.md'), 'd2\n')
+    const parChemin = decisionOf('git commit -m "notes (corrige #7)" -- notes/d.md', repo)
+    assert.ok(parChemin, 'la fermeture sans solde se refuse')
+    assert.doesNotMatch(parChemin.reason, /Palier atteint/, 'le src indexé hors pathspec ne part pas : 9 au palier')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
 // COÛT (en-tête de `solde-ticket-guard.mjs`) : un refus que le pre-push ne rejuge pas sort à l'étage 1,
 // sans payer l'étage 2 — celui qu'un `timeout` peut couper.
 test('DRIVER : un refus d’étage 1 sort SANS jouer l’étage 2 (stocks, reclassements)', () => {

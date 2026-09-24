@@ -172,31 +172,34 @@ export function estCheminDeSubstance(chemin) {
  * Les commits de SUBSTANCE de `plage` (`<a>..<b>`), du plus ancien au plus récent : ceux dont CE QU'ILS
  * FONT (`ceQueFaitLeCommit`, contre leur base) touche un chemin de substance (`estCheminDeSubstance`).
  * Une fusion propre n'en est pas ; une fusion qui apporte une ligne sous `src`/`scripts` en est.
- * `git` : le lecteur de l'appelant, `null` = rien.
+ * `git` : le lecteur de l'appelant, `null` = rien. `limite` : la lecture s'arrête au `limite`-ième
+ * commit de substance trouvé.
  * @param {(args: string[], opts?: { entree?: string }) => string | null} git @param {string} plage
+ * @param {{ limite?: number }} [options]
  * @returns {string[]}
  * @throws {GitIndisponible} propagée de `ceQueFaitLeCommit`.
  */
-export function shasDeSubstance(git, plage) {
+export function shasDeSubstance(git, plage, { limite = Infinity } = {}) {
   const shas = (git(['rev-list', '--reverse', plage]) ?? '').split('\n').map((l) => l.trim()).filter(Boolean)
-  return shas.filter((sha) => ceQueFaitLeCommit(git, sha).chemins().some(estCheminDeSubstance))
-}
-
-/** Commits de SUBSTANCE depuis `tete` (`shasDeSubstance`), plus celui que l'index s'apprête à faire
- *  s'il en touche aussi (le commit en cours compte pour le palier qu'il franchit). */
-export function commitsDeSubstanceDepuis(cwd, tete) {
-  const publies = shasDeSubstance(lecteurGit(cwd), `${tete}..HEAD`).length
-  const stage = cheminsDe((args) => git(args, cwd), ['diff', '--cached', '--name-only', '--', ...DOSSIERS_DE_SUBSTANCE])
-  return publies + (stage.length ? 1 : 0)
+  const vus = []
+  for (const sha of shas) {
+    if (vus.length >= limite) break
+    if (ceQueFaitLeCommit(git, sha).chemins().some(estCheminDeSubstance)) vus.push(sha)
+  }
+  return vus
 }
 
 /**
- * Ce que le contrôle de palier a besoin de savoir, mesuré. `erreur` = le palier est INMESURABLE et le
- * dit ; `compte: 0` sans référence = HEAD ne porte AUCUNE revue archivée, donc le palier n'a pas
- * d'origine à partir de laquelle compter — ce qui n'est pas un défaut de l'arbre jugé.
+ * Ce que le contrôle de palier a besoin de savoir, mesuré. `compte` = les commits de substance depuis
+ * `tete` (`shasDeSubstance`), plus le commit en cours si ce qu'il EMPORTE (`emportes`, la liste que
+ * lit la porte du ticket) est de substance ; le compte s'arrête à `seuil`. `erreur` = le palier est
+ * INMESURABLE et le dit, avec `tete`/`chemin` de la dernière revue quand elle est connue ; `compte: 0`
+ * sans référence = HEAD ne porte AUCUNE revue archivée, donc le palier n'a pas d'origine à partir de
+ * laquelle compter — ce qui n'est pas un défaut de l'arbre jugé.
+ * @param {string} [cwd] @param {{ emportes?: string[], seuil?: number }} [options]
  * @returns {{ compte:number, tete:string|null, chemin:string|null, erreur?:string }}
  */
-export function mesureDuPalier(cwd = process.cwd()) {
+export function mesureDuPalier(cwd = process.cwd(), { emportes = [], seuil = Infinity } = {}) {
   let derniere
   try {
     derniere = derniereRevueArchivee(cwd)
@@ -223,12 +226,13 @@ export function mesureDuPalier(cwd = process.cwd()) {
         + 'et une revue dont la tête de fenêtre est ORPHELINE (rebase) se ré-écrit sur sa fenêtre réelle',
     }
   }
-  let compte
+  const { tete, chemin } = derniere
+  const enCours = emportes.some(estCheminDeSubstance) ? 1 : 0
   try {
-    compte = commitsDeSubstanceDepuis(cwd, derniere.tete)
+    const publies = shasDeSubstance(lecteurGit(cwd), `${tete}..HEAD`, { limite: Math.max(0, seuil - enCours) }).length
+    return { compte: publies + enCours, tete, chemin }
   } catch (err) {
     if (!(err instanceof GitIndisponible)) throw err
-    return { compte: 0, tete: null, chemin: null, erreur: `ce que font les commits depuis ${derniere.tete} est illisible : ${err.raison}` }
+    return { compte: 0, tete, chemin, erreur: `ce que font les commits depuis ${tete} est illisible : ${err.raison}` }
   }
-  return { compte, tete: derniere.tete, chemin: derniere.chemin }
 }

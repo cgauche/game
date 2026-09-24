@@ -7,7 +7,7 @@
 //      commit le dise (`scripts/guards/lib/plageStock.mjs`) : les portes de stock du commit et du
 //      DERNIER commit ne voient qu'une tête, et un commit intermédiaire leur échappe (revue de
 //      palier n°2, 2026-09-03 — `429b9a1a2` a traversé les deux, six heures après leur pose) — et,
-//      par la même lecture, un RECLASSEMENT CSS non déclaré, chaque commit contre son parent
+//      par la même lecture, un RECLASSEMENT CSS non déclaré, chaque commit contre sa base
 //      (`reclassementsDeLaPlage`, même fichier) ;
 //   3. un push NON fast-forward vers une ref distante EXISTANTE. Une ref neuve ne peut écraser aucune
 //      histoire, elle n'est pas jugée. `refs/heads/chantier/**` en est EXEMPTÉE : une branche de

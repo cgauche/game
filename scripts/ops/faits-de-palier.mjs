@@ -158,9 +158,14 @@ function main() {
     process.exit(1)
   }
 
+  const substance = tenter(() => shasDeSubstance(lecteurGit(cwd), `${base}..${tete}`))
+  if (!substance.disponible) {
+    process.stderr.write(`faits-de-palier : ce que font les commits de \`${base}..${tete}\` est illisible — ${substance.raison}.\n`)
+    process.exit(1)
+  }
   const commits = marquerSubstance(
     journalDe((args) => git(args, cwd), `${base}..${tete}`).map(commitDuJournal),
-    shasDeSubstance(lecteurGit(cwd), `${base}..${tete}`),
+    substance.valeur,
   )
   const shas = commits.map((c) => c.sha)
   const fermetures = fermeturesDesCommits(commits, soldesSuivis(cwd))

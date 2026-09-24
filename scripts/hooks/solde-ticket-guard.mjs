@@ -61,6 +61,15 @@
 // Lot `-a` de 3 686 modules de `src/` : l'étage 1 rend son refus en 1,4-3,1 s ; l'étage 2 y lit les
 // stocks en 8,2-9,5 s (1 716 porteurs, dont un `git diff` de 0,96 s ; le reste est l'évaluation), plus
 // les reclassements (1,8-3,9 s), donc il expire. Lot réel de 10 fichiers (07d9f850d) : stocks 46-48 ms.
+// Le PALIER (`mesureDuPalier`) ne se mesure que pour un commit qui ferme un ticket ou ajoute une revue,
+// et son compte s'arrête à `PALIER`. Remesuré le 2026-09-24, `.wt-1806`, charge 9,6 à 10,9 : hook
+// entier sur un commit qui ne ferme rien 0,41-0,49 s (1,5-1,6 s quand le palier se mesurait à chaque
+// commit) ; mesure du palier 0,9-1,4 s, dont 1,1-1,2 s pour trouver la dernière revue parmi 31
+// archives (`derniereRevueArchivee`) et 0,14-0,33 s pour compter 10 commits de substance
+// (`shasDeSubstance`, 0,9-1,2 s sans arrêt sur la plus longue fenêtre observée, 66 commits). Une
+// fusion à trois parents dans la fenêtre, ou toute fusion sous un git plus ancien que 2.40
+// (`exigerMergeTree`, `gitPorte.mjs`), rend le palier INMESURABLE : toute fermeture est refusée
+// jusqu'à ce qu'une revue neuve porte la fenêtre au-delà de la fusion.
 // Ce qu'une expiration de l'étage 2 PERD :
 //   - le refus des stocks et des reclassements au commit. Restent, pour les STOCKS, le pre-push puis
 //     la CI, qui rejuge la plage poussée a posteriori (`scripts/hooks/stocks-nominatifs.test.mjs`,
@@ -1174,9 +1183,10 @@ export function problemesDeRevueNeuve({ nom, contenu }, { today, palier, dansHea
  * Décision du hook (PURE, testable). `readSolde(n)` renvoie le contenu STAGÉ (index git du commit
  * en cours) de `.claude/soldes/<n>.md`, ou `null`/`''` s'il n'y est pas. `soldeOnDisk(n)` renvoie le
  * contenu du même fichier sur le DISQUE : il ne sert qu'à distinguer « jamais écrit » de « écrit mais
- * non stagé » dans le message. `palier` = la MESURE de `mesureDuPalier` (scripts/guards/lib/revuePalier.mjs) :
- * `compte` de commits de substance depuis `tete` (la tête de fenêtre de la dernière revue archivée
- * dans HEAD, lue dans `chemin`), ou `erreur` quand le palier est INMESURABLE. `neuves()` rend les
+ * non stagé » dans le message. `palier()` rend la MESURE de `mesureDuPalier` (scripts/guards/lib/revuePalier.mjs),
+ * lue une fois et seulement par une revue neuve ou une fermeture : `compte` de commits de substance
+ * depuis `tete` (la tête de fenêtre de la dernière revue archivée dans HEAD, lue dans `chemin`), arrêté
+ * à `PALIER`, ou `erreur` quand le palier est INMESURABLE. `neuves()` rend les
  * revues de palier AJOUTÉES par ce commit et EMPORTÉES par sa forme (`revuesDuCommit`) : ce sont
  * elles qui franchissent le palier, et une revue neuve non conforme refuse le commit même hors palier
  * — une revue fausse dans l'histoire fausse toutes les mesures suivantes. `omises()` rend les revues
@@ -1187,13 +1197,15 @@ export function problemesDeRevueNeuve({ nom, contenu }, { today, palier, dansHea
  */
 export function evaluate({
   command, today, readSolde, soldeOnDisk = () => null,
-  palier = { compte: 0, tete: null, chemin: null }, neuves = () => [], omises = () => [],
+  palier: mesurer = () => ({ compte: 0, tete: null, chemin: null }), neuves = () => [], omises = () => [],
   dansHead,
   contexteSolde = {},
 }) {
+  let mesure = null
+  const palier = () => (mesure ??= mesurer())
   const revues = neuves()
   for (const revue of revues) {
-    const problemes = problemesDeRevueNeuve(revue, { today, palier, dansHead })
+    const problemes = problemesDeRevueNeuve(revue, { today, palier: palier(), dansHead })
     if (problemes.length) {
       return {
         decision: 'deny',
@@ -1209,30 +1221,31 @@ export function evaluate({
   const issues = extractClosedIssues(command)
   if (issues.length === 0) return null
 
-  if (palier.erreur) {
+  const { compte, tete, chemin, erreur } = palier()
+  if (erreur) {
     return {
       decision: 'deny',
       reason:
-        `⚠ Palier INMESURABLE, donc aucune fermeture : ${palier.erreur}. Le palier se mesure sur `
+        `⚠ Palier INMESURABLE, donc aucune fermeture : ${erreur}. Le palier se mesure sur `
         + "l'HISTOIRE : les commits de `<tête de la dernière revue de HEAD>..HEAD` dont ce qu'ils font touche "
         + '`src` ou `scripts` (`shasDeSubstance`, scripts/guards/lib/revuePalier.mjs).',
     }
   }
 
-  if (palier.compte >= PALIER && revues.length === 0) {
+  if (compte >= PALIER && revues.length === 0) {
     const enRade = omises()
     return {
       decision: 'deny',
       reason:
-        `⚠ Palier atteint : ${palier.compte} commits de substance depuis ${palier.tete} `
-        + `(${palier.chemin}) — revue adversariale de PALIER exigée avant toute nouvelle fermeture. `
+        `⚠ Palier atteint : au moins ${compte} commits de substance depuis ${tete} `
+        + `(${chemin}) — revue adversariale de PALIER exigée avant toute nouvelle fermeture. `
         + (enRade.length
           ? `${enRade.join(', ')} est écrite et stagée mais NON EMPORTÉE par ce commit : une commande `
             + `par pathspec n'emporte QUE les chemins nommés — y AJOUTER ${enRade.join(', ')}. `
           : '')
-        + `Sinon, l'écrire et la STAGER sous .claude/soldes/revue-palier-${today}-${palier.tete}.md `
+        + `Sinon, l'écrire et la STAGER sous .claude/soldes/revue-palier-${today}-${tete}.md `
         + `(ligne "verdict: CONFIRMÉ|PARTIEL|RÉFUTÉ", ≥${MIN_REVUE_PALIER_LEN} caractères de synthèse sur `
-        + `le CUMUL, date du jour en 1re ligne, fenêtre \`${palier.tete}..<tête>\` — la date et la base `
+        + `le CUMUL, date du jour en 1re ligne, fenêtre \`${tete}..<tête>\` — la date et la base `
         + 'NOMMENT le fichier).',
     }
   }
@@ -1835,8 +1848,8 @@ const lecteurDe = (dir) => (args, { entree } = {}) => sortieOuNull(lireGit(args,
 /**
  * Lectures du contenu que `command` va committer dans `dir` : `numstat()` (les champs du `--numstat`,
  * `analyzeDiffDuCommit`), `diff(chemins)` (le `-U0` de ces chemins, de tout le commit sans argument,
- * en un `git diff` par côté de la forme), `contenu(f)`/`avant(f)` (le fichier APRÈS et AVANT le
- * commit), `images(chemins)` (les mêmes, lus par lot : `lireEnLot`). Chemins lus par `cheminsDe` (`-z`). Le `HEAD` n'est interrogé que si la
+ * en un `git diff` par côté de la forme), `contenu(f)`/`texteDeBase(f)` (le fichier APRÈS le commit, et dans sa BASE
+ * — `sourceDeLaBase`), `images(chemins)` (les mêmes, lus par lot : `lireEnLot`). Chemins lus par `cheminsDe` (`-z`). Le `HEAD` n'est interrogé que si la
  * forme l'exige (un dépôt sans premier commit n'a que l'index).
  *
  * `contenu(f)` est la lecture de `sourceDuCommit`, qui suit la forme JUSQU'AU FICHIER, et c'est là que
@@ -1891,7 +1904,7 @@ export function diffDuCommit(command, dir = process.cwd()) {
       return [dedans.length ? lecture(['HEAD'], dedans) : '', dehors.length ? lecture(['--cached'], dehors) : ''].filter(Boolean).join('\n')
     },
     contenu: (f) => sourceDuCommit().lire(f),
-    avant: (f) => (aHead() ? sourceDeLaBase().lire(f) : null),
+    texteDeBase: (f) => (aHead() ? sourceDeLaBase().lire(f) : null),
     images: (chemins) => {
       const post = sourceDuCommit().lireTout(chemins)
       const pre = aHead() ? sourceDeLaBase().lireTout(chemins) : new Map()
@@ -2379,7 +2392,8 @@ if (isMain) {
     // un solde stagé hors pathspec reste à la version de HEAD et la preuve ne part pas.
     readSolde: (n) => commit.contenu(`.claude/soldes/${n}.md`),
     soldeOnDisk: (n) => readSoldeFile(n, targetDir),
-    palier: mesureDuPalier(targetDir),
+    // Le commit en cours compte par ce qu'il EMPORTE (`fichiers`), la liste de la porte du ticket.
+    palier: () => mesureDuPalier(targetDir, { emportes: fichiers, seuil: PALIER }),
     // La revue qui franchit le palier est celle que ce commit AJOUTE **et** EMPORTE : elle naît sous
     // son nom d'archive. Une revue posée sur le disque sans être stagée, ou stagée hors des pathspecs
     // de la commande, ne part pas avec le commit — donc ne franchit rien. Même règle que le solde.
@@ -2445,19 +2459,19 @@ if (isMain) {
   })
   // BUDGET DU CONTEXTE PERMANENT : mesuré seulement si le commit touche un chemin du périmètre —
   // sinon aucune lecture n'est payée au-delà de l'image de `CLAUDE.md`, qui dit les fichiers IMPORTÉS
-  // (`@<chemin>`) et donc le périmètre lui-même : post-image si le commit l'emporte, pré-image sinon.
-  // La mesure porte sur ce que le commit EMPORTE (`commit.contenu`), la référence et le plafond sur sa
-  // PRÉ-IMAGE (`commit.avant`) : relever la ligne du plafond dans le même commit ne suffit donc pas à
+  // (`@<chemin>`) et donc le périmètre lui-même : ce que le commit emporte s'il l'emporte, son texte de base sinon.
+  // La mesure porte sur ce que le commit EMPORTE (`commit.contenu`), la référence et le plafond sur son
+  // texte de BASE (`commit.texteDeBase`) : relever la ligne du plafond dans le même commit ne suffit donc pas à
   // faire passer une accrétion. Le LISTAGE des skills/agents se lit PAR IMAGE lui aussi — l'index pour
   // ce que le commit emporte, `HEAD` pour la référence — sans quoi un poste SUPPRIMÉ par le commit
   // disparaîtrait des DEUX côtés et le refus dirait « aucun poste ne grossit ».
-  const importsDuContexte = importsDe(commit.contenu('CLAUDE.md') ?? commit.avant('CLAUDE.md'))
+  const importsDuContexte = importsDe(commit.contenu('CLAUDE.md') ?? commit.texteDeBase('CLAUDE.md'))
   const budget = fichiers.some((f) => estCheminDuBudget(f, importsDuContexte))
     ? evaluateBudgetContexte({
       command: text,
       mesure: mesurerBudget(targetDir, { lire: commit.contenu, lister: listeurDuBudget(INDEX, targetDir) }),
-      reference: mesurerBudget(targetDir, { lire: commit.avant, lister: listeurDuBudget('HEAD', targetDir) }),
-      plafond: plafondDeLaSource(commit.avant(PORTEUR_DU_PLAFOND)),
+      reference: mesurerBudget(targetDir, { lire: commit.texteDeBase, lister: listeurDuBudget('HEAD', targetDir) }),
+      plafond: plafondDeLaSource(commit.texteDeBase(PORTEUR_DU_PLAFOND)),
     })
     : null
   // Voir COÛT (en-tête) : un refus qu'aucun autre étage ne rejuge sort ICI, avant les deux décisions
