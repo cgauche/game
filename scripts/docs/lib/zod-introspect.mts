@@ -3,8 +3,7 @@
 // Consommée par `scripts/docs/build-structures.mts` pour la colonne « déclaré » et le volet
 // « forme DÉCLARÉE jamais observée ».
 //
-// zod 4.4.3 : la forme d'un nœud se lit sur `s._zod.def` (`type`, `shape`, `element`, `options`,
-// `innerType`, `getter`, `in`/`out`).
+// La forme d'un nœud se lit par `defDe`, ses enfants par `enfantsDe` (`src/data/schemas/grammaire/descente.ts`).
 import type { SchemaDef } from '../../../src/data/schemas/types';
 import { defDe, descendre, enfantsDe } from '../../../src/data/schemas/grammaire/descente';
 import { valeursDe } from '../../../src/data/schemas/grammaire/meta';
@@ -53,7 +52,7 @@ function classeZod(s: unknown, chemin: Chemin = RACINE): string {
   const d = descente(s);
   switch (def.type) {
     case 'literal':
-      return `literal ${JSON.stringify(def.values ?? def.value)}`;
+      return `literal ${JSON.stringify(def.values)}`;
     case 'enum':
       // Un enum NOMMÉ (`enumNomme`, `grammaire/valeurs.ts`) porte le libellé FR de chacune de ses
       // options SUR SON NŒUD (#1694) : le relevé le dit, c'est ce qui distingue un vocabulaire dont
@@ -201,7 +200,7 @@ export function choixDeclares(defs: readonly SchemaDef[]): Map<string, Map<strin
       const d = descente(n);
       switch (def.type) {
         case 'literal':
-          return [def.values, def.value].flatMap((v) => (Array.isArray(v) ? v : [v])).filter((v): v is string => typeof v === 'string');
+          return (Array.isArray(def.values) ? def.values : []).filter((v): v is string => typeof v === 'string');
         case 'enum':
           return Object.values(def.entries ?? {}).filter((v): v is string => typeof v === 'string');
         case 'union':
@@ -221,8 +220,9 @@ export function choixDeclares(defs: readonly SchemaDef[]): Map<string, Map<strin
           return [];
       }
     };
-    descendre([schema], ({ def }) => {
-      for (const [k, v] of Object.entries(def.shape ?? {})) {
+    descendre([schema], ({ noeud }) => {
+      for (const { cle: k, noeud: v } of enfantsDe(noeud)) {
+        if (k === undefined) continue;
         for (const lit of litteraux(v)) {
           if (!parCle.has(k)) parCle.set(k, new Set());
           parCle.get(k)!.add(lit);

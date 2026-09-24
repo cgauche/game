@@ -17,8 +17,8 @@ import { SCHEMA_DEFS } from './_registry.generated';
 import './_registry-scenes.generated';
 import '../index';
 import { espacesDesignes, idDe, mesureDuParse, refOuSpec } from './grammaire/ref';
-import { listeCle } from './grammaire/collection-cle';
-import { HORS_DE_LA_GRAPHIE, cleDesSpecs, cleFiltree, lireCleDEspace, porteLeChampMarqueur } from './grammaire/cle-d-espace';
+import { collectionsDuDocument, listeCle } from './grammaire/collection-cle';
+import { HORS_DE_LA_GRAPHIE, cleDesSpecs, cleFiltree, estPrefixeDeSuite, lireCleDEspace, pasDeLaSuite, porteLeChampMarqueur, suiteAvecPas, type PasDeSuite } from './grammaire/cle-d-espace';
 import { SOURCES_DE_SPECS, type SourceDeSpecs } from './grammaire/sourcesDeSpecs';
 
 const CLES = Object.keys(IDS_PAR_ESPACE);
@@ -91,7 +91,7 @@ describe('INDEX DES IDS — chaque cible a son espace', () => {
   });
 });
 
-describe('AMORÇAGE — la table est inerte au parse de mesure en mode `espaces`', () => {
+describe('AMORÇAGE — la co-descente relève les collections sans lire l’index', () => {
   const NEUVE = 'competence-neuve-du-meme-commit';
   const schema = z.strictObject({
     lignes: listeCle(z.strictObject({ id: z.string(), competence: idDe('skill'), designee: refOuSpec('skill').optional() }), 'id', { espace: {} }),
@@ -99,12 +99,12 @@ describe('AMORÇAGE — la table est inerte au parse de mesure en mode `espaces`
   const donnee = { lignes: [{ id: 'a', competence: NEUVE, designee: { id: 'art', spec: 'spec-neuve-du-meme-commit' } }] };
 
   it('un espace neuf et ses désignateurs se mesurent avant d’être à l’index', () => {
-    expect(mesureDuParse(schema, donnee, 'espaces').collections.map((c) => c.marque.forme)).toEqual(['liste']);
+    expect(collectionsDuDocument(schema, donnee).map((c) => [c.suite, c.marque.forme, c.ids])).toEqual([['lignes', 'liste', ['a']]]);
   });
 
-  it('hors de la fenêtre, la même donnée est refusée contre l’index', () => {
+  it('au parse, la même donnée est refusée contre l’index', () => {
     expect(schema.safeParse(donnee).success).toBe(false);
-    expect(() => mesureDuParse(schema, donnee, 'slots')).toThrow(/invalide au parse normal/);
+    expect(() => mesureDuParse(schema, donnee)).toThrow(/invalide au parse normal/);
   });
 });
 
@@ -131,6 +131,30 @@ describe('AMORÇAGE — `npm run gen` répare un index illisible', () => {
     expect(vue, 'la table vue par l’enfant n’est pas la table vide').toBe(0);
     expect(index).toEqual(IDS_PAR_ESPACE);
   }, 60_000);
+});
+
+describe('GRAPHIE DES SUITES — `suiteAvecPas` écrit, `pasDeLaSuite` et `estPrefixeDeSuite` lisent', () => {
+  const PAS: readonly PasDeSuite[] = [{ champ: 'specs' }, { cle: 'art' }, { rang: true }];
+
+  it('aller-retour `pasDeLaSuite(suiteAvecPas(…))` sur chaque forme de pas, en premier pas et après chacune', () => {
+    for (const premier of PAS) {
+      expect(pasDeLaSuite(suiteAvecPas('', premier))).toEqual([premier]);
+      for (const second of PAS) expect(pasDeLaSuite(suiteAvecPas(suiteAvecPas('', premier), second))).toEqual([premier, second]);
+    }
+    expect(pasDeLaSuite('')).toEqual([]);
+  });
+
+  it('`estPrefixeDeSuite` : la racine, la suite elle-même, un point suivi de `.champ` ou `[…]` ; pas un préfixe de nom', () => {
+    const cas: [string, string, boolean][] = [
+      ['', '[art].specs', true],
+      ['[art].specs', '[art].specs', true],
+      ['[art]', '[art].specs', true],
+      ['lots', 'lots[].items', true],
+      ['rang', 'rangedMod', false],
+      ['[art].spec', '[art].specs', false],
+    ];
+    for (const [prefixe, suite, attendu] of cas) expect([prefixe, suite, estPrefixeDeSuite(prefixe, suite)]).toEqual([prefixe, suite, attendu]);
+  });
 });
 
 describe('MARQUEUR — un seul prédicat', () => {

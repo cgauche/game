@@ -3,7 +3,7 @@
 // rajouter d'autres options, je ne veux pas voir une suite d'id. Soit la cadence n'a rien a faire
 // dans policy, soit faut lui mettre un flag » — un code qui traite N entrées d'un registre de façon
 // uniforme ne teste JAMAIS l'identité d'une entrée : le comportement particulier est un ATTRIBUT
-// DÉCLARÉ sur l'entrée, lu comme n'importe quel champ (`def.kind`, `def.options`…).
+// DÉCLARÉ sur l'entrée, lu comme n'importe quel champ (`regle.kind`, `regle.options`…).
 //
 // ⚠ Distincte de `labelLogic.mjs` (logique keyée par LABEL au lieu de l'id) : ici, keyer par id est
 // tout aussi fautif — dans un code générique, on ne key pas, on lit un champ.

@@ -85,6 +85,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `MediaSelect` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U |  |
 | `gen-registry (_registry.generated)` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `descendre/enfantsDe` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
+| `coDescendre/ouverts/pasDeDonnee` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `MenuCard/MenuSection/MenuButton/MenuToggle` |  |  |  |  |  |  |  |  | U |  |  |  |  | U |  |  |
 | `ScreenMeta` |  |  |  |  | U |  | U | U |  |  | U |  |  |  | U |  |
 | `Tabs` |  |  |  |  | U |  | U | U |  | U | U |  |  |  | U | U |
@@ -207,4 +208,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 1a519e49978d3e90e6d8bf023a38d73ab6f28752 (1830 fichiers, 2 dossiers) corps: 04c923afae03369b7f056c83456ea5175ba37eab -->
+<!-- sources-empreinte: f06e725c7e8596e8720bdfed66103a46cbf6f2f5 (1830 fichiers, 2 dossiers) corps: 27daa45f38725fadc9d67320a7549a251c564a6e -->

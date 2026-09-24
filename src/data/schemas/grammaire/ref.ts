@@ -12,7 +12,6 @@ import './locale-fr';
 import { IDS_PAR_ESPACE } from '../_ids.generated';
 import { baseDe, cleDesSpecs, cleFiltree, lireCleDEspace } from './cle-d-espace';
 import { idsVivants, specsVivantesDe } from './idsVivants';
-import type { MarqueDeCollection } from './collection-cle';
 
 declare const marqueDeType: unique symbol;
 /** Id BRANDÉ par son type — frappé à la porte zod, jamais par un `as` d'appelant. */
@@ -77,19 +76,6 @@ export function espaceDe(type: TypeEntite): string {
   return TYPES[type].espace;
 }
 
-/**
- * La table est-elle INERTE ? Le temps d'un parse de mesure en mode `espaces` (`mesureDuParse`), qui
- * seul l'écrit : l'INDEX DES IDS s'y mesure, un espace neuf et son premier désignateur entrent donc
- * dans le même commit. Les LECTEURS de la table y rendent « tout est admis » pour leur consommateur :
- * `admisDe`, `entreeOuverte`, `estSpecialisable` et `refusDeSpec` admettent ; `porteLeMarqueur` rend
- * FAUX, l'appartenance y CONDITIONNANT un refus (cap d'un décor volumique, `defs-scenes/scene.ts`).
- */
-let tableInerte = false;
-
-/** Ce qu'un lecteur de la table rend : l'appartenance d'un id à un espace. */
-type Admis = { has(id: string): boolean };
-const TOUT_ADMIS: Admis = { has: () => true };
-
 /** Espace FIGÉ du registre généré, en `Set` construit une fois par clé d'espace. */
 const figes = new Map<string, ReadonlySet<string>>();
 function fige(cle: string): ReadonlySet<string> | undefined {
@@ -145,8 +131,7 @@ function cleDeSousListe(type: TypeEntite, valeur: string, site: string): string 
 }
 
 /** L'ensemble ADMIS par une feuille `idDe(type, valeur?)`, lu à chaque validation. */
-function admisDe(type: TypeEntite, valeur: string | undefined, site: string): Admis {
-  if (tableInerte) return TOUT_ADMIS;
+function admisDe(type: TypeEntite, valeur: string | undefined, site: string): ReadonlySet<string> {
   return idsDeLEspace(valeur === undefined ? espaceDe(type) : cleDeSousListe(type, valeur, site), site);
 }
 
@@ -162,7 +147,7 @@ export function porteLeMarqueur(type: TypeEntite, marqueur: string): (id: string
   const cle = cleFiltree(espaceDe(type), { champ: marqueur });
   const site = `porteLeMarqueur('${type}', '${marqueur}')`;
   DESIGNATIONS.add(cle);
-  return (id) => !tableInerte && idsDeLEspace(cle, site).has(id);
+  return (id) => idsDeLEspace(cle, site).has(id);
 }
 
 /** Catalogue de spécialisations d'UNE entrée (vide = l'entrée n'en déclare aucune) — lu en MÉMOIRE
@@ -179,7 +164,6 @@ function catalogueSpecs(type: TypeEntite, id: string): readonly string[] {
  * `LDB 09 l.40`). Un type dont l'espace n'a pas ce marqueur n'a que des entrées FERMÉES.
  */
 export function entreeOuverte(type: TypeEntite, id: string): boolean {
-  if (tableInerte) return true;
   return lireLEspace(cleFiltree(espaceDe(type), { champ: 'specsOpen' }))?.has(id) ?? false;
 }
 
@@ -191,7 +175,6 @@ export function entreeOuverte(type: TypeEntite, id: string): boolean {
  * déclaration du catalogue app-owned, sans équivalent au livre.
  */
 export function estSpecialisable(type: TypeEntite, id: string): boolean {
-  if (tableInerte) return true;
   return catalogueSpecs(type, id).length > 0;
 }
 
@@ -209,18 +192,8 @@ const REPERE: unique symbol = Symbol('repère de parse de mesure');
 /** Clé du repère de NŒUD D'OP : même régime que `REPERE`, émis par `marquerOpAtteinte`. */
 const REPERE_OP: unique symbol = Symbol('repère de nœud d’op');
 
-/** Clé du repère de COLLECTION À CLÉ : même régime que `REPERE`, émis par `marquerCollectionAtteinte`. */
-const REPERE_COLLECTION: unique symbol = Symbol('repère de collection à clé');
-
-/**
- * MODE d'un parse de mesure : `slots` relève les feuilles `idDe` et les nœuds d'op ; `espaces` relève
- * les collections à clé (`grammaire/collection-cle.ts`). Un mode ne relève QUE ses repères : un repère
- * fait avorter le `pipe` qui le porte, si bien qu'un repère de l'autre mode masquerait les siens.
- */
-export type ModeDeMesure = 'slots' | 'espaces';
-
-/** Le mode du `mesureDuParse` en cours, le temps SYNCHRONE de l'appel, qui seul l'écrit, et jamais ailleurs : aucun export n'expose l'état. */
-let parseDeMesure: ModeDeMesure | undefined;
+/** Un `mesureDuParse` est-il en cours ? Le temps SYNCHRONE de l'appel, qui seul l'écrit, et jamais ailleurs : aucun export n'expose l'état. */
+let parseDeMesure = false;
 
 /** Les feuilles construites par `idDe`, avec le type qu'elles référencent — ce que la garde du masquage
  *  (`parse-de-mesure.test.ts`) instrumente. */
@@ -250,7 +223,7 @@ export const estFeuilleDId = (noeud: unknown): boolean => typeDeFeuilleDId(noeud
 /**
  * Schéma d'un id NU de `type` : refiné contre le registre, brandé `Id<type>` à la sortie. C'est la
  * FEUILLE porteuse de la référence, et la SEULE vérification d'un id contre le registre sous
- * `src/data/schemas` : au parse de mesure en mode `slots` (`mesureDuParse`), chaque validation réussie y émet un
+ * `src/data/schemas` : au parse de mesure (`mesureDuParse`), chaque validation réussie y émet un
  * REPÈRE, que le volet SLOTS de `docs/structures-donnees.md` lit comme le côté DÉCLARÉ.
  *
  * La liste admise se LIT À CHAQUE VALIDATION, parce que le registre a deux régimes déclarés
@@ -268,7 +241,7 @@ export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<
     .string()
     .superRefine((v, ctx) => {
       if (admisDe(type, valeur, site).has(v)) {
-        if (parseDeMesure === 'slots') ctx.addIssue({ code: 'custom', message: `repère de ${site}`, params: { [REPERE]: type }, continue: true });
+        if (parseDeMesure) ctx.addIssue({ code: 'custom', message: `repère de ${site}`, params: { [REPERE]: type }, continue: true });
         return;
       }
       ctx.addIssue({
@@ -292,17 +265,7 @@ export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<
  * parse de mesure, l'appel ne fait rien : le parse normal n'y gagne aucun chemin.
  */
 export function marquerOpAtteinte(ctx: z.RefinementCtx): void {
-  if (parseDeMesure === 'slots') ctx.addIssue({ code: 'custom', message: 'repère de nœud d’op', params: { [REPERE_OP]: true }, continue: true });
-}
-
-/**
- * Marque la valeur en cours de validation comme une COLLECTION À CLÉ atteinte par le parse
- * (`marquerCollection`, `grammaire/collection-cle.ts`). Hors du parse de mesure en mode `espaces`,
- * l'appel ne fait rien.
- */
-export function marquerCollectionAtteinte(ctx: z.RefinementCtx, marque: MarqueDeCollection): void {
-  if (parseDeMesure === 'espaces')
-    ctx.addIssue({ code: 'custom', message: 'repère de collection à clé', params: { [REPERE_COLLECTION]: marque }, continue: true });
+  if (parseDeMesure) ctx.addIssue({ code: 'custom', message: 'repère de nœud d’op', params: { [REPERE_OP]: true }, continue: true });
 }
 
 /** Une référence validée par `idDe` au parse de mesure : son path de DONNÉE et son type. `parCle` :
@@ -318,14 +281,13 @@ type IssueLue = {
   readonly code: string;
   readonly path: readonly PropertyKey[];
   readonly message: string;
-  readonly params?: { readonly [REPERE]?: TypeEntite; readonly [REPERE_OP]?: true; readonly [REPERE_COLLECTION]?: MarqueDeCollection };
+  readonly params?: { readonly [REPERE]?: TypeEntite; readonly [REPERE_OP]?: true };
   readonly errors?: readonly (readonly IssueLue[])[];
   readonly issues?: readonly IssueLue[];
 };
 
 const typeDuRepere = (issue: IssueLue): TypeEntite | undefined => issue.params?.[REPERE];
 const estRepereDOp = (issue: IssueLue): boolean => issue.params?.[REPERE_OP] === true;
-const marqueDuRepere = (issue: IssueLue): MarqueDeCollection | undefined => issue.params?.[REPERE_COLLECTION];
 
 /** La FAMILLE du repère que portent les `params` d'une issue — `reference` (`idDe`) ou `op`
  *  (`marquerOpAtteinte`) —, `undefined` hors repère. Seule lecture des clés de repère hors de ce module :
@@ -341,26 +303,17 @@ export function familleDuRepere(params: unknown): 'reference' | 'op' | undefined
 const estPropre = (issue: IssueLue): boolean =>
   typeDuRepere(issue) !== undefined ||
   estRepereDOp(issue) ||
-  marqueDuRepere(issue) !== undefined ||
   (issue.code === 'invalid_union' && (issue.errors ?? []).some((b) => b.length > 0 && b.every(estPropre))) ||
   ((issue.code === 'invalid_key' || issue.code === 'invalid_element') && (issue.issues ?? []).length > 0 && issue.issues!.every(estPropre));
 
-/** Une collection à clé atteinte par le parse de mesure : son path de DONNÉE et sa marque. */
-export interface CollectionDeMesure {
-  readonly path: readonly PropertyKey[];
-  readonly marque: MarqueDeCollection;
-}
-
-/** Ce que rend le parse de mesure, selon son mode : en `slots`, les références validées par `idDe` et
- *  le path de DONNÉE de chaque nœud d'op que `gameOpSchema` a validé (`marquerOpAtteinte`) ; en
- *  `espaces`, les collections à clé (`marquerCollectionAtteinte`). */
+/** Ce que rend le parse de mesure : les références validées par `idDe` et le path de DONNÉE de chaque
+ *  nœud d'op que `gameOpSchema` a validé (`marquerOpAtteinte`). */
 export interface MesureDuParse {
   readonly reperes: readonly RepereDeMesure[];
   readonly ops: readonly (readonly PropertyKey[])[];
-  readonly collections: readonly CollectionDeMesure[];
 }
 
-type Recueil = { reperes: RepereDeMesure[]; ops: (readonly PropertyKey[])[]; collections: CollectionDeMesure[] };
+type Recueil = { reperes: RepereDeMesure[]; ops: (readonly PropertyKey[])[] };
 
 function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[], parCle: boolean, out: Recueil): void {
   for (const issue of issues) {
@@ -372,11 +325,6 @@ function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[]
     }
     if (estRepereDOp(issue)) {
       out.ops.push(path);
-      continue;
-    }
-    const marque = marqueDuRepere(issue);
-    if (marque !== undefined) {
-      out.collections.push({ path, marque });
       continue;
     }
     // La PREMIÈRE branche propre est celle que le parse normal choisit : la première sans issue.
@@ -392,9 +340,8 @@ function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[]
 }
 
 /**
- * PARSE DE MESURE d'une donnée par son schéma RÉEL, au `mode` donné : en `slots`, les références que
- * `idDe` y valide et les nœuds d'op que `gameOpSchema` y valide ; en `espaces`, les collections à clé
- * qu'il y atteint — chacun à son path de DONNÉE. Le mode est borné par construction : `parseDeMesure`
+ * PARSE DE MESURE d'une donnée par son schéma RÉEL : les références que `idDe` y valide et les nœuds
+ * d'op que `gameOpSchema` y valide, chacun à son path de DONNÉE. La fenêtre est bornée par construction : `parseDeMesure`
  * n'est posé que pendant l'appel SYNCHRONE à `safeParse` (zod lève sur tout nœud async), et le
  * `finally` le rend à sa valeur précédente, y compris quand le recueil lève. Les seuls parses exécutés
  * dans cette fenêtre sont ceux que ce `safeParse` imbrique (payload d'une op,
@@ -404,9 +351,7 @@ function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[]
  * EN SORTIE (`.transform`, `.pipe`) ne s'y exécute pas. Un échec du parse normal LÈVE en nommant sa
  * première issue ; dans la fenêtre, une issue qui n'est pas un repère LÈVE aussi.
  */
-export function mesureDuParse(schema: z.ZodType, donnee: unknown, mode: ModeDeMesure = 'slots'): MesureDuParse {
-  const inertePrecedente = tableInerte;
-  tableInerte = inertePrecedente || mode === 'espaces';
+export function mesureDuParse(schema: z.ZodType, donnee: unknown): MesureDuParse {
   const precedent = parseDeMesure;
   try {
     const normal = schema.safeParse(donnee);
@@ -416,14 +361,13 @@ export function mesureDuParse(schema: z.ZodType, donnee: unknown, mode: ModeDeMe
         `parse de mesure : la donnée est invalide au parse normal — issue « ${premiere.code} » à « ${premiere.path.map(String).join('.') || '(racine)'} » (${premiere.message}).`,
       );
     }
-    parseDeMesure = mode;
+    parseDeMesure = true;
     const resultat = schema.safeParse(donnee);
-    const out: Recueil = { reperes: [], ops: [], collections: [] };
+    const out: Recueil = { reperes: [], ops: [] };
     if (!resultat.success) recueillir(resultat.error.issues as unknown as readonly IssueLue[], [], false, out);
     return out;
   } finally {
     parseDeMesure = precedent;
-    tableInerte = inertePrecedente;
   }
 }
 
@@ -479,7 +423,6 @@ const SENTINELLE_DE_SPEC = /^au[\s-]+choix$/i;
  * `null` (admise).
  */
 export function refusDeSpec(type: TypeEntite, id: string, spec: string): 'nonSpecialisable' | 'sentinelle' | 'horsCatalogue' | null {
-  if (tableInerte) return null;
   if (!estSpecialisable(type, id)) return 'nonSpecialisable';
   if (SENTINELLE_DE_SPEC.test(spec)) return 'sentinelle';
   if (entreeOuverte(type, id)) return null;

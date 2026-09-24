@@ -4,9 +4,7 @@
 //
 // Le DÉCLARÉ est ce que le PARSE valide (#1473 R1) : chaque document est parsé par son schéma réel
 // au PARSE DE MESURE (`reperesDuParse`, `src/data/schemas/grammaire/ref.ts`), et chaque case
-// `(porteur, clé)` dont la valeur est validée par `idDe` est un SLOT, avec son type. Le même parse,
-// en mode `espaces`, relève les COLLECTIONS À CLÉ (`collectionsDuParse`, #1463), dont le même
-// `pathNormalise` écrit la CLÉ DE COLLECTION.
+// `(porteur, clé)` dont la valeur est validée par `idDe` est un SLOT, avec son type.
 //
 // MANDAT et ANGLES MORTS de ce volet : SOURCES UNIQUES `MANDAT_SLOTS` / `ANGLES_MORTS_SLOTS`
 // (`scripts/docs/lib/structures-lexique.mts`) — ils ne se reformulent nulle part.
@@ -14,8 +12,6 @@ import { SCHEMA_DEFS } from '../../../src/data/schemas/_registry.generated';
 import { SCHEMA_DEFS_SCENES } from '../../../src/data/schemas/_registry-scenes.generated';
 import type { SchemaDef } from '../../../src/data/schemas/types';
 import { estFeuilleDId, mesureDuParse, reperesDuParse, type TypeEntite } from '../../../src/data/schemas/grammaire/ref';
-import { idsDeCollection, type MarqueDeCollection } from '../../../src/data/schemas/grammaire/collection-cle';
-import { cleNichee } from '../../../src/data/schemas/grammaire/cle-d-espace';
 import { defDe, descendre, enfantsDe } from '../../../src/data/schemas/grammaire/descente';
 import { OP_DEFS } from '../../../src/data/schemas/grammaire/mecanique';
 import { nomDeDocument, type OccurrenceDeReference, type ReferencesParPorteur } from './structures-scan.mjs';
@@ -44,40 +40,11 @@ export type Slot = {
   readonly parCle: boolean;
 };
 
-/**
- * MODE d'écriture d'un path de DONNÉE. `slots` : la POSITION de schéma, que le registre des slots
- * regroupe — un rang s'écrit `[]`, et la clé de record qui porte la référence `{}` (`parCle`).
- * `espaces` : la CLÉ DE COLLECTION d'une collection à clé — le rang d'un élément d'une collection à clé s'écrit
- * `[clé]` (la clé de l'élément, lue sur le `document`, jamais son rang), celui d'une liste non marquée
- * `[]`. `listes` : la lecture de clé des listes marquées, par path de donnée (`cleDePath`).
- */
-type ModeDePath =
-  | { readonly mode: 'slots'; readonly parCle: boolean }
-  | {
-      readonly mode: 'espaces';
-      readonly document: unknown;
-      readonly listes: ReadonlyMap<string, (element: unknown) => string | undefined>;
-    };
-
-/** Clé d'un path de donnée dans une table (`listes`). */
-const cleDePath = (path: readonly PropertyKey[]): string => JSON.stringify(path.map(String));
-
-/** Path de DONNÉE, écrit selon son mode : `[].effects.steps[].test.skill`, `hauteurs{}` ; `[art].specs`. */
-function pathNormalise(path: readonly PropertyKey[], mode: ModeDePath): string {
-  let noeud: unknown = mode.mode === 'espaces' ? mode.document : undefined;
-  const segments = path.map((k, i) => {
-    const parent = noeud;
-    noeud = parent !== null && typeof parent === 'object' ? (parent as Record<PropertyKey, unknown>)[k] : undefined;
-    if (mode.mode === 'slots' && mode.parCle && i === path.length - 1) return '{}';
-    if (typeof k !== 'number') return `.${String(k)}`;
-    if (mode.mode === 'slots') return '[]';
-    const de = mode.listes.get(cleDePath(path.slice(0, i)));
-    if (!de) return '[]';
-    const cle = de(noeud);
-    if (cle === undefined)
-      throw new Error(`clé de collection : l'élément « ${path.slice(0, i + 1).map(String).join('.')} » d'une collection à clé ne porte pas de clé lisible.`);
-    return `[${cle}]`;
-  });
+/** Path de DONNÉE écrit en POSITION de schéma, que le registre des slots regroupe : un rang s'écrit
+ *  `[]`, et la clé de record qui porte la référence `{}` (`parCle`) — `[].effects.steps[].test.skill`,
+ *  `hauteurs{}`. */
+function pathNormalise(path: readonly PropertyKey[], parCle: boolean): string {
+  const segments = path.map((k, i) => (parCle && i === path.length - 1 ? '{}' : typeof k === 'number' ? '[]' : `.${String(k)}`));
   return segments.join('').replace(/^\./, '');
 }
 
@@ -101,7 +68,7 @@ function slotsDuDocument(dataset: string, schema: SchemaDef['schema'], document:
     if (porteur === null || typeof porteur !== 'object' || (!r.parCle && typeof noeud !== 'string'))
       throw new Error(`slots : le repère « ${r.path.map(String).join('.')} » de ${dataset} ne tombe sur aucune chaîne du document parsé.`);
     const cle = r.path[r.path.length - 1] as string | number;
-    return { dataset, path: pathNormalise(r.path, { mode: 'slots', parCle: r.parCle }), type: r.type, porteur, cle, parCle: r.parCle };
+    return { dataset, path: pathNormalise(r.path, r.parCle), type: r.type, porteur, cle, parCle: r.parCle };
   });
 }
 
@@ -115,47 +82,6 @@ export type ScanDesReferences = {
 /** Tous les slots des documents du scan, parsés par leur def (`defsDeDocument`). */
 export function slotsDuParse(scan: Pick<ScanDesReferences, 'brutParNom'>, defs: readonly SchemaDef[] = defsDeDocument()): Slot[] {
   return defs.filter((d) => scan.brutParNom.has(d.file)).flatMap((d) => slotsDuDocument(d.file, d.schema, scan.brutParNom.get(d.file)));
-}
-
-/**
- * Une COLLECTION À CLÉ d'un document, relevée au parse de mesure en mode `espaces`. `cle` : sa CLÉ
- * DE COLLECTION, `fichier` pour la collection de racine, `fichier#…` pour une collection nichée
- * (`criticals.json#[criticals-ldb-tete].entries`, `skills.json#[art].specs`), et CLÉ D'ESPACE quand la
- * marque porte `espace` ; `valeur` : la collection dans le document parsé ; `ids` : ses ids, dans
- * l'ordre de la donnée.
- */
-export type CollectionMesuree = {
-  readonly dataset: string;
-  readonly cle: string;
-  readonly marque: MarqueDeCollection;
-  readonly valeur: unknown;
-  readonly ids: readonly string[];
-};
-
-/**
- * Les collections à clé d'UN document. Un ESPACE DE NOMS (marque `espace`) sous une liste NON marquée
- * n'a pas de clé stable (le rang d'un élément n'identifie rien) : la mesure LÈVE en nommant la liste.
- */
-function collectionsDuDocument(dataset: string, schema: SchemaDef['schema'], document: unknown): CollectionMesuree[] {
-  const { collections } = mesureDuParse(schema, document, 'espaces');
-  const listes = new Map(collections.flatMap((c) => (c.marque.forme === 'liste' ? [[cleDePath(c.path), c.marque.de] as const] : [])));
-  return collections.map((c) => {
-    if (c.marque.espace) {
-      const rang = c.path.findIndex((k, i) => typeof k === 'number' && !listes.has(cleDePath(c.path.slice(0, i))));
-      if (rang >= 0)
-        throw new Error(
-          `clé d'espace : l'espace de noms « ${c.path.map(String).join('.')} » de ${dataset} est sous la liste NON marquée « ${c.path.slice(0, rang).map(String).join('.') || '(racine)'} » — le rang d'un élément n'identifie rien.`,
-        );
-    }
-    const suite = pathNormalise(c.path, { mode: 'espaces', document, listes });
-    const { noeud: valeur } = auPath(dataset, document, c.path);
-    return { dataset, cle: suite ? cleNichee(dataset, suite) : dataset, marque: c.marque, valeur, ids: idsDeCollection(c.marque, valeur) };
-  });
-}
-
-/** Toutes les collections à clé des documents du scan, parsés par leur def (`defsDeDocument`). */
-export function collectionsDuParse(scan: Pick<ScanDesReferences, 'brutParNom'>, defs: readonly SchemaDef[] = defsDeDocument()): CollectionMesuree[] {
-  return defs.filter((d) => scan.brutParNom.has(d.file)).flatMap((d) => collectionsDuDocument(d.file, d.schema, scan.brutParNom.get(d.file)));
 }
 
 /**

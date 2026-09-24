@@ -26,7 +26,7 @@ import { neufsDe } from '../../scripts/migrations/replay.mjs';
 import { scan } from '../../scripts/guards/lib/grammaireGuard.mjs';
 import { GRAMMAIRE_STOCK } from '../../scripts/guards/lib/grammaireStock.mjs';
 import { ecartsDeStock } from '../../scripts/guards/lib/stock.mjs';
-import { defDe, descendre } from './schemas/grammaire/descente';
+import { defDe, descendre, enfantsDe } from './schemas/grammaire/descente';
 import * as valeurs from './schemas/grammaire/valeurs';
 import * as reference from './schemas/grammaire/reference';
 import { ref, specRef, pick } from './schemas/grammaire/ref';
@@ -112,9 +112,9 @@ function signaturesDeLaGrammaire(
   const out = new Map<string, { noms: Set<string>; cles: string[] }>();
   const marcher = (racines: readonly [string, unknown][]): void => {
     for (const [nom, v] of racines)
-      descendre([v], ({ def }) => {
-        if (def.type !== 'object' || !def.shape) return;
-        const cles = Object.keys(def.shape);
+      descendre([v], ({ noeud, def }) => {
+        if (def.type !== 'object') return;
+        const cles = enfantsDe(noeud).flatMap((e) => (e.cle === undefined ? [] : [e.cle]));
         if (cles.length < 2) return;
         const cle = cles.slice().sort().join(',');
         const porteurs = out.get(cle) ?? { noms: new Set<string>(), cles };

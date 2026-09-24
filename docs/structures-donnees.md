@@ -53,8 +53,8 @@ Documents qu’AUCUNE def ne déclare : **0**.
 
 ### 1bis. Index des ids (le cœur du détecteur)
 
-Identités indexées : **5921** (entrées de racine + documents embarqués) ; libellés
-normalisés : **5157**. Un id vu dans PLUSIEURS datasets rend la résolution
+Identités indexées : **5922** (entrées de racine + documents embarqués) ; libellés
+normalisés : **5158**. Un id vu dans PLUSIEURS datasets rend la résolution
 AMBIGUË (jamais fausse) : **398** collisions, et **3424** ids
 sont aussi le libellé d’une entité (faux positif possible sur la résolvabilité d’un `{text}`).
 
@@ -511,15 +511,17 @@ dataset atteint n’est pas celui que le site vise — c’est là qu’une coll
 | `arene-projet.json` | `entities` | `ref` | `serpent` | `creatures.json` `groups.json` | `props.json` | 4 |
 | `creatures.json` | `skills` | `spec` | `escrime` | `weaponGroups.json` | `skills.json` | 4 |
 
-### 1ter. Collections à clé (déclarées au schéma, mesurées au parse)
+### 1ter. Collections à clé (déclarées au schéma, relevées par la co-descente)
 
 Termes : source UNIQUE `TERMES_COLLECTION_A_CLE` (`scripts/docs/lib/structures-lexique.mts`).
 
 - **collection à clé** — collection dont chaque élément a une IDENTITÉ déclarée au nœud du schéma qui la porte (`marquerCollection`, `src/data/schemas/grammaire/collection-cle.ts`) : une LISTE, dont la clé se lit dans chaque élément (`listeCle`), ou un RECORD, dont les ids sont les noms de propriété.
 - **espace de noms** — les ids d’une collection à clé dont la marque porte `espace`, éventuellement filtrée : la racine d’un document `entite`/`record` (`document()`), les `specs` d’une Compétence ou d’un Talent, `sizes.json#rangedMod`. Les paramètres `discriminant` et `marqueurs` de `espace` (`EspaceDeNoms`) y ajoutent les espaces FILTRÉS. Une collection dont la clé d’élément est une feuille `idDe` (une liste de RÉFÉRENCES) n’en ouvre jamais.
-- **clé de collection** — le nom d’une collection à clé, mesuré au parse (`collectionsDuParse`, `CollectionMesuree.cle`, `scripts/docs/lib/slots-registre.mts`) : `fichier` pour une racine, `fichier#…` pour une collection nichée, où un élément d’une collection à clé s’écrit `[clé]` et un rang de liste non marquée `[]` (`criticals.json#[criticals-ldb-tete].entries`, `skills.json#[art].specs`).
+- **clé de collection** — le nom d’une collection à clé : `fichier` pour une racine, `fichier#<suite nichée>` pour une collection nichée (`cleNichee`, `src/data/schemas/grammaire/cle-d-espace.ts` ; `criticals.json#[criticals-ldb-tete].entries`, `skills.json#[art].specs`), relevée par la co-descente (`collectionsDuDocument`, `src/data/schemas/grammaire/collection-cle.ts`).
+- **co-descente** — la descente ENSEMBLE d’une donnée et de son schéma (`coDescendre`, `src/data/schemas/grammaire/descente.ts`) : chaque point de la donnée reçoit ses nœuds de schéma `ouverts` — enveloppes, côtés d’intersection, branches d’union (d’une union discriminée, celles qu’admet le discriminant de la donnée, toutes sans valeur lisible) — et un pas de donnée passe par `pasDeDonnee`. Elle ne valide pas : un arbre invalide garde ses collections. Seule lecture des collections à clé d’un document (`collectionsDuDocument`, `collectionALaCle`) et du lieu d’une faute (`lieuDe`, `src/data/schemas/validate.ts`). Faux ami : l’option `descendre` de `scripts/guards/lib/lister.mjs`.
+- **suite nichée** — le chemin d’une collection à clé depuis la racine de son document, ce qui suit `#` dans sa clé de collection (`[art].specs`, `rangedMod`, `[criticals-ldb-tete].entries`) : premier pas sans point, `.champ` ensuite, `[clé]` pour un élément d’une liste marquée lu par sa marque, `[]` pour un élément d’une liste non marquée ; la suite vide désigne la racine. Seul écrivain : `suiteAvecPas` (`src/data/schemas/grammaire/cle-d-espace.ts`). La décision d’une visite de descente, elle, est une `DecisionDeVisite`.
 - **clé d’espace** — le nom d’un espace de noms (`src/data/schemas/grammaire/cle-d-espace.ts`) : la clé de collection d’une collection à clé dont la marque porte `espace` (`skills.json`, `skills.json#[art].specs`), suffixée d’un FILTRE — `?champ=valeur` pour le paramètre `discriminant` (`materials.json?domain=prop`), `?champ` pour un des `marqueurs` (`props.json?volume`). Un pas `[clé]`, une valeur ou un marqueur ne porte jamais `[`, `]`, `#`, `?` ni `=` (`src/data/schemas/espaces-contrat.test.ts`).
-- **`IDS_PAR_ESPACE`** — l’INDEX DES IDS généré (`src/data/schemas/_ids.generated.ts`, `scripts/gen-espaces.mts`, phase 2 de `npm run gen`) : clé d’espace → ids, mesuré au parse en mode `espaces` sur une table INERTE — un espace neuf et son premier désignateur entrent dans le même commit. Une entrée à `specsSource` y a pour espace de ses `specs` l’univers de sa source (`grammaire/sourcesDeSpecs.ts`).
+- **`IDS_PAR_ESPACE`** — l’INDEX DES IDS généré (`src/data/schemas/_ids.generated.ts`, `scripts/gen-espaces.mts`, phase 2 de `npm run gen`) : clé d’espace → ids, relevé par la co-descente du JSON disque (`collectionsDuDocument`), sans parse — un espace neuf et son premier désignateur entrent dans le même commit. Une entrée à `specsSource` y a pour espace de ses `specs` l’univers de sa source (`grammaire/sourcesDeSpecs.ts`).
 - **`espaceDe`** — la clé d’espace qui fait autorité sur les ids d’un type d’entité (`TYPES[type].espace`, `src/data/schemas/grammaire/ref.ts`).
 
 Collections à clé relevées dans les documents des deux racines : **664**, dont **309** espaces de noms.
@@ -605,7 +607,7 @@ nombre d’entrées qui la portent.
 | `src/data/oups.json` | array | liste | table | 8 | `id`:string(8) `kind`:string(8) `label`:string(8) `max`:number(7) `min`:number(7) `source`:object(8) `type`:string(8) |
 | `src/data/peripeties.json` | array | liste | entité | 10 | `desc`:string(10) `id`:string(10) `kind`:string(10) `label`:string(10) `roll`:number(10) `source`:object(10) `type`:string(10) |
 | `src/data/pregens.json` | array | liste | entité | 8 | `ambitionLong`:string(8) `ambitionShort`:string(8) `build`:number(2) `career`:string(8) `careerTalent`:object(2) `id`:string(8) `label`:string(8) `motivation`:string(8) `pettySpells`:array(1) `seed`:number(8) `sex`:string(2) `species`:string(8) `type`:string(8) |
-| `src/data/primitives.manifest.json` | array | liste | entité | 98 | `concept`:string(98) `css`:string(47) `fichier`:string(98) `id`:string(98) `label`:string(98) `nature`:string(5) `perimetre`:string(98) `poseurs`:array(11) `type`:string(98) `verrou`:string(98) |
+| `src/data/primitives.manifest.json` | array | liste | entité | 99 | `concept`:string(99) `css`:string(47) `fichier`:string(99) `id`:string(99) `label`:string(99) `nature`:string(5) `perimetre`:string(99) `poseurs`:array(11) `type`:string(99) `verrou`:string(99) |
 | `src/data/problemes-vehicule.json` | object | pipe à la racine | config | 1 | `die`:string(1) `entries`:array(1) `id`:string(1) `label`:string(1) `source`:object(1) `type`:string(1) |
 | `src/data/progression-schemas.derived.json` | object | pipe à la racine | config | 1 | `id`:string(1) `label`:string(1) `livres`:array(1) `schemas`:array(1) `type`:string(1) |
 | `src/data/props.json` | array | liste | entité | 123 | `cover`:string(32) `foot`:object(21) `id`:string(123) `label`:string(123) `light`:object(10) `maison`:string(41) `opaque`:boolean(5) `seatSlots`:array(2) `solid`:boolean(91) `type`:string(123) `volume`:object(39) |
@@ -685,7 +687,7 @@ Signatures distinctes d’entrée de document : **641**. Les 40 plus fréquentes
 | `availability,categorie,damage,desc,enc,id,label,loc,pa,price,qualities,reach,source,subType,type` | 66 |
 | `id,label,type` | 60 |
 | `desc,id,label,parent,prefix,source,suffix,type` | 55 |
-| `concept,fichier,id,label,perimetre,type,verrou` | 51 |
+| `concept,fichier,id,label,perimetre,type,verrou` | 52 |
 | `appearance,char,desc,folder,grantGroups,id,label,optionals,skills,source,spells,talents,title,traits,trappings,type` | 44 |
 | `appearance,char,desc,folder,harvest,id,label,optionals,skills,source,spells,talents,title,traits,trappings,type` | 42 |
 | `alsoIn,cn,curated,desc,domainId,duration,ecole,effects,family,id,label,range,source,subType,target,type` | 42 |
@@ -752,7 +754,7 @@ dans le MÊME commit :
 | source | clé absente | 42 |
 
 Documents dont AUCUNE ENTRÉE DE RACINE ne porte `source` : **42** (lot `L1d #1469`) —
-`ambiance.json`(1) `arcane-phenomena.json`(1) `books.json`(30) `breath-types.json`(6) `calendarPhases.json`(7) `crew-test-types.json`(1) `damage-types.json`(4) `details.json`(1) `disponibilite.json`(1) `donnees.manifest.json`(1) `groups.json`(38) `land-cargo.json`(1) `lieux-services.json`(7) `lightLevels.json`(5) `lightTones.json`(4) `localisation.json`(1) `mass-battle.json`(1) `materials.json`(15) `merchantFamilies.json`(7) `merchants.json`(6) `names.json`(7) `naval-progression.json`(1) `pregens.json`(8) `primitives.manifest.json`(98) `progression-schemas.derived.json`(1) `qualitySubtypes.json`(3) `qualityTypes.json`(2) `raceAppearance.json`(21) `raw.manifest.json`(12) `renduMonte.json`(1) `river-perils.json`(1) `sea-cargo.json`(1) `sea-events.json`(1) `sea-navigation.json`(1) `sea-perils.json`(1) `sea-weather.json`(1) `ship-construction.json`(1) `sizes.json`(1) `speciesRace.json`(1) `structureAppearance.json`(18) `systemes.manifest.json`(16) `weather.json`(1)
+`ambiance.json`(1) `arcane-phenomena.json`(1) `books.json`(30) `breath-types.json`(6) `calendarPhases.json`(7) `crew-test-types.json`(1) `damage-types.json`(4) `details.json`(1) `disponibilite.json`(1) `donnees.manifest.json`(1) `groups.json`(38) `land-cargo.json`(1) `lieux-services.json`(7) `lightLevels.json`(5) `lightTones.json`(4) `localisation.json`(1) `mass-battle.json`(1) `materials.json`(15) `merchantFamilies.json`(7) `merchants.json`(6) `names.json`(7) `naval-progression.json`(1) `pregens.json`(8) `primitives.manifest.json`(99) `progression-schemas.derived.json`(1) `qualitySubtypes.json`(3) `qualityTypes.json`(2) `raceAppearance.json`(21) `raw.manifest.json`(12) `renduMonte.json`(1) `river-perils.json`(1) `sea-cargo.json`(1) `sea-events.json`(1) `sea-navigation.json`(1) `sea-perils.json`(1) `sea-weather.json`(1) `ship-construction.json`(1) `sizes.json`(1) `speciesRace.json`(1) `structureAppearance.json`(18) `systemes.manifest.json`(16) `weather.json`(1)
 
 Le DoD ajouté de #1465 annonçait « 13 datasets sans `source` » : la mesure en trouve
 **42** — le chiffre de 13 n’a pas de porteur dans l’arbre, il ne se recopie pas.
@@ -1165,10 +1167,10 @@ Statuts : **cible** = forme visée, rien à migrer (liste FIGÉE au stock `STRUC
 **historique** = graphie connue à éteindre par un lot L1-L5 · **declaree** = forme volontairement
 conservée · **divergente** = graphie inconnue du lexique.
 
-Lignes concept × dataset × champ × forme : **872** (cible 418 · declaree 6 · historique 131 · divergente 317). Objets JSON parcourus : **48960**, dont **31599** portent une forme
+Lignes concept × dataset × champ × forme : **872** (cible 418 · declaree 6 · historique 131 · divergente 317). Objets JSON parcourus : **48961**, dont **31599** portent une forme
 mesurée. Champs porteurs de référence MESURÉS : **84**.
 
-Entrées de racine sans concept de valeur : **4090** sur **4177** —
+Entrées de racine sans concept de valeur : **4091** sur **4178** —
 un document n’est ni orphelin ni hors strate : ce compte est le seul porteur de ce qu’aucun concept ne revendique.
 Dont, NOMMÉES, celles qu’un concept de valeur revendiquerait sans la clause `horsDesignation` du lexique : `activities.json` 52.
 
@@ -2533,7 +2535,7 @@ un nom de concept est réservé à son type), pas en curant un contenu ni en pos
 | `tavernGames.json` | `test` | `skill` | clé réservée | 1 |
 | `trappings.json` | `test` | `label,noSupport,skill` | clé réservée | 1 |
 
-Au-delà des orphelines, **13483** objets sur **48960** ne sont portés par AUCUNE
+Au-delà des orphelines, **13483** objets sur **48961** ne sont portés par AUCUNE
 strate : ils n’annoncent aucune référence, ne portent aucune valeur du lexique et ne sont pas des
 documents. Les GRAPHIES de référence les ont quittés (une enveloppe `{ref:{…}}` ou une dotation
 `{text}` sous un champ porteur mesuré est une FORME, §3.1). Restent trois familles : les CHARGES UTILES pures
@@ -4782,4 +4784,4 @@ Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`).
 - Une occurrence dont AUCUNE case ne porte de chaîne n’est jamais ATTEINTE, quel que soit le schéma : aucune n’est un slot, et son couple reste au stock `SLOTS_SANS_DECLARATION`. Mesuré le 2026-09-23 : 14 `{choice:[…]}` de `careerLevels.json | trappings` (les feuilles comptent sous `careerLevels.json | choice`), 19 `{random:N}` de `species.json | talents`, 2 `{random:N}` de `species.json | of`, et 1 occurrence de `creatures.json | spec` dont la seule case est une clé de `CLES_DE_SPECIALISATION`. Stock nominatif `SLOTS_INATTEIGNABLES`, qui ne fait que décroître.
 - Une référence portée par une CLÉ de record (`z.record(idDe(…), …)`) est un slot `{}` du §6.1, jamais une case du scan, qui n’observe que des valeurs : mesuré le 2026-09-23, 6 slots `ship-criticals.json › tablesDeChute[].bandes[].hauteurs{}` (`shipStation`), sans couple touché.
 
-<!-- sources-empreinte: 795cf1f5b3e1d9e1fc932151eec2b7eec42de883 (389 fichiers, 10 dossiers) corps: 250b474721ced2f81324b14fbc8f60484a687e20 -->
+<!-- sources-empreinte: 512b6747a6b1a402444854be093d537df1c061c9 (389 fichiers, 10 dossiers) corps: e87f5602d4694be163771d0a2cefbe98c80830ac -->

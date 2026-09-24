@@ -1,8 +1,8 @@
 /**
  * Contrats de la COLLECTION À CLÉ (#1897, #1463) — la marque que pose `marquerCollection`, les
- * collections perdues (`collectionsPerdues`), la rencontre du parse de mesure et de la descente unique
+ * collections perdues (`collectionsPerdues`), la rencontre de la co-descente et de la descente unique
  * (`descendre`), la complétude du schéma de projet, l'unicité prouvée à la porte, et la CLÉ DE
- * COLLECTION mesurée au parse (`collectionsDuParse`).
+ * COLLECTION relevée par la co-descente (`collectionsDesDocuments`).
  */
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
@@ -11,16 +11,15 @@ import { SCHEMA_DEFS } from '../_registry.generated';
 import { SCHEMA_DEFS_SCENES } from '../_registry-scenes.generated';
 import { DATASET_FICHIER_DERIVE } from '../exposition-derivee';
 import { DATASET_KEYS, datasetArray } from '../../overrides';
-import { collectionsDuParse } from '../../../../scripts/docs/lib/slots-registre.mjs';
 import { scanDuCorpus } from '../../../../scripts/docs/lib/structures-scan.mjs';
 import { projetSchema } from '../defs-scenes/projet';
 import { sceneSchema } from '../defs-scenes/scene';
 import { validateDocument, cheminLisible } from '../validate';
 import { parseProject, ProjetRefuse } from '../../../state/worldMap';
 import areneProjet from '../../../scenes/arene/arene-projet.json';
-import { collectionDe, collectionsPerdues, collectionsRetrouvees, listeCle, marquerCollection, marqueDeRecord, type MarqueDeCollection } from './collection-cle';
-import { defDe, descendre, enfantsDe } from './descente';
-import { idDe, mesureDuParse } from './ref';
+import { collectionDe, collectionsDesDocuments, collectionsPerdues, collectionsRetrouvees, listeCle, marquerCollection, marqueDeRecord, type MarqueDeCollection } from './collection-cle';
+import { descendre, enfantsDe, ouverts } from './descente';
+import { idDe } from './ref';
 
 const nomDeMarque = (m: MarqueDeCollection | undefined): string | undefined => (m?.forme === 'liste' ? m.nom : m?.sous);
 const nomDe = (n: unknown): string | undefined => nomDeMarque(collectionDe(n));
@@ -69,22 +68,16 @@ const LISTES_DE_REFERENCES: Readonly<Record<string, string>> = {
   '.narratif.presetsPnj[].profil.trappings[].choice[]': 'références de Possessions (`trappings.json`)',
 };
 
-/** Clés d'objet d'un élément de liste, à travers enveloppes ET branches d'union. */
-function clesDeLElement(noeud: unknown, vus = new Set<unknown>()): string[] {
-  const def = defDe(noeud);
-  if (!def || vus.has(noeud)) return [];
-  vus.add(noeud);
-  if (def.shape) return Object.keys(def.shape);
-  if (def.options) return [...new Set(def.options.flatMap((o) => clesDeLElement(o, vus)))];
-  const enveloppe = enfantsDe(noeud).find((e) => e.segment === '');
-  return enveloppe ? clesDeLElement(enveloppe.noeud, vus) : [];
+/** Clés d'objet d'un élément de liste, à travers enveloppes ET branches d'union (`ouverts`). */
+function clesDeLElement(noeud: unknown): string[] {
+  return [...new Set(ouverts([noeud]).flatMap((n) => enfantsDe(n).flatMap((e) => (e.cle === undefined ? [] : [e.cle]))))];
 }
 
 /** Listes d'objets du schéma dont l'élément déclare `id`, avec leur chemin et leur marque de clé. */
 function listesAId(schema: unknown): { chemin: string; cle?: string }[] {
   const out: { chemin: string; cle?: string }[] = [];
   descendre([schema], ({ noeud, def, path }) => {
-    if (def.type === 'array' && clesDeLElement(def.element).includes('id')) out.push({ chemin: `${path.replace(/\|\d+/g, '')}[]`, cle: nomDe(noeud) });
+    if (def.type === 'array' && clesDeLElement(enfantsDe(noeud).find((e) => e.segment === '[]')?.noeud).includes('id')) out.push({ chemin: `${path.replace(/\|\d+/g, '')}[]`, cle: nomDe(noeud) });
   });
   return out;
 }
@@ -166,38 +159,26 @@ describe('`espace` — jamais sur une liste de RÉFÉRENCES', () => {
   });
 });
 
-describe('mesure au parse — un mode ne relève que ses repères', () => {
-  const liste = listeCle(z.strictObject({ id: z.string(), skill: idDe('skill') }), 'id');
-  const donnee = [{ id: 'a', skill: 'art' }];
-
-  it('`slots` : les feuilles `idDe`, aucune collection ; `espaces` : les collections, aucune feuille', () => {
-    const slots = mesureDuParse(liste, donnee, 'slots');
-    const espaces = mesureDuParse(liste, donnee, 'espaces');
-    expect([slots.reperes.map((r) => r.path), slots.collections]).toEqual([[[0, 'skill']], []]);
-    expect([espaces.reperes, espaces.collections.map((c) => c.path)]).toEqual([[], [[]]]);
-  });
-});
-
 const ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
 const { defs: DEFS, scan } = scanDuCorpus(ROOT);
-const COLLECTIONS = collectionsDuParse(scan, DEFS);
+const COLLECTIONS = collectionsDesDocuments(DEFS, scan.brutParNom);
 const ESPACES = COLLECTIONS.filter((c) => c.marque.espace);
 const trie = (ids: readonly string[]) => [...ids].sort();
 
-describe('parse ⇄ descente — une collection relevée au parse est une collection que la descente retrouve', () => {
-  it('toute collection mesurée au parse (mode `espaces`) est retrouvée par `collectionsRetrouvees` sur le def de son document', () => {
-    expect(COLLECTIONS.length, 'aucune collection mesurée : la preuve serait vacante').toBeGreaterThan(0);
+describe('co-descente ⇄ descente — une collection relevée dans la donnée est une collection que la descente du schéma retrouve', () => {
+  it('toute collection relevée par la co-descente est retrouvée par `collectionsRetrouvees` sur le def de son document', () => {
+    expect(COLLECTIONS.length, 'aucune collection relevée : la preuve serait vacante').toBeGreaterThan(0);
     const retrouvees = new Map<string, Set<MarqueDeCollection | undefined>>();
     for (const { file, schema } of DEFS) {
       const marques = retrouvees.get(file) ?? retrouvees.set(file, new Set()).get(file)!;
       for (const n of collectionsRetrouvees(schema)) marques.add(collectionDe(n));
     }
     const invisibles = COLLECTIONS.filter((c) => !retrouvees.get(c.dataset)?.has(c.marque)).map((c) => c.cle);
-    expect(invisibles, 'collection(s) validée(s) au parse que la descente ne voit pas').toEqual([]);
+    expect(invisibles, 'collection(s) relevée(s) dans la donnée que la descente ne voit pas').toEqual([]);
   });
 });
 
-describe('clé de collection — la mesure re-dérive les racines, les catégories nichées et les spécialisations', () => {
+describe('clé de collection — la co-descente re-dérive les racines, les catégories nichées et les spécialisations', () => {
   it('les ESPACES de racine sont exactement les documents `entite`/`record` de `src/data`', () => {
     const racines = ESPACES.filter((c) => !c.cle.includes('#'));
     expect(trie(racines.map((c) => c.cle))).toEqual(trie(SCHEMA_DEFS.filter((d) => d.famille !== 'config').map((d) => d.file)));
@@ -233,7 +214,7 @@ describe('clé de collection — la mesure re-dérive les racines, les catégori
     });
     expect(nichees).toHaveLength(54);
     const fichiersNiches = new Set(nichees.map(({ attendue }) => attendue.split('#')[0]));
-    const mesurees = collectionsDuParse({ brutParNom: new Map([...racines].filter(([f]) => fichiersNiches.has(f))) }, DEFS);
+    const mesurees = collectionsDesDocuments(DEFS, new Map([...racines].filter(([f]) => fichiersNiches.has(f))));
     const parTableau = nichees.map(({ k, tableau }) => [k, mesurees.filter((c) => c.valeur === tableau).map((c) => c.cle)]);
     expect(parTableau).toEqual(nichees.map(({ k, attendue }) => [k, [attendue]]));
     expect(parTableau).toContainEqual(['criticalsTete', ['criticals.json#[criticals-ldb-tete].entries']]);
@@ -250,18 +231,18 @@ describe('clé de collection — la mesure re-dérive les racines, les catégori
     expect(specs.map((c) => [c.cle, trie(c.ids)])).toEqual(attendues);
   });
 
-  it('un espace de noms sous une liste NON marquée n’a pas de clé stable : la mesure lève en nommant la liste', () => {
+  it('un espace de noms sous une liste NON marquée n’a pas de clé stable : la co-descente lève en nommant la liste', () => {
     const schema = z.strictObject({ lots: z.array(z.strictObject({ items: listeCle(z.strictObject({ id: z.string() }), 'id', { espace: {} }) })) });
     const def = { file: 'fixture.json', root: 'data', schema, famille: 'config' } as unknown as (typeof DEFS)[number];
-    expect(() => collectionsDuParse({ brutParNom: new Map([['fixture.json', { lots: [{ items: [{ id: 'a' }] }] }]]) }, [def])).toThrow(
-      /l'espace de noms « lots\.0\.items » de fixture\.json est sous la liste NON marquée « lots »/,
+    expect(() => collectionsDesDocuments([def], new Map([['fixture.json', { lots: [{ items: [{ id: 'a' }] }] }]]))).toThrow(
+      /^fixture\.json — clé d'espace : l'espace de noms « lots\.0\.items » est sous la liste NON marquée « lots »/,
     );
   });
 
   it('une collection d’unicité seule sous une liste non marquée s’écrit `[]`, sans lever', () => {
     const schema = z.strictObject({ lots: z.array(z.strictObject({ items: listeCle(z.strictObject({ id: z.string() }), 'id') })) });
     const def = { file: 'fixture.json', root: 'data', schema, famille: 'config' } as unknown as (typeof DEFS)[number];
-    const [c] = collectionsDuParse({ brutParNom: new Map([['fixture.json', { lots: [{ items: [{ id: 'a' }] }] }]]) }, [def]);
+    const [c] = collectionsDesDocuments([def], new Map([['fixture.json', { lots: [{ items: [{ id: 'a' }] }] }]]));
     expect([c.cle, c.ids]).toEqual(['fixture.json#lots[].items', ['a']]);
   });
 });

@@ -29,7 +29,8 @@ import {
   TERMES_COLLECTION_A_CLE,
   clesDuRole,
 } from './lib/structures-lexique.mjs';
-import { champsJoints, champsSansSlot, collectionsDuParse, registreDesSlots, slotsDuParse } from './lib/slots-registre.mjs';
+import { champsJoints, champsSansSlot, registreDesSlots, slotsDuParse } from './lib/slots-registre.mjs';
+import { collectionsDesDocuments } from '../../src/data/schemas/grammaire/collection-cle';
 import { effectSchema } from '../../src/data/schemas/defs-scenes/effets';
 import { defDe, descendre, enfantsDe } from '../../src/data/schemas/grammaire/descente';
 
@@ -65,8 +66,7 @@ function discriminantsDeffet(): string[] {
   return options.flatMap(({ noeud }) => {
     const litteral = enfantsDe(noeud).find((e) => e.cle === 'type')?.noeud;
     const d = defDe(litteral);
-    const brut = d?.values ?? d?.value;
-    const valeurs = Array.isArray(brut) ? brut : brut instanceof Set ? [...brut] : [brut];
+    const valeurs = Array.isArray(d?.values) ? d.values : [];
     return valeurs.filter((v): v is string => typeof v === 'string');
   });
 }
@@ -167,9 +167,9 @@ out += '#### Résolutions AMBIGUËS (la collision qui MORD)\n\n';
 }
 
 // ---------------------------------------------------------------------------
-out += '### 1ter. Collections à clé (déclarées au schéma, mesurées au parse)\n\n';
+out += '### 1ter. Collections à clé (déclarées au schéma, relevées par la co-descente)\n\n';
 {
-  const collections = collectionsDuParse(scan, DEFS);
+  const collections = collectionsDesDocuments(DEFS, scan.brutParNom);
   out += 'Termes : source UNIQUE `TERMES_COLLECTION_A_CLE` (`scripts/docs/lib/structures-lexique.mts`).\n\n';
   out += TERMES_COLLECTION_A_CLE.map(([terme, definition]) => `- **${terme}** — ${definition}`).join('\n');
   out += `\n\nCollections à clé relevées dans les documents des deux racines : **${collections.length}**, dont **${collections.filter((c) => c.marque.espace).length}** espaces de noms.\n\n`;

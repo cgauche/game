@@ -164,7 +164,15 @@ export const TERMES_COLLECTION_A_CLE: readonly (readonly [terme: string, definit
   ],
   [
     'clé de collection',
-    'le nom d’une collection à clé, mesuré au parse (`collectionsDuParse`, `CollectionMesuree.cle`, `scripts/docs/lib/slots-registre.mts`) : `fichier` pour une racine, `fichier#…` pour une collection nichée, où un élément d’une collection à clé s’écrit `[clé]` et un rang de liste non marquée `[]` (`criticals.json#[criticals-ldb-tete].entries`, `skills.json#[art].specs`).',
+    'le nom d’une collection à clé : `fichier` pour une racine, `fichier#<suite nichée>` pour une collection nichée (`cleNichee`, `src/data/schemas/grammaire/cle-d-espace.ts` ; `criticals.json#[criticals-ldb-tete].entries`, `skills.json#[art].specs`), relevée par la co-descente (`collectionsDuDocument`, `src/data/schemas/grammaire/collection-cle.ts`).',
+  ],
+  [
+    'co-descente',
+    'la descente ENSEMBLE d’une donnée et de son schéma (`coDescendre`, `src/data/schemas/grammaire/descente.ts`) : chaque point de la donnée reçoit ses nœuds de schéma `ouverts` — enveloppes, côtés d’intersection, branches d’union (d’une union discriminée, celles qu’admet le discriminant de la donnée, toutes sans valeur lisible) — et un pas de donnée passe par `pasDeDonnee`. Elle ne valide pas : un arbre invalide garde ses collections. Seule lecture des collections à clé d’un document (`collectionsDuDocument`, `collectionALaCle`) et du lieu d’une faute (`lieuDe`, `src/data/schemas/validate.ts`). Faux ami : l’option `descendre` de `scripts/guards/lib/lister.mjs`.',
+  ],
+  [
+    'suite nichée',
+    'le chemin d’une collection à clé depuis la racine de son document, ce qui suit `#` dans sa clé de collection (`[art].specs`, `rangedMod`, `[criticals-ldb-tete].entries`) : premier pas sans point, `.champ` ensuite, `[clé]` pour un élément d’une liste marquée lu par sa marque, `[]` pour un élément d’une liste non marquée ; la suite vide désigne la racine. Seul écrivain : `suiteAvecPas` (`src/data/schemas/grammaire/cle-d-espace.ts`). La décision d’une visite de descente, elle, est une `DecisionDeVisite`.',
   ],
   [
     'clé d’espace',
@@ -172,7 +180,7 @@ export const TERMES_COLLECTION_A_CLE: readonly (readonly [terme: string, definit
   ],
   [
     '`IDS_PAR_ESPACE`',
-    'l’INDEX DES IDS généré (`src/data/schemas/_ids.generated.ts`, `scripts/gen-espaces.mts`, phase 2 de `npm run gen`) : clé d’espace → ids, mesuré au parse en mode `espaces` sur une table INERTE — un espace neuf et son premier désignateur entrent dans le même commit. Une entrée à `specsSource` y a pour espace de ses `specs` l’univers de sa source (`grammaire/sourcesDeSpecs.ts`).',
+    'l’INDEX DES IDS généré (`src/data/schemas/_ids.generated.ts`, `scripts/gen-espaces.mts`, phase 2 de `npm run gen`) : clé d’espace → ids, relevé par la co-descente du JSON disque (`collectionsDuDocument`), sans parse — un espace neuf et son premier désignateur entrent dans le même commit. Une entrée à `specsSource` y a pour espace de ses `specs` l’univers de sa source (`grammaire/sourcesDeSpecs.ts`).',
   ],
   [
     '`espaceDe`',

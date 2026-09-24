@@ -14,6 +14,7 @@
  */
 import { z } from 'zod';
 import { sourceRefSchema, secondarySourceRefSchema, variantOf } from './valeurs';
+import { defDe } from './descente';
 import { noyauEnum, type MetaChamp, type MetaDesChamps } from './meta';
 import { exigeSource } from './sans-livre';
 import { champsProse, refineProse } from './prose';
@@ -316,14 +317,13 @@ function enveloppe(type: string, idDocument?: z.ZodType<string>, exiges: readonl
 }
 
 /**
- * Options d'un champ ÉNUMÉRÉ, à travers les enveloppes qui ne changent pas son univers de valeurs
- * (`optional`, `nullable`, `default`, `array`) — `undefined` si le champ n'est pas énuméré. COMPOSE le
- * déroulé unique du dépôt (`noyauEnum`, `grammaire/meta.ts`), celui-là même dont la lecture des
- * libellés d'un enum nommé (`valeursDe`, #1694) tire son noyau.
+ * Options d'un champ ÉNUMÉRÉ — les valeurs de son noyau d'enum, `undefined` si le champ n'est pas
+ * énuméré. COMPOSE le déroulé unique du dépôt (`noyauEnum`, `grammaire/meta.ts`), celui-là même dont la
+ * lecture des libellés d'un enum nommé (`valeursDe`, #1694) tire son noyau.
  */
 export function optionsEnum(noeud: z.ZodType): readonly string[] | undefined {
   const noyau = noyauEnum(noeud);
-  return noyau ? Object.values(noyau._zod!.def!.entries as Record<string, string>) : undefined;
+  return noyau ? Object.values(defDe(noyau)!.entries as Record<string, string>) : undefined;
 }
 
 function verifieExposition(type: string, exposition: Exposition): void {

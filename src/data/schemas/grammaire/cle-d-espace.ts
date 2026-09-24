@@ -26,16 +26,55 @@ export interface CleLue {
 /** Caractères qu'un pas `[clé]`, une valeur de discriminant ou un marqueur ne portent jamais. */
 export const HORS_DE_LA_GRAPHIE = /[?=#]/;
 
+/** Un PAS de suite nichée : un `champ`, l'élément `[clé]` d'une liste marquée, ou le `rang` (`[]`)
+ *  d'un élément d'une liste non marquée. */
+export type PasDeSuite = { readonly champ: string } | { readonly cle: string } | { readonly rang: true };
+
+/** SEUL écrivain d'une suite nichée : `suite` prolongée de `pas` — premier pas sans point, `.champ`
+ *  ensuite, `[clé]` et `[]` collés (`[art].specs`, `rangedMod`, `lots[].items`). */
+export function suiteAvecPas(suite: string, pas: PasDeSuite): string {
+  if ('champ' in pas) return suite === '' ? pas.champ : `${suite}.${pas.champ}`;
+  return 'cle' in pas ? `${suite}[${pas.cle}]` : `${suite}[]`;
+}
+
+/** Lecture d'une suite nichée en pas — l'inverse de `suiteAvecPas`, `[]` y redevient `rang`. */
+export function pasDeLaSuite(suite: string): PasDeSuite[] {
+  const pas: PasDeSuite[] = [];
+  for (let i = 0; i < suite.length; ) {
+    if (suite[i] === '[') {
+      const fin = suite.indexOf(']', i);
+      if (fin < 0) throw new Error(`suite nichée « ${suite} » : « [ » sans « ] ».`);
+      const cle = suite.slice(i + 1, fin);
+      pas.push(cle === '' ? { rang: true } : { cle });
+      i = fin + 1;
+      continue;
+    }
+    const debut = suite[i] === '.' ? i + 1 : i;
+    const fin = [suite.indexOf('.', debut), suite.indexOf('[', debut)].filter((j) => j >= 0).reduce((a, b) => Math.min(a, b), suite.length);
+    pas.push({ champ: suite.slice(debut, fin) });
+    i = fin;
+  }
+  return pas;
+}
+
+/** `prefixe` est-elle la suite d'un point sur le chemin de `suite` (`''`, `suite` elle-même, ou suivie
+ *  d'un pas `.champ` ou `[…]`) ? */
+export function estPrefixeDeSuite(prefixe: string, suite: string): boolean {
+  return prefixe === '' || prefixe === suite || (suite.startsWith(prefixe) && (suite[prefixe.length] === '.' || suite[prefixe.length] === '['));
+}
+
 /** Clé d'une collection NICHÉE sous `base` (un fichier, ou déjà une clé nichée) : `suite` est le pas
- *  qui y mène, `[clé]` d'un élément ou `champ` (`skills.json#[art].specs`, `sizes.json#rangedMod`). */
+ *  qui y mène, `[clé]` d'un élément ou `champ` (`skills.json#[art].specs`, `sizes.json#rangedMod`) ;
+ *  une suite vide désigne `base` elle-même. */
 export function cleNichee(base: string, suite: string): string {
+  if (suite === '') return base;
   if (!base.includes('#')) return `${base}#${suite}`;
   return suite.startsWith('[') ? `${base}${suite}` : `${base}.${suite}`;
 }
 
 /** Clé de l'espace des `specs` de l'élément `id` de l'espace `espace`. */
 export function cleDesSpecs(espace: string, id: string): string {
-  return cleNichee(espace, `[${id}].specs`);
+  return cleNichee(espace, suiteAvecPas(suiteAvecPas('', { cle: id }), { champ: 'specs' }));
 }
 
 /** Le fichier d'une clé d'espace, au type. */

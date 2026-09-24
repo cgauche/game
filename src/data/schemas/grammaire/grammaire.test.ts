@@ -28,6 +28,8 @@ import { SANS_LIVRE } from './sans-livre';
 import { SCHEMA_DEFS } from '../_registry.generated';
 import { IDS_PAR_ESPACE } from '../_ids.generated';
 import { poserSourceDIdsVivants } from './idsVivants';
+import { defDe, enfantsDe } from './descente';
+import { noeudObjet } from '../validate';
 
 type EntreeASpecs = { id: string; specs?: { id: string }[]; specsSource?: string };
 const UNE_COMPETENCE = skillsJson[0] as { id: string };
@@ -571,9 +573,9 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
   // Incident de Tir `kind: 'misfire'`) tiennent en UNE entrée dont un refine ⟺ porte la disjonction,
   // si bien qu'il n'a plus besoin d'une classe « union » hors des vagues d'adoption.
   const noeudInterne = (n: unknown): unknown => {
-    const d = (n as { _zod?: { def?: Record<string, unknown> }; def?: Record<string, unknown> })?._zod?.def;
-    if (!d) return undefined;
-    return d.type === 'array' ? d.element : d.innerType;
+    const type = defDe(n)?.type;
+    if (type === undefined || type === 'pipe' || type === 'lazy') return undefined;
+    return enfantsDe(n).find((e) => e.segment === (type === 'array' ? '[]' : ''))?.noeud;
   };
   const shapeDe = (schema: unknown): Record<string, z.ZodType> | undefined => {
     let n: unknown = schema;
@@ -697,9 +699,7 @@ describe('exigences d’enveloppe des defs ADOPTÉS — le verrou que le mesureu
    * scellé — il ferait entrer dans la population des defs dont l'enveloppe est écrite à la main, et
    * le verrou d'exigence y serait mesuré sur un contrat que `document()` ne porte pas.
    */
-  const adopte = (schema: unknown): boolean =>
-    ((schema as { _zod?: { def?: { type?: string; element?: { _zod?: { def?: { type?: string } } } } } })?._zod?.def?.element?._zod?.def
-      ?.type ?? '') === 'pipe';
+  const adopte = (schema: unknown): boolean => defDe(enfantsDe(schema).find((e) => e.segment === '[]')?.noeud)?.type === 'pipe';
 
   /** Dataset RÉEL complet (jamais une entrée isolée : `affinerDataset` peut exiger la liste entière —
    *  `names.json` refuse tout tableau qui n'a pas ses 7 races). */
@@ -1418,7 +1418,7 @@ describe('enumNomme — le libellé d’une valeur vit sur le NŒUD', () => {
     expect(valeursDe(z.array(voie))).toEqual({ a: 'Aile', b: 'Boue' });
     expect(valeursDe(voie.default('a'))).toEqual({ a: 'Aile', b: 'Boue' });
     const fiche = document('talent', 'entite', { voie }, { voie: { label: 'Voie' } } as never, EXPOSITION);
-    expect(valeursDe((fiche.entree as unknown as { _zod: { def: { in: { _zod: { def: { shape: Record<string, unknown> } } } } } })._zod.def.in._zod.def.shape.voie)).toEqual({ a: 'Aile', b: 'Boue' });
+    expect(valeursDe(enfantsDe(noeudObjet(fiche.entree)).find((e) => e.cle === 'voie')?.noeud)).toEqual({ a: 'Aile', b: 'Boue' });
   });
 
   it('un nœud NON nommé n’a pas de libellés, et sa valeur se rend BRUTE', () => {

@@ -2,14 +2,14 @@
  * PHASE 2 de `npm run gen` (#1463) — l'INDEX DES IDS (`src/data/schemas/_ids.generated.ts`,
  * `IDS_PAR_ESPACE`), keyé par CLÉ D'ESPACE (`src/data/schemas/grammaire/cle-d-espace.ts`).
  *
- * Chaque document de `SCHEMA_DEFS` est parsé par son schéma RÉEL au parse de mesure en mode `espaces`
- * (`collectionsDuParse`, `scripts/docs/lib/slots-registre.mts`) : chaque collection marquée `espace`
- * (`grammaire/collection-cle.ts`) y rend sa clé et ses ids, et ses paramètres `discriminant`/`marqueurs`
- * ses espaces filtrés. Une entrée à `specsSource` a pour espace de ses `specs` l'univers de sa source
- * (`grammaire/sourcesDeSpecs.ts`). Dans cette fenêtre la table est INERTE (`grammaire/ref.ts`) : un
- * espace neuf et son premier désignateur entrent dans le même commit — et une table VIDE rend le même
- * index : un index en conflit ou sans `IDS_PAR_ESPACE` est remplacé par une table vide AVANT que les
- * modules qui l'importent (`_registry.generated` → defs → `grammaire/ref.ts`) ne se chargent.
+ * Le JSON disque de chaque document de `SCHEMA_DEFS` est CO-DESCENDU avec son schéma, sans parse
+ * (`collectionsDesDocuments`, `grammaire/collection-cle.ts`) : chaque collection marquée `espace` y rend
+ * sa clé et ses ids, et ses paramètres `discriminant`/`marqueurs` ses espaces filtrés. Une entrée à
+ * `specsSource` a pour espace de ses `specs` l'univers de sa source (`grammaire/sourcesDeSpecs.ts`).
+ * Aucune validation n'y lit l'index : un espace neuf et son premier désignateur entrent dans le même
+ * commit — et une table VIDE rend le même index : un index en conflit ou sans `IDS_PAR_ESPACE` est
+ * remplacé par une table vide AVANT que les modules qui l'importent (`_registry.generated` → defs →
+ * `grammaire/ref.ts`) ne se chargent.
  *
  * Jouée par `genAll` (`scripts/gen-registry.mjs`), après la phase 1 : `npm run gen` et `buildStart`
  * (`vite.config.ts`).
@@ -18,7 +18,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { SchemaDef } from '../src/data/schemas/types';
-import type { CollectionMesuree } from './docs/lib/slots-registre.mjs';
+import type { CollectionDeFichier } from '../src/data/schemas/grammaire/collection-cle';
 import { cleDesSpecs, cleFiltree, HORS_DE_LA_GRAPHIE, retenuParFiltre } from '../src/data/schemas/grammaire/cle-d-espace';
 import { SOURCES_DE_SPECS, type SourceDeSpecs } from '../src/data/schemas/grammaire/sourcesDeSpecs';
 import { parUnitesDeCode } from './guards/lib/lister.mjs';
@@ -36,7 +36,7 @@ export function indexChargeable(texte: string): boolean {
 const estObjet = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
 
 /** Les éléments d'une collection-LISTE marquée, avec leur clé. */
-function elementsCles(c: CollectionMesuree): [Record<string, unknown>, string][] {
+function elementsCles(c: CollectionDeFichier): [Record<string, unknown>, string][] {
   if (c.marque.forme !== 'liste' || !Array.isArray(c.valeur))
     throw new Error(`gen-espaces: ${c.cle} : un filtre d'espace (\`discriminant\`, \`marqueurs\`) exige une collection-LISTE.`);
   const de = c.marque.de;
@@ -47,7 +47,7 @@ function elementsCles(c: CollectionMesuree): [Record<string, unknown>, string][]
 }
 
 /** Les espaces d'une collection marquée `espace` : le sien, puis ses espaces filtrés. */
-function espacesDe(c: CollectionMesuree): [string, readonly string[]][] {
+function espacesDe(c: CollectionDeFichier): [string, readonly string[]][] {
   const espace = c.marque.espace!;
   const out: [string, readonly string[]][] = [[c.cle, c.ids]];
   if (espace.discriminant !== undefined) {
@@ -71,7 +71,7 @@ function espacesDe(c: CollectionMesuree): [string, readonly string[]][] {
 }
 
 /** L'espace des `specs` d'une entrée à `specsSource` : l'univers de sa source, par clé. */
-function specsDesSources(c: CollectionMesuree): [string, string][] {
+function specsDesSources(c: CollectionDeFichier): [string, string][] {
   if (c.cle !== c.dataset || c.marque.forme !== 'liste') return [];
   return elementsCles(c).flatMap(([el, cle]): [string, string][] => {
     if (typeof el.specsSource !== 'string') return [];
@@ -86,9 +86,9 @@ function specsDesSources(c: CollectionMesuree): [string, string][] {
  *  `import()` : l'appelant a déjà rendu l'index chargeable. */
 export async function indexDesIds(): Promise<Map<string, readonly string[]>> {
   const { SCHEMA_DEFS } = (await import('../src/data/schemas/_registry.generated')) as { SCHEMA_DEFS: SchemaDef[] };
-  const { collectionsDuParse } = await import('./docs/lib/slots-registre.mjs');
+  const { collectionsDesDocuments } = await import('../src/data/schemas/grammaire/collection-cle');
   const brutParNom = new Map(SCHEMA_DEFS.map((d) => [d.file, JSON.parse(readFileSync(join(d.root, d.file), 'utf8')) as unknown]));
-  const collections = collectionsDuParse({ brutParNom }, SCHEMA_DEFS);
+  const collections = collectionsDesDocuments(SCHEMA_DEFS, brutParNom);
   const table = new Map<string, readonly string[]>();
   const poser = (cle: string, ids: readonly string[]) => {
     if (table.has(cle)) throw new Error(`gen-espaces: clé d'espace « ${cle} » rendue deux fois.`);

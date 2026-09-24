@@ -18,7 +18,7 @@ import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
  * quatre formes — égalité, `switch`, appartenance à une liste fermée, table littérale à clé ouverte —
  * TOUJOURS conditionnées à une liaison GÉNÉRIQUE (entrée reçue en paramètre, itérée, ou prop de
  * composant). Un lookup par id stable (`skills.find((s) => s.id === 'resistance')`) et la
- * lecture d'un champ déclaré (`def.kind === 'flag'`) restent hors de portée : ce sont les formes
+ * lecture d'un champ déclaré (`regle.kind === 'flag'`) restent hors de portée : ce sont les formes
  * saines.
  *
  * CLIQUET : `CEILING`/`KNOWN` figent la MESURE du jour. Ce plafond est fait pour DESCENDRE jusqu'à
@@ -299,8 +299,8 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
     expect(rules(handler)).toEqual(['id-equality']);
 
     const row = [
-      'function HouseRuleRow({ def }: { def: OptionalRule }) {',
-      "  return def.id === 'fortune-mid-session' ? <FortuneButton /> : null;",
+      'function HouseRuleRow({ regle }: { regle: OptionalRule }) {',
+      "  return regle.id === 'fortune-mid-session' ? <FortuneButton /> : null;",
       '}',
     ].join('\n');
     expect(rules(row, 'fixture.tsx')).toEqual(['id-equality']);
@@ -327,16 +327,16 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
 
   it('MORSURE : un ALIAS d’identité est suivi par sa LIAISON, quel que soit son nom', () => {
     const alias = [
-      'function row(def: OptionalRule) {',
-      '  const k = def.id;',
+      'function row(regle: OptionalRule) {',
+      '  const k = regle.id;',
       "  return k === 'combat-cadence';",
       '}',
     ].join('\n');
     expect(rules(alias)).toEqual(['id-equality']);
 
     const aliasSwitch = [
-      'function row(def: OptionalRule) {',
-      '  const k = def.id;',
+      'function row(regle: OptionalRule) {',
+      '  const k = regle.id;',
       '  switch (k) {',
       "    case 'a': return 1;",
       '  }',
@@ -348,7 +348,7 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
   it('CONTRE-ÉPREUVE : les formes SAINES restent vertes', () => {
     const sain = [
       // (1) lire un CHAMP DÉCLARÉ sur l'entrée — la forme que la doctrine demande.
-      "function Row({ def }: { def: OptionalRule }) { return def.kind === 'flag' ? <Check /> : <Select />; }",
+      "function Row({ regle }: { regle: OptionalRule }) { return regle.kind === 'flag' ? <Check /> : <Select />; }",
       // (2) comparer à une VARIABLE : une sélection, pas un branchement en dur.
       'const active = tabs.find((t) => t.id === tabKey);',
       // (3) lookup PAR ID STABLE dans un prédicat de sélection.
@@ -539,7 +539,7 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
     expect(
       worse,
       'Branchement par IDENTITÉ dans du code générique — le comportement particulier se déclare en ' +
-        "CHAMP sur l'entrée du registre (lu comme `def.kind`), jamais en test d'id :\n" + worse.join('\n'),
+        "CHAMP sur l'entrée du registre (lu comme `regle.kind`), jamais en test d'id :\n" + worse.join('\n'),
     ).toEqual([]);
 
     const better = Object.entries(KNOWN).filter(([rel, n]) => (perFile[rel] ?? 0) < n).map(([rel, n]) => `${rel}: ${perFile[rel] ?? 0} < ${n}`);
@@ -564,9 +564,9 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
 
     // Hors périmètre du détecteur brut : ce n'est pas une ÉGALITÉ, ou pas un champ d'identité.
     const horsPerimetre = [
-      "const fam = def.id.startsWith('combat-');",
+      "const fam = regle.id.startsWith('combat-');",
       "const sel = tabs.find((t) => t.id === tabKey);",
-      "const kind = def.kind === 'flag';",
+      "const kind = regle.kind === 'flag';",
       "const vide = id === '';",
     ].join('\n');
     expect(scanRawIdEqualities('fixture.ts', horsPerimetre)).toEqual([]);

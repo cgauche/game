@@ -6,12 +6,13 @@
  * jamais son emplacement) et la MARQUE. `listeCle(element, cle)` construit une liste à clé ; `document()`
  * (`grammaire/document.ts`) marque la charge d'un document après son affinage.
  *
- * La marque se lit à trois endroits : la résolution des fautes (`schemas/validate.ts`, `lieu`) nomme un
- * élément par sa clé plutôt que par son rang ; le parse de mesure en mode `espaces` (`mesureDuParse`,
- * `grammaire/ref.ts`) relève chaque collection marquée à son path de DONNÉE, dont
- * `scripts/docs/lib/slots-registre.mts` (`collectionsDuParse`) écrit la CLÉ DE COLLECTION ; la descente
- * unique (`descendre`, `grammaire/descente.ts`) la retrouve. Un `.min`/`.refine` posé APRÈS clone le
- * nœud : le clone garde le CONTRÔLE de la marque sans la marque, et `collectionsPerdues` le nomme.
+ * La marque se lit au nœud, par la CO-DESCENTE d'une donnée avec son schéma (`coDescendre`,
+ * `grammaire/descente.ts`) : la résolution des fautes (`schemas/validate.ts`, `lieuDe`) nomme un élément
+ * par sa clé plutôt que par son rang ; `collectionsDuDocument` rend chaque collection présente à sa
+ * SUITE NICHÉE (`suiteAvecPas`, `grammaire/cle-d-espace.ts`), lue par la phase 2 de `npm run gen` ;
+ * `collectionALaCle` atteint celle d'une suite. La descente du schéma seul (`descendre`) la retrouve.
+ * Un `.min`/`.refine` posé APRÈS clone le nœud : le clone garde le CONTRÔLE de la marque sans la
+ * marque, et `collectionsPerdues` le nomme.
  *
  * Une collection n'est un ESPACE DE NOMS que si sa marque porte `espace` : une clé d'unicité seule
  * (`members`, `stations`, `layers`, `walls` de `defs-scenes/scene.ts`) n'en ouvre aucun, et une clé
@@ -19,8 +20,9 @@
  */
 import { z } from 'zod';
 import './locale-fr';
-import { defDe, descendre, enfantsDe } from './descente';
-import { estFeuilleDId, marquerCollectionAtteinte } from './ref';
+import { coDescendre, defDe, descendre, enfantsDe, ouverts, pasDeDonnee, type DecisionDeVisite, type PointDeDonnee } from './descente';
+import { cleNichee, estPrefixeDeSuite, pasDeLaSuite, suiteAvecPas } from './cle-d-espace';
+import { estFeuilleDId } from './ref';
 
 /** Clé d'un élément : un CHAMP de l'élément, ou une clé COMPOSÉE nommée (`walls` : `x,y,side,z`). */
 export type CleDElement<T> =
@@ -86,28 +88,11 @@ export function idsDeCollection(marque: MarqueDeCollection, valeur: unknown): st
   return estObjet(carte) ? Object.keys(carte) : [];
 }
 
-/** Les enfants d'un nœud par un segment donné, à travers les enveloppes (`''`) et les unions (`|N`). */
-function parSegment(noeuds: readonly unknown[], admis: (segment: string) => boolean): unknown[] {
-  const out: unknown[] = [];
-  const vus = new Set<unknown>();
-  const file = [...noeuds];
-  while (file.length) {
-    const n = file.shift();
-    if (vus.has(n)) continue;
-    vus.add(n);
-    for (const e of enfantsDe(n)) {
-      if (e.segment === '' || e.segment.startsWith('|')) file.push(e.noeud);
-      else if (admis(e.segment)) out.push(e.noeud);
-    }
-  }
-  return out;
-}
-
 /** Les nœuds de schéma qui portent la CLÉ d'un élément de la collection marquée. */
 function noeudsDeCle(noeud: unknown, marque: MarqueDeCollection): unknown[] {
-  if (marque.forme === 'liste') return parSegment(parSegment([noeud], (s) => s === '[]'), (s) => s === `.${marque.nom}`);
-  const cartes = marque.sous === undefined ? [noeud] : parSegment([noeud], (s) => s === `.${marque.sous}`);
-  return parSegment(cartes, (s) => s === '{clé}');
+  if (marque.forme === 'liste') return ouverts(pasDeDonnee(ouverts(pasDeDonnee(ouverts([noeud]), 0)), marque.nom));
+  const cartes = marque.sous === undefined ? ouverts([noeud]) : ouverts(pasDeDonnee(ouverts([noeud]), marque.sous));
+  return cartes.flatMap((n) => enfantsDe(n).filter((e) => e.segment === '{clé}').map((e) => e.noeud));
 }
 
 /** Une feuille `idDe` est-elle atteinte depuis `noeud`, à travers ses seules enveloppes ? */
@@ -130,7 +115,6 @@ export function marquerCollection<N extends z.ZodType>(noeud: N, marque: MarqueD
     throw new Error(`marquerCollection : \`espace\` refusé — ${cle} est une feuille \`idDe\`, la collection est une liste de RÉFÉRENCES.`);
   }
   const marquee = noeud.superRefine((valeur, ctx) => {
-    marquerCollectionAtteinte(ctx, marque);
     if (marque.forme !== 'liste' || !Array.isArray(valeur)) return;
     const vues = new Set<string>();
     valeur.forEach((el, i) => {
@@ -193,4 +177,151 @@ export function collectionsPerdues(schema: unknown): MarqueDeCollection[] {
     }
   });
   return perdues;
+}
+
+/** Une collection marquée PRÉSENTE dans un document : sa suite nichée (`''` à la racine, graphie de
+ *  `suiteAvecPas`), son chemin de donnée, sa marque, sa valeur, ses ids, et les rangs de ses éléments
+ *  ANONYMES (liste marquée dont la marque ne lit aucune clé : sous-arbre élagué). */
+export interface CollectionDuDocument {
+  readonly suite: string;
+  readonly chemin: readonly (string | number)[];
+  readonly marque: MarqueDeCollection;
+  readonly valeur: unknown;
+  readonly ids: readonly string[];
+  readonly anonymes: readonly number[];
+}
+
+/** Un point de la co-descente vu par les collections : sa suite, sa marque, et le chemin de la
+ *  première liste NON marquée qu'il traverse. */
+type PointDeCollection = { readonly suite: string; readonly marque?: MarqueDeCollection; readonly sousListe?: readonly (string | number)[] };
+
+const cheminLu = (chemin: readonly (string | number)[]): string => chemin.map(String).join('.') || '(racine)';
+
+/**
+ * Co-descente d'un document par les COLLECTIONS : chaque point reçoit sa suite, composée par
+ * `suiteAvecPas`, et sa marque. Faits de SCHÉMA, qui LÈVENT : deux marques différentes sur un même
+ * point ; un espace de noms sous une liste non marquée. Fait de DONNÉE : l'élément d'une liste marquée
+ * dont la marque ne lit aucune clé n'est pas un pas `[]` — son sous-arbre est élagué, et `anonyme` le
+ * reçoit.
+ */
+function coDescendreLesCollections(
+  schema: unknown,
+  donnee: unknown,
+  visite: (p: PointDeDonnee, c: PointDeCollection) => DecisionDeVisite,
+  anonyme: (liste: PointDeDonnee, rang: number) => void = () => undefined,
+): void {
+  const vus = new Map<PointDeDonnee, PointDeCollection>();
+  coDescendre(schema, donnee, (p) => {
+    const parent = p.parent && vus.get(p.parent);
+    const cle = p.chemin[p.chemin.length - 1];
+    let suite = '';
+    let sousListe = parent?.sousListe;
+    if (parent && typeof cle === 'string') suite = suiteAvecPas(parent.suite, { champ: cle });
+    else if (parent && typeof cle === 'number') {
+      if (parent.marque?.forme === 'liste') {
+        const lue = parent.marque.de(p.valeur);
+        if (lue === undefined) {
+          anonyme(p.parent!, cle);
+          return 'elaguer';
+        }
+        suite = suiteAvecPas(parent.suite, { cle: lue });
+      } else {
+        suite = suiteAvecPas(parent.suite, { rang: true });
+        sousListe ??= p.parent!.chemin;
+      }
+    }
+    const marques = [...new Set(p.noeuds.map(collectionDe).filter((m): m is MarqueDeCollection => m !== undefined))];
+    if (marques.length > 1) throw new Error(`collection à clé : ${marques.length} marques différentes au point « ${cheminLu(p.chemin)} ».`);
+    const [marque] = marques;
+    if (marque?.espace && sousListe)
+      throw new Error(
+        `clé d'espace : l'espace de noms « ${cheminLu(p.chemin)} » est sous la liste NON marquée « ${cheminLu(sousListe)} » — le rang d'un élément n'identifie rien.`,
+      );
+    const point: PointDeCollection = { suite, marque, sousListe };
+    vus.set(p, point);
+    return visite(p, point);
+  });
+}
+
+/** Les collections marquées PRÉSENTES dans `donnee` (ni `null` ni `undefined`), dans l'ordre de la
+ *  donnée — par co-descente, sans parse : un arbre invalide a ses collections (pose transactionnelle,
+ *  copie modifiée). */
+export function collectionsDuDocument(schema: unknown, donnee: unknown): CollectionDuDocument[] {
+  const out: { collection: Omit<CollectionDuDocument, 'anonymes'>; anonymes: number[] }[] = [];
+  const parPoint = new Map<PointDeDonnee, number[]>();
+  coDescendreLesCollections(
+    schema,
+    donnee,
+    (p, { suite, marque }) => {
+      if (!marque || p.valeur === null || p.valeur === undefined) return;
+      const anonymes: number[] = [];
+      parPoint.set(p, anonymes);
+      out.push({ collection: { suite, chemin: p.chemin, marque, valeur: p.valeur, ids: idsDeCollection(marque, p.valeur) }, anonymes });
+    },
+    (liste, rang) => parPoint.get(liste)?.push(rang),
+  );
+  return out.map(({ collection, anonymes }) => ({ ...collection, anonymes }));
+}
+
+/** Une collection d'un document NOMMÉ, à sa CLÉ DE COLLECTION (`fichier`, `fichier#<suite nichée>`). */
+export type CollectionDeFichier = CollectionDuDocument & { readonly dataset: string; readonly cle: string };
+
+/** Les collections des documents de `defs` présents dans `brutParNom`, à leur clé de collection. Une
+ *  levée de `collectionsDuDocument` nomme son document. */
+export function collectionsDesDocuments(
+  defs: readonly { readonly file: string; readonly schema: unknown }[],
+  brutParNom: ReadonlyMap<string, unknown>,
+): CollectionDeFichier[] {
+  const duDocument = (d: { readonly file: string; readonly schema: unknown }): CollectionDuDocument[] => {
+    try {
+      return collectionsDuDocument(d.schema, brutParNom.get(d.file));
+    } catch (e) {
+      throw new Error(`${d.file} — ${e instanceof Error ? e.message : String(e)}`, { cause: e });
+    }
+  };
+  return defs
+    .filter((d) => brutParNom.has(d.file))
+    .flatMap((d) => duDocument(d).map((c) => ({ ...c, dataset: d.file, cle: cleNichee(d.file, c.suite) })));
+}
+
+/** Une collection à clé atteinte par sa suite : sa marque et sa valeur (`undefined` : absente de la donnée). */
+export interface CollectionALaCle {
+  readonly marque: MarqueDeCollection;
+  readonly valeur: unknown;
+}
+
+/**
+ * La collection à clé de `racine` au bout de `suite` (`''` : la racine ; `[art].specs`, `rangedMod`) :
+ * la co-descente des collections, élaguée hors du chemin de `suite`. Une collection absente de la donnée
+ * (`null` ou `undefined`) rend `valeur: undefined`, le reste de sa suite se lisant alors sur le schéma
+ * seul. LÈVE si la suite ne mène à aucune collection marquée, si elle porte un pas `[]` (un point par
+ * élément sous une liste non marquée, graphie étrangère à une liste marquée), ou si plusieurs points
+ * de la donnée ont cette suite.
+ */
+export function collectionALaCle(schema: unknown, racine: unknown, suite: string): CollectionALaCle {
+  const leve = (raison: string): never => {
+    throw new Error(`collectionALaCle : « ${suite || '(racine)'} » ${raison}.`);
+  };
+  if (pasDeLaSuite(suite).some((pas) => 'rang' in pas)) leve('porte un pas « [] », qui ne désigne pas UN point');
+  let atteint: { point: PointDeDonnee; collection: PointDeCollection } | undefined;
+  let exacts = 0;
+  coDescendreLesCollections(schema, racine, (point, collection) => {
+    if (!estPrefixeDeSuite(collection.suite, suite)) return 'elaguer';
+    if (!atteint || collection.suite.length > atteint.collection.suite.length) atteint = { point, collection };
+    if (collection.suite !== suite) return undefined;
+    exacts++;
+    return 'elaguer';
+  });
+  const aucune = (): never => leve('ne mène à aucune collection à clé du schéma');
+  if (exacts > 1) leve(`désigne ${exacts} points de la donnée`);
+  if (!atteint) return aucune();
+  if (atteint.collection.suite === suite) return atteint.collection.marque ? { marque: atteint.collection.marque, valeur: atteint.point.valeur ?? undefined } : aucune();
+  let noeuds: readonly unknown[] = atteint.point.noeuds;
+  for (const pas of pasDeLaSuite(suite.slice(atteint.collection.suite.length))) {
+    const marque = noeuds.map(collectionDe).find((m) => m !== undefined);
+    if ('cle' in pas && marque?.forme !== 'liste') return aucune();
+    noeuds = ouverts(pasDeDonnee(noeuds, 'champ' in pas ? pas.champ : 0));
+  }
+  const marque = noeuds.map(collectionDe).find((m) => m !== undefined);
+  return marque ? { marque, valeur: undefined } : aucune();
 }

@@ -27,7 +27,7 @@ manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-g
 mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
 au hook, ou une primitive née ailleurs n'y passent jamais.
 
-98 primitives.
+99 primitives.
 
 | Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |
 |---|---|---|---|---|---|
@@ -41,6 +41,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | étapes-jets subis influençables + appliers enregistrés par kind | `cascade/registerCascadeApplier` | `src/state/cascade.ts` | — | toute conséquence différée en série | cascade-consequence-guard.test.ts |
 | suspendre puis reprendre la cascade active quand un combat ou une transition s’ouvre en plein vol | `suspendActiveCascade/resumeSuspendedCascade` | `src/state/cascade.ts` | — | ouverture de combat, transition de scène, teardown de victoire ou de défaite | pile persistée de cascades suspendues, jamais un checkpoint parallèle ni une purge |
 | aperçu d’un personnage en pied hors combat, rig réel | `CharacterPreview` | `src/ui/CharacterPreview.tsx` | — | roster, créateur, fiche, marchand | — |
+| co-descente d'une donnée et de son schéma zod : à chaque point de la donnée, ses nœuds de schéma ouverts (enveloppes, intersections, branches d'union filtrées par le discriminant de la donnée), sa valeur et son chemin, sans valider | `coDescendre/ouverts/pasDeDonnee` | `src/data/schemas/grammaire/descente.ts` | — | toute lecture qui retrouve le schéma d'un point de donnée : collections à clé d'un document, lieu d'une faute | src/data/schemas/grammaire/co-descente.test.ts |
 | montant en monnaie impériale (LDB 57), coloré par dénomination et épelé en `title` — miroir JSX de `formatMoney` | `Coins` | `src/ui/Coins.tsx` | `src/ui/styles/coins.css` | tout prix AFFICHÉ : négoce, soins, repos, conseil, bourse d'en-tête | — |
 | fil d’ÉVÉNEMENTS du combat : le beat courant, ligne nue posée sur le terrain, toné par sa gravité | `CombatBanner` | `src/ui/CombatBanner.tsx` | `src/ui/styles/combat-banner.css` | refus du geste tenté, intention télégraphiée de l’IA, dernier résultat du journal | projection de sources existantes — zéro état dédié |
 | LE PONT de combat, en FLUX dans la rangée basse du plateau : deux travées d’alvéoles à compte FIXE autour de l’arche du combattant actif, conduit d’Avantage, coin de fin de tour — et, hors du tour de ce siège, la forme SPECTATRICE, l’arche seule sur une bande éteinte | `CombatConsole` | `src/ui/CombatConsole.tsx` | `src/ui/styles/combat-console.css` | HUD de combat plein-champ, dimensionné sur la FENÊTRE — la galerie en montre les deux formes de bureau, les formes étroites s’observent en recette | src/ui/CombatConsole.test.tsx — comptes de cases et budget de hauteur du pont |
@@ -129,4 +130,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 51b20791d79eaab80f35a3f13f11468603b1570a (6 fichiers, 0 dossiers) corps: 06c3cfc94654ab0e799104687fc2798a51bcecb0 -->
+<!-- sources-empreinte: cd66e39fb37aaac477f7cadd46e32c0c3bae3aa1 (6 fichiers, 0 dossiers) corps: 30c335e002c9a4fec11758ed508bae554eae93ad -->
