@@ -3,18 +3,20 @@
 // Sonde d'origine (2026-09-05) : 13 cas, dont deux motifs que la première liste ne portait pas
 // (`bad object`, `Invalid revision range`) et qui auraient classé « git en panne » deux absences.
 import { test } from 'node:test'
+import { Buffer } from 'node:buffer'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { STATUS_DLL_INIT_FAILED } from './spawnResilient.mjs'
 import {
-  INDEX, SUIVI, TRAVAIL, arbrePrincipal, cheminsDe, classer, eolsDe, etatsDe, nameStatusDe, numstatDe, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin,
+  GitIndisponible, INDEX, SUIVI, TRAVAIL, arbrePrincipal, ceQueFaitLeCommit, cheminsDe, classer, lecteurGit, eolsDe, etatsDe, nameStatusDe, numstatDe, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin,
   fichiersDuGrep, lireGit, lireEnLot, listerImage, natureDuChemin, raisonCourte, sortieOuNull,
 } from './gitPorte.mjs'
 import { envDeDepotForge, instanceDeDepot } from './depotGabarit.mjs'
 import { sourceGit } from './cssImages.mjs'
+import { parUnitesDeCode } from './lister.mjs'
 
 const ZERO = '0'.repeat(40)
 
@@ -409,4 +411,161 @@ test('sourceGit : `citants` ne rend que les MODULES de code de `src/`, `lireTout
   } finally {
     jeter(racine)
   }
+})
+
+// ── CE QUE FAIT LE COMMIT (`ceQueFaitLeCommit`, contre sa base) : des fusions FORGÉES ──────
+
+/** Dépôt jetable de trois fusions sur `main` : une PROPRE (la branche `cote` ajoute `h.txt`), une qui
+ *  RÉSOUT un conflit sur `f.txt`, une « maléfique » qui ajoute à `g.txt` une ligne qu'aucun parent ne
+ *  porte. `shas` nomme chaque fusion et le commit de branche qui a écrit `h.txt`. */
+function depotDeFusions() {
+  const { racine } = instanceDeDepot({ fichiers: { 'f.txt': 'a\nb\nc\n', 'g.txt': 'x\n' }, message: 'socle' })
+  const g = (...a) => execFileSync('git', a, { cwd: racine, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  const ecrire = (rel, texte) => writeFileSync(join(racine, rel), texte)
+  const tete = () => g('rev-parse', 'HEAD').trim()
+  g('checkout', '-q', '-b', 'cote')
+  ecrire('h.txt', 'h1\nh2\n'); g('add', 'h.txt'); g('commit', '-q', '-m', 'cote : h')
+  const auteurDeH = tete()
+  g('checkout', '-q', 'main')
+  ecrire('x.txt', 'x\n'); g('add', 'x.txt'); g('commit', '-q', '-m', 'main : x')
+  g('merge', '-q', '--no-ff', '-m', 'fusion propre', 'cote')
+  const propre = tete()
+  g('checkout', '-q', 'cote')
+  ecrire('f.txt', 'a\nB-cote\nc\n'); g('commit', '-q', '-am', 'cote : f')
+  g('checkout', '-q', 'main')
+  ecrire('f.txt', 'a\nB-main\nc\n'); g('commit', '-q', '-am', 'main : f')
+  try { g('merge', '-q', 'cote') } catch { /* conflit attendu, résolu ci-dessous */ }
+  ecrire('f.txt', 'a\nB-resolu\nc\n'); g('commit', '-q', '-am', 'fusion résolue')
+  const resolue = tete()
+  g('checkout', '-q', 'cote')
+  ecrire('g.txt', 'x\ny\n'); g('commit', '-q', '-am', 'cote : g')
+  g('checkout', '-q', 'main')
+  g('merge', '-q', '--no-commit', 'cote')
+  ecrire('g.txt', 'x\ny\nMAL\n'); g('add', 'g.txt'); g('commit', '-q', '-m', 'fusion maléfique')
+  return { racine, auteurDeH, propre, resolue, malefique: tete() }
+}
+
+test('ceQueFaitLeCommit : une fusion PROPRE n’apporte rien — ni le fichier ni les lignes de la branche fusionnée', () => {
+  const { racine, auteurDeH, propre } = depotDeFusions()
+  try {
+    const git = lecteurGit(racine, { env: envDeDepotForge() })
+    assert.deepEqual(ceQueFaitLeCommit(git, propre).chemins(), [])
+    assert.equal(ceQueFaitLeCommit(git, propre).diff(['h.txt']), '')
+    assert.deepEqual(ceQueFaitLeCommit(git, auteurDeH).chemins(), ['h.txt'], 'le commit d’ORIGINE, lui, porte h.txt')
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('ceQueFaitLeCommit : une fusion qui RÉSOUT un conflit apporte sa résolution, lue contre la fusion automatique', () => {
+  const { racine, resolue } = depotDeFusions()
+  try {
+    const fait = ceQueFaitLeCommit(lecteurGit(racine, { env: envDeDepotForge() }), resolue)
+    assert.deepEqual(fait.chemins(), ['f.txt'])
+    assert.match(fait.diff(['f.txt']), /^\+B-resolu$/m)
+    const avant = fait.avant('f.txt')
+    assert.match(avant, /^<<<<<<< /m, 'l’image d’avant est la fusion AUTOMATIQUE, marqueurs de conflit compris')
+    assert.match(avant, /^B-main$/m)
+    assert.match(avant, /^B-cote$/m)
+    assert.equal(fait.avant('g.txt'), 'x\n', 'un fichier que le commit ne touche pas a pour image d’avant son image')
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('ceQueFaitLeCommit : une fusion « maléfique » apporte la ligne qu’aucun parent ne porte, et seulement elle', () => {
+  const { racine, malefique } = depotDeFusions()
+  try {
+    const fait = ceQueFaitLeCommit(lecteurGit(racine, { env: envDeDepotForge() }), malefique)
+    assert.deepEqual(fait.chemins(), ['g.txt'])
+    assert.deepEqual(fait.diff().split('\n').filter((l) => /^[+-][^+-]/.test(l)), ['+MAL'])
+    assert.equal(fait.avant('g.txt'), 'x\ny\n')
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('ceQueFaitLeCommit : un commit à un parent se lit contre lui — chemins, image d’avant, naissance et renommage', () => {
+  const { racine, premier, second, g } = depot()
+  try {
+    g('mv', 'a.txt', 'b.txt'); g('commit', '-q', '-m', 'trois')
+    const git = lecteurGit(racine, { env: envDeDepotForge() })
+    assert.deepEqual(ceQueFaitLeCommit(git, second).chemins(), ['neuf.txt'])
+    assert.equal(ceQueFaitLeCommit(git, second).avant('neuf.txt'), null, 'un fichier qui NAÎT n’a pas d’image d’avant')
+    const trois = ceQueFaitLeCommit(git, g('rev-parse', 'HEAD').trim())
+    assert.deepEqual(trois.chemins().sort(), ['a.txt', 'b.txt'], '`--no-renames` : les deux bouts')
+    assert.deepEqual([...trois.renommages()], [['a.txt', 'b.txt']])
+    assert.equal(trois.avant('a.txt'), 'a\n')
+    assert.deepEqual(ceQueFaitLeCommit(git, premier).chemins(), ['a.txt'], 'une racine se lit contre l’arbre vide')
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('ceQueFaitLeCommit : sous git 2.39, un commit ordinaire se lit, une FUSION lève une raison NOMMÉE', () => {
+  const lecteur = (version, parents) => (args) => (args[0] === 'version' ? version : args[0] === 'rev-list' ? `abc ${parents}\n` : args[0] === 'diff' ? 'a.txt\0' : null)
+  assert.deepEqual(ceQueFaitLeCommit(lecteur('git version 2.39.0\n', 'p1'), 'abc').chemins(), ['a.txt'])
+  assert.throws(() => ceQueFaitLeCommit(lecteur('git version 2.39.0\n', 'p1 p2'), 'abc'), (e) => e instanceof GitIndisponible && /git 2\.39 ne sait pas git merge-tree --write-tree --stdin \(git 2\.40 ou plus\)/.test(e.raison))
+  assert.throws(() => ceQueFaitLeCommit(lecteur(null, 'p1 p2'), 'abc'), (e) => e instanceof GitIndisponible && /version de git illisible/.test(e.raison))
+  assert.deepEqual(ceQueFaitLeCommit(lecteur('git version 2.45.1.windows.1\n', 'p1 p2'), 'abc').chemins(), [], 'windows lu ; merge-tree muet : base nulle')
+  assert.deepEqual(ceQueFaitLeCommit(() => null, 'abc').chemins(), [], 'sha inconnu : rien, sans lire la version')
+  assert.throws(() => ceQueFaitLeCommit(lecteur('git version 2.43.0', 'p1 p2 p3'), 'abc'), (e) => e instanceof GitIndisponible && /à 3 parents/.test(e.raison))
+})
+
+// ── Les lecteurs nommés sur leurs formes rares (#1806, juge des commits 8 et 9, Q7) ─────────────
+
+test('numstatDe : un chemin à TABULATION entier, un binaire en `null` (git réel)', () => {
+  const T = 'src/f\tg.test.ts'
+  const { racine } = instanceDeDepot({ fichiers: { 'a.txt': 'a\n' }, message: 'socle' })
+  try {
+    const g = (...a) => execFileSync('git', a, { cwd: racine, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    mkdirSync(join(racine, 'src'), { recursive: true })
+    writeFileSync(join(racine, T), 'un\ndeux\n')
+    writeFileSync(join(racine, 'image.bin'), Buffer.from([0, 1, 2, 0, 255]))
+    g('add', '-A')
+    const git = lecteurGit(racine, { env: envDeDepotForge() })
+    const vu = numstatDe(git, ['diff', '--cached', '--numstat']).sort((x, y) => parUnitesDeCode(x.chemins[0], y.chemins[0]))
+    assert.deepEqual(vu, [
+      { plus: null, moins: null, chemins: ['image.bin'] },
+      { plus: 2, moins: 0, chemins: [T] },
+    ])
+    g('commit', '-q', '-m', 'deux')
+    g('mv', T, 'src/h\ti.test.ts')
+    assert.deepEqual(numstatDe(git, ['diff', '--cached', '-M', '--numstat']), [{ plus: 0, moins: 0, chemins: [T, 'src/h\ti.test.ts'] }])
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('nameStatusDe : une COPIE (`C`) porte ses deux chemins, comme un renommage', () => {
+  const git = () => 'C075\0a.txt\0b.txt\0R100\0c.txt\0d.txt\0M\0e.txt\0'
+  assert.deepEqual(nameStatusDe(git, ['diff', '-C', '--name-status']), [
+    { statut: 'C075', chemins: ['a.txt', 'b.txt'] },
+    { statut: 'R100', chemins: ['c.txt', 'd.txt'] },
+    { statut: 'M', chemins: ['e.txt'] },
+  ])
+})
+
+test('etatsDe : un renommage de l’ARBRE (` R`, colonne Y) porte ses deux chemins (git réel, `add -N`)', () => {
+  const { racine } = instanceDeDepot({ fichiers: { 'a.txt': 'contenu assez long pour un renommage\n' }, message: 'socle' })
+  try {
+    const g = (...a) => execFileSync('git', a, { cwd: racine, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    renameSync(join(racine, 'a.txt'), join(racine, 'b.txt'))
+    g('add', '-N', 'b.txt')
+    const vu = etatsDe(lecteurGit(racine, { env: envDeDepotForge() }), ['status', '--porcelain'])
+    assert.deepEqual(vu, [{ etat: ' R', chemins: ['b.txt', 'a.txt'] }])
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('eolsDe : un attribut à ESPACES (`attr/text eol=lf`) est lu entier, un enregistrement hors forme LÈVE en se nommant', () => {
+  const { racine } = instanceDeDepot({ fichiers: { '.gitattributes': '*.txt text eol=lf\n', 'a.txt': 'a\n' }, message: 'socle' })
+  try {
+    const vu = eolsDe(lecteurGit(racine, { env: envDeDepotForge() }), ['ls-files', '--eol', '--', 'a.txt'])
+    assert.deepEqual(vu, [{ index: 'lf', travail: 'lf', attr: 'text eol=lf', chemin: 'a.txt' }])
+  } finally {
+    jeter(racine)
+  }
+  assert.throws(() => eolsDe(() => 'pas une colonne\0', ['ls-files', '--eol']), /git ls-files --eol illisible : « pas une colonne »/)
 })

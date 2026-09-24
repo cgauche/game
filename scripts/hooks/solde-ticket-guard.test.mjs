@@ -943,8 +943,35 @@ test('extractCommitPathspecs : "-am" + pathspec après -- → le pathspec seul, 
   assert.deepEqual(extractCommitPathspecs(cmd), ['src/ui/Foo.tsx'])
 })
 
-test('extractCommitPathspecs : "-cam" (short groupé à 3 lettres) → message exclu, [] (index entier)', () => {
-  assert.deepEqual(extractCommitPathspecs('git commit -cam "feat: refonte truc"'), [])
+test('extractCommitPathspecs : "-cam" est `-c am` (`-c` prend une valeur, git : « could not lookup commit \'am\' »), le token suivant est un pathspec', () => {
+  assert.deepEqual(extractCommitPathspecs('git commit -cam "feat: refonte truc"'), ['feat: refonte truc'])
+  assert.deepEqual(extractCommitPathspecs('git commit -sam "feat: refonte truc"'), [])
+})
+
+test('formeDuCommit : `-C`, `-c`, `-t` portent une VALEUR, jamais un pathspec ; `-u<mode>` et `-S<clé>` ne sont pas `-a`', () => {
+  for (const [commande, attendu] of [
+    ['git commit --amend -C HEAD', { forme: 'index', pathspecs: [] }],
+    ['git commit -C HEAD -m x -- src/a.ts', { forme: 'pathspec', pathspecs: ['src/a.ts'] }],
+    ['git commit -c HEAD~1', { forme: 'index', pathspecs: [] }],
+    ['git commit -aC HEAD', { forme: 'tout', pathspecs: [] }],
+    ['git commit -t tmpl.txt', { forme: 'index', pathspecs: [] }],
+    ['git commit -tmpl.txt', { forme: 'index', pathspecs: [] }],
+    ['git commit --cleanup strip -m x', { forme: 'index', pathspecs: [] }],
+    ['git commit -uall -m x', { forme: 'index', pathspecs: [] }],
+    ['git commit -u -m x src/a.ts', { forme: 'pathspec', pathspecs: ['src/a.ts'] }],
+    ['git commit -Salice -m x', { forme: 'index', pathspecs: [] }],
+  ]) assert.deepEqual(formeDuCommit(commande), attendu, commande)
+})
+
+test('extractMessageSources : `-C <commit>` et `-t <modèle>` ne sont pas un fichier de message ; `-F` qui les suit l’est', () => {
+  const lus = []
+  const readFile = (p) => { lus.push(p); return 'corps' }
+  assert.equal(extractMessageSources('git commit -C HEAD', { readFile, cwd: '/r' }).fileError ?? null, null)
+  assert.equal(extractMessageSources('git commit -t modele.txt', { readFile, cwd: '/r' }).fileError ?? null, null)
+  assert.deepEqual(lus, [])
+  extractMessageSources('git commit -t modele.txt -F msg.txt', { readFile, cwd: '/r' })
+  assert.equal(lus.length, 1)
+  assert.match(lus[0], /msg\.txt$/)
 })
 
 test('formeDuCommit : "-am" est un `-a`, et son MESSAGE n\'est pas un pathspec', () => {
@@ -1786,13 +1813,55 @@ test('diffDuCommit : sous `-i`/`--include`, l’INDEX hors pathspec part aussi �
       assert.equal(inclus.contenu('src/b.ts'), 'export const b = 2\n', `${commande} : l’index hors pathspec part`)
       assert.equal(inclus.contenu('src/a.ts'), 'export const a = 2\n', `${commande} : l’arbre du pathspec part`)
       assert.deepEqual(lot(inclus), ['src/a.ts', 'src/b.ts'], commande)
-      assert.match(inclus.fichier('src/b.ts'), /^\+export const b = 2$/m, commande)
+      assert.match(inclus.diff(['src/b.ts']), /^\+export const b = 2$/m, commande)
     }
 
     const seul = diffDuCommit('git commit -o -m "x" -- src/a.ts', repo)
     assert.equal(seul.forme, 'pathspec')
     assert.equal(seul.contenu('src/b.ts'), 'export const b = 1\n', '`--only` : HEAD hors pathspec')
     assert.deepEqual(lot(seul), ['src/a.ts'])
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('diffDuCommit : sous `-i`, un renommage stagé qui TRAVERSE le pathspec garde ses deux bouts — comme `git show --numstat` après le commit', () => {
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'a.txt': 'un contenu assez long\npour être vu comme un renommage\n' }, message: 'socle' })
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    git('mv', 'a.txt', 'b.txt')
+    const commande = 'git commit -i -m "x" -- b.txt'
+    const c = diffDuCommit(commande, repo)
+    assert.deepEqual(c.numstat(), [{ plus: 0, moins: 0, chemins: ['a.txt', 'b.txt'] }])
+    assert.deepEqual([...c.renommages()], [['a.txt', 'b.txt']])
+    git('commit', '-q', '-i', '-m', 'x', '--', 'b.txt')
+    assert.equal(git('show', '--numstat', '--format=', 'HEAD'), '0\t0\ta.txt => b.txt\n', 'ce que git a emporté')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('diffDuCommit : `diff()` rend en UN diff par côté tout ce que le commit emporte, et `images` lit par lot ce qui part et ce qui était', () => {
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/a.ts': 'export const a = 1\n', 'src/b.ts': 'export const b = 1\n' }, message: 'socle' })
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), stdio: ['ignore', 'pipe', 'ignore'] })
+    writeFileSync(join(repo, 'src', 'a.ts'), 'export const a = 3\n', 'utf8')
+    writeFileSync(join(repo, 'src', 'b.ts'), 'export const b = 2\n', 'utf8')
+    git('add', 'src/a.ts', 'src/b.ts')
+    writeFileSync(join(repo, 'src', 'a.ts'), 'export const a = 2\n', 'utf8')
+    const ajouts = (d) => d.split('\n').filter((l) => /^\+[^+]/.test(l)).sort()
+
+    const inclus = diffDuCommit('git commit -i -m "x" -- src/a.ts', repo)
+    assert.deepEqual(ajouts(inclus.diff()), ['+export const a = 2', '+export const b = 2'], 'l’arbre du pathspec, l’index des autres, jamais l’index du pathspec')
+    assert.deepEqual(ajouts(inclus.diff(['src/a.ts'])), ['+export const a = 2'])
+    assert.equal(inclus.diff([]), '')
+    const images = inclus.images(['src/a.ts', 'src/b.ts', 'src/absent.ts'])
+    assert.deepEqual(['src/a.ts', 'src/b.ts', 'src/absent.ts'].map(images.lirePostImage), ['export const a = 2\n', 'export const b = 2\n', null])
+    assert.deepEqual(['src/a.ts', 'src/b.ts', 'src/absent.ts'].map(images.lirePreImage), ['export const a = 1\n', 'export const b = 1\n', null])
+
+    assert.deepEqual(ajouts(diffDuCommit('git commit -m "x"', repo).diff()), ['+export const a = 3', '+export const b = 2'], 'index')
+    assert.deepEqual(ajouts(diffDuCommit('git commit -m "x" -- src/a.ts', repo).diff()), ['+export const a = 2'], 'pathspec')
+    assert.deepEqual(ajouts(diffDuCommit('git commit -a -m "x"', repo).diff()), ['+export const a = 2', '+export const b = 2'], 'tout')
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }
@@ -2245,6 +2314,38 @@ test('validateSolde : « corrigé par » sans sha ni site reste hors grammaire',
   assert.match(r.problems.join(' ; '), /item sans disposition valide/)
 })
 
+test('validateSolde : « corrigé par <fusion> <fichier>:<ligne> » d’un travail AMENÉ par la fusion → refus (git réel)', () => {
+  // Cas b780a99e7 : lue contre son premier parent, la fusion « touchait » 556 fichiers venus de main,
+  // et la preuve d’un autre commit passait sous son sha.
+  const { racine: depot } = instanceDeDepot({ fichiers: { 'src/a.ts': 'export const a = 1\n' }, message: 'socle' })
+  const git = (...args) => execFileSync('git', args, { cwd: depot, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  try {
+    git('checkout', '-q', '-b', 'cote')
+    writeFileSync(join(depot, 'src/a.ts'), 'export const a = 1\nexport const b = 2\n')
+    git('commit', '-q', '-am', 'cote : b')
+    const auteur = git('rev-parse', 'HEAD').trim()
+    git('checkout', '-q', 'main')
+    writeFileSync(join(depot, 'x.txt'), 'x\n')
+    git('add', 'x.txt')
+    git('commit', '-q', '-m', 'main : x')
+    git('merge', '-q', '--no-ff', '-m', 'fusion', 'cote')
+    const fusion = git('rev-parse', 'HEAD').trim()
+    const histoire = {
+      commitEstAncetre: () => true,
+      fichiersDuCommit: (sha) => fichiersDuCommitGit(sha, depot),
+      lignesDuCommit: (sha, fichier) => lignesDeHunks(diffDunSha(sha, fichier, depot)),
+    }
+    const par = (sha) => validateSolde(solde({ restes: `- export b manquant -> corrigé par ${sha.slice(0, 9)} src/a.ts:2` }), TODAY, histoire)
+    const refus = par(fusion)
+    assert.equal(refus.ok, false)
+    assert.match(refus.problems.join(' ; '), /src\/a\.ts:2, que ce commit ne touche PAS/)
+    assert.equal(par(auteur).ok, true, 'le commit d’ORIGINE, lui, prouve la ligne')
+    assert.equal(diffDunSha(fusion, 'src/a.ts', depot), '', 'la fusion n’a aucun hunk propre dans src/a.ts')
+  } finally {
+    rmSync(depot, { recursive: true, force: true })
+  }
+})
+
 test('estDansHead / fichiersDuCommitGit : le cas fondateur #584 tient contre git RÉEL', () => {
   // Un clone SUPERFICIEL (CI sans `fetch-depth: 0`) ne porte pas 4d6e1ff78 : le test doit dire QUOI
   // corriger, jamais verdir sur une histoire qu'il n'a pas lue.
@@ -2303,7 +2404,7 @@ test('fichiersDuCommitGit : un RENOMMAGE rend les deux chemins NUS, jamais « {a
   }
 })
 
-test('fichiersDuCommitGit : une FUSION touche ce qu’elle apporte à sa ligne principale, pas son seul diff combiné', () => {
+test('fichiersDuCommitGit : une FUSION propre ne touche rien — le correctif appartient au commit de la branche', () => {
   const { racine: repo } = instanceDeDepot({ fichiers: { 'src/branche.ts': 'export const b = 1\n', 'src/principal.ts': 'export const p = 1\n' }, message: 'socle' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
@@ -2316,7 +2417,8 @@ test('fichiersDuCommitGit : une FUSION touche ce qu’elle apporte à sa ligne p
     git('merge', '-q', '--no-ff', '--no-verify', '-m', 'fusion du chantier', 'chantier')
     const fusion = git('rev-parse', 'HEAD').trim()
 
-    assert.deepEqual(fichiersDuCommitGit(fusion, repo), ['src/branche.ts'])
+    assert.deepEqual(fichiersDuCommitGit(fusion, repo), [])
+    assert.deepEqual(fichiersDuCommitGit(`${fusion}^2`, repo), ['src/branche.ts'])
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }

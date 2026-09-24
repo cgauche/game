@@ -228,8 +228,8 @@ export const cheminsDe = (git, args) => enregistrementsDe(git, args)
 
 /**
  * `git <args> --numstat` en entrées `{ plus, moins, chemins }` : `chemins` porte le chemin, ou les
- * deux bouts d'un renommage (`<plus>\t<moins>\t` puis ancien, nouveau). `plus`/`moins` valent `null`
- * pour un binaire (`-`). `args` porte `--numstat`.
+ * deux bouts d'un renommage (`<plus>\t<moins>\t` puis ancien, nouveau), tabulations comprises.
+ * `plus`/`moins` valent `null` pour un binaire (`-`). `args` porte `--numstat`.
  * @param {(args: string[]) => string | null} git @param {string[]} args
  * @returns {{ plus: number | null, moins: number | null, chemins: string[] }[]}
  */
@@ -237,7 +237,8 @@ export function numstatDe(git, args) {
   const champs = enregistrementsDe(git, args)
   const entrees = []
   for (let i = 0; i < champs.length; i += 1) {
-    const [plus, moins, chemin] = champs[i].split('\t')
+    const [plus, moins, ...reste] = champs[i].split('\t')
+    const chemin = reste.join('\t')
     const chemins = chemin ? [chemin] : [champs[i + 1], champs[i + 2]]
     if (!chemin) i += 2
     const nombre = (n) => (n === '-' ? null : Number(n))
@@ -296,6 +297,82 @@ export function journalDe(git, plage) {
   })
 }
 
+/** La première version de git dont `merge-tree --write-tree` lit `--stdin` (notes de version de git 2.40). */
+const GIT_MERGE_TREE = Object.freeze([2, 40])
+
+/** Versions déjà lues, par lecteur : une lecture de `git version` par lecteur, pas par commit. */
+const versionsLues = new WeakMap()
+
+/**
+ * Refuse, par `GitIndisponible` NOMMÉE, un git qui ne sait pas `merge-tree --write-tree --stdin` : il
+ * rendrait `error: unknown option`, qu'un lecteur à `null` confond avec un objet absent. Sonde de
+ * VERSION, pas de capacité : `git version` répond hors de tout dépôt et sans objet, donc sa réponse
+ * ne peut dire que la version.
+ * @param {(args: string[]) => string | null} git
+ * @throws {GitIndisponible}
+ */
+function exigerMergeTree(git) {
+  if (!versionsLues.has(git)) versionsLues.set(git, git(['version']))
+  const brut = versionsLues.get(git)
+  const m = /(\d+)\.(\d+)/.exec(String(brut ?? ''))
+  const exige = GIT_MERGE_TREE.join('.')
+  if (!m) throw new GitIndisponible(`version de git illisible (« ${String(brut ?? '').trim()} ») : git merge-tree --write-tree --stdin exige git ${exige}`)
+  const [majeure, mineure] = [Number(m[1]), Number(m[2])]
+  if (majeure < GIT_MERGE_TREE[0] || (majeure === GIT_MERGE_TREE[0] && mineure < GIT_MERGE_TREE[1])) {
+    throw new GitIndisponible(`git ${majeure}.${mineure} ne sait pas git merge-tree --write-tree --stdin (git ${exige} ou plus) : ce que fait un commit n'est pas lisible`)
+  }
+}
+
+/**
+ * La BASE du commit `sha` : l'arbre contre lequel il se lit. Son parent ; l'arbre vide pour une
+ * racine ; pour une fusion, l'arbre que git aurait fusionné TOUT SEUL depuis ses deux parents, conflits
+ * compris (`git merge-tree --write-tree --stdin`, dont la sortie est `<propre>\0<arbre>\0…` et le code
+ * 0 même en conflit). `merge-tree` ÉCRIT les objets de cet arbre, jamais une ref : des objets
+ * inaccessibles, que `git gc` ramasse. `null` si le sha est inconnu.
+ * @param {(args: string[], opts?: { entree?: string }) => string | null} git @param {string} sha
+ * @returns {string | null}
+ * @throws {GitIndisponible} fusion à plus de deux parents, ou fusion lue par un git plus ancien que
+ *   `GIT_MERGE_TREE` : seule la base d'une fusion demande `merge-tree`.
+ */
+function baseDuCommit(git, sha) {
+  const ligne = git(['rev-list', '--parents', '-n', '1', sha, '--'])
+  if (ligne === null) return null
+  const [, ...parents] = ligne.trim().split(/\s+/)
+  if (parents.length === 0) return (git(['hash-object', '-t', 'tree', '--stdin'], { entree: '' }) ?? '').trim() || null
+  if (parents.length === 1) return parents[0]
+  if (parents.length > 2) throw new GitIndisponible(`fusion ${sha.slice(0, 9)} à ${parents.length} parents : aucune fusion automatique ne rejoue sa base`)
+  exigerMergeTree(git)
+  const [, arbre] = (git(['merge-tree', '--write-tree', '-z', '--stdin'], { entree: `${parents[0]} ${parents[1]}\n` }) ?? '').split('\0')
+  return arbre || null
+}
+
+/**
+ * CE QUE FAIT LE COMMIT `sha` : son APPORT PROPRE, lu contre sa BASE (`baseDuCommit`). Une fusion
+ * propre n'apporte rien ; une résolution ou une retouche apporte ses lignes. L'unique lecture d'un
+ * commit POSÉ des portes : fichiers, diff, image d'avant, renommages et côté d'avant viennent de la
+ * même base. `--no-renames` sur les chemins et le patch : un renommage y rend ses deux bouts
+ * (26be12347).
+ *   - `base` : l'arbre d'avant (une ref ou un arbre), `null` si le sha est inconnu ;
+ *   - `chemins(filtre)` : les chemins touchés (`--name-only`, `-z`), `filtre` = `--diff-filter=…` ;
+ *   - `diff(pathspecs)` : le patch `-U0`, `''` si rien ;
+ *   - `avant(chemin)` : le texte de `chemin` dans la base, `null` s'il y est absent ;
+ *   - `renommages()` : chemin d'avant ↦ chemin du commit (`-M`).
+ * `git` (args, `{ entree }` → sortie, `null` = rien) est le lecteur de l'appelant.
+ * @param {(args: string[], opts?: { entree?: string }) => string | null} git @param {string} sha
+ * @throws {GitIndisponible} propagée de `baseDuCommit` (fusion seulement).
+ */
+export function ceQueFaitLeCommit(git, sha) {
+  const base = baseDuCommit(git, sha)
+  const entre = (forme, pathspecs = []) => ['diff', ...forme, base, sha, '--', ...pathspecs]
+  return {
+    base,
+    chemins: (filtre = []) => (base ? cheminsDe(git, entre(['--name-only', '--no-renames', ...filtre])) : []),
+    diff: (pathspecs = []) => (base ? git(entre(['-U0', '--no-renames'], pathspecs)) ?? '' : ''),
+    avant: (chemin) => (base ? git(['show', `${base}:${chemin}`]) : null),
+    renommages: () => new Map(base ? nameStatusDe(git, entre(['-M', '--diff-filter=R', '--name-status'])).map((e) => e.chemins) : []),
+  }
+}
+
 /** Colonnes d'un enregistrement `git ls-files --eol` : `i/<eol>`, `w/<eol>`, `attr/<attributs>`
  *  séparés par des ESPACES (la valeur d'`attr/` en contient), puis une TABULATION et le chemin. */
 const COLONNES_EOL = /^i\/(\S*)\s+w\/(\S*)\s+attr\/(.*?)\s*\t(.*)$/s
@@ -305,11 +382,13 @@ const COLONNES_EOL = /^i\/(\S*)\s+w\/(\S*)\s+attr\/(.*?)\s*\t(.*)$/s
  * du blob de l'index, du disque, et les attributs déclarés. `args` porte `ls-files` et `--eol`.
  * @param {(args: string[]) => string | null} git @param {string[]} args
  * @returns {{ index: string, travail: string, attr: string, chemin: string }[]}
+ * @throws {Error} enregistrement qui ne suit pas la forme de `COLONNES_EOL`, nommé.
  */
 export function eolsDe(git, args) {
-  return enregistrementsDe(git, args).flatMap((e) => {
+  return enregistrementsDe(git, args).map((e) => {
     const m = COLONNES_EOL.exec(e)
-    return m ? [{ index: m[1], travail: m[2], attr: m[3], chemin: m[4] }] : []
+    if (!m) throw new Error(`git ls-files --eol illisible : « ${e} »`)
+    return { index: m[1], travail: m[2], attr: m[3], chemin: m[4] }
   })
 }
 

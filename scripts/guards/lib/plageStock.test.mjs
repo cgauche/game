@@ -288,7 +288,7 @@ test('équivalence — solde au commit et plage au push comptent la même chose'
       const lectures = diffDuCommit(commande, racine)
       const auCommit = evaluateStocksQuiGrandissent({
         command: commande,
-        diff: lectures.fichier(porteur),
+        diff: lectures.diff([porteur]),
         images: { lirePostImage: lectures.contenu, lirePreImage: lectures.avant },
       })
       const base = gitDe('rev-parse', 'HEAD').trim()
@@ -343,10 +343,10 @@ test('équivalence — un `*-stock.json` qui NAÎT, puis qui GRANDIT : même com
     return {
       verdict: evaluateStocksQuiGrandissent({
         command: commande,
-        diff: lectures.fichier(porteur),
+        diff: lectures.diff([porteur]),
         images: { lirePostImage: lectures.contenu, lirePreImage: lectures.avant },
       }),
-      diff: lectures.fichier(porteur),
+      diff: lectures.diff([porteur]),
     }
   }
   try {
@@ -499,6 +499,45 @@ test('RECLASSEMENT : le renommage PUR d’une primitive réutilisée ne fait fra
   }
 })
 
+/** Le dépôt CSS où `chantier` fusionne `main` : `main` pose `surMain` (message `messageMain`), `chantier`
+ *  pose un fichier sans rapport, puis la fusion ajoute `dansLaFusion` à ce que git a fusionné seul. */
+function fusionCss({ surMain, messageMain, dansLaFusion = {} }) {
+  const d = depotCss()
+  d.git('checkout', '-q', '-b', 'chantier')
+  const avant = d.commettre({ 'notes.txt': 'travail du chantier\n' }, 'docs: notes du chantier')
+  d.git('checkout', '-q', 'main')
+  d.commettre(surMain, messageMain)
+  d.git('checkout', '-q', 'chantier')
+  d.git('merge', '-q', '--no-ff', '--no-commit', 'main')
+  const fusion = d.commettre(dansLaFusion, 'fusion de main')
+  return { ...d, avant, fusion }
+}
+
+test('RECLASSEMENT d’une FUSION : ce que main a fait franchir n’est pas à elle — même quand la fusion touche le manifeste', () => {
+  for (const dansLaFusion of [{}, { [MANIFESTE]: manifesteAvec(PRIMITIVE_CONSOLE, { id: 'b' }) }]) {
+    const { racine, avant, fusion } = fusionCss({ surMain: { 'src/ui/Ecran2.tsx': importeur('Ecran2') }, messageMain: RECLASSE, dansLaFusion })
+    try {
+      assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant, apres: fusion }).reclassements, [], JSON.stringify(Object.keys(dansLaFusion)))
+    } finally {
+      rmSync(racine, { recursive: true, force: true })
+    }
+  }
+})
+
+test('RECLASSEMENT d’une FUSION « maléfique » : le franchissement qu’elle pose elle-même est refusé, et nommé', () => {
+  const { racine, avant, fusion } = fusionCss({
+    surMain: { 'main.txt': 'main avance\n' },
+    messageMain: 'docs: main avance',
+    dansLaFusion: { 'src/ui/Ecran2.tsx': importeur('Ecran2') },
+  })
+  try {
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant, apres: fusion }).reclassements,
+      [{ sha: fusion, ecarts: [{ module: CONSOLE, n: 3, declare: null }] }])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
 // Un chemin non-ASCII, que la forme ligne de git CITE (`core.quotePath`) : `"src/ui/\303\211cran.tsx"`.
 const ECRAN_ACCENTUE = 'src/ui/Écran.tsx'
 
@@ -563,9 +602,10 @@ test('RECLASSEMENT (D3″) : un rebase qui fait disparaître le franchissement r
 
 test('RECLASSEMENT : manifeste ILLISIBLE → refus NOMMÉ par son commit, jamais une levée qui emporterait les autres refus', () => {
   const git = (args) => {
-    if (args[0] === 'rev-list') return 'c1'
+    if (args[0] === 'version') return 'git version 2.43.0'
+    if (args[0] === 'rev-list') return args.includes('--parents') ? 'c1 p1' : 'c1'
     if (args[0] === 'show' && args[1] === '-s') return 'feat'
-    if (args[0] === 'show' && args[1] === '--format=') return `diff --git a/${MANIFESTE} b/${MANIFESTE}\n`
+    if (args[0] === 'diff' && args.includes('--name-only')) return `${MANIFESTE}\0`
     if (args[0] === 'show') return args[1].endsWith(`:${MANIFESTE}`) ? '{pas du json' : null
     return null
   }
@@ -613,4 +653,67 @@ test('CLIQUET (D5″) : le renommage PUR d’un fichier cité par un stock coût
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
+})
+
+// ── Les FUSIONS se lisent par ce qu'elles font (`ceQueFaitLeCommit`, contre leur base) ─────
+
+/** Dépôt jetable dont `main` fusionne une branche `cote`. La branche fait grandir le stock sous son
+ *  CLIQUET ; `retouche` (texte du porteur posé DANS la fusion, ou `null`) rend la fusion maléfique. */
+function depotAFusion(retouche) {
+  const { racine: repo, sha: socle } = instanceDeDepot({ fichiers: { [PORTEUR]: sourceStock([A]), 'autre.txt': 'o\n' }, message: 'socle' })
+  const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  git('checkout', '-q', '-b', 'cote')
+  writeFileSync(join(repo, PORTEUR), sourceStock([A, B]), 'utf8')
+  git('commit', '-q', '--no-verify', '-am', 'cote\n\nCLIQUET: scripts/x.test.mjs +1 — fixture du test neuf, motif assez long')
+  git('checkout', '-q', 'main')
+  writeFileSync(join(repo, 'autre.txt'), 'o\np\n', 'utf8')
+  git('commit', '-q', '--no-verify', '-am', 'main')
+  git('merge', '-q', '--no-ff', '--no-commit', 'cote')
+  if (retouche !== null) {
+    writeFileSync(join(repo, PORTEUR), retouche, 'utf8')
+    git('add', PORTEUR)
+  }
+  git('commit', '-q', '--no-verify', '-m', 'fusion de cote')
+  return { repo, socle, fusion: git('rev-parse', 'HEAD').trim() }
+}
+
+test('PLAGE : une fusion PROPRE ne rejuge pas la croissance cliquetée de la branche qu’elle amène', () => {
+  const { repo, socle, fusion } = depotAFusion(null)
+  try {
+    const vu = croissancesDeLaPlage({ cwd: repo, avant: socle, apres: fusion })
+    assert.equal(vu.commits, 3, 'la fusion est dans la plage, avec ses deux parents')
+    assert.deepEqual(vu.refus, [])
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('PLAGE : une fusion « maléfique » qui fait grandir un stock en fusionnant est refusée, et nommée', () => {
+  const { repo, socle, fusion } = depotAFusion(sourceStock([A, B, C]))
+  try {
+    const { refus } = croissancesDeLaPlage({ cwd: repo, avant: socle, apres: fusion })
+    assert.deepEqual(refus.map((r) => [r.sha, r.fichier, r.net]), [[fusion, PORTEUR, 1]])
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('PLAGE : une fusion qui RÉÉCRIT une entrée amenée par la branche ne grandit rien — l’image d’avant est la fusion automatique', () => {
+  const { repo, socle, fusion } = depotAFusion(sourceStock([A, "  'src/b.ts', // retouchée à la fusion"]))
+  try {
+    assert.deepEqual(croissancesDeLaPlage({ cwd: repo, avant: socle, apres: fusion }).refus, [])
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('PLAGE : une FUSION lue par un git plus ancien que 2.40 rend la plage INDISPONIBLE, nommée, sans rien juger', () => {
+  const git = (args) => {
+    if (args[0] === 'version') return 'git version 2.39.2'
+    if (args[0] === 'rev-list') return args.includes('--parents') ? 'c1 p1 p2' : 'c1'
+    return null
+  }
+  const vu = croissancesDeLaPlage({ avant: 'a'.repeat(40), apres: 'b'.repeat(40), git })
+  assert.match(vu.indisponible, /git 2\.39 ne sait pas git merge-tree --write-tree --stdin/)
+  assert.deepEqual([vu.refus, vu.reclassements], [[], []])
 })
