@@ -548,11 +548,9 @@ export function scanLabelKeyedIndex(relPath, contenu) {
 }
 
 /**
- * Stock VIDE : la règle est à tolérance ZÉRO sur tout `STRICT_DIRS`. Les deux index mesurés à sa pose
- * (2026-09-08) sont migrés dans le même geste — `weaponGroupIdByWeaponLabel` et le couple
- * `conditionIds`/`conditionIdInText` portent désormais la couture dans `src/data/index.ts`. Cliquet
- * strict dans les DEUX sens comme `LABEL_LITERAL_STOCK` : une entrée neuve se migre, jamais
- * s'inscrit. @type {Readonly<Record<string, number>>}
+ * Stock VIDE : la règle est à tolérance ZÉRO sur tout `STRICT_DIRS`. Cliquet strict dans les DEUX
+ * sens comme `LABEL_LITERAL_STOCK` : une entrée neuve se migre, jamais s'inscrit.
+ * @type {Readonly<Record<string, number>>}
  */
 export const LABEL_KEYED_INDEX_STOCK = {};
 
@@ -892,32 +890,27 @@ export function ratchetShortKey(finding) {
 }
 
 // ── Résolution d'ENTITÉ depuis un LIBELLÉ, appelée hors de sa seule couture légitime (#909) ────────
-// La comparaison `.label === label` d'un résolveur (`findCreature`, `findSpell`…) vit DANS
+// La comparaison `.label === label` d'un résolveur (`findSpell`, `findTalent`…) vit DANS
 // `src/data/index.ts`, seul fichier où `isCorpusExcluded`/`STRICT_DIRS` la tolère. Les scans
 // ci-dessus ne voient QUE cette comparaison textuelle — pas le fait d'INVOQUER un tel résolveur
 // depuis `src/engine`/`src/state`, où le paramètre reçu est déjà, la plupart du temps, un id : y
-// appeler `findCreature(x)` bascule quand même toute la résolution sur le texte d'affichage.
+// appeler `findSpell(x)` bascule quand même toute la résolution sur le texte d'affichage.
 //
 // Reconnaissance du résolveur — critères structurels, jamais une liste de noms :
 //  1. déclaré et exporté dans `src/data/index.ts` (seul fichier où la légitimité existe, doctrine
 //     CLAUDE.md — un résolveur par label ailleurs serait une AUTRE faute, hors périmètre #909) ;
 //  2. il RÉSOUT par libellé, sous l'une des trois formes que porte ce fichier :
 //     a. fonction/flèche dont le paramètre s'appelle EXACTEMENT `label` et dont le type de retour est
-//        une entité de catalogue — `XxxData` (`CreatureData`/`SpellData`/`TalentData`/`SkillData`/
-//        `StarData`/`DomainData`/`TrappingData`), convention RÉELLE des interfaces app-owned ;
+//        une entité de catalogue — `XxxData` (`SpellData`, `TalentData`…), convention des
+//        interfaces app-owned ;
 //     b. ALIAS d'un binding construit par `indexParChamp(cle, entrees, (e) => e.label…)` — l'index
 //        vif rend l'ENTRÉE elle-même, donc l'alias résout l'entité par son libellé exactement comme
-//        (a). C'est la forme prise par `findDomain` (`index.ts:2738-2739`) quand son corps fléché a
-//        cédé la place à l'index vif : un critère qui ne juge que la FORME SYNTAXIQUE (flèche avec
-//        corps) devenait muet sur un résolveur inchangé pour l'appelant.
-//     c. fonction/flèche à paramètre `label` dont le NOM suit `…By…Label` (`talentIdByLabel`,
-//        `traitIdByLabel`, `weaponGroupIdByWeaponLabel`…) : la conversion libellé→id est la même
-//        résolution, elle rend l'id au lieu de l'entrée (#1924).
-// Choix MESURÉ plutôt qu'une liste : une liste nommée sur les 3 résolveurs cités par le ticket
-// (`findCreature`/`findSpell`/`findTrappingByLabel`) aurait manqué `findStar`/`findDomain`/
-// `findSkill`/`findTalent` — QUATRE résolveurs de MÊME forme, présents dans le corpus réel,
-// jamais mentionnés au brief. Le critère de FORME les retrouve tous, sans toucher cette lib au
-// prochain résolveur qui suivra la même convention.
+//        (a) : un critère qui ne jugerait que la FORME SYNTAXIQUE (flèche avec corps) serait muet sur
+//        ce résolveur, inchangé pour l'appelant.
+//     c. fonction/flèche à paramètre `label` dont le NOM suit `…By…Label` (`traitIdByLabel`…) : la
+//        conversion libellé→id est la même résolution, elle rend l'id au lieu de l'entrée (#1924).
+// Critère de FORME plutôt qu'une liste de noms : une liste manque tout résolveur de même forme
+// qu'elle ne nomme pas ; la forme retrouve le prochain sans toucher cette lib.
 //
 // CE QUE CE CRITÈRE NE VOIT PAS (faux négatifs assumés) :
 //  - un paramètre nommé autrement que `label` pile (`labelText`, `lbl`, `name` — `speciesSingular`
@@ -983,10 +976,10 @@ function labelKeyedBindings(sf) {
  * (`export function findX(label: string): XData {…}`) ou const fléchée exportée
  * (`export const findX = (label: …): XData | undefined => …`), premier paramètre nommé `label`,
  * retour `XxxData` (cf. en-tête ci-dessus pour la doctrine du critère) — ou retour d'un IDENTIFIANT
- * (`talentIdByLabel(label): string`, nom en `…By…Label`, #1924 : la conversion libellé→id est la même
+ * (`traitIdByLabel(label): string`, nom en `…By…Label`, #1924 : la conversion libellé→id est la même
  * résolution, elle rend l'id au lieu de l'entrée) ; OU export qui ALIASE un
- * binding keyé par le libellé (`export const findDomain: … = domaineParLabel;`, où `domaineParLabel
- * = indexParChamp('domains', domains, (d) => d.label)`) — la résolution est la même, seule la forme
+ * binding keyé par le libellé (`export const findX: … = xParLabel;`, où `xParLabel
+ * = indexParChamp('x', entrees, (e) => e.label)`) — la résolution est la même, seule la forme
  * syntaxique diffère.
  * @param {string} contenu — contenu de `src/data/index.ts` @returns {Set<string>}
  */
