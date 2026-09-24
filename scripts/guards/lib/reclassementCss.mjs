@@ -15,7 +15,8 @@
 import {
   CHEMIN_COUCHES, CHEMIN_MANIFESTE, RACINE_DES_MODULES, modulesDePrimitive, modulesExemptes, ventiler,
 } from './cssCouches.mjs'
-import { motifDImport, nomDImport, nomsDImport } from './cssImages.mjs'
+import { motifDeCitation, nomsDImport, nomsDImportDe } from './cssImages.mjs'
+import { hunksDe } from './hunks.mjs'
 import { MOTIF_MIN, declarationsDuMessage, mesuresNonCouvertes } from './stocksNominatifs.mjs'
 
 /** Le mot-clé de la ligne de message. */
@@ -47,12 +48,11 @@ export function franchisDesCotes(parent, commit) {
 /**
  * Un geste peut-il déplacer la frontière (#1806 E) ? Il touche le manifeste ou `FEUILLES_PARTAGEES`
  * (`cssCouches.mjs`) ; ou il AJOUTE ou SUPPRIME (`nesOuMorts`, chemins `--diff-filter=AD`) un module de
- * code qui porte le nom d'import d'un `fichier` (`nomDImport`) — vide compris : l'ordre de repli de
+ * code qui porte un nom d'import d'un `fichier` (`nomsDImportDe`) — vide compris : l'ordre de repli de
  * `resolveImport` (`importGraph.mjs`) peut alors faire changer de cible un import que rien ne réécrit,
- * ce qu'une simple MODIFICATION ne fait pas ; ou une ligne `+`/`-` de son diff importe un `fichier` du
- * manifeste (`motifDImport`, spécificateur seul d'un import sur plusieurs lignes compris) — un importeur
- * gagné ou perdu, supprimé compris. `nesOuMorts`, `diff` et `manifeste` (celui du parent) ne sont lus
- * qu'à défaut des chemins.
+ * ce qu'une simple MODIFICATION ne fait pas ; ou une ligne retirée ou ajoutée d'un hunk de son diff
+ * `-U0` (`hunksDe`) cite un `fichier` du manifeste (`motifDeCitation`, la présélection de `coteCss`).
+ * `nesOuMorts`, `diff` et `manifeste` (celui du parent) ne sont lus qu'à défaut des chemins.
  * @param {{ chemins: Iterable<string>, nesOuMorts: () => readonly string[], diff: () => string,
  *   manifeste: () => readonly { fichier?: string }[] }} p
  * @returns {boolean}
@@ -60,12 +60,12 @@ export function franchisDesCotes(parent, commit) {
 export function deplaceLaFrontiere({ chemins, nesOuMorts, diff, manifeste }) {
   if ([...chemins].some((f) => f === CHEMIN_COUCHES || f === CHEMIN_MANIFESTE)) return true
   const lu = manifeste()
-  const motif = motifDImport(lu)
+  const motif = motifDeCitation(lu)
   if (!motif) return false
   const noms = nomsDImport(lu)
-  if (nesOuMorts().some((f) => MODULE_DE_CODE.test(f) && noms.has(nomDImport(f)))) return true
-  const importe = new RegExp(motif)
-  return diff().split('\n').some((l) => (l.startsWith('+') || l.startsWith('-')) && importe.test(l.slice(1)))
+  if (nesOuMorts().some((f) => MODULE_DE_CODE.test(f) && nomsDImportDe(f).some((n) => noms.has(n)))) return true
+  const cite = new RegExp(motif)
+  return hunksDe(diff()).some(({ retirees, ajoutees }) => [...retirees, ...ajoutees].some((l) => cite.test(l)))
 }
 
 /** Un chemin de MODULE de code, que `resolveImport` peut désigner. */

@@ -11,7 +11,7 @@ import { join } from 'node:path'
 import { STATUS_DLL_INIT_FAILED } from './spawnResilient.mjs'
 import {
   INDEX, TRAVAIL, arbrePrincipal, classer, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin, lireGit,
-  listerImage, natureDuChemin, raisonCourte, sortieOuNull,
+  grepDe, listerImage, natureDuChemin, raisonCourte, sortieOuNull,
 } from './gitPorte.mjs'
 import { envDeDepotForge, instanceDeDepot } from './depotGabarit.mjs'
 
@@ -301,5 +301,19 @@ test('listerImage : l’unique listeur d’image — ref, INDEX et TRAVAIL rende
     assert.deepEqual(listerImage(() => null, 'HEAD', 'd'), [], 'git muet : []')
   } finally {
     rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('grepDe `entiers` : le contenu ENTIER de chaque fichier dont une ligne porte le motif, pour une ref, l’index et le travail', () => {
+  const texte = 'import {\n  X,\n} from\n  \'./cible\'\n\nconst y = 1\n'
+  const { racine, sha } = instanceDeDepot({ fichiers: { 'src/a.ts': texte, 'src/b.ts': 'const z = 2\n' }, message: 'un' })
+  try {
+    const git = (args) => sortieOuNull(lireGit(args, { cwd: racine }))
+    for (const portee of [[sha], ['--cached'], []]) {
+      assert.deepEqual([...grepDe(git, portee, '/cible', ['src'], { entiers: true })], [['src/a.ts', texte]], portee.join(' ') || 'travail')
+    }
+    assert.deepEqual([...grepDe(git, [], '/cible', ['src'])], [['src/a.ts', "  './cible'\n"]], 'sans `entiers` : les seules lignes qui le portent')
+  } finally {
+    jeter(racine)
   }
 })

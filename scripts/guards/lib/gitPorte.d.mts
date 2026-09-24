@@ -9,12 +9,13 @@ export type LectureGit =
 export function lireGit(args: string[], opts?: { cwd?: string; site?: string; timeout?: number }): LectureGit;
 /** La sortie d'une lecture réussie, `null` si l'objet est absent ou le code de sortie non nul. */
 export function sortieOuNull(union: LectureGit): string | null;
-/** Les lignes d'un `git grep -E` sous `dossiers`, par fichier. */
+/** Les lignes d'un `git grep -E` sous `dossiers`, par fichier ; `entiers` : le contenu entier des fichiers qui le portent. */
 export function grepDe(
   git: (args: string[]) => string | null,
   portee: string[],
   motif: string,
   dossiers: readonly string[],
+  options?: { entiers?: boolean },
 ): Map<string, string>;
 export const INDEX: string;
 export const TRAVAIL: string;

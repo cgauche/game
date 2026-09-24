@@ -1,6 +1,16 @@
 export const IMPORT_RE: RegExp;
 export function sourceALExecution(fichier: string, texte: string): string;
-export function resolveImport(fromFile: string, spec: string, existe?: (abs: string) => boolean): string | null;
+/** Un alias de chemin : préfixe du spécificateur → dossier cible absolu. */
+export interface Alias {
+  prefixe: string;
+  vers: string;
+}
+export function resolveImport(
+  fromFile: string,
+  spec: string,
+  existe?: (abs: string) => boolean,
+  alias?: readonly Alias[],
+): string | null;
 export function clotureDImports(
   roots: string[],
   options?: { retenir?: (abs: string) => boolean; cache?: Map<string, string[] | null>; typesEffaces?: boolean },
@@ -9,7 +19,10 @@ export function closureOf(roots: string[], cache?: Map<string, string[] | null>)
 export function directImportsOf(
   fromFile: string,
   contenu: string,
-  options?: { racine?: string; existe?: (abs: string) => boolean },
+  options?: { racine?: string; existe?: (abs: string) => boolean; alias?: readonly Alias[] },
 ): string[];
-/** Les alias de chemin du dépôt (`tsconfig.json` `paths`) : préfixe du spécificateur → dossier cible absolu. */
-export function aliasDuDepot(): { prefixe: string; vers: string }[];
+export const CHEMIN_TSCONFIG: string;
+/** Les alias que déclare le texte d'un `tsconfig.json`, cibles posées sous `racine`. */
+export function aliasDe(texte: string | null, racine: string): Alias[];
+/** Les alias du `tsconfig.json` que porte le disque sous `racine` (répertoire courant par défaut). */
+export function aliasDuDepot(racine?: string): Alias[];

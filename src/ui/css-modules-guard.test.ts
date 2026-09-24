@@ -115,7 +115,7 @@ export function sitesRepeint(feuilles: readonly { rel: string; text: string }[])
     if (FEUILLES_PARTAGEES.includes(rel)) continue;
     const siennes = primitives.has(rel) ? new Set(classesDe(text)) : new Set<string>();
     for (const r of reglesCss(text)) {
-      if (!declarations(r.corps).some((d) => !estPlacement(d.prop))) continue;
+      if (!declarations(r.corps).some((d) => !estPlacement(d.prop, d.valeur))) continue;
       for (const sel of r.selecteurs) {
         const p = parties(sel);
         const droite = p.pop() ?? '';

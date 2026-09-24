@@ -1,13 +1,13 @@
 // LECTURE des images CSS (#1806 L1) : le lieu UNIQUE où un arbre — ref git, index, arbre de travail —
 // devient l'image `{ fichiers, manifeste, partagees, reutilises }` que mesure `cssCouches.mjs`, et le
 // CÔTÉ `{ manifeste, partagees, reutilises, lire }` qu'en lit la garde `RECLASSEMENT:`. Les imports
-// qui fixent `reutilises` se résolvent par `directImportsOf` (`importGraph.mjs`) contre les fichiers de
-// l'arbre lu, sur les seules lignes que `git grep` (`grepDe`, `gitPorte.mjs`) trouve citant le nom d'un
-// `fichier` du manifeste. Appelants : `cssCouchesAudit.ts` (disque), `ventilationDeGit` (le
-// régénérateur), le garde de solde au commit, la porte de plage au push.
+// qui fixent `reutilises` sont ceux de `directImportsOf` (`importGraph.mjs`) sur le contenu entier des
+// fichiers que `git grep` (`grepDe`, `gitPorte.mjs`) présélectionne (`motifDeCitation`), résolus contre
+// l'arbre lu. Appelants : `cssCouchesAudit.ts` (disque), `ventilationDeGit` (le régénérateur), le garde
+// de solde au commit, la porte de plage au push.
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { aliasDuDepot, directImportsOf } from './importGraph.mjs'
+import { CHEMIN_TSCONFIG, aliasDe, directImportsOf } from './importGraph.mjs'
 import { INDEX, TRAVAIL, grepDe, lireGit, listerImage, sortieOuNull } from './gitPorte.mjs'
 import { entreesEcrites } from './stock.mjs'
 import {
@@ -22,54 +22,44 @@ export const RACINE_DES_SOURCES = 'src'
 const echapper = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
- * Le NOM par lequel un spécificateur relatif atteint `chemin` : son nom sans extension, celui de son
- * dossier pour un `index.*` (l'ordre de repli de `resolveImport`, `importGraph.mjs`).
- * @param {string} chemin @returns {string}
+ * Les NOMS par lesquels un spécificateur atteint `chemin` sous l'ordre de repli de `resolveImport`
+ * (`importGraph.mjs`) : son nom sans extension, et celui de son dossier pour un `index.*`.
+ * @param {string} chemin @returns {string[]}
  */
-export function nomDImport(chemin) {
+export function nomsDImportDe(chemin) {
   const segments = chemin.split('/')
   const base = segments.at(-1).replace(/\.[^.]+$/, '')
-  return base === 'index' ? segments.at(-2) ?? base : base
+  return base === 'index' && segments.length > 1 ? [base, segments.at(-2)] : [base]
 }
 
 /**
- * Les NOMS d'import des `fichier`s du manifeste (`nomDImport`).
+ * Les NOMS d'import des `fichier`s du manifeste (`nomsDImportDe`).
  * @param {readonly { fichier?: string }[]} manifeste @returns {Set<string>}
  */
 export function nomsDImport(manifeste) {
-  return new Set(manifeste.flatMap(({ fichier }) => (typeof fichier === 'string' ? [nomDImport(fichier)] : [])))
+  return new Set(manifeste.flatMap(({ fichier }) => (typeof fichier === 'string' ? nomsDImportDe(fichier) : [])))
 }
 
 /**
- * Le motif `-E` (`git grep` comme `RegExp`) des lignes qui IMPORTENT un `fichier` du manifeste, aux
- * seules formes que lit `IMPORT_RE` (`importGraph.mjs`) — `from '…'`, `import('…')`, `import '…'` —,
- * sur un spécificateur que `resolveImport` résout : relatif (`./`, `../`) ou sous un alias du dépôt
- * (`aliasDuDepot`), finissant par un nom du manifeste (`nomsDImport`), `/index` écrit ou non ; ou fait
- * de points seuls (`'.'`, `'..'`), dont le `index.*` ne se lit pas dans le spécificateur. Une ligne
- * faite du SEUL spécificateur (`SPECIFICATEUR_SEUL`) est candidate aussi : c'est la seconde ligne d'un
- * import écrit sur plusieurs, que `coteCss` relit alors en entier. `null` = rien à chercher.
+ * Le motif `-E` (`git grep` comme `RegExp`) des lignes qui CITENT un `fichier` du manifeste : un de ses
+ * noms (`nomsDImport`) en mot entier après une barre oblique — tout spécificateur relatif ou sous un
+ * alias l'y écrit —, ou un spécificateur que `resolveImport` résout sans écrire de nom, fini par `.`,
+ * `..` ou `/`. Il PRÉSÉLECTIONNE : `directImportsOf` lit ensuite le fichier entier. `null` = rien à
+ * chercher.
  * @param {readonly { fichier?: string }[]} manifeste @returns {string | null}
  */
-export function motifDImport(manifeste) {
+export function motifDeCitation(manifeste) {
   const noms = nomsDImport(manifeste)
   if (!noms.size) return null
-  const racines = ['\\.\\.?/', ...aliasDuDepot().map(({ prefixe }) => echapper(prefixe))].join('|')
-  const nomme = `(${racines})([^'"]*/)?(${[...noms].map(echapper).join('|')})(/index)?(\\.[cm]?[jt]sx?)?`
-  const specificateur = `['"](${nomme}|\\.\\.?(/\\.\\.)*/?)['"]`
-  return `(from|import)[ \t]*\\(?[ \t]*${specificateur}|^[ \t]*${specificateur}[ \t]*[,;)]*[ \t]*$`
+  return `/(${[...noms].map(echapper).join('|')})([^A-Za-z0-9_$]|$)|['"](([^'"]*/)?\\.\\.?|[^'"]*/)['"]`
 }
 
-/** Une ligne candidate qui commence par un guillemet : le SEUL spécificateur d'un import écrit sur
- *  plusieurs lignes (`motifDImport`). */
-export const SPECIFICATEUR_SEUL = /^[ \t]*['"]/
-
 /**
- * Le CÔTÉ d'un arbre : manifeste, `FEUILLES_PARTAGEES`, `fichier`s RÉUTILISÉS et lecteur de texte.
- * Un fichier candidat se résout sur ses lignes candidates, ou sur son contenu ENTIER dès qu'une d'elles
- * est un spécificateur seul (`SPECIFICATEUR_SEUL`) : `IMPORT_RE` lit alors l'import sur ses lignes.
- * Les imports se résolvent contre les SEULS fichiers de cet arbre (`lister`) : le disque n'est pas
- * l'arbre jugé (#1806).
- * @param {{ lire: (rel: string) => string | null, grep: (motif: string) => Map<string, string>,
+ * Le CÔTÉ d'un arbre : manifeste, `FEUILLES_PARTAGEES`, `fichier`s RÉUTILISÉS et lecteur de texte. Les
+ * fichiers de `src/` qui citent le manifeste (`motifDeCitation`) sont lus ENTIERS par `directImportsOf`
+ * (`importGraph.mjs`), contre les SEULS fichiers (`lister`) et les alias (`tsconfig.json`, `aliasDe`) de
+ * cet arbre : le disque n'est pas l'arbre jugé (#1806).
+ * @param {{ lire: (rel: string) => string | null, contenus: (motif: string) => Map<string, string>,
  *   lister: (dossier: string) => readonly string[] }} source
  * @param {{ racine?: string }} [options] le dépôt où les imports se résolvent
  * @throws {Error} manifeste ou `cssCouches.mjs` illisible.
@@ -77,17 +67,14 @@ export const SPECIFICATEUR_SEUL = /^[ \t]*['"]/
 export function coteCss(source, { racine = '.' } = {}) {
   const manifeste = manifesteDe(source.lire(CHEMIN_MANIFESTE))
   const partagees = feuillesPartageesDe(source.lire(CHEMIN_COUCHES))
-  const motif = motifDImport(manifeste)
+  const motif = motifDeCitation(manifeste)
   const racineAbs = resolve(racine).split('\\').join('/')
-  const arbre = motif ? new Set(source.lister(RACINE_DES_SOURCES).map((rel) => `${racineAbs}/${rel}`)) : new Set()
-  const existe = (abs) => arbre.has(abs)
-  const imports = motif
-    ? [...source.grep(motif)].map(([rel, lignes]) => {
-      const surPlusieursLignes = lignes.split('\n').some((l) => SPECIFICATEUR_SEUL.test(l))
-      const contenu = surPlusieursLignes ? source.lire(rel) ?? lignes : lignes
-      return [rel, directImportsOf(rel, contenu, { racine, existe })]
-    })
-    : []
+  const imports = []
+  if (motif) {
+    const arbre = new Set(source.lister(RACINE_DES_SOURCES).map((rel) => `${racineAbs}/${rel}`))
+    const options = { racine, existe: (abs) => arbre.has(abs), alias: aliasDe(source.lire(CHEMIN_TSCONFIG), racineAbs) }
+    for (const [rel, contenu] of source.contenus(motif)) imports.push([rel, directImportsOf(rel, contenu, options)])
+  }
   return { manifeste, partagees, reutilises: fichiersReutilises(manifeste, imports), lire: source.lire }
 }
 
@@ -129,7 +116,7 @@ export function sourceGit({ cwd = process.cwd(), arbre, git }) {
     lire: arbre === TRAVAIL
       ? (rel) => lireDuTravail(cwd, rel)
       : (rel) => lire(['show', `${arbre === INDEX ? '' : arbre}:${rel}`]),
-    grep: (motif) => grepDe(lire, portee, motif, [RACINE_DES_SOURCES]),
+    contenus: (motif) => grepDe(lire, portee, motif, [RACINE_DES_SOURCES], { entiers: true }),
   }
 }
 

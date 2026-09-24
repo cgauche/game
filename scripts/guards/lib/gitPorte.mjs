@@ -223,21 +223,27 @@ export function enfantsDirects(chemins, dossier) {
  * final) — l'unique lecture `git grep` des portes. `portee` : `[]` (arbre de travail suivi),
  * `['--untracked']`, `['--cached']` (index) ou `[<ref>]`, dont git préfixe alors chaque chemin.
  * `git` (args → sortie, `null` = rien) est le lecteur de l'appelant : aucun match (sortie 1) est vide.
+ * `entiers` rend le CONTENU ENTIER de chaque fichier texte dont une ligne porte le motif, lu dans la
+ * même passe (`--all-match` avec le motif `^`, que toute ligne porte).
  * @param {(args: string[]) => string | null} git @param {string[]} portee @param {string} motif
- * @param {readonly string[]} dossiers @returns {Map<string, string>}
+ * @param {readonly string[]} dossiers @param {{ entiers?: boolean }} [options]
+ * @returns {Map<string, string>}
  */
-export function grepDe(git, portee, motif, dossiers) {
+export function grepDe(git, portee, motif, dossiers, { entiers = false } = {}) {
   const prefixe = portee.length === 1 && !portee[0].startsWith('-') ? `${portee[0]}:` : ''
-  const sortie = git(['grep', '-z', '-E', '-e', motif, ...portee, '--', ...dossiers]) ?? ''
-  /** @type {Map<string, string>} */
+  const motifs = entiers ? ['-I', '--all-match', '-e', motif, '-e', '^'] : ['-e', motif]
+  const sortie = git(['grep', '-z', '-E', ...motifs, ...portee, '--', ...dossiers]) ?? ''
+  /** @type {Map<string, string[]>} */
   const lignes = new Map()
   for (const l of sortie.split('\n')) {
     const at = l.indexOf('\0')
     if (at < 0) continue
-    const rel = l.slice(0, at).slice(prefixe.length)
-    lignes.set(rel, `${lignes.get(rel) ?? ''}${l.slice(at + 1)}\n`)
+    const rel = l.slice(prefixe.length, at)
+    const deja = lignes.get(rel)
+    if (deja) deja.push(l.slice(at + 1))
+    else lignes.set(rel, [l.slice(at + 1)])
   }
-  return lignes
+  return new Map([...lignes].map(([rel, ls]) => [rel, `${ls.join('\n')}\n`]))
 }
 
 /**

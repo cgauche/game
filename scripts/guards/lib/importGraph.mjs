@@ -48,18 +48,34 @@ export function sourceALExecution(fichier, texte) {
   return typescript().transpileModule(texte, { fileName: fichier, compilerOptions: optionsDuDepot() }).outputText;
 }
 
-/** Les ALIAS de chemin du dépôt (`compilerOptions.paths` de `tsconfig.json`, forme `<clé>/*` →
- *  `<cible>/*`, cible résolue contre `baseUrl`), lus au premier spécificateur non relatif : la même
- *  source que le compilateur et que `vite.config.ts` (`resolve.alias`). */
-let alias = null;
-export const aliasDuDepot = () => {
-  if (alias) return alias;
-  const { compilerOptions: { baseUrl = '.', paths = {} } = {} } = JSON.parse(readFileSync(TSCONFIG_URL, 'utf8'));
-  const base = resolve(dirname(fileURLToPath(TSCONFIG_URL)), baseUrl).split('\\').join('/');
-  alias = Object.entries(paths)
+/** Le `tsconfig.json` d'un dépôt, à sa racine. */
+export const CHEMIN_TSCONFIG = 'tsconfig.json';
+
+/**
+ * Les ALIAS de chemin que déclare le texte d'un `tsconfig.json` (`compilerOptions.paths`, forme
+ * `<clé>/*` → `<cible>/*`), cibles posées sous `racine` via `baseUrl` : la même source que le
+ * compilateur et que `vite.config.ts` (`resolve.alias`). `null` (fichier absent de l'arbre) = aucun.
+ * @param {string | null} texte @param {string} racine @returns {{ prefixe: string, vers: string }[]}
+ */
+export function aliasDe(texte, racine) {
+  if (texte === null) return [];
+  const { compilerOptions: { baseUrl = '.', paths = {} } = {} } = JSON.parse(texte);
+  const base = resolve(racine, baseUrl).split('\\').join('/');
+  return Object.entries(paths)
     .filter(([cle, [cible] = []]) => cle.endsWith('/*') && cible?.endsWith('/*'))
     .map(([cle, [cible]]) => ({ prefixe: cle.slice(0, -1), vers: `${resolve(base, cible.slice(0, -1)).split('\\').join('/')}/` }));
-  return alias;
+}
+
+/** Les alias du dépôt dont `racine` est la racine sur le DISQUE (`aliasDe` sur son `tsconfig.json`),
+ *  lus une fois par racine. */
+const aliasParRacine = new Map();
+export const aliasDuDepot = (racine = '.') => {
+  const abs = resolve(racine);
+  if (!aliasParRacine.has(abs)) {
+    const chemin = resolve(abs, CHEMIN_TSCONFIG);
+    aliasParRacine.set(abs, aliasDe(existsSync(chemin) ? readFileSync(chemin, 'utf8') : null, abs));
+  }
+  return aliasParRacine.get(abs);
 };
 
 /** Extensions qu'un spécificateur peut porter LUI-MÊME (le chemin désigne alors le fichier). */
@@ -69,15 +85,17 @@ const EXTS_EXPLICITES = [...EXTS, '.json'];
  * Résout un spécificateur d'import RELATIF (`./foo`, `../bar`) vers un fichier source réel :
  * spécificateur portant DÉJÀ son extension (`./x.mjs`, `./data.json` — la forme des 109 imports de
  * `src/**` vers les libs de garde), sinon extension déduite d'`EXTS`, sinon repli `index.*`. Un
- * spécificateur qui commence par un ALIAS du dépôt (`aliasDuDepot`, `@/…`) se résout sous sa cible ;
- * un paquet npm rend `null` (hors périmètre).
- * `existe` (chemin absolu POSIX → présent ?) dit quel ARBRE fait foi : le disque par défaut, la liste
- * de fichiers d'une ref pour qui juge un autre arbre que l'arbre de travail (#1806).
+ * spécificateur qui commence par un ALIAS (`alias`, `@/…`) se résout sous sa cible ; un paquet npm
+ * rend `null` (hors périmètre).
+ * `existe` (chemin absolu POSIX → présent ?) et `alias` disent quel ARBRE fait foi : le disque du
+ * répertoire courant par défaut, la liste de fichiers et le `tsconfig.json` d'une ref pour qui juge un
+ * autre arbre que l'arbre de travail (#1806).
  * @param {string} fromFile @param {string} spec @param {(abs: string) => boolean} [existe]
+ * @param {readonly { prefixe: string, vers: string }[]} [alias]
  * @returns {string|null}
  */
-export function resolveImport(fromFile, spec, existe = existsSync) {
-  const a = spec.startsWith('.') ? null : aliasDuDepot().find(({ prefixe }) => spec.startsWith(prefixe));
+export function resolveImport(fromFile, spec, existe = existsSync, alias = aliasDuDepot()) {
+  const a = spec.startsWith('.') ? null : alias.find(({ prefixe }) => spec.startsWith(prefixe));
   if (!spec.startsWith('.') && !a) return null;
   const base = a ? `${a.vers}${spec.slice(a.prefixe.length)}` : resolve(dirname(fromFile), spec).split('\\').join('/');
   if (EXTS_EXPLICITES.some((e) => spec.endsWith(e))) return existe(base) ? base : null;
@@ -161,16 +179,17 @@ export function closureOf(roots, cache = new Map()) {
  * Imports RELATIFS directs (non transitifs) d'un fichier — résolus vers des chemins POSIX
  * relatifs à la racine du repo, dédupliqués, `src/`-only. `racine` = le dépôt où `fromFile` (relatif)
  * se résout, le répertoire courant par défaut : un hook s'exécute ailleurs que dans l'arbre jugé.
- * `existe` : l'arbre contre lequel résoudre (`resolveImport`).
+ * `existe` et `alias` : l'arbre contre lequel résoudre (`resolveImport`) ; par défaut les alias du
+ * disque de `racine` (`aliasDuDepot`).
  * @param {string} fromFile @param {string} contenu
- * @param {{ racine?: string, existe?: (abs: string) => boolean }} [options]
+ * @param {{ racine?: string, existe?: (abs: string) => boolean, alias?: readonly { prefixe: string, vers: string }[] }} [options]
  * @returns {string[]}
  */
-export function directImportsOf(fromFile, contenu, { racine = '.', existe } = {}) {
+export function directImportsOf(fromFile, contenu, { racine = '.', existe, alias = aliasDuDepot(racine) } = {}) {
   const root = resolve(racine).split('\\').join('/');
   const found = new Set();
   for (const m of contenu.matchAll(IMPORT_RE)) {
-    const resolved = resolveImport(resolve(root, fromFile), m[1] ?? m[2] ?? m[3], existe);
+    const resolved = resolveImport(resolve(root, fromFile), m[1] ?? m[2] ?? m[3], existe, alias);
     if (resolved?.startsWith(`${root}/`) && resolved.includes('/src/')) found.add(resolved.slice(root.length + 1));
   }
   return [...found];

@@ -1,11 +1,11 @@
 import type { EntreeManifeste, ImageCss, ventiler } from './cssCouches.mjs';
 import type { EntreeNominative } from './stock.mjs';
 
-/** Un arbre lisible : ses fichiers d'un dossier, le texte d'un chemin, les lignes de `src/` d'un motif. */
+/** Un arbre lisible : ses fichiers d'un dossier, le texte d'un chemin, le contenu entier des fichiers de `src/` qui portent un motif. */
 export interface SourceCss {
   lister: (dossier: string) => readonly string[];
   lire: (rel: string) => string | null;
-  grep: (motif: string) => Map<string, string>;
+  contenus: (motif: string) => Map<string, string>;
 }
 export interface CoteCss {
   manifeste: EntreeManifeste[];
@@ -14,10 +14,9 @@ export interface CoteCss {
   lire: (rel: string) => string | null;
 }
 export const RACINE_DES_SOURCES: string;
-export function nomDImport(chemin: string): string;
+export function nomsDImportDe(chemin: string): string[];
 export function nomsDImport(manifeste: readonly EntreeManifeste[]): Set<string>;
-export const SPECIFICATEUR_SEUL: RegExp;
-export function motifDImport(manifeste: readonly EntreeManifeste[]): string | null;
+export function motifDeCitation(manifeste: readonly EntreeManifeste[]): string | null;
 export function coteCss(source: SourceCss, options?: { racine?: string }): CoteCss;
 export function imageCss(source: SourceCss, options?: { racine?: string }): ImageCss;
 export function sourceGit(p: {

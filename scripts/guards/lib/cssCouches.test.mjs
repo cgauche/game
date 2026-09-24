@@ -64,28 +64,32 @@ test('declarations : sépare sur les `;` de premier niveau seulement', () => {
 })
 
 test('estPlacement : les propriétés nommées et les familles à préfixe placent, tout le reste PEINT', () => {
+  const MOT_CLE_CSS = 'initial'
   for (const p of ['display', 'flex', 'flex-direction', 'grid-template-columns', 'gap', 'padding-left',
     'margin-inline-start', 'min-width', 'max-height', 'overflow-y', 'position', 'z-index', 'text-align',
     'white-space', 'list-style', 'touch-action', 'user-select', 'transform', '--ma-var',
     'contain', 'container', 'container-type', 'container-name',
     'column-count', 'column-width', 'column-span', 'column-fill', 'column-gap',
     'list-style-type', 'list-style-position']) {
-    assert.equal(estPlacement(p), true, `${p} PLACE`)
+    assert.equal(estPlacement(p, MOT_CLE_CSS), true, `${p} PLACE`)
   }
   for (const p of ['color', 'background', 'border', 'border-color', 'border-radius', 'box-shadow',
     'font-size', 'font-weight', 'opacity', 'cursor', 'transition', 'filter', 'line-height',
     'column-rule', 'column-rule-color', 'column-rule-style', 'column-rule-width', 'list-style-image']) {
-    assert.equal(estPlacement(p), false, `${p} PEINT`)
+    assert.equal(estPlacement(p, MOT_CLE_CSS), false, `${p} PEINT`)
   }
 })
 
-test('estPlacement : un RACCOURCI dont un membre peint place tant que sa valeur ne pose pas ce membre', () => {
-  for (const v of ['none', 'disc inside', 'square outside', 'decimal']) assert.equal(estPlacement('list-style', v), true, `list-style: ${v}`)
-  for (const v of ['url(puce.svg)', 'disc url("x.png") inside', 'linear-gradient(red, blue)', 'image-set("a.png" 1x)']) {
+test('estPlacement : un RACCOURCI dont un membre peint ne place que sur une valeur de MOTS-CLÉS seuls ; une valeur indécidable peint', () => {
+  for (const v of ['none', 'disc inside', 'square outside', 'decimal', 'none !important', ' inherit ']) {
+    assert.equal(estPlacement('list-style', v), true, `list-style: ${v}`)
+  }
+  for (const v of ['url(puce.svg)', 'disc url("x.png") inside', 'linear-gradient(red, blue)', 'image-set("a.png" 1x)',
+    'var(--puce)', 'disc var(--img)', 'paint(puce)', '-webkit-gradient(linear, 0 0, 0 100%)', 'URL(a.png)', '"→"', 'disc 0']) {
     assert.equal(estPlacement('list-style', v), false, `list-style: ${v} PEINT`)
   }
   assert.equal(estPlacement('list-style-image', 'none'), false, 'le membre qui peint reste de l’identité, valeur comprise')
-  for (const [p, v] of [['columns', '2 200px'], ['flex', '1 1 0'], ['grid', 'auto / 1fr 1fr'], ['overflow', 'hidden auto']]) {
+  for (const [p, v] of [['columns', '2 200px'], ['flex', '1 1 0'], ['grid', 'auto / 1fr 1fr'], ['overflow', 'var(--o)']]) {
     assert.equal(estPlacement(p, v), true, `${p}: ${v} — aucun membre ne peint`)
   }
 })
@@ -101,10 +105,10 @@ test('physique : une propriété LOGIQUE se classe comme son équivalent physiqu
   ]
   for (const [logique, attendu] of PAIRES) assert.equal(physique(logique), attendu, logique)
   for (const [logique, equivalent] of PAIRES) {
-    assert.equal(estPlacement(logique), estPlacement(equivalent), `${logique} se classe comme ${equivalent}`)
+    assert.equal(estPlacement(logique, 'initial'), estPlacement(equivalent, 'initial'), `${logique} se classe comme ${equivalent}`)
   }
-  for (const p of ['block-size', 'inline-size', 'inset-inline-end', 'margin-block']) assert.equal(estPlacement(p), true, `${p} PLACE`)
-  for (const p of ['border-inline-color', 'border-block-start-width']) assert.equal(estPlacement(p), false, `${p} PEINT`)
+  for (const p of ['block-size', 'inline-size', 'inset-inline-end', 'margin-block']) assert.equal(estPlacement(p, 'initial'), true, `${p} PLACE`)
+  for (const p of ['border-inline-color', 'border-block-start-width']) assert.equal(estPlacement(p, 'initial'), false, `${p} PEINT`)
 })
 
 test('valeurHorsEchelle : un littéral de longueur NON NUL, et rien d’autre', () => {

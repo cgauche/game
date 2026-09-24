@@ -57,11 +57,13 @@
 // PORTEURS de stock) : `git commit -a` 1,8 s, `git commit -- .` 2,2 s, le rejeu de `429b9a1a2`
 // (23 734 insertions, 5 porteurs) 1,1 s ; `git show <sha> -U0` sur ce commit 0,15 s ; le chargement
 // du compilateur `typescript` (portée de module, à la demande) 0,20 s et le parse de ses 5 porteurs
-// 0,06 s. La porte `RECLASSEMENT:` (mesuré 2026-09-23, `.wt-1806`, 3 passes, 4 cœurs) : un commit qui
+// 0,06 s. La porte `RECLASSEMENT:` (mesuré 2026-09-24, `.wt-1806`, 3 passes, 4 cœurs) : un commit qui
 // ne déplace pas la frontière (`deplaceLaFrontiere` faux) paie le `-U0` de `src/` et le manifeste de
-// HEAD, 17-64 ms ; un commit qui la déplace relit les deux côtés, 0,8-1,2 s sous une charge de 8
-// (`/proc/loadavg`) et 1,45-3,9 s sous une charge de 18 à 20. Cumulée au pire cas de 2,2 s, la
-// relecture chargée donne 6,1 s : la marge sur le `timeout` n'est plus que d'un facteur 1,6 — un hook
+// HEAD, 20-35 ms ; un commit qui la déplace relit les deux côtés en ENTIER — les ~1 450 fichiers de
+// `src/` qui citent un nom du manifeste (`motifDeCitation`), ~34 Mo de `git grep` par côté —, 2,6-3,1 s
+// sous une charge de 8 (`/proc/loadavg`) et 2,2-4,4 s sous une charge de 13 à 16 ; `deplaceLaFrontiere`
+// est vrai sur 199 des 300 derniers commits touchant `src/`. Cumulée au pire cas de 2,2 s, la
+// relecture chargée donne 6,6 s : la marge sur le `timeout` n'est plus que d'un facteur 1,5 — un hook
 // expiré ne bloque pas, donc ce chiffre se re-mesure quand la porte s'alourdit, il ne se gonfle pas
 // par précaution.
 import { Buffer } from 'node:buffer'
@@ -1892,20 +1894,21 @@ export function diffDuCommit(command, dir = process.cwd()) {
       parent: coteCss(sourceGit({ cwd: dir, arbre: 'HEAD', git: lire }), { racine: dir }),
       commit: coteCss({
         lire: contenu,
-        grep: (motif) => grepDuCommit(motif),
+        contenus: (motif) => contenusDuCommit(motif),
         lister: (dossier) => listerImage(lire, INDEX, dossier),
       }, { racine: dir }),
     }),
   }
-  /** Les lignes d'import du commit, lues comme `contenu` : index, arbre de travail, ou l'arbre de
-   *  travail des seuls chemins du pathspec et `HEAD` pour les autres. */
-  function grepDuCommit(motif) {
-    if (contreIndex()) return grepDe(lire, ['--cached'], motif, [RACINE_DES_SOURCES])
-    if (forme !== 'pathspec') return grepDe(lire, [], motif, [RACINE_DES_SOURCES])
+  /** Le contenu entier des fichiers du commit qui portent `motif`, lus comme `contenu` : index, arbre
+   *  de travail, ou l'arbre de travail des seuls chemins du pathspec et `HEAD` pour les autres. */
+  function contenusDuCommit(motif) {
+    const contenus = (portee) => grepDe(lire, portee, motif, [RACINE_DES_SOURCES], { entiers: true })
+    if (contreIndex()) return contenus(['--cached'])
+    if (forme !== 'pathspec') return contenus([])
     const dans = (f) => pathspecs.some((ps) => pathMatchesPathspec(f, ps))
     return new Map([
-      ...[...grepDe(lire, ['HEAD'], motif, [RACINE_DES_SOURCES])].filter(([f]) => !dans(f)),
-      ...[...grepDe(lire, [], motif, [RACINE_DES_SOURCES])].filter(([f]) => dans(f)),
+      ...[...contenus(['HEAD'])].filter(([f]) => !dans(f)),
+      ...[...contenus([])].filter(([f]) => dans(f)),
     ])
   }
 }

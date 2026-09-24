@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import {
   deplaceLaFrontiere, ecartsDeReclassement, franchisDesCotes, raisonDeRefusDeReclassement, reclassementsNonDeclares,
 } from './reclassementCss.mjs'
-import { motifDImport } from './cssImages.mjs'
+import { motifDeCitation } from './cssImages.mjs'
 
 const Q = 'src/ui/styles/ecran-q.css'
 const P = 'src/ui/styles/prim-p.css'
@@ -81,7 +81,7 @@ const MODULE_CONSOLE = 'src/ui/styles/console.css'
 const MANIFESTE_CONSOLE = [{ id: 'a' }, { id: 'console', fichier: COMPOSANT_CONSOLE, css: MODULE_CONSOLE }]
 const jamais = (quoi) => () => { throw new Error(`${quoi} lu alors que les chemins suffisent`) }
 const diffDEcran = (ligne) =>
-  `diff --git a/src/ui/Ecran.tsx b/src/ui/Ecran.tsx\n--- a/src/ui/Ecran.tsx\n+++ b/src/ui/Ecran.tsx\n@@ -1,0 +1 @@\n${ligne}\n`
+  `diff --git a/src/ui/Ecran.tsx b/src/ui/Ecran.tsx\n--- a/src/ui/Ecran.tsx\n+++ b/src/ui/Ecran.tsx\n${ligne.startsWith('-') ? '@@ -1 +0,0 @@' : '@@ -0,0 +1 @@'}\n${ligne}\n`
 const deplace = (chemins, diff, nesOuMorts = []) =>
   deplaceLaFrontiere({ chemins, nesOuMorts: () => nesOuMorts, diff: () => diff, manifeste: () => MANIFESTE_CONSOLE })
 const sansLecture = { nesOuMorts: jamais('nesOuMorts'), diff: jamais('diff'), manifeste: jamais('manifeste') }
@@ -130,26 +130,28 @@ test('deplaceLaFrontiere : un module HOMONYME ajouté ou supprimé relit la fron
     'une simple MODIFICATION de l’homonyme ne change aucune résolution')
 })
 
-test('deplaceLaFrontiere : un import écrit sur PLUSIEURS lignes relit la frontière par sa ligne de spécificateur seul', () => {
-  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+  './Console'")), true)
-  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("-  '@/ui/Console';")), true)
-  assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran("+const p = './Console'")), false, 'un littéral relatif hors import')
+test('deplaceLaFrontiere : toute ligne de hunk qui CITE un `fichier` relit — spécificateur seul, commentaire, `/` final, littéral compris', () => {
+  for (const l of ["+  './Console'", "-  '@/ui/Console';", "+  './Console' // primitive", "+import X from './Console/'",
+    "+  './Console').then((m) => m.Console)", "+const p = './Console'"]) {
+    assert.equal(deplace(['src/ui/Ecran.tsx'], diffDEcran(l)), true, l)
+  }
+  const entete = 'diff --git a/src/ui/Console.tsx b/src/ui/Console.tsx\n--- a/src/ui/Console.tsx\n+++ b/src/ui/Console.tsx\n@@ -1 +1 @@\n-export const A = 1\n+export const A = 2\n'
+  assert.equal(deplace(['src/ui/Console.tsx'], entete), false, 'les en-têtes `---`/`+++` ne sont pas des lignes de hunk')
 })
 
-test('motifDImport : chaque forme que `IMPORT_RE` lit et que `resolveImport` résout, et rien d’autre', () => {
-  const importe = new RegExp(motifDImport(MANIFESTE_CONSOLE))
+test('motifDeCitation : un nom du manifeste en mot entier après `/`, ou un spécificateur fini par `.`, `..` ou `/`', () => {
+  const cite = new RegExp(motifDeCitation(MANIFESTE_CONSOLE))
   for (const l of [
-    "import { C } from './Console'", "import X from\t'./Console'", "export { C } from '../d/Console.tsx'",
-    "const L = lazy(() => import('./Console'))", "import './Console'", "import Z from './Console/index'",
-    "export { W } from '..'", "export * from '.'", "import { R } from '@/ui/Console'",
-  ]) assert.equal(importe.test(l), true, l)
-  for (const l of ["  './Console'", "\t'./Console';", "  '../ui/Console.tsx'", "  '@/ui/Console'", '  "./Console/index",']) {
-    assert.equal(importe.test(l), true, `spécificateur seul : ${l}`)
+    "import { C } from './Console'", "export { C } from '../d/Console.tsx'", "import Z from './Console/index'",
+    "import X from './Console/'", "  './Console' // primitive", "  './Console').then((m) => m.Console)",
+    "import { R } from '@/ui/Console'", "export * from '.'", "export { W } from '../..'", "import Y from './a/..'", "import V from '@/'",
+  ]) assert.equal(cite.test(l), true, l)
+  for (const l of ["const k = 'Console'", "import { B } from './ConsoleBis'", "import { t } from 'Console'", "import { u } from './MaConsole'", "const v = ''"]) {
+    assert.equal(cite.test(l), false, l)
   }
-  for (const l of ["const p = './Console'", "const k = 'Console'", "import { B } from './ConsoleBis'", "import { t } from 'Console'",
-    "  'Console'", "  './ConsoleBis'"]) {
-    assert.equal(importe.test(l), false, l)
-  }
+  assert.equal(new RegExp(motifDeCitation([{ id: 'i', fichier: 'src/ui/Console/index.tsx' }])).test("import I from './index'"), true,
+    'un `index.*` se cite aussi par `index`')
+  assert.equal(motifDeCitation([{ id: 'sans-fichier' }]), null)
 })
 
 test('le refus nomme chaque écart, le commit, et le geste `rebase -i` sur une plage', () => {

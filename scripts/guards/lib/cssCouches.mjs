@@ -285,23 +285,25 @@ const EQUIVALENT_PHYSIQUE = new Map([
  */
 export const physique = (prop) => EQUIVALENT_PHYSIQUE.get(prop) ?? prop;
 
-/** Les RACCOURCIS de la liste nommée dont un membre PEINT, et le test qui dit si la VALEUR pose ce
- *  membre : `list-style` porte `list-style-image` dès qu'elle cite une image. Les autres raccourcis
- *  nommés (`flex`, `grid`, `inset`, `margin`, `padding`, `overflow`, `columns`, `container`, `gap`,
- *  `white-space`) n'ont aucun membre qui peigne. */
-const RACCOURCIS_A_MEMBRE_PEINT = new Map([
-  ['list-style', (valeur) => /\b(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(/i.test(valeur)],
-]);
+/** Les RACCOURCIS de la liste nommée dont un membre PEINT (`list-style` porte `list-style-image`). Les
+ *  autres raccourcis nommés (`flex`, `grid`, `inset`, `margin`, `padding`, `overflow`, `columns`,
+ *  `container`, `gap`, `white-space`) n'ont aucun membre qui peigne. */
+const RACCOURCIS_A_MEMBRE_PEINT = new Set(['list-style']);
 
-/** Vrai si la déclaration PLACE : sa propriété, classée sous son nom physique (`physique`), est nommée
- *  ou d'une famille à préfixe, et sa `valeur` ne pose aucun membre qui peint
- *  (`RACCOURCIS_A_MEMBRE_PEINT`). Une variable CSS (`--x`) est un PARAMÈTRE de primitive (patron
- *  `.swatch`), jamais une matière — elle reste hors du stock d'identité.
- *  @param {string} prop @param {string} [valeur] */
-export const estPlacement = (prop, valeur = '') => {
+/** Une valeur faite de MOTS-CLÉS seuls (`!important` compris) : aucune fonction — `var()` compris —,
+ *  aucune chaîne, aucun nombre. */
+const MOTS_CLES_SEULS = /^-?[a-z_][\w-]*(\s+-?[a-z_][\w-]*)*(\s*!\s*important)?$/i;
+
+/** Vrai si la DÉCLARATION place : sa propriété, classée sous son nom physique (`physique`), est nommée
+ *  ou d'une famille à préfixe ; un raccourci dont un membre peint (`RACCOURCIS_A_MEMBRE_PEINT`) ne place
+ *  que si sa `valeur` est faite de mots-clés seuls (`MOTS_CLES_SEULS`) — une valeur indécidable peint.
+ *  Une variable CSS (`--x`) est un PARAMÈTRE de primitive (patron `.swatch`), jamais une matière — elle
+ *  reste hors du stock d'identité.
+ *  @param {string} prop @param {string} valeur */
+export const estPlacement = (prop, valeur) => {
   if (prop.startsWith('--')) return true;
   const p = physique(prop);
-  if (RACCOURCIS_A_MEMBRE_PEINT.get(p)?.(valeur)) return false;
+  if (RACCOURCIS_A_MEMBRE_PEINT.has(p) && !MOTS_CLES_SEULS.test(valeur.trim())) return false;
   return PROPRIETES_DE_PLACEMENT.has(p) || PREFIXES_DE_PLACEMENT.some((x) => p.startsWith(x));
 };
 
