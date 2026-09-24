@@ -4,10 +4,10 @@ import { weaponAttackClip, weaponParryClip, weaponRest } from './weaponClips';
 import { findTrappingById } from '../../../data';
 import type { Weapon } from '../../../engine/types';
 
-// Arme construite comme au SPAWN : id de Possession → shape ; les attaques naturelles portent
+// Arme construite comme au SPAWN : id de Possession → shape et Groupe (`subType`) ; les attaques naturelles portent
 // leur kind STABLE (`attackKind`) — c'est lui qui route le maniement, jamais le libellé.
 const w = (id: string, extra: Partial<Weapon> = {}): Weapon =>
-  ({ label: findTrappingById(id)?.label ?? id, type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], shape: findTrappingById(id)?.shape, ...extra });
+  ({ label: findTrappingById(id)?.label ?? id, type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], shape: findTrappingById(id)?.shape, subType: findTrappingById(id)?.subType ?? undefined, ...extra });
 const tentacule = w('tentacule', { attackKind: 'tentacules', natural: true });
 const cornes = w('cornes', { attackKind: 'cornes', natural: true });
 

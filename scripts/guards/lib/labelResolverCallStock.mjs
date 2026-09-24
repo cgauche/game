@@ -19,5 +19,4 @@
 export const LABEL_RESOLVER_CALL_STOCK = {
   'src/engine/qualities/normalize.ts': 1,
   'src/engine/traits/dispatch.ts': 1,
-  'src/engine/weaponGroup.ts': 1,
 };

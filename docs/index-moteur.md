@@ -26,7 +26,7 @@ sous le concept « Création de personnage : Carrière aléatoire (tirage), esp�
 - Le lexique `CROSS_CONCEPTS` (recherche transversale) est un filet de sens, pas une taxonomie exhaustive du domaine :
   une notion absente du lexique reste findable via le concept de fichier, jamais introuvable.
 
-_2130 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 1836 documentés (JSDoc exploitable), 294 sans JSDoc._
+_2129 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 1835 documentés (JSDoc exploitable), 294 sans JSDoc._
 
 ## Index par concept (français)
 
@@ -111,7 +111,7 @@ _2130 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 18
 | Génération de noms | `generateName` (names.ts:33) |
 | Grille : distance de cases | `chebyshev` (grid.ts:21), `GridPt` (grid.ts:12) |
 | Grimoire, sorts connus | `arcaneDomainsOf` (grimoire.ts:80), `canCastFromGrimoire` (grimoire.ts:185), `carriedGrimoire` (grimoire.ts:179), `CasterTalent` (grimoire.ts:29), `casterTalents` (grimoire.ts:37), `domainSpellsKnown` (grimoire.ts:65), `eligibleTalent` (grimoire.ts:87), `knownCount` (grimoire.ts:54), `learnableSpells` (grimoire.ts:163), `RitualReduced` (grimoire.ts:107), `ritualReduction` (grimoire.ts:115), `spellCost` (grimoire.ts:140) |
-| Groupe d'arme | `weaponGroup` (weaponGroup.ts:55), `weaponGroupFromText` (weaponGroup.ts:44), `weaponGroupKey` (weaponGroup.ts:61) |
+| Groupe d'arme | `weaponGroup` (weaponGroup.ts:23), `weaponGroupKey` (weaponGroup.ts:28) |
 | Groupes de créatures/joueurs | `groupMatch` (groups.ts:69), `groupsFor` (groups.ts:19), `hiddenGroupsOf` (groups.ts:54) |
 | Horloge, temps de jeu | `ancreDePhase` (clock.ts:145), `campaignStart` (clock.ts:123), `DAWN_MINUTE` (clock.ts:183), `DAY_PHASES` (clock.ts:134), `dayIndex` (clock.ts:198), `DayPhase` (clock.ts:130), `dayPhase` (clock.ts:169), `DayPhaseId` (clock.ts:129), `DAYS_PER_YEAR` (clock.ts:67), `daysPerYear` (clock.ts:65), `DUSK_MINUTE` (clock.ts:188), `EPOCH_YEAR` (clock.ts:29), `formatImperial` (clock.ts:115), `fromDate` (clock.ts:104), `IMPERIAL_MONTHS` (clock.ts:24), `ImperialDate` (clock.ts:69), `ImperialMonth` (clock.ts:21), `INTERCALARY` (clock.ts:25), `isNight` (clock.ts:163), `isTravelDaylight` (clock.ts:192), `MINUTES_PER_DAY` (clock.ts:28), `minutesUntilNext` (clock.ts:178), `NIGHT_WINDOW` (clock.ts:158), `scheduleAt` (clock.ts:213), `ScheduleSpec` (clock.ts:202), `toDate` (clock.ts:85), `WEEKDAYS` (clock.ts:26) |
 | Identifiants de qualités (union GÉNÉRÉE) | `QualityId` (qualities/qualityId.generated.ts:5) |
@@ -3089,9 +3089,8 @@ _2130 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 18
 
 | Export | Ligne | Genre | Rôle | Concepts |
 |---|---|---|---|---|
-| `weaponGroupFromText` | 44 | function | COUTURE texte→id (#602) : libellé d'arme SAISI (arme custom, statbloc sans identité de catalogue) → Groupe canonique. | Groupe d'arme |
-| `weaponGroup` | 55 | function | Groupe canonique (subType) — IDENTITÉ STABLE d'abord (#602 : `Weapon.subType` PORTE l'id du Groupe, posé par `toWeapon` depuis le catalogue) ; repli par TEXTE pour une arme sans identité. | Groupe d'arme |
-| `weaponGroupKey` | 61 | function | Clé de famille d'arme (base/escrime/…/poudre) : donnée → alias → défaut par type. | Groupe d'arme |
+| `weaponGroup` | 23 | function | Groupe canonique : l'id `Weapon.subType` (#602), posé par le catalogue ou par l'éditeur ; absent = pas de Groupe (LDB 85 l.31-33). | Groupe d'arme |
+| `weaponGroupKey` | 28 | function | Clé de famille d'arme (base/escrime/…/poudre) : Groupe → défaut par type. | Groupe d'arme |
 
 ### `weaponLoad.ts` — Chargement d'arme (munition, chambre)
 
@@ -3133,4 +3132,4 @@ _2130 exports publics mesurés (160 fichiers de `src/engine`, hors tests) — 18
 |---|---|---|---|---|
 | `woundsFromHit` | 30 | function | Blessures infligées par un coup : `totalDamage` (Dégâts d'arme + DR + qualités) moins le Bonus d'Endurance et les PA EFFECTIFS à la `location` (armure portée/naturelle + `extraAP`, matériau ignoré PUIS retrait plat, LDB 62 l.270). | Calcul des Blessures, Blessures, dégâts, soin, guérison, Tests : Degrés de Réussite, Caractéristiques, tables, Qualités d'arme et d'armure |
 
-<!-- sources-empreinte: 80b6c568860ff0f657df16aeed0658906cc46dc1 (166 fichiers, 6 dossiers) corps: b08c61ba8573ce988d667c4927246ed9c73c5aad -->
+<!-- sources-empreinte: ab3b52069322af53ecf8b707d8d79b94fbbe5c35 (166 fichiers, 6 dossiers) corps: eff3fc706586751eb780c7200bbdfedbccb6f611 -->

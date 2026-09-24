@@ -18,7 +18,6 @@ import type { MerchantArchetypeDef } from '../state/merchants/types';
 // EXACTEMENT les types des champs qu'elles alimentent — les redéclarer ici en ferait une seconde vérité.
 import type { Scene, ReliefDefaults, SceneRoofDefaults, Terrain } from '../state/scene';
 import { slugId } from './slug';
-import { norm } from '../lib/normalize';
 import { effectiveEntry } from '../engine/variants';
 import { CATEGORY_BY_SOURCE_KIND, type EffectSource } from '../engine/types';
 import characteristicsJson from './characteristics.json';
@@ -3194,23 +3193,6 @@ export function weaponGroupLabel(id: string | null | undefined): string {
 /** VOCABULAIRE FERMÉ des catégories de possession (`TrappingData.categorie`), miroir de l'enum du
  *  schéma `src/data/schemas/defs/trappings.ts` — une union, pas un registre de données. */
 export type TrappingTypeId = 'melee' | 'ranged' | 'ammunition' | 'armor' | 'trapping';
-const armeParLabelNormalise = indexParChamp('trappings', trappings, (t) =>
-  (t.categorie === 'melee' || t.categorie === 'ranged') && t.subType ? norm(t.label) : undefined);
-/** `id` de Groupe d'arme (`TrappingData.subType`) depuis un LIBELLÉ d'arme SAISI (arme custom, statbloc
- *  sans identité de catalogue) — libellé normalisé, `undefined` hors catalogue. La couture label→id vit
- *  ICI, au chargement de la donnée (CLAUDE.md § Pour TOUT agent) : `engine/weaponGroup` délègue et ne
- *  manipule que des ids. Patron `traitIdByLabel`/`qualityIdByLabel`. */
-export function weaponGroupIdByWeaponLabel(label: string): string | undefined {
-  return armeParLabelNormalise(norm(label))?.subType ?? undefined;
-}
-const groupeObjetParLabelMinuscule = indexParChamp('weaponGroups', weaponGroups, (g) => g.label.toLowerCase());
-/** Résout un `id` de Groupe depuis un LIBELLÉ (authoring/données de Sort « subType » par libellé) —
- *  insensible à la casse. Renvoie l'id si déjà un id connu, sinon résout le libellé. */
-export function weaponGroupIdByLabel(label: string | null | undefined): string | undefined {
-  if (!label) return undefined;
-  if (groupeObjetParId(label)) return label; // déjà un id
-  return groupeObjetParLabelMinuscule(label.toLowerCase())?.id;
-}
 const groupeParId = indexParId('groups', groups);
 /** Résout un Groupe d'APPARTENANCE par son `id` STABLE (cible de Trait psy, filtre onlyGroups/exceptGroups). */
 export function findGroupById(id: string | null | undefined): GroupData | undefined {
