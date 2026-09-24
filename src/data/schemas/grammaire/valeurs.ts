@@ -57,6 +57,10 @@ export function enumNomme<const V extends Readonly<Record<string, string>>>(
  */
 export const mutationKindSchema = enumNomme({ physique: 'Physique', mentale: 'Mentale' });
 
+/** Dé d'une table à fourchettes — UNE déclaration pour `tables.json` (`defs/tables.ts`), les tables de
+ *  `arcane-phenomena.json` et l'op `rollTable` (`grammaire/mecanique.ts`). */
+export const deDeTableSchema = enumNomme({ d10: '1d10', d100: '1d100' });
+
 /**
  * Registre d'où DÉRIVE le pool de spécialisations d'une def (`SpecsSource`, `src/data/index.ts` ;
  * catalogue `SPEC_SOURCES`) — UNE déclaration pour les trois defs qui portent ce champ
@@ -692,9 +696,6 @@ export const entityAppearanceSchema = z.strictObject({
  *  ne porte de valeur hors de ces 6 (vérifié au parse). */
 export const hitLocationSchema = z.enum(['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD']);
 
-/** `Formula` (`src/engine/ops.ts:87`) — quantité résolue à l'application (littéral/dés/bonus/Indice/
- *  jet-associé/pions/écart d'Avantage/Blessures/somme/facteur/borne basse). Resserré ici sur `CharKey`
- *  (fidèle à `src/engine/ops.ts:87`), sans risque pour les datasets (vérifié au parse). */
 /** `ReachValue` (`src/engine/types.ts`) : les SEPT longueurs de l'axe d'Allonge (LDB 62 l.156-164) ou
  *  « Variable » (Arme improvisée, l.31). Vocabulaire FERMÉ, validé au CHARGEMENT (fail-fast) : hors de
  *  cette liste, `reachIdOf` ne rendrait aucun rang et toute règle d'Allonge se tairait en silence. */
@@ -705,6 +706,9 @@ export const reachSchema = z.enum([REACH_VARIABLE, ...Object.values(REACH_LABELS
  *  (58 mesurées), là où le site de référence est UN. */
 const refRegleOptionnelle = idDe('regleOptionnelle');
 
+/** `Formula` (`src/engine/ops.ts:87`) — quantité résolue à l'application (littéral/dés/bonus/Indice/
+ *  jet-associé/pions/écart d'Avantage/Blessures/somme/facteur/borne basse). Resserré ici sur `CharKey`
+ *  (fidèle à `src/engine/ops.ts:87`), sans risque pour les datasets (vérifié au parse). */
 export const formulaSchema: z.ZodType<unknown> = z.lazy(() =>
   z.union([
     z.number(),

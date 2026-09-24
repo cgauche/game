@@ -1,6 +1,7 @@
 /**
  * STOCK des VOCABULAIRES encore sans libellés de valeurs (#1694) — banc À PART : la mesure part du seul
- * REGISTRE (`DEFS_DE_DOCUMENT`), jamais d'un document synthétique bâti par un autre banc.
+ * REGISTRE (`DEFS_DE_DOCUMENT`, et les payloads d'`OP_DEFS`), jamais d'un document synthétique bâti par
+ * un autre banc.
  *
  * UNE descente, `descendre` (`grammaire/descente.ts`) — jamais une descente sœur. Le stock se tient
  * par VOCABULAIRE (le jeu ordonné des options), pas par nœud : plusieurs nœuds `z.enum` distincts
@@ -12,6 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { readCorpus } from '../../../../scripts/guards/lib/sourceCorpus.mjs';
 import { z } from 'zod';
 import { DEFS_DE_DOCUMENT } from '../validate';
+import { OP_DEFS } from './mecanique';
 import { descendre } from './descente';
 import { valeursDe } from './meta';
 import { IDS_PAR_DATASET, SPECS_PAR_DATASET } from '../_ids.generated';
@@ -56,8 +58,10 @@ function vocabulairesDe(schemas: readonly unknown[]): Map<string, CompteDeNoeuds
   return vus;
 }
 
+/** Le registre des documents ET les payloads d'`OP_DEFS` : un payload d'op est lu par un raffinement de
+ *  `gameOpSchema` (`grammaire/descente.ts › enfantsDe`), que la descente d'un document ne traverse pas. */
 const vocabulairesDuRegistre = (): Map<string, CompteDeNoeuds> =>
-  vocabulairesDe(DEFS_DE_DOCUMENT.map((d) => d.schema));
+  vocabulairesDe([...DEFS_DE_DOCUMENT.map((d) => d.schema), ...Object.values(OP_DEFS)]);
 
 /** Les vocabulaires qu'un `enumNomme` nomme DÉJÀ et qui gardent un jumeau MUET — doctrine
  *  « un enum = une const nommée au module qui le porte » (#1694). */
@@ -137,6 +141,12 @@ const NOMMES = [
   'woundsCurrent|woundsMax|size|advantage',
   'onHit|onCrit|onWoundLoss|onSlain|onRoundStart|onStartled|onKill|onCharged|onGainCondition|onCombatStart|onCombatEnd|onRoundEnd|onTurnStart|onTurnEnd|onDayStart|onWake|onAttackResolved|onCastResolved|onMiscast|onOwnTestFailed',
   'self|victim|engaged|grappled',
+  // Payloads d'`OP_DEFS` (#1473) : `armourBypassCategorieSchema`, `loseTurnWhatSchema`, `zoneShapeSchema`
+  // (`grammaire/mecanique.ts`) ; `deDeTableSchema` (`grammaire/valeurs.ts`), partagé avec `tables.json`.
+  'action|movement',
+  'all|metal|leather|nonMagic|nonMetal',
+  'd10|d100',
+  'disc|wall',
 ].sort();
 
 /**
@@ -175,11 +185,11 @@ const VOCABULAIRES_SANS_LIBELLES: string[] = [
   'caniculaire|chaude|mediane|froide|glaciale',
   'cargaison|greement|coque|avirons|equipements|gouvernail|superstructure',
   'chaleur|froid',
+  'chaos|unravel',
   'classe|relais|compagnie|peage|patrouille',
   'complet|partiel',
   'complet|sans-disponibilite|sans-marchandage|simplifie',
   'current|ever',
-  'd10|d100',
   'dangereuse|tresDangereuse|extreme',
   'days|hours|minutes',
   'dechirure|fracture',
@@ -217,6 +227,7 @@ const VOCABULAIRES_SANS_LIBELLES: string[] = [
   'le-plus-lent|aucun',
   'lisses|griffues',
   'localisation|porteur',
+  'main|off',
   'majeure|mineure-x2',
   'metal|leather|chaos',
   'mineure|arcane|invocation|beni|chaos',

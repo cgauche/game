@@ -192,8 +192,9 @@ export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<
 
 /**
  * Marque le nœud en cours de validation comme un NŒUD D'OP ATTEINT par le parse (`gameOpSchema`,
- * `grammaire/mecanique.ts`). Hors du parse de mesure, l'appel ne fait rien : le parse normal n'y
- * gagne aucun chemin.
+ * `grammaire/mecanique.ts`), AVANT tout jugement de son payload : « atteint » ne dit pas « jugé » (une
+ * op de `OPS_NON_TYPEES` est atteinte et son payload n'est jugé par aucune feuille `idDe`). Hors du
+ * parse de mesure, l'appel ne fait rien : le parse normal n'y gagne aucun chemin.
  */
 export function marquerOpAtteinte(ctx: z.RefinementCtx): void {
   if (parseDeMesure) ctx.addIssue({ code: 'custom', message: 'repère de nœud d’op', params: { [REPERE_OP]: true }, continue: true });
@@ -219,6 +220,16 @@ type IssueLue = {
 
 const typeDuRepere = (issue: IssueLue): TypeEntite | undefined => issue.params?.[REPERE];
 const estRepereDOp = (issue: IssueLue): boolean => issue.params?.[REPERE_OP] === true;
+
+/** La FAMILLE du repère que portent les `params` d'une issue — `reference` (`idDe`) ou `op`
+ *  (`marquerOpAtteinte`) —, `undefined` hors repère. Seule lecture des clés de repère hors de ce module :
+ *  la garde du masquage (`parse-de-mesure.test.ts`) instrumente les deux familles. */
+export function familleDuRepere(params: unknown): 'reference' | 'op' | undefined {
+  const issue = { code: 'custom', path: [], message: '', params } as IssueLue;
+  if (params === undefined || params === null) return undefined;
+  if (typeDuRepere(issue) !== undefined) return 'reference';
+  return estRepereDOp(issue) ? 'op' : undefined;
+}
 
 /** L'issue n'est-elle faite QUE de repères (union dont une branche l'est, clé/élément dont toutes les issues le sont) ? */
 const estPropre = (issue: IssueLue): boolean =>

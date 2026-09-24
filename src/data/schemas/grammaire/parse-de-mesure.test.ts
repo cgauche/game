@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { z } from 'zod';
-import { estFeuilleDId, idDe, reperesDuParse } from './ref';
+import { estFeuilleDId, familleDuRepere, idDe, mesureDuParse, reperesDuParse } from './ref';
 import { gameOpSchema, OP_DEFS } from './mecanique';
 import { refTestDeCorruption } from './valeurs';
 import { descendre } from './descente';
@@ -94,7 +94,12 @@ describe('le mode de mesure est BORNÉ à l’appel de `reperesDuParse`', () => 
 //  - AVALEMENT : un nœud rend un résultat sans issue alors qu'un enfant lui a rendu des repères seuls ;
 //  - SAUT : une feuille validée au parse normal n'est plus exécutée au parse de mesure ;
 //  - COUVERTURE : un repère rendu vient d'une feuille que la marche instrumentée n'a pas atteinte.
+// Les deux familles de repère y passent : la référence (feuille `idDe`) et le nœud d'op (`NOEUD_D_OP`,
+// `marquerOpAtteinte`), chacune reconnue par `familleDuRepere`.
 // ============================================================================
+
+/** Le nœud qui émet le repère d'op : le côté `in` de `gameOpSchema`, qui porte le `superRefine`. */
+const NOEUD_D_OP: object = (gameOpSchema as unknown as z.ZodPipe).in;
 
 type Issue = { readonly code: string; readonly params?: object; readonly errors?: readonly (readonly Issue[])[]; readonly issues?: readonly Issue[] };
 type Charge = { value: unknown; issues: Issue[] };
@@ -117,12 +122,13 @@ interface Sonde {
   validees: { normal: Map<string, number>; mesure: Map<string, number> };
   emis: WeakSet<object>;
   nbEmis: number;
+  nbOpsEmis: number;
   avalements: string[];
 }
 
 /** Instrumente les nœuds atteints depuis les racines ; rend la sonde et la remise à l'identique. */
 function instrumenter(racines: readonly (readonly [string, unknown])[]): { sonde: Sonde; restaurer: () => void } {
-  const sonde: Sonde = { mesure: false, pile: [], validees: { normal: new Map(), mesure: new Map() }, emis: new WeakSet(), nbEmis: 0, avalements: [] };
+  const sonde: Sonde = { mesure: false, pile: [], validees: { normal: new Map(), mesure: new Map() }, emis: new WeakSet(), nbEmis: 0, nbOpsEmis: 0, avalements: [] };
   const estPropre = (i: Issue): boolean =>
     (i.params !== undefined && sonde.emis.has(i.params)) ||
     (i.code === 'invalid_union' && (i.errors ?? []).some((b) => b.length > 0 && b.every(estPropre))) ||
@@ -133,6 +139,7 @@ function instrumenter(racines: readonly (readonly [string, unknown])[]): { sonde
     const run = zod.run;
     originaux.push([zod, run]);
     const feuille = estFeuilleDId(noeud);
+    const emetteurDOp = noeud === NOEUD_D_OP;
     zod.run = (charge, ctx) => {
       const avant = charge.issues.length;
       const valeur = charge.value;
@@ -158,6 +165,13 @@ function instrumenter(racines: readonly (readonly [string, unknown])[]): { sonde
           }
         }
       }
+      if (emetteurDOp && sonde.mesure) {
+        for (const i of nouvelles) {
+          if (familleDuRepere(i.params) !== 'op' || sonde.emis.has(i.params!)) continue;
+          sonde.emis.add(i.params!);
+          sonde.nbOpsEmis += 1;
+        }
+      }
       if (sonde.mesure && nouvelles.length === 0 && enfants.some(Boolean)) sonde.avalements.push(nom);
       sonde.pile[sonde.pile.length - 1]?.push(sonde.mesure && nouvelles.length > 0 && nouvelles.every(estPropre));
       return r;
@@ -168,12 +182,12 @@ function instrumenter(racines: readonly (readonly [string, unknown])[]): { sonde
 
 /** Les fautes de masquage d'un document, sous des schémas instrumentés par `instrumenter`. */
 function masquagesDe(sonde: Sonde, nom: string, schema: z.ZodType, donnee: unknown): string[] {
-  Object.assign(sonde, { mesure: false, pile: [], validees: { normal: new Map(), mesure: new Map() }, nbEmis: 0, avalements: [] });
+  Object.assign(sonde, { mesure: false, pile: [], validees: { normal: new Map(), mesure: new Map() }, nbEmis: 0, nbOpsEmis: 0, avalements: [] });
   if (!schema.safeParse(donnee).success) return [`${nom} : invalide au parse normal`];
   sonde.mesure = true;
-  let rendus: number;
+  let rendus: ReturnType<typeof mesureDuParse>;
   try {
-    rendus = reperesDuParse(schema, donnee).length;
+    rendus = mesureDuParse(schema, donnee);
   } catch (e) {
     return [`${nom} : ${(e as Error).message}`];
   } finally {
@@ -184,7 +198,8 @@ function masquagesDe(sonde: Sonde, nom: string, schema: z.ZodType, donnee: unkno
     const m = sonde.validees.mesure.get(cle) ?? 0;
     if (m < n) fautes.push(`${nom} SAUT : ${cle} validée ${n}× au parse normal, ${m}× au parse de mesure`);
   }
-  if (rendus > sonde.nbEmis) fautes.push(`${nom} COUVERTURE : ${rendus} repères rendus, ${sonde.nbEmis} émis par les feuilles instrumentées`);
+  if (rendus.reperes.length > sonde.nbEmis) fautes.push(`${nom} COUVERTURE : ${rendus.reperes.length} repères rendus, ${sonde.nbEmis} émis par les feuilles instrumentées`);
+  if (rendus.ops.length > sonde.nbOpsEmis) fautes.push(`${nom} COUVERTURE : ${rendus.ops.length} nœuds d’op rendus, ${sonde.nbOpsEmis} émis par le nœud d’op instrumenté`);
   return fautes;
 }
 
@@ -230,6 +245,11 @@ describe('GARDE DU MASQUAGE — aucun nœud ne perd au parse de mesure une réf�
     expect(masquagesDuTemoin(s, { a: COMPETENCE, b: COMPETENCE })).toEqual([
       `témoin SAUT : témoin.b « ${COMPETENCE} » validée 1× au parse normal, 0× au parse de mesure`,
     ]);
+  });
+
+  it('G — union dont une branche postérieure OPAQUE avale un nœud d’op atteint', () => {
+    const s = z.union([z.array(gameOpSchema), z.array(z.unknown())]);
+    expect(masquagesDuTemoin(s, [{ op: 'condition', id: 'a' }])).toEqual(['témoin AVALEMENT : témoin']);
   });
 
   it('les documents des DEUX racines n’en portent aucun (payloads d’`OP_DEFS` compris, re-parsés par `gameOpSchema`)', () => {

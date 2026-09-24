@@ -15,7 +15,7 @@
  */
 import type { Flow, Condition, EffectOp } from '../../state/flow';
 import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
-import { senseSchema } from '../../data/schemas/grammaire/mecanique';
+import { armourBypassCategorieSchema, loseTurnWhatSchema, senseSchema, zoneShapeSchema } from '../../data/schemas/grammaire/mecanique';
 import { INDICE_TEMPLATE, type ActorRef, type CompareOp, type CompareSubject } from '../../engine/flowCore';
 import { estCausePersistante, type GameOp, type Formula, type ResolveWindow } from '../../engine/ops';
 import type { Camp, Relation } from '../../engine/relations';
@@ -275,10 +275,9 @@ export function humanizeCondition(c: Condition, neg = false): string {
 
 const RESOURCE_LABEL = { fortune: 'Chance', fate: 'Destin' } as const;
 const ATTR_LABEL = { wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination' } as const;
-const ARMOUR_BYPASS_CAT_LABEL = { all: "toute l'armure", metal: 'le métal', leather: 'le cuir', nonMagic: 'le non-magique', nonMetal: 'le non-métal' } as const;
 /** Libellé JOUEUR du volet matériau d'`armourPierce.bypass` (LDB 62 l.270) — `undefined`/nombre = pas de volet matériau. */
 const armourBypassCatLabel = (b: ArmourBypass | undefined): string | undefined =>
-  typeof b === 'string' ? ARMOUR_BYPASS_CAT_LABEL[b] : undefined;
+  typeof b === 'string' ? libelleDeValeur(armourBypassCategorieSchema, b) : undefined;
 
 /** ÉCHELLE « par DR » d'une quantité d'op (`PerSL`) en clair joueur — « +1 par DR d'échec » (Terreur,
  *  LDB 21 l.54), « +1 par 2 DR ». SOURCE UNIQUE de cette phrase : la chip d'une op qui la porte
@@ -442,7 +441,7 @@ export function humanizeOp(o: GameOp): string {
     case 'charDamage': return `perd ${humanizeFormula(o.amount)} en ${CHAR_LABELS[o.char]} (définitivement)`;
     case 'summon': return `invoque ${humanizeFormula(o.count)}× ${creatureLabel(o.ref)}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
     case 'scheduleRespawn': return `se reconstitue (${creatureLabel(o.ref)}) après ${humanizeFormula(o.delayDays)} jour(s)`;
-    case 'zone': return `pose ${o.shape === 'wall' ? `un mur ${deFormule(o.lengthMeters ?? 2)} m` : `un disque ${deFormule(o.radiusMeters ?? 2)} m`}`;
+    case 'zone': return `pose un ${libelleDeValeur(zoneShapeSchema, o.shape)} ${deFormule((o.shape === 'wall' ? o.lengthMeters : o.radiusMeters) ?? 2)} m`;
     case 'polymorph': return `se métamorphose en ${creatureLabel(o.ref)}`;
     case 'transform': return `se transforme (${creatureLabel(o.morphRef ?? o.tag)})`;
     case 'endTransform': return `retrouve sa forme initiale`;
@@ -470,7 +469,7 @@ export function humanizeOp(o: GameOp): string {
     case 'disarm': return `lâche l'objet tenu dans une main`;
     case 'handGate': return `doit réussir un Test avant d'agir de cette main`;
     case 'senseLoss': return `perd ${libelleDeValeur(senseSchema, o.sense)}`;
-    case 'loseTurn': return `perd ${o.what === 'action' ? 'son Action' : o.what === 'movement' ? 'son Mouvement' : 'son Action et son Mouvement'}`;
+    case 'loseTurn': return `perd ${o.what ? libelleDeValeur(loseTurnWhatSchema, o.what) : 'son Action et son Mouvement'}`;
     case 'actGate': return `doit réussir un Test de ${CHAR_LABELS[o.char]} chaque Round pour agir`;
     case 'diseaseTestMod': return `${o.amount >= 0 ? 'gagne' : 'subit'} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie`;
     case 'suppressSymptom': return `voit le symptôme ${symptomLabel(o.symptomId)} suspendu`;

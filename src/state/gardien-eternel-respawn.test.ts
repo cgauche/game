@@ -5,6 +5,7 @@ import { seedBattleRng } from './battleRng';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Combatant } from '../engine/types';
 import type { Scene } from './scene';
+import { t } from '../i18n';
 
 /**
  * Trait Gardien éternel (Prédateur sanglant — Bestiaire de Middenheim, #19) : « si l'élémentaire incarné
@@ -63,7 +64,7 @@ describe('Trait Gardien éternel — reconstitution différée (op scheduleRespa
     const h = harness({ battle: battle([c]) });
     const lines = notifySlain(h.get as never, h.set as never, c);
     expect(h.state().scheduledEffects).toHaveLength(0);
-    expect(lines).toContain('Prédateur sanglant ne peut pas se reconstituer : il n\'est l\'instance d\'aucune créature du bestiaire.');
+    expect(lines).toContain(t('cf.sourceRebuildsSansCreature', { name: 'Prédateur sanglant' }));
   });
 
   it('sans le trait → aucune reconstitution programmée à la mort', () => {

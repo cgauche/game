@@ -721,7 +721,7 @@ export const fr = {
   // révélées : le fichier était déclaré MIGRÉ, son invariant ZÉRO ne les voyait pas.
   'cf.componentAbsorbs': "{name} : le composant absorbe l'Incantation Imparfaite Mineure (aucun effet).",
   'cf.sourceRebuilds': '{name} est terrassé… mais sa Source le reconstituera dans {days} jour{s}.',
-  'cf.sourceRebuildsSansCreature': "{name} ne peut pas se reconstituer : il n'est l'instance d'aucune créature du bestiaire.",
+  'cf.sourceRebuildsSansCreature': '{name} ne peut pas se reconstituer : aucune créature du bestiaire ne lui correspond.',
   'cf.grimoireRefused': '{name} ne peut pas lancer {spell} depuis un grimoire (mémorisé, hors Domaine ou pas de grimoire porté).',
   'cf.spellNotFound': 'Sort « {spell} » introuvable.',
   'cf.cannotCast': '{name} ne peut pas incanter : {reason}.',
