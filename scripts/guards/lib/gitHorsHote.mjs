@@ -1,10 +1,14 @@
 // GIT HORS DE L'HÔTE — la garde de l'invariant d'en-tête de `gitPorte.mjs` : « l'hôte UNIQUE de la
 // forme d'union et des commandes git que les portes […] exécutent » (#1806).
 //
-// LE PÉRIMÈTRE est un fait du dépôt, pas une liste : les sources SUIVIES sous les trois dossiers d'où
-// une porte s'exécute — `scripts/hooks` (hooks Claude Code, `.claude/settings.json`), `scripts/git-hooks`
-// (hooks git, `core.hooksPath`) et `scripts/guards` (leur bibliothèque) —, hors suites de test (elles
-// FORGENT des dépôts) et hors l'hôte lui-même. Un module neuf y entre en naissant.
+// LE PÉRIMÈTRE est un fait du dépôt, pas une liste, et il a deux faces :
+//   · les sources SUIVIES sous les trois dossiers d'où une porte s'exécute — `scripts/hooks` (hooks
+//     Claude Code, `.claude/settings.json`), `scripts/git-hooks` (hooks git, `core.hooksPath`) et
+//     `scripts/guards` (leur bibliothèque) : une porte qui n'importe pas l'hôte y est prise ;
+//   · toute source suivie qui IMPORTE l'hôte : elle compose ses lectures, elle lit donc git par lui
+//     seul (`scripts/ops/faits-de-palier.mjs`, faits de palier ; `scripts/ops/publier.mjs`).
+// Hors instruments Vitest (`estFichierVitest` : une suite FORGE des dépôts, un banc n'est pas une porte)
+// et hors l'hôte lui-même. Un module neuf y entre en naissant, ou en important l'hôte.
 //
 // TROIS FORMES, chacune un site :
 //   · `lanceur`  — un appel dont le premier argument est l'exécutable `git` (`execFileSync('git', …)`,
@@ -16,8 +20,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { cheminsDe, lecteurGit } from './gitPorte.mjs'
-import { SUFFIXE_SUITE } from './fichierVitest.mjs'
+import { cheminsDe, fichiersDuGrep, lecteurGit } from './gitPorte.mjs'
+import { estFichierVitest } from './fichierVitest.mjs'
 
 /** L'arbre lu par défaut : celui où VIT ce module. */
 export const RACINE = fileURLToPath(new URL('../../..', import.meta.url))
@@ -29,19 +33,21 @@ export const DOSSIERS_DES_PORTES = Object.freeze(['scripts/guards', 'scripts/hoo
 export const HOTE = 'scripts/guards/lib/gitPorte.mjs'
 
 /** Les lecteurs de l'hôte qu'une forme de chemins doit traverser. */
-export const LECTEURS = Object.freeze(['cheminsDe', 'numstatDe', 'nameStatusDe', 'eolsDe', 'journalDe'])
+export const LECTEURS = Object.freeze(['cheminsDe', 'numstatDe', 'nameStatusDe', 'etatsDe', 'eolsDe', 'journalDe'])
 
 const MODULE = /\.(?:mjs|cjs|mts|cts|ts|js)$/
-const SUITE = new RegExp(`${SUFFIXE_SUITE}$`)
 const LANCEUR = /[\w$]\s*\(\s*(['"`])git\1|\bexec(?:Sync)?\(\s*(['"`])git\s/g
 const DECOUPE = /split\(\s*(['"`])(?:\\0|\\x00|\\u0000)\1\s*\)/g
 const FORME = /(['"`])(--name-only|--name-status|--numstat|ls-files|ls-tree|-z)\1/g
 
+/** Un import statique de l'hôte (`-E` de `git grep`). */
+export const IMPORT_DE_L_HOTE = "from[[:space:]]+['\"][^'\"]*gitPorte\\.mjs['\"]"
+
 /** Les sources du périmètre, chemins POSIX relatifs, triés. */
 export function sourcesDesPortes(racine = RACINE) {
-  return cheminsDe(lecteurGit(racine), ['ls-files', '--', ...DOSSIERS_DES_PORTES])
-    .filter((f) => MODULE.test(f) && !SUITE.test(f) && f !== HOTE)
-    .sort()
+  const git = lecteurGit(racine)
+  const sources = [...cheminsDe(git, ['ls-files', '--', ...DOSSIERS_DES_PORTES]), ...fichiersDuGrep(git, [], IMPORT_DE_L_HOTE, [])]
+  return [...new Set(sources)].filter((f) => MODULE.test(f) && !estFichierVitest(f) && f !== HOTE).sort()
 }
 
 /** Le nom de l'appel dont `index` est un argument : l'identifiant devant la première `(` ouverte à

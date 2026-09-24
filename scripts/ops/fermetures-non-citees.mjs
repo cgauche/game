@@ -15,13 +15,13 @@
 // `node scripts/ops/fermetures-non-citees.mjs --depuis 2026-08-20`. Le nom dit le RAPPORT : `ops:fermer`
 // est le geste qui FERME (scripts/ops/fermer-depuis-main.mjs), celui-ci ne fait que mesurer.
 // Le comparateur est PUR (`comparerFermetures`) ; la lecture de GitHub et de git vit dans `main`.
-import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { ecartsDeStock } from '../guards/lib/stock.mjs'
 import { numerosFermes } from '../guards/lib/fermetures.mjs'
 import { DEPOT, appelGhRunner, cheminTicket, pagesRest } from '../guards/lib/ticketsGh.mjs'
+import { cheminsDe, lecteurGit } from '../guards/lib/gitPorte.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 export const CHEMIN_BASELINE = join(RACINE, 'scripts', 'ops', 'fermetures-non-citees.json')
@@ -118,7 +118,13 @@ export function rapportMarkdown({ depuis, rapport, rouges }) {
  *  job `fermetures` (stdin refermé, jamais `shell: true`), donc une seule implémentation. */
 const appelGh = appelGhRunner({ cwd: RACINE })
 
-const git = (args) => execFileSync('git', args, { cwd: RACINE, encoding: 'utf8', maxBuffer: 1e8 })
+/** Le lecteur git dans `cwd` : une lecture sans sortie LÈVE, la fenêtre ne se juge pas sur rien. */
+const gitDans = (cwd) => (args) => {
+  const sortie = lecteurGit(cwd)(args)
+  if (sortie === null) throw new Error(`fermetures-non-citees : \`git ${args.join(' ')}\` n'a rien rendu dans ${cwd}`)
+  return sortie
+}
+const git = gitDans(RACINE)
 
 /** L'endpoint s'écrit SANS barre oblique de tête : sous Git Bash, MSYS réécrit un argument
  *  commençant par `/` en chemin Windows et `gh` refuse alors l'endpoint (mesuré 2026-09-04 :
@@ -192,8 +198,7 @@ export function citesDepuis(depuis) {
  *  paramètre, un objet de faits mélangeait deux arbres. */
 export function soldesSuivis(cwd = RACINE) {
   return new Set(
-    execFileSync('git', ['ls-files', '.claude/soldes'], { cwd, encoding: 'utf8', maxBuffer: 1e8 }).split('\n').filter(Boolean)
-      .map((p) => p.split('/').pop().replace(/\.md$/, '')),
+    cheminsDe(gitDans(cwd), ['ls-files', '--', '.claude/soldes']).map((p) => p.split('/').pop().replace(/\.md$/, '')),
   )
 }
 

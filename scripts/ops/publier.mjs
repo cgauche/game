@@ -36,7 +36,7 @@ import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSyn
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { estAncetre, fetchOrigin, lireGit, raisonCourte, sortieOuNull, urlOrigineAcceptee } from '../guards/lib/gitPorte.mjs'
+import { cheminsDe, estAncetre, etatsDe, fetchOrigin, lireGit, raisonCourte, sortieOuNull, urlOrigineAcceptee } from '../guards/lib/gitPorte.mjs'
 import { ANNULEE, ROUGES, coursesCi } from '../guards/lib/coursesCi.mjs'
 import { numerosCites, numerosFermes } from '../guards/lib/fermetures.mjs'
 import { BORNE_RAISON, DEPOT, lireTicket, poserCommentaire } from '../guards/lib/ticketsGh.mjs'
@@ -657,11 +657,11 @@ export function lireJournal(chemin, branche) {
   }
 }
 
+/** Le lecteur git de LECTURE dans `cwd` : sa sortie, ou `null`. */
+const lecteur = (cwd) => (args) => sortieOuNull(lireGit(args, { cwd, site: `git ${args[0]}` }))
+
 /** Sortie d'un `git` de LECTURE, trimée, ou `null`. */
-const lu = (args, cwd) => {
-  const vu = sortieOuNull(lireGit(args, { cwd, site: `git ${args[0]}` }))
-  return vu === null ? null : vu.trim()
-}
+const lu = (args, cwd) => lecteur(cwd)(args)?.trim() ?? null
 
 /** Fichier temporaire hors de l'arbre (message de commit, corps de commentaire). */
 function fichierTemporaire(prefixe, contenu) {
@@ -869,7 +869,7 @@ export const ETAPES = [
       const teteAvant = ctx.tete
       const vu = ctx.git(['rebase', 'origin/main'])
       if (!vu.disponible || vu.absent || vu.valeur.status !== 0) {
-        const conflits = (lu(['diff', '--name-only', '--diff-filter=U'], racine) ?? '').split('\n').filter(Boolean)
+        const conflits = cheminsDe(lecteur(racine), ['diff', '--name-only', '--diff-filter=U'])
         const entame = ['rebase-merge', 'rebase-apply'].some((nom) => {
           const chemin = lu(['rev-parse', '--git-path', nom], racine)
           return Boolean(chemin) && existsSync(resolve(racine, chemin))
@@ -904,7 +904,7 @@ export const ETAPES = [
     },
     jouer(ctx, journal) {
       const { racine } = ctx
-      const touches = (lu(['diff', '--name-only', `${journal.base}..${journal.tete}`], racine) ?? '').split('\n').filter(Boolean)
+      const touches = cheminsDe(lecteur(racine), ['diff', '--name-only', `${journal.base}..${journal.tete}`])
       // La saleté est lue AVANT toute décision de saut : le hook `post-rewrite` d'un rebase MANUEL a
       // pu régénérer des dérivés sans les committer, alors que la plage ne touche aucune source de
       // doc. `touchesDocSources` ne court-circuite donc que la RÉGÉNÉRATION, jamais le COMMIT —
@@ -1082,22 +1082,9 @@ export const ETAPES = [
   },
 ]
 
-/** Chemins que `git status --porcelain -z` rend SALES, dédupliqués (un renommage porte ses deux). */
-export function cheminsSales(racine) {
-  const champs = String(sortieOuNull(lireGit(['status', '--porcelain', '-z'], { cwd: racine })) ?? '').split('\0')
-  const chemins = []
-  for (let i = 0; i < champs.length; i += 1) {
-    const champ = champs[i]
-    if (!champ) continue
-    const etat = champ.slice(0, 2)
-    chemins.push(champ.slice(3))
-    if (/[RC]/.test(etat) && champs[i + 1]) {
-      i += 1
-      chemins.push(champs[i])
-    }
-  }
-  return [...new Set(chemins.filter(Boolean))]
-}
+/** Chemins que `git status --porcelain` rend SALES, dédupliqués (un renommage porte ses deux). */
+export const cheminsSales = (racine) =>
+  [...new Set(etatsDe(lecteur(racine), ['status', '--porcelain']).flatMap((e) => e.chemins).filter(Boolean))]
 
 function main() {
   // L'enfant détaché tend son filet AVANT tout geste faillible : son journal est sa seule voix.

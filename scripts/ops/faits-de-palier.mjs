@@ -27,16 +27,12 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DOSSIERS_DE_SUBSTANCE, ascendanceDansHead, derniereRevueArchivee, memeSha } from '../guards/lib/revuePalier.mjs'
 import { croissancesDeLaPlage } from '../guards/lib/plageStock.mjs'
-import { tenter } from '../guards/lib/gitPorte.mjs'
+import { journalDe, lecteurGit, tenter } from '../guards/lib/gitPorte.mjs'
 import { coursesCi } from '../guards/lib/coursesCi.mjs'
 import { soldesSuivis } from './fermetures-non-citees.mjs'
 import { numerosFermes } from '../guards/lib/fermetures.mjs'
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-
-/** Séparateurs de champ et d'enregistrement du journal git : aucun sujet de commit ne les porte. */
-export const CHAMP = String.fromCharCode(31)
-export const ENREGISTREMENT = String.fromCharCode(30)
 
 /**
  * Arguments de la ligne de commande. PUR.
@@ -72,21 +68,9 @@ export function analyserArguments(argv) {
 export const sortieParDefaut = (base, tete) =>
   join(tmpdir(), 'wfrp-faits-de-palier', `faits-${String(base).slice(0, 9)}-${String(tete).slice(0, 9)}.json`)
 
-/**
- * Commits d'un journal `--format=%H<CHAMP>%s<CHAMP>%B<ENREGISTREMENT>`. PUR.
- * @returns {{ sha: string, sujet: string, corps: string }[]}
- */
-export function parserJournal(brut) {
-  return String(brut ?? '')
-    .split(ENREGISTREMENT)
-    .map((bloc) => bloc.replace(/^\r?\n/, ''))
-    .filter((bloc) => bloc.trim())
-    .map((bloc) => {
-      const [sha = '', sujet = '', corps = ''] = bloc.split(CHAMP)
-      return { sha: sha.trim(), sujet: sujet.trim(), corps }
-    })
-    .filter((c) => c.sha)
-}
+/** Un commit du journal (`journalDe`) en `{ sha, sujet, corps }` : le sujet est la première ligne du
+ *  message, le corps le message entier. PUR. */
+export const commitDuJournal = ({ sha, message }) => ({ sha, sujet: message.split('\n')[0].trim(), corps: message })
 
 /** Marque les commits qui touchent `src`/`scripts` — la SUBSTANCE, au sens du palier. PUR. */
 export function marquerSubstance(commits, shasDeSubstance) {
@@ -133,8 +117,11 @@ export function coursesParCommit(servies, shas) {
 
 // ── Lecture réelle ────────────────────────────────────────────────────────────────────────────
 
-const git = (args, cwd) =>
-  execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1 << 28 })
+const git = (args, cwd) => {
+  const sortie = lecteurGit(cwd)(args)
+  if (sortie === null) throw new Error(`faits-de-palier : \`git ${args.join(' ')}\` n'a rien rendu dans ${cwd}`)
+  return sortie
+}
 
 function main() {
   let options
@@ -172,7 +159,7 @@ function main() {
   }
 
   const commits = marquerSubstance(
-    parserJournal(git(['log', `--format=%H${CHAMP}%s${CHAMP}%B${ENREGISTREMENT}`, `${base}..${tete}`], cwd)),
+    journalDe((args) => git(args, cwd), `${base}..${tete}`).map(commitDuJournal),
     git(['rev-list', `${base}..${tete}`, '--', ...DOSSIERS_DE_SUBSTANCE], cwd).split('\n').map((l) => l.trim()).filter(Boolean),
   )
   const shas = commits.map((c) => c.sha)

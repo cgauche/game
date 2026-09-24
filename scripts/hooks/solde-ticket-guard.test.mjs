@@ -30,6 +30,7 @@ import {
   extractCommitPathspecs,
   pathspecsDuCommit,
   formeDuCommit,
+  readChangedNames,
   diffDuCommit,
   repoRoot,
   readSoldeFile,
@@ -1770,6 +1771,49 @@ test('diffDuCommit.contenu : le solde EMPORTÉ suit la forme — index oui, hors
   }
 })
 
+test('diffDuCommit : sous `-i`/`--include`, l’INDEX hors pathspec part aussi — contenu et diff, pas HEAD', () => {
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/a.ts': 'export const a = 1\n', 'src/b.ts': 'export const b = 1\n' }, message: 'socle' })
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), stdio: ['ignore', 'pipe', 'ignore'] })
+    writeFileSync(join(repo, 'src', 'b.ts'), 'export const b = 2\n', 'utf8')
+    git('add', 'src/b.ts')
+    writeFileSync(join(repo, 'src', 'a.ts'), 'export const a = 2\n', 'utf8')
+    const lot = (c) => analyzeDiffDuCommit(c.numstat()).fichiers.sort()
+
+    for (const commande of ['git commit -i -m "x" -- src/a.ts', 'git commit --include -m "x" src/a.ts']) {
+      const inclus = diffDuCommit(commande, repo)
+      assert.equal(inclus.forme, 'inclus', commande)
+      assert.equal(inclus.contenu('src/b.ts'), 'export const b = 2\n', `${commande} : l’index hors pathspec part`)
+      assert.equal(inclus.contenu('src/a.ts'), 'export const a = 2\n', `${commande} : l’arbre du pathspec part`)
+      assert.deepEqual(lot(inclus), ['src/a.ts', 'src/b.ts'], commande)
+      assert.match(inclus.fichier('src/b.ts'), /^\+export const b = 2$/m, commande)
+    }
+
+    const seul = diffDuCommit('git commit -o -m "x" -- src/a.ts', repo)
+    assert.equal(seul.forme, 'pathspec')
+    assert.equal(seul.contenu('src/b.ts'), 'export const b = 1\n', '`--only` : HEAD hors pathspec')
+    assert.deepEqual(lot(seul), ['src/a.ts'])
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('readChangedNames : le modifié NON stagé, ou le stagé sous `cached` — chemin non-ASCII et espace en clair', () => {
+  const E = 'src/ui/Écran.ts'
+  const B = 'src/mon module.ts'
+  const { racine: repo } = instanceDeDepot({ fichiers: { [E]: 'export const e = 1\n', [B]: 'export const b = 1\n', 'src/x.ts': 'export const x = 1\n' }, message: 'socle' })
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), stdio: ['ignore', 'pipe', 'ignore'] })
+    writeFileSync(join(repo, B), 'export const b = 2\n', 'utf8')
+    git('add', B)
+    writeFileSync(join(repo, E), 'export const e = 2\n', 'utf8')
+    assert.deepEqual(readChangedNames(repo), [E])
+    assert.deepEqual(readChangedNames(repo, { cached: true }), [B])
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
 // ── Plafond de restes ROUTÉS (skill orchestrer § Fermeture) ───────────────────────────────────────
 // « une fermeture qui émettrait PLUS D'UN ticket de reste n'est PAS fermable : soit le lot GROSSIT
 // pour absorber le reste, soit le ticket RESTE OUVERT ».
@@ -2254,6 +2298,25 @@ test('fichiersDuCommitGit : un RENOMMAGE rend les deux chemins NUS, jamais « {a
     assert.ok(touches.includes('src/nouveau.ts'), `chemins rendus : ${JSON.stringify(touches)}`)
     assert.ok(touches.includes('src/ancien.ts'), `chemins rendus : ${JSON.stringify(touches)}`)
     assert.deepEqual(touches.filter((f) => f.includes('=>')), [], 'un chemin agrégé « {a => b} » reste illisible pour un solde')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('fichiersDuCommitGit : une FUSION touche ce qu’elle apporte à sa ligne principale, pas son seul diff combiné', () => {
+  const { racine: repo } = instanceDeDepot({ fichiers: { 'src/branche.ts': 'export const b = 1\n', 'src/principal.ts': 'export const p = 1\n' }, message: 'socle' })
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    git('checkout', '-q', '-b', 'chantier')
+    writeFileSync(join(repo, 'src', 'branche.ts'), 'export const b = 2\n')
+    git('commit', '-q', '--no-verify', '-am', 'le correctif')
+    git('checkout', '-q', 'main')
+    writeFileSync(join(repo, 'src', 'principal.ts'), 'export const p = 2\n')
+    git('commit', '-q', '--no-verify', '-am', 'la ligne principale avance')
+    git('merge', '-q', '--no-ff', '--no-verify', '-m', 'fusion du chantier', 'chantier')
+    const fusion = git('rev-parse', 'HEAD').trim()
+
+    assert.deepEqual(fichiersDuCommitGit(fusion, repo), ['src/branche.ts'])
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }

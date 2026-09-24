@@ -212,7 +212,7 @@ export const TRAVAIL = ':travail'
 
 /** Les enregistrements que rend `git <args>` sous `-z`, séparés par NUL : l'UNIQUE découpe d'une
  *  sortie de git des portes. `-z` suit la sous-commande. Privée : une porte lit des chemins
- *  (`cheminsDe`) ou une forme NOMMÉE (`numstatDe`, `nameStatusDe`, `eolsDe`, `journalDe`). */
+ *  (`cheminsDe`) ou une forme NOMMÉE (`numstatDe`, `nameStatusDe`, `etatsDe`, `eolsDe`, `journalDe`). */
 function enregistrementsDe(git, [sousCommande, ...reste]) {
   return (git([sousCommande, '-z', ...reste]) ?? '').split('\0').filter(Boolean)
 }
@@ -260,6 +260,25 @@ export function nameStatusDe(git, args) {
     const n = /^[RC]/.test(statut) ? 2 : 1
     entrees.push({ statut, chemins: champs.slice(i + 1, i + 1 + n) })
     i += n
+  }
+  return entrees
+}
+
+/**
+ * `git status --porcelain` en entrées `{ etat, chemins }` : `etat` = les deux colonnes `XY`, `chemins` =
+ * le chemin, ou le nouveau puis l'ancien pour `R`/`C` (`git help status`, « Porcelain Format Version
+ * 1 »). `args` porte `status` et `--porcelain`.
+ * @param {(args: string[]) => string | null} git @param {string[]} args
+ * @returns {{ etat: string, chemins: string[] }[]}
+ */
+export function etatsDe(git, args) {
+  const champs = enregistrementsDe(git, args)
+  const entrees = []
+  for (let i = 0; i < champs.length; i += 1) {
+    const etat = champs[i].slice(0, 2)
+    const chemins = [champs[i].slice(3)]
+    if (/[RC]/.test(etat) && champs[i + 1] !== undefined) chemins.push(champs[(i += 1)])
+    entrees.push({ etat, chemins })
   }
   return entrees
 }

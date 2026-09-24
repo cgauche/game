@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { STATUS_DLL_INIT_FAILED } from './spawnResilient.mjs'
 import {
-  INDEX, SUIVI, TRAVAIL, arbrePrincipal, cheminsDe, classer, eolsDe, nameStatusDe, numstatDe, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin,
+  INDEX, SUIVI, TRAVAIL, arbrePrincipal, cheminsDe, classer, eolsDe, etatsDe, nameStatusDe, numstatDe, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin,
   fichiersDuGrep, lireGit, lireEnLot, listerImage, natureDuChemin, raisonCourte, sortieOuNull,
 } from './gitPorte.mjs'
 import { envDeDepotForge, instanceDeDepot } from './depotGabarit.mjs'
@@ -367,6 +367,27 @@ test('cheminsDe, numstatDe, nameStatusDe, eolsDe : un chemin non-ASCII ou à esp
     assert.deepEqual(fichiersDuGrep(git, ['--cached'], 'const', ['src']).sort(), ['src/a.ts', 'src/renommé.ts', E].sort())
     assert.deepEqual(fichiersDuGrep(git, [], 'rien de tel', ['src']), [], 'aucun match : sortie 1, liste vide')
     assert.deepEqual(cheminsDe(() => null, ['ls-files']), [], 'git muet : []')
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('etatsDe : `status --porcelain` en `{ etat, chemins }`, renommage (nouveau puis ancien), non-suivi et chemin non-ASCII EN CLAIR', () => {
+  const E = 'src/ui/Écran.tsx'
+  const B = 'src/mon module.ts'
+  const { racine } = instanceDeDepot({ fichiers: { [E]: 'const e = 1\n', [B]: 'const b = 1\n' }, message: 'socle' })
+  const git = (args) => sortieOuNull(lireGit(args, { cwd: racine }))
+  const g = (...a) => execFileSync('git', a, { cwd: racine, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  try {
+    writeFileSync(join(racine, E), 'const e = 2\n')
+    g('mv', B, 'src/renommé.ts')
+    writeFileSync(join(racine, 'src/neuf é.ts'), 'n\n')
+    assert.deepEqual(etatsDe(git, ['status', '--porcelain']), [
+      { etat: 'R ', chemins: ['src/renommé.ts', B] },
+      { etat: ' M', chemins: [E] },
+      { etat: '??', chemins: ['src/neuf é.ts'] },
+    ])
+    assert.deepEqual(etatsDe(() => null, ['status', '--porcelain']), [], 'git muet : []')
   } finally {
     jeter(racine)
   }

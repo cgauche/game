@@ -53,16 +53,19 @@
 //                                 `RECLASSEMENT:` au message, ou ligne sans franchissement.
 //
 // COÛT, et pourquoi le `timeout: 10` de `.claude/settings.json` (et son miroir `.codex/hooks.json`)
-// reste à 10 s. Mesuré le 2026-09-24 dans UNE fenêtre de 3 passes, `.wt-1806`, 4 cœurs, charge 17 à 19
-// à `/proc/loadavg` : le hook entier (processus, stdin JSON) coûte 0,17-0,29 s sur une commande qui
-// n'est pas un commit, 1,4-1,7 s sur un commit d'index vide, 5,4-8,7 s sur un lot `-a` de 14 fichiers
-// qui touche `cssCouches.mjs` — donc relit les deux côtés de la frontière CSS (`coteCss` : `git grep -l`
-// des 1 420 modules citants, lus par lot, 1,6-1,9 s). Le déclencheur `deplaceLaFrontiere` au pire cas
-// des 3 686 modules de `src/` touchés ajoute 2,3-2,6 s ; il est vrai sur 60 des 300 derniers commits
-// touchant `src/`. Pire cas cumulé sous cette charge : 7,7 à 11,3 s, le `timeout` compris. Un hook expiré
-// ne bloque pas, et le pre-push rejuge la plage sans timeout (`croissancesDeLaPlage`,
-// `scripts/git-hooks/pre-push.mjs`) : ce chiffre se re-mesure quand la porte s'alourdit, il ne se
-// gonfle pas par précaution.
+// reste à 10 s. Un hook tué au `timeout` n'émet RIEN, et le geste passe : une décision n'est à l'abri
+// que si elle sort avant l'expiration, ou si un autre étage la rejuge. Le pre-push
+// (`scripts/git-hooks/pre-push.mjs`, `croissancesDeLaPlage`) rejuge les stocks et les reclassements, eux
+// seuls. D'où DEUX ÉTAGES : le premier prend toutes les autres décisions et sort au premier refus, le
+// second ne juge que les deux rejugées. Mesuré le 2026-09-24, `.wt-1806`, 4 cœurs, charge 7 à 15 à
+// `/proc/loadavg`, hook entier (processus, stdin JSON) : 0,11-0,13 s hors commit ; commit d'index vide
+// 1,2-1,5 s ; lot `-a` réel de 10 fichiers 2,0-2,3 s, dont l'étage 2 0,9-1,2 s. Lot `-a` de 3 686 modules
+// de `src/` et `cssCouches.mjs` : l'étage 1 rend son refus en 1,4-3,1 s (`numstat` 0,8-1,1 s,
+// `evaluate` 0,2-0,5 s, `evaluateTombale` 0,7-1,0 s sur une fermeture) ; l'étage 2 y coûte 43 à 96 s
+// (1 716 porteurs de stock : `stocks` 41-94 s, `reclassements` 1,8-3,9 s), il expire donc, et n'y perd
+// que ce que le pre-push rejuge. En un seul étage, ce lot rendait son refus d'`evaluateAntiEsquive` ou
+// de palier après 45 à 99 s : perdu. Ce chiffre se re-mesure quand une décision change d'étage ou que
+// l'étage 1 s'alourdit.
 import { Buffer } from 'node:buffer'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -1793,9 +1796,10 @@ export function analyzeDiffDuCommit(entrees = []) {
 }
 
 // ── Le diff que le commit va RÉELLEMENT produire ──────────────────────────────────────────────────
-// `git commit` a trois FORMES, et chacune emporte un contenu différent : avec des pathspecs
-// (`git commit -- <paths>` ou chemins positionnels) c'est l'ARBRE DE TRAVAIL de ces chemins, avec
-// `-a` c'est tout le modifié SUIVI, sinon c'est l'INDEX. Lire l'index dans les deux premiers cas
+// `git commit` a quatre FORMES, et chacune emporte un contenu différent : avec des pathspecs
+// (`git commit -- <paths>` ou chemins positionnels) c'est l'ARBRE DE TRAVAIL de ces chemins, HEAD pour
+// les autres ; sous `-i`/`--include` (`git commit -h`), l'arbre de ces chemins et l'INDEX pour les
+// autres ; avec `-a` c'est tout le modifié SUIVI, sinon c'est l'INDEX. Lire l'index dans les deux premiers cas
 // rendait un diff VIDE quand rien n'était stagé, et toute évaluation qui en dépend se taisait —
 // c'est par là que la croissance de stock de `429b9a1a2` est passée (revue de palier n°2, cause
 // prouvée par sonde le 2026-09-03). La forme se décide ICI, une fois, pour toutes les évaluations.
@@ -1804,13 +1808,14 @@ export function analyzeDiffDuCommit(entrees = []) {
 // contenu que HEAD ne portait déjà (donc rien de neuf à juger), et le contenu final est de toute
 // façon relu par la porte de PLAGE au pre-push (`scripts/guards/lib/plageStock.mjs`).
 
-/** Forme d'un `git commit` : `pathspec` (arbre des chemins nommés), `tout` (-a), `index`.
+/** Forme d'un `git commit` : `pathspec` (arbre des chemins nommés), `inclus` (`-i` : les mêmes, plus
+ *  l'index), `tout` (-a), `index`.
  *  Un pathspec NON RÉSOLU (joker) rend `tout` — git commitera l'arbre de travail, et un diff
  *  SUR-INCLUSIF (non borné) le voit toujours ; le prendre pour `index` rendait la garde MUETTE. */
 export function formeDuCommit(command) {
   const { chemins, nonResolus } = pathspecsDuCommit(command)
   if (nonResolus) return { forme: 'tout', pathspecs: [] }
-  if (chemins.length > 0) return { forme: 'pathspec', pathspecs: chemins }
+  if (chemins.length > 0) return { forme: aOption(command, '--include', 'i') ? 'inclus' : 'pathspec', pathspecs: chemins }
   if (aFlagTout(command)) return { forme: 'tout', pathspecs: [] }
   return { forme: 'index', pathspecs: [] }
 }
@@ -1830,7 +1835,8 @@ const lecteurDe = (dir) => (args, { entree } = {}) => sortieOuNull(lireGit(args,
  * mais HORS pathspec n'est PAS emporté — git garde pour lui le contenu de HEAD. Lire l'index validait
  * une preuve que le commit ne portait pas (mesuré 2026-09-04). Donc : forme `index` → l'index ; forme
  * `pathspec` → l'arbre de travail pour un chemin DANS le pathspec, HEAD pour tous les autres
- * (`sourceMelee`) ; forme `tout` → l'arbre de travail des chemins suivis (`SUIVI`).
+ * (`sourceMelee`) ; forme `inclus` → le même arbre, l'INDEX pour les autres ; forme `tout` → l'arbre
+ * de travail des chemins suivis (`SUIVI`).
  */
 export function diffDuCommit(command, dir = process.cwd()) {
   const { forme, pathspecs } = formeDuCommit(command)
@@ -1840,25 +1846,32 @@ export function diffDuCommit(command, dir = process.cwd()) {
   const contreIndex = () => forme === 'index' || !aHead()
   const rev = () => (contreIndex() ? ['--cached'] : ['HEAD'])
   const borne = pathspecs.length ? ['--', ...pathspecs] : []
+  const dans = (f) => pathspecs.some((ps) => pathMatchesPathspec(f, ps))
+  // Sous `inclus`, le commit emporte l'arbre des pathspecs ET l'index des autres chemins : chaque
+  // lecture de diff est l'union des deux, un chemin du pathspec lu dans l'arbre.
+  const inclus = () => forme === 'inclus' && !contreIndex()
+  const unir = (lecture, chemins) => (inclus()
+    ? [...lecture(['HEAD', ...borne]), ...lecture(['--cached']).filter((e) => !chemins(e).some(dans))]
+    : lecture([...rev(), ...borne]))
   const sourceDuParent = () => sourceGit({ cwd: dir, arbre: 'HEAD', git: lire })
   let source = null
   const sourceDuCommit = () => (source ??= (() => {
     if (contreIndex()) return sourceGit({ cwd: dir, arbre: INDEX, git: lire })
     const suivi = sourceGit({ cwd: dir, arbre: SUIVI, git: lire })
-    if (forme !== 'pathspec') return suivi
-    return sourceMelee({ dans: (f) => pathspecs.some((ps) => pathMatchesPathspec(f, ps)), dedans: suivi, dehors: sourceDuParent() })
+    if (forme === 'tout') return suivi
+    return sourceMelee({ dans, dedans: suivi, dehors: forme === 'inclus' ? sourceGit({ cwd: dir, arbre: INDEX, git: lire }) : sourceDuParent() })
   })())
   return {
     forme,
     pathspecs,
-    numstat: () => numstatDe(lire, ['diff', ...rev(), '--numstat', ...borne]),
-    fichier: (f) => lire(['diff', ...rev(), '-U0', '--', f]) ?? '',
+    numstat: () => unir((bornes) => numstatDe(lire, ['diff', '--numstat', ...bornes]), (e) => e.chemins),
+    fichier: (f) => lire(['diff', ...(inclus() && !dans(f) ? ['--cached'] : rev()), '-U0', '--', f]) ?? '',
     contenu: (f) => sourceDuCommit().lire(f),
     avant: (f) => (aHead() ? sourceDuParent().lire(f) : null),
-    renommages: () => renommagesDe(lire, [...rev(), ...borne]),
+    renommages: () => new Map(unir((bornes) => [...renommagesDe(lire, bornes)], (e) => e)),
     deplaceLaFrontiereCss: (chemins) => deplaceLaFrontiere({
       chemins,
-      nesOuMorts: () => cheminsDe(lire, ['diff', ...rev(), '--name-only', '--no-renames', '--diff-filter=AD', ...borne]),
+      nesOuMorts: () => unir((bornes) => cheminsDe(lire, ['diff', '--name-only', '--no-renames', '--diff-filter=AD', ...bornes]), (e) => [e]),
       parent: sourceDuParent(),
       commit: sourceDuCommit(),
       racine: dir,
@@ -1910,9 +1923,12 @@ export function jugerOuNommerLIndisponible(juger, { cwd = null, horsDepot = fals
 
 /** Chemins touchés par le commit `sha` dans `dir`, `[]` si le sha est inconnu du dépôt.
  *  `--no-renames` : sans lui, un renommage ne rend que son nouveau chemin — un solde juste au chemin
- *  d'origine est refusé (mesuré sur un renommage dans `.claude/soldes/`, 26be12347). */
+ *  d'origine est refusé (mesuré sur un renommage dans `.claude/soldes/`, 26be12347).
+ *  `--diff-merges=first-parent` : une fusion touche ce qu'elle apporte à sa ligne principale (`git help
+ *  show`, `--diff-merges`) ; le diff combiné par défaut ne rend que ses conflits résolus (b780a99e7 :
+ *  1 chemin, 556 contre le premier parent). */
 export function fichiersDuCommitGit(sha, dir = process.cwd()) {
-  return cheminsDe(lecteurDe(dir), ['show', '--name-only', '--no-renames', '--format=', sha])
+  return cheminsDe(lecteurDe(dir), ['show', '--name-only', '--no-renames', '--diff-merges=first-parent', '--format=', sha])
 }
 
 /** Diff à ZERO contexte d'un fichier DANS le commit `sha` (`git show <sha> -U0 -- <fichier>`),
@@ -2131,11 +2147,14 @@ export function evaluateArbrePrincipal({ command, principal = false, fichiersEmp
 
 /** `true` si un segment `git commit` de la commande porte `-a`/`--all` (isolé ou groupé : `-am`).
  *  Les OPTIONS seules sont inspectées (`jetonsDuCommit`) : la valeur d'un `-m` n'en est pas une. */
-function aFlagTout(command) {
+/** L'option `longue` de `git commit`, ou sa lettre `courte` dans un groupe d'options courtes. */
+function aOption(command, longue, courte) {
   const jetons = command ? jetonsDuCommit(command) : null
   if (!jetons) return false
-  return jetons.options.some((o) => o === '--all' || (!o.startsWith('--') && /^-[a-zA-Z]*a/.test(o)))
+  return jetons.options.some((o) => o === longue || (!o.startsWith('--') && new RegExp(`^-[a-zA-Z]*${courte}`).test(o)))
 }
+
+const aFlagTout = (command) => aOption(command, '--all', 'a')
 
 /**
  * Décision « le commit prendra l'ARBRE, pas l'index ». `fichiersModifies` = `git diff --name-only`
@@ -2396,20 +2415,6 @@ if (isMain) {
     fichiersModifies: readChangedNames(targetDir),
     fichiersStages: readChangedNames(targetDir, { cached: true }),
   })
-  // Diff des seuls fichiers PORTEURS de stock : le `-U0` par fichier existe déjà (même lecture que
-  // les preuves au site), et le lot entier ne se relit pas pour une poignée de fichiers. Hors
-  // `git commit`, aucun `git diff` n'est payé — ni le compilateur chargé par les images.
-  const porteursDeStock = isGitCommitCommand(text) ? fichiers.filter(estPorteurDeStock) : []
-  const stocks = evaluateStocksQuiGrandissent({
-    command: text,
-    diff: porteursDeStock.map((f) => commit.fichier(f)).join('\n'),
-    images: { lirePostImage: commit.contenu, lirePreImage: commit.avant, renommages: porteursDeStock.length ? commit.renommages() : new Map() },
-  })
-  const reclassements = evaluateReclassementsCss({
-    command: text,
-    deplace: () => commit.deplaceLaFrontiereCss(fichiers),
-    cotes: commit.cotesCss,
-  })
   // BUDGET DU CONTEXTE PERMANENT : mesuré seulement si le commit touche un chemin du périmètre —
   // sinon aucune lecture n'est payée au-delà de l'image de `CLAUDE.md`, qui dit les fichiers IMPORTÉS
   // (`@<chemin>`) et donc le périmètre lui-même : post-image si le commit l'emporte, pré-image sinon.
@@ -2427,10 +2432,27 @@ if (isMain) {
       plafond: plafondDeLaSource(commit.avant(PORTEUR_DU_PLAFOND)),
     })
     : null
-  const rendu = rendre(decisionCumulee([
+  // Voir COÛT (en-tête) : un refus qu'aucun autre étage ne rejuge sort ICI, avant les deux décisions
+  // que `scripts/git-hooks/pre-push.mjs` rejuge (`croissancesDeLaPlage`).
+  if (rendre(decisionCumulee([
     decision, porteDuTicket, antiEsquive, juge, amendInvisible, registresPorteurs,
-    horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null, stocks, reclassements, budget,
-  ]))
+    horsCommit, tombale, arbrePrincipal, hunks?.decision ? hunks : null, budget,
+  ]))) process.exit(0)
+  // Diff des seuls fichiers PORTEURS de stock : le `-U0` par fichier existe déjà (même lecture que
+  // les preuves au site), et le lot entier ne se relit pas pour une poignée de fichiers. Hors
+  // `git commit`, aucun `git diff` n'est payé — ni le compilateur chargé par les images.
+  const porteursDeStock = isGitCommitCommand(text) ? fichiers.filter(estPorteurDeStock) : []
+  const stocks = evaluateStocksQuiGrandissent({
+    command: text,
+    diff: porteursDeStock.map((f) => commit.fichier(f)).join('\n'),
+    images: { lirePostImage: commit.contenu, lirePreImage: commit.avant, renommages: porteursDeStock.length ? commit.renommages() : new Map() },
+  })
+  const reclassements = evaluateReclassementsCss({
+    command: text,
+    deplace: () => commit.deplaceLaFrontiereCss(fichiers),
+    cotes: commit.cotesCss,
+  })
+  const rendu = rendre(decisionCumulee([stocks, reclassements]))
   if (!rendu && hunks?.contexte) {
     console.log(JSON.stringify({
       hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: hunks.contexte },

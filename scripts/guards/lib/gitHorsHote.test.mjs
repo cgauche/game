@@ -2,21 +2,27 @@
 // forme qu'un module de porte peut écrire est vue. Lancé par `npm run test:hooks`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { DOSSIERS_DES_PORTES, HOTE, sitesDuDepot, sitesHorsHote, sourcesDesPortes } from './gitHorsHote.mjs'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { estFichierVitest } from './fichierVitest.mjs'
+import { DOSSIERS_DES_PORTES, HOTE, IMPORT_DE_L_HOTE, RACINE, sitesDuDepot, sitesHorsHote, sourcesDesPortes } from './gitHorsHote.mjs'
 
 test('l’arbre : aucun module de porte ne lit git hors de l’hôte', () => {
   const sites = sitesDuDepot()
   assert.deepEqual(sites.map((s) => `${s.chemin}:${s.ligne} [${s.forme}] ${s.extrait}`), [])
 })
 
-test('le périmètre : les sources suivies des dossiers de portes, hors suites et hors l’hôte', () => {
+test('le périmètre : les sources suivies des dossiers de portes et les importeurs de l’hôte, hors instruments Vitest et hors l’hôte', () => {
   const sources = sourcesDesPortes()
   assert.ok(sources.includes('scripts/hooks/solde-ticket-guard.mjs'))
   assert.ok(sources.includes('scripts/git-hooks/pre-commit.mjs'))
   assert.ok(sources.includes('scripts/guards/lib/plageStock.mjs'))
   assert.ok(!sources.includes(HOTE), 'l’hôte est la définition, pas un site')
-  assert.ok(!sources.some((f) => /\.test\.[cm]?[jt]sx?$/.test(f)), 'une suite forge des dépôts')
-  assert.ok(sources.every((f) => DOSSIERS_DES_PORTES.some((d) => f.startsWith(`${d}/`))))
+  assert.ok(!sources.some(estFichierVitest), 'un instrument Vitest n’est pas une porte')
+  const horsDossiers = sources.filter((f) => !DOSSIERS_DES_PORTES.some((d) => f.startsWith(`${d}/`)))
+  assert.ok(horsDossiers.includes('scripts/ops/faits-de-palier.mjs'), 'les faits de palier importent l’hôte')
+  assert.ok(horsDossiers.every((f) => new RegExp(IMPORT_DE_L_HOTE.replace('[[:space:]]', '\\s')).test(readFileSync(join(RACINE, f), 'utf8'))),
+    'hors des dossiers, seul un importeur de l’hôte est dans le périmètre')
 })
 
 const formes = (texte) => sitesHorsHote('x.mjs', texte).map((s) => [s.ligne, s.forme])
