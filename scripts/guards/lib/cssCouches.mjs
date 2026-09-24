@@ -285,26 +285,29 @@ const EQUIVALENT_PHYSIQUE = new Map([
  */
 export const physique = (prop) => EQUIVALENT_PHYSIQUE.get(prop) ?? prop;
 
-/** Les RACCOURCIS de la liste nommée dont un membre PEINT (`list-style` porte `list-style-image`). Les
- *  autres raccourcis nommés (`flex`, `grid`, `inset`, `margin`, `padding`, `overflow`, `columns`,
- *  `container`, `gap`, `white-space`) n'ont aucun membre qui peigne. */
-const RACCOURCIS_A_MEMBRE_PEINT = new Set(['list-style']);
+/** Les propriétés de la liste nommée dont la VALEUR peut porter une `<image>` (mdn-data 2.27.1,
+ *  `css/properties.json` et `css/syntaxes.json`) : `list-style` par son membre `list-style-image`,
+ *  `list-style-type` par `<counter-style>`, dont `symbols()` accepte `<string> | <image>`. Les autres
+ *  raccourcis nommés (`flex`, `grid`, `inset`, `margin`, `padding`, `overflow`, `columns`, `container`,
+ *  `gap`, `white-space`) n'ont aucun membre qui peigne. */
+const PORTEURS_D_IMAGE = new Set(['list-style', 'list-style-type']);
 
-/** Vrai si la valeur APPELLE une fonction (`url()`, `var()`, `image-set()`, un dégradé…), chaînes et
- *  commentaires ôtés : le seul moyen d'y poser une image. */
-const appelleUneFonction = (valeur) =>
-  valeur.replace(/\/\*[\s\S]*?\*\/|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, '').includes('(');
+/** Vrai si la valeur APPELLE une fonction autre que `symbols()` (`url()`, `var()`, `image-set()`, un
+ *  dégradé…), chaînes et commentaires ôtés : le seul moyen d'y poser une image. */
+const appelleUneImage = (valeur) =>
+  [...valeur.replace(/\/\*[\s\S]*?\*\/|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, '').matchAll(/([\w-]*)\(/g)]
+    .some(([, nom]) => nom.toLowerCase() !== 'symbols');
 
 /** Vrai si la DÉCLARATION place : sa propriété, classée sous son nom physique (`physique`), est nommée
- *  ou d'une famille à préfixe ; un raccourci dont un membre peint (`RACCOURCIS_A_MEMBRE_PEINT`) peint dès
- *  que sa `valeur` appelle une fonction (`appelleUneFonction`), `var()` compris : une valeur
+ *  ou d'une famille à préfixe ; un porteur d'image (`PORTEURS_D_IMAGE`) peint dès que sa `valeur`
+ *  appelle une fonction autre que `symbols()` (`appelleUneImage`), `var()` compris : une valeur
  *  indécidable peint. Une variable CSS (`--x`) est un PARAMÈTRE de primitive (patron `.swatch`), jamais
  *  une matière — elle reste hors du stock d'identité.
  *  @param {string} prop @param {string} valeur */
 export const estPlacement = (prop, valeur) => {
   if (prop.startsWith('--')) return true;
   const p = physique(prop);
-  if (RACCOURCIS_A_MEMBRE_PEINT.has(p) && appelleUneFonction(valeur)) return false;
+  if (PORTEURS_D_IMAGE.has(p) && appelleUneImage(valeur)) return false;
   return PROPRIETES_DE_PLACEMENT.has(p) || PREFIXES_DE_PLACEMENT.some((x) => p.startsWith(x));
 };
 

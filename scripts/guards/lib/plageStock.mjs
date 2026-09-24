@@ -24,7 +24,7 @@
 // La lib CALCULE ; le VERDICT appartient à l'appelant (le pre-push refuse, la mesure a posteriori
 // échoue). Elle reste PURE dans son cœur (`refusDeLaPlage`, `reclassementsDeLaPlage`) : les lectures
 // git sont injectées.
-import { lireGit, sortieOuNull } from './gitPorte.mjs'
+import { cheminsDe, lireGit, sortieOuNull } from './gitPorte.mjs'
 import { croissanceDesStocks, croissancesNonCouvertes } from './stocksNominatifs.mjs'
 import { deplaceLaFrontiere, ecartsDeReclassement, franchisDesCotes, lignesDeReclassement } from './reclassementCss.mjs'
 import { coteCss, renommagesDe, sourceGit } from './cssImages.mjs'
@@ -49,11 +49,6 @@ export function refusDeLaPlage({ commits = [], cumule = '', imagesCumul } = {}) 
     }
   }
   return refus
-}
-
-/** Les chemins qu'un diff git nomme (`diff --git a/<x> b/<y>`). */
-function cheminsDuDiff(diff) {
-  return [...String(diff ?? '').matchAll(/^diff --git a\/(\S+) b\/(\S+)$/gm)].flatMap((m) => [m[1], m[2]])
 }
 
 /**
@@ -147,9 +142,8 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
         renommages: renommagesDe(lire, [`${sha}^`, sha]),
       },
       cotes: () => (deplaceLaFrontiere({
-        chemins: cheminsDuDiff(diff),
-        nesOuMorts: () => (lire(['show', '--format=', '--name-only', '--no-renames', '--diff-filter=AD', sha]) ?? '')
-          .split('\n').map((l) => l.trim()).filter(Boolean),
+        chemins: cheminsDe(lire, ['show', '--format=', '--name-only', '--no-renames', sha]),
+        nesOuMorts: () => cheminsDe(lire, ['show', '--format=', '--name-only', '--no-renames', '--diff-filter=AD', sha]),
         parent: source(`${sha}^`),
         commit: source(sha),
         racine: cwd,

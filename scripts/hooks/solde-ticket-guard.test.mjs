@@ -775,32 +775,32 @@ test('validateRefFile : section Réfutation trop maigre', () => {
 
 // ── analyzeDiffDuCommit ────────────────────────────────────────────────────────────────────────────
 test('analyzeDiffDuCommit : touche src/**, compte les lignes', () => {
-  const raw = '5\t2\tsrc/engine/character.ts\n1\t0\tdocs/plans/truc.md\n'
+  const raw = ['5\t2\tsrc/engine/character.ts', '1\t0\tdocs/plans/truc.md']
   const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, true)
   assert.equal(r.totalLines, 8)
 })
 
 test('analyzeDiffDuCommit : docs-only ne touche pas src', () => {
-  const raw = '10\t3\tdocs/architecture.md\n'
+  const raw = ['10\t3\tdocs/architecture.md']
   const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, false)
 })
 
 test('analyzeDiffDuCommit : vide/absent → aucune touche, 0 ligne', () => {
-  assert.deepEqual(analyzeDiffDuCommit(''), { touchesSrc: false, touchesUi: false, totalLines: 0, fichiers: [] })
+  assert.deepEqual(analyzeDiffDuCommit([]), { touchesSrc: false, touchesUi: false, totalLines: 0, fichiers: [] })
   assert.deepEqual(analyzeDiffDuCommit(undefined), { touchesSrc: false, touchesUi: false, totalLines: 0, fichiers: [] })
 })
 
 test('analyzeDiffDuCommit : touche src/ui/** → touchesUi', () => {
-  const raw = '3\t1\tsrc/ui/RollShell.tsx\n'
+  const raw = ['3\t1\tsrc/ui/RollShell.tsx']
   const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, true)
   assert.equal(r.touchesUi, true)
 })
 
 test('analyzeDiffDuCommit : src/** hors src/ui/** → touchesUi false', () => {
-  const raw = '3\t1\tsrc/engine/combat.ts\n'
+  const raw = ['3\t1\tsrc/engine/combat.ts']
   const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, true)
   assert.equal(r.touchesUi, false)
@@ -816,7 +816,7 @@ test('analyzeDiffDuCommit : lit le numstat TEL QUEL, sans second filtrage de che
     '50\t20\tsrc/ui/RollShell.tsx',
     '3\t1\tscripts/hooks/solde-ticket-guard.mjs',
     '1\t0\t.claude/settings.json',
-  ].join('\n')
+  ]
   const r = analyzeDiffDuCommit(raw)
   assert.deepEqual(
     [r.touchesUi, r.touchesSrc, r.totalLines, r.fichiers.length], [true, true, 75, 3],
@@ -948,7 +948,7 @@ test('extractCommitPathspecs : "-cam" (short groupé à 3 lettres) → message e
 test('formeDuCommit : "-am" est un `-a`, et son MESSAGE n\'est pas un pathspec', () => {
   const f = formeDuCommit('git commit -am "feat: refonte truc"')
   assert.deepEqual([f.forme, f.pathspecs], ['tout', []])
-  const r = analyzeDiffDuCommit('50\t20\tsrc/ui/RollShell.tsx\n')
+  const r = analyzeDiffDuCommit(['50\t20\tsrc/ui/RollShell.tsx'])
   assert.deepEqual([r.touchesUi, r.totalLines], [true, 70])
 })
 
@@ -2051,7 +2051,7 @@ test('estFichierEcran : src/ui et src/gameIso, jamais leurs tests', () => {
 })
 
 test('analyzeDiffDuCommit : src/gameIso/** compte comme écran', () => {
-  const r = analyzeDiffDuCommit('40\t5\tsrc/gameIso/stage/GameStage3D.tsx\n')
+  const r = analyzeDiffDuCommit(['40\t5\tsrc/gameIso/stage/GameStage3D.tsx'])
   assert.equal(r.touchesUi, true)
   assert.deepEqual(r.fichiers, ['src/gameIso/stage/GameStage3D.tsx'])
 })
@@ -2240,8 +2240,8 @@ test('le solde #584 de l\'arbre est CONFORME à sa propre grammaire', () => {
 // ── C2/C3/C4/C5 : les règles resserrées après le juge de diff ─────────────────────────────────────
 test('fichiersDuCommitGit : un RENOMMAGE rend les deux chemins NUS, jamais « {ancien => nouveau} »', () => {
   // Mesuré sur 26be12347 : `.claude/soldes/revue-palier.md` renommée en `revue-palier-2205fde51.md`.
-  // Sans `--no-renames`, `git show --numstat` rend UNE ligne agrégée qu'aucun chemin cité n'égale —
-  // un solde JUSTE était refusé.
+  // Sans `--no-renames`, `git show --name-only` ne rend que le nouveau chemin — un solde JUSTE au
+  // chemin d'origine est refusé.
   const { racine: repo } = instanceDeDepot({ fichiers: { 'src/ancien.ts': 'export const a = 1\n'.repeat(20) }, message: 'socle' })
   try {
     const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
@@ -2558,7 +2558,7 @@ test('reclassement CSS (#1806 D2″) : jugé sur un commit qui touche la fronti�
   assert.match(injugeable.reason, /injugeable : src\/data\/primitives\.manifest\.json illisible/)
 })
 
-test('fichiersCitantTickets : les fichiers de l’INDEX sous `src/` et `scripts/` qui citent le ticket, par l’unique `grepDe`', () => {
+test('fichiersCitantTickets : les fichiers de l’INDEX sous `src/` et `scripts/` qui citent le ticket, par l’unique `fichiersDuGrep`', () => {
   const { racine } = instanceDeDepot({
     fichiers: {
       'src/a.ts': '// #1806\nexport const a = 1\n',

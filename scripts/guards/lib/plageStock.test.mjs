@@ -499,6 +499,58 @@ test('RECLASSEMENT : le renommage PUR d’une primitive réutilisée ne fait fra
   }
 })
 
+// Un chemin non-ASCII, que la forme ligne de git CITE (`core.quotePath`) : `"src/ui/\303\211cran.tsx"`.
+const ECRAN_ACCENTUE = 'src/ui/Écran.tsx'
+
+test('RECLASSEMENT : le second importeur au chemin NON-ASCII fait franchir la console — à la plage', () => {
+  const { racine, commettre } = depotCss()
+  try {
+    const avant = commettre({ [ECRAN_ACCENTUE]: 'export const E = 1\n' }, 'feat: écran nu')
+    const muet = commettre({ [ECRAN_ACCENTUE]: importeur('E') }, 'feat: l’écran importe la console')
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant, apres: muet }).reclassements,
+      [{ sha: muet, ecarts: [{ module: CONSOLE, n: 3, declare: null }] }])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('RECLASSEMENT au commit : chaque FORME lit l’arbre que le commit emporte — index, pathspec, `-a` — chemin non-ASCII compris', async () => {
+  const { analyzeDiffDuCommit, diffDuCommit } = await import('../../hooks/solde-ticket-guard.mjs')
+  const AUTRE = 'src/ui/Autre.tsx'
+  const NEUF = 'src/ui/Neuf.tsx'
+  /** Console importée par PERSONNE au socle : un seul importeur emporté ne la réutilise pas, deux oui. */
+  const juger = ({ ecrire, indexer = [], commande }) => {
+    const { racine } = instanceDeDepot({
+      fichiers: {
+        [MANIFESTE]: manifesteAvec(PRIMITIVE_CONSOLE), [CONSOLE]: '.c { color: red }\n', [COMPOSANT]: 'export const Console = 1\n',
+        [ECRAN_ACCENTUE]: 'export const E = 1\n', [AUTRE]: 'export const A = 1\n',
+      },
+      message: 'socle',
+    })
+    try {
+      for (const f of ecrire) writeFileSync(join(racine, f), importeur(f.slice(7, -4)), 'utf8')
+      if (indexer.length) execFileSync('git', ['add', '--', ...indexer], { cwd: racine, stdio: 'ignore' })
+      const c = diffDuCommit(commande, racine)
+      const { fichiers } = analyzeDiffDuCommit(c.numstat())
+      return { fichiers: fichiers.sort(), deplace: c.deplaceLaFrontiereCss(fichiers), reutilises: [...c.cotesCss().commit.reutilises] }
+    } finally {
+      rmSync(racine, { recursive: true, force: true })
+    }
+  }
+  assert.deepEqual(juger({ ecrire: [ECRAN_ACCENTUE, AUTRE], indexer: [ECRAN_ACCENTUE], commande: 'git commit -m "x"' }),
+    { fichiers: [ECRAN_ACCENTUE], deplace: true, reutilises: [] }, 'index : `Autre` non indexé reste au socle')
+  assert.deepEqual(juger({ ecrire: [ECRAN_ACCENTUE, AUTRE], indexer: [ECRAN_ACCENTUE, AUTRE], commande: 'git commit -m "x"' }),
+    { fichiers: [AUTRE, ECRAN_ACCENTUE].sort(), deplace: true, reutilises: [COMPOSANT] }, 'index : les deux indexés')
+  assert.deepEqual(juger({ ecrire: [ECRAN_ACCENTUE, AUTRE], indexer: [AUTRE], commande: `git commit -m "x" -- ${ECRAN_ACCENTUE}` }),
+    { fichiers: [ECRAN_ACCENTUE], deplace: true, reutilises: [] }, 'pathspec : `Autre`, indexé mais hors pathspec, est lu à HEAD')
+  assert.deepEqual(juger({ ecrire: [ECRAN_ACCENTUE, AUTRE], commande: `git commit -m "x" -- ${ECRAN_ACCENTUE} ${AUTRE}` }),
+    { fichiers: [AUTRE, ECRAN_ACCENTUE].sort(), deplace: true, reutilises: [COMPOSANT] }, 'pathspec : les deux dans le pathspec, lus sur le disque')
+  assert.deepEqual(juger({ ecrire: [ECRAN_ACCENTUE, NEUF], commande: 'git commit -a -m "x"' }),
+    { fichiers: [ECRAN_ACCENTUE], deplace: true, reutilises: [] }, '`-a` : le non-suivi `Neuf` n’est pas emporté')
+  assert.deepEqual(juger({ ecrire: [ECRAN_ACCENTUE, AUTRE], commande: 'git commit -a -m "x"' }),
+    { fichiers: [AUTRE, ECRAN_ACCENTUE].sort(), deplace: true, reutilises: [COMPOSANT] }, '`-a` : les suivis modifiés, lus sur le disque')
+})
+
 test('RECLASSEMENT (D3″) : un rebase qui fait disparaître le franchissement rend la ligne INVALIDE — refus bruyant', () => {
   const vide = { manifeste: [], partagees: [], reutilises: new Set(), lire: () => null }
   const commits = [{ sha: 'c1'.padEnd(40, '0'), message: RECLASSE, cotes: () => ({ parent: vide, commit: vide }) }]

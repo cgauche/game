@@ -2,13 +2,13 @@
 // devient l'image `{ fichiers, manifeste, partagees, reutilises }` que mesure `cssCouches.mjs`, et le
 // CÔTÉ `{ manifeste, partagees, reutilises, lire }` qu'en lit la garde `RECLASSEMENT:`. Les imports
 // qui fixent `reutilises` sont ceux de `directImportsOf` (`importGraph.mjs`) sur le contenu entier des
-// modules que `git grep` (`grepDe`, `gitPorte.mjs`) présélectionne (`motifDeCitation`), lus par lot
+// modules que `git grep -l` (`fichiersDuGrep`, `gitPorte.mjs`) présélectionne (`motifDeCitation`), lus par lot
 // (`lireEnLot`) et résolus contre l'arbre lu. Appelants : `cssCouchesAudit.ts` (disque), `ventilationDeGit` (le régénérateur), le garde
 // de solde au commit, la porte de plage au push.
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { CHEMIN_TSCONFIG, aliasDe, directImportsOf, estModule, pathspecsDeModules } from './importGraph.mjs'
-import { INDEX, TRAVAIL, grepDe, lireEnLot, lireGit, listerImage, sortieOuNull } from './gitPorte.mjs'
+import { INDEX, SUIVI, TRAVAIL, cheminsDe, fichiersDuGrep, lireEnLot, lireGit, listerImage, sortieOuNull } from './gitPorte.mjs'
 import { entreesEcrites } from './stock.mjs'
 import {
   CHEMIN_COUCHES, CHEMIN_MANIFESTE, RACINE_DES_MODULES, feuillesPartageesDe, fichiersReutilises,
@@ -117,28 +117,45 @@ const lecteurGit = (cwd, quoi) => (args, { entree } = {}) => {
   return sortieOuNull(vu)
 }
 
-/** Les modules de code de `src/` qu'un `git grep` de `portee` trouve portant `motif` (`grepDe`). */
-export const citantsDe = (git, portee, motif) => [...grepDe(git, portee, motif, pathspecsDeModules(RACINE_DES_SOURCES)).keys()]
-
 /**
- * Une source lue par git dans `cwd` : `arbre` = une ref, `INDEX` ou `TRAVAIL`. `git` (args,
+ * Une source lue par git dans `cwd` : `arbre` = une ref, `INDEX`, `SUIVI` ou `TRAVAIL` (`gitPorte.mjs`),
+ * ces deux derniers lus sur le disque. `git` (args,
  * `{ entree }` → sortie, `null` = objet absent) est le lecteur de l'appelant ; par défaut `lireGit`,
  * dont une indisponibilité LÈVE en se nommant : une image vide jugerait sur rien.
  * @param {{ cwd?: string, arbre: string, git?: (args: string[], opts?: { entree?: string }) => string | null }} p
  */
 export function sourceGit({ cwd = process.cwd(), arbre, git }) {
   const lire = git ?? lecteurGit(cwd, arbre)
-  const portee = arbre === INDEX ? ['--cached'] : arbre === TRAVAIL ? ['--untracked'] : [arbre]
+  const disque = arbre === SUIVI || arbre === TRAVAIL
+  const portee = arbre === INDEX ? ['--cached'] : arbre === SUIVI ? [] : arbre === TRAVAIL ? ['--untracked'] : [arbre]
   return {
-    existe: () => arbre === INDEX || arbre === TRAVAIL || lire(['rev-parse', '--verify', '--quiet', `${arbre}^{commit}`]) !== null,
+    existe: () => arbre === INDEX || disque || lire(['rev-parse', '--verify', '--quiet', `${arbre}^{commit}`]) !== null,
     lister: (dossier) => listerImage(lire, arbre, dossier),
-    lire: arbre === TRAVAIL
+    lire: disque
       ? (rel) => lireDuTravail(cwd, rel)
       : (rel) => lire(['show', `${arbre === INDEX ? '' : arbre}:${rel}`]),
-    lireTout: arbre === TRAVAIL
+    lireTout: disque
       ? (rels) => new Map(rels.map((rel) => [rel, lireDuTravail(cwd, rel)]))
       : (rels) => lireEnLot(lire, arbre, rels),
-    citants: (motif) => citantsDe(lire, portee, motif),
+    citants: (motif) => fichiersDuGrep(lire, portee, motif, pathspecsDeModules(RACINE_DES_SOURCES)),
+  }
+}
+
+/**
+ * La source des chemins que `dans` retient lus dans `dedans`, et de tous les autres dans `dehors` :
+ * l'arbre d'un `git commit -- <pathspec>` (`dedans` = l'arbre de travail, `dehors` = `HEAD`).
+ * @param {{ dans: (rel: string) => boolean, dedans: SourceCss, dehors: SourceCss }} p @returns {SourceCss}
+ */
+export function sourceMelee({ dans, dedans, dehors }) {
+  const hors = (rel) => !dans(rel)
+  return {
+    lister: (dossier) => [...dehors.lister(dossier).filter(hors), ...dedans.lister(dossier).filter(dans)],
+    lire: (rel) => (dans(rel) ? dedans : dehors).lire(rel),
+    lireTout: (rels) => {
+      const lus = new Map([...dehors.lireTout(rels.filter(hors)), ...dedans.lireTout(rels.filter(dans))])
+      return new Map(rels.map((rel) => [rel, lus.get(rel) ?? null]))
+    },
+    citants: (motif) => [...dehors.citants(motif).filter(hors), ...dedans.citants(motif).filter(dans)],
   }
 }
 
@@ -158,11 +175,9 @@ export function lireDuTravail(cwd, rel) {
  * @returns {Map<string, string>}
  */
 export function renommagesDe(git, bornes) {
+  const champs = cheminsDe(git, ['diff', '-M', '--diff-filter=R', '--name-status', ...bornes])
   const carte = new Map()
-  for (const l of (git(['diff', '-M', '--diff-filter=R', '--name-status', ...bornes]) ?? '').split('\n')) {
-    const m = /^R\d*\t(.+)\t(.+)$/.exec(l)
-    if (m) carte.set(m[1], m[2])
-  }
+  for (let i = 0; i + 2 < champs.length; i += 3) carte.set(champs[i + 1], champs[i + 2])
   return carte
 }
 

@@ -53,33 +53,30 @@
 //                                 `RECLASSEMENT:` au message, ou ligne sans franchissement.
 //
 // COÛT, et pourquoi le `timeout: 10` de `.claude/settings.json` (et son miroir `.codex/hooks.json`)
-// reste à 10 s (mesuré 2026-09-04, worst case fabriqué : 49 fichiers / 23 520 insertions dont 12
-// PORTEURS de stock) : `git commit -a` 1,8 s, `git commit -- .` 2,2 s, le rejeu de `429b9a1a2`
-// (23 734 insertions, 5 porteurs) 1,1 s ; `git show <sha> -U0` sur ce commit 0,15 s ; le chargement
-// du compilateur `typescript` (portée de module, à la demande) 0,20 s et le parse de ses 5 porteurs
-// 0,06 s. La porte `RECLASSEMENT:` (mesuré 2026-09-24, `.wt-1806`, 3 passes, 4 cœurs, charge 10 à 12 à
-// `/proc/loadavg`) : `deplaceLaFrontiere` compare les imports vers le manifeste des modules touchés,
-// parent et commit lus par lot (`lireEnLot`), 80-200 ms pour un module et 2,5-3,0 s au pire cas des
-// 3 686 modules de `src/` touchés ; il est vrai sur 60 des 300 derniers commits touchant `src/`. Un
-// commit qui déplace la frontière relit en plus les deux côtés (`coteCss` : `git grep` des ~1 420
-// modules citants, lus par lot), 1,7-2,4 s. Au pire cas cumulé — 2,2 s, 3,0 s, 2,4 s — le hook prend
-// 7,6 s : la marge sur le `timeout` n'est plus que d'un facteur 1,3 — un hook expiré ne bloque pas,
-// donc ce chiffre se re-mesure quand la porte s'alourdit, il ne se gonfle pas par précaution.
+// reste à 10 s. Mesuré le 2026-09-24 dans UNE fenêtre de 3 passes, `.wt-1806`, 4 cœurs, charge 17 à 19
+// à `/proc/loadavg` : le hook entier (processus, stdin JSON) coûte 0,17-0,29 s sur une commande qui
+// n'est pas un commit, 1,4-1,7 s sur un commit d'index vide, 5,4-8,7 s sur un lot `-a` de 14 fichiers
+// qui touche `cssCouches.mjs` — donc relit les deux côtés de la frontière CSS (`coteCss` : `git grep -l`
+// des 1 420 modules citants, lus par lot, 1,6-1,9 s). Le déclencheur `deplaceLaFrontiere` au pire cas
+// des 3 686 modules de `src/` touchés ajoute 2,3-2,6 s ; il est vrai sur 60 des 300 derniers commits
+// touchant `src/`. Pire cas cumulé sous cette charge : 7,7 à 11,3 s, le `timeout` compris. Un hook expiré
+// ne bloque pas, et le pre-push rejuge la plage sans timeout (`croissancesDeLaPlage`,
+// `scripts/git-hooks/pre-push.mjs`) : ce chiffre se re-mesure quand la porte s'alourdit, il ne se
+// gonfle pas par précaution.
 import { Buffer } from 'node:buffer'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
-import { execFileSync } from 'node:child_process'
 import { croissancesNonCouvertes, estPorteurDeStock, raisonDeRefus } from '../guards/lib/stocksNominatifs.mjs'
 import {
   deplaceLaFrontiere, lignesDeReclassement, raisonDeRefusDeReclassement, reclassementsNonDeclares,
 } from '../guards/lib/reclassementCss.mjs'
-import { citantsDe, coteCss, renommagesDe, sourceGit } from '../guards/lib/cssImages.mjs'
+import { coteCss, renommagesDe, sourceGit, sourceMelee } from '../guards/lib/cssImages.mjs'
 import {
   PORTEUR_DU_PLAFOND, estCheminDuBudget, importsDe, mesurerBudget, plafondDeLaSource, refusDeBudget,
 } from '../guards/budget-contexte.mjs'
 import {
-  GitIndisponible, INDEX, enfantsDirects, estDansHead, estRepertoire, grepDe, lireEnLot, lireGit, listerImage, sortieOuNull,
+  GitIndisponible, INDEX, SUIVI, cheminsDe, enfantsDirects, estDansHead, estRepertoire, fichiersDuGrep, lireGit, listerImage, sortieOuNull,
 } from '../guards/lib/gitPorte.mjs'
 import { hunksDe } from '../guards/lib/hunks.mjs'
 import { motifRattachement, numerosDeLaChaine, numerosFermes } from '../guards/lib/fermetures.mjs'
@@ -1766,11 +1763,10 @@ export function estFichierEcran(path) {
   return /^src\/(ui|gameIso)\/.+\.tsx$/.test(p)
 }
 
-/** Analyse du `--numstat` du diff que le commit va produire (`diffDuCommit(...).numstat()`) :
- *  touche-t-il `src/**` ? un ÉCRAN
- *  (`estFichierEcran`, rendu par `touchesUi`) ?
+/** Analyse du `--numstat` du diff que le commit va produire (`diffDuCommit(...).numstat()`, champs de
+ *  `cheminsDe`) : touche-t-il `src/**` ? un ÉCRAN (`estFichierEcran`, rendu par `touchesUi`) ?
  *  combien de lignes (insertions+suppressions) au total ? Fichiers binaires (`-\t-\t<path>`)
- *  comptés 0 ligne mais peuvent toucher `src/**`. `''`/erreur git → aucune touche, 0 ligne
+ *  comptés 0 ligne mais peuvent toucher `src/**`. Aucun champ → aucune touche, 0 ligne
  *  (silence, jamais un deny par accident hors dépôt).
  *
  * AUCUN filtrage de pathspec ici (#591 défaut 1, arbre PARTAGÉ) : la restriction au lot de CETTE
@@ -1780,21 +1776,25 @@ export function estFichierEcran(path) {
  * tout le lot était jeté (mesuré 2026-09-04). Un seul matcheur de pathspec dans ce fichier, et
  * c'est celui de git.
  *
- * `chemins` (facultatif) REMPLACE les chemins du `--numstat` pour `fichiers`/`touchesSrc`/`touchesUi` :
- * un renommage s'y replie en `src/ui/{Ancien.tsx => Nouveau.tsx}`, qui ne nomme aucun fichier — il
- * n'égale aucun site cité par un solde et ne se lit comme aucun ÉCRAN (mesuré).
- * `totalLines` reste celui du `--numstat` REPLIÉ dans les deux cas : c'est le VOLUME écrit, et un
- * renommage n'écrit rien. */
-export function analyzeDiffDuCommit(raw, chemins = null) {
+ * `fichiers` porte les DEUX bouts d'un renommage (champ `<plus>\t<moins>\t` suivi de ses deux
+ * chemins) : c'est par eux que la porte des stocks voit le porteur source ET le porteur cible, qu'un
+ * solde prouve sa correction au NOUVEAU chemin, et qu'un `.tsx` renommé reste un ÉCRAN (#1720).
+ * `totalLines` compte le renommage replié : c'est le VOLUME écrit, et un renommage n'écrit rien.
+ * @param {readonly string[]} [champs] */
+export function analyzeDiffDuCommit(champs = []) {
   let totalLines = 0
-  const duNumstat = []
-  for (const line of String(raw ?? '').split('\n')) {
-    if (!line.trim()) continue
-    const [ins, del, ...pathParts] = line.split('\t')
-    duNumstat.push(pathParts.join('\t'))
+  const fichiers = []
+  for (let i = 0; i < champs.length; i += 1) {
+    const [ins, del, ...chemin] = champs[i].split('\t')
     totalLines += (Number.parseInt(ins, 10) || 0) + (Number.parseInt(del, 10) || 0)
+    const nom = chemin.join('\t')
+    if (nom) {
+      fichiers.push(nom)
+      continue
+    }
+    fichiers.push(...champs.slice(i + 1, i + 3))
+    i += 2
   }
-  const fichiers = chemins ?? duNumstat
   return {
     touchesSrc: fichiers.some((f) => /^src\//.test(f)),
     touchesUi: fichiers.some(estFichierEcran),
@@ -1826,66 +1826,50 @@ export function formeDuCommit(command) {
   return { forme: 'index', pathspecs: [] }
 }
 
+/** Le lecteur git des portes du hook dans `dir` (`lireGit`) : `null` pour un objet absent, un code de
+ *  sortie non nul ou un git indisponible — le garde se tait, il ne refuse pas hors dépôt. */
+const lecteurDe = (dir) => (args, { entree } = {}) => sortieOuNull(lireGit(args, { cwd: dir, entree }))
+
 /**
- * Lectures du contenu que `command` va committer dans `dir` : `numstat()` (le stat d'ensemble),
- * `cheminsSansRenommage()` (les chemins du lot, un RENOMMAGE déplié en ses DEUX bouts),
- * `fichier(f)` (le `-U0` d'un fichier), `contenu(f)`/`avant(f)` (le fichier APRÈS et AVANT le
- * commit). Toute erreur git rend `''`/`null` — le garde se tait, il ne refuse pas hors dépôt.
+ * Lectures du contenu que `command` va committer dans `dir` : `numstat()` (les champs du `--numstat`,
+ * `analyzeDiffDuCommit`), `fichier(f)` (le `-U0` d'un fichier), `contenu(f)`/`avant(f)` (le fichier
+ * APRÈS et AVANT le commit). Chemins lus par `cheminsDe` (`-z`). Le `HEAD` n'est interrogé que si la
+ * forme l'exige (un dépôt sans premier commit n'a que l'index).
  *
- * `cheminsSansRenommage()` rend les DEUX bouts d'un renommage, parce que `--numstat` le replie en UN
- * chemin de la forme `scripts/guards/lib/{aStock.mjs => bStock.mjs}` (mesuré) qui ne nomme aucun
- * fichier et n'égale aucun pathspec : c'est par ces deux bouts que la porte des stocks voit le
- * porteur source ET le porteur cible, qu'un solde prouve sa correction au NOUVEAU chemin, et qu'un
- * `.tsx` renommé reste un ÉCRAN (#1720). `numstat()` garde la lecture repliée : c'est elle qui donne
- * le VOLUME du lot aux portes de preuve, et un renommage n'y ajoute pas de lignes écrites.
- * Le `HEAD` n'est interrogé que si la forme l'exige (un dépôt sans premier commit n'a que l'index).
- *
- * `contenu(f)` suit la forme JUSQU'AU FICHIER, et c'est là que se règle la porte de FERMETURE : sous
- * `git commit -m "… corrige #N" -- src/x.ts`, un solde stagé mais HORS pathspec n'est PAS emporté —
- * git garde pour lui le contenu de HEAD. Lire l'index validait une preuve que le commit ne portait
- * pas (mesuré 2026-09-04). Donc : forme `index` → l'index ; forme `pathspec` → l'arbre de travail
- * pour un chemin DANS le pathspec, HEAD pour tous les autres ; forme `tout` → l'arbre de travail.
+ * `contenu(f)` est la lecture de `sourceDuCommit`, qui suit la forme JUSQU'AU FICHIER, et c'est là que
+ * se règle la porte de FERMETURE : sous `git commit -m "… corrige #N" -- src/x.ts`, un solde stagé
+ * mais HORS pathspec n'est PAS emporté — git garde pour lui le contenu de HEAD. Lire l'index validait
+ * une preuve que le commit ne portait pas (mesuré 2026-09-04). Donc : forme `index` → l'index ; forme
+ * `pathspec` → l'arbre de travail pour un chemin DANS le pathspec, HEAD pour tous les autres
+ * (`sourceMelee`) ; forme `tout` → l'arbre de travail des chemins suivis (`SUIVI`).
  */
 export function diffDuCommit(command, dir = process.cwd()) {
   const { forme, pathspecs } = formeDuCommit(command)
-  const lire = (args, { entree } = {}) => {
-    try {
-      return execFileSync('git', args, {
-        encoding: 'utf8', cwd: dir, stdio: [entree === undefined ? 'ignore' : 'pipe', 'pipe', 'ignore'],
-        maxBuffer: 1 << 28, input: entree,
-      })
-    } catch { return null }
-  }
-  const fichierDeTravail = (f) => {
-    try { return readFileSync(join(dir, f), 'utf8') } catch { return null }
-  }
+  const lire = lecteurDe(dir)
   let head = null
   const aHead = () => (head ??= lire(['rev-parse', '--verify', '--quiet', 'HEAD']) !== null)
   const contreIndex = () => forme === 'index' || !aHead()
   const rev = () => (contreIndex() ? ['--cached'] : ['HEAD'])
   const borne = pathspecs.length ? ['--', ...pathspecs] : []
-  const contenu = (f) => {
-    if (contreIndex()) return lire(['show', `:${f}`])
-    if (forme === 'pathspec' && !pathspecs.some((ps) => pathMatchesPathspec(f, ps))) {
-      return lire(['show', `HEAD:${f}`])
-    }
-    return fichierDeTravail(f)
-  }
+  const sourceDuParent = () => sourceGit({ cwd: dir, arbre: 'HEAD', git: lire })
+  let source = null
+  const sourceDuCommit = () => (source ??= (() => {
+    if (contreIndex()) return sourceGit({ cwd: dir, arbre: INDEX, git: lire })
+    const suivi = sourceGit({ cwd: dir, arbre: SUIVI, git: lire })
+    if (forme !== 'pathspec') return suivi
+    return sourceMelee({ dans: (f) => pathspecs.some((ps) => pathMatchesPathspec(f, ps)), dedans: suivi, dehors: sourceDuParent() })
+  })())
   return {
     forme,
     pathspecs,
-    numstat: () => lire(['diff', ...rev(), '--numstat', ...borne]) ?? '',
-    cheminsSansRenommage: () =>
-      (lire(['diff', ...rev(), '--numstat', '--no-renames', ...borne]) ?? '')
-        .split('\n').map((l) => l.split('\t').slice(2).join('\t').trim()).filter(Boolean),
+    numstat: () => cheminsDe(lire, ['diff', ...rev(), '--numstat', ...borne]),
     fichier: (f) => lire(['diff', ...rev(), '-U0', '--', f]) ?? '',
-    contenu,
-    avant: (f) => (aHead() ? lire(['show', `HEAD:${f}`]) : null),
+    contenu: (f) => sourceDuCommit().lire(f),
+    avant: (f) => (aHead() ? sourceDuParent().lire(f) : null),
     renommages: () => renommagesDe(lire, [...rev(), ...borne]),
     deplaceLaFrontiereCss: (chemins) => deplaceLaFrontiere({
       chemins,
-      nesOuMorts: () => (lire(['diff', ...rev(), '--name-only', '--no-renames', '--diff-filter=AD', ...borne]) ?? '')
-        .split('\n').map((l) => l.trim()).filter(Boolean),
+      nesOuMorts: () => cheminsDe(lire, ['diff', ...rev(), '--name-only', '--no-renames', '--diff-filter=AD', ...borne]),
       parent: sourceDuParent(),
       commit: sourceDuCommit(),
       racine: dir,
@@ -1895,47 +1879,19 @@ export function diffDuCommit(command, dir = process.cwd()) {
       commit: coteCss(sourceDuCommit(), { racine: dir }),
     }),
   }
-  function sourceDuParent() {
-    return sourceGit({ cwd: dir, arbre: 'HEAD', git: lire })
-  }
-  /** L'arbre du commit, lu comme `contenu` : index, arbre de travail, ou l'arbre de travail des seuls
-   *  chemins du pathspec et `HEAD` pour les autres. */
-  function sourceDuCommit() {
-    const dans = (f) => pathspecs.some((ps) => pathMatchesPathspec(f, ps))
-    return {
-      lire: contenu,
-      lister: (dossier) => listerImage(lire, INDEX, dossier),
-      lireTout: (rels) => {
-        if (contreIndex()) return lireEnLot(lire, INDEX, rels)
-        if (forme !== 'pathspec') return new Map(rels.map((f) => [f, fichierDeTravail(f)]))
-        const deHead = lireEnLot(lire, 'HEAD', rels.filter((f) => !dans(f)))
-        return new Map(rels.map((f) => [f, dans(f) ? fichierDeTravail(f) : deHead.get(f) ?? null]))
-      },
-      citants: (motif) => {
-        if (contreIndex()) return citantsDe(lire, ['--cached'], motif)
-        if (forme !== 'pathspec') return citantsDe(lire, [], motif)
-        return [...citantsDe(lire, ['HEAD'], motif).filter((f) => !dans(f)), ...citantsDe(lire, [], motif).filter(dans)]
-      },
-    }
-  }
 }
 
 /** Chemins rendus par `git diff --name-only [--cached]` dans `dir`. */
 export function readChangedNames(dir = process.cwd(), { cached = false } = {}) {
-  try {
-    const args = ['diff', '--name-only']
-    if (cached) args.push('--cached')
-    return execFileSync('git', args, { encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'] })
-      .split('\n').map((l) => l.trim()).filter(Boolean)
-  } catch { return [] }
+  return cheminsDe(lecteurDe(dir), ['diff', '--name-only', ...(cached ? ['--cached'] : [])])
 }
 
-/** Fichiers de l'INDEX qui citent un des `numeros` (pré-filtre `git grep --cached`) : le scan de
+/** Fichiers de l'INDEX qui citent un des `numeros` (pré-filtre `git grep --cached -l`) : le scan de
  *  commentaires ne s'applique qu'à eux, jamais à l'arbre entier. */
 export function fichiersCitantTickets(numeros, dir = process.cwd()) {
   if (numeros.length === 0) return []
   const motif = `#(${numeros.join('|')})([^0-9]|$)`
-  return [...grepDe((args) => sortieOuNull(lireGit(args, { cwd: dir })), ['--cached'], motif, DOSSIERS_DE_SUBSTANCE).keys()]
+  return fichiersDuGrep(lecteurDe(dir), ['--cached'], motif, DOSSIERS_DE_SUBSTANCE)
 }
 
 /**
@@ -1964,16 +1920,10 @@ export function jugerOuNommerLIndisponible(juger, { cwd = null, horsDepot = fals
 }
 
 /** Chemins touchés par le commit `sha` dans `dir`, `[]` si le sha est inconnu du dépôt.
- *  `--no-renames` : sans lui, un renommage rend UNE ligne `{ancien => nouveau}` qu'aucun chemin cité
- *  ne peut égaler — un solde juste est refusé (mesuré sur un renommage dans `.claude/soldes/`, 26be12347). */
+ *  `--no-renames` : sans lui, un renommage ne rend que son nouveau chemin — un solde juste au chemin
+ *  d'origine est refusé (mesuré sur un renommage dans `.claude/soldes/`, 26be12347). */
 export function fichiersDuCommitGit(sha, dir = process.cwd()) {
-  try {
-    return execFileSync('git', ['show', '--numstat', '--no-renames', '--pretty=format:', sha], {
-      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
-    }).split('\n').map((l) => l.trim()).filter(Boolean)
-      .map((l) => l.split('\t').slice(2).join('\t'))
-      .filter(Boolean)
-  } catch { return [] }
+  return cheminsDe(lecteurDe(dir), ['show', '--name-only', '--no-renames', '--format=', sha])
 }
 
 /** Diff à ZERO contexte d'un fichier DANS le commit `sha` (`git show <sha> -U0 -- <fichier>`),
@@ -1981,11 +1931,7 @@ export function fichiersDuCommitGit(sha, dir = process.cwd()) {
  *  `diffDuCommit`, qui lit ce que la commande EN COURS va emporter. Le commit se place AVANT le
  *  séparateur : après, git le lirait comme un pathspec (`env-git-show-ordre-commit-avant-paths`). */
 export function diffDunSha(sha, fichier, dir = process.cwd()) {
-  try {
-    return execFileSync('git', ['show', '-U0', '--format=', '--no-renames', sha, '--', fichier], {
-      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
-    })
-  } catch { return '' }
+  return lecteurDe(dir)(['show', '-U0', '--format=', '--no-renames', sha, '--', fichier]) ?? ''
 }
 
 /** Date de dernière écriture la plus RÉCENTE parmi `fichiers` (ms, `0` si aucune lisible). */
@@ -2367,12 +2313,7 @@ if (isMain) {
   // Le contenu jugé est celui que le commit va EMPORTER, pas l'index : la forme de la commande le
   // décide (`diffDuCommit`), et toutes les évaluations lisent par cette même porte.
   const commit = diffDuCommit(command, targetDir)
-  // Un renommage se replie en `{ancien => nouveau}` dans le `--numstat` : ce chemin ne nomme aucun
-  // fichier, n'égale aucun site cité par un solde et ne se lit comme aucun écran. La relecture
-  // DÉPLIÉE ne se paie que là où elle change quelque chose.
-  const numstat = commit.numstat()
-  const { touchesSrc, touchesUi, totalLines, fichiers } =
-    analyzeDiffDuCommit(numstat, numstat.includes(' => ') ? commit.cheminsSansRenommage() : null)
+  const { touchesSrc, touchesUi, totalLines, fichiers } = analyzeDiffDuCommit(commit.numstat())
 
   // Message `-F <chemin>` : résolu dans le répertoire où le `git commit` s'exécute RÉELLEMENT
   // (targetDir), jamais dans celui d'où part la commande — un `cd wt && git commit -F m.txt`

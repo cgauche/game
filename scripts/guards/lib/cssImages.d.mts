@@ -19,7 +19,6 @@ export function nomsDImportDe(chemin: string): string[];
 export function nomsDImport(manifeste: readonly EntreeManifeste[]): Set<string>;
 export function motifDeCitation(manifeste: readonly EntreeManifeste[]): string | null;
 export function importsDansLArbre(source: SourceCss, rels: readonly string[], options?: { racine?: string }): [string, string[]][];
-export function citantsDe(git: (args: string[]) => string | null, portee: string[], motif: string): string[];
 export function lireDuTravail(cwd: string, rel: string): string | null;
 export function coteCss(source: SourceCss, options?: { racine?: string }): CoteCss;
 export function imageCss(source: SourceCss, options?: { racine?: string }): ImageCss;
@@ -28,6 +27,7 @@ export function sourceGit(p: {
   arbre: string;
   git?: (args: string[], opts?: { entree?: string }) => string | null;
 }): SourceCss & { existe: () => boolean };
+export function sourceMelee(p: { dans: (rel: string) => boolean; dedans: SourceCss; dehors: SourceCss }): SourceCss;
 export function renommagesDe(git: (args: string[]) => string | null, bornes: string[]): Map<string, string>;
 export const CHEMIN_STOCK_CSS: string;
 export function ventilationDeGit(p: {

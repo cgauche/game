@@ -11,7 +11,7 @@
 // commandes git, et qui rend la même valeur depuis n'importe quel arbre. Un compteur d'événements
 // compterait ce que chaque worktree fait de son côté (20 sur ce dépôt, dont des trains qui ne
 // rejoignent jamais `main`) : deux worktrees suffisent à en faire un nombre que rien ne recoupe.
-import { GitIndisponible, estAncetre, lireGit, sortieOuNull } from './gitPorte.mjs'
+import { GitIndisponible, cheminsDe, estAncetre, lireGit, sortieOuNull } from './gitPorte.mjs'
 import { parUnitesDeCode } from './lister.mjs'
 
 /** Lecture git de ce module : la sortie, ou `''` quand l'objet demandé n'existe pas (un dépôt sans
@@ -103,7 +103,7 @@ export function memeSha(a, b) {
  */
 export function archivesDe(cwd = process.cwd()) {
   // Dépôt sans HEAD : `git` rend `''` (objet absent), donc aucune archive — et ce n'est pas une erreur.
-  const suivis = git(['ls-tree', '-r', '--name-only', 'HEAD', '--', '.claude/soldes'], cwd).split('\n').filter(Boolean)
+  const suivis = cheminsDe((args) => git(args, cwd), ['ls-tree', '-r', '--name-only', 'HEAD', '--', '.claude/soldes'])
   return suivis
     .filter((chemin) => CHEMIN_DE_REVUE_RE.test(chemin))
     .map((chemin) => ({ chemin, ...fenetreDeRevue(git(['show', `HEAD:${chemin}`], cwd)) }))
@@ -115,10 +115,8 @@ export function archivesDe(cwd = process.cwd()) {
  * @returns {{ chemin: string, nom: string, contenu: string }[]}
  */
 export function revuesNeuves(cwd = process.cwd()) {
-  const ajoutees = git(['diff', '--cached', '--name-status', '--diff-filter=A', '--', '.claude/soldes'], cwd)
-    .split('\n')
-    .map((ligne) => ligne.split('\t')[1])
-    .filter((chemin) => chemin && CHEMIN_DE_REVUE_RE.test(chemin))
+  const ajoutees = cheminsDe((args) => git(args, cwd), ['diff', '--cached', '--name-only', '--diff-filter=A', '--', '.claude/soldes'])
+    .filter((chemin) => CHEMIN_DE_REVUE_RE.test(chemin))
   return ajoutees.map((chemin) => ({
     chemin,
     nom: chemin.split('/').pop(),

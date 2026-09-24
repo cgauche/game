@@ -10,8 +10,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { STATUS_DLL_INIT_FAILED } from './spawnResilient.mjs'
 import {
-  INDEX, TRAVAIL, arbrePrincipal, classer, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin, lireGit,
-  lireEnLot, listerImage, natureDuChemin, raisonCourte, sortieOuNull,
+  INDEX, SUIVI, TRAVAIL, arbrePrincipal, cheminsDe, classer, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin,
+  fichiersDuGrep, lireGit, lireEnLot, listerImage, natureDuChemin, raisonCourte, sortieOuNull,
 } from './gitPorte.mjs'
 import { envDeDepotForge, instanceDeDepot } from './depotGabarit.mjs'
 import { sourceGit } from './cssImages.mjs'
@@ -289,7 +289,7 @@ test('classer : la RAISON est la première ligne significative, bornée à 200 c
   assert.equal(raisonCourte('   \n  premier mot  \nsuite'), 'premier mot')
 })
 
-test('listerImage : l’unique listeur d’image — ref, INDEX et TRAVAIL rendent chacun LEURS fichiers ; enfantsDirects en projette les noms', () => {
+test('listerImage : l’unique listeur d’image — ref, INDEX, SUIVI et TRAVAIL rendent chacun LEURS fichiers ; enfantsDirects en projette les noms', () => {
   const { racine } = instanceDeDepot({ fichiers: { 'd/a.txt': 'a\n', 'd/s/b.txt': 'b\n', 'x.txt': 'x\n' }, message: 'socle' })
   const git = (args) => sortieOuNull(lireGit(args, { cwd: racine }))
   try {
@@ -297,6 +297,7 @@ test('listerImage : l’unique listeur d’image — ref, INDEX et TRAVAIL rende
     writeFileSync(join(racine, 'd/neuf.txt'), 'n\n')
     assert.deepEqual(listerImage(git, 'HEAD', 'd'), ['d/a.txt', 'd/s/b.txt'])
     assert.deepEqual(listerImage(git, INDEX, 'd'), ['d/s/b.txt'], 'retiré de l’index : hors de ce que le commit emporte')
+    assert.deepEqual(listerImage(git, SUIVI, 'd'), ['d/s/b.txt'], 'les chemins suivis : ni le retiré ni le non-suivi')
     assert.deepEqual(listerImage(git, TRAVAIL, 'd').sort(), ['d/a.txt', 'd/neuf.txt', 'd/s/b.txt'], 'l’arbre de travail : non suivis compris')
     assert.deepEqual(enfantsDirects(listerImage(git, 'HEAD', 'd'), 'd'), ['a.txt', 's'])
     assert.deepEqual(listerImage(() => null, 'HEAD', 'd'), [], 'git muet : []')
@@ -323,14 +324,44 @@ test('lireEnLot : un seul `cat-file --batch` rend le texte de chaque chemin, mul
   }
 })
 
-test('sourceGit : `citants` ne rend que les MODULES de code de `src/`, `lireTout` leur texte par lot — ref, INDEX et travail', () => {
+test('lireEnLot : une sortie de `cat-file` dont le bloc ne finit pas à sa taille LÈVE en nommant le chemin', () => {
+  const git = () => 'abc blob 3\nabcX'
+  assert.throws(() => lireEnLot(git, 'HEAD', ['src/a.ts']), /illisible à HEAD:src\/a\.ts : « abc blob 3 »/)
+  assert.deepEqual([...lireEnLot(() => 'abc blob 3\nabc\n', 'HEAD', ['src/a.ts'])], [['src/a.ts', 'abc']], 'témoin : le bloc bien formé')
+})
+
+test('cheminsDe : un chemin non-ASCII ou à espace est rendu EN CLAIR — ls-files, ls-tree, diff, numstat, name-status, grep -l', () => {
+  const E = 'src/ui/Écran.tsx'
+  const B = 'src/mon module.ts'
+  const { racine, sha } = instanceDeDepot({ fichiers: { [E]: 'const e = 1\n', [B]: 'const b = 1\n', 'src/a.ts': 'const a = 1\n' }, message: 'socle' })
+  const git = (args) => sortieOuNull(lireGit(args, { cwd: racine }))
+  const g = (...a) => execFileSync('git', a, { cwd: racine, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  try {
+    assert.match(git(['ls-files']), /^"src\/ui\/\\303\\211cran\.tsx"$/m, 'témoin : la forme ligne CITE le chemin')
+    assert.deepEqual(cheminsDe(git, ['ls-files', '--', 'src']).sort(), [B, 'src/a.ts', E].sort())
+    assert.deepEqual(listerImage(git, sha, 'src').sort(), [B, 'src/a.ts', E].sort())
+    writeFileSync(join(racine, E), 'const e = 2\n')
+    g('mv', B, 'src/renommé.ts')
+    assert.deepEqual(cheminsDe(git, ['diff', 'HEAD', '--name-only', '--no-renames']).sort(), [B, 'src/renommé.ts', E].sort())
+    assert.deepEqual(cheminsDe(git, ['diff', 'HEAD', '--numstat']), ['0\t0\t', B, 'src/renommé.ts', `1\t1\t${E}`], 'un renommage : un champ, puis ses deux bouts')
+    assert.deepEqual(cheminsDe(git, ['diff', 'HEAD', '-M', '--diff-filter=R', '--name-status']), ['R100', B, 'src/renommé.ts'])
+    assert.deepEqual(fichiersDuGrep(git, [sha], 'const e', ['src']), [E], 'le préfixe `<ref>:` est retiré')
+    assert.deepEqual(fichiersDuGrep(git, ['--cached'], 'const', ['src']).sort(), ['src/a.ts', 'src/renommé.ts', E].sort())
+    assert.deepEqual(fichiersDuGrep(git, [], 'rien de tel', ['src']), [], 'aucun match : sortie 1, liste vide')
+    assert.deepEqual(cheminsDe(() => null, ['ls-files']), [], 'git muet : []')
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('sourceGit : `citants` ne rend que les MODULES de code de `src/`, `lireTout` leur texte par lot — ref, INDEX, suivi et travail', () => {
   const texte = "import {\n  C,\n} from\n  './Cible'\n"
   const { racine, sha } = instanceDeDepot({
     fichiers: { 'src/a.ts': texte, 'src/n.md': "from './Cible'\n", 'src/d.json': '"./Cible"\n', 'src/z.ts': 'const z = 1\n' },
     message: 'un',
   })
   try {
-    for (const arbre of [sha, INDEX, TRAVAIL]) {
+    for (const arbre of [sha, INDEX, SUIVI, TRAVAIL]) {
       const source = sourceGit({ cwd: racine, arbre })
       const citants = source.citants('/Cible')
       assert.deepEqual(citants, ['src/a.ts'], arbre)

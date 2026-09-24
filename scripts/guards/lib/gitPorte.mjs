@@ -183,25 +183,39 @@ export function lireGit(args, opts = {}) {
 export const sortieOuNull = (union) =>
   union.disponible && !union.absent && union.valeur.status === 0 ? union.valeur.stdout : null
 
-/** Marques des deux images qui ne sont pas des refs : l'index et l'arbre de travail. */
+/** Marques des images qui ne sont pas des refs : l'index, l'arbre de travail des chemins suivis
+ *  (`git commit -a`), et l'arbre de travail entier, non-suivis compris. */
 export const INDEX = ':index'
+export const SUIVI = ':suivi'
 export const TRAVAIL = ':travail'
+
+/**
+ * Les champs que rend `git <args>` sous `-z` : des chemins tels que git les écrit, jamais CITÉS
+ * (`core.quotePath` : `"src/\303\211cran.tsx"` sous la forme ligne), espace et saut de ligne compris.
+ * L'UNIQUE lecteur de chemins des portes. `-z` suit la sous-commande. `--numstat` rend
+ * `<plus>\t<moins>\t<chemin>` par champ, un renommage `<plus>\t<moins>\t` puis ses deux bouts ;
+ * `--name-status` rend le statut, puis le ou les chemins, en champs distincts. `git` (args → sortie,
+ * `null` = rien) est le lecteur de l'appelant : git muet → `[]`.
+ * @param {(args: string[]) => string | null} git @param {string[]} args @returns {string[]}
+ */
+export function cheminsDe(git, [sousCommande, ...reste]) {
+  return (git([sousCommande, '-z', ...reste]) ?? '').split('\0').filter(Boolean)
+}
 
 /**
  * Les FICHIERS qu'une IMAGE git porte sous `dossier`, chemins POSIX complets — l'unique listeur
  * d'image des portes : `arbre` = une ref (`ls-tree -r`), `INDEX` (`ls-files --cached`, ce que le
- * commit emporte) ou `TRAVAIL` (l'index plus les non-suivis non ignorés). Un listage de DISQUE commun
- * à deux images rendait un fichier SUPPRIMÉ absent de la pré-image elle-même (#1728). `git` (args →
- * sortie, `null` = rien) est le lecteur de l'appelant : git muet → `[]`, comme un dossier absent.
+ * commit emporte), `SUIVI` (les mêmes chemins, lus sur le disque : ce que `git commit -a` emporte) ou
+ * `TRAVAIL` (l'index plus les non-suivis non ignorés). Un listage de DISQUE commun à deux images
+ * rendait un fichier SUPPRIMÉ absent de la pré-image elle-même (#1728).
  * @param {(args: string[]) => string | null} git @param {string} arbre @param {string} dossier
  * @returns {string[]}
  */
 export function listerImage(git, arbre, dossier) {
-  const args = arbre === INDEX ? ['ls-files', '--cached']
+  const args = arbre === INDEX || arbre === SUIVI ? ['ls-files', '--cached']
     : arbre === TRAVAIL ? ['ls-files', '--cached', '--others', '--exclude-standard']
       : ['ls-tree', '-r', '--name-only', arbre]
-  const sortie = git([...args, '--', dossier]) ?? ''
-  return sortie.split(/\r?\n/).map((l) => l.trim().replace(/\\/g, '/')).filter(Boolean)
+  return cheminsDe(git, [...args, '--', dossier])
 }
 
 /**
@@ -221,27 +235,15 @@ export function enfantsDirects(chemins, dossier) {
 }
 
 /**
- * Les lignes qui portent le motif `-E` `motif` sous `pathspecs`, PAR FICHIER (texte des lignes, `\n`
- * final) — l'unique lecture `git grep` des portes. `portee` : `[]` (arbre de travail suivi),
- * `['--untracked']`, `['--cached']` (index) ou `[<ref>]`, dont git préfixe alors chaque chemin.
- * `git` (args → sortie, `null` = rien) est le lecteur de l'appelant : aucun match (sortie 1) est vide.
+ * Les FICHIERS qui portent le motif `-E` `motif` sous `pathspecs` (`git grep -l`, `cheminsDe`) —
+ * l'unique lecture `git grep` des portes. `portee` : `[]` (arbre de travail suivi), `['--untracked']`,
+ * `['--cached']` (index) ou `[<ref>]`, dont git préfixe alors chaque chemin. Aucun match (sortie 1) : `[]`.
  * @param {(args: string[]) => string | null} git @param {string[]} portee @param {string} motif
- * @param {readonly string[]} pathspecs @returns {Map<string, string>}
+ * @param {readonly string[]} pathspecs @returns {string[]}
  */
-export function grepDe(git, portee, motif, pathspecs) {
+export function fichiersDuGrep(git, portee, motif, pathspecs) {
   const prefixe = portee.length === 1 && !portee[0].startsWith('-') ? `${portee[0]}:` : ''
-  const sortie = git(['grep', '-z', '-E', '-e', motif, ...portee, '--', ...pathspecs]) ?? ''
-  /** @type {Map<string, string[]>} */
-  const lignes = new Map()
-  for (const l of sortie.split('\n')) {
-    const at = l.indexOf('\0')
-    if (at < 0) continue
-    const rel = l.slice(prefixe.length, at)
-    const deja = lignes.get(rel)
-    if (deja) deja.push(l.slice(at + 1))
-    else lignes.set(rel, [l.slice(at + 1)])
-  }
-  return new Map([...lignes].map(([rel, ls]) => [rel, `${ls.join('\n')}\n`]))
+  return cheminsDe(git, ['grep', '-l', '-E', '-e', motif, ...portee, '--', ...pathspecs]).map((c) => c.slice(prefixe.length))
 }
 
 /**

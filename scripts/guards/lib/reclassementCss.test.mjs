@@ -125,6 +125,21 @@ test('deplaceLaFrontiere : des arcs vers le manifeste INCHANGÉS ne relisent rie
     false, 'un manifeste sans `fichier` n’a rien à importer : ni les chemins nés ou morts ni le commit ne sont lus')
 })
 
+test('deplaceLaFrontiere : un module touché HORS de `src/` n’est pas un importeur — ses arcs vers le manifeste ne relisent rien', () => {
+  const outil = 'scripts/outil.ts'
+  assert.equal(deplace({ [outil]: 'const a = 1\n' }, { [outil]: "import { Console } from '../src/ui/Console'\n" }), false)
+})
+
+test('deplaceLaFrontiere : les MÊMES cibles importées dans un autre ordre ne relisent rien', () => {
+  const PUPITRE = 'src/ui/Pupitre.tsx'
+  const manifeste = [...MANIFESTE_CONSOLE, { id: 'pupitre', fichier: PUPITRE, css: 'src/ui/styles/pupitre.css' }]
+  const importe = (...noms) => noms.map((n) => `import { ${n} } from './${n}'\n`).join('')
+  const arbre = (texte) => arbreDe({ [ECRAN]: texte, [PUPITRE]: 'export const Pupitre = 1\n' }, manifeste)
+  const juger = (avant, apres) => deplaceLaFrontiere({ chemins: [ECRAN], nesOuMorts: () => [], parent: arbre(avant), commit: arbre(apres), racine: '/r' })
+  assert.equal(juger(importe('Console', 'Pupitre'), importe('Pupitre', 'Console')), false)
+  assert.equal(juger(importe('Console'), importe('Pupitre', 'Console')), true, 'témoin : une cible gagnée')
+})
+
 test('deplaceLaFrontiere : un module HOMONYME ajouté ou supprimé relit la frontière, VIDE compris — `./Console` peut changer de cible', () => {
   assert.equal(deplace({}, { 'src/ui/Console.ts': '' }, ['src/ui/Console.ts']), true, '`Console.ts` VIDE ajouté passe avant `Console.tsx`')
   assert.equal(deplace({ 'src/ui/Console.ts': '' }, {}, ['src/ui/Console.ts']), true, 'le retirer, vide, rend `./Console` à `Console.tsx`')

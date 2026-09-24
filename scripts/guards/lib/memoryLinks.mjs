@@ -43,6 +43,7 @@
 // Module ESM pur — consommé par `scripts/guards/lib/memoryLinks.test.mjs`.
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { cheminsDe } from './gitPorte.mjs';
 import { parUnitesDeCode, listerDossier } from './lister.mjs';
 import { extname, join } from 'node:path';
 import { sansBlocsDeCode } from './liensMarkdown.mjs';
@@ -145,10 +146,10 @@ function jetonDisparues(disparues) {
 export function nomsDeFichesConnues(root) {
   const noms = new Set(liveNotes(root).map((f) => f.replace(/\.md$/, '')));
   try {
-    const sortie = execFileSync('git', ['ls-tree', '--name-only', 'HEAD', `${MEMORY_DIR}/`], {
+    const chemins = cheminsDe((args) => execFileSync('git', args, {
       cwd: root, encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'ignore'],
-    });
-    for (const ligne of sortie.split('\n')) {
+    }), ['ls-tree', '--name-only', 'HEAD', `${MEMORY_DIR}/`]);
+    for (const ligne of chemins) {
       if (!ligne.endsWith('.md')) continue;
       noms.add(ligne.slice(`${MEMORY_DIR}/`.length, -'.md'.length));
     }
@@ -161,12 +162,11 @@ export function nomsDeFichesConnues(root) {
  * non ignorés) : un fichier temporaire posé dans le périmètre est donc VU. @returns {string[]}
  */
 export function fichiersHorsMemoire(root) {
-  const sortie = execFileSync(
-    'git',
+  const chemins = cheminsDe(
+    (args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 }),
     ['ls-files', '--cached', '--others', '--exclude-standard', '--', ...RACINES_HORS_MEMOIRE],
-    { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 },
   );
-  return [...new Set(sortie.split('\n').filter(Boolean))]
+  return [...new Set(chemins)]
     .filter((rel) => EXTENSIONS_LUES.has(extname(rel)))
     .filter((rel) => !HORS_SCAN.some((p) => rel === p || rel.startsWith(p)))
     .sort(parUnitesDeCode);
