@@ -162,7 +162,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 |---|---|---|
 | `raceAppearance.json` | Apparence par race (gabarit, palette, tenue) — rig (21 entrée(s)) | `raceAppearance` — dataset `raceAppearance` |
 | `structureAppearance.json` | Apparence de structure (murs, portes) (18 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (presets de rendu édités au fichier — absent de `CodexEdit.CATEGORY_DATASET`) |
-| `props.json` | Props de décor (leurs matières vivent dans `materials.json`) (123 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (édité à la PALETTE de décor de l’éditeur de carte, jamais par une catégorie du Codex) — dataset `props` |
+| `props.json` | Props de décor (leurs matières vivent dans `materials.json`) (123 entrée(s)) | exempt (vocabulaire-app-interne) — aucune (catalogue d’art, édité au fichier `src/data/props.json` — aucun écran ne l’écrit (la palette de l’éditeur de carte le LIT)) — dataset `props` |
 | `decorPalette.json` | Palette de couleurs de décor (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (palette d'art éditée au fichier (aucun écran d'atelier ne l'expose)) |
 | `teintesJeu.json` | TEINTES DE JEU du terrain — surbrillances tactiques (portées, zones, bandes de tir, anneaux de cible, halos, télégraphes) et identité d'unité (anneaux réservés, équipes, une couleur par héros), `id → #rrggbb` groupé par préfixe ; servi aux peintres par `src/gameIso/highlightTints.ts` et `src/gameIso/teamColors.ts` (objet à sous-catalogues) | exempt (vocabulaire-app-interne) — aucune (palette de rendu éditée au fichier (aucun écran d'atelier ne l'expose)) |
 | `materials.json` | LES matières du monde — un document, le domaine (`prop` décor volumique · `roof` toiture · `relief`) porté par l'entrée (15 entrée(s)) | `materials` — dataset `materials` |
@@ -495,4 +495,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: 524a8b38fd98092596531fef5d1245a0348c5602 (379 fichiers, 2 dossiers) corps: 5b95ae77d6c9526ae5a3d74fcccab0fd83e262ef -->
+<!-- sources-empreinte: 2e73bb1b79a33fabe301cc1f82d41e72a2b0b197 (379 fichiers, 2 dossiers) corps: 87781af6b18a4134bf97c623fdc01ea3abb120ed -->

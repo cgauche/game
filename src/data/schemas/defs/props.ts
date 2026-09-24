@@ -99,10 +99,10 @@ const doc = document(
       exempt: {
         kind: 'vocabulaire-app-interne',
         raison:
-          'catalogue des placeables de décor (art, pas règle) — aucune catégorie du Codex ne l’expose ; il s’édite à la palette de l’éditeur de carte',
+          'catalogue des placeables de décor (art, pas règle) — aucune catégorie du Codex ne l’expose, aucun écran ne l’écrit : il s’édite au fichier `src/data/props.json`',
       },
     },
-    edit: { none: 'édité à la PALETTE de décor de l’éditeur de carte, jamais par une catégorie du Codex', dataset: 'props' },
+    edit: { none: 'catalogue d’art, édité au fichier `src/data/props.json` — aucun écran ne l’écrit (la palette de l’éditeur de carte le LIT)', dataset: 'props' },
   },
   {
     /**

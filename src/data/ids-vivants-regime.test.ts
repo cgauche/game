@@ -8,7 +8,7 @@ import { sceneEntitySchema } from './schemas/defs-scenes/scene';
 /**
  * RÉGIME VIF DES IDS (#1897) — tout dataset-tableau du seam (`ARRAYS`, `data/overrides.ts`) est lu en
  * MÉMOIRE par `ref.ts`, qu'il ait une route d'édition au Codex ou non (`props.json` est `edit: none` :
- * il s'édite à la palette de l'éditeur de carte). Chaque cas LIT d'abord (le mémo de `idsVivants.ts`
+ * aucun écran ne l'écrit). Chaque cas LIT d'abord (le mémo de `idsVivants.ts`
  * se remplit), ÉCRIT au seam, puis relit : un mémo qui ignorerait la version servirait l'ancien monde.
  */
 

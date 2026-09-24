@@ -37,6 +37,7 @@ import type { GameOp } from '../../engine/ops';
 import type { ConsumableDuration } from '../../engine/consumables';
 import { JsonField } from '../editor/JsonField';
 import { creatureSpeciesOptions, QUAD_SPECIES, WINGED_SPECIES } from '../../gameIso/rig/creatures';
+import { coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
 import { CreaturePreview } from './CreaturePreview';
 import { porteurDApercu } from './apercuPorteur';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
@@ -865,7 +866,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
  *  `creatures.json` ; le rig le lit comme couche de défaut → l'apparence en jeu reflète l'édition. */
 function AppearanceField({ label, porteur, value, onChange }: { label: string; porteur?: string; value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
   const a = value ?? {};
-  const patch = (p: Partial<EntityAppearance>) => onChange({ ...a, ...p });
+  const patch = (p: Partial<EntityAppearance>) => onChange(coiffureRetombee({ ...a, ...p }));
   // Le harnachement est un canal du pipeline QUADRUPÈDE (quad ∪ ailé) : hors de ces gabarits, la
   // clé serait de la donnée absurde, ignorée au rendu — le sélecteur n'est donc pas offert.
   const quadrupede = !!a.species && (a.species in QUAD_SPECIES || a.species in WINGED_SPECIES);

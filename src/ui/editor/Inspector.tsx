@@ -22,6 +22,7 @@ import { hashSeed } from '../../engine/dice';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { tokenBodyKind } from '../../gameIso/tokenBodyKind';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
+import { coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { buildingsMeta } from '../../state/buildings';
 import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
@@ -1355,7 +1356,7 @@ function EntityPanel({
               {/* Espèce EXPLICITE de rendu (`appearance.species`) — découple l'apparence du nom/ref
                   (cf. scene.ts). Vide = bipède Humain par défaut. Le profil de stats se choisit via la
                   réf de créature (fold Rôle/Combat), distincte de l'apparence. */}
-              <select value={ent.appearance?.species ?? ''} onChange={(e) => updateSel({ appearance: { ...ent.appearance, species: e.target.value || undefined } })}>
+              <select value={ent.appearance?.species ?? ''} onChange={(e) => updateSel({ appearance: coiffureRetombee({ ...ent.appearance, species: e.target.value || undefined }) })}>
                 <option value="">(par défaut : Humain)</option>
                 {creatureSpeciesOptions().map((o) => (
                   <option key={o.id} value={o.id}>
@@ -1394,7 +1395,7 @@ function EntityPanel({
               onMonster={(patch) => updateSel({ appearance: { ...ent.appearance, monster: { ...(ent.appearance?.monster ?? {}), ...patch } } })}
               onWeapon={(w) => updateSel({ weapon: w })}
               onColors={(patch) => updateSel({ appearance: { ...ent.appearance, colors: { ...(ent.appearance?.colors ?? {}), ...patch } } })}
-              onSex={(s) => updateSel({ appearance: { ...ent.appearance, sex: s } })}
+              onSex={(s) => updateSel({ appearance: coiffureRetombee({ ...ent.appearance, sex: s }) })}
               onBuild={(b) => updateSel({ appearance: { ...ent.appearance, build: b } })}
               onHairstyle={(id) => updateSel({ appearance: { ...ent.appearance, hairstyle: id } })}
               onTenue={(c) => updateSel({ appearance: { ...ent.appearance, tenue: c } })}

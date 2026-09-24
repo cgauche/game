@@ -437,9 +437,7 @@ export function spawnEnemy(
   // rendu dérivé du nom inchangé.
   const a = opts?.appearance;
   if (a?.species) c.species = a.species; // espèce/race d'auteur → rig en combat comme en exploration
-  if (a && (a.species || a.monster || a.features || a.colors || a.parts || a.eyes || a.sex || a.build !== undefined || a.seed !== undefined || a.armurePortee !== undefined)) {
-    c.appearanceOverride = a;
-  }
+  if (a && Object.values(a).some((v) => v !== undefined)) c.appearanceOverride = a;
   // Tenue éditée (libellé) → portée par le rig (via Combatant.career, qui sert de tenue) en
   // combat comme en exploration.
   if (a?.tenue) c.career = a.tenue;

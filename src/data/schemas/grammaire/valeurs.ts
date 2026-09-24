@@ -643,9 +643,8 @@ export const countSpecSchema = z.union([
   z.strictObject({ roll: diceSpecSchema }),
 ]);
 
-/** `EntityAppearance` (`src/engine/authoringAppearance.ts`) — apparence d'entité (créature/trait/mutation).
- *  Dupliqué à l'identique dans `creatures`/`traits` ; `mutations` l'étend d'un `legs` anomalique
- *  (cf. `mutations.ts`, non repris ici — anomalie propre à ce seul dataset). */
+/** `EntityAppearance` (`src/engine/authoringAppearance.ts`) — apparence d'entité, composée par
+ *  `creatures`, `traits`, `mutations`, la scène (`SceneEntity.appearance`) et le narratif. */
 export const entityAppearanceSchema = z.strictObject({
   seed: z.number().optional(),
   monster: z
@@ -683,6 +682,8 @@ export const entityAppearanceSchema = z.strictObject({
   /** Armure de statblock (PA par localisation, sans inventaire) VISIBLE/portée (#774) — défaut
    *  absent : les PA restent mécaniques PURS, aucun art d'armure synthétisé (nu de l'espèce/naturel). */
   armurePortee: z.boolean().optional(),
+  /** Coiffure IMPOSÉE — id stable d'une coiffure du rig (`gameIso/rig/parts/hairstyles/defs`, #637). */
+  hairstyle: z.string().optional(),
   eyes: z.strictObject({ G: z.string().optional(), D: z.string().optional() }).optional(),
   features: z.array(z.string()).optional(),
 });

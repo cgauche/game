@@ -319,8 +319,8 @@ const priceLabel = (p: Money | 'ND' | null | undefined): string | null => {
 const damageFact = (t: { damage: import('../../engine/types').WeaponDamageSpec | null; qualities: { id: string; value?: number }[]; onHitEffects?: import('../../engine/flowCore').TriggeredEffect[] }): string | undefined =>
   join(t.damage ? damageString(t.damage) : null, conditionalDamageNote(t));
 
-/** Nom d'auteur d'un décor de `props.json` (le catalogue n'a pas de catégorie Codex : il s'édite à la
- *  palette de l'éditeur de carte, `defs/props.ts`) — lecture VIVE du dataset ; l'id nu tient lieu de
+/** Nom d'auteur d'un décor de `props.json` (le catalogue n'a pas de catégorie Codex et aucun écran ne
+ *  l'écrit, `defs/props.ts`) — lecture VIVE du dataset ; l'id nu tient lieu de
  *  nom pour une référence hors catalogue, que le parse refuse nominativement (`idDe('prop')`). */
 const propLabel = (id: string): string => props.find((p) => p.id === id)?.label ?? id;
 

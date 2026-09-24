@@ -5,6 +5,7 @@ import { Icon } from '../Icon';
 import { MasterDetail } from '../MasterDetail';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
+import { coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
 import { creatures, creatureLabel, findCreatureById, memoParVersion } from '../../data';
 import { CHAR_KEYS, CHAR_LABELS, type CharKey } from '../../engine/types';
 import type { NarratifBlock, PresetPnj, Affaire, Indice, IndiceStade, OuvertureBlock, ClotureBlock, AmbianceCadre } from '../../state/campaignNarratif';
@@ -603,7 +604,7 @@ function PresetForm({ preset, onRename, onPatch, onRemove }: {
   };
   /** Fusionne un patch d'apparence (retire `apparence` si elle redevient vide). */
   const patchAppearance = (patch: Partial<EntityAppearance>) => {
-    const next = { ...appearance, ...patch };
+    const next = coiffureRetombee({ ...appearance, ...patch });
     onPatch({ apparence: Object.keys(next).length ? next : undefined });
   };
 

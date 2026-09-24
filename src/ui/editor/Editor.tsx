@@ -966,12 +966,12 @@ export function Editor({
         {/* Colonne centrale de la grille (1 enfant par colonne, sinon la grille 3 colonnes déborde en
             ligne implicite et s'effondre) : le canvas + la barre d'étages en OVERLAY ancré dessus. */}
         <div className="editor-canvas-col">
-        {/* Le FILET du monde (patron `gameIso/stage/MondeDeCampagne.tsx`) : une faute de donnée qui fait
-            lever le canevas n'emporte ni l'Inspecteur, ni la Validation, ni la barre d'outils ; la
-            scène est sa CLÉ DE REPRISE — la corriger relève le monde sans recharger. */}
+        {/* Le FILET du monde (patron `gameIso/stage/MondeDeCampagne.tsx`) : une erreur de rendu n'emporte
+            ni l'Inspecteur, ni la Validation, ni la barre d'outils ; la scène est sa CLÉ DE REPRISE — la
+            modifier relève le monde sans recharger. */}
         <SceneErrorBoundary
           className="scene-error-boundary editor-canvas-wrap"
-          message="Le monde de l'éditeur a rencontré une erreur de rendu : corrige la faute (onglet Validation), il se relève seul."
+          message="Le monde de l'éditeur a rencontré une erreur de rendu : il se relève dès que la scène change, ou par « Réessayer »."
           retryLabel="Réessayer"
           onRetry={() => {}}
           cleDeReprise={scene}
