@@ -242,4 +242,4 @@ est un angle mort, et les voici :
 - Les **ids de zone** (`Zn`) affichés sont ceux que le JSDoc des props DÉCLARE. Une zone du contrat non
   encore taguée à la primitive n'a pas d'id ici — ce document RELÈVE les ids, il ne les attribue pas.
 
-<!-- sources-empreinte: 2318cfca8cac2b65501371dc6b80460c5797dc25 (1970 fichiers, 134 dossiers) corps: 8f1ee698aaa823822390b65a5262b101aae75e43 -->
+<!-- sources-empreinte: 86af819fee102cda8e44c95b5a7cc5d7f527ee54 (1970 fichiers, 134 dossiers) corps: 8f1ee698aaa823822390b65a5262b101aae75e43 -->

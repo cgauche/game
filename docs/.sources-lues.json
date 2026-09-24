@@ -9927,6 +9927,7 @@
       "scripts/guards/lib/npmLockHoisted.mjs",
       "scripts/guards/lib/purgerPerimes.mjs",
       "scripts/guards/lib/spawnResilient.mjs",
+      "scripts/node-requis.mjs",
       "scripts/ops/ruleset-main.mjs",
       "scripts/port-dev.mjs",
       "scripts/test/partition.mjs"
@@ -18395,6 +18396,7 @@
       "src/geometry/iso.ts",
       "src/geometry/walk.test.ts",
       "src/geometry/walk.ts",
+      "src/graphies-d-hote-guard.test.ts",
       "src/i18n/fixtureText.ts",
       "src/i18n/i18n.test.ts",
       "src/i18n/index.ts",
@@ -23480,6 +23482,7 @@
       "src/geometry/iso.ts",
       "src/geometry/walk.test.ts",
       "src/geometry/walk.ts",
+      "src/graphies-d-hote-guard.test.ts",
       "src/i18n/fixtureText.ts",
       "src/i18n/i18n.test.ts",
       "src/i18n/index.ts",
