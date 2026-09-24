@@ -19,7 +19,7 @@
  * la racine du dépôt, 126 documents pour 126 basenames distincts). Aucune heuristique de nom,
  * aucune racine devinée — un basename absent de cette liste LÈVE, nommément.
  */
-import { execFileSync } from 'node:child_process';
+import { lecteurGit } from './gitPorte.mjs';
 import { scanDuCorpus } from '../../docs/lib/structures-scan.mjs';
 import type { Site } from './stock.mjs';
 
@@ -66,7 +66,8 @@ export const sitesHorsStrate = (
 
 /** La mesure du corpus réel, pour qui n'a pas déjà un scan sous la main (le régénérateur). */
 export const auditHorsStrate = (root?: string): MesureHorsStrate => {
-  const racine = root ?? execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
+  const racine = root ?? lecteurGit(process.cwd())(['rev-parse', '--show-toplevel'])?.trim();
+  if (!racine) throw new Error(`racine du dépôt non résolue depuis ${process.cwd()}`);
   const { scan } = scanDuCorpus(racine);
   return { invisibles: scan.invisibles, documents: scan.documents };
 };

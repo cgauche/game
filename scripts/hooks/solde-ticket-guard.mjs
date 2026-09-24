@@ -76,7 +76,8 @@ import {
   PORTEUR_DU_PLAFOND, estCheminDuBudget, importsDe, mesurerBudget, plafondDeLaSource, refusDeBudget,
 } from '../guards/budget-contexte.mjs'
 import {
-  GitIndisponible, INDEX, SUIVI, cheminsDe, enfantsDirects, estDansHead, estRepertoire, fichiersDuGrep, lireGit, listerImage, sortieOuNull,
+  GitIndisponible, INDEX, SUIVI, cheminsDe, enfantsDirects, estDansHead, estRepertoire, fichiersDuGrep, lireGit, listerImage, numstatDe,
+  sortieOuNull,
 } from '../guards/lib/gitPorte.mjs'
 import { hunksDe } from '../guards/lib/hunks.mjs'
 import { motifRattachement, numerosDeLaChaine, numerosFermes } from '../guards/lib/fermetures.mjs'
@@ -1763,10 +1764,10 @@ export function estFichierEcran(path) {
   return /^src\/(ui|gameIso)\/.+\.tsx$/.test(p)
 }
 
-/** Analyse du `--numstat` du diff que le commit va produire (`diffDuCommit(...).numstat()`, champs de
- *  `cheminsDe`) : touche-t-il `src/**` ? un ÉCRAN (`estFichierEcran`, rendu par `touchesUi`) ?
- *  combien de lignes (insertions+suppressions) au total ? Fichiers binaires (`-\t-\t<path>`)
- *  comptés 0 ligne mais peuvent toucher `src/**`. Aucun champ → aucune touche, 0 ligne
+/** Analyse du `--numstat` du diff que le commit va produire (`diffDuCommit(...).numstat()`, entrées de
+ *  `numstatDe`) : touche-t-il `src/**` ? un ÉCRAN (`estFichierEcran`, rendu par `touchesUi`) ?
+ *  combien de lignes (insertions+suppressions) au total ? Fichiers binaires (`plus`/`moins` nuls)
+ *  comptés 0 ligne mais peuvent toucher `src/**`. Aucune entrée → aucune touche, 0 ligne
  *  (silence, jamais un deny par accident hors dépôt).
  *
  * AUCUN filtrage de pathspec ici (#591 défaut 1, arbre PARTAGÉ) : la restriction au lot de CETTE
@@ -1776,25 +1777,13 @@ export function estFichierEcran(path) {
  * tout le lot était jeté (mesuré 2026-09-04). Un seul matcheur de pathspec dans ce fichier, et
  * c'est celui de git.
  *
- * `fichiers` porte les DEUX bouts d'un renommage (champ `<plus>\t<moins>\t` suivi de ses deux
- * chemins) : c'est par eux que la porte des stocks voit le porteur source ET le porteur cible, qu'un
- * solde prouve sa correction au NOUVEAU chemin, et qu'un `.tsx` renommé reste un ÉCRAN (#1720).
+ * `fichiers` porte les DEUX bouts d'un renommage (`chemins` de l'entrée) : c'est par eux que la porte
+ * des stocks voit le porteur source ET le porteur cible, qu'un solde prouve sa correction au NOUVEAU chemin, et qu'un `.tsx` renommé reste un ÉCRAN (#1720).
  * `totalLines` compte le renommage replié : c'est le VOLUME écrit, et un renommage n'écrit rien.
- * @param {readonly string[]} [champs] */
-export function analyzeDiffDuCommit(champs = []) {
-  let totalLines = 0
-  const fichiers = []
-  for (let i = 0; i < champs.length; i += 1) {
-    const [ins, del, ...chemin] = champs[i].split('\t')
-    totalLines += (Number.parseInt(ins, 10) || 0) + (Number.parseInt(del, 10) || 0)
-    const nom = chemin.join('\t')
-    if (nom) {
-      fichiers.push(nom)
-      continue
-    }
-    fichiers.push(...champs.slice(i + 1, i + 3))
-    i += 2
-  }
+ * @param {readonly { plus: number | null, moins: number | null, chemins: string[] }[]} [entrees] */
+export function analyzeDiffDuCommit(entrees = []) {
+  const totalLines = entrees.reduce((n, e) => n + (e.plus ?? 0) + (e.moins ?? 0), 0)
+  const fichiers = entrees.flatMap((e) => e.chemins)
   return {
     touchesSrc: fichiers.some((f) => /^src\//.test(f)),
     touchesUi: fichiers.some(estFichierEcran),
@@ -1862,7 +1851,7 @@ export function diffDuCommit(command, dir = process.cwd()) {
   return {
     forme,
     pathspecs,
-    numstat: () => cheminsDe(lire, ['diff', ...rev(), '--numstat', ...borne]),
+    numstat: () => numstatDe(lire, ['diff', ...rev(), '--numstat', ...borne]),
     fichier: (f) => lire(['diff', ...rev(), '-U0', '--', f]) ?? '',
     contenu: (f) => sourceDuCommit().lire(f),
     avant: (f) => (aHead() ? sourceDuParent().lire(f) : null),

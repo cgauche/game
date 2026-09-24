@@ -16,6 +16,7 @@
 // est la SOURCE UNIQUE du `timeout` déclaré aux surfaces. Le hook n'échoue JAMAIS la session : ce
 // qu'il n'a pas pu poser, il le NOMME sur sa sortie, qui entre au contexte de la session.
 import { spawnSync } from 'node:child_process'
+import { lireGit } from '../guards/lib/gitPorte.mjs'
 import { fileURLToPath } from 'node:url'
 
 /** Marqueur d'un conteneur distant Claude Code (`CLAUDE_CODE_REMOTE=true`). */
@@ -48,6 +49,15 @@ export function lancer(exe, args, { budget = BUDGET_CONSTAT, ...options } = {}) 
   }
 }
 
+/** `git <args>` par l'hôte des lectures git (`lireGit`), rendu dans la forme de `lancer`. */
+export function lancerGit(args, { budget = BUDGET_CONSTAT, cwd } = {}) {
+  const vu = lireGit(args, { cwd, timeout: budget * 1000 })
+  if (!vu.disponible) return { ok: false, valeur: '', rapport: borner(vu.raison) }
+  if (vu.absent) return { ok: false, valeur: '', rapport: `objet absent : git ${args.join(' ')}` }
+  const { status, stdout, stderr } = vu.valeur
+  return { ok: status === 0, valeur: stdout.trim(), rapport: borner(`${stdout}${stderr}`.trim()) }
+}
+
 /** Ce que le canon exige d'un arbre de travail, et comment le poser. `manque` MESURE, `poser` agit :
  *  un prérequis déjà satisfait ne fait rien. `budget` borne le temps total de `poser`, en secondes. */
 export const PREREQUIS = [
@@ -56,10 +66,10 @@ export const PREREQUIS = [
     // Le conteneur clone à une profondeur bornée (50 commits mesurés). Dix gardes de `test:hooks`
     // LISENT l'histoire — `fermetures-sans-solde`, `soldes-stock`, `stocks-nominatifs`,
     // `segments-profonds` — et refusent NOMMÉMENT un dépôt superficiel.
-    manque: ({ racine, run }) =>
-      run('git', ['rev-parse', '--is-shallow-repository'], { cwd: racine }).valeur === 'true',
-    poser: ({ racine, run, budget }) =>
-      run('git', ['fetch', '--unshallow', 'origin'], { cwd: racine, budget }),
+    manque: ({ racine, git }) =>
+      git(['rev-parse', '--is-shallow-repository'], { cwd: racine }).valeur === 'true',
+    poser: ({ racine, git, budget }) =>
+      git(['fetch', '--unshallow', 'origin'], { cwd: racine, budget }),
     geste: 'git fetch --unshallow origin',
     budget: 90,
   },
@@ -67,8 +77,8 @@ export const PREREQUIS = [
     nom: 'hooks git du dépôt',
     // Le script `postinstall` de `package.json` pose `core.hooksPath` et les trois pilotes de
     // fusion des docs dérivés ; sans lui, aucune garde de commit ne joue.
-    manque: ({ racine, run }) =>
-      run('git', ['config', 'core.hooksPath'], { cwd: racine }).valeur !== 'scripts/git-hooks',
+    manque: ({ racine, git }) =>
+      git(['config', 'core.hooksPath'], { cwd: racine }).valeur !== 'scripts/git-hooks',
     poser: ({ racine, run, budget }) =>
       run('npm', ['install', '--no-audit', '--no-fund'], { cwd: racine, budget }),
     geste: 'npm install',
@@ -113,9 +123,9 @@ export function mettreEnConformite(contexte, prerequis = PREREQUIS) {
   return lignes
 }
 
-export function bootstrap(env = process.env, racine = process.cwd(), run = lancer) {
+export function bootstrap(env = process.env, racine = process.cwd(), run = lancer, git = lancerGit) {
   if (!estConteneurDistant(env)) return []
-  return mettreEnConformite({ racine, run })
+  return mettreEnConformite({ racine, run, git })
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

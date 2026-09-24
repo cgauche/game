@@ -295,6 +295,22 @@ test('DRIVER : les TROIS formes de commit sont jugées sur ce qu\'elles emporten
   }
 })
 
+// #1806 D1 — un porteur au chemin NON-ASCII : l'en-tête `+++ b/<chemin>` du patch `-U0` n'a pas de
+// `-z`, et git l'y CITE (`core.quotePath`) hors de l'hôte des lectures git (`gitPorte.mjs`).
+test('DRIVER : un stock au chemin NON-ASCII qui grandit est refusé — le patch le nomme en clair', () => {
+  const porteur = 'src/ui/Écran.test.ts'
+  const { racine: repo } = instanceDeDepot({ fichiers: { [porteur]: "export const STOCK = [\n  'src/a.ts',\n]\n" }, message: 'socle' })
+  try {
+    writeFileSync(join(repo, porteur), "export const STOCK = [\n  'src/a.ts',\n  'src/b.ts',\n]\n", 'utf8')
+    execFileSync('git', ['add', '--', porteur], { cwd: repo, env: envDeDepotForge(), stdio: 'ignore' })
+    const refus = decisionOf('git commit -m "feat: une exemption de plus"', repo)
+    assert.equal(refus?.decision, 'deny', 'aucune décision : le porteur cité a échappé à la porte')
+    assert.ok(refus.reason.includes(`${porteur} : +1`), refus.reason)
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
 /** Dépôt jetable portant un stock VIDE commité, et de quoi le faire grandir. */
 function depotAStock() {
   const chemin = 'scripts/guards/lib/xStock.mjs'

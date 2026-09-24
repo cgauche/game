@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { CHEMIN_TSCONFIG, aliasDe, directImportsOf, estModule, pathspecsDeModules } from './importGraph.mjs'
-import { INDEX, SUIVI, TRAVAIL, cheminsDe, fichiersDuGrep, lireEnLot, lireGit, listerImage, sortieOuNull } from './gitPorte.mjs'
+import { INDEX, SUIVI, TRAVAIL, fichiersDuGrep, lecteurGit, lireEnLot, listerImage, nameStatusDe } from './gitPorte.mjs'
 import { entreesEcrites } from './stock.mjs'
 import {
   CHEMIN_COUCHES, CHEMIN_MANIFESTE, RACINE_DES_MODULES, feuillesPartageesDe, fichiersReutilises,
@@ -110,22 +110,15 @@ export function imageCss(source, options) {
   return { fichiers, manifeste, partagees, reutilises }
 }
 
-/** Le lecteur git par défaut dans `cwd` : une indisponibilité LÈVE en nommant ce qu'elle lisait. */
-const lecteurGit = (cwd, quoi) => (args, { entree } = {}) => {
-  const vu = lireGit(args, { cwd, entree })
-  if (!vu.disponible) throw new Error(`git indisponible pour lire ${quoi} : ${vu.raison}`)
-  return sortieOuNull(vu)
-}
-
 /**
  * Une source lue par git dans `cwd` : `arbre` = une ref, `INDEX`, `SUIVI` ou `TRAVAIL` (`gitPorte.mjs`),
  * ces deux derniers lus sur le disque. `git` (args,
- * `{ entree }` → sortie, `null` = objet absent) est le lecteur de l'appelant ; par défaut `lireGit`,
- * dont une indisponibilité LÈVE en se nommant : une image vide jugerait sur rien.
+ * `{ entree }` → sortie, `null` = objet absent) est le lecteur de l'appelant ; par défaut `lecteurGit`,
+ * dont une indisponibilité LÈVE (`GitIndisponible`) : une image vide jugerait sur rien.
  * @param {{ cwd?: string, arbre: string, git?: (args: string[], opts?: { entree?: string }) => string | null }} p
  */
 export function sourceGit({ cwd = process.cwd(), arbre, git }) {
-  const lire = git ?? lecteurGit(cwd, arbre)
+  const lire = git ?? lecteurGit(cwd)
   const disque = arbre === SUIVI || arbre === TRAVAIL
   const portee = arbre === INDEX ? ['--cached'] : arbre === SUIVI ? [] : arbre === TRAVAIL ? ['--untracked'] : [arbre]
   return {
@@ -175,10 +168,7 @@ export function lireDuTravail(cwd, rel) {
  * @returns {Map<string, string>}
  */
 export function renommagesDe(git, bornes) {
-  const champs = cheminsDe(git, ['diff', '-M', '--diff-filter=R', '--name-status', ...bornes])
-  const carte = new Map()
-  for (let i = 0; i + 2 < champs.length; i += 3) carte.set(champs[i + 1], champs[i + 2])
-  return carte
+  return new Map(nameStatusDe(git, ['diff', '-M', '--diff-filter=R', '--name-status', ...bornes]).map((e) => e.chemins))
 }
 
 /** Le stock CSS nominatif, et ses deux collections que la ventilation lit. */
@@ -193,7 +183,7 @@ const COLLECTIONS = { identite: 'CSS_IDENTITE_ECRAN_RATCHET', espacement: 'CSS_E
  * @param {{ cwd?: string, base: string, tete?: string, git?: (args: string[]) => string | null }} p
  */
 export function ventilationDeGit({ cwd = process.cwd(), base, tete = TRAVAIL, git }) {
-  const lire = git ?? lecteurGit(cwd, `${base}..${tete}`)
+  const lire = git ?? lecteurGit(cwd)
   const source = (arbre) => {
     const s = sourceGit({ cwd, arbre, git: lire })
     if (!s.existe()) throw new Error(`ref ${arbre} absente de l'histoire de ${cwd} (clone superficiel ? il faut \`fetch-depth: 0\`)`)

@@ -11,17 +11,13 @@
 // commandes git, et qui rend la même valeur depuis n'importe quel arbre. Un compteur d'événements
 // compterait ce que chaque worktree fait de son côté (20 sur ce dépôt, dont des trains qui ne
 // rejoignent jamais `main`) : deux worktrees suffisent à en faire un nombre que rien ne recoupe.
-import { GitIndisponible, cheminsDe, estAncetre, lireGit, sortieOuNull } from './gitPorte.mjs'
+import { cheminsDe, estAncetre, lecteurGit } from './gitPorte.mjs'
 import { parUnitesDeCode } from './lister.mjs'
 
 /** Lecture git de ce module : la sortie, ou `''` quand l'objet demandé n'existe pas (un dépôt sans
  *  HEAD ne porte aucune archive, et ce n'est pas une erreur). Une INDISPONIBILITÉ (git absent, hors
  *  dépôt) JETTE — `mesureDuPalier` la rend en `erreur` nommée. */
-const git = (args, cwd) => {
-  const vu = lireGit(args, { cwd })
-  if (!vu.disponible) throw new GitIndisponible(vu.raison)
-  return sortieOuNull(vu) ?? ''
-}
+const git = (args, cwd) => lecteurGit(cwd)(args) ?? ''
 
 const DATE_RE = /\d{4}-\d{2}-\d{2}/g
 const FENETRE_RE = /([0-9a-f]{7,40})\.\.([0-9a-f]{7,40})/
@@ -178,8 +174,8 @@ export function commitsDeSubstanceDepuis(cwd, tete) {
   const publies = Number.parseInt(
     git(['rev-list', '--count', `${tete}..HEAD`, '--', ...DOSSIERS_DE_SUBSTANCE], cwd).trim(), 10,
   )
-  const stage = git(['diff', '--cached', '--name-only', '--', ...DOSSIERS_DE_SUBSTANCE], cwd).trim()
-  return (Number.isFinite(publies) ? publies : 0) + (stage ? 1 : 0)
+  const stage = cheminsDe((args) => git(args, cwd), ['diff', '--cached', '--name-only', '--', ...DOSSIERS_DE_SUBSTANCE])
+  return (Number.isFinite(publies) ? publies : 0) + (stage.length ? 1 : 0)
 }
 
 /**

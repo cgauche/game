@@ -8,17 +8,18 @@ import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SOURCES_LUES } from '../docs/build-all.mjs'
-
-const git = (args, cwd) => execFileSync('git', args, { cwd, encoding: 'utf8' })
+import { cheminsDe, lecteurGit, lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs'
 
 /** Fichiers du lot que le hook vient de recevoir (ORIG_HEAD..HEAD). Sans ORIG_HEAD : `null`
  *  (= inconnu, on régénère). */
 export function touchedFiles(cwd) {
-  try {
-    return git(['diff', '--name-only', 'ORIG_HEAD', 'HEAD'], cwd).split('\n').filter(Boolean)
-  } catch {
-    return null
-  }
+  let lu = false
+  const chemins = cheminsDe((args) => {
+    const sortie = sortieOuNull(lireGit(args, { cwd }))
+    lu = sortie !== null
+    return sortie
+  }, ['diff', '--name-only', 'ORIG_HEAD', 'HEAD'])
+  return lu ? chemins : null
 }
 
 /** Les sources MESURÉES de l'arbre (`docs/.sources-lues.json`), ou `null` si le dérivé est illisible. */
@@ -62,7 +63,8 @@ export function touchesDocSources(chemins, mesure) {
 }
 
 function main() {
-  const cwd = git(['rev-parse', '--show-toplevel']).trim()
+  const cwd = lecteurGit(process.cwd())(['rev-parse', '--show-toplevel'])?.trim()
+  if (!cwd) return
   if (!touchesDocSources(touchedFiles(cwd), sourcesMesurees(cwd))) return
   try {
     execFileSync(process.execPath, ['scripts/docs/build-all.mjs', '--quiet'], { cwd, stdio: ['ignore', 'ignore', 'inherit'] })
@@ -72,7 +74,7 @@ function main() {
     process.stderr.write(`docs — régénération INTERROMPUE : docs/ possiblement incohérent, \`git checkout -- docs/\` puis corriger la cause.\n`)
     return
   }
-  const changed = git(['diff', '--name-only', '--', 'docs/'], cwd).split('\n').filter(Boolean)
+  const changed = cheminsDe(lecteurGit(cwd), ['diff', '--name-only', '--', 'docs/'])
   if (!changed.length) return
   process.stderr.write(`docs régénérés : à committer (${changed.length}) :\n${changed.map((f) => `  ${f}`).join('\n')}\n`)
 }

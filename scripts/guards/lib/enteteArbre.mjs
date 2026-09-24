@@ -7,17 +7,12 @@
 //
 // Le filigrane ne JETTE JAMAIS : il est imprimé juste avant les refus d'un hook, et une exception ici
 // emporterait les refus nommés avec elle. Git indisponible donne une ligne DÉGRADÉE qui le dit.
-import { GitIndisponible, lireGit, sortieOuNull } from './gitPorte.mjs'
+import { lecteurGit } from './gitPorte.mjs'
 
 /** Lecteur git par défaut : `git <args>` dans `racine`, sortie ébarbée, `null` si l'objet demandé
  *  n'existe pas. Une INDISPONIBILITÉ JETTE avec sa raison — `enteteArbre` en fait sa ligne dégradée.
  *  @param {string} racine @returns {(args: string[]) => string | null} */
-export const gitDans = (racine) => (args) => {
-  const vu = lireGit(args, { cwd: racine })
-  if (!vu.disponible) throw new GitIndisponible(vu.raison)
-  const sortie = sortieOuNull(vu)
-  return sortie === null ? null : sortie.trim()
-}
+export const gitDans = (racine) => (args) => lecteurGit(racine)(args)?.trim() ?? null
 
 /**
  * Ligne de filigrane : `arbre <sha7> « <sujet, 70 car. max> » + N fichier(s) non committé(s)`.

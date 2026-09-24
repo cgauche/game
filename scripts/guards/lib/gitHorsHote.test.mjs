@@ -1,0 +1,47 @@
+// La garde « git hors de l'hôte » (`gitHorsHote.mjs`, #1806) : l'arbre RÉEL n'a aucun site, et chaque
+// forme qu'un module de porte peut écrire est vue. Lancé par `npm run test:hooks`.
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { DOSSIERS_DES_PORTES, HOTE, sitesDuDepot, sitesHorsHote, sourcesDesPortes } from './gitHorsHote.mjs'
+
+test('l’arbre : aucun module de porte ne lit git hors de l’hôte', () => {
+  const sites = sitesDuDepot()
+  assert.deepEqual(sites.map((s) => `${s.chemin}:${s.ligne} [${s.forme}] ${s.extrait}`), [])
+})
+
+test('le périmètre : les sources suivies des dossiers de portes, hors suites et hors l’hôte', () => {
+  const sources = sourcesDesPortes()
+  assert.ok(sources.includes('scripts/hooks/solde-ticket-guard.mjs'))
+  assert.ok(sources.includes('scripts/git-hooks/pre-commit.mjs'))
+  assert.ok(sources.includes('scripts/guards/lib/plageStock.mjs'))
+  assert.ok(!sources.includes(HOTE), 'l’hôte est la définition, pas un site')
+  assert.ok(!sources.some((f) => /\.test\.[cm]?[jt]sx?$/.test(f)), 'une suite forge des dépôts')
+  assert.ok(sources.every((f) => DOSSIERS_DES_PORTES.some((d) => f.startsWith(`${d}/`))))
+})
+
+const formes = (texte) => sitesHorsHote('x.mjs', texte).map((s) => [s.ligne, s.forme])
+
+test('lanceur : git passé comme exécutable, ou en tête d’une ligne de commande shell', () => {
+  assert.deepEqual(formes("execFileSync('git', ['status'])"), [[1, 'lanceur']])
+  assert.deepEqual(formes('spawnSync("git", args)'), [[1, 'lanceur']])
+  assert.deepEqual(formes("const x = 1\nrun('git', ['fetch'], { budget })"), [[2, 'lanceur']])
+  assert.deepEqual(formes("execSync('git status --porcelain')"), [[1, 'lanceur']])
+  assert.deepEqual(formes('throw new Error(`git ${args.join(" ")} refusé`)'), [], 'un message qui commence par git n’en lance pas')
+  assert.deepEqual(formes("// execFileSync('git', args)\n/* spawnSync('git') */"), [], 'un commentaire ne lance rien')
+})
+
+test('découpe : un split sur NUL hors de l’hôte', () => {
+  assert.deepEqual(formes("sortie.split('\\0')"), [[1, 'decoupe']])
+  assert.deepEqual(formes('sortie.split("\\u0000").filter(Boolean)'), [[1, 'decoupe']])
+  assert.deepEqual(formes("sortie.split('\\n')"), [])
+})
+
+test('forme : une option qui produit des chemins, hors d’un lecteur de l’hôte', () => {
+  assert.deepEqual(formes("lire(['diff', '--cached', '--name-only']).split('\\n')"), [[1, 'forme']])
+  assert.deepEqual(formes("const args = ['ls-files', '-z']"), [[1, 'forme'], [1, 'forme']])
+  assert.deepEqual(formes("git(['show', '--numstat', sha])"), [[1, 'forme']])
+  assert.deepEqual(formes("cheminsDe(lire, ['diff', '--name-only', ...borne])"), [])
+  assert.deepEqual(formes("numstatDe(lire, [\n  'diff',\n  ...rev(),\n  '--numstat',\n])"), [], 'multi-ligne, dans le lecteur')
+  assert.deepEqual(formes("nameStatusDe(git, ['diff', '-M', '--name-status', ...f(a, [b])])"), [])
+  assert.deepEqual(formes("eolsDe(git, ['ls-files', '--eol', '--cached'])"), [])
+})

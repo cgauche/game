@@ -18,11 +18,10 @@
 //
 // Le jeu des feuilles est une DONNÉE : en ajouter une coûte une ligne, et aucune condition en dur ne
 // nomme un module.
-import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { cheminsDe } from './gitPorte.mjs'
+import { cheminsDe, lecteurGit } from './gitPorte.mjs'
 import { IMPORT_RE, resolveImport } from './importGraph.mjs'
 
 /** L'arbre lu par défaut : celui où VIT ce module. */
@@ -51,7 +50,7 @@ export const FEUILLES = Object.freeze([
 /** Sources SUIVIES par git susceptibles de porter un import, chemins POSIX relatifs, triés.
  *  La source est GIT, pas le disque : ce que la CI joue, c'est ce qui est suivi. */
 export function sourcesSuivies(racine = RACINE) {
-  return cheminsDe((args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8', maxBuffer: 1e8 }), ['ls-files'])
+  return cheminsDe(lecteurGit(racine), ['ls-files'])
     .filter((f) => EXTS_SOURCE.test(f))
     .sort()
 }

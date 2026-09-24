@@ -7,10 +7,10 @@
 // 34 ms un `git init` nu.
 // Aucun état de départ n'est simulé : c'est le même arbre, aux mêmes octets, sous le même sha.
 
-import { execFileSync } from 'node:child_process'
 import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
+import { lecteurGit } from './gitPorte.mjs'
 
 /** @typedef {{ fichiers?: Record<string, string>, branche?: string, origin?: string | null, message?: string, refs?: Record<string, string>, commit?: boolean }} ParamsDepot */
 /** @typedef {{ racine: string, sha: string | null }} Depot */
@@ -43,14 +43,19 @@ let VARIABLES_LOCALES = null
  * @returns {NodeJS.ProcessEnv}
  */
 export function envDeDepotForge() {
-  VARIABLES_LOCALES ??= execFileSync('git', ['rev-parse', '--local-env-vars'], { encoding: 'utf8' })
+  VARIABLES_LOCALES ??= (lecteurGit(process.cwd())(['rev-parse', '--local-env-vars']) ?? '')
     .split('\n').map((l) => l.trim()).filter(Boolean)
   const env = { ...process.env }
   for (const nom of VARIABLES_LOCALES) delete env[nom]
   return env
 }
 
-const git = (cwd) => (args) => execFileSync('git', args, { cwd, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+/** `git <args>` dans le dépôt forgé `cwd` : la fixture ne se construit pas sur une commande refusée. */
+const git = (cwd) => (args) => {
+  const sortie = lecteurGit(cwd, { env: envDeDepotForge() })(args)
+  if (sortie === null) throw new Error(`git ${args.join(' ')} refusé dans ${cwd}`)
+  return sortie.trim()
+}
 
 /** Clé de contenu : deux appels aux mêmes paramètres décrivent le même arbre, donc le même gabarit. */
 function cle({ fichiers, branche, origin, message, refs, commit }) {

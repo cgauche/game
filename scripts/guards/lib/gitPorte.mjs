@@ -96,11 +96,12 @@ export function tenter(fn) {
   }
 }
 
-/** Lancement avec rejeu du processus qui n'a pas démarré. `spawn`/`attendre` injectables (mesure). */
-function lancer(commande, args, { cwd, spawn = spawnSync, attendre = attendreSync, site = 'gitPorte', journal = process.stderr, timeout, entree } = {}) {
+/** Lancement avec rejeu du processus qui n'a pas démarré. `spawn`/`attendre` injectables (mesure).
+ *  `env` : l'environnement du processus (`envDeDepotForge`, `depotGabarit.mjs`), celui du parent par défaut. */
+function lancer(commande, args, { cwd, spawn = spawnSync, attendre = attendreSync, site = 'gitPorte', journal = process.stderr, timeout, entree, env } = {}) {
   for (let essai = 0; ; essai += 1) {
     const stdio = [entree === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe']
-    const vu = spawn(commande, args, { cwd, encoding: 'utf8', maxBuffer: 1 << 28, stdio, timeout, input: entree })
+    const vu = spawn(commande, args, { cwd, env, encoding: 'utf8', maxBuffer: 1 << 28, stdio, timeout, input: entree })
     if (!estEchecDeChargement(vu?.status) || essai >= BACKOFFS_MS.length) return vu
     rejeux.total += 1
     journal.write(`${MARQUE_REJEU} : ${site} — ${commande} (essai ${essai + 2}/${BACKOFFS_MS.length + 1})\n`)
@@ -167,14 +168,19 @@ export function classer(vu, { cwd, nature = natureDuChemin } = {}) {
   return indisponible(stderr)
 }
 
+/** Les options git que porte TOUTE commande de l'hôte : un chemin non-ASCII s'écrit en clair dans les
+ *  formes qui n'ont pas de `-z` (en-têtes d'un patch, `git help config`, `core.quotePath`). */
+export const OPTIONS_DE_L_HOTE = Object.freeze(['-c', 'core.quotePath=false'])
+
 /**
- * `git <args>` dans `cwd`, rendu en union à trois issues. `entree` : l'entrée standard du processus.
+ * `git <args>` dans `cwd`, rendu en union à trois issues. `entree` : l'entrée standard du processus ;
+ * `env` : son environnement.
  * @param {string[]} args
  * @param {{cwd?:string, spawn?:Function, attendre?:Function, site?:string, timeout?:number, entree?:string,
- *   nature?:(p:string)=>'repertoire'|'fichier'|'absent'}} [opts]
+ *   env?:NodeJS.ProcessEnv, nature?:(p:string)=>'repertoire'|'fichier'|'absent'}} [opts]
  */
 export function lireGit(args, opts = {}) {
-  return classer(lancer('git', args, { site: `git ${args[0] ?? ''}`, ...opts }), { cwd: opts.cwd, nature: opts.nature })
+  return classer(lancer('git', [...OPTIONS_DE_L_HOTE, ...args], { site: `git ${args[0] ?? ''}`, ...opts }), { cwd: opts.cwd, nature: opts.nature })
 }
 
 /** La sortie d'une lecture réussie, `null` si l'objet est absent ou si le code de sortie n'est pas 0.
@@ -183,30 +189,116 @@ export function lireGit(args, opts = {}) {
 export const sortieOuNull = (union) =>
   union.disponible && !union.absent && union.valeur.status === 0 ? union.valeur.stdout : null
 
+/**
+ * Le lecteur git d'une porte dans `cwd` : `(args, { entree }) → sortie`, `null` si l'objet est absent
+ * ou si le code de sortie n'est pas 0 (`sortieOuNull`). Une INDISPONIBILITÉ JETTE (`GitIndisponible`) :
+ * la porte qui l'appelle la nomme ou la laisse remonter, elle ne conclut pas sur rien. `env` :
+ * l'environnement du processus (`lancer`).
+ * @param {string} cwd @param {{ env?: NodeJS.ProcessEnv }} [opts]
+ * @returns {(args: string[], opts?: { entree?: string }) => string | null}
+ */
+export const lecteurGit = (cwd, { env } = {}) => (args, { entree } = {}) => {
+  const vu = lireGit(args, { cwd, env, entree })
+  if (!vu.disponible) throw new GitIndisponible(vu.raison)
+  return sortieOuNull(vu)
+}
+
 /** Marques des images qui ne sont pas des refs : l'index, l'arbre de travail des chemins suivis
- *  (`git commit -a`), et l'arbre de travail entier, non-suivis compris. */
+ *  présents sur le disque (`git commit -a`, `git commit -h` : « commit all changed files », un suivi
+ *  supprimé du disque est supprimé), et l'arbre de travail entier, non-suivis compris. */
 export const INDEX = ':index'
 export const SUIVI = ':suivi'
 export const TRAVAIL = ':travail'
 
+/** Les enregistrements que rend `git <args>` sous `-z`, séparés par NUL : l'UNIQUE découpe d'une
+ *  sortie de git des portes. `-z` suit la sous-commande. Privée : une porte lit des chemins
+ *  (`cheminsDe`) ou une forme NOMMÉE (`numstatDe`, `nameStatusDe`, `eolsDe`, `journalDe`). */
+function enregistrementsDe(git, [sousCommande, ...reste]) {
+  return (git([sousCommande, '-z', ...reste]) ?? '').split('\0').filter(Boolean)
+}
+
 /**
- * Les champs que rend `git <args>` sous `-z` : des chemins tels que git les écrit, jamais CITÉS
- * (`core.quotePath` : `"src/\303\211cran.tsx"` sous la forme ligne), espace et saut de ligne compris.
- * L'UNIQUE lecteur de chemins des portes. `-z` suit la sous-commande. `--numstat` rend
- * `<plus>\t<moins>\t<chemin>` par champ, un renommage `<plus>\t<moins>\t` puis ses deux bouts ;
- * `--name-status` rend le statut, puis le ou les chemins, en champs distincts. `git` (args → sortie,
- * `null` = rien) est le lecteur de l'appelant : git muet → `[]`.
+ * Les CHEMINS que rend `git <args>`, une forme où chaque enregistrement est un chemin (`ls-files`,
+ * `ls-tree --name-only`, `--name-only`, `grep -l`) : tels que git les écrit, jamais cités
+ * (`core.quotePath`), espace et saut de ligne compris. L'UNIQUE lecteur de chemins des portes. `git`
+ * (args → sortie, `null` = rien) est le lecteur de l'appelant : git muet → `[]`.
  * @param {(args: string[]) => string | null} git @param {string[]} args @returns {string[]}
  */
-export function cheminsDe(git, [sousCommande, ...reste]) {
-  return (git([sousCommande, '-z', ...reste]) ?? '').split('\0').filter(Boolean)
+export const cheminsDe = (git, args) => enregistrementsDe(git, args)
+
+/**
+ * `git <args> --numstat` en entrées `{ plus, moins, chemins }` : `chemins` porte le chemin, ou les
+ * deux bouts d'un renommage (`<plus>\t<moins>\t` puis ancien, nouveau). `plus`/`moins` valent `null`
+ * pour un binaire (`-`). `args` porte `--numstat`.
+ * @param {(args: string[]) => string | null} git @param {string[]} args
+ * @returns {{ plus: number | null, moins: number | null, chemins: string[] }[]}
+ */
+export function numstatDe(git, args) {
+  const champs = enregistrementsDe(git, args)
+  const entrees = []
+  for (let i = 0; i < champs.length; i += 1) {
+    const [plus, moins, chemin] = champs[i].split('\t')
+    const chemins = chemin ? [chemin] : [champs[i + 1], champs[i + 2]]
+    if (!chemin) i += 2
+    const nombre = (n) => (n === '-' ? null : Number(n))
+    entrees.push({ plus: nombre(plus), moins: nombre(moins), chemins })
+  }
+  return entrees
+}
+
+/**
+ * `git <args> --name-status` en entrées `{ statut, chemins }` : `statut` = la lettre suivie du score
+ * (`R100`, `M`), `chemins` = un chemin, ou deux pour `R`/`C`. `args` porte `--name-status`.
+ * @param {(args: string[]) => string | null} git @param {string[]} args
+ * @returns {{ statut: string, chemins: string[] }[]}
+ */
+export function nameStatusDe(git, args) {
+  const champs = enregistrementsDe(git, args)
+  const entrees = []
+  for (let i = 0; i < champs.length; i += 1) {
+    const statut = champs[i]
+    const n = /^[RC]/.test(statut) ? 2 : 1
+    entrees.push({ statut, chemins: champs.slice(i + 1, i + 1 + n) })
+    i += n
+  }
+  return entrees
+}
+
+/**
+ * Les commits de `plage` (`<a>..<b>`), du plus ancien au plus récent, en `{ sha, message }` : `git log -z`
+ * sépare les commits par NUL. `git` muet → `[]`.
+ * @param {(args: string[]) => string | null} git @param {string} plage
+ * @returns {{ sha: string, message: string }[]}
+ */
+export function journalDe(git, plage) {
+  return enregistrementsDe(git, ['log', '--reverse', '--format=%H%x1f%B', plage]).map((e) => {
+    const [sha, message = ''] = e.split('\x1f')
+    return { sha, message }
+  })
+}
+
+/** Colonnes d'un enregistrement `git ls-files --eol` : `i/<eol>`, `w/<eol>`, `attr/<attributs>`
+ *  séparés par des ESPACES (la valeur d'`attr/` en contient), puis une TABULATION et le chemin. */
+const COLONNES_EOL = /^i\/(\S*)\s+w\/(\S*)\s+attr\/(.*?)\s*\t(.*)$/s
+
+/**
+ * `git <args> --eol` (`ls-files`) en entrées `{ index, travail, attr, chemin }` : les fins de ligne
+ * du blob de l'index, du disque, et les attributs déclarés. `args` porte `ls-files` et `--eol`.
+ * @param {(args: string[]) => string | null} git @param {string[]} args
+ * @returns {{ index: string, travail: string, attr: string, chemin: string }[]}
+ */
+export function eolsDe(git, args) {
+  return enregistrementsDe(git, args).flatMap((e) => {
+    const m = COLONNES_EOL.exec(e)
+    return m ? [{ index: m[1], travail: m[2], attr: m[3], chemin: m[4] }] : []
+  })
 }
 
 /**
  * Les FICHIERS qu'une IMAGE git porte sous `dossier`, chemins POSIX complets — l'unique listeur
  * d'image des portes : `arbre` = une ref (`ls-tree -r`), `INDEX` (`ls-files --cached`, ce que le
- * commit emporte), `SUIVI` (les mêmes chemins, lus sur le disque : ce que `git commit -a` emporte) ou
- * `TRAVAIL` (l'index plus les non-suivis non ignorés). Un listage de DISQUE commun à deux images
+ * commit emporte), `SUIVI` (les mêmes chemins privés de ceux que le disque a perdus, `ls-files
+ * --deleted` : ce que `git commit -a` emporte) ou `TRAVAIL` (`SUIVI` plus les non-suivis non ignorés). Un listage de DISQUE commun à deux images
  * rendait un fichier SUPPRIMÉ absent de la pré-image elle-même (#1728).
  * @param {(args: string[]) => string | null} git @param {string} arbre @param {string} dossier
  * @returns {string[]}
@@ -215,7 +307,10 @@ export function listerImage(git, arbre, dossier) {
   const args = arbre === INDEX || arbre === SUIVI ? ['ls-files', '--cached']
     : arbre === TRAVAIL ? ['ls-files', '--cached', '--others', '--exclude-standard']
       : ['ls-tree', '-r', '--name-only', arbre]
-  return cheminsDe(git, [...args, '--', dossier])
+  const chemins = cheminsDe(git, [...args, '--', dossier])
+  if (arbre !== SUIVI && arbre !== TRAVAIL) return chemins
+  const perdus = new Set(cheminsDe(git, ['ls-files', '--deleted', '--', dossier]))
+  return chemins.filter((c) => !perdus.has(c))
 }
 
 /**

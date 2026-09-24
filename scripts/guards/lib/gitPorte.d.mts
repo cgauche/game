@@ -6,7 +6,15 @@ export type LectureGit =
   | { disponible: true; absent: true }
   | { disponible: false; raison: string };
 
-export function lireGit(args: string[], opts?: { cwd?: string; site?: string; timeout?: number; entree?: string }): LectureGit;
+export function lireGit(
+  args: string[],
+  opts?: { cwd?: string; site?: string; timeout?: number; entree?: string; env?: NodeJS.ProcessEnv },
+): LectureGit;
+/** Le lecteur git d'une porte dans `cwd` : la sortie, `null` si absent ou code non nul ; jette si git est indisponible. */
+export function lecteurGit(
+  cwd: string,
+  opts?: { env?: NodeJS.ProcessEnv },
+): (args: string[], opts?: { entree?: string }) => string | null;
 /** La sortie d'une lecture réussie, `null` si l'objet est absent ou le code de sortie non nul. */
 export function sortieOuNull(union: LectureGit): string | null;
 /** Les champs d'une sortie `git <args> -z` : les chemins tels que git les écrit, jamais cités. */

@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { STATUS_DLL_INIT_FAILED } from './spawnResilient.mjs'
 import {
-  INDEX, SUIVI, TRAVAIL, arbrePrincipal, cheminsDe, classer, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin,
+  INDEX, SUIVI, TRAVAIL, arbrePrincipal, cheminsDe, classer, eolsDe, nameStatusDe, numstatDe, commitsDe, enfantsDirects, estAncetre, estRepertoire, fetchOrigin,
   fichiersDuGrep, lireGit, lireEnLot, listerImage, natureDuChemin, raisonCourte, sortieOuNull,
 } from './gitPorte.mjs'
 import { envDeDepotForge, instanceDeDepot } from './depotGabarit.mjs'
@@ -306,6 +306,19 @@ test('listerImage : l’unique listeur d’image — ref, INDEX, SUIVI et TRAVAI
   }
 })
 
+test('listerImage : un suivi SUPPRIMÉ du disque sort de SUIVI et de TRAVAIL (`git commit -a` le supprime), pas de l’INDEX', () => {
+  const { racine } = instanceDeDepot({ fichiers: { 'd/a.txt': 'a\n', 'd/Console.tsx': 'c\n' }, message: 'socle' })
+  const git = (args) => sortieOuNull(lireGit(args, { cwd: racine }))
+  try {
+    rmSync(join(racine, 'd/Console.tsx'))
+    assert.deepEqual(listerImage(git, INDEX, 'd'), ['d/Console.tsx', 'd/a.txt'], 'l’index le porte encore')
+    assert.deepEqual(listerImage(git, SUIVI, 'd'), ['d/a.txt'])
+    assert.deepEqual(listerImage(git, TRAVAIL, 'd'), ['d/a.txt'])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
 test('lireEnLot : un seul `cat-file --batch` rend le texte de chaque chemin, multi-octet compris, `null` pour un absent — ref et INDEX', () => {
   const textes = { 'src/a.ts': 'const é = "→"\n\nexport {}\n', 'src/b.ts': 'const z = 2' }
   const { racine, sha } = instanceDeDepot({ fichiers: textes, message: 'un' })
@@ -330,21 +343,26 @@ test('lireEnLot : une sortie de `cat-file` dont le bloc ne finit pas à sa taill
   assert.deepEqual([...lireEnLot(() => 'abc blob 3\nabc\n', 'HEAD', ['src/a.ts'])], [['src/a.ts', 'abc']], 'témoin : le bloc bien formé')
 })
 
-test('cheminsDe : un chemin non-ASCII ou à espace est rendu EN CLAIR — ls-files, ls-tree, diff, numstat, name-status, grep -l', () => {
+test('cheminsDe, numstatDe, nameStatusDe, eolsDe : un chemin non-ASCII ou à espace est rendu EN CLAIR — ls-files, ls-tree, diff, numstat, name-status, grep -l, --eol', () => {
   const E = 'src/ui/Écran.tsx'
   const B = 'src/mon module.ts'
   const { racine, sha } = instanceDeDepot({ fichiers: { [E]: 'const e = 1\n', [B]: 'const b = 1\n', 'src/a.ts': 'const a = 1\n' }, message: 'socle' })
   const git = (args) => sortieOuNull(lireGit(args, { cwd: racine }))
   const g = (...a) => execFileSync('git', a, { cwd: racine, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
   try {
-    assert.match(git(['ls-files']), /^"src\/ui\/\\303\\211cran\.tsx"$/m, 'témoin : la forme ligne CITE le chemin')
+    assert.match(g('ls-files'), /^"src\/ui\/\\303\\211cran\.tsx"$/m, 'témoin : hors de l’hôte, la forme ligne CITE le chemin')
+    assert.match(git(['ls-files']), /^src\/ui\/Écran\.tsx$/m, 'par l’hôte, même la forme ligne (un patch n’a pas de -z) l’écrit en clair')
     assert.deepEqual(cheminsDe(git, ['ls-files', '--', 'src']).sort(), [B, 'src/a.ts', E].sort())
     assert.deepEqual(listerImage(git, sha, 'src').sort(), [B, 'src/a.ts', E].sort())
     writeFileSync(join(racine, E), 'const e = 2\n')
     g('mv', B, 'src/renommé.ts')
     assert.deepEqual(cheminsDe(git, ['diff', 'HEAD', '--name-only', '--no-renames']).sort(), [B, 'src/renommé.ts', E].sort())
-    assert.deepEqual(cheminsDe(git, ['diff', 'HEAD', '--numstat']), ['0\t0\t', B, 'src/renommé.ts', `1\t1\t${E}`], 'un renommage : un champ, puis ses deux bouts')
-    assert.deepEqual(cheminsDe(git, ['diff', 'HEAD', '-M', '--diff-filter=R', '--name-status']), ['R100', B, 'src/renommé.ts'])
+    assert.deepEqual(numstatDe(git, ['diff', 'HEAD', '--numstat']),
+      [{ plus: 0, moins: 0, chemins: [B, 'src/renommé.ts'] }, { plus: 1, moins: 1, chemins: [E] }], 'un renommage : ses deux bouts')
+    assert.deepEqual(nameStatusDe(git, ['diff', 'HEAD', '-M', '--name-status']),
+      [{ statut: 'R100', chemins: [B, 'src/renommé.ts'] }, { statut: 'M', chemins: [E] }])
+    assert.deepEqual(eolsDe(git, ['ls-files', '--eol', '--cached', '--', E, 'src/renommé.ts']),
+      [{ index: 'lf', travail: 'lf', attr: '', chemin: 'src/renommé.ts' }, { index: 'lf', travail: 'lf', attr: '', chemin: E }], 'la TABULATION coupe, pas l’espace')
     assert.deepEqual(fichiersDuGrep(git, [sha], 'const e', ['src']), [E], 'le préfixe `<ref>:` est retiré')
     assert.deepEqual(fichiersDuGrep(git, ['--cached'], 'const', ['src']).sort(), ['src/a.ts', 'src/renommé.ts', E].sort())
     assert.deepEqual(fichiersDuGrep(git, [], 'rien de tel', ['src']), [], 'aucun match : sortie 1, liste vide')

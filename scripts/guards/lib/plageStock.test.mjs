@@ -574,6 +574,22 @@ test('RECLASSEMENT : manifeste ILLISIBLE → refus NOMMÉ par son commit, jamais
   assert.deepEqual(lu.refus, [])
 })
 
+// #1806 D1 — le porteur au chemin NON-ASCII, lu dans les en-têtes du patch `-U0` de chaque commit et
+// du cumul : aucun `-z` n'y existe, l'hôte (`gitPorte.mjs`) les rend en clair.
+test('PLAGE : un stock au chemin NON-ASCII qui grandit sans CLIQUET est refusé', () => {
+  const porteur = 'src/ui/Écran.test.ts'
+  const { racine, sha } = instanceDeDepot({ fichiers: { [porteur]: `export const STOCK = [\n${A}\n]\n` }, message: 'socle' })
+  const git = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  try {
+    writeFileSync(join(racine, porteur), `export const STOCK = [\n${A}\n${B}\n]\n`, 'utf8')
+    git('commit', '-q', '--no-verify', '-am', 'feat: une exemption de plus')
+    const apres = git('rev-parse', 'HEAD').trim()
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant: sha, apres }).refus.map((r) => [r.fichier, r.net]), [[porteur, 1]])
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
 // ── CLIQUET par clé (#1806 D5″) sur une plage réelle ────────────────────────────────────────────
 
 test('CLIQUET (D5″) : le renommage PUR d’un fichier cité par un stock coûte 0 ; la même réécriture sans renommage coûte +1', () => {

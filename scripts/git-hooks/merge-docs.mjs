@@ -19,11 +19,11 @@
 //                   puis entrant, puis ancêtre — une section AJOUTÉE par l'entrant garde donc SON
 //                   champ. Conflit résiduel = divergence de prose, donc humain : marqueurs écrits
 //                   dans %A et exit 1.
-import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { GitIndisponible, lireGit } from '../guards/lib/gitPorte.mjs'
 // Frontière du champ dérivé : SOURCE UNIQUE partagée avec le générateur (scripts/raw/build-implemente.mjs).
 import { NOT_IMPL, parseFiche } from '../raw/build-implemente.mjs'
 // Blocs préservés des catalogues : SOURCE UNIQUE partagée avec le générateur.
@@ -83,15 +83,11 @@ export function threeWay(ours, base, theirs, labels = { ours: 'ours', base: 'bas
     const put = (name, content) => { const f = join(dir, name); writeFileSync(f, content); return f }
     const args = ['merge-file', '-p', '-L', labels.ours, '-L', labels.base, '-L', labels.theirs,
       put('ours', ours), put('base', base), put('theirs', theirs)]
-    try {
-      return { text: execFileSync('git', args, { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }), conflict: false }
-    } catch (e) {
-      // `git merge-file` sort le NOMBRE de conflits (>0), ou 255 sur erreur réelle.
-      if (typeof e.status === 'number' && e.status > 0 && e.status < 255 && e.stdout != null) {
-        return { text: String(e.stdout), conflict: true }
-      }
-      throw e
-    }
+    // `git merge-file` sort le NOMBRE de conflits (>0), stderr vide, ou 255 sur erreur réelle.
+    const vu = lireGit(args)
+    if (!vu.disponible) throw new GitIndisponible(vu.raison)
+    if (vu.absent || vu.valeur.status >= 255) throw new Error(`git merge-file en échec (${vu.absent ? 'objet absent' : vu.valeur.status})`)
+    return { text: vu.valeur.stdout, conflict: vu.valeur.status > 0 }
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

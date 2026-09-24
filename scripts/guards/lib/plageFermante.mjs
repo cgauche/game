@@ -8,9 +8,8 @@
 // glissé dans l'étape `pilotage` laisse un cliquet d'argv entièrement vert.
 //
 // Lecture PURE ou lecture de git : rien ici n'écrit, ni sur le disque, ni sur GitHub.
-import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { estAncetre } from './gitPorte.mjs'
+import { estAncetre, journalDe, lecteurGit } from './gitPorte.mjs'
 import { numerosFermes } from './fermetures.mjs'
 
 /** L'arbre lu par défaut : celui où VIT ce module. */
@@ -65,7 +64,7 @@ export const avertissementRapportee = (numero, sha) =>
 
 /** Le dépôt LU est un paramètre : le test joue sur un dépôt jetable de `os.tmpdir()`, jamais sur
  *  l'arbre de travail (un test ne fabrique pas de commits dans l'arbre partagé). */
-const git = (args, cwd = RACINE) => execFileSync('git', args, { cwd, encoding: 'utf8', maxBuffer: 1e8 })
+const git = (args, cwd = RACINE) => lecteurGit(cwd)(args)
 
 /**
  * La base d'une plage est-elle un ANCÊTRE de sa tête ? `git log <base>..<tête>` sur une base
@@ -83,18 +82,14 @@ export function motifDePlageIllisible(plage, cwd = RACINE) {
 
 /** Commits d'une plage `<a>..<b>`, du plus ancien au plus récent. */
 export function commitsDeLaPlage(plage, cwd = RACINE) {
-  const brut = git(['log', '--reverse', '--pretty=format:%H%x1f%B%x00', plage], cwd)
-  return brut.split('\0').filter((b) => b.trim()).map((bloc) => {
-    const [sha, message] = bloc.replace(/^\n/, '').split('\x1f')
-    return { sha, message: message ?? '' }
-  })
+  return journalDe((args) => {
+    const sortie = git(args, cwd)
+    if (sortie === null) throw new Error(`plage ${plage} illisible dans ${cwd}`)
+    return sortie
+  }, plage)
 }
 
 /** Solde tel que le COMMIT l'emporte (jamais le disque du runner) ; `null` s'il n'y est pas. */
 export function soldeDuCommit(sha, numero, cwd = RACINE) {
-  try {
-    return git(['show', `${sha}:.claude/soldes/${numero}.md`], cwd)
-  } catch {
-    return null
-  }
+  return git(['show', `${sha}:.claude/soldes/${numero}.md`], cwd)
 }

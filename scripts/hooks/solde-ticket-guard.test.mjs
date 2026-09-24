@@ -774,15 +774,16 @@ test('validateRefFile : section Réfutation trop maigre', () => {
 })
 
 // ── analyzeDiffDuCommit ────────────────────────────────────────────────────────────────────────────
+const entree = (plus, moins, chemin) => ({ plus, moins, chemins: [chemin] })
 test('analyzeDiffDuCommit : touche src/**, compte les lignes', () => {
-  const raw = ['5\t2\tsrc/engine/character.ts', '1\t0\tdocs/plans/truc.md']
+  const raw = [entree(5, 2, 'src/engine/character.ts'), entree(1, 0, 'docs/plans/truc.md')]
   const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, true)
   assert.equal(r.totalLines, 8)
 })
 
 test('analyzeDiffDuCommit : docs-only ne touche pas src', () => {
-  const raw = ['10\t3\tdocs/architecture.md']
+  const raw = [entree(10, 3, 'docs/architecture.md')]
   const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, false)
 })
@@ -793,14 +794,14 @@ test('analyzeDiffDuCommit : vide/absent → aucune touche, 0 ligne', () => {
 })
 
 test('analyzeDiffDuCommit : touche src/ui/** → touchesUi', () => {
-  const raw = ['3\t1\tsrc/ui/RollShell.tsx']
+  const raw = [entree(3, 1, 'src/ui/RollShell.tsx')]
   const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, true)
   assert.equal(r.touchesUi, true)
 })
 
 test('analyzeDiffDuCommit : src/** hors src/ui/** → touchesUi false', () => {
-  const raw = ['3\t1\tsrc/engine/combat.ts']
+  const raw = [entree(3, 1, 'src/engine/combat.ts')]
   const r = analyzeDiffDuCommit(raw)
   assert.equal(r.touchesSrc, true)
   assert.equal(r.touchesUi, false)
@@ -813,9 +814,9 @@ test('analyzeDiffDuCommit : src/** hors src/ui/** → touchesUi false', () => {
 // compte de lignes à zéro sur la forme la plus courante.
 test('analyzeDiffDuCommit : lit le numstat TEL QUEL, sans second filtrage de chemins', () => {
   const raw = [
-    '50\t20\tsrc/ui/RollShell.tsx',
-    '3\t1\tscripts/hooks/solde-ticket-guard.mjs',
-    '1\t0\t.claude/settings.json',
+    entree(50, 20, 'src/ui/RollShell.tsx'),
+    entree(3, 1, 'scripts/hooks/solde-ticket-guard.mjs'),
+    entree(1, 0, '.claude/settings.json'),
   ]
   const r = analyzeDiffDuCommit(raw)
   assert.deepEqual(
@@ -948,7 +949,7 @@ test('extractCommitPathspecs : "-cam" (short groupé à 3 lettres) → message e
 test('formeDuCommit : "-am" est un `-a`, et son MESSAGE n\'est pas un pathspec', () => {
   const f = formeDuCommit('git commit -am "feat: refonte truc"')
   assert.deepEqual([f.forme, f.pathspecs], ['tout', []])
-  const r = analyzeDiffDuCommit(['50\t20\tsrc/ui/RollShell.tsx'])
+  const r = analyzeDiffDuCommit([entree(50, 20, 'src/ui/RollShell.tsx')])
   assert.deepEqual([r.touchesUi, r.totalLines], [true, 70])
 })
 
@@ -2051,7 +2052,7 @@ test('estFichierEcran : src/ui et src/gameIso, jamais leurs tests', () => {
 })
 
 test('analyzeDiffDuCommit : src/gameIso/** compte comme écran', () => {
-  const r = analyzeDiffDuCommit(['40\t5\tsrc/gameIso/stage/GameStage3D.tsx'])
+  const r = analyzeDiffDuCommit([entree(40, 5, 'src/gameIso/stage/GameStage3D.tsx')])
   assert.equal(r.touchesUi, true)
   assert.deepEqual(r.fichiers, ['src/gameIso/stage/GameStage3D.tsx'])
 })
