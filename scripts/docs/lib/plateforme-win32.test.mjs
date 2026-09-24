@@ -8,7 +8,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import path from 'node:path'
@@ -146,17 +146,46 @@ test('rendu sous win32 : `process.cwd()` est en `C:\\` pour le code du dépôt, 
   }
 })
 
-/** Un dépôt jetable dont `src/entree.mjs` porte `source`, rendu sous win32 : ce qu'il imprime, parsé. */
-function vuDuDepot(source) {
+/** Un dépôt jetable dont `src/entree.mjs` porte `source`, rendu sous win32 : ce qu'il imprime, parsé.
+ *  `parLien` : la racine est donnée (cwd, `WFRP_PLATEFORME_RACINE`, entrée) par un lien symbolique. */
+function vuDuDepot(source, { parLien = false } = {}) {
   const racine = realpathSync(mkdtempSync(path.join(tmpdir(), 'plateforme-win32-')))
+  const lien = `${racine}-lien`
   try {
     mkdirSync(path.join(racine, 'src'))
     writeFileSync(path.join(racine, 'src', 'entree.mjs'), source)
-    return { racine, vu: JSON.parse(sousWin32(racine, [path.join(racine, 'src', 'entree.mjs')])) }
+    if (parLien) symlinkSync(racine, lien, 'dir')
+    const donnee = parLien ? lien : racine
+    return { racine, vu: JSON.parse(sousWin32(donnee, [path.join(donnee, 'src', 'entree.mjs')])) }
   } finally {
+    rmSync(lien, { force: true })
     rmSync(racine, { recursive: true, force: true })
   }
 }
+
+test('rendu sous win32 : une racine donnée par un lien symbolique est simulée comme sa cible', () => {
+  const { racine, vu } = vuDuDepot("console.log(JSON.stringify(process.cwd()))\n", { parLien: true })
+  assert.equal(vu, `C:${racine.replaceAll('/', '\\')}`)
+})
+
+test('rendu sous win32 : chaque fonction de `fs` et de `fs.promises` est enveloppée ou déclarée sans chemin', () => {
+  const { vu } = vuDuDepot(
+    [
+      "import fs from 'node:fs'",
+      `import { SANS_CHEMIN_FS } from ${JSON.stringify(pathToFileURL(PLATEFORME_WIN32).href)}`,
+      'const oubliees = []',
+      "for (const [nom, hote] of [['fs', fs], ['fs.promises', fs.promises]]) {",
+      '  for (const cle of Object.keys(hote)) {',
+      "    if (typeof hote[cle] !== 'function' || hote[cle].name === 'enveloppe') continue",
+      "    if (!SANS_CHEMIN_FS.has(cle.replace(/Sync$/, ''))) oubliees.push(`${nom}.${cle}`)",
+      '  }',
+      '}',
+      'console.log(JSON.stringify(oubliees))',
+      '',
+    ].join('\n'),
+  )
+  assert.deepEqual(vu, [])
+})
 
 test('rendu sous win32 : `path.posix` appelé du dépôt résout sur le cwd POSIX, comme `posixCwd` de node', () => {
   const { racine, vu } = vuDuDepot(
@@ -223,8 +252,15 @@ test('rendu sous win32 : sur l’arbre réel, tsx (node_modules) trouve son `jsx
   assert.deepEqual(vu, ['react-jsx', realpathSync(RACINE)])
 })
 
-test('`--plateforme` inconnue : refus nommé, rien de rendu', () => {
-  const r = verifier(['--plateforme', 'amiga'])
-  assert.equal(r.status, 1, r.sortie)
-  assert.match(r.sortie, /--plateforme « amiga » inconnue/)
+test('`--plateforme` inconnue, sans valeur ou en surnombre : refus nommé, rien de rendu', () => {
+  for (const [argv, recu] of [
+    [['--plateforme', 'amiga'], 'amiga'],
+    [['--plateforme'], ''],
+    [['--plateforme', '--only', 'scripts/raw/reanchor.mjs'], ''],
+    [['--plateforme', 'win32', HOTE, '--only', 'scripts/raw/reanchor.mjs'], `win32 ${HOTE}`],
+  ]) {
+    const r = verifier(argv)
+    assert.equal(r.status, 1, `${argv.join(' ')} : ${r.sortie}`)
+    assert.ok(r.sortie.includes(`--plateforme « ${recu} » : attend UNE plateforme parmi ${HOTE}`), r.sortie)
+  }
 })

@@ -1,7 +1,10 @@
 // Contrat de `docs:check` (#1679 L2 T1d, #1801, #1775) :
 //   · CIBLÉ, un générateur dont toutes les cibles portent un pied qui signe LES MÊMES SOURCES et LEUR
 //     PROPRE CORPS n'est pas rejoué ; tout le reste l'est, et le dit ;
-//   · la fraîcheur est AVEUGLE à la plateforme qui a rendu un corps — seul `--tout` rejoue ;
+//   · la fraîcheur est AVEUGLE à la plateforme qui a rendu un corps — `--tout` et `--plateforme`
+//     (l'hôte compris) rejouent chaque générateur ;
+//   · un rouge ne se dit guéri par `docs:build` que si l'hôte a DÉCLARÉ ses corps périmés, et chaque
+//     plateforme les mêmes ;
 //   · en `--check`, `executer` va au bout : chaque rouge est nommé avec sa nature.
 //   node --test scripts/docs/build-all-check.test.mjs  (chaîné dans `npm run test:docs`)
 //
@@ -256,7 +259,7 @@ const PRIMITIVE = pathToFileURL(path.join(ICI, 'lib', 'empreinte-sources.mjs')).
 const BUILD_ALL = pathToFileURL(path.join(ICI, 'build-all.mjs')).href
 
 /** Un générateur RÉEL : lit ses DEUX sources (`SEUIL_SOURCES`), rend un doc qui CITE un chemin, et
- *  passe par la primitive. `cliquet` : sous `BANC_CLIQUET_ROUGE`, il pose son rouge AVANT la
+ *  passe par la primitive. `cliquet` : sous `BANC_SORTIE=<code>`, il pose ce code AVANT la
  *  primitive, comme `reconcile.mjs` — les deux rouges doivent alors se dire. `separateur` : le
  *  chemin cité est bâti par `path.join`, donc rendu dans la graphie de la plateforme. */
 const generateurReel = (nom, { cliquet = false, separateur = false } = {}) => [
@@ -264,7 +267,7 @@ const generateurReel = (nom, { cliquet = false, separateur = false } = {}) => [
   "import path from 'node:path'",
   `import { ecrireOuVerifier } from ${JSON.stringify(PRIMITIVE)}`,
   `const lu = readFileSync('src/${nom}.ts', 'utf8') + readFileSync('src/commun.ts', 'utf8')`,
-  cliquet ? "if (process.env.BANC_CLIQUET_ROUGE) { console.log('CLIQUET ROUGE'); process.exitCode = 1 }" : '',
+  cliquet ? "if (process.env.BANC_SORTIE) { console.log('CLIQUET ROUGE'); process.exitCode = Number(process.env.BANC_SORTIE) }" : '',
   'ecrireOuVerifier({',
   `  out: \`# ${nom}\\n\\nSource : \\\`${separateur ? `\${path.join('src', '${nom}.ts')}` : `src/${nom}.ts`}\\\` (\${lu.length} octets)\\n\`,`,
   `  path: 'docs/${nom}.md',`,
@@ -329,6 +332,12 @@ test('ANGLE MORT de la fraîcheur : un corps « rendu sous une autre plateforme 
     assert.equal(cible_.status, 0, `--check ciblé : ${cible_.sortie}`)
     assert.match(cible_.sortie, /docs:check — g\/a\.mjs — frais \(sources [0-9a-f]{12}, corps [0-9a-f]{12}\), non rejoué/)
 
+    // `--plateforme <hôte>` n'a aucune autre plateforme à rendre, mais rejoue chaque générateur.
+    const hote = executer(racine, ['--check', '--plateforme', process.platform])
+    assert.equal(hote.status, CODE_CORPS_PERIME, `--check --plateforme ${process.platform} : ${hote.sortie}`)
+    assert.doesNotMatch(hote.sortie, /— frais \(/)
+    assert.match(hote.sortie, /docs:check — g\/a\.mjs — corps périmé\n/)
+
     const tout = executer(racine, ['--check', '--tout'])
     assert.equal(tout.status, CODE_CORPS_PERIME, `--check --tout, seul rouge un corps périmé, que \`docs:build\` guérit : ${tout.sortie}`)
     assert.match(tout.sortie, /docs:check — g\/a\.mjs — corps périmé/)
@@ -392,7 +401,7 @@ test('`--check --tout` va AU BOUT : un corps périmé ET un cliquet rouge dans l
     const cible = path.join(racine, DOC_A)
     writeFileSync(cible, readFileSync(cible, 'utf8').replace('# a\n', '# a édité à la main\n'))
     git('add', DOC_A)
-    const rouge = executer(racine, ['--check', '--tout'], { BANC_CLIQUET_ROUGE: '1' })
+    const rouge = executer(racine, ['--check', '--tout'], { BANC_SORTIE: '1' })
     assert.equal(rouge.status, 1, `un cliquet ne se guérit pas en régénérant : ${rouge.sortie}`)
     // `g/a.mjs` est rouge le PREMIER : `g/b.mjs`, qui le suit, doit rendre son verdict quand même —
     // sur l'hôte, et sous chaque autre plateforme rendue par `--tout`.
@@ -411,6 +420,35 @@ test('`--check --tout` va AU BOUT : un corps périmé ET un cliquet rouge dans l
     const vert = executer(racine, ['--check', '--tout'])
     assert.equal(vert.status, 0, vert.sortie)
     assert.match(vert.sortie, /docs:check — OK/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('`--check --tout` : une sortie 2 sans corps DÉCLARÉ périmé ne se dit pas guérissable, sortie 1', () => {
+  const { racine } = depotReel()
+  try {
+    const rouge = executer(racine, ['--check', '--tout'], { BANC_SORTIE: String(CODE_CORPS_PERIME) })
+    assert.equal(rouge.status, 1, `aucun corps déclaré : \`docs:build\` n'a rien de prouvé à guérir : ${rouge.sortie}`)
+    assert.match(rouge.sortie, /docs:check — g\/b\.mjs — corps périmé\n/)
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('`executer` purge son cache de lectures et de corps à chaque sortie, verte, rouge ou en ARRÊT', () => {
+  const { racine, git } = depotReel()
+  const cache = path.join(racine, 'node_modules', '.cache', 'lectures-docs')
+  const restes = () => listerDossier(cache, { absent: 'vide' })
+  try {
+    assert.deepEqual(restes(), [], 'après `docs:build` vert')
+    const cible = path.join(racine, DOC_A)
+    writeFileSync(cible, readFileSync(cible, 'utf8').replace('# a\n', '# a édité à la main\n'))
+    git('add', DOC_A)
+    assert.equal(executer(racine, ['--check', '--tout']).status, CODE_CORPS_PERIME)
+    assert.deepEqual(restes(), [], 'après `--check --tout` rouge')
+    assert.equal(executer(racine, [], { BANC_SORTIE: '1' }).status, 1)
+    assert.deepEqual(restes(), [], 'après un ARRÊT de `docs:build`')
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }

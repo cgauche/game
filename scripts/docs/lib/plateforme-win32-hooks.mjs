@@ -3,10 +3,12 @@
 // sur le cwd POSIX) et `node:url` en un `fileURLToPath` qui rend la graphie Windows : c'est ce que ce
 // code reçoit d'un hôte win32.
 // Les modules de `node_modules` et node lui-même gardent leur `path` : ils ne sont pas jugés ici.
-// La RACINE du dépôt rendu est celle que `run()` donne au générateur (`initialize`).
+// La RACINE du dépôt rendu est celle que `lancer()` (via `commandeDe`) donne au générateur
+// (`initialize`).
 //
 // Ce module est aussi importé depuis le thread principal (le `node:url` de remplacement y prend
 // `versWindows` / `versPosix`) : il n'a donc AUCUN effet de bord à l'import.
+import { realpathSync } from 'node:fs'
 import path from 'node:path'
 import url from 'node:url'
 
@@ -27,8 +29,9 @@ export const versPosix = (chemin) => {
   return /^[A-Za-z]:\//.test(s) ? s.slice(LECTEUR.length) : s
 }
 
-/** URL `file:` du dossier racine du dépôt rendu, barre finale comprise. */
-export const urlDuDepot = (racine) => url.pathToFileURL(path.join(racine, '/')).href
+/** URL `file:` du dossier racine du dépôt rendu, barre finale comprise. Canonique, comme les URL de
+ *  modules et le cwd du noyau : une racine par lien symbolique ne reconnaîtrait aucun module. */
+export const urlDuDepot = (racine) => url.pathToFileURL(path.join(realpathSync(racine), '/')).href
 
 /** Les deux modules de la simulation : sous la racine, ils rendent à l'hôte des chemins POSIX. */
 const SIMULATION = new Set(['plateforme-win32.mjs', 'plateforme-win32-hooks.mjs'].map((f) => new URL(f, import.meta.url).href))

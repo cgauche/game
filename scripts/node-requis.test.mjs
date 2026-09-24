@@ -1,18 +1,27 @@
-// Porte de version de Node (#1801) : la règle PURE, puis son CÂBLAGE de bout en bout sur un FAUX
-// ARBRE en dossier temporaire — `package.json` `engines.node` y exige un Node inexistant, et les
-// VRAIS `.npmrc`, `scripts/node-requis.mjs` et hooks shell y sont copiés : chaque porte doit refuser.
-// `npm run gates` : l'import de tête de `scripts/gates/toutes.mjs`, que ce faux arbre ne porte pas.
+// Porte de version de Node (#1801) : la règle PURE, puis son CÂBLAGE dans chaque point d'entrée qui
+// rend un verdict. `.npmrc` et les hooks shell de `scripts/git-hooks/` se jouent de bout en bout sur un
+// FAUX ARBRE en dossier temporaire — `package.json` `engines.node` y exige un Node inexistant, et les
+// VRAIS `.npmrc`, `scripts/node-requis.mjs` et hooks shell y sont copiés. `npm run gates` se juge sur l'AST de
+// `scripts/gates/toutes.mjs`, dont les imports ne se copient pas.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { scriptKindDe, typescript } from './guards/lib/dialecte.mjs'
+import { listerDossier } from './guards/lib/lister.mjs'
 import { refusDeVersion } from './node-requis.mjs'
 
 const RACINE = fileURLToPath(new URL('..', import.meta.url))
-const HOOKS_REFUSANTS = ['pre-commit', 'commit-msg', 'pre-push']
+const DOSSIER_HOOKS = join(RACINE, 'scripts', 'git-hooks')
+/** Les hooks shell : chaque fichier de `scripts/git-hooks/` sans extension. */
+const HOOKS_SHELL = listerDossier(DOSSIER_HOOKS).filter((f) => !f.includes('.'))
+/** githooks(5) : un hook `post-*` ne peut pas faire échouer l'opération qui vient d'avoir lieu. */
+const estPostHook = (hook) => hook.startsWith('post-')
+/** Les `.mjs` qu'un hook shell lance à côté de lui, `"$(dirname "$0")/<nom>.mjs"`. */
+const modulesDuHook = (texte) => [...texte.matchAll(/"\$\(dirname "\$0"\)\/([\w-]+\.mjs)"/g)].map((m) => m[1])
 const EXIGENCE_INTENABLE = '>=999.0.0'
 
 test('refus : version inférieure sur le majeur, le mineur ou le correctif', () => {
@@ -33,7 +42,8 @@ test('plage absente ou hors forme `>=M.m.p` : refus qui la nomme', () => {
   }
 })
 
-/** Faux arbre : `package.json` à l'exigence intenable, `.npmrc` et porte réels, hooks shell réels. */
+/** Faux arbre : `package.json` à l'exigence intenable, `.npmrc`, porte et hooks shell réels. Chaque
+ *  `.mjs` qu'un hook shell lance est un TÉMOIN qui dépose `TEMOIN-<nom>` à la racine s'il tourne. */
 function fauxArbre() {
   const racine = mkdtempSync(join(tmpdir(), 'node-requis-'))
   mkdirSync(join(racine, 'scripts', 'git-hooks'), { recursive: true })
@@ -43,12 +53,22 @@ function fauxArbre() {
   )
   copyFileSync(join(RACINE, '.npmrc'), join(racine, '.npmrc'))
   copyFileSync(join(RACINE, 'scripts', 'node-requis.mjs'), join(racine, 'scripts', 'node-requis.mjs'))
-  for (const hook of HOOKS_REFUSANTS) {
-    copyFileSync(join(RACINE, 'scripts', 'git-hooks', hook), join(racine, 'scripts', 'git-hooks', hook))
-    writeFileSync(join(racine, 'scripts', 'git-hooks', `${hook}.mjs`), 'process.exit(0)\n')
+  for (const hook of HOOKS_SHELL) {
+    const texte = readFileSync(join(DOSSIER_HOOKS, hook), 'utf8')
+    writeFileSync(join(racine, 'scripts', 'git-hooks', hook), texte)
+    const modules = modulesDuHook(texte)
+    assert.ok(modules.length, `${hook} ne lance aucun \`.mjs\` lisible : le témoin ne prouverait rien`)
+    for (const module of modules) {
+      writeFileSync(
+        join(racine, 'scripts', 'git-hooks', module),
+        `import { writeFileSync } from 'node:fs'\nwriteFileSync(new URL('../../TEMOIN-${module}', import.meta.url), '')\n`,
+      )
+    }
   }
   return racine
 }
+
+const temoins = (racine) => listerDossier(racine).filter((f) => f.startsWith('TEMOIN-'))
 
 /** Environnement sans ce que `npm run` pose à l'appelant (`npm_config_*` serait lu comme configuration). */
 function envNu() {
@@ -73,15 +93,26 @@ test('câblage `.npmrc` : `npm install` refuse le Node courant, exit 1, EBADENGI
   }
 })
 
-test('câblage des hooks shell : chaque porte git refuse avant son `.mjs`, exit 1', () => {
+test('câblage des hooks shell de `scripts/git-hooks/` : chacun refuse AVANT son `.mjs` — exit 1, ou 0 pour un `post-*`', () => {
   const racine = fauxArbre()
   try {
-    for (const hook of HOOKS_REFUSANTS) {
-      const r = spawnSync('sh', [join('scripts', 'git-hooks', hook)], { cwd: racine, env: envNu(), encoding: 'utf8' })
-      assert.equal(r.status, 1, `${hook} : ${r.stdout}${r.stderr}`)
+    for (const hook of HOOKS_SHELL) {
+      // `rebase` : le seul `$1` qui fasse agir post-rewrite ; les autres hooks refusent avant de le lire.
+      const r = spawnSync('sh', [join('scripts', 'git-hooks', hook), 'rebase'], { cwd: racine, env: envNu(), encoding: 'utf8' })
+      assert.equal(r.status, estPostHook(hook) ? 0 : 1, `${hook} : ${r.stdout}${r.stderr}`)
       assert.match(r.stderr, REFUS, hook)
     }
+    assert.deepEqual(temoins(racine), [], 'un module de hook a tourné sous un Node refusé')
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
+})
+
+test('câblage de `npm run gates` : la PREMIÈRE requête de module de `scripts/gates/toutes.mjs` est la porte', () => {
+  const ts = typescript()
+  const chemin = join(RACINE, 'scripts', 'gates', 'toutes.mjs')
+  const source = ts.createSourceFile(chemin, readFileSync(chemin, 'utf8'), ts.ScriptTarget.Latest, true, scriptKindDe(chemin))
+  const premiere = source.statements.find((s) => (ts.isImportDeclaration(s) || ts.isExportDeclaration(s)) && s.moduleSpecifier)
+  assert.equal(premiere?.moduleSpecifier.text, '../node-requis.mjs')
+  assert.equal(premiere.importClause, undefined, 'la porte s’importe pour son seul effet d’évaluation')
 })

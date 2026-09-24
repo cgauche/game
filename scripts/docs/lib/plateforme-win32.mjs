@@ -1,7 +1,7 @@
-// Rendu d'un générateur SOUS win32 (#1801) — module `node --import`, composé par `run()` de
-// `scripts/docs/build-all.mjs` dans `NODE_OPTIONS` (`--plateforme win32`, et chaque générateur de
-// `--check --tout`), seul : ce rendu se vérifie et ne se mesure pas, l'enregistreur de lectures n'y
-// est pas. Il se pose AVANT `tsx/esm`.
+// Rendu d'un générateur SOUS win32 (#1801) — module `node --import`, composé par `lancer()` (via
+// `commandeDe`) de `scripts/docs/build-all.mjs` dans `NODE_OPTIONS` (`--plateforme win32`, et chaque
+// générateur de `--check --tout`), seul : ce rendu se vérifie et ne se mesure pas, l'enregistreur de
+// lectures n'y est pas. Il se pose AVANT `tsx/esm`.
 //
 // Ce que voit le code du dépôt : `node:path` = `path.win32` et `fileURLToPath` en graphie Windows
 // (`plateforme-win32-hooks.mjs`), `process.cwd()` sous le lecteur `C:`. Le code de `node_modules`,
@@ -11,9 +11,10 @@
 // résout sur le cwd POSIX (`posixCwd`, lib/path.js de node). Aucune source ne lit le chemin du
 // script dans `argv` (garde `src/point-d-entree-guard.test.ts`).
 // Ce qu'il touche : le disque POSIX — les ENTRÉES de `fs` (chemins en argument, `cwd` de `glob`) et
-// de `child_process` (exécutable, argv absolus, `cwd`, PATH de `env`) sont ramenées en POSIX. La
-// racine du dépôt rendu : `WFRP_PLATEFORME_RACINE`, posée par `run()` comme la racine de
-// l'enregistreur.
+// de `child_process` (exécutable, argv absolus, `cwd`, PATH de `env`) sont ramenées en POSIX. Chaque
+// fonction de `fs` et de `fs.promises` est enveloppée ou déclarée SANS CHEMIN (`SANS_CHEMIN_FS`). La
+// racine du dépôt rendu : `WFRP_PLATEFORME_RACINE`, posée par `commandeDe` comme la racine de
+// l'enregistreur, et lue canonique (`urlDuDepot`).
 //
 // NON SIMULÉ — ce que le code du dépôt reçoit de l'hôte, et la garde qui le ferme quand il y en a une :
 //   · `import.meta.dirname`/`filename`, `require`/`createRequire`/`getBuiltinModule` de `path` ou
@@ -26,7 +27,11 @@
 //   · les sorties de git — rien ;
 //   · les SORTIES de `fs` et de `child_process` — rien ;
 //   · `process.env` tel que lu, PATH compris (joint par `:`) — rien ;
-//   · la chaîne de commande d'`exec`/`execSync`, passée telle quelle au shell de l'hôte — rien.
+//   · les URL `file:` sans lecteur (`import.meta.url`, `pathToFileURL`, leur `pathname`) — rien ;
+//   · `os.tmpdir()`, `os.homedir()`, `process.execPath` — rien ;
+//   · la chaîne de commande d'`exec`/`execSync`, et celle de `spawn*`/`execFile*` sous `shell: true`,
+//     passée telle quelle au shell de l'hôte — rien ;
+//   · un chemin ENCASTRÉ dans un argument de `child_process` (`--sortie=C:\…`), passé tel quel — rien.
 import cp from 'node:child_process'
 import fs from 'node:fs'
 import { register, syncBuiltinESMExports } from 'node:module'
@@ -35,13 +40,19 @@ import { estAbsoluWindows, estModuleDuDepot, urlDuDepot, versPosix, versWindows 
 
 /** Nom → nombre d'arguments-CHEMINS en tête, pour la forme synchrone, à rappel et `fs.promises`. */
 const ENTREES_FS = {
-  access: 1, appendFile: 1, chmod: 1, chown: 1, copyFile: 2, cp: 2, exists: 1, glob: 1, lchown: 1,
-  link: 2, lstat: 1, lutimes: 1, mkdir: 1, mkdtemp: 1, open: 1, opendir: 1, readdir: 1, readFile: 1,
-  readlink: 1, realpath: 1, rename: 2, rm: 1, rmdir: 1, stat: 1, statfs: 1, symlink: 2, truncate: 1,
-  unlink: 1, utimes: 1, writeFile: 1,
+  access: 1, appendFile: 1, chmod: 1, chown: 1, copyFile: 2, cp: 2, exists: 1, glob: 1, lchmod: 1,
+  lchown: 1, link: 2, lstat: 1, lutimes: 1, mkdir: 1, mkdtemp: 1, open: 1, opendir: 1, readdir: 1,
+  readFile: 1, readlink: 1, realpath: 1, rename: 2, rm: 1, rmdir: 1, stat: 1, statfs: 1, symlink: 2,
+  truncate: 1, unlink: 1, utimes: 1, watch: 1, writeFile: 1,
 }
 /** Sans variante `Sync` ni `fs.promises`. */
-const SEULES_FS = { createReadStream: 1, createWriteStream: 1, openAsBlob: 1, watch: 1, watchFile: 1, unwatchFile: 1 }
+const SEULES_FS = { createReadStream: 1, createWriteStream: 1, openAsBlob: 1, watchFile: 1, unwatchFile: 1 }
+/** Fonctions de `fs` (nom sans `Sync`) qui ne prennent aucun chemin : descripteurs, classes, interne. */
+export const SANS_CHEMIN_FS = new Set([
+  'close', 'fchmod', 'fchown', 'fdatasync', 'fstat', 'fsync', 'ftruncate', 'futimes', 'read', 'readv',
+  'write', 'writev', 'Dir', 'Dirent', 'FileReadStream', 'FileWriteStream', 'ReadStream', 'Stats',
+  'WriteStream', '_toUnixTimestamp',
+])
 /** Nom → position de l'argument d'options qui porte un `cwd`. */
 const OPTIONS_FS = { glob: 1 }
 
@@ -106,7 +117,7 @@ for (const nom of ['exec', 'execSync']) {
 syncBuiltinESMExports()
 
 const racine = process.env.WFRP_PLATEFORME_RACINE
-if (!racine) throw new Error('plateforme-win32 : WFRP_PLATEFORME_RACINE absent — ce module se compose par run() de scripts/docs/build-all.mjs')
+if (!racine) throw new Error('plateforme-win32 : WFRP_PLATEFORME_RACINE absent — ce module se compose par lancer() (via commandeDe) de scripts/docs/build-all.mjs')
 const depot = urlDuDepot(racine)
 
 /** Adresse `file:` du module qui a appelé `fonction` : premier cadre de pile hors de node. */

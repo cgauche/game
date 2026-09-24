@@ -212,7 +212,7 @@ const ATTENDU = {
   ],
   'test:runner': [
     'scripts/lancer-local.test.mjs',
-    // +1 le 2026-09-23 (#1801) : la porte de version de Node se prouve sur un FAUX ARBRE
+    // +1 le 2026-09-24 (#1801) : la porte de version de Node se prouve sur un FAUX ARBRE
     // (`mkdtempSync` + `writeFileSync`/`copyFileSync` sous os.tmpdir(), `rmSync` en finally) — un
     // `engines.node` intenable ne se fabrique pas autrement ; l'arbre du dépôt n'est jamais écrit.
     'scripts/node-requis.test.mjs',

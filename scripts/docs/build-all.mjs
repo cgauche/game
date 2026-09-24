@@ -30,11 +30,12 @@
 // `resoudreOutilLocal` + `envIsole`, qui transmettent l'env).
 //
 // RENDU SOUS UNE PLATEFORME (#1801) : `--check --plateforme <nom>` rend chaque générateur sur l'hôte
-// ET sous `<nom>`, par un module de `PLATEFORMES` composé dans `NODE_OPTIONS` comme l'enregistreur —
-// un générateur de plus y passe sans rien déclarer ; `--check --tout` le fait pour chaque plateforme
-// de `PLATEFORMES` autre que l'hôte. Les deux processus tournent en parallèle ; un corps qui dépend
-// de la plateforme qui l'a rendu est rouge, et le rouge nomme sa plateforme. Seul le rendu de l'hôte
-// s'écrit et se mesure (pied, `docs/.sources-lues.json`) : l'autre ne charge pas l'enregistreur.
+// ET sous `<nom>` (sur l'hôte seul quand `<nom>` est l'hôte), par un module de `PLATEFORMES` composé
+// dans `NODE_OPTIONS` comme l'enregistreur — un générateur de plus y passe sans rien déclarer ;
+// `--check --tout` le fait pour chaque plateforme de `PLATEFORMES` autre que l'hôte. Les deux
+// processus tournent en parallèle ; un corps qui dépend de la plateforme qui l'a rendu est rouge, et
+// le rouge nomme sa plateforme. Seul le rendu de l'hôte s'écrit et se mesure (pied,
+// `docs/.sources-lues.json`) : l'autre ne charge pas l'enregistreur.
 import { execFileSync, spawn } from 'node:child_process'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
@@ -596,11 +597,12 @@ export async function executer({
   const seulement = only && new Set(only)
   if (argv.includes('--empreinte')) return verifierEmpreintes(cwd, seulement)
   const hote = process.platform
-  const [demandee = null] = argumentsDe(argv, '--plateforme') ?? []
-  if (demandee !== null && demandee !== hote && !PLATEFORMES[demandee]) {
-    process.stderr.write(`docs:build — --plateforme « ${demandee} » inconnue : ${[hote, ...Object.keys(PLATEFORMES)].join(', ')}.\n`)
+  const plateformes = argumentsDe(argv, '--plateforme')
+  if (plateformes && (plateformes.length !== 1 || (plateformes[0] !== hote && !PLATEFORMES[plateformes[0]]))) {
+    process.stderr.write(`docs:build — --plateforme « ${plateformes.join(' ')} » : attend UNE plateforme parmi ${[...new Set([hote, ...Object.keys(PLATEFORMES)])].join(', ')}.\n`)
     return 1
   }
+  const demandee = plateformes?.[0] ?? null
   // Le rendu de l'HÔTE est le seul écrit et le seul mesuré. Les plateformes rendues EN PLUS, en
   // parallèle, sont vérifiées : `--plateforme <nom>`, ou toutes celles de `PLATEFORMES` sous `--tout`.
   const enPlus = (demandee !== null ? [demandee] : check && tout ? Object.keys(PLATEFORMES) : []).filter((p) => p !== hote)
@@ -634,11 +636,11 @@ export async function executer({
   // Pour le cliquet, c'est équivalent : il ne lit que des fichiers que l'enregistreur de lectures
   // MESURE (son stock, les fiches docs/raw, Source/), et des sources inchangées rendent le même
   // verdict. Pour le corps, c'est un raccourci AVEUGLE à la plateforme qui l'a rendu : un corps rendu
-  // ailleurs puis re-signé y passe pour frais. `--tout` et `--plateforme` rejouent donc chaque
-  // générateur, et la CI joue `--tout` (#1801).
+  // ailleurs puis re-signé y passe pour frais. `--tout` et `--plateforme` (l'hôte compris) rejouent
+  // donc chaque générateur, et la CI joue `--tout` (#1801).
   const frais = new Map()
   const blobs = check ? indexGit(cwd) : null
-  if (check && !tout && !enPlus.length) {
+  if (check && !tout && demandee === null) {
     let surDisque
     try { surDisque = readFileSync(path.join(cwd, SOURCES_LUES), 'utf8') } catch { surDisque = null }
     const complet = motifRejeuComplet(auCommit(cwd, SOURCES_LUES), surDisque)
@@ -652,165 +654,172 @@ export async function executer({
   }
   const racineLectures = path.join(cwd, 'node_modules', '.cache', 'lectures-docs', String(process.pid))
   rmSync(racineLectures, { recursive: true, force: true })
-  const parGenerateur = {}
-  // Verdicts de `--check`, TOUS collectés : un générateur rouge ne masque pas les suivants.
-  const rouges = []
-  // Par générateur : chaque plateforme rendue a-t-elle déclaré les mêmes corps périmés que l'hôte ?
-  const memesPerimes = new Map()
-  // Chaque refus dit s'il se GUÉRIT en régénérant (`docs:build`) : c'est le code de sortie.
-  const refus = []
-  const refuser = (message, { guerit = false } = {}) => {
-    process.stderr.write(`${message}\n`)
-    refus.push({ message, guerit })
-  }
-  let sautes = 0
-  for (const [rang, g] of generateurs.entries()) {
-    // `--only` ne restreint QUE la vérification : un `docs:build` partiel réécrirait
-    // `.sources-lues.json` avec les seuls générateurs joués, et effacerait la mesure des autres.
-    if (check && seulement && !seulement.has(g.script)) continue
-    const { ecrites, signees, injectees } = cibles.get(g.script)
-    if (frais.has(g.script)) {
-      sautes += 1
-      const corps = sha1Corps(readFileSync(path.join(cwd, signees[0]), 'utf8'))
-      console.log(
-        `docs:check — ${g.script} — frais (sources ${frais.get(g.script).slice(0, 12)}, corps ${corps.slice(0, 12)}), non rejoué`,
+  // Le cache de lectures et de corps de ce run se purge à chaque sortie d'`executer`.
+  try {
+    const parGenerateur = {}
+    // Verdicts de `--check`, TOUS collectés : un générateur rouge ne masque pas les suivants.
+    const rouges = []
+    // Par générateur : l'hôte a-t-il déclaré au moins un corps périmé, et chaque plateforme rendue les
+    // mêmes ?
+    const memesPerimes = new Map()
+    // Chaque refus dit s'il se GUÉRIT en régénérant (`docs:build`) : c'est le code de sortie.
+    const refus = []
+    const refuser = (message, { guerit = false } = {}) => {
+      process.stderr.write(`${message}\n`)
+      refus.push({ message, guerit })
+    }
+    let sautes = 0
+    for (const [rang, g] of generateurs.entries()) {
+      // `--only` ne restreint QUE la vérification : un `docs:build` partiel réécrirait
+      // `.sources-lues.json` avec les seuls générateurs joués, et effacerait la mesure des autres.
+      if (check && seulement && !seulement.has(g.script)) continue
+      const { ecrites, signees, injectees } = cibles.get(g.script)
+      if (frais.has(g.script)) {
+        sautes += 1
+        const corps = sha1Corps(readFileSync(path.join(cwd, signees[0]), 'utf8'))
+        console.log(
+          `docs:check — ${g.script} — frais (sources ${frais.get(g.script).slice(0, 12)}, corps ${corps.slice(0, 12)}), non rejoué`,
+        )
+        continue
+      }
+      const dossier = path.join(racineLectures, String(rang))
+      mkdirSync(dossier, { recursive: true })
+      const corpsDe = (plateforme) => path.join(dossier, `corps-rendus.${plateforme ?? 'hote'}`)
+      const autres = enPlus.map((plateforme) => ({
+        plateforme,
+        rendu: lancer(g, { cwd, check, tsxEsm, plateforme, corps: corpsDe(plateforme) }),
+      }))
+      let rougePrincipal = false
+      // Un générateur relit ce qu'il écrit (sa cible en `--check`, le fichier où il injecte un champ) :
+      // rien de tout cela n'est une de ses sources. Seule une cible SIGNÉE — un doc écrit EN ENTIER —
+      // reçoit le pied : `build-implemente` n'écrit qu'un champ des fiches docs/raw, fichiers manuscrits
+      // qu'aucune empreinte ne peut signer, et un registre `*.generated.ts` est du code.
+      try {
+        run(g, { cwd, quiet, check, tsxEsm, lectures: dossier, cibles: [...new Set([...ecrites, ...injectees])].sort(), corps: corpsDe(null) })
+      } catch (e) {
+        transmettreDiagnostic(e, quiet)
+        const issue = issueDe(e)
+        if (!check) {
+          process.stderr.write(`docs:build — ARRÊT sur ${g.script} (${natureDuRouge(issue)}) : docs/ n'est PAS à jour.\n`)
+          return 1
+        }
+        rouges.push({ script: g.script, issue, plateforme: null })
+        rougePrincipal = true
+      }
+      for (const { plateforme, rendu } of autres) {
+        const { issue, sortie } = await rendu
+        if (issue.status === 0) continue
+        process.stderr.write(`docs:check — ${g.script} — rendu sous ${plateforme} :\n${sortie}`)
+        rouges.push({ script: g.script, issue, plateforme })
+      }
+      const perimesHote = corpsRendus(corpsDe(null))
+      memesPerimes.set(g.script, perimesHote !== '' && enPlus.every((plateforme) => corpsRendus(corpsDe(plateforme)) === perimesHote))
+      if (rougePrincipal) continue
+      const lues = fusionnerLectures(dossier)
+      // Un chemin lu hors racine sort de la mesure : dit ici, il cesse d'être indiscernable d'une
+      // absence de lecture (un générateur dont les sources vivent derrière une jonction, par exemple).
+      if (lues.cheminsRejetes > 0) {
+        process.stdout.write(`docs:build — ${g.script} : ${lues.cheminsRejetes} chemin(s) lu(s) hors racine, écarté(s) de la mesure.\n`)
+      }
+      const aveugle = refusSourcesInsuffisantes(g.script, lues.fichiers.length, lues.cheminsRejetes)
+      if (aveugle) {
+        if (!check) {
+          process.stderr.write(`${aveugle}\n`)
+          return 1
+        }
+        refuser(aveugle)
+        continue
+      }
+      const ecritesAuMemeRangOuPlusTard = new Map(
+        generateurs.flatMap((autre, r) => (r >= rang ? cibles.get(autre.script).ecrites.map((c) => [c, autre.script]) : [])),
       )
-      continue
-    }
-    const dossier = path.join(racineLectures, String(rang))
-    mkdirSync(dossier, { recursive: true })
-    const corpsDe = (plateforme) => path.join(dossier, `corps-rendus.${plateforme ?? 'hote'}`)
-    const autres = enPlus.map((plateforme) => ({
-      plateforme,
-      rendu: lancer(g, { cwd, check, tsxEsm, plateforme, corps: corpsDe(plateforme) }),
-    }))
-    let rougePrincipal = false
-    // Un générateur relit ce qu'il écrit (sa cible en `--check`, le fichier où il injecte un champ) :
-    // rien de tout cela n'est une de ses sources. Seule une cible SIGNÉE — un doc écrit EN ENTIER —
-    // reçoit le pied : `build-implemente` n'écrit qu'un champ des fiches docs/raw, fichiers manuscrits
-    // qu'aucune empreinte ne peut signer, et un registre `*.generated.ts` est du code.
-    try {
-      run(g, { cwd, quiet, check, tsxEsm, lectures: dossier, cibles: [...new Set([...ecrites, ...injectees])].sort(), corps: corpsDe(null) })
-    } catch (e) {
-      transmettreDiagnostic(e, quiet)
-      const issue = issueDe(e)
-      if (!check) {
-        process.stderr.write(`docs:build — ARRÊT sur ${g.script} (${natureDuRouge(issue)}) : docs/ n'est PAS à jour.\n`)
-        return 1
+      const lectureTardive = lues.fichiers.find((source) => ecritesAuMemeRangOuPlusTard.has(source))
+      if (lectureTardive) {
+        const message = `docs:build — ARRÊT sur ${g.script} : lit « ${lectureTardive} », que ${ecritesAuMemeRangOuPlusTard.get(lectureTardive)} écrit au même rang ou plus tard — cette source serait périmée.`
+        if (!check) {
+          process.stderr.write(`${message}\n`)
+          return 1
+        }
+        refuser(message)
+        continue
       }
-      rouges.push({ script: g.script, issue, plateforme: null })
-      rougePrincipal = true
-    }
-    for (const { plateforme, rendu } of autres) {
-      const { issue, sortie } = await rendu
-      if (issue.status === 0) continue
-      process.stderr.write(`docs:check — ${g.script} — rendu sous ${plateforme} :\n${sortie}`)
-      rouges.push({ script: g.script, issue, plateforme })
-    }
-    const perimesHote = corpsRendus(corpsDe(null))
-    memesPerimes.set(g.script, enPlus.every((plateforme) => corpsRendus(corpsDe(plateforme)) === perimesHote))
-    if (rougePrincipal) continue
-    const lues = fusionnerLectures(dossier)
-    // Un chemin lu hors racine sort de la mesure : dit ici, il cesse d'être indiscernable d'une
-    // absence de lecture (un générateur dont les sources vivent derrière une jonction, par exemple).
-    if (lues.cheminsRejetes > 0) {
-      process.stdout.write(`docs:build — ${g.script} : ${lues.cheminsRejetes} chemin(s) lu(s) hors racine, écarté(s) de la mesure.\n`)
-    }
-    const aveugle = refusSourcesInsuffisantes(g.script, lues.fichiers.length, lues.cheminsRejetes)
-    if (aveugle) {
-      if (!check) {
-        process.stderr.write(`${aveugle}\n`)
-        return 1
+      parGenerateur[g.script] = { cibles: signees, fichiers: lues.fichiers, dossiers: [...lues.dossiers.keys()] }
+      const { empreinte } = empreinteDuDisque(cwd, lues, ignores)
+      if (check) {
+        // Un doc est à jour quand son CORPS **et** son PIED le sont. `run` vient de juger le corps ;
+        // le pied se juge ici contre l'empreinte des sources telles que le DISQUE les porte — le MÊME
+        // calcul que la pose du pied ci-dessous. C'est le verdict que rend `--empreinte`.
+        for (const cible of signees) {
+          const chemin = path.join(cwd, cible)
+          if (!existeFichier(chemin)) continue
+          const raison = verdictDuPied({ pied: lirePied(readFileSync(chemin, 'utf8')), empreinte, cible })
+          if (raison) refuser(`docs:check — ${g.script} — ${raison} — npm run docs:build`, { guerit: true })
+        }
+        continue
       }
-      refuser(aveugle)
-      continue
-    }
-    const ecritesAuMemeRangOuPlusTard = new Map(
-      generateurs.flatMap((autre, r) => (r >= rang ? cibles.get(autre.script).ecrites.map((c) => [c, autre.script]) : [])),
-    )
-    const lectureTardive = lues.fichiers.find((source) => ecritesAuMemeRangOuPlusTard.has(source))
-    if (lectureTardive) {
-      const message = `docs:build — ARRÊT sur ${g.script} : lit « ${lectureTardive} », que ${ecritesAuMemeRangOuPlusTard.get(lectureTardive)} écrit au même rang ou plus tard — cette source serait périmée.`
-      if (!check) {
-        process.stderr.write(`${message}\n`)
-        return 1
-      }
-      refuser(message)
-      continue
-    }
-    parGenerateur[g.script] = { cibles: signees, fichiers: lues.fichiers, dossiers: [...lues.dossiers.keys()] }
-    const { empreinte } = empreinteDuDisque(cwd, lues, ignores)
-    if (check) {
-      // Un doc est à jour quand son CORPS **et** son PIED le sont. `run` vient de juger le corps ;
-      // le pied se juge ici contre l'empreinte des sources telles que le DISQUE les porte — le MÊME
-      // calcul que la pose du pied ci-dessous. C'est le verdict que rend `--empreinte`.
+      // Le pied se pose AVANT le générateur suivant : un doc signé plus tard serait lu SANS son pied par
+      // les suivants, et leur empreinte suivrait la génération PRÉCÉDENTE — mesuré sur `coverage.mjs`,
+      // qui lit les `catalogue-*.md` que `build-catalogs.mjs` signe.
+      const pied = { empreinte, fichiers: lues.fichiers.length, dossiers: lues.dossiers.size }
       for (const cible of signees) {
         const chemin = path.join(cwd, cible)
-        if (!existeFichier(chemin)) continue
-        const raison = verdictDuPied({ pied: lirePied(readFileSync(chemin, 'utf8')), empreinte, cible })
-        if (raison) refuser(`docs:check — ${g.script} — ${raison} — npm run docs:build`, { guerit: true })
+        if (existeFichier(chemin)) writeFileSync(chemin, avecPied(readFileSync(chemin, 'utf8'), pied))
       }
-      continue
     }
-    // Le pied se pose AVANT le générateur suivant : un doc signé plus tard serait lu SANS son pied par
-    // les suivants, et leur empreinte suivrait la génération PRÉCÉDENTE — mesuré sur `coverage.mjs`,
-    // qui lit les `catalogue-*.md` que `build-catalogs.mjs` signe.
-    const pied = { empreinte, fichiers: lues.fichiers.length, dossiers: lues.dossiers.size }
-    for (const cible of signees) {
-      const chemin = path.join(cwd, cible)
-      if (existeFichier(chemin)) writeFileSync(chemin, avecPied(readFileSync(chemin, 'utf8'), pied))
+    if (!check) {
+      const nonSignees = ciblesNonSignees(cwd, parGenerateur)
+      if (nonSignees.length) {
+        process.stderr.write(
+          `docs:build — ARRÊT : ${nonSignees.length} cible(s) SANS pied « sources-empreinte », donc jugée(s) par rien :\n${nonSignees.map((c) => `  ${c}`).join('\n')}\n`,
+        )
+        return 1
+      }
+      writeFileSync(path.join(cwd, SOURCES_LUES), serialiserSourcesLues(parGenerateur))
+      console.log(`${SOURCES_LUES} — ${Object.keys(parGenerateur).length} générateur(s) mesuré(s).`)
+      return 0
     }
-  }
-  if (!check) {
-    const nonSignees = ciblesNonSignees(cwd, parGenerateur)
-    if (nonSignees.length) {
-      process.stderr.write(
-        `docs:build — ARRÊT : ${nonSignees.length} cible(s) SANS pied « sources-empreinte », donc jugée(s) par rien :\n${nonSignees.map((c) => `  ${c}`).join('\n')}\n`,
-      )
-      return 1
+    // Les vérificateurs purs : ils n'écrivent rien, leur code de sortie est leur verdict.
+    const verificateursJoues = verificateurs.filter((script) => !seulement || seulement.has(script))
+    for (const script of verificateursJoues) {
+      try {
+        execFileResilient(process.execPath, [script], {
+          cwd,
+          env: envIsole(process.env, binLocal(cwd)),
+          ...sortiesDe(quiet),
+        }, { site: `build-all/${script}` })
+      } catch (e) {
+        transmettreDiagnostic(e, quiet)
+        refuser(`docs:check — ${script} — ${natureDuRouge(issueDe(e))}`)
+      }
     }
-    writeFileSync(path.join(cwd, SOURCES_LUES), serialiserSourcesLues(parGenerateur))
-    console.log(`${SOURCES_LUES} — ${Object.keys(parGenerateur).length} générateur(s) mesuré(s).`)
+    const mesure = { ...lireSourcesLues(cwd), ...parGenerateur }
+    const rendu = serialiserSourcesLues(mesure)
+    let actuel
+    try { actuel = readFileSync(path.join(cwd, SOURCES_LUES), 'utf8') } catch { actuel = null }
+    if (actuel !== rendu) {
+      process.stderr.write(diagnosticSourcesLues(actuel, rendu, mesure))
+      refuser(`docs:check — ${SOURCES_LUES} est PÉRIMÉ (les sources MESURÉES d'au moins un générateur ont changé) — npm run docs:build`, { guerit: true })
+    }
+    // `docs:build` écrit le rendu de l'HÔTE : un corps périmé, rendu sur l'hôte ou sous une autre
+    // plateforme, n'y guérit que si l'hôte l'a DÉCLARÉ (`declarerCorpsPerime`) et que chaque plateforme
+    // déclare les MÊMES corps périmés que lui. Une sortie 2 sans corps déclaré ne prouve rien.
+    for (const { script, issue, plateforme } of rouges) {
+      refus.push({
+        message: `docs:check — ${script}${plateforme ? ` — rendu sous ${plateforme}` : ''} — ${natureDuRouge(issue)}`,
+        guerit: guerissable(issue) && memesPerimes.get(script),
+      })
+    }
+    if (refus.length) {
+      process.stderr.write(`${ENTETE_ROUGES} (${refus.length}) :\n${refus.map((r) => `  ${r.message}`).join('\n')}\n`)
+      return refus.every((r) => r.guerit) ? CODE_CORPS_PERIME : 1
+    }
+    console.log(
+      `docs:check — OK (${SOURCES_LUES} à jour, ${Object.keys(parGenerateur).length} générateur(s) rejoué(s) sous ${[hote, ...enPlus].join(' + ')}, ${sautes} frais, ${verificateursJoues.length} vérificateur(s))`,
+    )
     return 0
+  } finally {
+    rmSync(racineLectures, { recursive: true, force: true })
   }
-  // Les vérificateurs purs : ils n'écrivent rien, leur code de sortie est leur verdict.
-  const verificateursJoues = verificateurs.filter((script) => !seulement || seulement.has(script))
-  for (const script of verificateursJoues) {
-    try {
-      execFileResilient(process.execPath, [script], {
-        cwd,
-        env: envIsole(process.env, binLocal(cwd)),
-        ...sortiesDe(quiet),
-      }, { site: `build-all/${script}` })
-    } catch (e) {
-      transmettreDiagnostic(e, quiet)
-      refuser(`docs:check — ${script} — ${natureDuRouge(issueDe(e))}`)
-    }
-  }
-  const mesure = { ...lireSourcesLues(cwd), ...parGenerateur }
-  const rendu = serialiserSourcesLues(mesure)
-  let actuel
-  try { actuel = readFileSync(path.join(cwd, SOURCES_LUES), 'utf8') } catch { actuel = null }
-  if (actuel !== rendu) {
-    process.stderr.write(diagnosticSourcesLues(actuel, rendu, mesure))
-    refuser(`docs:check — ${SOURCES_LUES} est PÉRIMÉ (les sources MESURÉES d'au moins un générateur ont changé) — npm run docs:build`, { guerit: true })
-  }
-  // `docs:build` écrit le rendu de l'HÔTE : un corps périmé, rendu sur l'hôte ou sous une autre
-  // plateforme, n'y guérit que si chaque plateforme déclare les MÊMES corps périmés que l'hôte.
-  for (const { script, issue, plateforme } of rouges) {
-    refus.push({
-      message: `docs:check — ${script}${plateforme ? ` — rendu sous ${plateforme}` : ''} — ${natureDuRouge(issue)}`,
-      guerit: guerissable(issue) && memesPerimes.get(script),
-    })
-  }
-  if (refus.length) {
-    process.stderr.write(`${ENTETE_ROUGES} (${refus.length}) :\n${refus.map((r) => `  ${r.message}`).join('\n')}\n`)
-    return refus.every((r) => r.guerit) ? CODE_CORPS_PERIME : 1
-  }
-  console.log(
-    `docs:check — OK (${SOURCES_LUES} à jour, ${Object.keys(parGenerateur).length} générateur(s) rejoué(s) sous ${[hote, ...enPlus].join(' + ')}, ${sautes} frais, ${verificateursJoues.length} vérificateur(s))`,
-  )
-  return 0
 }
 
 async function main() {
