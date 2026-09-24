@@ -59,7 +59,8 @@ import { refKey, splitLabel } from '../../engine/careerSlots';
 import { adresseDeCreation, poolDuJoker, speciesSkillDefaults } from '../../engine/character';
 import { emplacementOctroye } from '../../engine/creation';
 import type { RefDesignee } from '../../data/schemas/grammaire/ref';
-import type { SourceRef } from '../../data/schemas/grammaire/valeurs';
+import { sexeSchema, type SourceRef } from '../../data/schemas/grammaire/valeurs';
+import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics, Combatant } from '../../engine/types';
 import { damageString, itemFromTrappingById, itemLabel } from '../../engine/items';
 import { skillBaseValue } from '../../engine/skills';
@@ -2252,7 +2253,7 @@ export function DetailsScreen({ d, setD }: StepProps): ReactNode {
           label="Sexe"
           content={
             <button type="button" className="btn small" onClick={() => setD({ ...d, sex: d.sex === 'M' ? 'F' : 'M' })}>
-              <Icon id="ui/branch" size="sm" /> {d.sex === 'F' ? 'Féminin' : 'Masculin'}
+              <Icon id="ui/branch" size="sm" /> {libelleDeValeur(sexeSchema, d.sex)}
             </button>
           }
         />
@@ -2360,7 +2361,7 @@ export function PresentationScreen({ d }: StepProps): ReactNode {
         <Rubrique title="Identité">
           <div className="skill-tags">
             {sign && <CodexRef category="stars" id={sign.id} label={sign.label}><span className="chip">{sign.label}</span></CodexRef>}
-            <span className="chip">{d.sex === 'F' ? 'Féminin' : 'Masculin'}</span>
+            <span className="chip">{libelleDeValeur(sexeSchema, d.sex)}</span>
             {hero.details?.age != null && <span className="chip">{hero.details.age} ans</span>}
             {hero.details?.height != null && <span className="chip">{hero.details.height} cm</span>}
             {hero.details?.eyes && <span className="chip">Yeux {hero.details.eyes}</span>}

@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { AVAILABILITIES, COUVERT_DIFFICULTES, STAKE_FORMS } from '../../../engine/types';
 import { refOuSpec, idDe, refs } from './ref';
-import { estEspeceDAuteur, fauteDeCoiffure } from './art';
+import { fauteDEspece, fauteDeCoiffure } from './art';
 import { estGraphieDeChapitre } from '../../source/decoupe';
 
 /**
@@ -644,6 +644,11 @@ export const countSpecSchema = z.union([
   z.strictObject({ roll: diceSpecSchema }),
 ]);
 
+/** Sexe d'une apparence — UNE déclaration pour les trois nœuds qui le portent : `entityAppearanceSchema`
+ *  (ci-dessous), `defs/pregens.ts` et `defs/raceAppearance.ts`. Chaque affichage lit le libellé par
+ *  `libelleDeValeur(sexeSchema, v)`. */
+export const sexeSchema = enumNomme({ M: 'Masculin', F: 'Féminin' });
+
 /** `EntityAppearance` (`src/engine/authoringAppearance.ts`) — apparence d'entité, composée par
  *  `creatures`, `traits`, `mutations`, la scène (`SceneEntity.appearance`) et le narratif. */
 export const entityAppearanceSchema = z.strictObject({
@@ -673,14 +678,14 @@ export const entityAppearanceSchema = z.strictObject({
     })
     .optional(),
   parts: z.strictObject({ cheveux: z.number().optional(), visage: z.number().optional() }).optional(),
-  sex: z.enum(['M', 'F']).optional(),
+  sex: sexeSchema.optional(),
   build: z.number().optional(),
-  /** Espèce de RENDU — espèce jouable ou espèce déclarée par le rig (`grammaire/art.ts`). */
+  /** Espèce du corps affiché — espèce jouable ou espèce dessinée (`grammaire/art.ts`). */
   species: z
     .string()
     .superRefine((v, ctx) => {
-      if (!estEspeceDAuteur(v))
-        ctx.addIssue({ code: 'custom', message: `espèce « ${v} » absente des espèces jouables et des espèces du rig — rendue en corps d'erreur.` });
+      const faute = fauteDEspece(v);
+      if (faute) ctx.addIssue({ code: 'custom', message: faute });
     })
     .optional(),
   tenue: z.string().optional(),

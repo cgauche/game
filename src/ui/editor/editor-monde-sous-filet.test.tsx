@@ -63,11 +63,11 @@ describe('Éditeur — une espèce hors domaine se voit, elle ne lève pas', () 
 
     expect(container.textContent).not.toContain(MESSAGE);
     expect(container.querySelector('.editor-canvas-wrap svg'), 'le canevas est monté').not.toBeNull();
-    expect(erreurs.mock.calls.map((c) => String(c[0])).filter((m) => m.includes('« espece-hors-vocabulaire »') && m.includes("corps d'erreur")).length).toBeGreaterThan(0);
+    expect(erreurs.mock.calls.map((c) => String(c[0])).filter((m) => m.includes('« espece-hors-vocabulaire »') && m.includes("silhouette d'erreur")).length).toBeGreaterThan(0);
 
     const onglet = [...container.querySelectorAll('button')].find((b) => b.textContent?.includes('Validation'))!;
     await act(async () => { onglet.click(); });
-    expect(container.querySelector('.ed-validation')?.textContent).toContain('espèce « espece-hors-vocabulaire » absente des espèces jouables et des espèces du rig');
+    expect(container.querySelector('.ed-validation')?.textContent).toContain('espèce « espece-hors-vocabulaire » inconnue : ni espèce jouable, ni espèce dessinée');
   });
 });
 

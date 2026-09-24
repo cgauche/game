@@ -6,6 +6,7 @@
  */
 import { z } from 'zod';
 import { document } from '../grammaire/document';
+import { sexeSchema } from '../grammaire/valeurs';
 import { SLOTS } from '../../palette.types';
 
 export const file = 'raceAppearance.json';
@@ -29,7 +30,7 @@ const doc = document(
     pose: z.record(z.string(), z.number()).optional(),
     tenue: z.string().optional(),
     colors: z.record(z.string(), z.string()).optional(),
-    sex: z.enum(['M', 'F']).optional(),
+    sex: sexeSchema.optional(),
     parts: z.strictObject({ cheveux: z.number().optional(), visage: z.number().optional() }).optional(),
     scale: z.number().optional(),
     eyes: z.strictObject({ G: z.string().optional(), D: z.string().optional() }).optional(),

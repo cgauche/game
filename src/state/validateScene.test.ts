@@ -25,10 +25,10 @@ describe('validateScene', () => {
       s.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 1, y: 1 }, appearance });
       return msgs(validateScene([s]).filter((x) => x.scope === 'entity' && x.refId === 'pnj' && x.level === 'error'));
     };
-    expect(avec({ species: 'zorglub' })).toEqual(["pnj › appearance.species : espèce « zorglub » absente des espèces jouables et des espèces du rig — rendue en corps d'erreur."]);
-    expect(avec({ hairstyle: 'zzz', sex: 'M' })).toEqual(['pnj › appearance.hairstyle : coiffure « zzz » absente du catalogue des coiffures du rig.']);
-    expect(avec({ hairstyle: 'queue-de-cheval-haute-f' })).toEqual(['pnj › appearance.hairstyle : coiffure « queue-de-cheval-haute-f » (sexe F) imposée sans sexe posé — poser le sexe F, ou retirer la coiffure.']);
-    expect(avec({ hairstyle: 'queue-de-cheval-haute-f', sex: 'M' })).toEqual(['pnj › appearance.hairstyle : coiffure « queue-de-cheval-haute-f » (sexe F) imposée sur le sexe M.']);
+    expect(avec({ species: 'zorglub' })).toEqual(["pnj › appearance.species : espèce « zorglub » inconnue : ni espèce jouable, ni espèce dessinée — le personnage s'affiche en silhouette d'erreur."]);
+    expect(avec({ hairstyle: 'zzz', sex: 'M' })).toEqual(['pnj › appearance.hairstyle : coiffure « zzz » inconnue : absente du catalogue des coiffures.']);
+    expect(avec({ hairstyle: 'queue-de-cheval-haute-f' })).toEqual(['pnj › appearance.hairstyle : coiffure « queue-de-cheval-haute-f » (sexe : Féminin) imposée sans sexe posé — poser le sexe Féminin, ou retirer la coiffure.']);
+    expect(avec({ hairstyle: 'queue-de-cheval-haute-f', sex: 'M' })).toEqual(['pnj › appearance.hairstyle : coiffure « queue-de-cheval-haute-f » (sexe : Féminin) imposée sur le sexe Masculin.']);
     // Domaine admis : espèce jouable, def de créature, forme de nuée ; coiffure au sexe posé.
     for (const ok of [{ species: 'humains-reiklander' }, { species: 'amibe' }, { species: 'rats' }, { hairstyle: 'queue-de-cheval-haute-f', sex: 'F' }])
       expect(avec(ok), JSON.stringify(ok)).toEqual([]);

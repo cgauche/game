@@ -20,7 +20,7 @@ import { DEFAULT_RACE_ID } from './races';
 import { diagOnce, diagSubject } from './devDiag';
 import { eyesArtFromKeys } from './parts/eyes';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
-import { estEspeceDAuteur, estFormeDeNuee } from '../../data/schemas/grammaire/art';
+import { fauteDEspece, estFormeDeNuee } from '../../data/schemas/grammaire/art';
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
  *  déclare son `id`). Le monolithique n'est PAS un BodyPlan (fallback legacy hors registre). */
@@ -135,7 +135,7 @@ export type RenderResolution =
   | {
     kind: 'rig';
     plan: 'biped';
-    /** Espèce d'origine CODE : l'espèce d'auteur est jugée ici, en amont (`estEspeceDAuteur`). */
+    /** Espèce d'origine CODE : l'espèce d'auteur est jugée ici, en amont (`fauteDEspece`). */
     species: RigSpeciesId;
     scale: number;
     /** `species` est la race par DÉFAUT d'une donnée sans espèce (ni explicite, ni record, ni affût, ni véhicule). */
@@ -143,9 +143,9 @@ export type RenderResolution =
   }
   | { kind: 'plan'; plan: BodyPlanId; species: string; scale: number };
 
-/** Corps d'ERREUR (`plans/defs/manquant.ts`) d'une espèce d'auteur que le rendu refuse. */
+/** Corps d'ERREUR (`plans/defs/manquant.ts`) d'une espèce d'auteur que le rendu refuse, `faute` nommée. */
 function especeManquante(espece: string, sujet: string | undefined, faute: string): RenderResolution {
-  if (import.meta.env?.DEV) diagOnce(`bodyPlan:manquant:${sujet ?? diagSubject()}:${espece}`, () => console.error(`[bodyPlan] « ${sujet ?? (diagSubject() || '(sans réf)')} » : espèce « ${espece} » ${faute} — corps d'erreur visible, donnée à corriger.`));
+  if (import.meta.env?.DEV) diagOnce(`bodyPlan:manquant:${sujet ?? diagSubject()}:${espece}`, () => console.error(`[bodyPlan] « ${sujet ?? (diagSubject() || '(sans réf)')} » : ${faute}`));
   return { kind: 'plan', plan: 'manquant', species: espece, scale: 1 };
 }
 export function resolveRender(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, idOrName: string | undefined): RenderResolution {
@@ -171,7 +171,8 @@ export function resolveRender(species: string | undefined, traits: import('../..
   // Espèce d'AUTEUR (argument explicite ou `appearance.species` du record) : jugée contre le domaine de
   // saisie du schéma, jamais rendue en l'art d'une autre espèce.
   const resolved = species ?? rec?.appearance?.species;
-  if (resolved && !estEspeceDAuteur(resolved)) return especeManquante(resolved, idOrName, 'absente des espèces jouables et des espèces du rig');
+  const faute = resolved === undefined ? null : fauteDEspece(resolved);
+  if (resolved && faute) return especeManquante(resolved, idOrName, faute);
   // Nuée NON typée (aucune espèce de forme) → forme GÉNÉRIQUE (DEFAULT_FORM de composeSwarm via '').
   // Ce défaut vaut pour LA VOIE bodyPlan : `src/gameIso/usePlanAnim.ts:113` retombe, lui, sur la 1re
   // forme du registre (`species || plan.speciesNames()[0]`) — divergence latente consignée à #1537.
@@ -184,7 +185,7 @@ export function resolveRender(species: string | undefined, traits: import('../..
   }
   // Résolution par la DONNÉE : espèce EXPLICITE (arg) → espèce du record, jamais un repli par libellé.
   if (resolved) {
-    if (estFormeDeNuee(resolved)) return especeManquante(resolved, idOrName, 'est une forme de nuée, sans le trait Nuée');
+    if (estFormeDeNuee(resolved)) return especeManquante(resolved, idOrName, `espèce « ${resolved} » : forme de nuée sans le trait Nuée — le personnage s'affiche en silhouette d'erreur.`);
     const d = defById(resolved);
     if (d && d.plan !== 'biped') return { kind: 'plan', plan: d.plan, species: resolved, scale: speciesScale(resolved) };
     return { kind: 'rig', plan: 'biped', species: asRigSpeciesId(resolved), scale: speciesScale(resolved) };

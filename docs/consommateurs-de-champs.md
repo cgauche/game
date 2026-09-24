@@ -120,19 +120,19 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `seed` | 3 | `src/gameIso/rig/enemyProfile.ts:116` |
-| `monster` | 8 | `src/gameIso/rig/enemyProfile.ts:159` |
+| `seed` | 3 | `src/gameIso/rig/enemyProfile.ts:119` |
+| `monster` | 8 | `src/gameIso/rig/enemyProfile.ts:175` |
 | `colors` | 10 | `src/gameIso/rig/bodyPlan.ts:123` |
-| `parts` | 2 | `src/gameIso/rig/enemyProfile.ts:62` |
-| `sex` | 4 | `src/gameIso/rig/enemyProfile.ts:61` |
-| `build` | 5 | `src/gameIso/rig/enemyProfile.ts:61` |
+| `parts` | 2 | `src/gameIso/rig/enemyProfile.ts:65` |
+| `sex` | 4 | `src/gameIso/rig/enemyProfile.ts:64` |
+| `build` | 5 | `src/gameIso/rig/enemyProfile.ts:64` |
 | `species` | 14 | `src/gameIso/rig/bodyPlan.ts:173` |
-| `tenue` | 6 | `src/gameIso/rig/enemyProfile.ts:99` |
+| `tenue` | 6 | `src/gameIso/rig/enemyProfile.ts:102` |
 | `harnais` | 2 | `src/gameIso/rig/bodyPlan.ts:125` |
-| `armurePortee` | 3 | `src/gameIso/rig/enemyProfile.ts:208` |
-| `hairstyle` | 4 | `src/gameIso/rig/enemyProfile.ts:62` |
+| `armurePortee` | 3 | `src/gameIso/rig/enemyProfile.ts:224` |
+| `hairstyle` | 4 | `src/gameIso/rig/enemyProfile.ts:65` |
 | `eyes` | 10 | `src/gameIso/rig/bodyPlan.ts:124` |
-| `features` | 6 | `src/gameIso/rig/enemyProfile.ts:62` |
+| `features` | 6 | `src/gameIso/rig/enemyProfile.ts:65` |
 
 ### `FlowTest` (src/engine/flowCore.ts)
 
@@ -300,4 +300,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: cc2e22233aba2fe81c6b167422b872b7e1c0c01a (2106 fichiers, 174 dossiers) corps: 12442ef69b197e31f417abdc1f09031e9bdb039f -->
+<!-- sources-empreinte: 9a167f0025d7f28f3cf60f46eaf93d0a106f5a8f (2106 fichiers, 174 dossiers) corps: 4d6f0716aacaa65c1aa0f672a74502d26ae8c396 -->

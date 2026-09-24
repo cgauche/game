@@ -3790,8 +3790,8 @@ porteur dans l’arbre, le chiffre ne se recopie pas.
 | `miscast.ts` | 82 | — | test | divergente | `characteristic,difficulty,skill+…` | — |
 | `oups.ts` | 41 | — | plage | cible | `max,min+…` | — |
 | `psychology.ts` | 54 | `test` | test | historique | `difficulty,skill` | — |
-| `raceAppearance.ts` | 33 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
-| `raceAppearance.ts` | 35 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
+| `raceAppearance.ts` | 34 | `parts` | — | hors lexique | `cheveux,visage` | `entityAppearanceSchema` |
+| `raceAppearance.ts` | 36 | `eyes` | — | hors lexique | `D,G` | `entityAppearanceSchema` |
 | `river-navigation.ts` | 39 | `rowingAgility` | test | divergente | `difficulty+…` | — |
 | `river-navigation.ts` | 54 | `temporaryRepair` | test | divergente | `difficulty+…` | — |
 | `sea-cargo.ts` | 97 | `producesGossip` | test | divergente | `difficulty+…` | — |
@@ -5210,4 +5210,4 @@ pèse **2990** slots sur 3554.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: 5d99cfa87d6d52ef7d66a7fd5a2b4b8a7bd3c7d7 (390 fichiers, 10 dossiers) corps: acd8f40d271ff96d81e2db788643f14b69b28c39 -->
+<!-- sources-empreinte: e42e76330b473629020e0567ad6ff08142695b7b (390 fichiers, 10 dossiers) corps: b8302245edfbcdc27338fe69c75e75f01e0ef01c -->

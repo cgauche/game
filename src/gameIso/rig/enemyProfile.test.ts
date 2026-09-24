@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { classifyEnemy, enemyRigProfile, entityRigProfile } from './enemyProfile';
 import { combatantOverlays } from './parts/combatantVisuals';
 import { creatures } from '../../data';
@@ -14,6 +14,7 @@ import { armourPart } from './parts/equipment';
 import { spawnEnemy } from '../../state/spawn';
 import { hairstylesForSex } from './parts/hairstyles';
 import { COIFFURE_HORS_POOL } from './parts/cosmetic';
+import { resetDiagOnce, withDiagSubject } from './devDiag';
 import { resolveRig } from './composeRig';
 import { bonesToSvg } from './renderBones';
 import type { Combatant, Weapon, ItemInstance, ArmourPoints } from '../../engine/types';
@@ -303,6 +304,27 @@ describe('coiffure du record, sexe de l’entité — la coiffure retombe', () =
       // La contradiction posée par UNE couche reste une faute de donnée VISIBLE (le schéma la nomme).
       expect(rendu(entityRigProfile('villageois', 1, { sex: 'M', hairstyle: 'queue-de-cheval-haute-f' })!)).toContain(COIFFURE_HORS_POOL);
     } finally {
+      setDataset('creatures', avant);
+    }
+  });
+  it('le retrait se DIT : un avertissement console nomme le sujet, la coiffure retirée et le sexe posé au-dessus', () => {
+    const avant = [...creatures];
+    setDataset('creatures', creatures.map((c) => (c.id === 'villageois'
+      ? { ...c, appearance: { ...c.appearance!, sex: 'F' as const, hairstyle: 'queue-de-cheval-haute-f' } }
+      : c)));
+    resetDiagOnce();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      withDiagSubject('scene-x/pnj-1', () => entityRigProfile('villageois', 1, { sex: 'M' }));
+      expect(warn.mock.calls.map((c) => String(c[0]))).toEqual([
+        "[rig] « scene-x/pnj-1 » : coiffure « queue-de-cheval-haute-f » (sexe : Féminin) retirée au rendu — une couche d'apparence plus haute pose le sexe Masculin.",
+      ]);
+      warn.mockClear();
+      withDiagSubject('scene-x/pnj-2', () => entityRigProfile('villageois', 1));
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+      resetDiagOnce();
       setDataset('creatures', avant);
     }
   });

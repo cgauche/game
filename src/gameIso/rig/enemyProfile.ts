@@ -25,6 +25,9 @@ import { baseSpeciesOf } from './skeletons';
 import { teintesTirees } from './parts/tirageIndividuel';
 import { diagOnce, diagSubject } from './devDiag';
 import { coiffureRetombee } from './parts/cosmetic';
+import { sexeDeCoiffure } from '../../data/schemas/grammaire/art';
+import { sexeSchema } from '../../data/schemas/grammaire/valeurs';
+import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
 
 export interface EnemyRigProfile {
   appearance: Appearance;
@@ -126,14 +129,26 @@ function sousAuteur<T extends object>(tire: T | undefined, auteur: T | undefined
 
 /** Sexe et coiffure des couches d'AUTEUR, de la plus basse à la plus haute : une couche qui pose un sexe
  *  sans coiffure est le geste d'édition du sexe (`coiffureRetombee`) sur la coiffure des couches du
- *  dessous ; une couche qui pose sa coiffure la garde, même contre son propre sexe (faute de donnée,
- *  nommée par le schéma, vue au rendu). PURE. */
-function sexeEtCoiffure(couches: readonly (Pick<Appearance, 'hairstyle'> & { sex?: 'M' | 'F' } | undefined)[]): { sex?: 'M' | 'F'; hairstyle?: string } {
-  return couches.reduce<{ sex?: 'M' | 'F'; hairstyle?: string }>((bas, haut) => {
+ *  dessous, dont l'id retiré est rendu en `retombee` ; une couche qui pose sa coiffure la garde, même
+ *  contre son propre sexe (faute de donnée, nommée par le schéma, vue au rendu). PURE. */
+function sexeEtCoiffure(couches: readonly (Pick<Appearance, 'hairstyle'> & { sex?: 'M' | 'F' } | undefined)[]): { sex?: 'M' | 'F'; hairstyle?: string; retombee?: string } {
+  return couches.reduce<{ sex?: 'M' | 'F'; hairstyle?: string; retombee?: string }>((bas, haut) => {
     if (!haut) return bas;
     if (haut.hairstyle != null) return { sex: haut.sex ?? bas.sex, hairstyle: haut.hairstyle };
-    return haut.sex != null ? coiffureRetombee({ ...bas, sex: haut.sex }) : bas;
+    if (haut.sex == null) return bas;
+    const r = coiffureRetombee({ sex: haut.sex, hairstyle: bas.hairstyle });
+    return { ...r, retombee: r.hairstyle === bas.hairstyle ? bas.retombee : bas.hairstyle };
   }, {});
+}
+
+/** Diagnostic d'une coiffure d'auteur RETIRÉE au rendu par `sexeEtCoiffure` — même canal que la coiffure
+ *  hors du pool (`hairIndexById`) : console du DEV, une fois par sujet. */
+function direCoiffureRetombee(retombee: string, sex: 'M' | 'F'): void {
+  // `?.` : le rig est importé par les scripts tsx (galeries QC), où `import.meta.env` n'existe pas.
+  if (!import.meta.env?.DEV) return;
+  const sujet = diagSubject();
+  const sexe = sexeDeCoiffure(retombee);
+  diagOnce(`rig:coiffure-retombee:${sujet}:${retombee}:${sex}`, () => console.warn(`[rig] « ${sujet || '(sans réf)'} » : coiffure « ${retombee} »${sexe ? ` (sexe : ${libelleDeValeur(sexeSchema, sexe)})` : ''} retirée au rendu — une couche d'apparence plus haute pose le sexe ${libelleDeValeur(sexeSchema, sex)}.`));
 }
 
 /** Carrure par défaut dérivée du seed (0.35..0.75) — formule UNIQUE. */
@@ -151,6 +166,7 @@ function rigAppearance(graine: number, base: BipedBase, cd: EntityAppearance | u
   const o = override ?? {};
   const tirage = tirageIndividuel(graine, base);
   const auteur = sexeEtCoiffure([cd, o]);
+  if (auteur.retombee !== undefined && auteur.sex !== undefined) direCoiffureRetombee(auteur.retombee, auteur.sex);
   return {
     species,
     sex: auteur.sex ?? perso?.sex ?? race.sex ?? (graine % 7 < 2 ? 'F' : 'M'),

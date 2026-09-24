@@ -11,6 +11,8 @@ import { tenueOptions } from '../../gameIso/rig/parts/career';
 import { harnaisOptions } from '../../gameIso/rig/quadruped/harnais';
 import { elementsOf } from '../../gameIso/rig/parts/elements';
 import type { MonsterPartsSel, ColorsSel } from '../../engine/authoringAppearance';
+import { sexeSchema } from '../../data/schemas/grammaire/valeurs';
+import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
 
 /** Armes équipables proposées (une par forme/groupe — affichées par le rig). */
 export const EDITOR_WEAPONS = ['Épée', 'Hache', 'Masse', 'Dague', 'Lance', 'Hallebarde', 'Bâton de combat', 'Arc', 'Arbalète', 'Pistolet', 'Fronde', 'Fouet'];
@@ -70,10 +72,9 @@ export function MonsterPartsFields({
         <span>Apparence (rig)</span>
         <label className="ed-subfield">
           Sexe
-          <select value={sex ?? ''} onChange={(e) => onSex?.(e.target.value as 'M' | 'F')}>
+          <select value={sex ?? ''} onChange={(e) => onSex?.(sexeSchema.parse(e.target.value))}>
             {sex == null && <option value="" disabled>Tiré au rendu</option>}
-            <option value="M">Masculin</option>
-            <option value="F">Féminin</option>
+            {sexeSchema.options.map((s) => <option key={s} value={s}>{libelleDeValeur(sexeSchema, s)}</option>)}
           </select>
         </label>
         <label className="ed-subfield">
@@ -86,8 +87,8 @@ export function MonsterPartsFields({
             <option value="">Défaut (espèce)</option>
             {sex
               ? hairstylesForSex(sex).map((h) => <option key={h.id} value={h.id}>{h.label}</option>)
-              : ([['M', 'Masculines'], ['F', 'Féminines']] as const).map(([s, titre]) => (
-                <optgroup key={s} label={titre}>
+              : sexeSchema.options.map((s) => (
+                <optgroup key={s} label={`Sexe : ${libelleDeValeur(sexeSchema, s)}`}>
                   {hairstylesForSex(s).map((h) => <option key={h.id} value={h.id}>{h.label}</option>)}
                 </optgroup>
               ))}

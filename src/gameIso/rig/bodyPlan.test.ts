@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { bodyPlanById, resolveSpecies, planById, planOptsForRecord, resolveById } from './bodyPlan';
+import { bodyPlanById, resolveSpecies, planById, planOptsForRecord, resolveById, resolveRender } from './bodyPlan';
+import { CREATURES } from './creatures';
 import { EYE_OPTIONS } from './parts/eyes';
 import { creatures } from '../../data';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
@@ -76,6 +77,19 @@ describe('résolution espèce/id → plan (resolveSpecies / bodyPlanById)', () =
   });
   it('engins de siège (baliste / canon) → engin (corps statique, pas un bipède)', () => {
     for (const id of ['baliste', 'canon-petit']) expect(planOfSpecies(id), id).toBe('engin');
+  });
+});
+
+/** Le corps d'erreur `manquant` n'est atteint que par une espèce d'auteur hors domaine (`fauteDEspece`). */
+describe('corps d’erreur `manquant` — atteint par la faute seule', () => {
+  it('aucun record du bestiaire ni aucune def de créature ne rend le corps d’erreur', () => {
+    const parRecord = creatures.filter((c) => resolveById(c.id).plan === 'manquant').map((c) => c.id);
+    const parDef = CREATURES.filter((d) => resolveRender(d.id, undefined, undefined).plan === 'manquant').map((d) => d.id);
+    expect({ parRecord, parDef }).toEqual({ parRecord: [], parDef: [] });
+  });
+  it('une espèce inconnue le rend, et il se dessine sous toutes les vues', () => {
+    expect(resolveRender('zzz', undefined, undefined)).toEqual({ kind: 'plan', plan: 'manquant', species: 'zzz', scale: 1 });
+    for (const vue of ['front', 'profile', 'back'] as const) expect(planById('manquant').hasView('zzz', vue), vue).toBe(true);
   });
 });
 
