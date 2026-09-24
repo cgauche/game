@@ -1,26 +1,27 @@
 /**
  * FABRIQUE DE RÉFÉRENCE (#1466) — la seule façon de désigner une entité par son id.
  *
- * `ref(type)` construit ET ENREGISTRE le nœud FINAL : l'id est refiné AU PARSE contre le registre
- * généré `IDS_PAR_DATASET` (`npm run gen`), si bien qu'une référence morte casse au chargement, en
+ * `ref(type)` construit ET ENREGISTRE le nœud FINAL : l'id est refiné AU PARSE contre l'INDEX DES
+ * IDS `IDS_PAR_ESPACE` (`npm run gen`), si bien qu'une référence morte casse au chargement, en
  * test et à la sauvegarde du Compendium — sans qu'aucune garde nominative n'ait à l'énumérer
  * (clause B absorbée de #1473). La fabrique n'expose aucun nœud extensible : zod 4.4.3 perd le
  * registre et la `.meta()` au `.extend`, la composition se fait donc ICI via `extra`.
  */
 import { z } from 'zod';
 import './locale-fr';
-import { IDS_PAR_DATASET, IDS_PAR_DISCRIMINANT, IDS_PAR_MARQUEUR, SPECS_PAR_DATASET } from '../_ids.generated';
-import { idsVivants, idsVivantsDuDiscriminant, idsVivantsDuMarqueur, specsVivantesDe } from './idsVivants';
+import { IDS_PAR_ESPACE } from '../_ids.generated';
+import { baseDe, cleDesSpecs, cleFiltree, lireCleDEspace } from './cle-d-espace';
+import { idsVivants, specsVivantesDe } from './idsVivants';
 import type { MarqueDeCollection } from './collection-cle';
 
 declare const marqueDeType: unique symbol;
 /** Id BRANDÉ par son type — frappé à la porte zod, jamais par un `as` d'appelant. */
 export type Id<T extends string> = string & { readonly [marqueDeType]: T };
 
-/** Ce qu'un type d'entité déclare : son dataset cible et le nom de son catalogue. */
-export interface CibleDeType {
-  /** Nom de fichier du dataset qui fait AUTORITÉ sur les ids de ce type. */
-  readonly dataset: string;
+/** Ce qu'un type d'entité déclare : son espace de noms et le nom de son catalogue. */
+export interface DeclarationDeType {
+  /** CLÉ D'ESPACE (`grammaire/cle-d-espace.ts`) de l'espace qui fait AUTORITÉ sur les ids de ce type. */
+  readonly espace: string;
   /** Le catalogue tel que l'AUTEUR le nomme, au pluriel (« des sorts ») : le refus d'une référence
    *  morte se lit à l'éditeur, au Compendium et à l'import d'un projet, jamais qu'en CI. */
   readonly catalogue: string;
@@ -30,154 +31,173 @@ export interface CibleDeType {
  * Types d'entité déclarés à la grammaire. La liste est celle des concepts que les lots L2/L3 du
  * chantier migrent (Compétence, puis Talent/Trait/Objet/Sort/Créature/Véhicule/Structure, +
  * Carrière et Trait NAVAL au L-gram-2 #1463) + la TABLE, cible de `pick({ table })`, + la MATIÈRE du
- * monde (#1686), premier type dont le dataset est DISCRIMINÉ (`idDe('material', 'prop')`), + le
+ * monde (#1686), premier type dont l'espace est DISCRIMINÉ (`idDe('material', 'prop')`), + le
  * TERRAIN et le DÉCOR (#1690 : `layer.tiles` résout un terrain, `terrains › overlayProp` un décor),
  * + l'ESPÈCE (#1520 : `pregens.json › species`).
  * Un type s'ajoute avec le lot qui le migre, jamais « au cas où ».
  */
 export const TYPES = {
-  skill: { dataset: 'skills.json', catalogue: 'compétences' },
-  talent: { dataset: 'talents.json', catalogue: 'talents' },
-  trait: { dataset: 'traits.json', catalogue: 'traits' },
-  trapping: { dataset: 'trappings.json', catalogue: 'objets' },
-  spell: { dataset: 'spells.json', catalogue: 'sorts' },
-  creature: { dataset: 'creatures.json', catalogue: 'créatures' },
-  vehicle: { dataset: 'vehicles.json', catalogue: 'véhicules' },
-  structure: { dataset: 'structures.json', catalogue: 'structures' },
-  career: { dataset: 'careers.json', catalogue: 'carrières' },
-  species: { dataset: 'species.json', catalogue: 'espèces' },
-  navalTrait: { dataset: 'naval-traits.json', catalogue: 'traits navals' },
+  skill: { espace: 'skills.json', catalogue: 'compétences' },
+  talent: { espace: 'talents.json', catalogue: 'talents' },
+  trait: { espace: 'traits.json', catalogue: 'traits' },
+  trapping: { espace: 'trappings.json', catalogue: 'objets' },
+  spell: { espace: 'spells.json', catalogue: 'sorts' },
+  creature: { espace: 'creatures.json', catalogue: 'créatures' },
+  vehicle: { espace: 'vehicles.json', catalogue: 'véhicules' },
+  structure: { espace: 'structures.json', catalogue: 'structures' },
+  career: { espace: 'careers.json', catalogue: 'carrières' },
+  species: { espace: 'species.json', catalogue: 'espèces' },
+  navalTrait: { espace: 'naval-traits.json', catalogue: 'traits navals' },
   // PORT du catalogue naval : `MapPlace.port.ref` résout AU PARSE, toutes les réfs mortes nommées.
-  navalPort: { dataset: 'naval-ports.json', catalogue: 'ports' },
-  shipStation: { dataset: 'ship-stations.json', catalogue: 'postes de navire' },
-  crewRole: { dataset: 'crew-roles.json', catalogue: 'rôles d’équipage' },
-  table: { dataset: 'tables.json', catalogue: 'tables' },
-  etat: { dataset: 'etats.json', catalogue: 'états' },
-  maladie: { dataset: 'maladies.json', catalogue: 'maladies' },
-  symptome: { dataset: 'symptoms.json', catalogue: 'symptômes' },
-  material: { dataset: 'materials.json', catalogue: 'matières' },
+  navalPort: { espace: 'naval-ports.json', catalogue: 'ports' },
+  shipStation: { espace: 'ship-stations.json', catalogue: 'postes de navire' },
+  crewRole: { espace: 'crew-roles.json', catalogue: 'rôles d’équipage' },
+  table: { espace: 'tables.json', catalogue: 'tables' },
+  etat: { espace: 'etats.json', catalogue: 'états' },
+  maladie: { espace: 'maladies.json', catalogue: 'maladies' },
+  symptome: { espace: 'symptoms.json', catalogue: 'symptômes' },
+  material: { espace: 'materials.json', catalogue: 'matières' },
   // RÈGLE OPTIONNELLE : cible du terme `{rule}` d'une `Formula` (#1599) — une quantité que le livre ne
   // chiffre pas se lit au registre, l'id résout donc AU PARSE comme toute autre référence.
-  regleOptionnelle: { dataset: 'reglesOptionnelles.json', catalogue: 'règles optionnelles' },
-  terrain: { dataset: 'terrains.json', catalogue: 'terrains' },
+  regleOptionnelle: { espace: 'reglesOptionnelles.json', catalogue: 'règles optionnelles' },
+  terrain: { espace: 'terrains.json', catalogue: 'terrains' },
   // PALIER D'ÉCLAIRAGE (#1716) : la semence d'éclairage d'une scène neuve (`semences-de-scene.json`)
   // nomme un palier — l'id résout AU PARSE, là où `Scene.ambientLight` reste une chaîne libre.
-  lightLevel: { dataset: 'lightLevels.json', catalogue: 'paliers d’éclairage' },
-  prop: { dataset: 'props.json', catalogue: 'décors' },
-  building: { dataset: 'buildings.json', catalogue: 'bâtiments' },
+  lightLevel: { espace: 'lightLevels.json', catalogue: 'paliers d’éclairage' },
+  prop: { espace: 'props.json', catalogue: 'décors' },
+  building: { espace: 'buildings.json', catalogue: 'bâtiments' },
   // AXE de forces/faiblesses (#409) : `activeAxes` d'un projet de scène résout AU PARSE (#1473 R1).
-  axe: { dataset: 'axes.json', catalogue: 'axes' },
-} as const satisfies Record<string, CibleDeType>;
+  axe: { espace: 'axes.json', catalogue: 'axes' },
+} as const satisfies Record<string, DeclarationDeType>;
 
 export type TypeEntite = keyof typeof TYPES;
 
-/** Dataset qui fait autorité sur les ids d'un type. */
-export function cibleDe(type: TypeEntite): string {
-  return TYPES[type].dataset;
+/** Clé de l'espace qui fait autorité sur les ids d'un type. */
+export function espaceDe(type: TypeEntite): string {
+  return TYPES[type].espace;
 }
 
-/** Liste FIGÉE du registre généré, en `Set` construit une fois par liste. */
-const figes = new Map<readonly string[], ReadonlySet<string>>();
-const VIDE: readonly string[] = [];
-function fige(liste: readonly string[] | undefined): ReadonlySet<string> {
-  const l = liste ?? VIDE;
-  let ids = figes.get(l);
-  if (!ids) figes.set(l, (ids = new Set(l)));
+/**
+ * La table est-elle INERTE ? Le temps d'un parse de mesure en mode `espaces` (`mesureDuParse`), qui
+ * seul l'écrit : l'INDEX DES IDS s'y mesure, un espace neuf et son premier désignateur entrent donc
+ * dans le même commit. Les LECTEURS de la table y rendent « tout est admis » pour leur consommateur :
+ * `admisDe`, `entreeOuverte`, `estSpecialisable` et `refusDeSpec` admettent ; `porteLeMarqueur` rend
+ * FAUX, l'appartenance y CONDITIONNANT un refus (cap d'un décor volumique, `defs-scenes/scene.ts`).
+ */
+let tableInerte = false;
+
+/** Ce qu'un lecteur de la table rend : l'appartenance d'un id à un espace. */
+type Admis = { has(id: string): boolean };
+const TOUT_ADMIS: Admis = { has: () => true };
+
+/** Espace FIGÉ du registre généré, en `Set` construit une fois par clé d'espace. */
+const figes = new Map<string, ReadonlySet<string>>();
+function fige(cle: string): ReadonlySet<string> | undefined {
+  const liste = IDS_PAR_ESPACE[cle];
+  if (!liste) return undefined;
+  let ids = figes.get(cle);
+  if (!ids) figes.set(cle, (ids = new Set(liste)));
   return ids;
 }
 
-function idsDe(type: TypeEntite): ReadonlySet<string> {
-  const dataset = cibleDe(type);
-  // La MÉMOIRE d'abord (`idsVivants`, second régime déclaré par `_ids.generated.ts`) : une entité
-  // créée ou renommée à l'atelier est référençable IMMÉDIATEMENT. Hors application (scripts, gardes,
-  // `npm run gen`), aucune source n'est posée et le fichier généré fait foi.
-  return idsVivants(dataset) ?? fige(IDS_PAR_DATASET[dataset]);
-}
-
 /**
- * Ids d'une SOUS-LISTE du dataset d'un type : ceux dont le champ DISCRIMINANT du document vaut
- * `valeur` — lus en MÉMOIRE quand une source vivante est posée (`idsVivants.ts`), sinon au registre
- * généré `IDS_PAR_DISCRIMINANT` (`npm run gen` — le def déclare son `discriminant`).
- * FAIL-FAST à la CONSTRUCTION du schéma : un type non discriminé, ou une valeur qu'aucune entrée ne
- * porte, ferait un nœud qui refuse TOUT en silence.
+ * SEULE lecture des ids d'un espace, par sa clé : la MÉMOIRE d'abord (`idsVivants`, second régime
+ * déclaré par `_ids.generated.ts`) — une entité créée ou renommée à l'atelier est référençable
+ * IMMÉDIATEMENT —, sinon l'INDEX DES IDS généré. Hors application (scripts, gardes, `npm run gen`),
+ * aucune source n'est posée et le fichier généré fait foi. `undefined` : l'espace n'existe pas.
  */
-function idsSousListe(type: TypeEntite, valeur: string): ReadonlySet<string> {
-  const dataset = cibleDe(type);
-  const table = IDS_PAR_DISCRIMINANT[dataset];
-  if (!table) {
-    throw new Error(
-      `idDe('${type}', '${valeur}') : ${dataset} ne déclare aucun champ discriminant — poser \`export const discriminant\` sur son def, ou référer le type sans valeur.`,
-    );
-  }
-  // EXISTENCE de la valeur : le registre GÉNÉRÉ en fait foi (fail-fast à la construction) — une valeur
-  // discriminante est un univers FERMÉ (enum du def), que la mémoire ne peut pas élargir. Le CONTENU de
-  // la sous-liste, lui, se lit vivant : une matière créée à l'atelier est référençable aussitôt.
-  if (!table[valeur]) {
-    throw new Error(
-      `idDe('${type}', '${valeur}') : « ${valeur} » n'est aucune des valeurs discriminantes de ${dataset} (${Object.keys(table).join(', ')}).`,
-    );
-  }
-  return idsVivantsDuDiscriminant(dataset, valeur) ?? fige(table[valeur]);
+function lireLEspace(cle: string): ReadonlySet<string> | undefined {
+  return idsVivants(cle) ?? fige(cle);
+}
+
+/** SEULE lecture des CLÉS de l'INDEX DES IDS (quels espaces existent). */
+const clesDeLIndex = (): readonly string[] => Object.keys(IDS_PAR_ESPACE);
+
+/** Ids d'un espace DÉSIGNÉ : une clé absente LÈVE — un désignateur qui vise un espace que la phase 2
+ *  ne mesure pas refuserait tout en silence. */
+function idsDeLEspace(cle: string, site: string): ReadonlySet<string> {
+  const ids = lireLEspace(cle);
+  if (!ids) throw new Error(`${site} : « ${cle} » n'est aucun espace de l'INDEX DES IDS (\`IDS_PAR_ESPACE\`, \`npm run gen\`).`);
+  return ids;
 }
 
 /**
- * Appartenance à la SOUS-LISTE MARQUÉE du dataset d'un type : les entrées qui PORTENT le champ
- * `marqueur` (le def le déclare : `export const marqueurs`, cf. `defs/props.ts`). Lue en MÉMOIRE quand
- * une source vivante est posée, sinon au registre généré `IDS_PAR_MARQUEUR`. SŒUR d'`idDe` et non
- * `idDe` lui-même : `idDe` REFUSE un id hors liste, alors qu'une entrée sans marqueur est une référence
- * valide — l'appartenance CONDITIONNE une autre règle (`defs-scenes/scene.ts`, cap d'un décor), elle
- * ne valide rien. FAIL-FAST à la CONSTRUCTION : un marqueur non déclaré ferait un prédicat toujours faux.
+ * Clé d'espace de la sous-liste `valeur` d'un type discriminé : le CHAMP discriminant se lit aux clés
+ * de l'INDEX DES IDS (`<espace>?<champ>=<valeur>`), où la phase 2 l'écrit depuis le paramètre
+ * `espace.discriminant` du def — une seule déclaration, au nœud.
+ */
+const champsDiscriminants = new Map<string, string>();
+function cleDeSousListe(type: TypeEntite, valeur: string, site: string): string {
+  const espace = espaceDe(type);
+  const connu = champsDiscriminants.get(espace);
+  if (connu !== undefined) return cleFiltree(espace, { champ: connu, vaut: valeur });
+  const champs = new Set(
+    clesDeLIndex().flatMap((cle) => {
+      const lue = lireCleDEspace(cle);
+      return baseDe(lue) === espace && lue.filtre?.vaut !== undefined ? [lue.filtre.champ] : [];
+    }),
+  );
+  if (champs.size !== 1)
+    throw new Error(`${site} : ${espace} ${champs.size ? `a ${champs.size} champs discriminants (${[...champs].join(', ')})` : "n'a aucun champ discriminant (paramètre `espace.discriminant` de son def)"}.`);
+  const [champ] = champs;
+  champsDiscriminants.set(espace, champ);
+  return cleFiltree(espace, { champ, vaut: valeur });
+}
+
+/** L'ensemble ADMIS par une feuille `idDe(type, valeur?)`, lu à chaque validation. */
+function admisDe(type: TypeEntite, valeur: string | undefined, site: string): Admis {
+  if (tableInerte) return TOUT_ADMIS;
+  return idsDeLEspace(valeur === undefined ? espaceDe(type) : cleDeSousListe(type, valeur, site), site);
+}
+
+/**
+ * Appartenance à la SOUS-LISTE MARQUÉE de l'espace d'un type : les entrées qui PORTENT le champ
+ * `marqueur` (paramètre `espace.marqueurs` du def, cf. `defs/props.ts`), clé `<espace>?<marqueur>`.
+ * SŒUR d'`idDe` et non `idDe` lui-même : `idDe` REFUSE un id hors liste, alors qu'une entrée sans
+ * marqueur est une référence valide — l'appartenance CONDITIONNE une autre règle
+ * (`defs-scenes/scene.ts`, cap d'un décor), elle ne valide rien. Un marqueur que la phase 2 ne mesure
+ * pas LÈVE à l'appel.
  */
 export function porteLeMarqueur(type: TypeEntite, marqueur: string): (id: string) => boolean {
-  const dataset = cibleDe(type);
-  const table = IDS_PAR_MARQUEUR[dataset];
-  if (!table?.[marqueur]) {
-    throw new Error(
-      `porteLeMarqueur('${type}', '${marqueur}') : ${dataset} ne déclare pas le marqueur « ${marqueur} » — l'ajouter à \`export const marqueurs\` de son def.`,
-    );
-  }
-  const figee = fige(table[marqueur]);
-  return (id) => (idsVivantsDuMarqueur(dataset, marqueur) ?? figee).has(id);
+  const cle = cleFiltree(espaceDe(type), { champ: marqueur });
+  const site = `porteLeMarqueur('${type}', '${marqueur}')`;
+  DESIGNATIONS.add(cle);
+  return (id) => !tableInerte && idsDeLEspace(cle, site).has(id);
 }
 
 /** Catalogue de spécialisations d'UNE entrée (vide = l'entrée n'en déclare aucune) — lu en MÉMOIRE
- *  quand une source vivante est posée (`specsVivantesDe`), sinon au registre généré `SPECS_PAR_DATASET`. */
+ *  quand une source vivante est posée (`specsVivantesDe`), sinon à l'espace de ses `specs`
+ *  (`<espace>#[<id>].specs`) de l'INDEX DES IDS. */
 function catalogueSpecs(type: TypeEntite, id: string): readonly string[] {
-  const dataset = cibleDe(type);
-  return specsVivantesDe(dataset, id) ?? SPECS_PAR_DATASET[dataset]?.[id] ?? [];
+  const espace = espaceDe(type);
+  return specsVivantesDe(espace, id) ?? [...(lireLEspace(cleDesSpecs(espace, id)) ?? [])];
 }
-
-/** Prédicat « entrée ouverte » par type, construit une fois. */
-const ouvertes = new Map<TypeEntite, (id: string) => boolean>();
 
 /**
  * L'entrée `id` de `type` admet-elle une spécialisation en TEXTE LIBRE hors de son catalogue ? La
- * DONNÉE le dit, entrée par entrée : le marqueur `specsOpen` (`export const marqueurs` du def,
- * `LDB 09 l.40`). Un type dont le def ne déclare pas ce marqueur n'a que des entrées FERMÉES.
+ * DONNÉE le dit, entrée par entrée : le marqueur `specsOpen` (paramètre `espace.marqueurs` du def,
+ * `LDB 09 l.40`). Un type dont l'espace n'a pas ce marqueur n'a que des entrées FERMÉES.
  */
 export function entreeOuverte(type: TypeEntite, id: string): boolean {
-  let porte = ouvertes.get(type);
-  if (!porte) {
-    porte = IDS_PAR_MARQUEUR[cibleDe(type)]?.specsOpen ? porteLeMarqueur(type, 'specsOpen') : () => false;
-    ouvertes.set(type, porte);
-  }
-  return porte(id);
+  if (tableInerte) return true;
+  return lireLEspace(cleFiltree(espaceDe(type), { champ: 'specsOpen' }))?.has(id) ?? false;
 }
 
 /**
  * L'entrée porte-t-elle des Spécialisations ? La DONNÉE le dit, par un catalogue NON VIDE — `specs[]`
- * inline ou pool dérivé d'une `specsSource` (registre `SPECS_PAR_DATASET`, `npm run gen`). Sans
+ * inline ou univers d'une `specsSource` (INDEX DES IDS, `npm run gen`). Sans
  * catalogue, ni `spec` ni `choix` n'ont de sens : la réf est un `ref(type)` nu. Pour les Compétences,
  * ce catalogue est celui des Compétences Groupées (`LDB 09 l.36`) ; pour les autres types, c'est une
  * déclaration du catalogue app-owned, sans équivalent au livre.
  */
 export function estSpecialisable(type: TypeEntite, id: string): boolean {
+  if (tableInerte) return true;
   return catalogueSpecs(type, id).length > 0;
 }
 
 /** Refus d'un id qu'aucune entrée du catalogue de `type` ne porte. */
 function refMorte(type: TypeEntite, id: string): string {
-  return `« ${id} » est absent du catalogue des ${TYPES[type].catalogue} (${cibleDe(type)}).`;
+  return `« ${id} » est absent du catalogue des ${TYPES[type].catalogue} (${espaceDe(type)}).`;
 }
 
 /**
@@ -210,6 +230,20 @@ const FEUILLES_D_ID = new WeakMap<object, TypeEntite>();
 export const typeDeFeuilleDId = (noeud: unknown): TypeEntite | undefined =>
   typeof noeud === 'object' && noeud !== null ? FEUILLES_D_ID.get(noeud) : undefined;
 
+/** Les espaces que les feuilles `idDe` et les `porteLeMarqueur` construits désignent : une clé d'espace,
+ *  ou `<espace>\0<valeur>` pour une sous-liste discriminée — la cible que `espaces-contrat.test.ts` exige à l'INDEX DES IDS. */
+const DESIGNATIONS = new Set<string>();
+
+/** Chaque désignation construite, en clé d'espace (la valeur discriminée résolue par `cleDeSousListe`). */
+export function espacesDesignes(): string[] {
+  return [...DESIGNATIONS].map((d) => {
+    const [espace, valeur] = d.split('\u0000');
+    if (valeur === undefined) return espace;
+    const type = (Object.keys(TYPES) as TypeEntite[]).find((t) => espaceDe(t) === espace)!;
+    return cleDeSousListe(type, valeur, `idDe('${type}', '${valeur}')`);
+  });
+}
+
 /** Le nœud est-il une feuille construite par `idDe` ? */
 export const estFeuilleDId = (noeud: unknown): boolean => typeDeFeuilleDId(noeud) !== undefined;
 
@@ -223,18 +257,17 @@ export const estFeuilleDId = (noeud: unknown): boolean => typeDeFeuilleDId(noeud
  * (`_ids.generated.ts`) : le fichier généré figé au commit, et le RECALCUL en mémoire de l'éditeur
  * (`CodexEdit.save` → `validateDataset`), qui remplace l'entrée du dataset. Les schémas, eux, se
  * construisent UNE fois au chargement du module : une lecture faite à la construction rendrait une
- * entité créée au Compendium invalide pour toute donnée qui la référence. La construction ne fait
- * qu'un contrôle FAIL-FAST de la sous-liste demandée.
+ * entité créée au Compendium invalide pour toute donnée qui la référence. La construction ne lit pas
+ * la table (`idsVivants.ts:9-11`) : un espace désigné et absent LÈVE au parse, et
+ * `espaces-contrat.test.ts` exige la cible de chaque désignation (`espacesDesignes`).
  */
 export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<Id<T>, string> {
-  const dataset = cibleDe(type);
-  if (valeur !== undefined) idsSousListe(type, valeur);
-  const admis = (): ReadonlySet<string> => (valeur === undefined ? idsDe(type) : idsSousListe(type, valeur));
+  const espace = espaceDe(type);
   const site = valeur === undefined ? `idDe('${type}')` : `idDe('${type}', '${valeur}')`;
   const feuille = z
     .string()
     .superRefine((v, ctx) => {
-      if (admis().has(v)) {
+      if (admisDe(type, valeur, site).has(v)) {
         if (parseDeMesure === 'slots') ctx.addIssue({ code: 'custom', message: `repère de ${site}`, params: { [REPERE]: type }, continue: true });
         return;
       }
@@ -243,11 +276,12 @@ export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<
         message:
           valeur === undefined
             ? refMorte(type, v)
-            : `« ${v} » est hors de la sous-liste « ${valeur} » du catalogue des ${TYPES[type].catalogue} (${dataset}).`,
+            : `« ${v} » est hors de la sous-liste « ${valeur} » du catalogue des ${TYPES[type].catalogue} (${espace}).`,
       });
     })
     .transform((v) => v as Id<T>);
   FEUILLES_D_ID.set(feuille, type);
+  DESIGNATIONS.add(valeur === undefined ? espaceDe(type) : `${espaceDe(type)}\u0000${valeur}`);
   return feuille;
 }
 
@@ -371,22 +405,25 @@ function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[]
  * première issue ; dans la fenêtre, une issue qui n'est pas un repère LÈVE aussi.
  */
 export function mesureDuParse(schema: z.ZodType, donnee: unknown, mode: ModeDeMesure = 'slots'): MesureDuParse {
-  const normal = schema.safeParse(donnee);
-  if (!normal.success) {
-    const [premiere] = normal.error.issues;
-    throw new Error(
-      `parse de mesure : la donnée est invalide au parse normal — issue « ${premiere.code} » à « ${premiere.path.map(String).join('.') || '(racine)'} » (${premiere.message}).`,
-    );
-  }
+  const inertePrecedente = tableInerte;
+  tableInerte = inertePrecedente || mode === 'espaces';
   const precedent = parseDeMesure;
-  parseDeMesure = mode;
   try {
+    const normal = schema.safeParse(donnee);
+    if (!normal.success) {
+      const [premiere] = normal.error.issues;
+      throw new Error(
+        `parse de mesure : la donnée est invalide au parse normal — issue « ${premiere.code} » à « ${premiere.path.map(String).join('.') || '(racine)'} » (${premiere.message}).`,
+      );
+    }
+    parseDeMesure = mode;
     const resultat = schema.safeParse(donnee);
     const out: Recueil = { reperes: [], ops: [], collections: [] };
     if (!resultat.success) recueillir(resultat.error.issues as unknown as readonly IssueLue[], [], false, out);
     return out;
   } finally {
     parseDeMesure = precedent;
+    tableInerte = inertePrecedente;
   }
 }
 
@@ -442,6 +479,7 @@ const SENTINELLE_DE_SPEC = /^au[\s-]+choix$/i;
  * `null` (admise).
  */
 export function refusDeSpec(type: TypeEntite, id: string, spec: string): 'nonSpecialisable' | 'sentinelle' | 'horsCatalogue' | null {
+  if (tableInerte) return null;
   if (!estSpecialisable(type, id)) return 'nonSpecialisable';
   if (SENTINELLE_DE_SPEC.test(spec)) return 'sentinelle';
   if (entreeOuverte(type, id)) return null;
@@ -463,7 +501,7 @@ function noeudASpecialisation<T extends TypeEntite>(
   extra: Record<string, z.ZodType> | undefined,
   regime: RegimeDeSpec,
 ): z.ZodType<RefASpecialisation> {
-  const dataset = cibleDe(type);
+  const espace = espaceDe(type);
   const catalogue = TYPES[type].catalogue;
   const unRegime = (id: unknown): string =>
     `« ${String(id)} » : une spécialisation se désigne par « spec » OU par « choix », exactement un des deux (catalogue des ${catalogue}).`;
@@ -486,14 +524,14 @@ function noeudASpecialisation<T extends TypeEntite>(
         ctx.addIssue({
           code: 'custom',
           path: ['choix'],
-          message: `« ${String(v.id)} » : ce champ DÉSIGNE une spécialisation — « choix » (emplacement non désigné) n'y est pas admis, seul « spec » l'est (catalogue des ${catalogue}, ${dataset}).`,
+          message: `« ${String(v.id)} » : ce champ DÉSIGNE une spécialisation — « choix » (emplacement non désigné) n'y est pas admis, seul « spec » l'est (catalogue des ${catalogue}, ${espace}).`,
         });
         return;
       }
       if (!estSpecialisable(type, String(v.id))) {
         ctx.addIssue({
           code: 'custom',
-          message: `« ${String(v.id)} » ne déclare aucune spécialisation au catalogue des ${catalogue} (${dataset}) — « spec » et « choix » ne s'y appliquent pas.`,
+          message: `« ${String(v.id)} » ne déclare aucune spécialisation au catalogue des ${catalogue} (${espace}) — « spec » et « choix » ne s'y appliquent pas.`,
         });
         return;
       }
@@ -512,8 +550,8 @@ function noeudASpecialisation<T extends TypeEntite>(
           path: [aSpec ? 'spec' : 'choix'],
           message:
             r === 'sentinelle'
-              ? `« ${c} » n'est pas une spécialisation mais un EMPLACEMENT non désigné de « ${String(v.id)} » (catalogue des ${catalogue}, ${dataset}) — s'écrit « choix ».`
-              : `« ${c} » est absente des spécialisations de « ${String(v.id)} » au catalogue des ${catalogue} (${dataset}).`,
+              ? `« ${c} » n'est pas une spécialisation mais un EMPLACEMENT non désigné de « ${String(v.id)} » (catalogue des ${catalogue}, ${espace}) — s'écrit « choix ».`
+              : `« ${c} » est absente des spécialisations de « ${String(v.id)} » au catalogue des ${catalogue} (${espace}).`,
         });
       }
     });

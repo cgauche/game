@@ -126,8 +126,8 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
   }),
   skillMod: z.strictObject({ op: z.literal('skillMod'), skill: refOuSpec('skill'), mod: z.number(), sense: senseSchema.optional() }),
   /** Cible EXCLUSIVE, `skill` OU `testType` (`engine/ops.ts`, union `skillDRBonus`). `testType` : id de
-   *  `crew-test-types.json`, document `config` dont les ids vivent sous `types[]` — hors du registre
-   *  `IDS_PAR_DATASET` (`scripts/gen-registry.mjs`, `idsDuDataset`) ; clé étrangère tenue par
+   *  `crew-test-types.json`, document `config` dont les ids vivent sous `types[]` — hors de l'INDEX
+   *  DES IDS (`IDS_PAR_ESPACE`, `scripts/gen-espaces.mts`) ; clé étrangère tenue par
    *  `scripts/guards/lib/gameOpRefFk.mjs` pour les sous-listes à ids des documents `config` (#1473). */
   skillDRBonus: z.union([
     z.strictObject({ op: z.literal('skillDRBonus'), skill: refOuSpec('skill'), bonus: formulaSchema }),

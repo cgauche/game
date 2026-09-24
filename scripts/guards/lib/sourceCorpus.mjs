@@ -17,7 +17,7 @@
 // CONDITION DE LICÉITÉ : l'arbre scanné est STATIQUE pendant un run. Sous vitest, l'unique écrivain
 // de `src/**` est `genAll()` du plugin `registryGen` (`vite.config.ts:18`, hook `buildStart`) : il
 // écrit `src/**/_registry.generated.ts` dans le processus vite-node PRINCIPAL, avant le démarrage
-// des workers, et seulement quand le contenu diffère (`scripts/gen-registry.mjs:426,711`). Les
+// des workers, et seulement quand le contenu diffère (`scripts/gen-registry.mjs:476`). Les
 // autres écrivains de l'arbre sont des gates, jouées EN SÉRIE avant les lanes de lecture
 // (`AVANT_LES_LANES`, `scripts/gates/toutes.mjs:248`). Un appelant qui écrirait dans un dossier
 // scanné entre deux lectures a sa porte : `viderCorpus()`.

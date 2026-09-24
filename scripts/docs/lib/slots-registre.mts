@@ -15,6 +15,7 @@ import { SCHEMA_DEFS_SCENES } from '../../../src/data/schemas/_registry-scenes.g
 import type { SchemaDef } from '../../../src/data/schemas/types';
 import { estFeuilleDId, mesureDuParse, reperesDuParse, type TypeEntite } from '../../../src/data/schemas/grammaire/ref';
 import { idsDeCollection, type MarqueDeCollection } from '../../../src/data/schemas/grammaire/collection-cle';
+import { cleNichee } from '../../../src/data/schemas/grammaire/cle-d-espace';
 import { defDe, descendre, enfantsDe } from '../../../src/data/schemas/grammaire/descente';
 import { OP_DEFS } from '../../../src/data/schemas/grammaire/mecanique';
 import { nomDeDocument, type OccurrenceDeReference, type ReferencesParPorteur } from './structures-scan.mjs';
@@ -146,9 +147,9 @@ function collectionsDuDocument(dataset: string, schema: SchemaDef['schema'], doc
           `clé d'espace : l'espace de noms « ${c.path.map(String).join('.')} » de ${dataset} est sous la liste NON marquée « ${c.path.slice(0, rang).map(String).join('.') || '(racine)'} » — le rang d'un élément n'identifie rien.`,
         );
     }
-    const cleNichee = pathNormalise(c.path, { mode: 'espaces', document, listes });
+    const suite = pathNormalise(c.path, { mode: 'espaces', document, listes });
     const { noeud: valeur } = auPath(dataset, document, c.path);
-    return { dataset, cle: cleNichee ? `${dataset}#${cleNichee}` : dataset, marque: c.marque, valeur, ids: idsDeCollection(c.marque, valeur) };
+    return { dataset, cle: suite ? cleNichee(dataset, suite) : dataset, marque: c.marque, valeur, ids: idsDeCollection(c.marque, valeur) };
   });
 }
 

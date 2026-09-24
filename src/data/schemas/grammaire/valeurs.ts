@@ -290,7 +290,7 @@ export type DescRef = z.infer<typeof descRefSchema>;
  * d'affichage, l'attestation de l'entrée quand elle vient d'un autre folio (`source`/`alsoIn`), et
  * `pool: false` pour une entrée VALIDE mais non PROPOSÉE d'office (`LDB 09 l.40`). SOURCE UNIQUE :
  * `specsSchema` la compose — c'est le catalogue que `specRef`/`refOuSpec` confrontent
- * (`grammaire/ref.ts`, registre `SPECS_PAR_DATASET`).
+ * (`grammaire/ref.ts`, espace `<fichier>#[<id>].specs` de l'INDEX DES IDS).
  */
 const specEntrySchema = z.strictObject({
   id: z.string(),

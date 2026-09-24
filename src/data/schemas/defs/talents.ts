@@ -21,10 +21,6 @@ import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'talents.json';
 export const famille = 'entite';
-/** Champ MARQUEUR (#1897) : `specsOpen` définit la SOUS-LISTE des Talents OUVERTS, dont la `spec`
- *  admet un texte libre hors de `specs[]` — lue par `entreeOuverte` (`grammaire/ref.ts`).
- *  @generateur lu au TEXTE par `lireExports` (`scripts/gen-registry.mjs`), qu'aucun import ne dit à knip. */
-export const marqueurs = ['specsOpen'];
 
 // ── TestMatch / TalentTest (src/data/index.ts) ──────────────────────────────────────────────────
 /** Un `TestMatch` désigne la spec visée d'UNE façon : `skill.spec` FIXE, `specFromInstance` (la spec
@@ -121,7 +117,8 @@ const doc = document(
     codex: { keys: ['talents'] },
     edit: { dataset: 'talents' },
   },
-  { exiges: ['source'], variantes: VARIANT_RESOLVED_FIELDS },
+  // `specsOpen` : lu par `entreeOuverte` (`grammaire/ref.ts`).
+  { exiges: ['source'], variantes: VARIANT_RESOLVED_FIELDS, espace: { marqueurs: ['specsOpen'] } },
 );
 
 export const schema = doc.schema;

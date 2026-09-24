@@ -311,7 +311,7 @@ describe('L2 #1548 — `refOuSpec` refuse la sentinelle AU PARSE (`ref.ts#SENTIN
  * regarde une def QUE si elle porte des `specs[]` INLINE (`if (inline.length)`), ce qui saute par
  * construction les défs à `specsSource` — mesuré 2026-08-31 : `corps-a-corps`, `focalisation` et
  * `projectiles` ont 0 spéc inline pour 8/9/10 au registre, donc trois trous. `estSpecialisable` lit
- * le catalogue RÉSOLU (`SPECS_PAR_DATASET`), les deux régimes compris.
+ * le catalogue RÉSOLU (espace `<fichier>#[<id>].specs` de l'INDEX DES IDS), les deux régimes compris.
  */
 describe('L2 #1548 — toute Compétence spécialisable propose au moins une spéc au tirage', () => {
   it('les défs à `specsSource` sont bien DANS le périmètre (le volet inline les saute)', () => {

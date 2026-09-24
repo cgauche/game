@@ -568,7 +568,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   // (`Field` → `GenericArrayField`, `field.noeud`) : c'est le nœud qui porte le libellé des VALEURS
   // (`enumNomme`, #1694), donc le `select` nommé à toute profondeur du sous-formulaire.
   const noeudDe = (champ: string): unknown => noeudDuChamp(src.file, champ);
-  // Un document DISCRIMINÉ (`SchemaDef.discriminant`) présente la charge du CAS de l'entrée — jamais
+  // Un document DISCRIMINÉ (`espace.discriminant` de sa racine, `partitionDeCharge`) présente la charge du CAS de l'entrée — jamais
   // l'union des cas (mesuré sur `materials.json` : union 28 clés, 7 portées par une matière `prop`).
   // Le discriminant lui-même reste à l'écran : c'est en le changeant qu'on change de cas.
   const charge = useMemo(() => chargeDiscriminee(src.file, entry), [src.file, entry]);

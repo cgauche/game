@@ -17,7 +17,7 @@ import { sourceRefSchema, secondarySourceRefSchema, variantOf } from './valeurs'
 import { noyauEnum, type MetaChamp, type MetaDesChamps } from './meta';
 import { exigeSource } from './sans-livre';
 import { champsProse, refineProse } from './prose';
-import { marquerCollection, marqueDeListe, marqueDeRecord } from './collection-cle';
+import { marquerCollection, marqueDeListe, marqueDeRecord, type EspaceDeNoms } from './collection-cle';
 
 /** Les 3 EMBALLAGES de fichier d'un document : liste d'entrées, entrée seule, record clé → valeur.
  *  La CHARGE d'un document (ses rangées, `options.rangee`) est orthogonale à son emballage. */
@@ -216,6 +216,11 @@ export interface OptionsDocument {
    * porte, lui, par `affinerEntree` — en famille `record` l'entrée EST le document, `entries` comprise.
    */
   readonly affinerDataset?: (dataset: z.ZodType<unknown>) => z.ZodType<unknown>;
+  /**
+   * Paramètres de l'ESPACE DE NOMS de racine (`discriminant`, `marqueurs` : `EspaceDeNoms`,
+   * `grammaire/collection-cle.ts`) — refusés hors des familles `entite`/`record`, qui seules en ouvrent un.
+   */
+  readonly espace?: EspaceDeNoms;
 }
 
 /** Handle FERMÉ d'un document : ce que le registre, l'éditeur et les gardes consomment. */
@@ -372,7 +377,7 @@ export function document<T extends string, C extends Record<string, z.ZodType>>(
   exposition: Exposition,
   options: OptionsDocument = {},
 ): DocumentHandle<T> {
-  const { variantes, valeurRecord, cleRecord, idDocument, exiges = [], rangee, deDeTirage, affinerEntree, affinerDataset } = options;
+  const { variantes, valeurRecord, cleRecord, idDocument, exiges = [], rangee, deDeTirage, affinerEntree, affinerDataset, espace = {} } = options;
   if (idDocument && idDocument.safeParse('').success) {
     throw new Error(
       `document('${type}') : \`idDocument\` admet la CHAÎNE VIDE — l'enveloppe ferme l'id à \`.min(1)\`, un schéma d'id ne le ré-ouvre pas.`,
@@ -406,6 +411,9 @@ export function document<T extends string, C extends Record<string, z.ZodType>>(
     throw new Error(
       `document('${type}') : \`rangee\` et la famille « record » sont EXCLUSIVES — un record porte sa charge par CLÉ (\`valeurRecord\`), une liste ordonnée de rangées est un autre document.`,
     );
+  }
+  if (famille === 'config' && options.espace) {
+    throw new Error(`document('${type}') : \`espace\` n'a de sens que pour les familles « entite » et « record » (ici « config ») — un document de réglage n'ouvre aucun espace de noms de racine.`);
   }
   if (deDeTirage && !rangee) {
     throw new Error(`document('${type}') : \`deDeTirage\` exige \`rangee\` — un dé de tirage tire une RANGÉE.`);
@@ -503,9 +511,9 @@ export function document<T extends string, C extends Record<string, z.ZodType>>(
   // sur le nœud FINAL — `affinerDataset` clone le nœud qu'il reçoit (#1463).
   const schema: z.ZodType<unknown> =
     famille === 'entite'
-      ? marquerCollection(affineDataset, marqueDeListe<{ id: string }>('id', {}))
+      ? marquerCollection(affineDataset, marqueDeListe<{ id: string }>('id', espace))
       : famille === 'record'
-        ? marquerCollection(affineDataset, marqueDeRecord({ sous: 'entries', espace: {} }))
+        ? marquerCollection(affineDataset, marqueDeRecord({ sous: 'entries', espace }))
         : affineDataset;
   const metaPubliee = { ...(meta as Record<string, MetaChamp>), ...Object.fromEntries(clesPosees.map((k) => [k, META_CHARGE[k]])) };
   return {

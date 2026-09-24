@@ -10,7 +10,8 @@ import type { RigSpeciesId } from '../gameIso/rig/appearance';
 import type { SourceRef, SecondaryRef, RaceKey, RefCareerId, DescRef } from './schemas/grammaire/valeurs';
 import { porteLeMarqueur, type TypeEntite } from './schemas/grammaire/ref';
 import { symptomSeveritySchema } from './schemas/grammaire/valeurs';
-import { SOURCES_DE_SPECS, poolDeSource, sourceAdmet, type DatasetDeSource } from './schemas/grammaire/sourcesDeSpecs';
+import { SOURCES_DE_SPECS, type DatasetDeSource, type SourceDeSpecs } from './schemas/grammaire/sourcesDeSpecs';
+import { fichierDe, idsSurLaRacine } from './schemas/grammaire/cle-d-espace';
 import sizesJson from './sizes.json';
 import { libelleDeValeur } from './schemas/grammaire/meta';
 import type { MerchantArchetypeDef } from '../state/merchants/types';
@@ -3504,9 +3505,16 @@ const LIBELLE_DE_SOURCE: Record<SpecsSource, (id: string) => string> = {
  *  Le pool borne le CHOIX joueur ; l'univers borne la VALIDITÉ des données (le Triton, MDG 16 l.283). */
 export const SPEC_SOURCES = Object.fromEntries(
   (Object.keys(SOURCES_DE_SPECS) as SpecsSource[]).map((src) => {
-    const decl = SOURCES_DE_SPECS[src];
-    const racine = RACINE_DE_SOURCE[decl.dataset];
-    return [src, { pool: () => poolDeSource(decl, racine()), label: LIBELLE_DE_SOURCE[src], resolves: (id: string) => sourceAdmet(decl, racine(), id) }];
+    const decl: SourceDeSpecs = SOURCES_DE_SPECS[src];
+    const racine = RACINE_DE_SOURCE[fichierDe(SOURCES_DE_SPECS[src].univers)];
+    return [
+      src,
+      {
+        pool: () => idsSurLaRacine(decl.pool ?? decl.univers, racine()),
+        label: LIBELLE_DE_SOURCE[src],
+        resolves: (id: string) => idsSurLaRacine(decl.univers, racine()).includes(id),
+      },
+    ];
   }),
 ) as Record<SpecsSource, { pool(): string[]; label(id: string): string; resolves(id: string): boolean }>;
 /** POOL d'une def (Compétence/Talent) — ce qu'un choix joueur PROPOSE d'office (`LDB 09 l.40`) :

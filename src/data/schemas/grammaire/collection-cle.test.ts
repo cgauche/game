@@ -9,7 +9,6 @@ import { execFileSync } from 'node:child_process';
 import { z } from 'zod';
 import { SCHEMA_DEFS } from '../_registry.generated';
 import { SCHEMA_DEFS_SCENES } from '../_registry-scenes.generated';
-import { IDS_PAR_DATASET, SPECS_PAR_DATASET } from '../_ids.generated';
 import { DATASET_FICHIER_DERIVE } from '../exposition-derivee';
 import { DATASET_KEYS, datasetArray } from '../../overrides';
 import { collectionsDuParse } from '../../../../scripts/docs/lib/slots-registre.mjs';
@@ -199,11 +198,9 @@ describe('parse ⇄ descente — une collection relevée au parse est une collec
 });
 
 describe('clé de collection — la mesure re-dérive les racines, les catégories nichées et les spécialisations', () => {
-  it('les ESPACES de racine sont les racines du registre, plus `decorPalette.json`, aux mêmes ids', () => {
+  it('les ESPACES de racine sont exactement les documents `entite`/`record` de `src/data`', () => {
     const racines = ESPACES.filter((c) => !c.cle.includes('#'));
-    expect(trie(racines.map((c) => c.cle))).toEqual(trie([...Object.keys(IDS_PAR_DATASET), 'decorPalette.json']));
-    const ecarts = racines.filter((c) => c.cle in IDS_PAR_DATASET && trie(c.ids).join() !== trie(IDS_PAR_DATASET[c.cle]).join());
-    expect(ecarts.map((c) => c.cle)).toEqual([]);
+    expect(trie(racines.map((c) => c.cle))).toEqual(trie(SCHEMA_DEFS.filter((d) => d.famille !== 'config').map((d) => d.file)));
   });
 
   it('chaque catégorie nichée est UNE collection mesurée, keyée par sa clé de collection, à l’identité de son tableau vivant', async () => {
@@ -242,12 +239,12 @@ describe('clé de collection — la mesure re-dérive les racines, les catégori
     expect(parTableau).toContainEqual(['criticalsTete', ['criticals.json#[criticals-ldb-tete].entries']]);
   });
 
-  it('les `specs` d’une Compétence ou d’un Talent sont l’espace `fichier#[id].specs`, aux ids du registre', () => {
+  it('les `specs` d’une Compétence ou d’un Talent sont l’espace `fichier#[id].specs`, aux ids de la donnée', () => {
     const specs = ESPACES.filter((c) => c.cle.endsWith('.specs'));
     const attendues = ['skills.json', 'talents.json'].flatMap((f) =>
-      (scan.brutParNom.get(f) as { id: string; specs?: unknown[] }[])
+      (scan.brutParNom.get(f) as { id: string; specs?: { id: string }[] }[])
         .filter((e) => e.specs)
-        .map((e) => [`${f}#[${e.id}].specs`, trie(SPECS_PAR_DATASET[f][e.id] ?? [])]),
+        .map((e) => [`${f}#[${e.id}].specs`, trie(e.specs!.map((s) => s.id))]),
     );
     expect(attendues.filter(([, ids]) => ids.length > 0).length, 'aucune spécialisation inline : la preuve serait vacante').toBeGreaterThan(0);
     expect(specs.map((c) => [c.cle, trie(c.ids)])).toEqual(attendues);

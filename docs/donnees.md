@@ -401,14 +401,14 @@ pas exigible (vocabulaires d'app, documents dont la source vit en profondeur) so
 
 **Les 4 exports plats du contrat `gen`** : tout def qui appelle `document(` exporte `file`, `schema`,
 `famille` et `meta` **À PLAT**. Le générateur de registre est TEXTUEL (lecture par regex, jamais un
-import) — la sanction diffère donc PAR EXPORT, et une seule est silencieuse :
+import) : son lecteur UNIQUE `lireExports` (`scripts/gen-registry.mjs`, formes `FORMES_D_EXPORT`) :
 
-- `file` non conforme au filtre `scripts/gen-registry.mjs:370` (`^export const file = '`, guillemet
-  SIMPLE littéral) : le def est **ÉCARTÉ du registre, en silence** — double quote, `: string` annoté,
-  littéral gabarit et `= doc.file` compilent tous et sortent pourtant du registre. Seul cet export
-  décide de l'appartenance au registre.
-- `meta` non plat : le def **RESTE au registre** et perd son entrée `meta` (invisible de `presents()`,
-  `scripts/gen-registry.mjs:382`) — l'atelier retombe sur la clé technique, sans qu'aucun gate rougisse.
+- `file` ou `meta` présent HORS de sa forme canonique (`export const file = '…';`, `export const meta`
+  à plat) : la génération **LÈVE** en nommant le def et le champ — double quote, `: string` annoté,
+  `as const`, `= doc.file`, destructuration (`src/data/schemas/gen-registry-lecteur.test.ts`).
+- `file` ABSENT : le module n'est pas un document, il sort du registre (modules de FORME partagés).
+- `meta` ABSENT : le def **RESTE au registre** sans entrée `meta` — l'atelier retombe sur la clé
+  technique, sans qu'aucun gate rougisse.
 - `schema`/`famille` destructurés (`export const { schema } = doc`) **COMPILERAIENT** : la
   destructuration crée un vrai nom importable. La garde n'y protège pas la compilation mais la
   CONVENTION — forme plate unique, lisible par un codemod.
@@ -421,8 +421,9 @@ méta sans champ correspondant est refusée. C'est le canal registre → atelier
 `src/data/schemas/validate.ts`) : les gardes de libellés et le CLIQUET de couverture vivent dans
 `src/ui/compendium/libelles-de-champs.test.tsx` — les CHIFFRES y sont, jamais recopiés ici.
 
-**Registres GÉNÉRÉS** — `_registry.generated.ts`, `_registry-scenes.generated.ts` et
-`_ids.generated.ts`, par `node scripts/gen-registry.mjs` (`npm run gen`). Ne JAMAIS éditer à la main.
+**Registres GÉNÉRÉS** — `_registry.generated.ts` et `_registry-scenes.generated.ts` par
+`scripts/gen-registry.mjs` (phase 1 de `npm run gen`), `_ids.generated.ts` (l'INDEX DES IDS,
+`IDS_PAR_ESPACE`) par `scripts/gen-espaces.mts` (phase 2). Ne JAMAIS éditer à la main.
 `DEFS_DE_DOCUMENT` (`src/data/schemas/validate.ts`) est l'union des deux registres.
 
 Un def de `src/data/schemas/defs-scenes/` suit la même fabrique ; son `file` est le **chemin RELATIF à
@@ -495,4 +496,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: 9dd4325e5d434e15134d83fae254bd9a1fb6996d (379 fichiers, 2 dossiers) corps: 36ea7c43f88b105c050e36937eacce3c65372bfc -->
+<!-- sources-empreinte: 6a9af13f329a52a7c55ab82f7f29a6ee0c59f00f (380 fichiers, 2 dossiers) corps: 56cafc527a8edd559d5575a49f501aadef921fb2 -->

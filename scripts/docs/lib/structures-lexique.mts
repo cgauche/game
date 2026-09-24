@@ -160,7 +160,7 @@ export const TERMES_COLLECTION_A_CLE: readonly (readonly [terme: string, definit
   ],
   [
     'espace de noms',
-    'les ids d’une collection à clé dont la marque porte `espace` : la racine d’un document `entite`/`record` (`document()`) et les `specs` d’une Compétence ou d’un Talent. Une collection dont la clé d’élément est une feuille `idDe` (une liste de RÉFÉRENCES) n’en ouvre jamais.',
+    'les ids d’une collection à clé dont la marque porte `espace`, éventuellement filtrée : la racine d’un document `entite`/`record` (`document()`), les `specs` d’une Compétence ou d’un Talent, `sizes.json#rangedMod`. Les paramètres `discriminant` et `marqueurs` de `espace` (`EspaceDeNoms`) y ajoutent les espaces FILTRÉS. Une collection dont la clé d’élément est une feuille `idDe` (une liste de RÉFÉRENCES) n’en ouvre jamais.',
   ],
   [
     'clé de collection',
@@ -168,7 +168,15 @@ export const TERMES_COLLECTION_A_CLE: readonly (readonly [terme: string, definit
   ],
   [
     'clé d’espace',
-    'la clé de collection d’une collection à clé dont la marque porte `espace` : le nom d’un espace de noms (`skills.json`, `skills.json#[art].specs`).',
+    'le nom d’un espace de noms (`src/data/schemas/grammaire/cle-d-espace.ts`) : la clé de collection d’une collection à clé dont la marque porte `espace` (`skills.json`, `skills.json#[art].specs`), suffixée d’un FILTRE — `?champ=valeur` pour le paramètre `discriminant` (`materials.json?domain=prop`), `?champ` pour un des `marqueurs` (`props.json?volume`). Un pas `[clé]`, une valeur ou un marqueur ne porte jamais `[`, `]`, `#`, `?` ni `=` (`src/data/schemas/espaces-contrat.test.ts`).',
+  ],
+  [
+    '`IDS_PAR_ESPACE`',
+    'l’INDEX DES IDS généré (`src/data/schemas/_ids.generated.ts`, `scripts/gen-espaces.mts`, phase 2 de `npm run gen`) : clé d’espace → ids, mesuré au parse en mode `espaces` sur une table INERTE — un espace neuf et son premier désignateur entrent dans le même commit. Une entrée à `specsSource` y a pour espace de ses `specs` l’univers de sa source (`grammaire/sourcesDeSpecs.ts`).',
+  ],
+  [
+    '`espaceDe`',
+    'la clé d’espace qui fait autorité sur les ids d’un type d’entité (`TYPES[type].espace`, `src/data/schemas/grammaire/ref.ts`).',
   ],
 ];
 

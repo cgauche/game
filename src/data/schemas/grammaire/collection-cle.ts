@@ -27,8 +27,19 @@ export type CleDElement<T> =
   | Extract<keyof T, string>
   | { readonly nom: string; readonly de: (element: T) => string | undefined };
 
-/** Paramètres d'un ESPACE DE NOMS — une collection marquée `espace` en ouvre un. */
-export type EspaceDeNoms = Readonly<Record<string, never>>;
+/**
+ * Paramètres d'un ESPACE DE NOMS — une collection marquée `espace` en ouvre un, et chaque paramètre
+ * y ajoute des espaces FILTRÉS (`grammaire/cle-d-espace.ts`) : `discriminant`, un espace par valeur du
+ * champ (`materials.json?domain=prop`) ; `marqueurs`, un espace par champ, les éléments qui le PORTENT
+ * (`props.json?volume`). La phase 2 de `npm run gen` (`scripts/gen-espaces.mts`) les lit au nœud.
+ */
+export interface EspaceDeNoms {
+  readonly discriminant?: string;
+  /** Second rôle du `discriminant` : les clés de CHARGE admises par valeur du champ, ce que l'atelier
+   *  présente d'une entrée (`chargeDiscriminee`, `schemas/validate.ts`). Exige `discriminant`. */
+  readonly chargeParDiscriminant?: Readonly<Record<string, readonly string[]>>;
+  readonly marqueurs?: readonly string[];
+}
 
 /**
  * Marque d'une collection à clé. `liste` : le NOM de la clé (message, compteur) et sa lecture sur un
@@ -112,6 +123,8 @@ function porteUneFeuilleDId(noeud: unknown): boolean {
  * d'élément est une feuille `idDe` — une liste de RÉFÉRENCES n'est jamais un espace de noms.
  */
 export function marquerCollection<N extends z.ZodType>(noeud: N, marque: MarqueDeCollection): N {
+  if (marque.espace?.chargeParDiscriminant && marque.espace.discriminant === undefined)
+    throw new Error('marquerCollection : `chargeParDiscriminant` sans `discriminant` — la charge se partitionne par les valeurs d’un champ discriminant.');
   if (marque.espace && noeudsDeCle(noeud, marque).some(porteUneFeuilleDId)) {
     const cle = marque.forme === 'liste' ? `la clé « ${marque.nom} »` : 'la clé de record';
     throw new Error(`marquerCollection : \`espace\` refusé — ${cle} est une feuille \`idDe\`, la collection est une liste de RÉFÉRENCES.`);

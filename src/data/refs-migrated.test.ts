@@ -16,7 +16,7 @@ import {
 import { avancement } from './schemas/grammaire/avancement';
 import { gameOpSchema } from './schemas/grammaire/mecanique';
 import { entreeOuverte, mesureDuParse, refusDeSpec } from './schemas/grammaire/ref';
-import { IDS_PAR_DATASET } from './schemas/_ids.generated';
+import { IDS_PAR_ESPACE } from './schemas/_ids.generated';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
@@ -1269,7 +1269,7 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     const def = DEFS.find((d) => d.file === 'sea-events.json');
     expect(def, 'def de sea-events.json introuvable').toBeTruthy();
     const document = structuredClone(CORPUS.brutParNom.get('sea-events.json')) as { boardEvents: { params: Record<string, unknown> }[] };
-    const op = { op: 'domeWard', traitId: IDS_PAR_DATASET['traits.json'][0], indice: 1 };
+    const op = { op: 'domeWard', traitId: IDS_PAR_ESPACE['traits.json'][0], indice: 1 };
     document.boardEvents[0].params.ops = [op];
     const noeuds = scanGameOpRefs({ sources: [{ file: 'sea-events.json', data: document }], resolvers, champsASlot: CHAMPS_A_SLOT }).noeudsDOp;
     expect(noeuds.map((n) => n.noeud)).toEqual([op]);

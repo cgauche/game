@@ -26,7 +26,7 @@ import { byId, type SkillData, type TypeResolu } from '../../index';
 import { avancement } from './avancement';
 import { SANS_LIVRE } from './sans-livre';
 import { SCHEMA_DEFS } from '../_registry.generated';
-import { IDS_PAR_DATASET } from '../_ids.generated';
+import { IDS_PAR_ESPACE } from '../_ids.generated';
 import { poserSourceDIdsVivants } from './idsVivants';
 
 type EntreeASpecs = { id: string; specs?: { id: string }[]; specsSource?: string };
@@ -1068,7 +1068,7 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
 
   /**
    * DEUX RÉGIMES, UN SEUL NŒUD (`_ids.generated.ts`) : le fichier généré figé au commit, et les ids
-   * VIVANTS que `ref.ts` lit d'abord (`idsDe` : `idsVivants(dataset)`, sinon `IDS_PAR_DATASET[dataset]`),
+   * VIVANTS que `ref.ts` lit d'abord (`idsVivants(clé d'espace)`, sinon `IDS_PAR_ESPACE[clé d'espace]`),
    * posés par la couche donnée. Un schéma se construit une fois au chargement du module, la donnée se
    * valide après ; la liste admise doit donc se lire à la VALIDATION. Sans quoi une entité créée au
    * Compendium rendrait rouge toute donnée qui la référence.
@@ -1076,14 +1076,13 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
    * partagé, et vaut que la couche donnée ait déjà posé la sienne dans ce worker ou non.
    */
   it('un schéma construit AVANT une mise à jour du registre voit la NOUVELLE liste', () => {
-    const avant = (IDS_PAR_DATASET as unknown as Record<string, readonly string[]>)['etats.json'];
+    const avant = IDS_PAR_ESPACE['etats.json'];
     const noeud = idDe('etat'); // construit AVANT la mise à jour
     expect(noeud.safeParse('etat-cree-au-compendium').success).toBe(false);
     const precedente = poserSourceDIdsVivants({
       entrees: (f) =>
         f === 'etats.json' ? [...avant.map((id) => ({ id })), { id: 'etat-cree-au-compendium' }] : precedente?.entrees(f),
       version: (f) => precedente?.version(f) ?? 0,
-      discriminantDe: (f) => precedente?.discriminantDe(f),
     });
     try {
       expect(noeud.safeParse('etat-cree-au-compendium').success).toBe(true);

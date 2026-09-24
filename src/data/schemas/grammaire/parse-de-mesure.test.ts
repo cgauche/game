@@ -14,14 +14,14 @@ import { estFeuilleDId, familleDuRepere, idDe, mesureDuParse, reperesDuParse } f
 import { gameOpSchema, OP_DEFS } from './mecanique';
 import { refTestDeCorruption } from './valeurs';
 import { descendre } from './descente';
-import { IDS_PAR_DATASET } from '../_ids.generated';
+import { IDS_PAR_ESPACE } from '../_ids.generated';
 import { DEFS_DE_DOCUMENT } from '../validate';
 import { scannerDonnees } from '../../../../scripts/docs/lib/structures-scan.mjs';
 
-const COMPETENCE = IDS_PAR_DATASET['skills.json'][0];
-const TALENT = IDS_PAR_DATASET['talents.json'][0];
-const TRAIT = IDS_PAR_DATASET['traits.json'][0];
-const POSTE = IDS_PAR_DATASET['ship-stations.json'][0];
+const COMPETENCE = IDS_PAR_ESPACE['skills.json'][0];
+const TALENT = IDS_PAR_ESPACE['talents.json'][0];
+const TRAIT = IDS_PAR_ESPACE['traits.json'][0];
+const POSTE = IDS_PAR_ESPACE['ship-stations.json'][0];
 
 type Flux = { skill?: string; steps?: Flux[] };
 const flux: z.ZodType<Flux> = z.lazy(() => z.strictObject({ skill: idDe('skill').optional(), steps: z.array(flux).optional() }));

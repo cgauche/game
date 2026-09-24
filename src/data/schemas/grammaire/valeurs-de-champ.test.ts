@@ -16,20 +16,17 @@ import { DEFS_DE_DOCUMENT } from '../validate';
 import { OP_DEFS } from './mecanique';
 import { descendre } from './descente';
 import { valeursDe } from './meta';
-import { IDS_PAR_DATASET, SPECS_PAR_DATASET } from '../_ids.generated';
+import { IDS_PAR_ESPACE } from '../_ids.generated';
 
 /** Les ids AUTHORÉS des deux racines, tels que `npm run gen` les relève — la référence qui dit d'un
  *  vocabulaire qu'il ÉNUMÈRE des entités plutôt qu'un univers de mots. */
-const IDS_CONNUS: ReadonlySet<string> = new Set([
-  ...Object.values(IDS_PAR_DATASET).flat(),
-  ...Object.values(SPECS_PAR_DATASET).flatMap((parId) => Object.values(parId).flat()),
-]);
+const IDS_CONNUS: ReadonlySet<string> = new Set(Object.values(IDS_PAR_ESPACE).flat());
 
 /**
  * Un vocabulaire d'IDS ne se nomme JAMAIS : ses options sont les ids d'un dataset, dont le nom FR est
  * déjà porté par l'entrée référencée — le redéclarer en ferait une SECONDE vérité. Il se DÉRIVE (jamais
- * une liste tenue à la main) : toutes ses options sont des ids authorés (`IDS_PAR_DATASET`,
- * `SPECS_PAR_DATASET`, émis par `npm run gen`), là où un vocabulaire de mots (`action`, `free`,
+ * une liste tenue à la main) : toutes ses options sont des ids authorés (`IDS_PAR_ESPACE`,
+ * émis par `npm run gen`), là où un vocabulaire de mots (`action`, `free`,
  * `charge`) n'en est aucun.
  */
 const estVocabulaireDIds = (options: readonly string[]): boolean => options.every((o) => IDS_CONNUS.has(o));

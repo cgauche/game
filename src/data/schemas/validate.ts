@@ -168,6 +168,14 @@ export interface ChargeDiscriminee {
   readonly toutes: readonly string[];
 }
 
+/** Champ DISCRIMINANT d'un document et sa CHARGE par valeur : les paramètres `discriminant` et
+ *  `chargeParDiscriminant` de l'`espace` de la marque de sa racine (`grammaire/collection-cle.ts`),
+ *  `undefined` sans eux. */
+function partitionDeCharge(def: SchemaDef | undefined): { champ: string; table: Readonly<Record<string, readonly string[]>> } | undefined {
+  const espace = def && collectionDe(def.schema)?.espace;
+  return espace?.discriminant && espace.chargeParDiscriminant ? { champ: espace.discriminant, table: espace.chargeParDiscriminant } : undefined;
+}
+
 /**
  * Charge DISCRIMINÉE d'une entrée — `undefined` si le document ne déclare pas de discriminant, ou si
  * l'entrée n'en porte pas une valeur connue (entrée en cours de saisie). C'est ce que l'atelier
@@ -175,10 +183,9 @@ export interface ChargeDiscriminee {
  * partagent aucune clé ferait éditer à chacun l'union des clés de tous les autres.
  */
 export function chargeDiscriminee(file: string, entree: Record<string, unknown>): ChargeDiscriminee | undefined {
-  const def = DEFS_DE_DOCUMENT.find((d) => d.file === file);
-  const champ = def?.discriminant;
-  const table = def?.chargeParDiscriminant;
-  if (!champ || !table) return undefined;
+  const partition = partitionDeCharge(DEFS_DE_DOCUMENT.find((d) => d.file === file));
+  if (!partition) return undefined;
+  const { champ, table } = partition;
   const valeur = entree[champ];
   const duCas = typeof valeur === 'string' ? table[valeur] : undefined;
   if (!duCas) return undefined;
@@ -204,11 +211,10 @@ export function brouillonNeuf(file: string, entrees: readonly Record<string, unk
   const brouillon: Record<string, unknown> = {};
   const type = def.meta && entrees.find((e) => typeof e?.type === 'string')?.type;
   if (typeof type === 'string') brouillon.type = type;
-  const champ = def.discriminant;
-  const table = def.chargeParDiscriminant;
-  if (champ && table) {
-    const premiere = Object.keys(valeursDe(noeudDuChamp(file, champ)) ?? table)[0];
-    if (premiere !== undefined) brouillon[champ] = premiere;
+  const partition = partitionDeCharge(def);
+  if (partition) {
+    const premiere = Object.keys(valeursDe(noeudDuChamp(file, partition.champ)) ?? partition.table)[0];
+    if (premiere !== undefined) brouillon[partition.champ] = premiere;
   }
   return brouillon;
 }
