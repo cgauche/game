@@ -60,10 +60,10 @@ import {
   listeurDuBudget,
 } from './solde-ticket-guard.mjs'
 import { tombalesDansSource, evaluateTombale, EXEMPTIONS_TOMBALE } from './solde-tombale.mjs'
-import { GitIndisponible, INDEX, estDansHead } from '../guards/lib/gitPorte.mjs'
+import { GitIndisponible, INDEX, estDansHead, lecteurGit } from '../guards/lib/gitPorte.mjs'
 import {
   archivesDe, derniereRevueArchivee, fenetreDeRevue, mesureDuPalier, nomDArchiveDeRevue, nomsDArchiveAcceptes,
-  revuesNeuves,
+  revuesNeuves, shasDeSubstance,
 } from '../guards/lib/revuePalier.mjs'
 import { envDeDepotForge, instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 
@@ -576,6 +576,33 @@ test('mesureDuPalier : compte les commits de substance depuis la derniere revue 
     writeFileSync(join(depot, 'scripts', 'c.txt'), 'c')
     git('add', '-A')
     assert.equal(mesureDuPalier(depot).compte, 3)
+  } finally { rmSync(depot, { recursive: true, force: true }) }
+})
+
+test('shasDeSubstance : une fusion PROPRE n’est pas de substance, une fusion qui touche scripts l’est -- ce que fait le commit, pas sa simplification d’histoire', () => {
+  const { racine: depot } = instanceDeDepot({ fichiers: { 'src/s.txt': 's\n', 'docs/architecture.md': 'd\n' }, message: 'socle' })
+  const git = (...args) => execFileSync('git', args, { cwd: depot, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+  const poser = (chemin, texte, message) => {
+    writeFileSync(join(depot, chemin), texte); git('add', chemin); git('commit', '-q', '-m', message)
+    return git('rev-parse', 'HEAD').trim()
+  }
+  try {
+    const socle = git('rev-parse', 'HEAD').trim()
+    git('checkout', '-q', '-b', 'cote')
+    const deCote = poser('src/b.txt', 'b\n', 'cote : src/b')
+    git('checkout', '-q', 'main')
+    const deMain = poser('src/m.txt', 'm\n', 'main : src/m')
+    git('merge', '-q', '--no-ff', '-m', 'fusion propre', 'cote')
+    const propre = git('rev-parse', 'HEAD').trim()
+    git('checkout', '-q', 'cote')
+    const doc = poser('docs/architecture.md', 'd2\n', 'cote : docs')
+    git('checkout', '-q', 'main')
+    git('merge', '-q', '--no-commit', 'cote')
+    const malefique = poser('src/mal.txt', 'MAL\n', 'fusion maléfique')
+    assert.ok(git('rev-list', `${socle}..HEAD`, '--', 'src', 'scripts').includes(propre), 'témoin : la simplification d’histoire compte la fusion propre')
+    const vus = shasDeSubstance(lecteurGit(depot, { env: envDeDepotForge() }), `${socle}..HEAD`)
+    assert.deepEqual(new Set(vus), new Set([deCote, deMain, malefique]))
+    assert.ok(!vus.includes(propre) && !vus.includes(doc))
   } finally { rmSync(depot, { recursive: true, force: true }) }
 })
 
@@ -1841,6 +1868,28 @@ test('diffDuCommit : sous `-i`, un renommage stagé qui TRAVERSE le pathspec gar
   }
 })
 
+test('diffDuCommit : sous `diff.renames=copies`, une COPIE stagée se lit comme sans cette configuration — sous `-i`, son source reste l’INDEX, comme `git show --numstat --no-renames` après le commit', () => {
+  const lignes = Array.from({ length: 20 }, (_, i) => `ligne ${i} du fichier a\n`).join('')
+  const { racine: repo } = instanceDeDepot({ fichiers: { a: lignes }, message: 'socle' })
+  try {
+    const git = (...args) => execFileSync('git', args, { cwd: repo, env: envDeDepotForge(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+    git('config', 'diff.renames', 'copies')
+    writeFileSync(join(repo, 'c'), lignes)
+    writeFileSync(join(repo, 'a'), `${lignes}x\n`)
+    git('add', 'a', 'c')
+    writeFileSync(join(repo, 'a'), `${lignes}x\ny\n`)
+    const commande = 'git commit -i -m m -- c'
+    const lu = diffDuCommit(commande, repo)
+    assert.deepEqual(lu.numstat(), [{ plus: 20, moins: 0, chemins: ['c'] }, { plus: 1, moins: 0, chemins: ['a'] }])
+    assert.doesNotMatch(lu.diff(['a']), /^\+y$/m, 'le `y` du disque ne part pas')
+    assert.match(diffDuCommit('git commit -m m', repo).diff(['a', 'c']), /^\+ligne 0 du fichier a$/m, 'une copie se lit comme une naissance, ses lignes comprises')
+    git('commit', '-q', '-i', '-m', 'm', '--', 'c')
+    assert.equal(git('show', '--numstat', '--no-renames', '--format=', 'HEAD'), '1\t0\ta\n20\t0\tc\n', 'ce que git a emporté')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
 test('diffDuCommit : `diff()` rend en UN diff par côté tout ce que le commit emporte, et `images` lit par lot ce qui part et ce qui était', () => {
   const { racine: repo } = instanceDeDepot({ fichiers: { 'src/a.ts': 'export const a = 1\n', 'src/b.ts': 'export const b = 1\n' }, message: 'socle' })
   try {
@@ -2700,7 +2749,7 @@ test('reclassement CSS (#1806 D2″) : jugé sur un commit qui touche la fronti�
     reutilises: new Set(reutilisee ? ['src/ui/Console.tsx'] : []),
     lire: (f) => (f === module ? css : null),
   })
-  const franchit = () => ({ parent: cote(false), commit: cote(true) })
+  const franchit = () => ({ base: cote(false), commit: cote(true) })
   const sans = evaluateReclassementsCss({ command: 'git commit -m "feat: second écran"', deplace: () => true, cotes: franchit })
   assert.equal(sans.decision, 'deny')
   assert.ok(sans.reason.includes(`${module} : franchi au prix 2, aucune ligne`), sans.reason)
@@ -2711,7 +2760,7 @@ test('reclassement CSS (#1806 D2″) : jugé sur un commit qui touche la fronti�
   const orpheline = evaluateReclassementsCss({
     command: `git commit -m "docs\n\n${ligne}"`,
     deplace: () => false,
-    cotes: () => ({ parent: cote(true), commit: cote(true) }),
+    cotes: () => ({ base: cote(true), commit: cote(true) }),
   })
   assert.ok(orpheline?.reason.includes(`${module} : ligne \`+2\` sans franchissement`), 'une ligne sans franchissement est refusée, même hors frontière')
   assert.equal(evaluateReclassementsCss({ command: 'git status', deplace: () => true, cotes: jamaisLu }), null)

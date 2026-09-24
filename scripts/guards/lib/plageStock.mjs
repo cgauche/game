@@ -19,8 +19,8 @@
 // qu'une baisse dans Q du même porteur compenserait reste en croissance au cumul, et se refuse.
 //
 // Chaque commit de la plage, fusions comprises, se lit par CE QU'IL FAIT (`ceQueFaitLeCommit`) contre
-// sa BASE : diff, pré-images des stocks et côté d'avant des reclassements. Une fusion n'y porte que son
-// apport propre, et ce qu'elle ajoute en résolvant s'y voit.
+// sa BASE : diff, textes des stocks dans la base et côté `base` des reclassements. Une fusion n'y porte
+// que son apport propre, et ce qu'elle ajoute en résolvant s'y voit.
 //
 // `RECLASSEMENT: <module> +N — <motif>` (`reclassementCss.mjs`) se juge PAR COMMIT seulement, contre sa
 // base (#1806 D3″) : la ligne vit dans UN message et nomme le franchissement de CE commit.
@@ -38,7 +38,7 @@ export const SHA_NUL = '0'.repeat(40)
 
 /**
  * Refus d'une plage, PUR. `commits` = `[{ sha, message, diff, images }]` dans l'ordre de l'histoire,
- * `cumule` = le diff `<avant>..<apres>` d'un bloc, `imagesCumul` = les lecteurs d'image de ses deux
+ * `cumule` = le diff `<debut>..<fin>` d'un bloc, `imagesCumul` = les lecteurs d'image de ses deux
  * bouts. Chaque `images` porte un `lirePostImage` : `croissanceDesStocks` refuse nommément sinon.
  * @returns {{ sha: string, fichier: string, net: number, declare: number | null, exemples: string[] }[]}
  * @throws {Error} propagé de `croissanceDesStocks` : sans lecteur d'image post, le compte ment.
@@ -57,9 +57,9 @@ export function refusDeLaPlage({ commits = [], cumule = '', imagesCumul } = {}) 
 
 /**
  * Reclassements CSS non déclarés d'une plage, PUR : chaque commit contre sa base (#1806 D3″).
- * `cotes()` rend `{ parent, commit }` (`coteCss`), ou `null` si le commit ne touche pas la frontière ;
+ * `cotes()` rend `{ base, commit }` (`coteCss`), ou `null` si le commit ne touche pas la frontière ;
  * une image illisible est un refus NOMMÉ par son commit, jamais une levée.
- * @param {{ commits?: { sha: string, message: string, cotes: () => ({ parent: object, commit: object } | null) }[] }} p
+ * @param {{ commits?: { sha: string, message: string, cotes: () => ({ base: object, commit: object } | null) }[] }} p
  * @returns {({ sha: string, ecarts: ReturnType<typeof ecartsDeReclassement> } | { sha: string, illisible: string })[]}
  */
 export function reclassementsDeLaPlage({ commits = [] } = {}) {
@@ -74,7 +74,7 @@ export function reclassementsDeLaPlage({ commits = [] } = {}) {
     }
     const lignes = lignesDeReclassement(message)
     if (!lus && !lignes.length) continue
-    const ecarts = ecartsDeReclassement(lus ? franchisDesCotes(lus.parent, lus.commit) : [], lignes)
+    const ecarts = ecartsDeReclassement(lus ? franchisDesCotes(lus.base, lus.commit) : [], lignes)
     if (ecarts.length) refus.push({ sha, ecarts })
   }
   return refus
@@ -95,17 +95,17 @@ export function raisonDeRefusDePlage(refus) {
 }
 
 /**
- * Lecture d'une plage réelle dans `cwd` et refus qu'elle porte.
- * `avant` nul (branche NEUVE, forme observée sur stdin du hook) → `origin/main` : la plage jugée est
+ * Lecture de la plage réelle `<debut>..<fin>` dans `cwd` et refus qu'elle porte.
+ * `debut` nul (branche NEUVE, forme observée sur stdin du hook) → `origin/main` : la plage jugée est
  * ce que la branche ajoute au tronc.
  * `null` = l'OBJET demandé n'existe pas (le contrat des lecteurs d'image) ; une INDISPONIBILITÉ de
  * git est rendue à part (`indisponible`), et l'appelant la NOMME : une plage illisible ne se juge
  * pas, elle se dit.
- * @param {{ cwd?: string, avant: string, apres: string,
+ * @param {{ cwd?: string, debut: string, fin: string,
  *           git?: (args: string[]) => string | null }} p
  * @returns {{ refus: [], reclassements: [], notes: string[], plage: string, indisponible: string|null, commits?: number }}
  */
-export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } = {}) {
+export function croissancesDeLaPlage({ cwd = process.cwd(), debut: debutDonne, fin, git } = {}) {
   const pannes = []
   const lire = git ?? ((args, { entree } = {}) => {
     const vu = lireGit(args, { cwd, entree })
@@ -116,15 +116,15 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
     return sortieOuNull(vu)
   })
   const notes = []
-  let base = avant
-  if (!base || base === SHA_NUL) {
-    base = 'origin/main'
-    if (lire(['rev-parse', '--verify', '--quiet', `${base}^{commit}`]) === null) {
-      notes.push(`plage inconnue : ni sha distant ni \`origin/main\` — ${apres.slice(0, 9)} seul est jugé`)
-      base = `${apres}^`
+  let debut = debutDonne
+  if (!debut || debut === SHA_NUL) {
+    debut = 'origin/main'
+    if (lire(['rev-parse', '--verify', '--quiet', `${debut}^{commit}`]) === null) {
+      notes.push(`plage inconnue : ni sha distant ni \`origin/main\` — ${fin.slice(0, 9)} seul est jugé`)
+      debut = `${fin}^`
     }
   }
-  const plage = `${base}..${apres}`
+  const plage = `${debut}..${fin}`
   const liste = lire(['rev-list', '--reverse', plage])
   if (liste === null) {
     notes.push(`plage \`${plage}\` illisible : rien n'est jugé`)
@@ -136,23 +136,23 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
     commits = shas.map((sha) => {
       const fait = ceQueFaitLeCommit(lire, sha)
       const source = (arbre) => sourceGit({ cwd, arbre, git: lire })
-      const avant = source(fait.base)
+      const base = source(fait.base)
       return {
         sha,
         message: lire(['show', '-s', '--format=%B', sha]) ?? '',
         diff: fait.diff(),
         images: {
           lirePostImage: (f) => lire(['show', `${sha}:${f}`]),
-          lirePreImage: fait.avant,
+          lirePreImage: fait.texteDeBase,
           renommages: fait.renommages(),
         },
         cotes: () => (deplaceLaFrontiere({
           chemins: fait.chemins(),
           nesOuMorts: () => fait.chemins(['--diff-filter=AD']),
-          parent: avant,
+          base,
           commit: source(sha),
           racine: cwd,
-        }) ? { parent: coteCss(avant, { racine: cwd }), commit: coteCss(source(sha), { racine: cwd }) } : null),
+        }) ? { base: coteCss(base, { racine: cwd }), commit: coteCss(source(sha), { racine: cwd }) } : null),
       }
     })
   } catch (e) {
@@ -160,11 +160,11 @@ export function croissancesDeLaPlage({ cwd = process.cwd(), avant, apres, git } 
     notes.push(`plage \`${plage}\` illisible : rien n'est jugé`)
     return { refus: [], reclassements: [], notes, plage, indisponible: e.raison }
   }
-  const cumule = lire(['diff', '-U0', '--no-renames', `${base}..${apres}`]) ?? ''
+  const cumule = lire(['diff', '-U0', '--no-renames', plage]) ?? ''
   const imagesCumul = {
-    lirePostImage: (f) => lire(['show', `${apres}:${f}`]),
-    lirePreImage: (f) => lire(['show', `${base}:${f}`]),
-    renommages: renommagesDe(lire, [base, apres]),
+    lirePostImage: (f) => lire(['show', `${fin}:${f}`]),
+    lirePreImage: (f) => lire(['show', `${debut}:${f}`]),
+    renommages: renommagesDe(lire, [debut, fin]),
   }
   return {
     refus: refusDeLaPlage({ commits, cumule, imagesCumul }),

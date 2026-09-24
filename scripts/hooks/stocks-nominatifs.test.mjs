@@ -42,13 +42,13 @@ function porteEnVigueur() {
 }
 
 /** Début de la plage à juger. En CI, l'événement de push le porte (`GITHUB_EVENT_PATH` → `before`) ;
- *  `origin/main` n'y a PAS de reflog, il ne peut donc pas servir de base. Sans événement lisible, la
- *  base reste nulle et `croissancesDeLaPlage` juge HEAD seul en le DISANT (jamais un silence). */
+ *  `origin/main` n'y a PAS de reflog, il ne peut donc pas servir de début. Sans événement lisible, le
+ *  début reste nul et `croissancesDeLaPlage` juge HEAD seul en le DISANT (jamais un silence). */
 function debutDeLaPlage(env = process.env) {
   if (!env.GITHUB_EVENT_PATH) return SHA_NUL
   try {
-    const avant = String(JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, 'utf8'))?.before ?? '')
-    return /^[0-9a-f]{40}$/.test(avant) && avant !== SHA_NUL ? avant : SHA_NUL
+    const debut = String(JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, 'utf8'))?.before ?? '')
+    return /^[0-9a-f]{40}$/.test(debut) && debut !== SHA_NUL ? debut : SHA_NUL
   } catch { return SHA_NUL }
 }
 
@@ -1061,8 +1061,8 @@ test('stock `.mjs` nominatif — une entrée AJOUTÉE est vue par la porte de pl
 //   · `c8d3105ae` fait croître un registre à clés en NOM DE FICHIER (`AUTO_RESOLUS`) ;
 //   · `a9b7edf17` fait croître un stock OBJET dont les valeurs sont des tableaux.
 const FENETRE_STOCKS = { avant: '571f54287', apres: '02cc09c04' }
-const FENETRE_REGISTRE = { avant: '2c11fdd9a', apres: 'c8d3105ae' }
-const FENETRE_STOCK_OBJET = { avant: 'da3acf95c', apres: 'a9b7edf17' }
+const FENETRE_REGISTRE = { debut: '2c11fdd9a', fin: 'c8d3105ae' }
+const FENETRE_STOCK_OBJET = { debut: 'da3acf95c', fin: 'a9b7edf17' }
 const gitOuNull = (...args) => {
   try { return git(...args) } catch { return null }
 }
@@ -1125,7 +1125,7 @@ test('CLIQUET stocks : la PLAGE POUSSÉE ne fait grossir aucun stock en silence'
   }
   exigerHistoireComplete()
   const { refus, notes, commits } = croissancesDeLaPlage({
-    cwd: RACINE, avant: debutDeLaPlage(), apres: git('rev-parse', 'HEAD').trim(),
+    cwd: RACINE, debut: debutDeLaPlage(), fin: git('rev-parse', 'HEAD').trim(),
   })
   for (const n of notes) t.diagnostic(n)
   if (commits !== undefined) t.diagnostic(`${commits} commit(s) jugé(s)`)

@@ -326,9 +326,12 @@ function exigerMergeTree(git) {
 /**
  * La BASE du commit `sha` : l'arbre contre lequel il se lit. Son parent ; l'arbre vide pour une
  * racine ; pour une fusion, l'arbre que git aurait fusionné TOUT SEUL depuis ses deux parents, conflits
- * compris (`git merge-tree --write-tree --stdin`, dont la sortie est `<propre>\0<arbre>\0…` et le code
- * 0 même en conflit). `merge-tree` ÉCRIT les objets de cet arbre, jamais une ref : des objets
- * inaccessibles, que `git gc` ramasse. `null` si le sha est inconnu.
+ * compris, qu'ils aient un ancêtre commun ou non (`git merge-tree --write-tree --stdin
+ * --allow-unrelated-histories`, dont la sortie est `<propre>\0<arbre>\0…` et le code 0 même en
+ * conflit). `merge-tree` ÉCRIT les objets de cet arbre, jamais une ref : des objets inaccessibles, que
+ * `git gc` ramasse. `null` quand `git` ne rend pas la lecture qui la donne : sha inconnu
+ * (`rev-list`), arbre vide non rendu (`hash-object`), fusion refusée (`merge-tree`), ou toute
+ * indisponibilité qu'un lecteur à `null` rend en `null` au lieu de la lever.
  * @param {(args: string[], opts?: { entree?: string }) => string | null} git @param {string} sha
  * @returns {string | null}
  * @throws {GitIndisponible} fusion à plus de deux parents, ou fusion lue par un git plus ancien que
@@ -342,21 +345,23 @@ function baseDuCommit(git, sha) {
   if (parents.length === 1) return parents[0]
   if (parents.length > 2) throw new GitIndisponible(`fusion ${sha.slice(0, 9)} à ${parents.length} parents : aucune fusion automatique ne rejoue sa base`)
   exigerMergeTree(git)
-  const [, arbre] = (git(['merge-tree', '--write-tree', '-z', '--stdin'], { entree: `${parents[0]} ${parents[1]}\n` }) ?? '').split('\0')
+  const [, arbre] = (git(['merge-tree', '--write-tree', '--allow-unrelated-histories', '-z', '--stdin'], { entree: `${parents[0]} ${parents[1]}\n` }) ?? '').split('\0')
   return arbre || null
 }
 
 /**
  * CE QUE FAIT LE COMMIT `sha` : son APPORT PROPRE, lu contre sa BASE (`baseDuCommit`). Une fusion
  * propre n'apporte rien ; une résolution ou une retouche apporte ses lignes. L'unique lecture d'un
- * commit POSÉ des portes : fichiers, diff, image d'avant, renommages et côté d'avant viennent de la
- * même base. `--no-renames` sur les chemins et le patch : un renommage y rend ses deux bouts
- * (26be12347).
- *   - `base` : l'arbre d'avant (une ref ou un arbre), `null` si le sha est inconnu ;
- *   - `chemins(filtre)` : les chemins touchés (`--name-only`, `-z`), `filtre` = `--diff-filter=…` ;
- *   - `diff(pathspecs)` : le patch `-U0`, `''` si rien ;
- *   - `avant(chemin)` : le texte de `chemin` dans la base, `null` s'il y est absent ;
- *   - `renommages()` : chemin d'avant ↦ chemin du commit (`-M`).
+ * commit POSÉ des portes : fichiers, diff, textes et renommages viennent tous de la même base.
+ * `--no-renames` sur les chemins et le patch : un renommage y rend ses deux bouts (26be12347).
+ *   - `base` : l'arbre contre lequel le commit se lit (une ref ou un arbre), `null` dans les cas de
+ *     `baseDuCommit` ; tout ce qui suit est alors vide ;
+ *   - `chemins(filtre)` : les chemins touchés (`--name-only`, `-z`), `filtre` = `--diff-filter=…`,
+ *     `[]` si la base est `null` ;
+ *   - `diff(pathspecs)` : le patch `-U0`, `''` si rien ou si la base est `null` ;
+ *   - `texteDeBase(chemin)` : le texte de `chemin` dans la base, `null` s'il y est absent ou si la base
+ *     est `null` ;
+ *   - `renommages()` : chemin de la base ↦ chemin du commit (`-M`), vide si la base est `null`.
  * `git` (args, `{ entree }` → sortie, `null` = rien) est le lecteur de l'appelant.
  * @param {(args: string[], opts?: { entree?: string }) => string | null} git @param {string} sha
  * @throws {GitIndisponible} propagée de `baseDuCommit` (fusion seulement).
@@ -368,7 +373,7 @@ export function ceQueFaitLeCommit(git, sha) {
     base,
     chemins: (filtre = []) => (base ? cheminsDe(git, entre(['--name-only', '--no-renames', ...filtre])) : []),
     diff: (pathspecs = []) => (base ? git(entre(['-U0', '--no-renames'], pathspecs)) ?? '' : ''),
-    avant: (chemin) => (base ? git(['show', `${base}:${chemin}`]) : null),
+    texteDeBase: (chemin) => (base ? git(['show', `${base}:${chemin}`]) : null),
     renommages: () => new Map(base ? nameStatusDe(git, entre(['-M', '--diff-filter=R', '--name-status'])).map((e) => e.chemins) : []),
   }
 }

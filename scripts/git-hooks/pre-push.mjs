@@ -121,7 +121,7 @@ export function jugerPush({ cwd, stdin, env = process.env }) {
 
   for (const { refLocale, shaLocal, refDistante, shaDistant } of refsAPousser(stdin)) {
     // Stocks nominatifs de la PLAGE poussée : par commit, filtrés par la croissance cumulée.
-    const stocks = croissancesDeLaPlage({ cwd, avant: shaDistant, apres: shaLocal })
+    const stocks = croissancesDeLaPlage({ cwd, debut: shaDistant, fin: shaLocal })
     for (const n of stocks.notes) notes.push(n)
     if (stocks.indisponible)
       refus.push(`${refLocale} → ${refDistante} : plage \`${stocks.plage}\` illisible : ${stocks.indisponible}`)

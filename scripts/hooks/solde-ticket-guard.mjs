@@ -62,15 +62,17 @@
 // stocks en 8,2-9,5 s (1 716 porteurs, dont un `git diff` de 0,96 s ; le reste est l'évaluation), plus
 // les reclassements (1,8-3,9 s), donc il expire. Lot réel de 10 fichiers (07d9f850d) : stocks 46-48 ms.
 // Ce qu'une expiration de l'étage 2 PERD :
-//   - le refus des stocks et des reclassements au commit. Le pre-push est le SEUL filet, et il est
-//     plus lâche : un commit n'y est refusé que si la croissance CUMULÉE de la plage reste positive
-//     (`refusDeLaPlage`, `plageStock.mjs`) ;
+//   - le refus des stocks et des reclassements au commit. Restent, pour les STOCKS, le pre-push puis
+//     la CI, qui rejuge la plage poussée a posteriori (`scripts/hooks/stocks-nominatifs.test.mjs`,
+//     « CLIQUET stocks », joué par `npm run test:hooks`) ; pour les RECLASSEMENTS, le pre-push seul.
+//     Le filet des stocks est plus lâche : un commit n'y est refusé que si la croissance CUMULÉE de
+//     la plage reste positive (`refusDeLaPlage`, `plageStock.mjs`) ;
 //   - la note `additionalContext` des modifications non stagées qu'emporte le commit (fin du driver,
 //     `evaluateHunksEmportes`), rendue seulement quand l'étage 2 ne refuse rien.
 // Dans l'arbre principal, un `ask` d'étage 1 (`evaluateArbrePrincipal`) sort avant l'étage 2 : un stock
 // qui grandit y reçoit ce `ask`, jamais son `deny`. Et `--no-verify` n'est refusé nulle part : un
-// `git push --no-verify` saute le seul filet. Ce chiffre se re-mesure quand une décision change
-// d'étage ou que l'étage 1 s'alourdit.
+// `git push --no-verify` saute le pre-push, donc le seul filet des reclassements, pas la CI. Ce chiffre
+// se re-mesure quand une décision change d'étage ou que l'étage 1 s'alourdit.
 import { Buffer } from 'node:buffer'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -1212,7 +1214,8 @@ export function evaluate({
       decision: 'deny',
       reason:
         `⚠ Palier INMESURABLE, donc aucune fermeture : ${palier.erreur}. Le palier se mesure sur `
-        + "l'HISTOIRE (`git rev-list --count <tête de la dernière revue de HEAD>..HEAD -- src scripts`).",
+        + "l'HISTOIRE : les commits de `<tête de la dernière revue de HEAD>..HEAD` dont ce qu'ils font touche "
+        + '`src` ou `scripts` (`shasDeSubstance`, scripts/guards/lib/revuePalier.mjs).',
     }
   }
 
@@ -1856,7 +1859,9 @@ export function diffDuCommit(command, dir = process.cwd()) {
   // Sous `inclus`, le commit emporte l'arbre des pathspecs ET l'index des autres chemins : chaque
   // lecture de diff est l'union des deux, un chemin du pathspec lu dans l'arbre. Une entrée de l'index
   // qui TRAVERSE le pathspec (`git mv a b` puis `git commit -i -- b`, #1806 A6) se relit côté arbre avec
-  // son bout extérieur, que git emporte aussi : la paire reste une paire.
+  // son bout extérieur, que git emporte aussi : la paire reste une paire. `-M` fixe la détection des
+  // lectures `numstat` et `diff` : sans lui, `diff.renames=copies` de l'utilisateur fait d'une copie
+  // une paire, et son bout extérieur se relit dans l'arbre au lieu de l'index (#1806 A6).
   const inclus = () => forme === 'inclus' && !contreIndex()
   const unir = (lecture, chemins) => {
     if (!inclus()) return lecture([...rev(), ...borne])
@@ -1866,45 +1871,45 @@ export function diffDuCommit(command, dir = process.cwd()) {
     const cote = (f) => dans(f) || bouts.includes(f)
     return [...lecture(['HEAD', '--', ...pathspecs, ...bouts]), ...index.filter((e) => !chemins(e).some(cote))]
   }
-  const sourceDuParent = () => sourceGit({ cwd: dir, arbre: 'HEAD', git: lire })
+  const sourceDeLaBase = () => sourceGit({ cwd: dir, arbre: 'HEAD', git: lire })
   let source = null
   const sourceDuCommit = () => (source ??= (() => {
     if (contreIndex()) return sourceGit({ cwd: dir, arbre: INDEX, git: lire })
     const suivi = sourceGit({ cwd: dir, arbre: SUIVI, git: lire })
     if (forme === 'tout') return suivi
-    return sourceMelee({ dans, dedans: suivi, dehors: forme === 'inclus' ? sourceGit({ cwd: dir, arbre: INDEX, git: lire }) : sourceDuParent() })
+    return sourceMelee({ dans, dedans: suivi, dehors: forme === 'inclus' ? sourceGit({ cwd: dir, arbre: INDEX, git: lire }) : sourceDeLaBase() })
   })())
   return {
     forme,
     pathspecs,
-    numstat: () => unir((bornes) => numstatDe(lire, ['diff', '--numstat', ...bornes]), (e) => e.chemins),
+    numstat: () => unir((bornes) => numstatDe(lire, ['diff', '-M', '--numstat', ...bornes]), (e) => e.chemins),
     diff: (chemins) => {
-      const lecture = (bornes, ps) => lire(['diff', ...bornes, '-U0', '--', ...ps]) ?? ''
+      const lecture = (bornes, ps) => lire(['diff', '-M', ...bornes, '-U0', '--', ...ps]) ?? ''
       if (!inclus()) return chemins?.length === 0 ? '' : lecture(rev(), chemins ?? pathspecs)
       const dedans = chemins ? chemins.filter(dans) : pathspecs
       const dehors = chemins ? chemins.filter((c) => !dans(c)) : pathspecs.map((ps) => `:(exclude)${ps}`)
       return [dedans.length ? lecture(['HEAD'], dedans) : '', dehors.length ? lecture(['--cached'], dehors) : ''].filter(Boolean).join('\n')
     },
     contenu: (f) => sourceDuCommit().lire(f),
-    avant: (f) => (aHead() ? sourceDuParent().lire(f) : null),
+    avant: (f) => (aHead() ? sourceDeLaBase().lire(f) : null),
     images: (chemins) => {
       const post = sourceDuCommit().lireTout(chemins)
-      const pre = aHead() ? sourceDuParent().lireTout(chemins) : new Map()
+      const pre = aHead() ? sourceDeLaBase().lireTout(chemins) : new Map()
       return {
         lirePostImage: (f) => (post.has(f) ? post.get(f) : sourceDuCommit().lire(f)),
-        lirePreImage: (f) => (pre.has(f) ? pre.get(f) : aHead() ? sourceDuParent().lire(f) : null),
+        lirePreImage: (f) => (pre.has(f) ? pre.get(f) : aHead() ? sourceDeLaBase().lire(f) : null),
       }
     },
     renommages: () => new Map(unir((bornes) => [...renommagesDe(lire, bornes)], (e) => e)),
     deplaceLaFrontiereCss: (chemins) => deplaceLaFrontiere({
       chemins,
       nesOuMorts: () => unir((bornes) => cheminsDe(lire, ['diff', '--name-only', '--no-renames', '--diff-filter=AD', ...bornes]), (e) => [e]),
-      parent: sourceDuParent(),
+      base: sourceDeLaBase(),
       commit: sourceDuCommit(),
       racine: dir,
     }),
     cotesCss: () => ({
-      parent: coteCss(sourceDuParent(), { racine: dir }),
+      base: coteCss(sourceDeLaBase(), { racine: dir }),
       commit: coteCss(sourceDuCommit(), { racine: dir }),
     }),
   }
@@ -1948,14 +1953,16 @@ export function jugerOuNommerLIndisponible(juger, { cwd = null, horsDepot = fals
   }
 }
 
-/** Chemins que le commit `sha` touche dans `dir` (`ceQueFaitLeCommit`), `[]` si le sha est inconnu. */
+/** Chemins que le commit `sha` touche dans `dir` (`ceQueFaitLeCommit`), `[]` quand sa base est `null`
+ *  (`baseDuCommit`, gitPorte.mjs) : `lecteurDe` rend une indisponibilité de git en `null`, elle y est
+ *  donc comprise. Lève `GitIndisponible` là où `ceQueFaitLeCommit` la lève. */
 export function fichiersDuCommitGit(sha, dir = process.cwd()) {
   return ceQueFaitLeCommit(lecteurDe(dir), sha).chemins()
 }
 
-/** Diff `-U0` de `fichier` dans le commit `sha` (`ceQueFaitLeCommit`), `''` si le commit ou le fichier
- *  est inconnu — le diff d'UN SHA DÉJÀ POSÉ, à ne pas confondre avec `diffDuCommit`, qui lit ce que
- *  la commande EN COURS va emporter. */
+/** Diff `-U0` de `fichier` dans le commit `sha` (`ceQueFaitLeCommit`), `''` si le commit ne touche pas
+ *  le fichier ou si sa base est `null` (les cas de `fichiersDuCommitGit`) — le diff d'UN SHA DÉJÀ
+ *  POSÉ, à ne pas confondre avec `diffDuCommit`, qui lit ce que la commande EN COURS va emporter. */
 export function diffDunSha(sha, fichier, dir = process.cwd()) {
   return ceQueFaitLeCommit(lecteurDe(dir), sha).diff([fichier])
 }
@@ -2238,11 +2245,11 @@ export function evaluateStocksQuiGrandissent({ command, diff, images }) {
 
 /**
  * Décision « un module FRANCHIT la frontière CSS sans que le message le dise, ou le message déclare un
- * franchissement qui n'a pas lieu » (`RECLASSEMENT:`, #1806 D2″). `cotes()` rend les côtés parent et
+ * franchissement qui n'a pas lieu » (`RECLASSEMENT:`, #1806 D2″). `cotes()` rend les côtés base et
  * commit (`coteCss`) ; ne se prononce que sur un `git commit` dont le message porte une ligne ou qui
  * peut déplacer la frontière (`deplace()`, `deplaceLaFrontiere`). Une lecture qui lève est un refus
  * NOMMÉ, jamais un passage muet.
- * @param {{ command: string, deplace: () => boolean, cotes: () => { parent: object, commit: object } }} p
+ * @param {{ command: string, deplace: () => boolean, cotes: () => { base: object, commit: object } }} p
  * @returns {{ decision: 'deny', reason: string } | null}
  */
 export function evaluateReclassementsCss({ command, deplace, cotes }) {

@@ -27,7 +27,7 @@ const ligne = (module, n, motif = 'la console devient une primitive, refs #1806'
 const message = (...lignes) => `refactor\n\n${lignes.join('')}`
 
 /** S1 : Q franchit (4 sites), aucun autre module ne bouge. */
-const S1 = { parent: cote({ [Q]: CSS }), commit: cote({ [Q]: CSS }, [Q]) }
+const S1 = { base: cote({ [Q]: CSS }), commit: cote({ [Q]: CSS }, [Q]) }
 
 test('D2″ : un module franchi SANS ligne est refusé, avec son prix', () => {
   assert.deepEqual(reclassementsNonDeclares({ message: 'refactor' }, S1), [{ module: Q, n: 4, declare: null }])
@@ -43,7 +43,7 @@ test('D2″ : la ligne au N exact passe ; un N faux est refusé ; deux lignes po
 })
 
 test('D2″ : une ligne SANS franchissement est refusée — la ligne fausse ne couvre pas le vrai franchi (S2)', () => {
-  const S2 = { parent: cote({ [Q]: CSS }), commit: cote({ [Q]: CSS, [P]: CSS }, [Q, P]) }
+  const S2 = { base: cote({ [Q]: CSS }), commit: cote({ [Q]: CSS, [P]: CSS }, [Q, P]) }
   assert.deepEqual(reclassementsNonDeclares({ message: message(ligne(P, 4)) }, S2), [
     { module: Q, n: 4, declare: null },
     { module: P, n: null, declare: 4 },
@@ -57,23 +57,23 @@ test('D2″ : sans `#ticket` ou sous le motif minimal, la ligne n’est pas lue'
 })
 
 test('D1″ : un SECOND importeur gagné fait franchir le module (S11) ; revendiquer à un seul hôte ne fait rien franchir', () => {
-  const S11 = { parent: cote({ [P]: CSS }, [], [P]), commit: cote({ [P]: CSS }, [P]) }
-  assert.deepEqual(franchisDesCotes(S11.parent, S11.commit), [{ module: P, identite: 3, espacement: 1, n: 4 }])
-  const monoHote = { parent: cote({ [Q]: CSS }), commit: cote({ [Q]: CSS }, [], [Q]) }
-  assert.deepEqual(franchisDesCotes(monoHote.parent, monoHote.commit), [])
+  const S11 = { base: cote({ [P]: CSS }, [], [P]), commit: cote({ [P]: CSS }, [P]) }
+  assert.deepEqual(franchisDesCotes(S11.base, S11.commit), [{ module: P, identite: 3, espacement: 1, n: 4 }])
+  const monoHote = { base: cote({ [Q]: CSS }), commit: cote({ [Q]: CSS }, [], [Q]) }
+  assert.deepEqual(franchisDesCotes(monoHote.base, monoHote.commit), [])
 })
 
 test('D1″ : un module franchi à 0 site n’exige aucune ligne', () => {
-  const vide = { parent: cote({ [P]: '.p { gap: var(--sp-md) }' }), commit: cote({ [P]: '.p { gap: var(--sp-md) }' }, [P]) }
+  const vide = { base: cote({ [P]: '.p { gap: var(--sp-md) }' }), commit: cote({ [P]: '.p { gap: var(--sp-md) }' }, [P]) }
   assert.deepEqual(reclassementsNonDeclares({ message: 'refactor' }, vide), [])
 })
 
-test('franchisDesCotes ne lit que les candidats — exemptés au commit, pas au parent', () => {
+test('franchisDesCotes ne lit que les candidats — exemptés au commit, pas à la base', () => {
   const lus = []
   const espion = (c) => ({ ...c, lire: (f) => { lus.push(f); return c.lire(f) } })
-  const parent = cote({ [Q]: CSS, [P]: CSS }, [P])
+  const base = cote({ [Q]: CSS, [P]: CSS }, [P])
   const commit = cote({ [Q]: CSS, [P]: CSS }, [P, Q])
-  franchisDesCotes(espion(parent), espion(commit))
+  franchisDesCotes(espion(base), espion(commit))
   assert.deepEqual([...new Set(lus)], [Q])
 })
 
@@ -93,12 +93,12 @@ const arbreDe = (textes, manifeste = MANIFESTE_CONSOLE) => {
     lister: () => [...Object.keys(textes).filter((f) => f.startsWith('src/')), COMPOSANT_CONSOLE],
   }
 }
-/** `avant` et `apres` : les textes du parent et du commit ; les chemins touchés sont leurs clés. */
+/** `avant` et `apres` : les textes de la base et du commit ; les chemins touchés sont leurs clés. */
 const deplace = (avant, apres, nesOuMorts = []) => deplaceLaFrontiere({
   chemins: [...new Set([...Object.keys(avant), ...Object.keys(apres)])],
-  nesOuMorts: () => nesOuMorts, parent: arbreDe(avant), commit: arbreDe(apres), racine: '/r',
+  nesOuMorts: () => nesOuMorts, base: arbreDe(avant), commit: arbreDe(apres), racine: '/r',
 })
-const sansLecture = { nesOuMorts: jamais('nesOuMorts'), parent: { lire: jamais('parent') }, commit: { lire: jamais('commit') } }
+const sansLecture = { nesOuMorts: jamais('nesOuMorts'), base: { lire: jamais('base') }, commit: { lire: jamais('commit') } }
 const IMPORT = "import { Console } from './Console'\n"
 
 test('deplaceLaFrontiere : le MANIFESTE, `cssCouches.mjs` ou `tsconfig.json` touché suffit, sans rien lire d’autre', () => {
@@ -121,7 +121,7 @@ test('deplaceLaFrontiere : des arcs vers le manifeste INCHANGÉS ne relisent rie
   assert.equal(deplace({ [ECRAN]: 'const a = 1\n' }, { [ECRAN]: "const p = './Console'\nimport { B } from './ConsoleBis'\nimport { t } from 'Console'\n" }), false)
   assert.equal(deplace({ [ECRAN]: IMPORT }, { [ECRAN]: `const a = 1\n${IMPORT}` }), false, 'le même arc')
   assert.equal(deplace({ 'src/ui/NOTES.md': 'a' }, { 'src/ui/NOTES.md': IMPORT }), false, 'un fichier qui n’est pas un module n’importe pas')
-  assert.equal(deplaceLaFrontiere({ chemins: [ECRAN], nesOuMorts: jamais('nesOuMorts'), parent: arbreDe({}, [{ id: 'sans-fichier' }]), commit: sansLecture.commit }),
+  assert.equal(deplaceLaFrontiere({ chemins: [ECRAN], nesOuMorts: jamais('nesOuMorts'), base: arbreDe({}, [{ id: 'sans-fichier' }]), commit: sansLecture.commit }),
     false, 'un manifeste sans `fichier` n’a rien à importer : ni les chemins nés ou morts ni le commit ne sont lus')
 })
 
@@ -135,7 +135,7 @@ test('deplaceLaFrontiere : les MÊMES cibles importées dans un autre ordre ne r
   const manifeste = [...MANIFESTE_CONSOLE, { id: 'pupitre', fichier: PUPITRE, css: 'src/ui/styles/pupitre.css' }]
   const importe = (...noms) => noms.map((n) => `import { ${n} } from './${n}'\n`).join('')
   const arbre = (texte) => arbreDe({ [ECRAN]: texte, [PUPITRE]: 'export const Pupitre = 1\n' }, manifeste)
-  const juger = (avant, apres) => deplaceLaFrontiere({ chemins: [ECRAN], nesOuMorts: () => [], parent: arbre(avant), commit: arbre(apres), racine: '/r' })
+  const juger = (avant, apres) => deplaceLaFrontiere({ chemins: [ECRAN], nesOuMorts: () => [], base: arbre(avant), commit: arbre(apres), racine: '/r' })
   assert.equal(juger(importe('Console', 'Pupitre'), importe('Pupitre', 'Console')), false)
   assert.equal(juger(importe('Console'), importe('Pupitre', 'Console')), true, 'témoin : une cible gagnée')
 })

@@ -25,7 +25,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { DOSSIERS_DE_SUBSTANCE, ascendanceDansHead, derniereRevueArchivee, memeSha } from '../guards/lib/revuePalier.mjs'
+import { ascendanceDansHead, derniereRevueArchivee, memeSha, shasDeSubstance } from '../guards/lib/revuePalier.mjs'
 import { croissancesDeLaPlage } from '../guards/lib/plageStock.mjs'
 import { journalDe, lecteurGit, tenter } from '../guards/lib/gitPorte.mjs'
 import { coursesCi } from '../guards/lib/coursesCi.mjs'
@@ -72,9 +72,9 @@ export const sortieParDefaut = (base, tete) =>
  *  message, le corps le message entier. PUR. */
 export const commitDuJournal = ({ sha, message }) => ({ sha, sujet: message.split('\n')[0].trim(), corps: message })
 
-/** Marque les commits qui touchent `src`/`scripts` — la SUBSTANCE, au sens du palier. PUR. */
-export function marquerSubstance(commits, shasDeSubstance) {
-  const substantiels = new Set([...(shasDeSubstance ?? [])].map((s) => String(s).trim()).filter(Boolean))
+/** Marque les commits de SUBSTANCE au sens du palier (`shasDeSubstance`, revuePalier.mjs). PUR. */
+export function marquerSubstance(commits, shas) {
+  const substantiels = new Set([...(shas ?? [])].map((s) => String(s).trim()).filter(Boolean))
   return (commits ?? []).map((c) => ({ ...c, substance: substantiels.has(c.sha) }))
 }
 
@@ -160,11 +160,11 @@ function main() {
 
   const commits = marquerSubstance(
     journalDe((args) => git(args, cwd), `${base}..${tete}`).map(commitDuJournal),
-    git(['rev-list', `${base}..${tete}`, '--', ...DOSSIERS_DE_SUBSTANCE], cwd).split('\n').map((l) => l.trim()).filter(Boolean),
+    shasDeSubstance(lecteurGit(cwd), `${base}..${tete}`),
   )
   const shas = commits.map((c) => c.sha)
   const fermetures = fermeturesDesCommits(commits, soldesSuivis(cwd))
-  const stocks = tenter(() => croissancesDeLaPlage({ cwd, avant: base, apres: tete }))
+  const stocks = tenter(() => croissancesDeLaPlage({ cwd, debut: base, fin: tete }))
 
   const depuis = git(['log', '-1', '--format=%cs', base], cwd).trim()
   const fermeturesHorsCommit = horsLigne

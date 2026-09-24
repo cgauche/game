@@ -6,12 +6,12 @@
 // nom se déduit du contenu (`nomDArchiveDeRevue`), et la porte au commit vérifie qu'ils se répondent.
 // Les archives antérieures gardent leur nom (`nomsDArchiveAcceptes`) : la mesure lit leur FENÊTRE.
 //
-// Le palier se MESURE sur l'histoire : les commits touchant `src`/`scripts` depuis la tête de fenêtre
-// de la dernière revue archivée DANS HEAD. C'est une lecture que n'importe qui refait en deux
-// commandes git, et qui rend la même valeur depuis n'importe quel arbre. Un compteur d'événements
+// Le palier se MESURE sur l'histoire : les commits dont CE QU'ILS FONT (`ceQueFaitLeCommit`) touche
+// `src`/`scripts`, depuis la tête de fenêtre de la dernière revue archivée DANS HEAD. C'est une lecture
+// que n'importe qui refait avec git, et qui rend la même valeur depuis n'importe quel arbre. Un compteur d'événements
 // compterait ce que chaque worktree fait de son côté (20 sur ce dépôt, dont des trains qui ne
 // rejoignent jamais `main`) : deux worktrees suffisent à en faire un nombre que rien ne recoupe.
-import { cheminsDe, estAncetre, lecteurGit } from './gitPorte.mjs'
+import { GitIndisponible, ceQueFaitLeCommit, cheminsDe, estAncetre, lecteurGit } from './gitPorte.mjs'
 import { parUnitesDeCode } from './lister.mjs'
 
 /** Lecture git de ce module : la sortie, ou `''` quand l'objet demandé n'existe pas (un dépôt sans
@@ -156,7 +156,7 @@ export const ascendanceDansHead = (sha, cwd = process.cwd()) =>
   sha ? estAncetre(sha, 'HEAD', { cwd }) : { disponible: true, absent: true }
 
 /** Les dossiers qui font la SUBSTANCE d'un commit : le moteur et l'outillage. Source unique du
- *  critère — la mesure du palier (`commitsDeSubstanceDepuis`) et la porte du ticket au commit
+ *  critère — la mesure du palier (`shasDeSubstance`) et la porte du ticket au commit
  *  (`evaluatePorteDuTicket`, scripts/hooks/solde-ticket-guard.mjs) lisent la MÊME liste, sinon deux
  *  définitions de « substance » cohabitent et un commit passe l'une sans passer l'autre. */
 export const DOSSIERS_DE_SUBSTANCE = ['src', 'scripts']
@@ -168,14 +168,26 @@ export function estCheminDeSubstance(chemin) {
   return DOSSIERS_DE_SUBSTANCE.some((d) => p === d || p.startsWith(`${d}/`))
 }
 
-/** Commits de SUBSTANCE depuis `tete` : ceux qui touchent `src` ou `scripts`, plus celui que l'index
- *  s'apprête à faire s'il en touche aussi (le commit en cours compte pour le palier qu'il franchit). */
+/**
+ * Les commits de SUBSTANCE de `plage` (`<a>..<b>`), du plus ancien au plus récent : ceux dont CE QU'ILS
+ * FONT (`ceQueFaitLeCommit`, contre leur base) touche un chemin de substance (`estCheminDeSubstance`).
+ * Une fusion propre n'en est pas ; une fusion qui apporte une ligne sous `src`/`scripts` en est.
+ * `git` : le lecteur de l'appelant, `null` = rien.
+ * @param {(args: string[], opts?: { entree?: string }) => string | null} git @param {string} plage
+ * @returns {string[]}
+ * @throws {GitIndisponible} propagée de `ceQueFaitLeCommit`.
+ */
+export function shasDeSubstance(git, plage) {
+  const shas = (git(['rev-list', '--reverse', plage]) ?? '').split('\n').map((l) => l.trim()).filter(Boolean)
+  return shas.filter((sha) => ceQueFaitLeCommit(git, sha).chemins().some(estCheminDeSubstance))
+}
+
+/** Commits de SUBSTANCE depuis `tete` (`shasDeSubstance`), plus celui que l'index s'apprête à faire
+ *  s'il en touche aussi (le commit en cours compte pour le palier qu'il franchit). */
 export function commitsDeSubstanceDepuis(cwd, tete) {
-  const publies = Number.parseInt(
-    git(['rev-list', '--count', `${tete}..HEAD`, '--', ...DOSSIERS_DE_SUBSTANCE], cwd).trim(), 10,
-  )
+  const publies = shasDeSubstance(lecteurGit(cwd), `${tete}..HEAD`).length
   const stage = cheminsDe((args) => git(args, cwd), ['diff', '--cached', '--name-only', '--', ...DOSSIERS_DE_SUBSTANCE])
-  return (Number.isFinite(publies) ? publies : 0) + (stage.length ? 1 : 0)
+  return publies + (stage.length ? 1 : 0)
 }
 
 /**
@@ -211,5 +223,12 @@ export function mesureDuPalier(cwd = process.cwd()) {
         + 'et une revue dont la tête de fenêtre est ORPHELINE (rebase) se ré-écrit sur sa fenêtre réelle',
     }
   }
-  return { compte: commitsDeSubstanceDepuis(cwd, derniere.tete), tete: derniere.tete, chemin: derniere.chemin }
+  let compte
+  try {
+    compte = commitsDeSubstanceDepuis(cwd, derniere.tete)
+  } catch (err) {
+    if (!(err instanceof GitIndisponible)) throw err
+    return { compte: 0, tete: null, chemin: null, erreur: `ce que font les commits depuis ${derniere.tete} est illisible : ${err.raison}` }
+  }
+  return { compte, tete: derniere.tete, chemin: derniere.chemin }
 }

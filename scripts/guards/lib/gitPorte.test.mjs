@@ -463,11 +463,11 @@ test('ceQueFaitLeCommit : une fusion qui RÉSOUT un conflit apporte sa résoluti
     const fait = ceQueFaitLeCommit(lecteurGit(racine, { env: envDeDepotForge() }), resolue)
     assert.deepEqual(fait.chemins(), ['f.txt'])
     assert.match(fait.diff(['f.txt']), /^\+B-resolu$/m)
-    const avant = fait.avant('f.txt')
-    assert.match(avant, /^<<<<<<< /m, 'l’image d’avant est la fusion AUTOMATIQUE, marqueurs de conflit compris')
-    assert.match(avant, /^B-main$/m)
-    assert.match(avant, /^B-cote$/m)
-    assert.equal(fait.avant('g.txt'), 'x\n', 'un fichier que le commit ne touche pas a pour image d’avant son image')
+    const deBase = fait.texteDeBase('f.txt')
+    assert.match(deBase, /^<<<<<<< /m, 'la base est la fusion AUTOMATIQUE, marqueurs de conflit compris')
+    assert.match(deBase, /^B-main$/m)
+    assert.match(deBase, /^B-cote$/m)
+    assert.equal(fait.texteDeBase('g.txt'), 'x\n', 'un fichier que le commit ne touche pas a dans la base son texte du commit')
   } finally {
     jeter(racine)
   }
@@ -479,23 +479,44 @@ test('ceQueFaitLeCommit : une fusion « maléfique » apporte la ligne qu’aucu
     const fait = ceQueFaitLeCommit(lecteurGit(racine, { env: envDeDepotForge() }), malefique)
     assert.deepEqual(fait.chemins(), ['g.txt'])
     assert.deepEqual(fait.diff().split('\n').filter((l) => /^[+-][^+-]/.test(l)), ['+MAL'])
-    assert.equal(fait.avant('g.txt'), 'x\ny\n')
+    assert.equal(fait.texteDeBase('g.txt'), 'x\ny\n')
   } finally {
     jeter(racine)
   }
 })
 
-test('ceQueFaitLeCommit : un commit à un parent se lit contre lui — chemins, image d’avant, naissance et renommage', () => {
+test('ceQueFaitLeCommit : une fusion SANS ANCÊTRE COMMUN se lit comme `git show --remerge-diff` — chemins et patch', () => {
+  const { racine, g } = depot()
+  try {
+    const entree = (texte) => ({ cwd: racine, env: envDeDepotForge(), encoding: 'utf8', input: texte })
+    const blob = execFileSync('git', ['hash-object', '-w', '--stdin'], entree('o\n')).trim()
+    const arbre = execFileSync('git', ['mktree'], entree(`100644 blob ${blob}\to.txt\n`)).trim()
+    const racineEtrangere = execFileSync('git', ['commit-tree', arbre, '-m', 'autre histoire'], entree('')).trim()
+    g('merge', '-q', '--no-commit', '--allow-unrelated-histories', racineEtrangere)
+    writeFileSync(join(racine, 'mal.txt'), 'MAL\n'); g('add', 'mal.txt'); g('commit', '-q', '-m', 'fusion sans ancêtre')
+    const fusion = g('rev-parse', 'HEAD').trim()
+    const remerge = (...forme) => g('show', '--remerge-diff', '--format=', ...forme, fusion)
+    const fait = ceQueFaitLeCommit(lecteurGit(racine, { env: envDeDepotForge() }), fusion)
+    assert.deepEqual(fait.chemins(), remerge('--name-only').split('\n').filter(Boolean))
+    assert.deepEqual(fait.chemins(), ['mal.txt'], 'o.txt vient de la fusion automatique, mal.txt de la fusion seule')
+    const lignes = (patch) => patch.split('\n').filter((l) => /^[+-][^+-]/.test(l))
+    assert.deepEqual(lignes(fait.diff()), lignes(remerge('-U0')))
+  } finally {
+    jeter(racine)
+  }
+})
+
+test('ceQueFaitLeCommit : un commit à un parent se lit contre lui — chemins, texte de base, naissance et renommage', () => {
   const { racine, premier, second, g } = depot()
   try {
     g('mv', 'a.txt', 'b.txt'); g('commit', '-q', '-m', 'trois')
     const git = lecteurGit(racine, { env: envDeDepotForge() })
     assert.deepEqual(ceQueFaitLeCommit(git, second).chemins(), ['neuf.txt'])
-    assert.equal(ceQueFaitLeCommit(git, second).avant('neuf.txt'), null, 'un fichier qui NAÎT n’a pas d’image d’avant')
+    assert.equal(ceQueFaitLeCommit(git, second).texteDeBase('neuf.txt'), null, 'un fichier qui NAÎT est absent de la base')
     const trois = ceQueFaitLeCommit(git, g('rev-parse', 'HEAD').trim())
     assert.deepEqual(trois.chemins().sort(), ['a.txt', 'b.txt'], '`--no-renames` : les deux bouts')
     assert.deepEqual([...trois.renommages()], [['a.txt', 'b.txt']])
-    assert.equal(trois.avant('a.txt'), 'a\n')
+    assert.equal(trois.texteDeBase('a.txt'), 'a\n')
     assert.deepEqual(ceQueFaitLeCommit(git, premier).chemins(), ['a.txt'], 'une racine se lit contre l’arbre vide')
   } finally {
     jeter(racine)

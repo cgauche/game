@@ -105,7 +105,7 @@ test('C : sur un dépôt réel, la plage voit le commit du MILIEU que `git show 
     { contenu: `${sourceStock([A, B])}// tête anodine\n`, message: 'tête' },
   ])
   try {
-    const { refus } = croissancesDeLaPlage({ cwd: repo, avant: shas[0], apres: shas[2] })
+    const { refus } = croissancesDeLaPlage({ cwd: repo, debut: shas[0], fin: shas[2] })
     assert.deepEqual(refus.map((r) => [r.sha, r.fichier, r.net]), [[shas[1], PORTEUR, 2]])
   } finally {
     rmSync(repo, { recursive: true, force: true })
@@ -119,7 +119,7 @@ test('C : la même croissance RETIRÉE plus loin dans la plage ne refuse plus ri
     { contenu: sourceStock([]), message: 'et on les retire' },
   ])
   try {
-    assert.deepEqual(croissancesDeLaPlage({ cwd: repo, avant: shas[0], apres: shas[2] }).refus, [])
+    assert.deepEqual(croissancesDeLaPlage({ cwd: repo, debut: shas[0], fin: shas[2] }).refus, [])
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }
@@ -132,7 +132,7 @@ test('C : base NULLE sans `origin/main` → HEAD seul, et la porte le DIT (jamai
     { contenu: `${sourceStock([A, B])}// tête anodine\n`, message: 'tête' },
   ])
   try {
-    const { refus, notes } = croissancesDeLaPlage({ cwd: repo, avant: SHA_NUL, apres: shas[2] })
+    const { refus, notes } = croissancesDeLaPlage({ cwd: repo, debut: SHA_NUL, fin: shas[2] })
     assert.deepEqual(refus, [], 'la tête seule ne porte aucune croissance')
     assert.equal(notes.length, 1)
     assert.match(notes[0], /plage inconnue/)
@@ -147,7 +147,7 @@ test('C : base NULLE sans `origin/main` → HEAD seul, et la porte le DIT (jamai
 test('git INDISPONIBLE : `indisponible` porte la raison, et la plage est NOMMÉE', () => {
   const hors = mkdtempSync(join(tmpdir(), 'plage-hors-'))
   try {
-    const vu = croissancesDeLaPlage({ cwd: hors, avant: 'aaaaaaa', apres: 'bbbbbbb' })
+    const vu = croissancesDeLaPlage({ cwd: hors, debut: 'aaaaaaa', fin: 'bbbbbbb' })
     assert.match(vu.indisponible, /not a git repository/i)
     assert.equal(vu.plage, 'aaaaaaa..bbbbbbb')
     assert.deepEqual(vu.refus, [])
@@ -157,7 +157,7 @@ test('git INDISPONIBLE : `indisponible` porte la raison, et la plage est NOMMÉE
 })
 
 test('un lecteur injecté qui rend `null` (objet absent) ne lève AUCUNE indisponibilité', () => {
-  const vu = croissancesDeLaPlage({ avant: 'aaaaaaa', apres: 'bbbbbbb', git: () => null })
+  const vu = croissancesDeLaPlage({ debut: 'aaaaaaa', fin: 'bbbbbbb', git: () => null })
   assert.equal(vu.indisponible, null)
   assert.match(vu.notes.join(' '), /plage `aaaaaaa\.\.bbbbbbb` illisible/)
 })
@@ -179,10 +179,10 @@ test('C : un tableau de RACINES passé en ARGUMENT ne fait grandir aucun stock, 
   ])
   try {
     assert.deepEqual(
-      croissancesDeLaPlage({ cwd: repo, avant: shas[0], apres: shas[1] }).refus, [],
+      croissancesDeLaPlage({ cwd: repo, debut: shas[0], fin: shas[1] }).refus, [],
       'trois arguments d’appel : aucune entrée de stock',
     )
-    const { refus } = croissancesDeLaPlage({ cwd: repo, avant: shas[1], apres: shas[2] })
+    const { refus } = croissancesDeLaPlage({ cwd: repo, debut: shas[1], fin: shas[2] })
     assert.deepEqual(
       refus.map((r) => [r.sha, r.fichier, r.net]), [[shas[2], PORTEUR, 2]],
       'le stock RÉEL reste vu — sans quoi la correction serait une cécité',
@@ -207,7 +207,7 @@ test('C : un `git mv` de porteur rend net 0 ; renommé PLUS une entrée reste +1
       if (ajoutees.length) writeFileSync(join(repo, nouveau), source([A, B, C, ...ajoutees]), 'utf8')
       git('add', '-A')
       git('commit', '-q', '--no-verify', '-m', 'refactor: le porteur change de nom')
-      const { refus } = croissancesDeLaPlage({ cwd: repo, avant: sha, apres: git('rev-parse', 'HEAD').trim() })
+      const { refus } = croissancesDeLaPlage({ cwd: repo, debut: sha, fin: git('rev-parse', 'HEAD').trim() })
       assert.deepEqual(
         refus.map((r) => [r.fichier, r.net]),
         ajoutees.length ? [[nouveau, 1]] : [],
@@ -237,7 +237,7 @@ test('C : un porteur SCINDÉ en deux ne grandit pas ; renommé MOINS une entrée
       for (const [chemin, entrees] of Object.entries(porteurs)) writeFileSync(join(repo, chemin), source(entrees), 'utf8')
       git('add', '-A')
       git('commit', '-q', '--no-verify', '-m', 'refactor: le porteur se redistribue')
-      const { refus } = croissancesDeLaPlage({ cwd: repo, avant: sha, apres: git('rev-parse', 'HEAD').trim() })
+      const { refus } = croissancesDeLaPlage({ cwd: repo, debut: sha, fin: git('rev-parse', 'HEAD').trim() })
       assert.deepEqual(refus.map((r) => [r.fichier, r.net]), [], `${nom} : aucune entrée de plus`)
     } finally {
       rmSync(repo, { recursive: true, force: true })
@@ -293,7 +293,7 @@ test('équivalence — solde au commit et plage au push comptent la même chose'
       })
       const base = gitDe('rev-parse', 'HEAD').trim()
       gitDe('commit', '-q', '--no-verify', '-m', 'test: sans cliquet')
-      const auPush = croissancesDeLaPlage({ cwd: racine, avant: base, apres: gitDe('rev-parse', 'HEAD').trim() })
+      const auPush = croissancesDeLaPlage({ cwd: racine, debut: base, fin: gitDe('rev-parse', 'HEAD').trim() })
       assert.equal(auPush.indisponible, null, `${nom} : plage illisible`)
       assert.equal(
         auCommit === null, auPush.refus.length === 0,
@@ -337,7 +337,7 @@ test('équivalence — un `*-stock.json` qui NAÎT, puis qui GRANDIT : même com
   const { racine } = instanceDeDepot({ fichiers: { 'scripts/raw/socle.md': '# socle\n' }, message: 'socle' })
   const gitDe = (...args) => execFileSync('git', args, { cwd: racine, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
   const poser = (entrees) => { writeFileSync(join(racine, porteur), stock(entrees), 'utf8'); gitDe('add', '-A') }
-  const auPush = (avant) => croissancesDeLaPlage({ cwd: racine, avant, apres: gitDe('rev-parse', 'HEAD').trim() })
+  const auPush = (debut) => croissancesDeLaPlage({ cwd: racine, debut, fin: gitDe('rev-parse', 'HEAD').trim() })
   const auCommit = (commande) => {
     const lectures = diffDuCommit(commande, racine)
     return {
@@ -369,7 +369,7 @@ test('équivalence — un `*-stock.json` qui NAÎT, puis qui GRANDIT : même com
     assert.deepEqual(auPush(base).refus.map((r) => [r.fichier, r.net]), [[porteur, 13]], 'porte au push : le même compte')
 
     // CROISSANCE de deux entrées sur les treize, DITE par le message : les deux portes passent.
-    const avant = gitDe('rev-parse', 'HEAD').trim()
+    const debut = gitDe('rev-parse', 'HEAD').trim()
     poser(trous(15))
     const message = 'test: deux trous durs de plus\n\nCLIQUET: scripts/raw/fixture-stock.json +2 — deux chapitres non couverts par l’Atlas'
     const croissance = auCommit(`git commit -m "${message}"`)
@@ -380,14 +380,14 @@ test('équivalence — un `*-stock.json` qui NAÎT, puis qui GRANDIT : même com
       'témoin de non-vacuité : la croissance vaut bien +2 — sans le cliquet, le verdict serait un refus',
     )
     gitDe('commit', '-q', '--no-verify', '-m', message)
-    assert.deepEqual(auPush(avant).refus, [], 'porte au push : le cliquet du message couvre la croissance')
+    assert.deepEqual(auPush(debut).refus, [], 'porte au push : le cliquet du message couvre la croissance')
     t.diagnostic('naissance +13, croissance +2, trois lectures concordantes')
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
 })
 
-// ── RECLASSEMENT CSS (#1806 D1″-D3″) : chaque commit contre son parent, aux deux voies ──────────
+// ── RECLASSEMENT CSS (#1806 D1″-D3″) : chaque commit contre sa base, aux deux voies ─────────────
 
 const MANIFESTE = 'src/data/primitives.manifest.json'
 const CONSOLE = 'src/ui/styles/console.css'
@@ -427,7 +427,7 @@ test('RECLASSEMENT : un SECOND importeur fait franchir la console — refusé sa
   const { racine, base, commettre } = depotCss()
   try {
     const muet = commettre({ 'src/ui/Ecran2.tsx': importeur('Ecran2') }, 'feat: second écran')
-    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant: base, apres: muet }).reclassements,
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, debut: base, fin: muet }).reclassements,
       [{ sha: muet, ecarts: [{ module: CONSOLE, n: 3, declare: null }] }])
   } finally {
     rmSync(racine, { recursive: true, force: true })
@@ -435,7 +435,7 @@ test('RECLASSEMENT : un SECOND importeur fait franchir la console — refusé sa
   const d = depotCss()
   try {
     const dit = d.commettre({ 'src/ui/Ecran2.tsx': importeur('Ecran2') }, RECLASSE)
-    assert.deepEqual(croissancesDeLaPlage({ cwd: d.racine, avant: d.base, apres: dit }).reclassements, [])
+    assert.deepEqual(croissancesDeLaPlage({ cwd: d.racine, debut: d.base, fin: dit }).reclassements, [])
   } finally {
     rmSync(d.racine, { recursive: true, force: true })
   }
@@ -446,7 +446,7 @@ test('RECLASSEMENT (D3″) : franchie puis rendue au stock dans la plage — le 
   try {
     const c1 = commettre({ 'src/ui/Ecran2.tsx': importeur('Ecran2') }, 'feat: second écran')
     const c2 = commettre({ 'src/ui/Ecran2.tsx': null }, 'revert: un seul écran')
-    const { reclassements } = croissancesDeLaPlage({ cwd: racine, avant: base, apres: c2 })
+    const { reclassements } = croissancesDeLaPlage({ cwd: racine, debut: base, fin: c2 })
     assert.deepEqual(reclassements, [{ sha: c1, ecarts: [{ module: CONSOLE, n: 3, declare: null }] }])
   } finally {
     rmSync(racine, { recursive: true, force: true })
@@ -467,7 +467,7 @@ test('équivalence — RECLASSEMENT au commit et à la plage : même verdict', a
         cotes: diffDuCommit(commande, racine).cotesCss,
       })
       git('commit', '-q', '--no-verify', '-m', message)
-      const auPush = croissancesDeLaPlage({ cwd: racine, avant: base, apres: git('rev-parse', 'HEAD').trim() })
+      const auPush = croissancesDeLaPlage({ cwd: racine, debut: base, fin: git('rev-parse', 'HEAD').trim() })
       assert.equal(auCommit === null, auPush.reclassements.length === 0, `${message} : les deux voies divergent`)
       assert.equal(auCommit === null, message === RECLASSE, `${message} : verdict`)
       if (auCommit) assert.ok(auCommit.reason.includes(`${CONSOLE} : franchi au prix 3, aucune ligne`), auCommit.reason)
@@ -493,7 +493,7 @@ test('RECLASSEMENT : le renommage PUR d’une primitive réutilisée ne fait fra
     assert.equal(evaluateReclassementsCss({ command: commande, deplace: () => commit.deplaceLaFrontiereCss([MANIFESTE, ECRAN1]), cotes: commit.cotesCss }), null)
     git('commit', '-q', '--no-verify', '-m', 'refactor: la console devient le pupitre')
     const renomme = git('rev-parse', 'HEAD').trim()
-    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant: reutilisee, apres: renomme }).reclassements, [])
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, debut: reutilisee, fin: renomme }).reclassements, [])
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
@@ -504,20 +504,20 @@ test('RECLASSEMENT : le renommage PUR d’une primitive réutilisée ne fait fra
 function fusionCss({ surMain, messageMain, dansLaFusion = {} }) {
   const d = depotCss()
   d.git('checkout', '-q', '-b', 'chantier')
-  const avant = d.commettre({ 'notes.txt': 'travail du chantier\n' }, 'docs: notes du chantier')
+  const debut = d.commettre({ 'notes.txt': 'travail du chantier\n' }, 'docs: notes du chantier')
   d.git('checkout', '-q', 'main')
   d.commettre(surMain, messageMain)
   d.git('checkout', '-q', 'chantier')
   d.git('merge', '-q', '--no-ff', '--no-commit', 'main')
   const fusion = d.commettre(dansLaFusion, 'fusion de main')
-  return { ...d, avant, fusion }
+  return { ...d, debut, fusion }
 }
 
 test('RECLASSEMENT d’une FUSION : ce que main a fait franchir n’est pas à elle — même quand la fusion touche le manifeste', () => {
   for (const dansLaFusion of [{}, { [MANIFESTE]: manifesteAvec(PRIMITIVE_CONSOLE, { id: 'b' }) }]) {
-    const { racine, avant, fusion } = fusionCss({ surMain: { 'src/ui/Ecran2.tsx': importeur('Ecran2') }, messageMain: RECLASSE, dansLaFusion })
+    const { racine, debut, fusion } = fusionCss({ surMain: { 'src/ui/Ecran2.tsx': importeur('Ecran2') }, messageMain: RECLASSE, dansLaFusion })
     try {
-      assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant, apres: fusion }).reclassements, [], JSON.stringify(Object.keys(dansLaFusion)))
+      assert.deepEqual(croissancesDeLaPlage({ cwd: racine, debut, fin: fusion }).reclassements, [], JSON.stringify(Object.keys(dansLaFusion)))
     } finally {
       rmSync(racine, { recursive: true, force: true })
     }
@@ -525,13 +525,13 @@ test('RECLASSEMENT d’une FUSION : ce que main a fait franchir n’est pas à e
 })
 
 test('RECLASSEMENT d’une FUSION « maléfique » : le franchissement qu’elle pose elle-même est refusé, et nommé', () => {
-  const { racine, avant, fusion } = fusionCss({
+  const { racine, debut, fusion } = fusionCss({
     surMain: { 'main.txt': 'main avance\n' },
     messageMain: 'docs: main avance',
     dansLaFusion: { 'src/ui/Ecran2.tsx': importeur('Ecran2') },
   })
   try {
-    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant, apres: fusion }).reclassements,
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, debut, fin: fusion }).reclassements,
       [{ sha: fusion, ecarts: [{ module: CONSOLE, n: 3, declare: null }] }])
   } finally {
     rmSync(racine, { recursive: true, force: true })
@@ -544,9 +544,9 @@ const ECRAN_ACCENTUE = 'src/ui/Écran.tsx'
 test('RECLASSEMENT : le second importeur au chemin NON-ASCII fait franchir la console — à la plage', () => {
   const { racine, commettre } = depotCss()
   try {
-    const avant = commettre({ [ECRAN_ACCENTUE]: 'export const E = 1\n' }, 'feat: écran nu')
+    const debut = commettre({ [ECRAN_ACCENTUE]: 'export const E = 1\n' }, 'feat: écran nu')
     const muet = commettre({ [ECRAN_ACCENTUE]: importeur('E') }, 'feat: l’écran importe la console')
-    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant, apres: muet }).reclassements,
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, debut, fin: muet }).reclassements,
       [{ sha: muet, ecarts: [{ module: CONSOLE, n: 3, declare: null }] }])
   } finally {
     rmSync(racine, { recursive: true, force: true })
@@ -592,7 +592,7 @@ test('RECLASSEMENT au commit : chaque FORME lit l’arbre que le commit emporte 
 
 test('RECLASSEMENT (D3″) : un rebase qui fait disparaître le franchissement rend la ligne INVALIDE — refus bruyant', () => {
   const vide = { manifeste: [], partagees: [], reutilises: new Set(), lire: () => null }
-  const commits = [{ sha: 'c1'.padEnd(40, '0'), message: RECLASSE, cotes: () => ({ parent: vide, commit: vide }) }]
+  const commits = [{ sha: 'c1'.padEnd(40, '0'), message: RECLASSE, cotes: () => ({ base: vide, commit: vide }) }]
   assert.deepEqual(reclassementsDeLaPlage({ commits }), [{ sha: commits[0].sha, ecarts: [{ module: CONSOLE, n: null, declare: 3 }] }])
   const horsFrontiere = [{ ...commits[0], cotes: () => null }]
   assert.deepEqual(reclassementsDeLaPlage({ commits: horsFrontiere }), [{ sha: commits[0].sha, ecarts: [{ module: CONSOLE, n: null, declare: 3 }] }],
@@ -609,7 +609,7 @@ test('RECLASSEMENT : manifeste ILLISIBLE → refus NOMMÉ par son commit, jamais
     if (args[0] === 'show') return args[1].endsWith(`:${MANIFESTE}`) ? '{pas du json' : null
     return null
   }
-  const lu = croissancesDeLaPlage({ avant: 'a'.repeat(40), apres: 'b'.repeat(40), git })
+  const lu = croissancesDeLaPlage({ debut: 'a'.repeat(40), fin: 'b'.repeat(40), git })
   assert.deepEqual(lu.reclassements.map((r) => [r.sha, /primitives\.manifest\.json illisible/.test(r.illisible)]), [['c1', true]])
   assert.deepEqual(lu.refus, [])
 })
@@ -623,8 +623,8 @@ test('PLAGE : un stock au chemin NON-ASCII qui grandit sans CLIQUET est refusé'
   try {
     writeFileSync(join(racine, porteur), `export const STOCK = [\n${A}\n${B}\n]\n`, 'utf8')
     git('commit', '-q', '--no-verify', '-am', 'feat: une exemption de plus')
-    const apres = git('rev-parse', 'HEAD').trim()
-    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant: sha, apres }).refus.map((r) => [r.fichier, r.net]), [[porteur, 1]])
+    const fin = git('rev-parse', 'HEAD').trim()
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, debut: sha, fin }).refus.map((r) => [r.fichier, r.net]), [[porteur, 1]])
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
@@ -644,12 +644,12 @@ test('CLIQUET (D5″) : le renommage PUR d’un fichier cité par un stock coût
     git('add', '-A')
     git('commit', '-q', '--no-verify', '-m', 'refactor: a devient z')
     const renomme = git('rev-parse', 'HEAD').trim()
-    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant: sha, apres: renomme }).refus, [])
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, debut: sha, fin: renomme }).refus, [])
     writeFileSync(join(racine, PORTEUR), `export const STOCK = [\n  'src/z.ts',\n  'src/y.ts',\n]\n`, 'utf8')
     git('add', '-A')
     git('commit', '-q', '--no-verify', '-m', 'refactor: b devient y, sans renommage')
     const reecrit = git('rev-parse', 'HEAD').trim()
-    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, avant: renomme, apres: reecrit }).refus.map((r) => [r.fichier, r.net]), [[PORTEUR, 1]])
+    assert.deepEqual(croissancesDeLaPlage({ cwd: racine, debut: renomme, fin: reecrit }).refus.map((r) => [r.fichier, r.net]), [[PORTEUR, 1]])
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }
@@ -680,7 +680,7 @@ function depotAFusion(retouche) {
 test('PLAGE : une fusion PROPRE ne rejuge pas la croissance cliquetée de la branche qu’elle amène', () => {
   const { repo, socle, fusion } = depotAFusion(null)
   try {
-    const vu = croissancesDeLaPlage({ cwd: repo, avant: socle, apres: fusion })
+    const vu = croissancesDeLaPlage({ cwd: repo, debut: socle, fin: fusion })
     assert.equal(vu.commits, 3, 'la fusion est dans la plage, avec ses deux parents')
     assert.deepEqual(vu.refus, [])
   } finally {
@@ -691,17 +691,17 @@ test('PLAGE : une fusion PROPRE ne rejuge pas la croissance cliquetée de la bra
 test('PLAGE : une fusion « maléfique » qui fait grandir un stock en fusionnant est refusée, et nommée', () => {
   const { repo, socle, fusion } = depotAFusion(sourceStock([A, B, C]))
   try {
-    const { refus } = croissancesDeLaPlage({ cwd: repo, avant: socle, apres: fusion })
+    const { refus } = croissancesDeLaPlage({ cwd: repo, debut: socle, fin: fusion })
     assert.deepEqual(refus.map((r) => [r.sha, r.fichier, r.net]), [[fusion, PORTEUR, 1]])
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }
 })
 
-test('PLAGE : une fusion qui RÉÉCRIT une entrée amenée par la branche ne grandit rien — l’image d’avant est la fusion automatique', () => {
+test('PLAGE : une fusion qui RÉÉCRIT une entrée amenée par la branche ne grandit rien — sa base est la fusion automatique', () => {
   const { repo, socle, fusion } = depotAFusion(sourceStock([A, "  'src/b.ts', // retouchée à la fusion"]))
   try {
-    assert.deepEqual(croissancesDeLaPlage({ cwd: repo, avant: socle, apres: fusion }).refus, [])
+    assert.deepEqual(croissancesDeLaPlage({ cwd: repo, debut: socle, fin: fusion }).refus, [])
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }
@@ -713,7 +713,7 @@ test('PLAGE : une FUSION lue par un git plus ancien que 2.40 rend la plage INDIS
     if (args[0] === 'rev-list') return args.includes('--parents') ? 'c1 p1 p2' : 'c1'
     return null
   }
-  const vu = croissancesDeLaPlage({ avant: 'a'.repeat(40), apres: 'b'.repeat(40), git })
+  const vu = croissancesDeLaPlage({ debut: 'a'.repeat(40), fin: 'b'.repeat(40), git })
   assert.match(vu.indisponible, /git 2\.39 ne sait pas git merge-tree --write-tree --stdin/)
   assert.deepEqual([vu.refus, vu.reclassements], [[], []])
 })
