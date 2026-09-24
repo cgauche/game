@@ -17,7 +17,6 @@ import { avancement } from './schemas/grammaire/avancement';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
-import { effectTables } from './effectTables';
 import { terrainEntree } from '../state/terrain';
 import pregensJson from './pregens.json';
 import { makePregens } from './pregens';
@@ -38,8 +37,11 @@ import { readFileSync } from 'node:fs';
 import { readCorpus } from '../../scripts/guards/lib/sourceCorpus.mjs';
 import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import {
-  GAMEOP_FIELD_TARGETS, auditFieldCoverage, collectJsonFiles, scanGameOpRefs, formatOffender,
+  GAMEOP_FIELD_TARGETS, auditFieldCoverage, scanGameOpRefs, formatOffender,
 } from '../../scripts/guards/lib/gameOpRefFk.mjs';
+import { champsDOpASlot, slotsDuParse } from '../../scripts/docs/lib/slots-registre.mjs';
+import { scanDuCorpus } from '../../scripts/docs/lib/structures-scan.mjs';
+import { NARRATIVE_MARKERS } from '../engine/conditions';
 import { extractedBooks, frenchSourceDirs, isSentinel, sourceDirOf, walkSkillRefs } from '../../scripts/data/lib/skillSpecWalk.mjs';
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x != null;
@@ -1198,15 +1200,12 @@ describe('grantGroups / exceptGroups — ids de groups.json qui résolvent (#131
 
 // ── RÉFÉRENCES DES `GameOp` DE LA DONNÉE COMMITÉE (#847) — `applyOps` (`src/engine/ops.ts`)
 // empile sans valider ; le gate d'édition ne voit que ce qui passe par l'UI. Le PÉRIMÈTRE (quels
-// champs d'op portent une référence) est DÉRIVÉ de l'union `GameOp` par le TypeChecker, la CIBLE de
-// chaque champ est déclarée dans `scripts/guards/lib/gameOpRefFk.mjs` — dont l'en-tête écrit ce que
-// la garde ne voit pas. Les registres sont câblés ICI, où ils sont typés.
+// champs d'op portent une référence) est DÉRIVÉ de l'union `GameOp` par le TypeChecker, moins les
+// CHAMPS D'OP À SLOT d'`OP_DEFS` (`champsDOpASlot`), vérifiés au parse ; la CIBLE de chaque autre
+// champ est déclarée dans `scripts/guards/lib/gameOpRefFk.mjs` — dont l'en-tête écrit ce que la garde
+// ne voit pas. Les registres sont câblés ICI, où ils sont typés.
 describe('GameOp — toute référence de la donnée committée résout dans son registre (#847)', () => {
-  const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
-  const SCENES_DIR = fileURLToPath(new URL('../scenes', import.meta.url));
-
   const MUTATION_TABLE_IDS = new Set(mutationTables.map((t) => t.id));
-  const EFFECT_TABLE_IDS = new Set(effectTables.map((t) => t.id));
   const TRAUMA_IDS = new Set((traumasJson as { id: string }[]).map((t) => t.id));
 
   const resolvers: Record<string, (id: string) => boolean> = {
@@ -1225,19 +1224,54 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     creatures: (id) => !!findCreatureById(id),
     crewTestTypes: (id) => !!findCrewTestTypeById(id),
     mutationTables: (id) => MUTATION_TABLE_IDS.has(id),
-    effectTables: (id) => EFFECT_TABLE_IDS.has(id),
     terrains: (id) => terrainEntree(id) !== undefined,
     lightTones: (id) => !!findLightToneById(id),
   };
 
-  const sources = [...collectJsonFiles(DATA_DIR, REPO_ROOT), ...collectJsonFiles(SCENES_DIR, REPO_ROOT)];
-  const scan = scanGameOpRefs({ sources, resolvers });
+  /** Le corpus des DEUX racines, celui que parse le registre des slots (`scanDuCorpus`) : une seule
+   *  lecture, pour que la jointure des cases se fasse par IDENTITÉ de porteur. */
+  const { defs: DEFS, scan: CORPUS } = scanDuCorpus(REPO_ROOT);
+  const sources = [...CORPUS.brutParNom].map(([file, data]) => ({ file, data }));
+  const CHAMPS_A_SLOT = champsDOpASlot();
+  const softIds = { etats: Object.keys(NARRATIVE_MARKERS) };
+  const scan = scanGameOpRefs({ sources, resolvers, softIds, champsASlot: CHAMPS_A_SLOT.keys() });
 
-  it('le périmètre est DÉRIVÉ de l’union GameOp : aucun champ de référence sans cible déclarée', () => {
-    const { derived, unclassified, stale } = auditFieldCoverage(REPO_ROOT);
+  it('le périmètre est DÉRIVÉ de l’union GameOp moins les champs d’op à slot : aucun champ de référence sans cible déclarée', () => {
+    const { derived, unclassified, stale } = auditFieldCoverage(REPO_ROOT, { champsASlot: CHAMPS_A_SLOT.keys() });
     expect(derived.length, 'aucun champ dérivé — l’extraction du type a échoué').toBeGreaterThan(40);
     expect(unclassified, `champs de GameOp sans cible déclarée (gameOpRefFk.mjs) :\n${unclassified.join('\n')}`).toEqual([]);
-    expect(stale, `cibles déclarées sans champ correspondant dans GameOp :\n${stale.join('\n')}`).toEqual([]);
+    expect(stale.map((c) => `${c.key} — ${c.raison}`), 'cibles déclarées hors périmètre').toEqual([]);
+  });
+
+  it('une cible déclarée sur un champ d’op à slot sort en `stale`, raison nommée (contre-épreuve)', () => {
+    expect(CHAMPS_A_SLOT.has('removeTrait.traitId')).toBe(true);
+    const declare = GAMEOP_FIELD_TARGETS as Record<string, unknown>;
+    declare['removeTrait.traitId'] = { registry: 'traits' };
+    try {
+      const { stale: doublon } = auditFieldCoverage(REPO_ROOT, { champsASlot: CHAMPS_A_SLOT.keys() });
+      expect(doublon.map((c) => c.key)).toEqual(['removeTrait.traitId']);
+      expect(doublon[0].raison).toMatch(/typé AU PARSE par sa feuille `idDe` d’`OP_DEFS`/);
+    } finally {
+      delete declare['removeTrait.traitId'];
+    }
+  });
+
+  // COUVERTURE (#1473) : un champ d'op à slot ne sort du scan que si CHAQUE occurrence committée que le
+  // scan visite est une CASE validée par `idDe` au parse de mesure (`slotsDuParse`, même porteur, même
+  // clé), ou une VALEUR RÉSERVÉE déclarée au même nœud du schéma (`champsDOpASlot`). Une op typée sous
+  // un conteneur LOOSE (`OPS_NON_TYPEES`) n'est pas parsée : son conteneur se type avant ou avec elle.
+  it('toute occurrence d’un champ d’op à slot est un slot du parse, ou une valeur réservée de son nœud', () => {
+    const SLOTS = slotsDuParse(CORPUS, DEFS);
+    const cases = new Map<object, Set<string | number>>();
+    for (const s of SLOTS) {
+      if (!cases.has(s.porteur)) cases.set(s.porteur, new Set());
+      cases.get(s.porteur)!.add(s.cle);
+    }
+    expect(scan.occurrencesASlot.length, 'aucune occurrence de champ d’op à slot — la jointure est vide').toBeGreaterThan(50);
+    const hors = scan.occurrencesASlot
+      .filter((o) => !cases.get(o.porteur)?.has(o.cle) && !(CHAMPS_A_SLOT.get(o.key) ?? []).includes(o.value))
+      .map((o) => `${o.file} ${o.path} : ${o.key} = ${JSON.stringify(o.value)}`);
+    expect(hors, `occurrences hors du parse — typer leur conteneur (OP_DEFS) :\n${hors.join('\n')}`).toEqual([]);
   });
 
   it('chaque registre visé par la table a son résolveur câblé', () => {
@@ -1251,10 +1285,10 @@ describe('GameOp — toute référence de la donnée committée résout dans son
   });
 
   // Le format d'une cible est un ensemble FERMÉ (`gameOpRefFk.mjs`, doc de `GAMEOP_FIELD_TARGETS`) :
-  // `{ registry, self? }` | `{ nonRef }` | `{ coveredBy }`. Une clé hors de cet ensemble serait lue par
+  // `{ registry }` | `{ nonRef }` | `{ coveredBy }`. Une clé hors de cet ensemble serait lue par
   // PERSONNE dans `scanGameOpRefs` — donc une tolérance muette, ou un champ tenu pour gardé sans l'être.
-  it('le format d’une cible est fermé : aucune clé hors registry/self/nonRef/coveredBy', () => {
-    const CLES = new Set(['registry', 'self', 'nonRef', 'coveredBy']);
+  it('le format d’une cible est fermé : aucune clé hors registry/nonRef/coveredBy', () => {
+    const CLES = new Set(['registry', 'nonRef', 'coveredBy']);
     const anomalies: string[] = [];
     for (const [cible, decl] of Object.entries(GAMEOP_FIELD_TARGETS as Record<string, Record<string, unknown>>)) {
       for (const cle of Object.keys(decl)) {
@@ -1263,10 +1297,6 @@ describe('GameOp — toute référence de la donnée committée résout dans son
       const formes = ['registry', 'nonRef', 'coveredBy'].filter((k) => k in decl);
       if (formes.length !== 1) {
         anomalies.push(`${cible} : ${formes.length} forme(s) déclarée(s) [${formes.join(', ')}] — il en faut une et une seule`);
-      }
-      if ('self' in decl) {
-        if (decl.self !== true) anomalies.push(`${cible} : « self » vaut ${JSON.stringify(decl.self)} au lieu de true`);
-        if (!('registry' in decl)) anomalies.push(`${cible} : « self » sans « registry » — le mot réservé ne se tolère que sur une référence dure`);
       }
       for (const k of ['registry', 'nonRef', 'coveredBy']) {
         if (k in decl && (typeof decl[k] !== 'string' || !decl[k])) anomalies.push(`${cible} : « ${k} » n’est pas un texte non vide`);
@@ -1291,19 +1321,11 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     expect(out[0].path).toBe('fixture.json[0].effects[0].flow.effect.ops[0].talentId');
   });
 
-  it('le vocabulaire toléré reste vert — $arg, self, et les marqueurs narratifs déclarés', () => {
-    const legit = [{
-      file: 'fixture.json',
-      data: [
-        { op: 'exposeDisease', disease: '$arg' },
-        { op: 'scheduleRespawn', ref: 'self', delayDays: 1 },
-        { op: 'condition', id: 'petrifie' },
-      ],
-    }];
-    expect(scanGameOpRefs({ sources: legit, resolvers }).offenders.map(formatOffender)).toEqual([]);
-    // Le mot réservé `self` n'est toléré QUE sur le champ qui le déclare.
-    const misplaced = [{ file: 'fixture.json', data: [{ op: 'summon', ref: 'self', count: 1 }] }];
-    expect(scanGameOpRefs({ sources: misplaced, resolvers }).offenders).toHaveLength(1);
+  it('un marqueur narratif (`NARRATIVE_MARKERS`) résout là où son registre est visé, et seulement s’il est injecté', () => {
+    const [marqueur] = Object.keys(NARRATIVE_MARKERS);
+    const fixture = [{ file: 'fixture.json', data: [{ op: 'condition', id: marqueur }] }];
+    expect(scanGameOpRefs({ sources: fixture, resolvers, softIds }).offenders.map(formatOffender)).toEqual([]);
+    expect(scanGameOpRefs({ sources: fixture, resolvers }).offenders).toHaveLength(1);
   });
 
   it('un champ NON-RÉFÉRENCE porte sa justification, un champ gardé ailleurs nomme sa garde', () => {

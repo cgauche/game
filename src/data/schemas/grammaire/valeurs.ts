@@ -936,3 +936,21 @@ export function catalogueSaisonnier<A extends EntreeMarchande, B extends EntreeM
     }
   });
 }
+
+/**
+ * FEUILLE ou VALEUR RÉSERVÉE — un champ qui admet, en plus de sa feuille, UN littéral que le moteur
+ * lit à part : gabarit d'instance substitué par `withArg` (`engine/flowCore › INDICE_TEMPLATE`,
+ * `ARG_TEMPLATE`) ou mot réservé interprété à l'application (`engine/ops › SELF_REF`). Le littéral est
+ * une branche `z.literal` du MÊME nœud : le parse de mesure n'y pose aucun repère, et la jointure des
+ * slots le lit sur le schéma (`scripts/docs/lib/slots-registre.mts › champsDOpASlot`).
+ * Une valeur ni feuille ni réservée est refusée par le message de la FEUILLE (celui d'`idDe` nomme
+ * l'id absent et son dataset), jamais par l'« Entrée invalide » générique d'une union.
+ */
+export function ouReserve<F extends z.ZodType, const R extends string>(feuille: F, reserve: R) {
+  return z.union([feuille, z.literal(reserve)], {
+    error: (iss) => {
+      const branches = (iss as { errors?: readonly (readonly { message: string }[])[] }).errors;
+      return branches?.[0]?.[0]?.message;
+    },
+  });
+}

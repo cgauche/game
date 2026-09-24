@@ -510,6 +510,12 @@ export type Flow<E = EffectOp> =
 export const INDICE_TEMPLATE = '$indice';
 export type IndiceTemplate = typeof INDICE_TEMPLATE;
 
+/** TEMPLATE d'instance d'un champ d'op : l'ARGUMENT de l'entité PORTEUSE (trait Maladie « (peste) » →
+ *  `exposeDisease{disease: ARG_TEMPLATE}`), substitué par `withArg` (`state/triggeredEffects`) avant
+ *  exécution. Même mécanisme qu'`INDICE_TEMPLATE`, pour l'arg au lieu de l'Indice. */
+export const ARG_TEMPLATE = '$arg';
+export type ArgTemplate = typeof ARG_TEMPLATE;
+
 /** Le NŒUD `test` seul — la forme UNIQUE du jet en donnée (jet + conséquence des deux branches), telle
  *  qu'un porteur l'épingle hors d'un Flow complet (rangée de Critique, cycle de maladie). */
 export type FlowTestNode<E = EffectOp> = Extract<Flow<E>, { kind: 'test' }>;

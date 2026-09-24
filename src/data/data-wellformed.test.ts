@@ -12,9 +12,9 @@
  *                      (number fini OU objet à clé connue). Une string qui fuit → rouge.
  *  4. PLACEHOLDERS   — une string `$…` n'est tolérée QUE si elle vaut `'$arg'`/`'$indice'` ET vit dans
  *                      les `effects` de `traits.json` (substituée par `withArg`, state/triggeredEffects).
- *  5. REFS           — `summon/polymorph/scheduleRespawn.ref` → créature ; `grantTrait.traitId` → trait ;
- *                      `condition/removeCondition.id` → État ; `exposeDisease/contractDisease.disease`
- *                      → maladie. Tolère le template `'$arg'`/`'$indice'`.
+ *  5. REFS           — `grantTrait.traitId` → trait ; `condition/removeCondition.id` → État. Les refs
+ *                      des ops TYPÉES (`OP_DEFS`, `src/data/schemas/grammaire/mecanique.ts`) sont
+ *                      vérifiées AU PARSE par leur feuille `idDe`.
  *  6. FLOW PUR       — chaque `TriggeredEffect.flow` (champs `TriggeredEffect[]` du catalogue, extraits
  *                      par regex de `data/index.ts` — JAMAIS une liste de fichiers à la main) ne porte pas
  *                      une op de `STRAY_IMPURE_OPS` (`interruptFocus`/`breakBlade`/`delayed`) HORS branche
@@ -35,11 +35,11 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isValidFormula } from '../engine/ops';
 import { ICON_DEFS } from '../ui/icons';
-import { flowHasImpureOpOutsideTest } from '../engine/flowCore';
+import { ARG_TEMPLATE, INDICE_TEMPLATE, flowHasImpureOpOutsideTest } from '../engine/flowCore';
 import type { Flow } from '../engine/flowCore';
-import { findCreatureById, findVehicleById, findTraitById, findConditionById, findDiseaseById, findSymptomById } from './index';
+import { findTraitById, findConditionById } from './index';
 import { ruleDef } from '../engine/policy';
-import { TOLERATED } from '../../scripts/guards/lib/gameOpRefFk.mjs';
+import { NARRATIVE_MARKERS } from '../engine/conditions';
 import { listerArbre, listerDossier } from '../../scripts/guards/lib/lister.mjs';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
@@ -63,9 +63,9 @@ const TRIGGERED_EFFECT_FIELDS = new Set(
 
 // Fichier DIALECTE compilé (cf. en-tête) : exclu des familles Formule & Refs.
 const MISCAST = 'miscast.json';
-// Marqueurs narratifs tolérés pour `condition.id` : SOURCE UNIQUE `TOLERATED.softIds.etats`
-// (`scripts/guards/lib/gameOpRefFk.mjs`), qui déclare le mécanisme et ses réfs RAW.
-const SOFT_CONDITIONS = new Set<string>(TOLERATED.softIds.etats);
+// Marqueurs narratifs tolérés pour `condition.id` : REGISTRE UNIQUE `NARRATIVE_MARKERS`
+// (`src/engine/conditions.ts`).
+const SOFT_CONDITIONS = new Set<string>(Object.keys(NARRATIVE_MARKERS));
 
 // Champs d'une `GameOp` typés `Formula` (ou `number`, qui passe `isValidFormula`) — au minimum amount/count.
 const FORMULA_FIELDS = [
@@ -86,8 +86,8 @@ const FORMULA_FIELDS = [
  *  PÉRIMÈTRE DÉCLARÉ : la porte est le FICHIER + le chemin `effects`, pas le champ ; un template posé sous
  *  un autre champ d'`effects` de ces deux fichiers passerait ici et serait DROPPÉ au runtime, pas détecté. */
 const TEMPLATES_PAR_FICHIER: Record<string, readonly string[]> = {
-  'traits.json': ['$arg', '$indice'],
-  'qualities.json': ['$indice'],
+  'traits.json': [ARG_TEMPLATE, INDICE_TEMPLATE],
+  'qualities.json': [INDICE_TEMPLATE],
 };
 const isTemplate = (v: unknown, file: string, path: string): boolean =>
   typeof v === 'string' && (TEMPLATES_PAR_FICHIER[file] ?? []).includes(v) && path.includes('effects');
@@ -105,13 +105,8 @@ function refResolves(op: string, o: Record<string, unknown>, file: string, path:
     if (typeof val !== 'string' || tol(val)) return;
     if (!ok(val)) out.push({ file, path: `${path}.${field}`, detail: `ref ${kind} introuvable : ${JSON.stringify(val)}` });
   };
-  if (op === 'summon' || op === 'polymorph' || op === 'scheduleRespawn')
-    // Résolution par ID (runtime `spawnEnemy`) ; `'self'` = sentinelle `scheduleRespawn` (engine/ops.ts),
-    // coque de véhicule = créature portée par `VehicleData.hull`.
-    ref('ref', o.ref, (s) => s === 'self' || !!findCreatureById(s) || !!findVehicleById(s)?.hull, 'créature');
   if (op === 'grantTrait') ref('traitId', o.traitId, (s) => !!findTraitById(s), 'trait');
   if (op === 'condition' || op === 'removeCondition') ref('id', o.id, (s) => !!findConditionById(s) || SOFT_CONDITIONS.has(s), 'État');
-  if (op === 'exposeDisease' || op === 'contractDisease') ref('disease', o.disease, (s) => !!findDiseaseById(s) || !!findSymptomById(s), 'maladie');
 }
 
 function walk(node: unknown, file: string, path: string, scan: Scan): void {
@@ -192,12 +187,9 @@ describe('Intégrité des données src/data/*.json', () => {
     expect(probe({ op: 'removeCondition', id: 'a-terre' })).toEqual([]);
     expect(probe({ op: 'condition', id: 'petrifie' })).toEqual([]); // marqueur narratif toléré
     expect(probe({ op: 'grantTrait', traitId: 'peur' })).toEqual([]);
-    expect(probe({ op: 'summon', ref: 'gobelin', count: 1 })).toEqual([]);
-    expect(probe({ op: 'exposeDisease', disease: 'peste-noire' })).toEqual([]);
     // Rouge : la même op avec une valeur fantôme sur le MÊME champ.
     for (const [op, field] of [
       ['condition', 'id'], ['removeCondition', 'id'], ['grantTrait', 'traitId'],
-      ['summon', 'ref'], ['exposeDisease', 'disease'],
     ] as const) {
       const bad = probe({ op, [field]: 'entite-fantome-inexistante' });
       expect(bad, `${op}.${field} : la garde n'a rien vu`).toHaveLength(1);

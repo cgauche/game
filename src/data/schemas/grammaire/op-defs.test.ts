@@ -4,7 +4,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import { conditionSchema, gameOpSchema, OP_DEFS, OPS_NON_TYPEES } from './mecanique';
-import { applyOps, messageRecurrenceHorloge } from '../../../engine/ops';
+import { applyOps, messageRecurrenceHorloge, SELF_REF } from '../../../engine/ops';
+import { ARG_TEMPLATE, INDICE_TEMPLATE } from '../../../engine/flowCore';
+import { champsDOpASlot } from '../../../../scripts/docs/lib/slots-registre.mjs';
 import type { Combatant } from '../../../engine/types';
 
 describe('OP_DEFS — payload strict par op, repli nominatif, rouge au SITE', () => {
@@ -80,6 +82,60 @@ describe('OP_DEFS — payload strict par op, repli nominatif, rouge au SITE', ()
     // Une cible UNIQUE mais fausse garde le refus de sa FEUILLE, pas celui de l'exclusivité.
     const fantome = gameOpSchema.safeParse({ op: 'skillDRBonus', skill: { id: 'id-fantome' }, bonus: 1 });
     expect(fantome.error!.issues.map((i) => i.path.join('.'))).toEqual(['skill.id']);
+  });
+
+  it('`rollTable` : table EXCLUSIVE — `rows` OU `tableId`, jamais les deux, jamais aucune, refus NOMMÉ', () => {
+    const rows = [{ min: 1, max: 10, ops: [{ op: 'kill' }] }];
+    expect(gameOpSchema.safeParse({ op: 'rollTable', die: 'd10', rows }).success).toBe(true);
+    expect(gameOpSchema.safeParse({ op: 'rollTable', tableId: 'mendier-ennuis' }).success).toBe(true);
+    for (const table of [{ die: 'd10', rows, tableId: 'mendier-ennuis' }, {}]) {
+      const res = gameOpSchema.safeParse({ op: 'rollTable', ...table });
+      expect(res.success).toBe(false);
+      expect(res.error!.issues.map((i) => i.code)).toEqual(['invalid_union']);
+      expect(res.error!.issues[0].message).toMatch(/GameOp « rollTable » : table EXCLUSIVE : « rows » .* OU « tableId »/);
+    }
+    const fantome = gameOpSchema.safeParse({ op: 'rollTable', tableId: 'table-fantome' });
+    expect(fantome.error!.issues.map((i) => [i.path.join('.'), i.message])).toEqual([
+      ['tableId', "GameOp « rollTable » : ref('table') : id « table-fantome » absent de tables.json (registre _ids.generated.ts)."],
+    ]);
+    // Les ops de rangée sont PARSÉES : une op fantôme sous `rows` est refusée à son chemin.
+    const imbriquee = gameOpSchema.safeParse({ op: 'rollTable', die: 'd10', rows: [{ min: 1, max: 10, ops: [{ op: 'contractDisease', disease: 'maladie-fantome' }] }] });
+    expect(imbriquee.error!.issues.map((i) => i.path.join('.'))).toEqual(['rows.0.ops.0.disease']);
+  });
+
+  it('valeur RÉSERVÉE au même nœud que la feuille : acceptée sur SON champ seul, et le refus garde le message nommé d’`idDe`', () => {
+    expect(gameOpSchema.safeParse({ op: 'exposeDisease', disease: ARG_TEMPLATE }).success).toBe(true);
+    expect(gameOpSchema.safeParse({ op: 'scheduleRespawn', ref: SELF_REF, delayDays: 1 }).success).toBe(true);
+    // Hors du champ qui la déclare, la valeur réservée est un id comme un autre : refusé.
+    expect(gameOpSchema.safeParse({ op: 'contractDisease', disease: ARG_TEMPLATE }).success).toBe(false);
+    expect(gameOpSchema.safeParse({ op: 'summon', ref: SELF_REF, count: 1 }).success).toBe(false);
+    expect(gameOpSchema.safeParse({ op: 'exposeDisease', disease: INDICE_TEMPLATE }).success).toBe(false);
+    for (const [op, champ, type, dataset, reste] of [
+      ['exposeDisease', 'disease', 'maladie', 'maladies.json', {}],
+      ['scheduleRespawn', 'ref', 'creature', 'creatures.json', { delayDays: 1 }],
+    ] as const) {
+      const res = gameOpSchema.safeParse({ op, [champ]: 'entite-fantome', ...reste });
+      expect(res.success, `${op}.${champ}`).toBe(false);
+      expect(res.error!.issues.map((i) => [i.path.join('.'), i.message]), `${op}.${champ}`).toEqual([
+        [champ, `GameOp « ${op} » : ref('${type}') : id « entite-fantome » absent de ${dataset} (registre _ids.generated.ts).`],
+      ]);
+    }
+    // Les valeurs réservées se LISENT sur le nœud : aucune liste recopiée.
+    expect(champsDOpASlot().get('exposeDisease.disease')).toEqual([ARG_TEMPLATE]);
+    expect(champsDOpASlot().get('scheduleRespawn.ref')).toEqual([SELF_REF]);
+  });
+
+  it('les CHAMPS D’OP À SLOT se lisent sur `OP_DEFS` : feuille `idDe` du champ, jamais celles d’une op imbriquée', () => {
+    const champs = champsDOpASlot();
+    // `summon.count` : une `Formula` porte le terme `{rule}`, feuille `idDe('regleOptionnelle')`.
+    for (const k of ['removeTrait.traitId', 'diseaseTestMod.diseases', 'testMod.exceptSkills', 'rollTable.tableId', 'transform.morphRef', 'summon.count']) {
+      expect(champs.has(k), k).toBe(true);
+    }
+    // `rows`/`ops`/`thresholds` portent des ops IMBRIQUÉES (`z.lazy`), `addTraits` un `traitInstanceSchema`
+    // dont l'`id` n'est pas une feuille `idDe` : aucun n'est un champ à slot.
+    for (const k of ['rollTable.rows', 'transform.ops', 'perRound.ops', 'rollThreshold.thresholds', 'summon.addTraits', 'skillDRBonus.testType']) {
+      expect(champs.has(k), k).toBe(false);
+    }
   });
 
   it('la clé `op` SURCHARGÉE d’une `Condition` (comparateur) ne passe pas par ce rouge', () => {

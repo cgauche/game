@@ -378,6 +378,11 @@ export function incomingDamageNullified(defender: Combatant, attacker: Combatant
  *  Perception basés sur l'ouïe, pas ceux basés sur la vue/l'odorat — LDB 18). */
 export type PairedSense = 'vue' | 'ouie';
 
+/** Mot RÉSERVÉ de `scheduleRespawn.ref` : la créature DÉFUNTE elle-même, lue par son `creatureId` à la
+ *  programmation (`state/combatFlow › scheduleRespawnFromOp`). */
+export const SELF_REF = 'self';
+export type SelfRef = typeof SELF_REF;
+
 export type GameOp =
   /** Blessures subies DIRECTEMENT. Par DÉFAUT ignore BE ET PA (tables de contrecoup LDB 46/40 ;
    *  sorts « ignorant BE et PA » comme la Comète à Deux Queues). `ignoreTB:false` → le Bonus
@@ -757,7 +762,7 @@ export type GameOp =
    *  aux Tests classés « déplacement » (`SkillData.movement` — Athlétisme/Chevaucher/Escalade/Esquive/Natation,
    *  MÊME catégorie que l'État À Terre/Empêtré) — lu par `testValue`/`defenseValue` (Esquive). Absent des deux
    *  = comportement historique (global, comme avant #193). */
-  | { op: 'testMod'; amount: number; char?: CharKey; combatOnly?: boolean; movementOnly?: boolean; hearingOnly?: boolean; exceptSkills?: string[]; weaponHand?: 'main' | 'off' }
+  | { op: 'testMod'; amount: number; char?: CharKey; combatOnly?: boolean; movementOnly?: boolean; hearingOnly?: boolean; exceptSkills?: SkillRef[]; weaponHand?: 'main' | 'off' }
   /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête) tant que le Sort dure — Peau de loup
    *  d'hiver (Ulric), Protection contre la pluie. Lu par `exposureNight` (engine/exposure). */
   | { op: 'weatherWard' }
@@ -860,7 +865,7 @@ export type GameOp =
   /** Tirage sur TABLE (`die` = d10/d100) : lookup par fourchette `[min,max]` (`findTableEntry`, source
    *  unique), les `ops` de la rangée touchée sont appliquées avec le MÊME ctx. DEUX formes exclusives de
    *  la table : `rows` INLINE (authorées sur l'op) OU `tableId` = référence à `tables.json`
-   *  (`findEffectTableById`, fail-fast) — jamais les deux (garde `data-wellformed`). `mod` = modificateur
+   *  (`findEffectTableById`, fail-fast) — jamais les deux (membres stricts d'`OP_DEFS.rollTable`). `mod` = modificateur
    *  CONSTANT ajouté au jet (Haute Alchimie « lancez 1d10 + 3 », VDM 03 l.698) — se cumule avec
    *  `addNegativeSL` (le RAW enchaîne les deux : « lancez 1d10 + 3. Ajoutez les degrés d'échec »).
    *  `addNegativeSL` ajoute |ctx.sl| au jet quand le contexte porte un DR négatif (Vers de carie
@@ -894,7 +899,7 @@ export type GameOp =
   | { op: 'summon'; ref: string; count: Formula; countPerSL?: PerSL; addTraits?: TraitInstance[];
       size?: SizeCategory; allyOfCaster?: boolean; despawnIfCasterDown?: boolean }
   /** RECONSTITUTION DIFFÉRÉE (Gardien éternel, Middenheim — « se reconstitue au bout de d10 jours »).
-   *  À la MORT du porteur, programme la ré-invocation de la créature `ref` (`'self'` = la défunte, par son
+   *  À la MORT du porteur, programme la ré-invocation de la créature `ref` (`SELF_REF` = la défunte, par son
    *  `creatureId`) après `delayDays` jours d'HORLOGE, sauf si `cancelFlag` est posé entre-temps (les
    *  « précautions appropriées » : drain/rituel/corruption de la Source — un Effet de scène/MJ pose le flag).
    *  Effet IMPUR (file `scheduledEffects` + `applySummon`) RÉSOLU par la couche state — programmé par

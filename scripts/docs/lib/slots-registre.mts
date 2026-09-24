@@ -11,7 +11,9 @@
 import { SCHEMA_DEFS } from '../../../src/data/schemas/_registry.generated';
 import { SCHEMA_DEFS_SCENES } from '../../../src/data/schemas/_registry-scenes.generated';
 import type { SchemaDef } from '../../../src/data/schemas/types';
-import { reperesDuParse, type TypeEntite } from '../../../src/data/schemas/grammaire/ref';
+import { estFeuilleDId, reperesDuParse, type TypeEntite } from '../../../src/data/schemas/grammaire/ref';
+import { defDe, descendre, enfantsDe } from '../../../src/data/schemas/grammaire/descente';
+import { OP_DEFS } from '../../../src/data/schemas/grammaire/mecanique';
 import { nomDeDocument, type OccurrenceDeReference, type ReferencesParPorteur } from './structures-scan.mjs';
 import { parUnitesDeCode } from '../../guards/lib/lister.mjs';
 
@@ -76,6 +78,37 @@ export type ScanDesReferences = {
 /** Tous les slots des documents du scan, parsés par leur def (`defsDeDocument`). */
 export function slotsDuParse(scan: Pick<ScanDesReferences, 'brutParNom'>, defs: readonly SchemaDef[] = defsDeDocument()): Slot[] {
   return defs.filter((d) => scan.brutParNom.has(d.file)).flatMap((d) => slotsDuDocument(d.file, d.schema, scan.brutParNom.get(d.file)));
+}
+
+/**
+ * CHAMPS D'OP À SLOT, lus STATIQUEMENT sur `OP_DEFS` : pour chaque op (chaque membre objet d'une union
+ * comprise), chaque champ dont le sous-arbre porte une feuille `idDe`. Une op IMBRIQUÉE (`z.lazy` vers
+ * `gameOpSchema`) n'y compte pas : son payload est lu par un raffinement, pas par un enfant du schéma
+ * (`grammaire/descente.ts › enfantsDe`), et chaque op a son entrée ici. La valeur : les VALEURS
+ * RÉSERVÉES du champ, branches `z.literal` du MÊME nœud (atteintes par des seules branches d'union ou
+ * enveloppes, `grammaire/valeurs.ts › ouReserve`), qu'aucun repère ne marque.
+ * Clé : `op.champ`, la graphie de `GAMEOP_FIELD_TARGETS` (`scripts/guards/lib/gameOpRefFk.mjs`).
+ */
+export function champsDOpASlot(opDefs: Readonly<Record<string, unknown>> = OP_DEFS): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const [op, schema] of Object.entries(opDefs)) {
+    const membres = defDe(schema)?.type === 'union' ? enfantsDe(schema).map((e) => e.noeud) : [schema];
+    for (const membre of membres) {
+      for (const champ of enfantsDe(membre)) {
+        if (champ.cle === undefined || champ.cle === 'op') continue;
+        let aFeuille = false;
+        const reserves: string[] = [];
+        descendre([champ.noeud], ({ noeud, def, path }) => {
+          if (estFeuilleDId(noeud)) aFeuille = true;
+          if (def.type === 'literal' && /^(\|\d+)*$/.test(path)) reserves.push(...((def.values as unknown[]) ?? []).map(String));
+        });
+        if (!aFeuille) continue;
+        const cle = `${op}.${champ.cle}`;
+        out.set(cle, [...new Set([...(out.get(cle) ?? []), ...reserves])].sort(parUnitesDeCode));
+      }
+    }
+  }
+  return new Map([...out].sort(([a], [b]) => parUnitesDeCode(a, b)));
 }
 
 const cleDeCouple = (c: { dataset: string; champ: string }) => `${c.dataset} | ${c.champ}`;

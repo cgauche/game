@@ -608,7 +608,7 @@ export function testStatePenaltyParts(c: Combatant, skill?: string): ModLine[] {
       if (m.op.combatOnly) continue; // Aveuglé (vue) : non classé hors combat (faute de classification du Test)
       if (m.op.movementOnly && !competenceParId(skill)?.movement) continue; // À Terre/Empêtré : Tests de déplacement seuls
       if (m.op.hearingOnly && !competenceParId(skill)?.hearing) continue; // Assourdi : Tests d'audition seuls (Perception)
-      if (m.op.exceptSkills?.includes(skill ?? '')) continue; // Brisé : sauf course (Athlétisme) / dissimulation (Discrétion)
+      if (m.op.exceptSkills?.some((r) => r.id === skill)) continue; // LDB 16 l.52
       cand.push({ amount: m.op.amount, nature: 'État', src: m.src });
     }
     cand = dropWorst(cand, ignoredStatesCount(c)); // « peut ignorer un État » (MDG 09 l.244)

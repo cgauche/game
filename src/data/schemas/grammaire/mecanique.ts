@@ -8,9 +8,10 @@ import { z } from 'zod';
 import { isMenaceId, menaceIds } from '../../../engine/menace';
 import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/types';
 import type { StakeRef } from '../../index';
-import { messageRecurrenceHorloge, type GameOp } from '../../../engine/ops';
-import { INDICE_TEMPLATE, type Condition, type EffectOp, type EffectTrigger, type Flow } from '../../../engine/flowCore';
-import { chaosAlignSchema, charKeySchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, plageSchema, refTestDeCorruption, symptomSeveritySchema } from './valeurs';
+import { messageRecurrenceHorloge, SELF_REF, type GameOp } from '../../../engine/ops';
+import { ARG_TEMPLATE, INDICE_TEMPLATE, type Condition, type EffectOp, type EffectTrigger, type Flow } from '../../../engine/flowCore';
+import { chaosAlignSchema, charKeySchema, diceSpecSchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, ouReserve, plageSchema, refTestDeCorruption, sizeCategorySchema, symptomSeveritySchema } from './valeurs';
+import { traitInstanceSchema } from './reference';
 import { idDe, ref, refs, refOuSpec } from './ref';
 
 /** `PerSL` (`src/engine/ops.ts:146`) — échelle « par +N DR » d'un payload d'op. */
@@ -62,7 +63,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
    *  committée ne la porte aujourd'hui : ses seuls producteurs sont les rangées de Critique, où
    *  `noeudAmputation` (engine/critical.ts) la fabrique depuis `entry.amputation`. Son payload est typé
    *  ICI comme celui de toute op authorée ; ses `sequels` sont des ids de fiche `traumas.json`, dataset
-   *  non encore déclaré à `TYPES` (même graphie que `amputationSchema`). */
+   *  absent de `TYPES` jusqu'à R2 v2 de #1473 (même graphie que `amputationSchema`). */
   amputer: z.strictObject({
     op: z.literal('amputer'),
     sequels: z.array(z.string()),
@@ -95,8 +96,7 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
   /** `offTerrainMod` — passif POSITIONNEL : hors de son terrain d'ÉLECTION, le porteur subit un M
    *  IMPOSÉ (`mSet`, Créature marine MDG 16 p.140 « son M tombe à 1 » ; Aquatique MSRC 15 p.90 → 0),
    *  un malus de DR à TOUS ses Tests (`testDR`) et/ou la suffocation (`suffocates`). Le terrain se
-   *  nomme par un ID du registre (`idDe('terrain')`) : un terrain inconnu est refusé AU PARSE, là où
-   *  il rendait auparavant le drapeau `offTerrain` VRAI partout en silence (`engine/ops.ts:279-283`). */
+   *  nomme par un ID du registre (`idDe('terrain')`) : un terrain inconnu est refusé AU PARSE. */
   offTerrainMod: z.strictObject({
     op: z.literal('offTerrainMod'),
     terrain: idDe('terrain'),
@@ -133,6 +133,99 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
   }),
   grantCareerSkill: z.strictObject({ op: z.literal('grantCareerSkill'), skill: refOuSpec('skill') }),
   grantReverseToken: z.strictObject({ op: z.literal('grantReverseToken'), skill: refOuSpec('skill').optional() }),
+  exposeDisease: z.strictObject({
+    op: z.literal('exposeDisease'),
+    disease: ouReserve(idDe('maladie'), ARG_TEMPLATE),
+    difficultyShift: z.number().optional(),
+    incubation: z.literal('instant').optional(),
+  }),
+  contractDisease: z.strictObject({ op: z.literal('contractDisease'), disease: idDe('maladie') }),
+  reduceDiseaseDays: z.strictObject({
+    op: z.literal('reduceDiseaseDays'),
+    days: z.number().optional(),
+    dice: diceSpecSchema.optional(),
+    disease: idDe('maladie').optional(),
+    oncePerDisease: z.boolean().optional(),
+    daysPerSL: perSLSchema.optional(),
+  }),
+  diseaseTestMod: z.strictObject({ op: z.literal('diseaseTestMod'), diseases: refs('maladie').optional(), amount: z.number() }),
+  suppressSymptom: z.strictObject({ op: z.literal('suppressSymptom'), symptomId: idDe('symptome') }),
+  giveTrapping: z.strictObject({
+    op: z.literal('giveTrapping'),
+    trappingId: idDe('trapping').optional(),
+    custom: z.string().optional(),
+    count: z.number().optional(),
+    perSL: perSLSchema.optional(),
+  }),
+  /** `addTraits` : instances de Trait (`grammaire/reference.ts › traitInstanceSchema`), dont l'`id` est un
+   *  `z.string()` et non une feuille `idDe` — aucun slot. */
+  summon: z.strictObject({
+    op: z.literal('summon'),
+    ref: idDe('creature'),
+    count: formulaSchema,
+    countPerSL: perSLSchema.optional(),
+    addTraits: z.array(traitInstanceSchema).optional(),
+    size: sizeCategorySchema.optional(),
+    allyOfCaster: z.boolean().optional(),
+    despawnIfCasterDown: z.boolean().optional(),
+  }),
+  scheduleRespawn: z.strictObject({
+    op: z.literal('scheduleRespawn'),
+    ref: ouReserve(idDe('creature'), SELF_REF),
+    delayDays: formulaSchema,
+    count: formulaSchema.optional(),
+    allyOfCaster: z.boolean().optional(),
+    cancelFlag: z.string().optional(),
+  }),
+  polymorph: z.strictObject({ op: z.literal('polymorph'), ref: idDe('creature') }),
+  transform: z.strictObject({
+    op: z.literal('transform'),
+    tag: z.string(),
+    ops: z.array(z.lazy(() => gameOpSchema)),
+    morphRef: idDe('creature').optional(),
+  }),
+  /** Table INLINE (`rows`) OU RÉFÉRENCÉE (`tableId`), exclusives (`engine/ops.ts`, union `rollTable`). */
+  rollTable: z.union([
+    z.strictObject({
+      op: z.literal('rollTable'),
+      die: z.enum(['d10', 'd100']),
+      mod: z.number().optional(),
+      addNegativeSL: z.boolean().optional(),
+      extraRollsPerStep: z.number().optional(),
+      rows: z.array(z.strictObject({ min: z.number(), max: z.number(), ops: z.array(z.lazy(() => gameOpSchema)) })),
+    }),
+    z.strictObject({
+      op: z.literal('rollTable'),
+      die: z.enum(['d10', 'd100']).optional(),
+      mod: z.number().optional(),
+      addNegativeSL: z.boolean().optional(),
+      extraRollsPerStep: z.number().optional(),
+      tableId: idDe('table'),
+    }),
+  ], {
+    error: (iss) => {
+      const v = (iss.input ?? {}) as { rows?: unknown; tableId?: unknown };
+      return (v.rows === undefined) === (v.tableId === undefined)
+        ? 'table EXCLUSIVE : « rows » (rangées inline) OU « tableId » (tables.json) — exactement une des deux.'
+        : undefined;
+    },
+  }),
+  testMod: z.strictObject({
+    op: z.literal('testMod'),
+    amount: z.number(),
+    char: charKeySchema.optional(),
+    combatOnly: z.boolean().optional(),
+    movementOnly: z.boolean().optional(),
+    hearingOnly: z.boolean().optional(),
+    exceptSkills: z.array(refOuSpec('skill')).optional(),
+    weaponHand: z.enum(['main', 'off']).optional(),
+  }),
+  perRound: z.strictObject({ op: z.literal('perRound'), ops: z.array(z.lazy(() => gameOpSchema)) }),
+  rollThreshold: z.strictObject({
+    op: z.literal('rollThreshold'),
+    sides: z.number(),
+    thresholds: z.array(z.strictObject({ atLeast: z.number(), ops: z.array(z.lazy(() => gameOpSchema)) })),
+  }),
 };
 
 /**
@@ -145,19 +238,15 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
  */
 export const OPS_NON_TYPEES: readonly string[] = [
   'actGate', 'ap', 'armourPierce', 'arrowWard', 'attackKeyword', 'attackWardFM', 'attrMod', 'augmentWeapon',
-  'beginPsych', 'breakBlade', 'castWard', 'chain', 'charDRBonus', 'charDamage', 'charMod',
-  'condition', 'contractDisease', 'crewTestMod', 'critOnRoll', 'critTwice', 'cureCriticalWound', 'cureDisease',
-  'damageArmour', 'delayed', 'disarm', 'diseaseTestMod', 'endPsych', 'endTransform', 'exposeDisease',
-  'freeReroll', 'gainAdvantage', 'gainResource', 'giveTrapping', 'grantCareerTalent',
-  'grantFreeAttack', 'grantNaturalWeapon', 'grantPsychTrait', 'grantTalent', 'grantTrait',
-  'grantWeapon', 'handGate', 'ignoreAnimosity', 'ignoreStatePenalties', 'incomingAdvantage', 'incomingAttackMod',
-  'incomingSpellDRMod', 'interruptFocus', 'intoxicate', 'lifeSteal', 'light', 'martyr', 'maxWeaponHands',
-  'mitigateIncoming', 'moveMod', 'moveScale', 'narrative', 'perRound', 'polymorph',
-  'preventInfection', 'push', 'reduceDiseaseDays', 'reduceToZero', 'removeCondition', 'removePsychTrait',
-  'removeShipPoste', 'rollMutation', 'rollTable', 'rollThreshold', 'sbBonus', 'scheduleRespawn', 'senseLoss',
-  'sinMod', 'spendAdvantage', 'statusMod', 'summon', 'suppressPsych',
-  'suppressSymptom', 'teamCommander', 'teleport', 'testMod', 'transform', 'weaponDamageMod', 'weaponRollMod',
-  'weatherWard', 'wounds', 'zone',
+  'beginPsych', 'breakBlade', 'castWard', 'chain', 'charDRBonus', 'charDamage', 'charMod', 'condition',
+  'crewTestMod', 'critOnRoll', 'critTwice', 'cureCriticalWound', 'cureDisease', 'damageArmour', 'delayed', 'disarm',
+  'endPsych', 'endTransform', 'freeReroll', 'gainAdvantage', 'gainResource', 'grantCareerTalent', 'grantFreeAttack',
+  'grantNaturalWeapon', 'grantPsychTrait', 'grantTalent', 'grantTrait', 'grantWeapon', 'handGate', 'ignoreAnimosity',
+  'ignoreStatePenalties', 'incomingAdvantage', 'incomingAttackMod', 'incomingSpellDRMod', 'interruptFocus',
+  'intoxicate', 'lifeSteal', 'light', 'martyr', 'maxWeaponHands', 'mitigateIncoming', 'moveMod', 'moveScale',
+  'narrative', 'preventInfection', 'push', 'reduceToZero', 'removeCondition', 'removePsychTrait', 'removeShipPoste',
+  'rollMutation', 'sbBonus', 'senseLoss', 'sinMod', 'spendAdvantage', 'statusMod', 'suppressPsych', 'teamCommander',
+  'teleport', 'weaponDamageMod', 'weaponRollMod', 'weatherWard', 'wounds', 'zone',
 ];
 
 /** Champs de l'op `condition` qu'un État PORTÉ (#1695) ne peut PAS tenir — LISTE CLOSE, alignée sur ce
@@ -591,7 +680,7 @@ export const flowSchema: z.ZodType<Flow<EffectOp>> = z.lazy(() =>
       prompt: z.string(),
       // Coût LITTÉRAL, ou TEMPLATE `$indice` (`engine/flowCore::INDICE_TEMPLATE`) — accepté AU PARSE
       // seulement : `withArg` (`state/triggeredEffects`) le remplace par l'Indice de l'instance porteuse.
-      advantageCost: z.union([z.number(), z.literal(INDICE_TEMPLATE)]).optional(),
+      advantageCost: ouReserve(z.number(), INDICE_TEMPLATE).optional(),
       icon: z.string().optional(),
       yes: flowSchema,
       no: flowSchema.optional(),
