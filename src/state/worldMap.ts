@@ -11,6 +11,7 @@
  * marche forcée au niveau carte.
  */
 import type { Effect, Fige, ReliefDefaults, Scene, SceneRoofDefaults } from './scene';
+import { remapSortsFusionnesDeep } from '../data/sortsFusionnes';
 import { normalizeScene } from './scene';
 import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
@@ -983,6 +984,16 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
     version: 13,
     schema: 13,
   }),
+  /**
+   * `13` fait désigner à chaque id de sort FUSIONNÉ par #1897 l'entrée qui l'a absorbé
+   * (`SORTS_FUSIONNES_1897`, table GELÉE), à toute place de sort du document — primitive
+   * `remapSortsFusionnesDeep` (`src/data/sortsFusionnes.ts`), la même que `ROSTER_MIGRATIONS[4]`. Sans ce
+   * passage, un projet de bibliothèque utilisateur qui cite un sort fusionné serait REFUSÉ au parse
+   * (`idDe('spell')`).
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-24-1897-projet-sorts-fusionnes.mjs`
+   * (parité mesurée par `projet-migration-13-vers-14.test.ts`, qui joue la MÊME fixture par les deux).
+   */
+  13: (doc) => ({ ...(remapSortsFusionnesDeep(doc) as Record<string, unknown>), version: 14, schema: 14 }),
 };
 
 /** Provenance d'une campagne AUTHORÉE À L'ÉDITEUR : aucun livre ne la publie, et un folio ne se

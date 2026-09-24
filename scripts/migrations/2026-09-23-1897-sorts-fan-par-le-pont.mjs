@@ -6,7 +6,7 @@
  * (`.claude/memory/game-doctrine-une-entite-n-livres-n-variantes.md`) : une entité, N livres.
  *
  * GESTES, dans l'ordre :
- *  1. FUSIONS (`SORTS_FUSIONNES`, `src/data/sortsFusionnes.ts`) : l'entrée fan disparaît, l'entrée qui
+ *  1. FUSIONS (`SORTS_FUSIONNES_1897`, `src/data/sortsFusionnes.ts`) : l'entrée fan disparaît, l'entrée qui
  *     l'absorbe gagne `alsoIn: { book: 'frenchy-bzh', page, quote }` — `quote` = la VF imprimée (sigle
  *     retiré), `page` = le folio de la PREMIÈRE cellule qui l'imprime et que le pont résout vers
  *     l'absorbante (pied de page, jamais recopié de l'entrée fan).
@@ -18,7 +18,7 @@
  * Entrées : `src/data/spells.json` et `src/data/creatures.json` (écrits), `src/data/books.json`
  * (registre des livres, via `scripts/raw/_lib.mjs`), le dossier d'extraction
  * `Source/Warhammer - Habitants & Creatures  du Vieux-Monde (Discord) PDF` (chapitres `NN - ….md`),
- * `SORTS_FUSIONNES` (`src/data/sortsFusionnes.ts`) et la table du pont (`scripts/data/lib/pontSortsFan.ts`).
+ * `SORTS_FUSIONNES_1897` (`src/data/sortsFusionnes.ts`) et la table du pont (`scripts/data/lib/pontSortsFan.ts`).
  *
  * FAIL-FAST, rien n'est écrit (sortie 1, fautes nommées) si : forme non canonique d'un fichier, cible
  * de fusion absente ou elle-même fusionnée, fusion sans cellule imprimée, cellule que le pont ne résout
@@ -28,7 +28,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SORTS_FUSIONNES } from '../../src/data/sortsFusionnes.ts';
+import { SORTS_FUSIONNES_1897 } from '../../src/data/sortsFusionnes.ts';
 import { cellulesDeSortsFan, normCellule, LIVRE_FAN } from '../data/lib/cellulesDeSortsFan.ts';
 import { ligneDeCellule, listesDerivees } from '../data/lib/pontSortsFan.ts';
 
@@ -89,10 +89,10 @@ for (const { doublons } of parCreature.values()) fautes.push(...doublons.map((d)
 
 // 1. Fusions : porte, puis emplacement secondaire calculé à la cellule.
 const poses = [];
-for (const [fan, cible] of Object.entries(SORTS_FUSIONNES)) {
+for (const [fan, cible] of Object.entries(SORTS_FUSIONNES_1897)) {
   const absorbante = parId.get(cible);
   if (!absorbante) { fautes.push(`fusion ${fan} → ${cible} : cible absente de spells.json`); continue; }
-  if (SORTS_FUSIONNES[cible]) { fautes.push(`fusion ${fan} → ${cible} : la cible est elle-même fusionnée`); continue; }
+  if (SORTS_FUSIONNES_1897[cible]) { fautes.push(`fusion ${fan} → ${cible} : la cible est elle-même fusionnée`); continue; }
   const entreeFan = parId.get(fan);
   const libelle = entreeFan ? entreeFan.label : null;
   const imprimees = cellules.filter((c) => ligneDeCellule(c)?.id === cible);
@@ -120,7 +120,7 @@ const naissants = new Set(NEUVES.map((n) => n.entree.id));
 for (const c of cellules) {
   const id = ligneDeCellule(c)?.id;
   if (id && !parId.has(id) && !naissants.has(id)) fautes.push(`pont : ${c.fichier}:${c.ligne} → ${id}, absent de spells.json`);
-  if (id && SORTS_FUSIONNES[id]) fautes.push(`pont : ${c.fichier}:${c.ligne} → ${id}, id FUSIONNÉ`);
+  if (id && SORTS_FUSIONNES_1897[id]) fautes.push(`pont : ${c.fichier}:${c.ligne} → ${id}, id FUSIONNÉ`);
 }
 if (fautes.length) sortir();
 
@@ -138,7 +138,7 @@ for (const e of neuves) if (!parId.has(e.id)) { docSorts.push(e); parId.set(e.id
 for (const c of creatures.doc) {
   if (!Array.isArray(c.spells)) continue;
   const derivee = c.source?.book === LIVRE_FAN ? parCreature.get(c.id)?.spells : undefined;
-  const cible = derivee ?? c.spells.map((id) => SORTS_FUSIONNES[id] ?? id);
+  const cible = derivee ?? c.spells.map((id) => SORTS_FUSIONNES_1897[id] ?? id);
   if (JSON.stringify(cible) !== JSON.stringify(c.spells)) { c.spells = [...cible]; changes++; }
 }
 

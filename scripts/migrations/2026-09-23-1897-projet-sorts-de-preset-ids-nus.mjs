@@ -18,9 +18,11 @@
  * PORTE DE FORME : chaque élément de `profil.spells` est la forme SOURCE (objet de clé unique `id`,
  * chaîne non vide) ou la forme CIBLE (chaîne non vide) ; sinon rien n'est écrit, sortie 1, preset nommé.
  * IDEMPOTENT : rejouée sur l'état final, la migration n'écrit rien et sort 0.
- * BORNE HAUTE CLOSE (`schema` ∈ {12, 13}) : DERNIÈRE de la chaîne dans l'ordre lexical, elle NOMME un
- * `schema` futur.
- * FAIL-FAST : `schema` absent, non numérique ou ∉ {12, 13}, `scenes` non-tableau, `narratif.presetsPnj`
+ * BORNE HAUTE OUVERTE (`schema` ∈ {12, ≥ 13}) : la DERNIÈRE migration de la chaîne dans l'ordre
+ * lexical est la seule à nommer un `schema` futur (`DERNIERE`, dérivée par
+ * `src/scenes/migrations-format-projet.test.ts`). Le document sort donc d'ici en `schema` =
+ * max(le sien, 13) : une migration amont ne RABAISSE jamais une forme.
+ * FAIL-FAST : `schema` absent, non entier ou < 12, `scenes` non-tableau, `narratif.presetsPnj`
  * non-tableau, périmètre vide → rien n'est écrit, sortie 1.
  */
 import fs from 'node:fs';
@@ -31,7 +33,7 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const NOM = '2026-09-23-1897-projet-sorts-de-preset-ids-nus';
 const RACINE = path.join(ROOT, 'src/scenes');
 
-/** Forme du document AVANT et APRÈS ce bump — la borne haute est CLOSE (cf. en-tête). */
+/** Forme du document AVANT et APRÈS ce bump — la borne haute est OUVERTE (cf. en-tête). */
 const SCHEMA_AVANT = 12;
 const SCHEMA_APRES = 13;
 
@@ -57,8 +59,8 @@ for (const abs of cibles) {
   const doc = JSON.parse(brut);
 
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
-  if (doc.schema !== SCHEMA_AVANT && doc.schema !== SCHEMA_APRES) {
-    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`);
+  if (typeof doc.schema !== 'number' || !Number.isInteger(doc.schema) || doc.schema < SCHEMA_AVANT) {
+    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou plus récent attendu)`);
     continue;
   }
   if (!Array.isArray(doc.scenes)) { echecs.push(`${rel} : \`scenes\` absent ou non-tableau`); continue; }
@@ -94,7 +96,7 @@ if (echecs.length) {
 for (const r of rapports) {
   const sortie = Object.fromEntries(
     Object.entries(r.doc).map(([k, v]) => (
-      k === 'narratif' ? [k, { ...v, presetsPnj: r.presetsPnj }] : k === 'schema' ? [k, SCHEMA_APRES] : [k, v]
+      k === 'narratif' ? [k, { ...v, presetsPnj: r.presetsPnj }] : k === 'schema' ? [k, Math.max(v, SCHEMA_APRES)] : [k, v]
     )),
   );
   const out = canonique(sortie);
@@ -105,7 +107,7 @@ for (const r of rapports) {
   const restes = apres.narratif.presetsPnj
     .filter((p) => (p?.profil?.spells ?? []).some((s) => !estCible(s)))
     .map((p) => p.id);
-  if (restes.length || apres.schema !== SCHEMA_APRES) {
+  if (restes.length || !(apres.schema >= SCHEMA_APRES)) {
     console.error(`[${NOM}] VÉRIFICATION POST-ÉCRITURE ROUGE — ${r.rel} : schema=${apres.schema}, ${restes.join(', ')}`);
     process.exit(1);
   }

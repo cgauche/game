@@ -83,10 +83,10 @@ export function joue(racine, migration) {
   return { code: r.status, stdout, stderr, sortie: `${stdout}${stderr}` };
 }
 
-/** Un rouge d'AVANT-écriture : sur un dépôt portant `fichiers`, `migration` sort 1, DEMANDE
- *  l'arbitrage, NOMME `message`, et ne touche aucun fichier posé. */
-export function refuse(migration, fichiers, message) {
-  const d = depot(fichiers);
+/** Un rouge d'AVANT-écriture : sur un dépôt portant `fichiers` (et les `copies` de l'arbre, cf.
+ *  `depot`), `migration` sort 1, DEMANDE l'arbitrage, NOMME `message`, et ne touche aucun fichier posé. */
+export function refuse(migration, fichiers, message, copies = []) {
+  const d = depot(fichiers, copies);
   try {
     const { code, sortie } = joue(d.racine, migration);
     assert.equal(code, 1, `sortie ${code} — la migration devait ARRÊTER : ${sortie.slice(0, 1200)}`);

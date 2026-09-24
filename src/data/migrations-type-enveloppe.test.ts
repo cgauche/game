@@ -229,7 +229,7 @@ describe('vague 12b — la donnée porte son `type` et RIEN d’autre n’a boug
   // tenue au PRÉSENT, avec les 12 autres matières, par la partition EXHAUSTIVE en fin de fichier.
   // 1730 → 1731 : +1 : Mendier, LDB 09 l.97 (folio 119), #1612.
   // 1731 → 1681 : −50 : `spells.json` 576 → 526, #1897 — 54 entrées du livre fan fusionnées dans l'entrée
-  // qui les double (`SORTS_FUSIONNES`), 4 sorts fan imprimés sans entrée créés (`frenchy.bzh 56` l.145,
+  // qui les double (`SORTS_FUSIONNES_1897`), 4 sorts fan imprimés sans entrée créés (`frenchy.bzh 56` l.145,
   // `71` l.259-260, `50` l.217).
   const TOTAL_ATTENDU = 1681;
 

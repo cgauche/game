@@ -130,7 +130,7 @@ import type { Scene } from './scene';
 // demi-Mouvement et le plafond de mains d'arme disparaissent en silence. La save se jette (politique 2
 // ci-dessus).
 // 50 → 51 (#1897) : 54 ids de sort du livre fan sont FUSIONNÉS dans l'entrée qui les double
-// (`SORTS_FUSIONNES`, `src/data/sortsFusionnes.ts`) et n'existent plus. `snapshotSave` recopie le `state`
+// (`SORTS_FUSIONNES_1897`, `src/data/sortsFusionnes.ts`) et n'existent plus. `snapshotSave` recopie le `state`
 // ENTIER, `Combatant.spells` des héros et des pions de la scène vivante comprise : une save de 50 rouvrirait
 // un héros dont `findSpellById` ne résout plus le sort appris (`grimoire.ts`) — il disparaît de son
 // grimoire EN SILENCE. La save se jette (politique 2 ci-dessus).

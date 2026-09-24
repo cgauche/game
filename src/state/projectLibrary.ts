@@ -12,11 +12,12 @@ import type { GameState } from './store';
  *  un schema 9 dont les décors à places ne sont pas activés, ou un schema 10 dont les décors
  *  fouillables portent encore un champ `interact`, un projet enregistré avant #877 est un schema 11
  *  dont un décor peut ne NOMMER aucun type, un projet enregistré avant #1897 est un schema 12 dont un
- *  preset de PNJ peut lister ses sorts en `{ id }`. La montée au format courant se fait au CHARGEMENT via
- *  `parseProject` (chaîne 2→3→4→5→6→7→8→9→10→11→12→13), jamais dans ce module — et c'est là, pas ici,
+ *  preset de PNJ peut lister ses sorts en `{ id }`, ou un schema 13 qui peut citer un sort FUSIONNÉ par
+ *  #1897. La montée au format courant se fait au CHARGEMENT via
+ *  `parseProject` (chaîne 2→3→4→5→6→7→8→9→10→11→12→13→14), jamais dans ce module — et c'est là, pas ici,
  *  que l'absence d'identité se fait REFUSER. */
 export type StoredProject = Omit<ProjectDoc, 'schema' | 'narratif' | 'type' | 'id' | 'label' | 'versionContenu'> & {
-  schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
+  schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14;
   narratif?: NarratifBlock;
   type?: 'projet';
   id?: string;
