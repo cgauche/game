@@ -117,7 +117,7 @@ import seaPerilsJson from './sea-perils.json';
 import seaWeatherJson from './sea-weather.json';
 import shipConstructionJson from './ship-construction.json';
 import riverNavigationJson from './river-navigation.json';
-import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability, type TestedAvailability, Difficulty, type NightTestKind, type StakeForm } from '../engine/types';
+import { CharKey, Weapon, VehicleData, StructureData, Availability, type TestedAvailability, Difficulty, type NightTestKind, type StakeForm } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
 import type { PowerEstimateRow, MightModifierRow, WarMachineRow, StructureRow as MassBattleStructureRow, HazardRow } from '../engine/massBattle'; // type-only (le runtime de massBattle.ts importe ces tableaux d'ici)
@@ -3016,13 +3016,6 @@ const etatParLabelMinuscule = indexParChamp('etats', etats, (e) => e.label.toLow
 export function conditionIdByLabel(label: string): string | undefined {
   return etatParLabelMinuscule(label.toLowerCase())?.id;
 }
-/** Inverse de `CHAR_LABELS` (engine/types) : nom FR complet (« Force Mentale ») → `CharKey` (« FM »).
- *  Couture UNIQUE label→id des Caractéristiques — consommée par `engine/spellRange.ts` pour parser
- *  la prose des Portées/ZdE de sort (« (Bonus de Force Mentale) mètres »), jamais recopiée ailleurs. */
-const CHAR_KEY_BY_LABEL = new Map<string, CharKey>((Object.entries(CHAR_LABELS) as [CharKey, string][]).map(([k, v]) => [v, k]));
-export function charKeyByLabel(label: string): CharKey | undefined {
-  return CHAR_KEY_BY_LABEL.get(label);
-}
 const especeParId = indexParId('species', species);
 /** Résout une Espèce par son `id` STABLE (slug du libellé) — réf runtime/données (Combatant.species,
  *  pregens, draft). Le libellé ne sert qu'à l'affichage (`speciesSingular`). */
@@ -3169,13 +3162,6 @@ export function findTalent(label: string): TalentData | undefined {
  *  label→id (doctrine CLAUDE.md) : SEULE définition, `src/engine` délègue ici. */
 export function talentIdByLabel(label: string): string {
   return findTalent(label)?.id ?? slugId(label);
-}
-/** Specs PROPOSÉES par un libellé d'AUTHORING à joker (« Nom (Au choix) ») — résout Compétence OU
- *  Talent par libellé puis délègue à `specPoolOf` (hoisté plus bas dans ce module). `[]` si le nom
- *  ne porte aucune spec ou n'est pas au catalogue. */
-export function wildcardSpecIds(name: string): string[] {
-  const def = findSkill(name) ?? findTalent(name);
-  return def ? specPoolOf(def) : [];
 }
 const talentParId = indexParId('talents', talents);
 /** Résout un Talent par son `id` STABLE (référence structurée — fin du lookup par libellé parsé). */
@@ -3527,7 +3513,7 @@ export function specCatalogOf(def: { specsSource?: SpecsSource; specs?: SpecEntr
 }
 /** VALIDITÉ d'une spéc pour une def : l'id existe au catalogue inline (pool ou non) OU dans le REGISTRE
  *  d'une `specsSource` (⊇ son pool joueur — un statbloc RAW porte une spéc réelle non choisissable).
- *  Porte de la RÉSOLUTION (`resolveSpecId`, `testValue` par id, bonus de règle) et des gardes. */
+ *  Porte de la RÉSOLUTION (`testValue` par id, bonus de règle) et des gardes. */
 export function specResolves(def: { specsSource?: SpecsSource; specs?: SpecEntry[] }, specId: string): boolean {
   return def.specsSource
     ? SPEC_SOURCES[def.specsSource].resolves(specId)

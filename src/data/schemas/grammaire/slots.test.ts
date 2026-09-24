@@ -221,7 +221,8 @@ describe('compteur de marques — le seul détecteur du zéro SILENCIEUX', () =>
       "idDe('spell', 'mineure')",
       ...Array.from({ length: 4 }, () => "idDe('table')"),
       // … 6 → 7 (#1520, 2026-09-23) : `defs/pregens.ts › careerTalent` (`refOuSpec('talent')`).
-      ...Array.from({ length: 7 }, () => "idDe('talent')"),
+      // … 7 → 8 (#1924) : `grammaire/mecanique.ts › flowTestSchema.easierIf.hasTalent`.
+      ...Array.from({ length: 8 }, () => "idDe('talent')"),
       // +1 site ADOPTÉ (#1690) : `defs-scenes/scene.ts › layerSchema.tiles` résout CHAQUE case de la
       // grille contre `terrains.json` — 18 154 cellules sur les 4 projets livrés.
       "idDe('terrain')",

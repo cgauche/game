@@ -381,7 +381,7 @@ export const flowTestSchema = z.strictObject({
   easierIf: z
     .strictObject({
       hasSkill: z.strictObject({ id: z.string(), spec: z.string().optional() }).optional(),
-      hasTalent: z.string().optional(),
+      hasTalent: idDe('talent').optional(),
       steps: z.number().optional(),
     })
     .optional(),

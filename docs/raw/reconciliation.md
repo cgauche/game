@@ -75,7 +75,7 @@
 - `src/data/index.ts:849` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
 - `src/data/reglesOptionnelles.json:542` (l.5) — "ref": "NADJ 14 l.5",
 - `src/data/schemas/defs/species.ts:57` (l.5) — *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
-- `src/engine/creation.test.ts:128` (l.5) — describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
+- `src/engine/creation.test.ts:135` (l.5) — describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
 
 ### PDT 8 — 1 réf(s) code, 0 dans l'Atlas
 - `src/ui/mono-stake-ratchet.test.ts:73` (l.370) — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
@@ -207,4 +207,4 @@ _Aucun._
 
 Code : AA, ACE, ADE I, ADE II, EDO, EDOC, LDB, MCLB, MDG, MSRC, NADJ, PDT, VDM, ZI
 Atlas : AA, ACE, ADE I, ADE II, AU1, CRB, EDO, EDOC, LDB, MCLB, MDG, MSR, MSRC, NADJ, PDT, VDM, ZI
-<!-- sources-empreinte: 6a892e4605d62c7bb76755c1503afb260c4a1633 (4224 fichiers, 152 dossiers) corps: 971534e54682f805a24a49ed3eb93644b4474a5c -->
+<!-- sources-empreinte: 9e25c8bc5b417c92e7b6ae636afad475e59dae41 (4228 fichiers, 153 dossiers) corps: e471ae3e0ae25ac3137dee555e872d8ff072dbbd -->

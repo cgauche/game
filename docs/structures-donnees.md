@@ -4273,7 +4273,7 @@ dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **3470** — espèce `id` **480**, espèce `acteur` **2990**.
+Slots déclarés : **3554** — espèce `id` **564**, espèce `acteur` **2990**.
 
 ### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)
 
@@ -4302,30 +4302,43 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `creatures.json` | `[].spells[]` | `spells` | `spell` | liste | 665 | 665 / 665 |
 | `crew-roles.json` | `[].skills[].id` | `id` | `skill` | liste | 10 | 10 / 10 |
 | `criticals.json` | `[].entries[].test.test.skill.id` | `id` | `skill` | liste | 38 | 38 / 38 |
+| `criticals.json` | `[].entries[].test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `criticals.json` | `[].entries[].test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `criticals.json` | `[].entries[].test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `criticals.json` | `[].entries[].test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `criticals.json` | `[].entries[].test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `criticals.json` | `[].entries[].amputation.unites\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `criticals.json` | `[].entries[].escalation.apresDelai.jours\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `criticals.json` | `[].entries[].escalation.onNextCritWhileCondition.test.test.skill.id` | `id` | `skill` | liste | 1 | 1 / 1 |
+| `criticals.json` | `[].entries[].escalation.onNextCritWhileCondition.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `criticals.json` | `[].entries[].escalation.onNextCritWhileCondition.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `criticals.json` | `[].entries[].escalation.onNextCritWhileCondition.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `criticals.json` | `[].entries[].escalation.onNextCritWhileCondition.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `criticals.json` | `[].entries[].escalation.onNextCritWhileCondition.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `defauts-de-compilation.json` | `cheminDeRonde` | `cheminDeRonde` | `terrain` | un | 1 | 1 / 1 |
 | `defauts-de-compilation.json` | `masse` | `masse` | `terrain` | un | 1 | 1 / 1 |
 | `defauts-de-compilation.json` | `pont` | `pont` | `terrain` | un | 1 | 1 / 1 |
 | `domains.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `domains.json` | `[].effects[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `domains.json` | `[].windModifiers[].cancelledBy.requiresSkill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
 | `domains.json` | `[].windModifiers[].cancelledBy.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
+| `domains.json` | `[].windModifiers[].cancelledBy.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `etats.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 3 | 3 / 3 |
+| `etats.json` | `[].effects[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `etats.json` | `[].recover.skill.id` | `id` | `skill` | liste | 1 | 1 / 1 |
 | `gods.json` | `[].blessings[]` | `blessings` | `spell` | liste | 90 | 90 / 90 |
 | `gods.json` | `[].miracles[]` | `miracles` | `spell` | liste | 96 | 96 / 96 |
 | `gods.json` | `[].chaosSpells[]` | `chaosSpells` | `spell` | liste | 17 | 17 / 17 |
 | `incidents-monture.json` | `entries[].mount.riderTest.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
 | `maladies.json` | `[].dailyTest.test.test.skill.id` | `id` | `skill` | liste | 1 | 1 / 1 |
+| `maladies.json` | `[].dailyTest.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `maladies.json` | `[].dailyTest.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `maladies.json` | `[].dailyTest.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `maladies.json` | `[].dailyTest.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `maladies.json` | `[].dailyTest.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `maladies.json` | `[].mutation.into` | `into` | `maladie` | liste | 1 | 1 / 1 |
 | `maneuvers.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `maneuvers.json` | `[].effects[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `merchants.json` | `[].curated[]` | `curated` | `trapping` | liste | 19 | 19 / 19 |
 | `miscast.json` | `[].entries[].ops[].value\|0\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `miscast.json` | `[].entries[].ops[].value\|2.sum[]\|0\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
@@ -4377,6 +4390,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `miscast.json` | `[].entries[].test.onFailHard.ops[].days\|0\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `miscast.json` | `[].entries[].test.onFailHard.ops[].days\|2.sum[]\|0\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `mutations.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `mutations.json` | `[].effects[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `pregens.json` | `[].species` | `species` | `species` | liste | 8 | 8 / 8 |
 | `pregens.json` | `[].career` | `career` | `career` | liste | 8 | 8 / 8 |
 | `pregens.json` | `[].careerTalent.id` | `id` | `talent` | liste | 2 | 2 / 2 |
@@ -4387,36 +4401,53 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `props.json` | `[].volume.primitives[]\|1.material` | `material` | `material` | liste | 297 | 297 / 297 |
 | `props.json` | `[].volume.primitives[]\|2.material` | `material` | `material` | liste | 297 | 297 / 297 |
 | `psychology.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `psychology.json` | `[].effects[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `psychology.json` | `[].test.skill.id` | `id` | `skill` | liste | 7 | 7 / 7 |
 | `qualities.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `qualities.json` | `[].effects[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `rencontres-edoc.json` | `tables.positives[].mount.riderTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `rencontres-edoc.json` | `tables.fortuites[].mount.riderTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `rencontres-edoc.json` | `tables.dangereuses[].mount.riderTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.greement[].crewHit.crewTarget\|1.stations[]` | `stations` | `shipStation` | liste | 1 | 1 / 1 |
 | `river-criticals.json` | `tables.greement[].crewHit.crewTarget\|2.role.id` | `id` | `crewRole` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.greement[].crewHit.test.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.greement[].crewHit.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.greement[].crewHit.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.greement[].crewHit.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.greement[].crewHit.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.greement[].crewHit.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.avirons[].crewHit.crewTarget\|1.stations[]` | `stations` | `shipStation` | liste | 1 | 1 / 1 |
 | `river-criticals.json` | `tables.avirons[].crewHit.crewTarget\|2.role.id` | `id` | `crewRole` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.avirons[].crewHit.test.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.avirons[].crewHit.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.avirons[].crewHit.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.avirons[].crewHit.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.avirons[].crewHit.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.avirons[].crewHit.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.gouvernail[].crewHit.crewTarget\|1.stations[]` | `stations` | `shipStation` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.gouvernail[].crewHit.crewTarget\|2.role.id` | `id` | `crewRole` | liste | 1 | 1 / 1 |
 | `river-criticals.json` | `tables.gouvernail[].crewHit.test.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.gouvernail[].crewHit.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.gouvernail[].crewHit.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.gouvernail[].crewHit.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.gouvernail[].crewHit.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.gouvernail[].crewHit.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.coque[].crewHit.crewTarget\|1.stations[]` | `stations` | `shipStation` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.coque[].crewHit.crewTarget\|2.role.id` | `id` | `crewRole` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.coque[].crewHit.test.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.coque[].crewHit.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.coque[].crewHit.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.coque[].crewHit.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.coque[].crewHit.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.coque[].crewHit.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.superstructure[].crewHit.crewTarget\|1.stations[]` | `stations` | `shipStation` | liste | 1 | 1 / 1 |
 | `river-criticals.json` | `tables.superstructure[].crewHit.crewTarget\|2.role.id` | `id` | `crewRole` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.superstructure[].crewHit.test.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.superstructure[].crewHit.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.superstructure[].crewHit.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.superstructure[].crewHit.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `river-criticals.json` | `tables.superstructure[].crewHit.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `river-criticals.json` | `tables.superstructure[].crewHit.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `sea-cargo.json` | `opportunite.test.skill.id` | `id` | `skill` | un | 1 | 1 / 1 |
 | `sea-perils.json` | `hazards[].freeTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `sea-perils.json` | `tourbillonSwim.skill.id` | `id` | `skill` | un | 1 | 1 / 1 |
@@ -4431,28 +4462,43 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `ship-criticals.json` | `tables.cargaison[].crewHit.crewTarget\|1.stations[]` | `stations` | `shipStation` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.cargaison[].crewHit.crewTarget\|2.role.id` | `id` | `crewRole` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.cargaison[].crewHit.test.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.cargaison[].crewHit.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.cargaison[].crewHit.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.cargaison[].crewHit.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.cargaison[].crewHit.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.cargaison[].crewHit.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.greement[].crewHit.crewTarget\|1.stations[]` | `stations` | `shipStation` | liste | 10 | 10 / 10 |
 | `ship-criticals.json` | `tables.greement[].crewHit.crewTarget\|2.role.id` | `id` | `crewRole` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.greement[].crewHit.test.test.skill.id` | `id` | `skill` | liste | 5 | 5 / 5 |
+| `ship-criticals.json` | `tables.greement[].crewHit.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.greement[].crewHit.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.greement[].crewHit.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.greement[].crewHit.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.greement[].crewHit.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.coque[].crewHit.crewTarget\|1.stations[]` | `stations` | `shipStation` | liste | 4 | 4 / 4 |
 | `ship-criticals.json` | `tables.coque[].crewHit.crewTarget\|2.role.id` | `id` | `crewRole` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.coque[].crewHit.test.test.skill.id` | `id` | `skill` | liste | 4 | 4 / 4 |
+| `ship-criticals.json` | `tables.coque[].crewHit.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.coque[].crewHit.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.coque[].crewHit.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.coque[].crewHit.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.coque[].crewHit.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.avirons[].crewHit.crewTarget\|1.stations[]` | `stations` | `shipStation` | liste | 2 | 2 / 2 |
 | `ship-criticals.json` | `tables.avirons[].crewHit.crewTarget\|2.role.id` | `id` | `crewRole` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.avirons[].crewHit.test.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
+| `ship-criticals.json` | `tables.avirons[].crewHit.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.avirons[].crewHit.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.avirons[].crewHit.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.avirons[].crewHit.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.avirons[].crewHit.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.equipements[].crewHit.crewTarget\|1.stations[]` | `stations` | `shipStation` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.equipements[].crewHit.crewTarget\|2.role.id` | `id` | `crewRole` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.equipements[].crewHit.test.test.skill.id` | `id` | `skill` | liste | 1 | 1 / 1 |
+| `ship-criticals.json` | `tables.equipements[].crewHit.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.equipements[].crewHit.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.equipements[].crewHit.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-criticals.json` | `tables.equipements[].crewHit.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `ship-criticals.json` | `tables.equipements[].crewHit.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `ship-stations.json` | `[].requiresTrait.id` | `id` | `navalTrait` | liste | 2 | 2 / 2 |
 | `species.json` | `[].skills[]\|0.id` | `id` | `skill` | liste | 315 | 315 / 315 |
 | `species.json` | `[].skills[]\|1\|0.of[]\|0.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4472,17 +4518,24 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `spells.json` | `[].duration\|2.value\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `spells.json` | `[].opposed.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `spells.json` | `[].effects\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `spells.json` | `[].effects\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `spells.json` | `[].variants[].duration\|1.value\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `spells.json` | `[].variants[].duration\|2.value\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `spells.json` | `[].variants[].effects\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `spells.json` | `[].variants[].effects\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `steam-breakdown.json` | `[].restart[].skill.id` | `id` | `skill` | liste | 4 | 4 / 4 |
 | `structures.json` | `[].traits[].id` | `id` | `trait` | liste | 5 | 5 / 5 |
 | `symptoms.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `symptoms.json` | `[].effects[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `symptoms.json` | `[].onTick.test.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
+| `symptoms.json` | `[].onTick.test.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `symptoms.json` | `[].onTick.test.success\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `symptoms.json` | `[].onTick.test.success\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `symptoms.json` | `[].onTick.test.fail\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `symptoms.json` | `[].onTick.test.fail\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `talents.json` | `[].test.matches[].skill.id` | `id` | `skill` | liste | 112 | 112 / 112 |
 | `talents.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
+| `talents.json` | `[].effects[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `talents.json` | `[].combat.reverseFailed.skills[].id` | `id` | `skill` | liste | 9 | 9 / 9 |
 | `talents.json` | `[].variants[].test.matches[].skill.id` | `id` | `skill` | liste | 4 | 4 / 4 |
 | `talents.json` | `[].variants[].combat.reverseFailed.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4494,8 +4547,11 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `terrains.json` | `[].overlayProp` | `overlayProp` | `prop` | liste | 1 | 1 / 1 |
 | `terrains.json` | `[].matiere` | `matiere` | `material` | liste | 1 | 1 / 1 |
 | `traits.json` | `[].effects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `traits.json` | `[].effects[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `trappings.json` | `[].onHitEffects[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `trappings.json` | `[].onHitEffects[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `trappings.json` | `[].consumable\|3.test.skill.id` | `id` | `skill` | liste | 6 | 6 / 6 |
+| `trappings.json` | `[].consumable\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `trappings.json` | `[].consumableDuration.minutes\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `trappings.json` | `[].consumableDuration.hours\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
 | `trappings.json` | `[].consumableDuration.days\|10.rule` | `rule` | `regleOptionnelle` | liste | 0 | 0 / 0 |
@@ -4503,6 +4559,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `vehicles.json` | `[].ship.traits[].id` | `id` | `navalTrait` | liste | 20 | 20 / 20 |
 | `water-exposure.json` | `test.skill.id` | `id` | `skill` | un | 1 | 1 / 1 |
 | `arene-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].effectZones[].crossTest.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].reliefDefaults.cliff` | `cliff` | `material` | liste | 18 | 18 / 18 |
 | `arene-projet.json` | `scenes[].reliefDefaults.ramp` | `ramp` | `material` | liste | 18 | 18 / 18 |
 | `arene-projet.json` | `scenes[].reliefDefaults.deck` | `deck` | `material` | liste | 18 | 18 / 18 |
@@ -4520,6 +4577,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 4 | 4 / 4 |
+| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].combat.spells[]` | `spells` | `spell` | liste | 4 | 4 / 4 |
 | `arene-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
@@ -4534,6 +4592,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | `id` | `skill` | liste | 3 | 3 / 3 |
+| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4543,6 +4602,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
+| `arene-projet.json` | `scenes[].triggers[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4552,14 +4612,17 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].encounters[].onVictory\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.places[].port.ref` | `ref` | `navalPort` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|44.spell` | `spell` | `spell` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|45.spellId` | `spellId` | `spell` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4568,6 +4631,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `arene-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `narratif.presetsPnj[].profil.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].effectZones[].crossTest.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].reliefDefaults.cliff` | `cliff` | `material` | liste | 3 | 3 / 3 |
 | `barge-du-sel-projet.json` | `scenes[].reliefDefaults.ramp` | `ramp` | `material` | liste | 3 | 3 / 3 |
 | `barge-du-sel-projet.json` | `scenes[].reliefDefaults.deck` | `deck` | `material` | liste | 3 | 3 / 3 |
@@ -4585,6 +4649,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].combat.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
@@ -4599,6 +4664,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4608,6 +4674,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4617,14 +4684,17 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.places[].port.ref` | `ref` | `navalPort` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|44.spell` | `spell` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|45.spellId` | `spellId` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4633,6 +4703,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `barge-du-sel-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `narratif.presetsPnj[].profil.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].effectZones[].crossTest.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].reliefDefaults.cliff` | `cliff` | `material` | liste | 2 | 2 / 2 |
 | `diligence-projet.json` | `scenes[].reliefDefaults.ramp` | `ramp` | `material` | liste | 2 | 2 / 2 |
 | `diligence-projet.json` | `scenes[].reliefDefaults.deck` | `deck` | `material` | liste | 2 | 2 / 2 |
@@ -4650,6 +4721,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].combat.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 1 | 1 / 1 |
@@ -4664,6 +4736,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4673,6 +4746,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].triggers[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4682,14 +4756,17 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].encounters[].onVictory\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.places[].port.ref` | `ref` | `navalPort` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|44.spell` | `spell` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|45.spellId` | `spellId` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4698,6 +4775,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `diligence-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `narratif.presetsPnj[].profil.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].effectZones[].crossTest.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].effectZones[].crossTest.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.cliff` | `cliff` | `material` | liste | 5 | 5 / 5 |
 | `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.ramp` | `ramp` | `material` | liste | 5 | 5 / 5 |
 | `loup-et-saumure-projet.json` | `scenes[].reliefDefaults.deck` | `deck` | `material` | liste | 5 | 5 / 5 |
@@ -4715,6 +4793,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].combat.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
@@ -4729,6 +4808,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
+| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4738,6 +4818,7 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4747,14 +4828,17 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.places[].port.ref` | `ref` | `navalPort` | liste | 2 | 2 / 2 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|44.spell` | `spell` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|45.spellId` | `spellId` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.easierIf.hasTalent` | `hasTalent` | `talent` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.spells[]` | `spells` | `spell` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -5118,7 +5202,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 ### 6.3 Angles morts DÉCLARÉS de ce volet
 
 Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`) — l’espèce `acteur`
-pèse **2990** slots sur 3470.
+pèse **2990** slots sur 3554.
 
 - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).
@@ -5126,4 +5210,4 @@ pèse **2990** slots sur 3470.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: f45246464d306771dbcfb005ed66a1538f127909 (388 fichiers, 10 dossiers) corps: 552d7f648ba61521dc10a67ab855a20d6fce1326 -->
+<!-- sources-empreinte: 3844f70ed8ab3a3fa131681009d706b185f31b70 (388 fichiers, 10 dossiers) corps: bc0c498c1118a882abf9ab01da2ac1101cce8f7b -->

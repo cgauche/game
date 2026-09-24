@@ -134,7 +134,11 @@ import type { Scene } from './scene';
 // ENTIER, `Combatant.spells` des héros et des pions de la scène vivante comprise : une save de 50 rouvrirait
 // un héros dont `findSpellById` ne résout plus le sort appris (`grimoire.ts`) — il disparaît de son
 // grimoire EN SILENCE. La save se jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 51;
+// 51 → 52 (#1924) : la clé d'un emplacement de carrière (`Combatant.careerSlotChoices`,
+// `engine/careerSlots.ts`) se résume en ids, plus en libellés. Une save de 51 rouvrirait des héros dont
+// aucune désignation n'est plus appariée à son emplacement : chaque joker de carrière redevient à désigner.
+// La save se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 52;
 
 export interface SaveMeta {
   version: number;

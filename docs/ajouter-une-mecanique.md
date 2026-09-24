@@ -145,13 +145,13 @@ Lecture — un seul point d'entrée par portée, chaque canal restant disjoint p
 
 | Lecteur | Site | Portée |
 |---|---|---|
-| `traitCapability` | `src/engine/traits/dispatch.ts:222` | par trait |
+| `traitCapability` | `src/engine/traits/dispatch.ts:204` | par trait |
 | `itemCapability` | `src/engine/capabilities.ts:25` | par objet |
 | `hasCapability` | `src/engine/capabilities.ts:45` | agrégat cross-source, par personnage |
 
 ### Une capacité peut être ANNULÉE par un autre trait porté
 
-`suppressesCapabilities` (lu par `traitCapability`, `src/engine/traits/dispatch.ts:226`) : un trait déclare
+`suppressesCapabilities` (lu par `traitCapability`, `src/engine/traits/dispatch.ts:208`) : un trait déclare
 les capacités qu'il annule chez **les autres traits du même porteur** — la résolution rend `false`
 même si un second trait la déclare. C'est de la DONNÉE, jamais un chemin de code par nom de trait :
 1 entrée(s) de `src/data/traits.json` l'exercent, dont `dresse-dompte`
@@ -220,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: e22c3a14816a64203ee0b93a2b5cf4c2c53cefd3 (158 fichiers, 1 dossiers) corps: 41c4df3d6a42d7293841e934bf0f0f09a995b6fe -->
+<!-- sources-empreinte: 3ad5f95b00cca53a5738e63a8702b1b41b72f869 (158 fichiers, 1 dossiers) corps: a73c66c2539cda89b9311a8b91ff3825223a6e99 -->

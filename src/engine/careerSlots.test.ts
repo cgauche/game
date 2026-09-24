@@ -13,7 +13,7 @@ import {
   designateSlot,
   designationsFor,
   freeSlotFor,
-  talentMax,
+  talentMaxById,
   talentMaxReached,
   heldArcaneDomains,
   arcaneDomainCap,
@@ -170,14 +170,14 @@ describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix)
 describe('Maxi des Talents (LDB 10 « Schéma des Talents »)', () => {
   it('Maxi 1 (Lire/Écrire) : atteint dès la 1re acquisition', () => {
     const h = hero({ talents: [{ talentId: 'lire-ecrire', times: 1 }] });
-    expect(talentMax(h, 'Lire/Écrire')).toBe(1);
+    expect(talentMaxById(h, 'lire-ecrire')).toBe(1);
     expect(talentMaxReached(h, 'lire-ecrire')).toBe(true);
     expect(talentMaxReached(h, 'baratiner')).toBe(false);
   });
   it('Maxi « Bonus de Caractéristique » : par spécialisation, recalculé sur la valeur courante', () => {
     // Sens aiguisé : Maxi = Bonus d'Initiative (I 30 → 3).
     const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'gout', times: 3 }, { talentId: 'sens-aiguise', spec: 'ouie', times: 1 }] });
-    expect(talentMax(h, 'Sens aiguisé (Goût)')).toBe(3);
+    expect(talentMaxById(h, 'sens-aiguise')).toBe(3);
     expect(talentMaxReached(h, 'sens-aiguise', 'gout')).toBe(true);
     expect(talentMaxReached(h, 'sens-aiguise', 'ouie')).toBe(false); // spec distincte
   });
@@ -246,31 +246,26 @@ describe('un emplacement « (Au choix) » se désigne par une spécialisation (L
 });
 
 describe('wildcardSpecs — pool d’un joker (SOURCE UNIQUE créateur + avancement)', () => {
+  const joker = (optionId: string, specOptions?: string[]) => ({ optionId, ...(specOptions ? { specOptions } : {}) });
   it('Béni → cultes du registre (ids ; dont les dieux gnomes NADJ)', () => {
-    const s = wildcardSpecs({ label: 'Béni' });
+    const s = wildcardSpecs(joker('beni'), 'talent');
     expect(s).toContain('sigmar');
     expect(s).toContain('evawn');
   });
   it('Magie des Arcanes → ids de domaine (specs id-based, data-driven)', () => {
-    expect(wildcardSpecs({ label: 'Magie des Arcanes' })).toEqual(expect.arrayContaining(['feu', 'ombres', 'metal']));
+    expect(wildcardSpecs(joker('magie-des-arcanes'), 'talent')).toEqual(expect.arrayContaining(['feu', 'ombres', 'metal']));
   });
   it('Magie du Chaos → ids nurgle / slaanesh / tzeentch', () => {
-    expect(wildcardSpecs({ label: 'Magie du Chaos' }).sort()).toEqual(['nurgle', 'slaanesh', 'tzeentch']);
+    expect(wildcardSpecs(joker('magie-du-chaos'), 'talent').sort()).toEqual(['nurgle', 'slaanesh', 'tzeentch']);
   });
   it('Invocation → cultes (ids)', () => {
-    expect(wildcardSpecs({ label: 'Invocation' })).toContain('sigmar');
+    expect(wildcardSpecs(joker('invocation'), 'talent')).toContain('sigmar');
   });
-  it('libellé sans domaine/culte/specs → []', () => {
-    expect(wildcardSpecs({ label: 'Inexistant-xyz' })).toEqual([]);
+  it('id absent du catalogue → []', () => {
+    expect(wildcardSpecs(joker('inexistant-xyz'), 'skill')).toEqual([]);
   });
-  it('entrée par id (avancement) = entrée par libellé (créateur) : un seul pool', () => {
-    expect(wildcardSpecs({ label: 'Béni', optionId: 'beni', wildcard: true }, 'talent')).toEqual(wildcardSpecs({ label: 'Béni' }));
-    expect(wildcardSpecs({ label: 'Savoir', optionId: 'savoir', wildcard: true }, 'skill')).toEqual(wildcardSpecs({ label: 'Savoir' }));
-    expect(wildcardSpecs({ label: 'Béni', optionId: 'beni', wildcard: true }, 'talent').length).toBeGreaterThan(0);
-  });
-  it('liste restreinte « (A ou B) » : prime sur le pool de la def, par les deux entrées', () => {
-    expect(wildcardSpecs({ label: 'Béni', optionId: 'beni', wildcard: true, specOptions: ['sigmar'] }, 'talent')).toEqual(['sigmar']);
-    expect(wildcardSpecs({ label: 'Béni', specOptions: ['sigmar'] })).toEqual(['sigmar']);
+  it('liste restreinte « (A ou B) » : prime sur le pool de la def', () => {
+    expect(wildcardSpecs(joker('beni', ['sigmar']), 'talent')).toEqual(['sigmar']);
   });
 });
 

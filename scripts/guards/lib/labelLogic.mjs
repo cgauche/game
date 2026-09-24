@@ -901,7 +901,7 @@ export function ratchetShortKey(finding) {
 // Reconnaissance du résolveur — critères structurels, jamais une liste de noms :
 //  1. déclaré et exporté dans `src/data/index.ts` (seul fichier où la légitimité existe, doctrine
 //     CLAUDE.md — un résolveur par label ailleurs serait une AUTRE faute, hors périmètre #909) ;
-//  2. il RÉSOUT par libellé, sous l'une des deux formes que porte ce fichier :
+//  2. il RÉSOUT par libellé, sous l'une des trois formes que porte ce fichier :
 //     a. fonction/flèche dont le paramètre s'appelle EXACTEMENT `label` et dont le type de retour est
 //        une entité de catalogue — `XxxData` (`CreatureData`/`SpellData`/`TalentData`/`SkillData`/
 //        `StarData`/`DomainData`/`TrappingData`), convention RÉELLE des interfaces app-owned ;
@@ -910,6 +910,9 @@ export function ratchetShortKey(finding) {
 //        (a). C'est la forme prise par `findDomain` (`index.ts:2738-2739`) quand son corps fléché a
 //        cédé la place à l'index vif : un critère qui ne juge que la FORME SYNTAXIQUE (flèche avec
 //        corps) devenait muet sur un résolveur inchangé pour l'appelant.
+//     c. fonction/flèche à paramètre `label` dont le NOM suit `…By…Label` (`talentIdByLabel`,
+//        `traitIdByLabel`, `weaponGroupIdByWeaponLabel`…) : la conversion libellé→id est la même
+//        résolution, elle rend l'id au lieu de l'entrée (#1924).
 // Choix MESURÉ plutôt qu'une liste : une liste nommée sur les 3 résolveurs cités par le ticket
 // (`findCreature`/`findSpell`/`findTrappingByLabel`) aurait manqué `findStar`/`findDomain`/
 // `findSkill`/`findTalent` — QUATRE résolveurs de MÊME forme, présents dans le corpus réel,
@@ -919,19 +922,8 @@ export function ratchetShortKey(finding) {
 // CE QUE CE CRITÈRE NE VOIT PAS (faux négatifs assumés) :
 //  - un paramètre nommé autrement que `label` pile (`labelText`, `lbl`, `name` — `speciesSingular`
 //    prend `label` mais ne RÉSOUT rien, il reformate ; son retour `string` l'exclut déjà) ;
-//  - un retour qui ne suit pas la convention `XxxData` — c'est VOULU : `charKeyByLabel` (→ `CharKey`)
-//    et `conditionIdByLabel`/`weaponGroupIdByLabel` (→ `string`) sont des conversions label→id/enum,
-//    la couture TOLÉRÉE par la doctrine (CLAUDE.md), pas des résolutions d'ENTITÉ — les exclure est
-//    le fond de la distinction, pas un oubli ;
+//  - un retour hors `XxxData` sous un nom hors `…By…Label` ;
 //  - un résolveur déclaré hors de `src/data/index.ts` (hors périmètre par construction, cf. ci-dessus).
-//
-// ANCIEN CAS REPÉRÉ, SOLDÉ 2026-07-27 : `src/engine/careerSlots.ts:339`/`talentEffects.ts:78`
-// appelaient `findTalent(splitLabel(label).name)` — le paramètre n'était pas un `label` d'ENTITÉ
-// mais un FRAGMENT DE TEXTE issu de `splitLabel` (parsing d'une spécialisation d'auteur), la même
-// couture d'AUTHORING que celle documentée pour `slugId(p.name)` plus haut. Le scan ne pouvait pas
-// le distinguer structurellement — soldé en déplaçant la couture vers `talentIdByLabel`
-// (`src/data/index.ts`, retour `string` ≠ `XxxData`, hors du critère ci-dessus) au lieu de
-// documenter une exception permanente ; les deux sites n'appellent plus `findTalent`.
 
 /** Le type est-il une TypeReference (traversant les unions) dont le nom se termine par `Data` —
  *  convention réelle des interfaces de catalogue app-owned de ce dépôt ? @param {ts.TypeNode=} t */
@@ -990,7 +982,9 @@ function labelKeyedBindings(sf) {
  * Résolveurs d'entité par libellé déclarés dans `src/data/index.ts` — fonction nommée exportée
  * (`export function findX(label: string): XData {…}`) ou const fléchée exportée
  * (`export const findX = (label: …): XData | undefined => …`), premier paramètre nommé `label`,
- * retour `XxxData` (cf. en-tête ci-dessus pour la doctrine du critère) ; OU export qui ALIASE un
+ * retour `XxxData` (cf. en-tête ci-dessus pour la doctrine du critère) — ou retour d'un IDENTIFIANT
+ * (`talentIdByLabel(label): string`, nom en `…By…Label`, #1924 : la conversion libellé→id est la même
+ * résolution, elle rend l'id au lieu de l'entrée) ; OU export qui ALIASE un
  * binding keyé par le libellé (`export const findDomain: … = domaineParLabel;`, où `domaineParLabel
  * = indexParChamp('domains', domains, (d) => d.label)`) — la résolution est la même, seule la forme
  * syntaxique diffère.
@@ -1001,9 +995,10 @@ export function collectLabelEntityResolvers(contenu) {
   const names = new Set();
   const parLabel = labelKeyedBindings(sf);
   const hasLabelFirstParam = (params) => params.length >= 1 && ts.isIdentifier(params[0].name) && params[0].name.text === 'label';
+  const resout = (nom, type) => isEntityDataType(type) || /By\w*Label$/.test(nom);
   const visit = (node) => {
     if (ts.isFunctionDeclaration(node) && node.name && isExported(node)
-      && hasLabelFirstParam(node.parameters) && isEntityDataType(node.type)) {
+      && hasLabelFirstParam(node.parameters) && resout(node.name.text, node.type)) {
       names.add(node.name.text);
     }
     if (ts.isVariableStatement(node) && isExported(node)) {
@@ -1011,7 +1006,7 @@ export function collectLabelEntityResolvers(contenu) {
         if (!ts.isIdentifier(d.name)) continue;
         const init = d.initializer && unwrap(d.initializer);
         if (init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init))
-          && hasLabelFirstParam(init.parameters) && isEntityDataType(init.type)) {
+          && hasLabelFirstParam(init.parameters) && resout(d.name.text, init.type)) {
           names.add(d.name.text);
         }
         if (init && ts.isIdentifier(init) && parLabel.has(init.text)) names.add(d.name.text);

@@ -552,18 +552,18 @@ describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)
     return counts;
   }
 
-  it('src/data/index.ts porte au moins les 7 résolveurs mesurés à la pose de la règle', () => {
+  it('src/data/index.ts porte au moins les résolveurs mesurés (7 à la pose de la règle, + les libellé→id de #1924)', () => {
     // Contre le silence : si la convention de nommage (`label` + retour `XxxData`) dérive au fil
     // d'un renommage, ce test devient rouge AVANT que le reste du volet ne devienne muet à son tour.
     expect(RESOLVER_NAMES.size, 'aucun résolveur reconnu : le volet est devenu muet').toBeGreaterThan(0);
     expect([...RESOLVER_NAMES].sort()).toEqual(
       expect.arrayContaining(
-        ['findCreature', 'findDomain', 'findSkill', 'findSpell', 'findStar', 'findTalent', 'findTrappingByLabel'],
+        ['findCreature', 'findDomain', 'findSkill', 'findSpell', 'findStar', 'findTalent', 'findTrappingByLabel', 'skillIdByLabel', 'talentIdByLabel', 'weaponGroupIdByWeaponLabel'],
       ),
     );
   });
 
-  // Le stock est VIDE, et ce zéro est un CLIQUET TENU : aucun plafond ne le double. Un appel neuf
+  // Le stock ne fait que décroître : aucun plafond ne le double. Un appel neuf
   // depuis `src/engine`/`src/state` est une entrée que le stock ne porte pas, donc une `neuve` du
   // volet ci-dessous — et une ligne ajoutée au stock pour « solder » cette régression serait une
   // `perimee` au même geste. Les deux sens sont tenus par l'ÉCART, jamais par un compte.

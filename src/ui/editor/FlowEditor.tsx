@@ -176,7 +176,7 @@ export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: F
       <div className="tf-row">
         <span className="dr">Plus facile si</span>
         <RefField cfg={{ ds: 'skills', single: true, spec: true }} fieldKey="compétence" value={test.easierIf?.hasSkill} onChange={(v) => setEase({ hasSkill: (v as { id: string; spec?: string } | null) ?? undefined })} nullable />
-        <input placeholder="ou talent" value={test.easierIf?.hasTalent ?? ''} onChange={(e) => setEase({ hasTalent: e.target.value || undefined })} />
+        <RefField cfg={{ ds: 'talents', single: true }} fieldKey="ou talent" value={test.easierIf?.hasTalent} onChange={(v) => setEase({ hasTalent: (v as string | null) || undefined })} nullable />
         <label className="dr">−<NumberField variant="nu" label="Crans de facilité" min={1} value={test.easierIf?.steps ?? 1} onChange={(steps) => setEase({ steps })} /> cran(s)</label>
         {/* Menace du talent « Résistance (Menace) » (LDB 10) : tag qui offre son auto-succès sur CE Test.
             Les options sont les SPECS AUTHORÉES du talent (`menaceIds`, lues au catalogue) — l'auteur

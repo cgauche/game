@@ -29,7 +29,7 @@
  */
 import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
-import { byId, specPoolOf, levelsForCareer, findTalentById, findDomainById, findSpeciesById, advancementLabel, refLabel, wildcardSpecIds, talentIdByLabel, CareerLevelData, type AdvancementRef } from '../data';
+import { byId, specPoolOf, levelsForCareer, findTalentById, findDomainById, findSpeciesById, advancementLabel, refLabel, CareerLevelData, type AdvancementRef } from '../data';
 import { entreeOuverte, refusDeSpec } from '../data/schemas/grammaire/ref';
 import { domainSpellsKnown } from './grimoire';
 import { splitLabel } from './statEntry';
@@ -56,7 +56,8 @@ export interface SlotOption {
 }
 
 export interface CareerSlot {
-  /** Clé stable de désignation : `${level}:${kind}:${index}:${résumé}`. */
+  /** Clé stable de désignation : `${level}:${kind}:${index}:${résumé}`, le résumé fait des ids des
+   *  options (`resumeDesOptions`). */
   key: string;
   level: number;
   kind: 'skill' | 'talent';
@@ -108,28 +109,18 @@ export function parseEntry(raw: string): SlotOption[] {
 
 /**
  * Pool de spécialisations PROPOSÉES par une option joker — SOURCE UNIQUE : la liste restreinte
- * `specOptions` (« (A ou B) »), sinon `specPoolOf` de la def. La def se résout par `optionId` + `kind`
- * (avancement), sinon par libellé via `wildcardSpecIds` (créateur, #1923/#1924). Valeurs = ids de
- * spec. `[]` si la def ne porte aucune spec ou n'est pas au catalogue.
+ * `specOptions` (« (A ou B) »), sinon `specPoolOf` de la def, résolue par `optionId` + `kind`. Valeurs
+ * = ids de spec. `[]` si la def ne porte aucune spec ou n'est pas au catalogue.
  */
-export function wildcardSpecs(o: Pick<SlotOption, 'label' | 'specOptions'>): string[];
-export function wildcardSpecs(o: SlotOption, kind: 'skill' | 'talent'): string[];
-export function wildcardSpecs(o: Pick<SlotOption, 'label' | 'optionId' | 'specOptions'>, kind?: 'skill' | 'talent'): string[] {
+export function wildcardSpecs(o: Pick<SlotOption, 'optionId' | 'specOptions'>, kind: 'skill' | 'talent'): string[] {
   if (o.specOptions) return o.specOptions;
-  if (o.optionId == null || kind == null) return wildcardSpecIds(o.label);
-  const def = defDeJoker(kind, o.optionId);
+  const def = o.optionId == null ? undefined : defDeJoker(kind, o.optionId);
   return def ? specPoolOf(def) : [];
 }
 
 /** Def (Compétence/Talent) d'une option par son id STABLE. */
 function defDeJoker(kind: 'skill' | 'talent', id: string) {
   return kind === 'skill' ? byId('skill', id) : findTalentById(id);
-}
-
-/** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». AFFICHAGE seulement — ne
- *  JAMAIS l'utiliser comme identité/clé de désignation (cf. `refKey`). */
-export function concreteLabel(name: string, spec?: string): string {
-  return spec ? `${name} (${spec})` : name;
 }
 
 /**
@@ -169,7 +160,7 @@ export function parseAdvancement(entry: string): AdvancementRef {
 }
 
 /** `AdvancementRef` STRUCTURÉ → `SlotOption[]` — lecture DIRECTE de la donnée (id→libellé via `refLabel`,
- *  jamais de re-parse de prose). `label` reste un LIBELLÉ (consommé par `findSkill`/`concreteLabel`).
+ *  jamais de re-parse de prose). `label` reste un LIBELLÉ d'affichage.
  *  Remplace le round-trip `advancementLabel(ref) → parseEntry(prose)`. */
 export function slotOptionsFromRef(category: string, a: AdvancementRef): SlotOption[] {
   if ('id' in a) {
@@ -188,9 +179,37 @@ function slotsOfLevel(level: CareerLevelData, kind: 'skill' | 'talent'): CareerS
     const options = slotOptionsFromRef(cat, ref); // DIRECT depuis la structure (zéro re-parse)
     const entry = advancementLabel(cat, ref); // libellé d'AFFICHAGE seulement (formateur)
     const needsChoice = options.length > 1 || options.some((o) => o.wildcard);
-    const summary = options.map((o) => o.label).join('|');
-    return { key: `${level.level}:${kind}:${i}:${summary}`, level: level.level, kind, entry, options, needsChoice };
+    return { key: `${positionDeSlot(level.level, kind, i)}:${resumeDesOptions(options)}`, level: level.level, kind, entry, options, needsChoice };
   });
+}
+
+/** Position d'un emplacement dans les listes de carrière — le préfixe de sa clé. */
+function positionDeSlot(level: number, kind: 'skill' | 'talent', i: number): string {
+  return `${level}:${kind}:${i}`;
+}
+
+/** Résumé d'un emplacement en ids : `refKey` de chaque option, un joker marqué `*`. */
+function resumeDesOptions(options: SlotOption[]): string {
+  return options.map((o) => `${refKey(o.optionId ?? '', o.spec)}${o.wildcard ? '*' : ''}`).join('+');
+}
+
+/** Position (`niveau:type:index`) d'une clé d'emplacement, quel que soit son résumé. */
+function positionDeCle(cle: string): string {
+  return cle.split(':').slice(0, 3).join(':');
+}
+
+/**
+ * Clés de `careerSlotChoices` au résumé en ids (`resumeDesOptions`) : chaque clé prend celle de
+ * l'emplacement de la donnée du jour à la même position (`positionDeCle`). Idempotent ; une clé sans
+ * emplacement à sa position est gardée telle quelle (`designationsFor` ne la lit pas). Aucun libellé lu.
+ */
+export function migrerClesDEmplacement(choix: Record<string, Record<string, string>>): Record<string, Record<string, string>> {
+  return Object.fromEntries(Object.entries(choix).map(([career, stored]) => {
+    const levels = levelsForCareer(career);
+    const top = Math.max(0, ...levels.map((l) => l.level));
+    const parPosition = new Map([...skillSlots(levels, top), ...talentSlotsUpTo(levels, top)].map((s) => [positionDeCle(s.key), s.key]));
+    return [career, Object.fromEntries(Object.entries(stored).map(([cle, v]) => [parPosition.get(positionDeCle(cle)) ?? cle, v]))];
+  }));
 }
 
 /** Slots de COMPÉTENCES disponibles au niveau `level` : cumul des niveaux ≤ courant (LDB 07 l.78). */
@@ -375,12 +394,6 @@ export function talentMaxById(hero: Combatant, talentId: string): number | null 
 export function talentMaxLabel(max: number | { bonusOf: CharKey } | null): string {
   if (max == null) return t('slot.maxNone');
   return typeof max === 'number' ? String(max) : t('slot.maxBonusOf', { char: CHAR_LABELS[max.bonusOf] });
-}
-
-/** Maxi par LIBELLÉ — bord authoring/tests : résout l'id (nom seul) puis délègue. */
-export function talentMax(hero: Combatant, label: string): number | null {
-  const id = talentIdByLabel(splitLabel(label).name);
-  return talentMaxById(hero, id);
 }
 
 /** Le héros a-t-il atteint le Maxi de ce Talent, par `(talentId, spec)` — identité STABLE, jamais
