@@ -16,3 +16,5 @@ export function lireDefs(dir: string, noms: readonly string[]): ({ module: strin
 export function discriminantsDeclares(dir?: string): Map<string, string>;
 export function marqueursDeclares(dir?: string): Map<string, string[]>;
 export function idsParMarqueur(racine: unknown, champs: readonly string[], dataset: string): Record<string, string[]>;
+/** Projection d'un registre de defs (option `projection`) : `[id]` ou `[id, valeur de champ]`, triés — lève par def fautif. */
+export function projeterDefs(dir: string, projection: { nom: string; champ?: string }): string[][];

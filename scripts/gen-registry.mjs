@@ -27,7 +27,11 @@ import { porteLeChampMarqueur } from '../src/data/schemas/grammaire/idsVivants.t
  * `constFields` (option PAR registre, avec `fields`) : champs de VALEUR LITTÉRALE ajoutés à chaque
  * entrée générée — ce que le def ne déclare pas parce que c'est une propriété du REGISTRE (la
  * racine `root` d'un dataset : le def dit son fichier, le registre dit d'où il vient).
- * @type {{ dir:string, out:string, exportName?:string, arrayName:string, type:string, typeFrom:string, importDir?:string, idUnion?:{ typeName:string, field:string }, fields?:string[], constFields?:Record<string,string> }[]}
+ * `projection` (option PAR registre) : projette les ids des defs (et, avec `champ`, la valeur de ce champ
+ * par id) dans `src/data/schemas/_art.generated.ts` (`genArt`) — la forme partagée extraite vers une
+ * couche neutre (`eslint.config.js`, `AVALS_DATA`) : la donnée juge un id d'art d'auteur sans importer
+ * le rendu.
+ * @type {{ dir:string, out:string, exportName?:string, arrayName:string, type:string, typeFrom:string, importDir?:string, idUnion?:{ typeName:string, field:string }, fields?:string[], constFields?:Record<string,string>, projection?:{ nom:string, champ?:string } }[]}
  */
 export const REGISTRIES = [
   {
@@ -37,6 +41,7 @@ export const REGISTRIES = [
     arrayName: 'CREATURES',
     type: 'CreatureDef',
     typeFrom: './types',
+    projection: { nom: 'ESPECES_DE_CREATURE' },
   },
   {
     // Scénarios de test : fichiers À PLAT dans le dossier (pas de sous-dossier defs/).
@@ -190,6 +195,7 @@ export const REGISTRIES = [
     arrayName: 'HAIRSTYLE_DEFS',
     type: 'HairstyleDef',
     typeFrom: './types',
+    projection: { nom: 'SEXE_DE_COIFFURE', champ: 'sex' },
   },
   {
     // Formes de nuée (silhouette d'1 constituant + palette) : 1 forme = 1 fichier defs/.
@@ -199,6 +205,7 @@ export const REGISTRIES = [
     arrayName: 'SWARM_FORM_DEFS',
     type: 'SwarmFormDef',
     typeFrom: './formDef',
+    projection: { nom: 'FORMES_DE_NUEE' },
   },
   {
     // Éléments d'apparence (catalogue unifié — traits de corps réutilisables) : 1 élément = 1 fichier defs/.
@@ -483,6 +490,67 @@ function genOne(r) {
   return { arrayName: r.arrayName, dir: r.dir, files: files.length, changed, missing: false };
 }
 
+/** Littéral de chaîne TS d'une valeur, pour les modules générés. */
+const lit = (v) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+
+/**
+ * Valeur du champ `champ` écrit en LITTÉRAL (guillemets simples ou doubles) dans la source d'un def —
+ * EXACTEMENT une occurrence, sinon la génération LÈVE en nommant le def : un id calculé, absent ou
+ * doublé ne se projette pas en silence.
+ * @param {string} src source du def
+ * @param {string} champ champ lu
+ * @param {string} def chemin du def, pour le message
+ * @returns {string}
+ */
+function champLitteralUnique(src, champ, def) {
+  const vus = [...src.matchAll(new RegExp(String.raw`^\s*${champ}:\s*(['"])([^'"\\\n]+)\1`, 'gm'))];
+  if (vus.length !== 1)
+    throw new Error(`gen-registry: ${def} : ${vus.length} champ(s) « ${champ} » littéral(aux) — la projection en exige EXACTEMENT un.`);
+  return vus[0][2];
+}
+
+/**
+ * Projection d'un registre de defs : `[id]` par def, ou `[id, valeur de champ]` avec `projection.champ`.
+ * FAIL-FAST nominatif : un id porté par deux defs lève.
+ * @param {string} dir dossier des defs
+ * @param {{ nom:string, champ?:string }} projection
+ * @returns {string[][]}
+ */
+export function projeterDefs(dir, projection) {
+  const lignes = modulesDeDefs(dir).map((f) => {
+    const src = readFileSync(join(dir, f), 'utf8');
+    const id = champLitteralUnique(src, 'id', join(dir, f));
+    return projection.champ ? [id, champLitteralUnique(src, projection.champ, join(dir, f))] : [id];
+  });
+  const vus = new Set();
+  for (const [id] of lignes) {
+    if (vus.has(id)) throw new Error(`gen-registry: ${dir} : id « ${id} » porté par deux defs — ${projection.nom} ne peut pas se projeter.`);
+    vus.add(id);
+  }
+  return lignes.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+/** Module des projections (`projection` des `REGISTRIES`), écrit seulement s'il change. */
+function genArt(registres = REGISTRIES, out = 'src/data/schemas/_art.generated.ts') {
+  const blocs = registres.filter((r) => r.projection).map((r) => {
+    const lignes = projeterDefs(r.dir, r.projection);
+    const tete = `/** Projection GÉNÉRÉE de \`${r.dir}\`${r.projection.champ ? ` : id → \`${r.projection.champ}\`` : ' : ids'} (${lignes.length}). */\n`;
+    if (!r.projection.champ)
+      return { nom: r.projection.nom, n: lignes.length, texte: `${tete}export const ${r.projection.nom}: readonly string[] = [\n${lignes.map(([id]) => `  ${lit(id)},\n`).join('')}];\n` };
+    const valeurs = [...new Set(lignes.map(([, v]) => v))].sort().map(lit).join(' | ');
+    return { nom: r.projection.nom, n: lignes.length, texte: `${tete}export const ${r.projection.nom}: Readonly<Record<string, ${valeurs}>> = {\n${lignes.map(([id, v]) => `  ${lit(id)}: ${lit(v)},\n`).join('')}};\n` };
+  });
+  const body =
+    `// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.\n` +
+    `// Régénérer : \`npm run gen\` (option \`projection\` des REGISTRIES).\n\n` +
+    blocs.map((b) => b.texte).join('\n');
+  let prev = '';
+  try { prev = readFileSync(out, 'utf8'); } catch { /* nouveau */ }
+  const changed = prev !== body;
+  if (changed) writeFileSync(out, body);
+  return { out, blocs: blocs.map((b) => `${b.nom}=${b.n}`), changed };
+}
+
 /**
  * Registre des IDS de la donnée authorée (`src/data/schemas/_ids.generated.ts`) — le socle contre
  * lequel `ref(type)` refine un id AU PARSE (#1466, clause B de #1473).
@@ -707,7 +775,6 @@ function genIds() {
     if (parEntree.length) specs.push([f, parEntree]);
   }
   verifieExhaustiviteDesIds(new Set(ids.map(([f]) => f)));
-  const lit = (v) => `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
   const body =
     `// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.\n` +
     `// Régénérer : \`npm run gen\` (deux exécutions successives rendent le même octet).\n\n` +
@@ -787,6 +854,12 @@ export function genAll(verbose = false) {
     } else {
       unchangedCount++;
     }
+  }
+  const artRes = genArt();
+  if (artRes.changed || verbose) {
+    console.log(`gen-registry: projections d'art ← ${artRes.blocs.join(', ')} (${artRes.out})${artRes.changed ? '' : ' [inchangé]'}`);
+  } else {
+    unchangedCount++;
   }
   const idsRes = genIds();
   if (idsRes.changed || verbose) {

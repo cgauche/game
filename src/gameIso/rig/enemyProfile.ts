@@ -7,7 +7,6 @@
  */
 import type { Combatant, ItemInstance, ArmourPoints, HitLocation } from '../../engine/types';
 import type { Appearance } from './appearance';
-import { asRigSpeciesId } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { equipFromCombatant } from './parts/equipment';
 import { emptyArmour } from '../../engine/items';
@@ -25,6 +24,7 @@ import { raceById } from './races';
 import { baseSpeciesOf } from './skeletons';
 import { teintesTirees } from './parts/tirageIndividuel';
 import { diagOnce, diagSubject } from './devDiag';
+import { coiffureRetombee } from './parts/cosmetic';
 
 export interface EnemyRigProfile {
   appearance: Appearance;
@@ -52,12 +52,13 @@ export function classifyBy(species: string | undefined, traits: import('../../en
 
 /** Apparence d'AUTHORING (`EntityAppearance` : entité de scène, `Combatant.appearanceOverride`) →
  *  `Partial<Appearance>`, UNE fois pour le combat et l'exploration : seuls les champs fournis sortent,
- *  les yeux passent de clés à arts (`eyesArtFromKeys`). Les défauts restent au constructeur `rigAppearance`. */
-type ApparenceDAuteur = Pick<EntityAppearance, 'species' | 'sex' | 'build' | 'features' | 'colors' | 'parts' | 'hairstyle' | 'eyes'> & { monster?: MonsterParts };
-function apparenceDAuteur(a: ApparenceDAuteur | undefined): Partial<Appearance> | undefined {
+ *  les yeux passent de clés à arts (`eyesArtFromKeys`). Les défauts restent au constructeur `rigAppearance`.
+ *  L'espèce n'en sort pas : elle entre par `resolveRender`, seule porte des espèces d'auteur. */
+type ApparenceDAuteur = Pick<EntityAppearance, 'sex' | 'build' | 'features' | 'colors' | 'parts' | 'hairstyle' | 'eyes'> & { monster?: MonsterParts };
+function apparenceDAuteur(a: ApparenceDAuteur | undefined): Omit<Partial<Appearance>, 'species'> | undefined {
   if (!a) return undefined;
   return {
-    species: a.species === undefined ? undefined : asRigSpeciesId(a.species), sex: a.sex, build: a.build, monster: a.monster,
+    sex: a.sex, build: a.build, monster: a.monster,
     features: a.features, colors: a.colors, parts: a.parts, hairstyle: a.hairstyle, eyes: eyesArtFromKeys(a.eyes),
   };
 }
@@ -86,7 +87,7 @@ function synthArmour(ap: ArmourPoints, armurePortee: boolean | undefined): ItemI
  *  (défauts d'apparence partagés) + perso (surcharges d'espèce non-canonique). L'espèce vient
  *  TOUJOURS de `resolveRender` (résolveur unique), `repli` dit qu'elle est la race de REPLI d'une espèce
  *  non résolue — aucun repli d'espèce ici. */
-function bipedBase(r: RenderResolution) {
+function bipedBase(r: Extract<RenderResolution, { kind: 'rig' }>) {
   const d = bipedDef(r.species);
   return { species: r.species, repli: !!r.repli, d, race: raceById(d?.race ?? baseSpeciesOf(r.species)), perso: d?.perso };
 }
@@ -123,6 +124,18 @@ function sousAuteur<T extends object>(tire: T | undefined, auteur: T | undefined
   return out as T;
 }
 
+/** Sexe et coiffure des couches d'AUTEUR, de la plus basse à la plus haute : une couche qui pose un sexe
+ *  sans coiffure est le geste d'édition du sexe (`coiffureRetombee`) sur la coiffure des couches du
+ *  dessous ; une couche qui pose sa coiffure la garde, même contre son propre sexe (faute de donnée,
+ *  nommée par le schéma, vue au rendu). PURE. */
+function sexeEtCoiffure(couches: readonly (Pick<Appearance, 'hairstyle'> & { sex?: 'M' | 'F' } | undefined)[]): { sex?: 'M' | 'F'; hairstyle?: string } {
+  return couches.reduce<{ sex?: 'M' | 'F'; hairstyle?: string }>((bas, haut) => {
+    if (!haut) return bas;
+    if (haut.hairstyle != null) return { sex: haut.sex ?? bas.sex, hairstyle: haut.hairstyle };
+    return haut.sex != null ? coiffureRetombee({ ...bas, sex: haut.sex }) : bas;
+  }, {});
+}
+
 /** Carrure par défaut dérivée du seed (0.35..0.75) — formule UNIQUE. */
 const buildFromSeed = (seed: number): number => +(0.35 + ((Math.floor(seed / 7) % 41) / 100)).toFixed(2);
 
@@ -131,21 +144,23 @@ const buildFromSeed = (seed: number): number => +(0.35 + ((Math.floor(seed / 7) 
  * override d'instance → record créature (`cd`) → perso/race → tirage par la `graine` de l'individu
  * (`graineDeTirage`) ; les teintes posent en dessous le tirage individuel de la race, que chaque
  * teinte posée par l'auteur recouvre (`sousAuteur`). `override` porte ses YEUX en art (`apparenceDAuteur`).
+ * Sexe et coiffure d'auteur se résolvent ENSEMBLE (`sexeEtCoiffure`).
  */
-function rigAppearance(graine: number, base: BipedBase, cd: EntityAppearance | undefined, override: Partial<Appearance> | undefined): Appearance {
+function rigAppearance(graine: number, base: BipedBase, cd: EntityAppearance | undefined, override: Omit<Partial<Appearance>, 'species'> | undefined): Appearance {
   const { species, d, race, perso } = base;
   const o = override ?? {};
   const tirage = tirageIndividuel(graine, base);
+  const auteur = sexeEtCoiffure([cd, o]);
   return {
-    species: o.species ?? asRigSpeciesId(species),
-    sex: o.sex ?? cd?.sex ?? perso?.sex ?? race.sex ?? (graine % 7 < 2 ? 'F' : 'M'),
+    species,
+    sex: auteur.sex ?? perso?.sex ?? race.sex ?? (graine % 7 < 2 ? 'F' : 'M'),
     build: o.build ?? cd?.build ?? buildFromSeed(graine),
     seed: graine,
     monster: o.monster ?? cd?.monster ?? perso?.monster,
     features: o.features ?? cd?.features,
     colors: sousAuteur(tirage, o.colors ?? cd?.colors ?? perso?.colors ?? race.colors),
     parts: o.parts ?? cd?.parts ?? perso?.parts ?? race.parts,
-    hairstyle: o.hairstyle ?? cd?.hairstyle,
+    hairstyle: auteur.hairstyle,
     gabarit: o.gabarit ?? perso?.gabarit ?? d?.gabarit,
     eyes: o.eyes ?? eyesArtFromKeys(cd?.eyes) ?? eyesArtFromKeys(perso?.eyes),
   };

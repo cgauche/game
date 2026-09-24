@@ -3,7 +3,7 @@ import type { Appearance } from '../gameIso/rig/appearance';
 import type { EquipCtx } from '../gameIso/rig/parts/equipment';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { hairstylesForSex } from '../gameIso/rig/parts/hairstyles';
-import { coiffureRetombee } from '../gameIso/rig/parts/cosmetic';
+import { coiffureChoisie, coiffureRetombee } from '../gameIso/rig/parts/cosmetic';
 import { Icon } from './Icon';
 
 /**
@@ -43,7 +43,7 @@ export function AppearancePanel({
             Coiffure
             <select
               value={value.hairstyle ?? ''}
-              onChange={(e) => set({ hairstyle: e.target.value || undefined })}
+              onChange={(e) => set(coiffureChoisie(e.target.value || undefined))}
             >
               <option value="">Défaut (espèce)</option>
               {hairstylesForSex(value.sex).map((h) => (

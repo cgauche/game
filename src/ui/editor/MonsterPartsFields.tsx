@@ -70,7 +70,8 @@ export function MonsterPartsFields({
         <span>Apparence (rig)</span>
         <label className="ed-subfield">
           Sexe
-          <select value={sex ?? 'M'} onChange={(e) => onSex?.(e.target.value as 'M' | 'F')}>
+          <select value={sex ?? ''} onChange={(e) => onSex?.(e.target.value as 'M' | 'F')}>
+            {sex == null && <option value="" disabled>Tiré au rendu</option>}
             <option value="M">Masculin</option>
             <option value="F">Féminin</option>
           </select>
@@ -83,9 +84,13 @@ export function MonsterPartsFields({
           Coiffure
           <select value={hairstyle ?? ''} onChange={(e) => onHairstyle?.(e.target.value || undefined)}>
             <option value="">Défaut (espèce)</option>
-            {hairstylesForSex(sex ?? 'M').map((h) => (
-              <option key={h.id} value={h.id}>{h.label}</option>
-            ))}
+            {sex
+              ? hairstylesForSex(sex).map((h) => <option key={h.id} value={h.id}>{h.label}</option>)
+              : ([['M', 'Masculines'], ['F', 'Féminines']] as const).map(([s, titre]) => (
+                <optgroup key={s} label={titre}>
+                  {hairstylesForSex(s).map((h) => <option key={h.id} value={h.id}>{h.label}</option>)}
+                </optgroup>
+              ))}
           </select>
         </label>
       </div>

@@ -5,6 +5,7 @@ import { HEADS_BY_KEY } from './heads';
 import { hairstylesForSex, type HairArt } from './hairstyles';
 import { MISSING_ART } from '../viewArt';
 import { diagOnce, diagSubject } from '../devDiag';
+import { sexeDeCoiffure } from '../../../data/schemas/grammaire/art';
 // Têtes (visage + coiffure défaut) en heads/defs, coiffures en hairstyles/defs — CHAQUE chevelure
 // porte ses 3 vues + composantes `behind` (masse qui épouse le crâne) et `drop` (chute qui dépasse
 // la tête) éventuelles PAR vue (HairArt), pliées ici dans la chaîne de vue (dépliées par composeRig :
@@ -117,14 +118,23 @@ export function hairIndexById(species: string, sex: 'M' | 'F', id: string): numb
   return undefined;
 }
 
-/** Apparence d'AUTEUR dont la coiffure imposée RETOMBE (champ retiré) quand elle sort du pool de
- *  l'espèce×sexe posés — patron `propRefPatch` : un geste d'édition (sexe, espèce) ne crée pas de
- *  faute. Sexe non posé : le sexe rendu se tire au rendu (`rigAppearance`), rien à juger ici. PURE. */
-export function coiffureRetombee<T extends { species?: string; sex?: 'M' | 'F'; hairstyle?: string }>(a: T): T {
-  if (a.hairstyle == null || a.sex == null || rangDeCoiffure(a.species ?? '', a.sex, a.hairstyle) >= 0) return a;
+/** Apparence d'AUTEUR dont la coiffure imposée RETOMBE (champ retiré) quand le sexe posé n'est plus
+ *  le sien (`sexeDeCoiffure`) — patron `propRefPatch` : un geste d'édition ne crée pas de faute. Une
+ *  coiffure inconnue ou sans sexe posé reste : le schéma la nomme. PURE. */
+export function coiffureRetombee<T extends { sex?: 'M' | 'F'; hairstyle?: string }>(a: T): T {
+  if (a.hairstyle == null || a.sex == null) return a;
+  const sexe = sexeDeCoiffure(a.hairstyle);
+  if (sexe === undefined || sexe === a.sex) return a;
   const sans = { ...a };
   delete sans.hairstyle;
   return sans;
+}
+
+/** Patch d'auteur du CHOIX d'une coiffure : elle pose son sexe avec elle (`sexeDeCoiffure`) ; aucune
+ *  coiffure choisie la retire. PURE. */
+export function coiffureChoisie(id: string | undefined): { hairstyle?: string; sex?: 'M' | 'F' } {
+  const sex = id === undefined ? undefined : sexeDeCoiffure(id);
+  return sex ? { hairstyle: id, sex } : { hairstyle: undefined };
 }
 
 /** Part cosmétique (toujours espèce×sexe). slot ∈ {visage, cheveux}.

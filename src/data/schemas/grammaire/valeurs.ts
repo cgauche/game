@@ -7,6 +7,7 @@
 import { z } from 'zod';
 import { AVAILABILITIES, COUVERT_DIFFICULTES, STAKE_FORMS } from '../../../engine/types';
 import { refOuSpec, idDe, refs } from './ref';
+import { estEspeceDAuteur, fauteDeCoiffure } from './art';
 import { estGraphieDeChapitre } from '../../source/decoupe';
 
 /**
@@ -674,7 +675,14 @@ export const entityAppearanceSchema = z.strictObject({
   parts: z.strictObject({ cheveux: z.number().optional(), visage: z.number().optional() }).optional(),
   sex: z.enum(['M', 'F']).optional(),
   build: z.number().optional(),
-  species: z.string().optional(),
+  /** Espèce de RENDU — espèce jouable ou espèce déclarée par le rig (`grammaire/art.ts`). */
+  species: z
+    .string()
+    .superRefine((v, ctx) => {
+      if (!estEspeceDAuteur(v))
+        ctx.addIssue({ code: 'custom', message: `espèce « ${v} » absente des espèces jouables et des espèces du rig — rendue en corps d'erreur.` });
+    })
+    .optional(),
   tenue: z.string().optional(),
   /** Set d'ÉQUIPEMENT quadrupède porté (id du registre `gameIso/rig/quadruped/harnais`, #1128) —
    *  absent = bête nue. */
@@ -686,6 +694,9 @@ export const entityAppearanceSchema = z.strictObject({
   hairstyle: z.string().optional(),
   eyes: z.strictObject({ G: z.string().optional(), D: z.string().optional() }).optional(),
   features: z.array(z.string()).optional(),
+}).superRefine((a, ctx) => {
+  const faute = a.hairstyle === undefined ? null : fauteDeCoiffure(a.hairstyle, a.sex);
+  if (faute) ctx.addIssue({ code: 'custom', path: ['hairstyle'], message: faute });
 });
 
 /** `HitLocation` (`src/engine/types.ts`) — 6 zones de touche (dé inversé, LDB). Resserré depuis

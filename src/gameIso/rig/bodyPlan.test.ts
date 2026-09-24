@@ -38,9 +38,9 @@ describe('résolution espèce/id → plan (resolveSpecies / bodyPlanById)', () =
       expect(planOfSpecies(id), id).toBe('biped');
     }
   });
-  it('id d’espèce inconnu (rôle générique sans def) → bipède par défaut', () => {
+  it('id d’espèce hors domaine (rôle générique sans def) → corps d’erreur `manquant`, jamais un bipède', () => {
     for (const id of ['soldat', 'bandit', 'creature-totalement-inconnue-xyz'])
-      expect(planOfSpecies(id), id).toBe('biped');
+      expect(planOfSpecies(id), id).toBe('manquant');
   });
   it('ailés (griffon/pégase/hippogriffe/dragon) → winged', () => {
     // IDS d'espèce-defs (sans record obligatoire) via resolveSpecies…

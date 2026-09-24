@@ -18,6 +18,22 @@ describe('validateScene', () => {
     expect(validateScene([base()])).toEqual([]);
   });
 
+  /** Ids d'ART d'auteur jugés au schéma (`grammaire/art.ts`, #1897) : l'espèce et la coiffure. */
+  it('apparence : espèce hors domaine, coiffure inconnue, sans sexe ou de l’autre sexe → erreur nominative', () => {
+    const avec = (appearance: object) => {
+      const s = base();
+      s.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 1, y: 1 }, appearance });
+      return msgs(validateScene([s]).filter((x) => x.scope === 'entity' && x.refId === 'pnj' && x.level === 'error'));
+    };
+    expect(avec({ species: 'zorglub' })).toEqual(["pnj › appearance.species : espèce « zorglub » absente des espèces jouables et des espèces du rig — rendue en corps d'erreur."]);
+    expect(avec({ hairstyle: 'zzz', sex: 'M' })).toEqual(['pnj › appearance.hairstyle : coiffure « zzz » absente du catalogue des coiffures du rig.']);
+    expect(avec({ hairstyle: 'queue-de-cheval-haute-f' })).toEqual(['pnj › appearance.hairstyle : coiffure « queue-de-cheval-haute-f » (sexe F) imposée sans sexe posé — poser le sexe F, ou retirer la coiffure.']);
+    expect(avec({ hairstyle: 'queue-de-cheval-haute-f', sex: 'M' })).toEqual(['pnj › appearance.hairstyle : coiffure « queue-de-cheval-haute-f » (sexe F) imposée sur le sexe M.']);
+    // Domaine admis : espèce jouable, def de créature, forme de nuée ; coiffure au sexe posé.
+    for (const ok of [{ species: 'humains-reiklander' }, { species: 'amibe' }, { species: 'rats' }, { hairstyle: 'queue-de-cheval-haute-f', sex: 'F' }])
+      expect(avec(ok), JSON.stringify(ok)).toEqual([]);
+  });
+
   it("dialogueId d'entité inexistant → erreur", () => {
     const s = base();
     s.entities.push({ id: 'e-0', kind: 'personnage', pos: { x: 1, y: 1 }, dialogueId: 'manque' });

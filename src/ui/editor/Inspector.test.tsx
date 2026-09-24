@@ -772,6 +772,15 @@ describe('Inspector — la coiffure imposée suit le pool du sexe', () => {
     expect(validateScene([h.sceneOf()]).filter((w) => w.message.includes('hairstyle'))).toEqual([]);
   });
 
+  it('PNJ sans sexe posé, coiffure F choisie : le sexe F est écrit avec elle, le schéma de la scène passe', async () => {
+    const coiffureF = hairstylesForSex('F')[0].id;
+    const h = mount({ id: 'pnj', kind: 'personnage', pos: { x: 1, y: 1 }, ref: 'mutant' });
+    await h.mount();
+    await choisir(h.container, 'Coiffure', coiffureF);
+    expect(h.entOf().appearance).toMatchObject({ hairstyle: coiffureF, sex: 'F' });
+    expect(validateScene([h.sceneOf()]).filter((w) => w.message.includes('hairstyle'))).toEqual([]);
+  });
+
   it('coiffure M puis sexe F : la coiffure retombe dans le MÊME patch, l’aperçu tient', async () => {
     const h = mount({ id: 'pnj', kind: 'personnage', pos: { x: 1, y: 1 }, ref: 'mutant', appearance: { sex: 'M', hairstyle: coiffureM } });
     await h.mount();

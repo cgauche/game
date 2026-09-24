@@ -37,7 +37,7 @@ import type { GameOp } from '../../engine/ops';
 import type { ConsumableDuration } from '../../engine/consumables';
 import { JsonField } from '../editor/JsonField';
 import { creatureSpeciesOptions, QUAD_SPECIES, WINGED_SPECIES } from '../../gameIso/rig/creatures';
-import { coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
+import { coiffureChoisie, coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
 import { CreaturePreview } from './CreaturePreview';
 import { porteurDApercu } from './apercuPorteur';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
@@ -887,7 +887,7 @@ function AppearanceField({ label, porteur, value, onChange }: { label: string; p
         onColors={(p) => patch({ colors: { ...(a.colors ?? {}), ...p } })}
         onSex={(s) => patch({ sex: s })}
         onBuild={(b) => patch({ build: b })}
-        onHairstyle={(id) => patch({ hairstyle: id })}
+        onHairstyle={(id) => patch(coiffureChoisie(id))}
         onTenue={(c) => patch({ tenue: c })}
         onHarnais={quadrupede ? (id) => patch({ harnais: id }) : undefined}
         onEyes={(p) => patch({ eyes: { ...(a.eyes ?? {}), ...p } })}

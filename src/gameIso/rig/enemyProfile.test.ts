@@ -12,6 +12,7 @@ import { CLAWFOOT, MAIN_GRIFFUE } from './parts/bodies/extremites';
 import { armourPart } from './parts/equipment';
 import { spawnEnemy } from '../../state/spawn';
 import { hairstylesForSex } from './parts/hairstyles';
+import { COIFFURE_HORS_POOL } from './parts/cosmetic';
 import { resolveRig } from './composeRig';
 import { bonesToSvg } from './renderBones';
 import type { Combatant, Weapon, ItemInstance, ArmourPoints } from '../../engine/types';
@@ -279,6 +280,29 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
     expect(entityRigProfile(id, 1, { enrolled: true })!.equip.weapons.length).toBeGreaterThan(0); // enrôlée → kit
     expect(entityRigProfile(id, 1)!.equip.weapons).toEqual([]); // ambiance (défaut non enrôlée) → mains libres
     expect(entityRigProfile(id, 1)!.equip.armour).toEqual([]);
+  });
+});
+
+/** Sexe et coiffure posés par deux couches différentes (`rigAppearance`) : `coiffureRetombee` (#1897). */
+describe('coiffure du record, sexe de l’entité — la coiffure retombe', () => {
+  it('coiffure F au record + `sex: M` sur l’entité → coiffure par défaut de l’espèce et du sexe rendus, jamais la chevelure d’erreur', () => {
+    const rec = creatures.find((c) => c.id === 'villageois')!;
+    const avant = rec.appearance;
+    const rendu = (p: NonNullable<ReturnType<typeof entityRigProfile>>) => bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, 'front', []));
+    const attendu = rendu(entityRigProfile('villageois', 1, { sex: 'M' })!);
+    rec.appearance = { ...avant!, sex: 'F', hairstyle: 'queue-de-cheval-haute-f' };
+    try {
+      expect(entityRigProfile('villageois', 1)!.appearance).toMatchObject({ sex: 'F', hairstyle: 'queue-de-cheval-haute-f' });
+      const p = entityRigProfile('villageois', 1, { sex: 'M' })!;
+      expect(p.appearance.sex).toBe('M');
+      expect(p.appearance.hairstyle).toBeUndefined();
+      expect(rendu(p)).not.toContain(COIFFURE_HORS_POOL);
+      expect(rendu(p)).toBe(attendu);
+      // La contradiction posée par UNE couche reste une faute de donnée VISIBLE (le schéma la nomme).
+      expect(rendu(entityRigProfile('villageois', 1, { sex: 'M', hairstyle: 'queue-de-cheval-haute-f' })!)).toContain(COIFFURE_HORS_POOL);
+    } finally {
+      rec.appearance = avant;
+    }
   });
 });
 

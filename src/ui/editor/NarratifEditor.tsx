@@ -5,7 +5,7 @@ import { Icon } from '../Icon';
 import { MasterDetail } from '../MasterDetail';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
-import { coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
+import { coiffureChoisie, coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
 import { creatures, creatureLabel, findCreatureById, memoParVersion } from '../../data';
 import { CHAR_KEYS, CHAR_LABELS, type CharKey } from '../../engine/types';
 import type { NarratifBlock, PresetPnj, Affaire, Indice, IndiceStade, OuvertureBlock, ClotureBlock, AmbianceCadre } from '../../state/campaignNarratif';
@@ -674,7 +674,7 @@ function PresetForm({ preset, onRename, onPatch, onRemove }: {
         onColors={(patch) => patchAppearance({ colors: { ...(appearance.colors ?? {}), ...patch } })}
         onSex={(s) => patchAppearance({ sex: s })}
         onBuild={(b) => patchAppearance({ build: b })}
-        onHairstyle={(id) => patchAppearance({ hairstyle: id })}
+        onHairstyle={(id) => patchAppearance(coiffureChoisie(id))}
         onTenue={(c) => patchAppearance({ tenue: c })}
         onEyes={(patch) => patchAppearance({ eyes: { ...(appearance.eyes ?? {}), ...patch } })}
         onFeatures={(f) => patchAppearance({ features: f.length ? f : undefined })}

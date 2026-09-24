@@ -418,7 +418,7 @@ describe('convention d’export lue par le générateur de registre', () => {
     });
     expect(
       verdicts.filter((v) => v.gardeAccepte !== v.genAccepte),
-      'la garde diverge du filtre du gen : une forme qu’elle accepte serait ÉCARTÉE du registre en silence',
+      'la garde diverge du filtre du gen : une forme qu’elle accepte ferait lever `npm run gen`',
     ).toEqual([]);
     expect(verdicts.map((v) => v.gardeAccepte)).toEqual([true, false, false, false, false]);
   });

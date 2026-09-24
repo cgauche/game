@@ -234,7 +234,7 @@ export const ECRIT_LU = {
     ecritFerme: {
       'src/_registry.generated.ts':
         'le `buildStart` de vite.config.ts:16 appelle `genAll()`, qui n’écrit que `if (changed)` ' +
-        '(scripts/gen-registry.mjs:435,662) — `toutes.mjs` joue `npm run gen` AVANT les lanes et REFUSE si un ' +
+        '(`genOne`, `genArt`, `genIds` de scripts/gen-registry.mjs) — `toutes.mjs` joue `npm run gen` AVANT les lanes et REFUSE si un ' +
         'registre bouge, donc il ne reste rien à écrire',
     },
     lit: ['src/', 'server/src/', 'scripts/', 'docs/', 'Source/', '.gitattributes', 'vite.config.ts'],
@@ -305,7 +305,7 @@ export const ECRIT_LU = {
     ecritFerme: {
       'docs/raw/coverage.md':
         'scripts/raw/coverage.mjs:422 passe par `ecrireDoc`, qui n’écrit QUE si le rendu diffère du fichier ' +
-        '(scripts/docs/lib/empreinte-sources.mjs, patron gen-registry.mjs:435) : sur l’arbre PROPRE qu’exige ce ' +
+        '(scripts/docs/lib/empreinte-sources.mjs, patron `genOne` de gen-registry.mjs) : sur l’arbre PROPRE qu’exige ce ' +
         'lanceur, un rapport à jour n’est pas réécrit. S’il est périmé au commit, il est réécrit UNE fois et ' +
         '`photoArbre` avant/après fait REFUSER le run — jamais un vert de course',
     },

@@ -120,19 +120,19 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `seed` | 3 | `src/gameIso/rig/enemyProfile.ts:115` |
-| `monster` | 8 | `src/gameIso/rig/enemyProfile.ts:144` |
-| `colors` | 10 | `src/gameIso/rig/bodyPlan.ts:122` |
-| `parts` | 2 | `src/gameIso/rig/enemyProfile.ts:61` |
-| `sex` | 5 | `src/gameIso/rig/enemyProfile.ts:60` |
-| `build` | 5 | `src/gameIso/rig/enemyProfile.ts:60` |
-| `species` | 16 | `src/gameIso/rig/bodyPlan.ts:168` |
-| `tenue` | 6 | `src/gameIso/rig/enemyProfile.ts:98` |
-| `harnais` | 2 | `src/gameIso/rig/bodyPlan.ts:124` |
-| `armurePortee` | 3 | `src/gameIso/rig/enemyProfile.ts:193` |
-| `hairstyle` | 5 | `src/gameIso/rig/enemyProfile.ts:61` |
-| `eyes` | 10 | `src/gameIso/rig/bodyPlan.ts:123` |
-| `features` | 6 | `src/gameIso/rig/enemyProfile.ts:61` |
+| `seed` | 3 | `src/gameIso/rig/enemyProfile.ts:116` |
+| `monster` | 8 | `src/gameIso/rig/enemyProfile.ts:159` |
+| `colors` | 10 | `src/gameIso/rig/bodyPlan.ts:123` |
+| `parts` | 2 | `src/gameIso/rig/enemyProfile.ts:62` |
+| `sex` | 4 | `src/gameIso/rig/enemyProfile.ts:61` |
+| `build` | 5 | `src/gameIso/rig/enemyProfile.ts:61` |
+| `species` | 14 | `src/gameIso/rig/bodyPlan.ts:173` |
+| `tenue` | 6 | `src/gameIso/rig/enemyProfile.ts:99` |
+| `harnais` | 2 | `src/gameIso/rig/bodyPlan.ts:125` |
+| `armurePortee` | 3 | `src/gameIso/rig/enemyProfile.ts:208` |
+| `hairstyle` | 4 | `src/gameIso/rig/enemyProfile.ts:62` |
+| `eyes` | 10 | `src/gameIso/rig/bodyPlan.ts:124` |
+| `features` | 6 | `src/gameIso/rig/enemyProfile.ts:62` |
 
 ### `FlowTest` (src/engine/flowCore.ts)
 
@@ -300,4 +300,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: 4ace0d00e3d9f2584a38ba762fef82eaccc7b21c (2100 fichiers, 173 dossiers) corps: adcf728c6249001e8b1639a01e591d9be29f5724 -->
+<!-- sources-empreinte: 019fb5f2362bcacfdfeba48f2d66e4cb498b5460 (2104 fichiers, 174 dossiers) corps: eaa818d6c5fc7eb2d2ac05caf88ad1edbed482f1 -->

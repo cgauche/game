@@ -401,14 +401,17 @@ pas exigible (vocabulaires d'app, documents dont la source vit en profondeur) so
 
 **Les 4 exports plats du contrat `gen`** : tout def qui appelle `document(` exporte `file`, `schema`,
 `famille` et `meta` **À PLAT**. Le générateur de registre est TEXTUEL (lecture par regex, jamais un
-import) — la sanction diffère donc PAR EXPORT, et une seule est silencieuse :
+import) ; son lecteur unique, `lireExports` de `scripts/gen-registry.mjs`, lit `file` et `famille` à la
+seule forme `export const X = '…';` (guillemet SIMPLE littéral) et `meta` à la présence de
+`export const meta` :
 
-- `file` non conforme au filtre `scripts/gen-registry.mjs:370` (`^export const file = '`, guillemet
-  SIMPLE littéral) : le def est **ÉCARTÉ du registre, en silence** — double quote, `: string` annoté,
-  littéral gabarit et `= doc.file` compilent tous et sortent pourtant du registre. Seul cet export
-  décide de l'appartenance au registre.
-- `meta` non plat : le def **RESTE au registre** et perd son entrée `meta` (invisible de `presents()`,
-  `scripts/gen-registry.mjs:382`) — l'atelier retombe sur la clé technique, sans qu'aucun gate rougisse.
+- `file`, `famille` ou `meta` hors de sa forme canonique (guillemets doubles, `: string` annoté,
+  littéral gabarit, `= doc.file`, destructuration, `export { … }`) : `npm run gen` **LÈVE** en nommant
+  le def et l'export — aucun def n'est écarté en silence.
+- `file` absent : le module n'est pas une entrée du registre (module de FORME partagé, `genOne` de
+  `scripts/gen-registry.mjs`). Seul cet export décide de l'appartenance au registre.
+- `meta` absent : le def **RESTE au registre** sans entrée `meta` (`presents` de `genOne`) — l'atelier
+  retombe sur la clé technique ; seule la garde ci-dessous l'exige.
 - `schema`/`famille` destructurés (`export const { schema } = doc`) **COMPILERAIENT** : la
   destructuration crée un vrai nom importable. La garde n'y protège pas la compilation mais la
   CONVENTION — forme plate unique, lisible par un codemod.
@@ -495,4 +498,4 @@ se met à ressembler à une clé de l'autre sans être le couple ponté sanction
 >    scope ».
 > 5. **Vérifie** : canonicaliser via `serializeDataset`, puis `npm test` + `npm run typecheck` verts ;
 >    recette navigateur si l'élément est visible au Codex/éditeur.
-<!-- sources-empreinte: 6bd2d8b602f1d1f302fd0de7f2ffe78ac335526e (379 fichiers, 2 dossiers) corps: aa8600accae61c330f05a8f0edb8384bdf44a1c7 -->
+<!-- sources-empreinte: b3f5a0a7d2ed61744b2999a5bb2ea5041371e894 (381 fichiers, 2 dossiers) corps: 92013025f44f2c9f8c061fde6ea253f4eef97917 -->
