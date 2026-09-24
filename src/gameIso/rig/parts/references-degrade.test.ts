@@ -31,6 +31,7 @@ import { planById, resolveById, planOptsForRecord } from '../bodyPlan';
 import { asRigSpeciesId, type Appearance } from '../appearance';
 import { defsGlobaux } from '../../sprites';
 import { listerArbre } from '../../../../scripts/guards/lib/lister.mjs';
+import { estFichierVitest } from '../../../../scripts/guards/lib/fichierVitest.mjs';
 import type { ItemInstance, Weapon } from '../../../engine/types';
 import type { PartArt } from './types';
 
@@ -113,7 +114,7 @@ describe('références de dégradé d’un rendu final (#1903 A4)', () => {
   it('(1\') chaque `url(#id)` littéral du source du rig vise un id global, local au fichier, ou un `dg-` de forme et d’arité connues', () => {
     const DG = /^dg-([a-z0-9]+)((?:-(?:@[a-zA-Z]\w*|#[0-9a-fA-F]{6}))+)$/;
     const fautes: string[] = [];
-    for (const rel of listerArbre(RIG, { filtre: (r) => /\.tsx?$/.test(r) && !/\.test\.tsx?$/.test(r) })) {
+    for (const rel of listerArbre(RIG, { filtre: (r) => /\.tsx?$/.test(r) && !estFichierVitest(r) })) {
       const src = readFileSync(resolve(RIG, rel), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
       const locaux = new Set([...src.matchAll(/\bid=["']([^"']+)["']/g)].map((m) => m[1]));
       for (const [, id] of src.matchAll(/url\(#([^)'"`\s]*)\)/g)) {
@@ -129,7 +130,7 @@ describe('références de dégradé d’un rendu final (#1903 A4)', () => {
 
   it('(3) aucune définition de dégradé dans l’art du rig hors `fxGradients.ts` et la résolution `dg-`', () => {
     const permis = new Set(['fxGradients.ts', 'palette.ts']);
-    const fautes = listerArbre(RIG, { filtre: (rel) => /\.tsx?$/.test(rel) && !/\.test\.tsx?$/.test(rel) && !permis.has(rel) })
+    const fautes = listerArbre(RIG, { filtre: (rel) => /\.tsx?$/.test(rel) && !estFichierVitest(rel) && !permis.has(rel) })
       .filter((rel) => /<(linear|radial)Gradient\s[^>]*id=/.test(readFileSync(resolve(RIG, rel), 'utf8')));
     expect(fautes).toEqual([]);
   });
