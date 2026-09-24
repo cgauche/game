@@ -2196,7 +2196,7 @@ ne FORCE aucun concept — seul `price` nomme le concept `prix`, parce que `Pric
 
 ### 3.19 Paramètres d’entité (`arg`) et régimes de `price`
 
-Valeurs distinctes d’`arg` sur un objet porteur d’`id` : **183** (690 occurrences) — **181** vues en `src/data`, **2** propres aux scènes (`Ténèbres`, `chaos`). Aucun schéma ne les DÉCLARE aujourd’hui :
+Valeurs distinctes d’`arg` sur un objet porteur d’`id` : **182** (690 occurrences) — **180** vues en `src/data`, **2** propres aux scènes (`Ténèbres`, `chaos`). Aucun schéma ne les DÉCLARE aujourd’hui :
 cette table EST le dénominateur A11 de #1466. La « nature » est devinée par MOTIF (id d’entité,
 enum-libellé, taille, seuil `N+`, prose, nombre) : un candidat à examiner, jamais un verdict.
 
@@ -2207,8 +2207,8 @@ enum-libellé, taille, seuil `N+`, prose, nombre) : un candidat à examiner, jam
 | `fievre-du-rongeur` | id d’entité | 53 | `creatures.json` |
 | `petite` | id d’entité | 37 | `arene-projet.json` `creatures.json` |
 | `peau-verte` | id d’entité | 30 | `creatures.json` |
+| `Modérée` | enum-libellé | 29 | `creatures.json` |
 | `Mineure` | enum-libellé | 27 | `creatures.json` |
-| `Modérée` | enum-libellé | 27 | `creatures.json` |
 | `monstrueuse` | id d’entité | 26 | `arene-projet.json` `creatures.json` |
 | `elfe` | id d’entité | 17 | `creatures.json` |
 | `tresPetite` | enum-libellé | 16 | `creatures.json` |
@@ -2263,7 +2263,6 @@ enum-libellé, taille, seuil `N+`, prose, nombre) : un candidat à examiner, jam
 | `coup-de-poing` | id d’entité | 2 | `creatures.json` |
 | `deesse-araignee` | id d’entité | 2 | `creatures.json` |
 | `hallebarde` | id d’entité | 2 | `creatures.json` |
-| `modérée` | enum-libellé | 2 | `creatures.json` |
 | `nain` | id d’entité | 2 | `creatures.json` |
 | `pistolet` | id d’entité | 2 | `creatures.json` |
 | `sorcellerie` | id d’entité | 2 | `creatures.json` |
@@ -5207,4 +5206,4 @@ pèse **2990** slots sur 3554.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: 5770f7884c15f6f43f8f491e913e5d4836661561 (390 fichiers, 10 dossiers) corps: ebd22ce6ab245d0e4596e9dab9e7301221a3a125 -->
+<!-- sources-empreinte: 12cfddfadd3bd0ddc1c3eb2ca6f67b38b267739e (390 fichiers, 10 dossiers) corps: 53f4cfa7493907beb67158b2bbda877f4e4e9f78 -->

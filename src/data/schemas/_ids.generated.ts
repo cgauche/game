@@ -201,5 +201,6 @@ export const IDS_PAR_MARQUEUR: Readonly<Record<string, Readonly<Record<string, r
   'traits.json': {
     'indice': ['a-distance', 'arme', 'armure', 'attaque-caudale', 'cornes', 'corruption', 'demoniaque', 'fouissement', 'langue-prehensile', 'morsure', 'mutation', 'peur', 'protection', 'redoutable', 'resistance-a-la-magie', 'souffle', 'tentacules', 'terreur', 'toile', 'venin', 'vol', 'vomissement'],
     'range': ['a-distance', 'langue-prehensile'],
+    'specsOpen': ['a-distance', 'arme', 'cornes', 'corruption-mentale', 'lanceur-de-sorts', 'perturbant', 'souffle'],
   },
 };
