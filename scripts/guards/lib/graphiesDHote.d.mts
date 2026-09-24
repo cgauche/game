@@ -5,4 +5,4 @@ export interface LectureDHote {
 }
 
 /** Lectures d'hôte non simulées dans `source` (définition : en-tête de `graphiesDHote.mjs`). */
-export function lecturesDHote(source: string): LectureDHote[];
+export function lecturesDHote(source: string, chemin?: string): LectureDHote[];

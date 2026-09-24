@@ -144,10 +144,6 @@ test('paquet PRÉSENT : lancé avec ses arguments, PATH isolé, code de sortie p
   }
 })
 
-/** Ce que l'enfant imprime comme entrée : son `argv[1]`, ASSEMBLÉ — le texte est le code de l'ENFANT,
- *  pas celui de ce banc, qui ne lit pas son propre point d'entrée (`scripts/guards/lib/pointDEntree.mjs`). */
-const ENTREE_DE_L_ENFANT = ['process', 'argv[1]'].join('.')
-
 test('`--cwd` : l’enfant tourne dans le dossier demandé, l’outil reste celui de l’arbre', () => {
   const racine = fauxArbre()
   const ailleurs = mkdtempSync(join(tmpdir(), 'cwd-demande-'))
@@ -159,7 +155,7 @@ test('`--cwd` : l’enfant tourne dans le dossier demandé, l’outil reste celu
     )
     writeFileSync(
       join(racine, 'node_modules', 'sonde', 'sonde.mjs'),
-      `process.stdout.write(JSON.stringify({ cwd: process.cwd(), entree: ${ENTREE_DE_L_ENFANT} }))\n`,
+      'process.stdout.write(JSON.stringify({ cwd: process.cwd(), entree: process.argv[1] }))\n',
     )
     const vu = JSON.parse(lancer(racine, ['sonde', '--cwd', ailleurs, '--', 'sonde']).stdout)
     assert.equal(vu.cwd, ailleurs)

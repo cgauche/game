@@ -5,4 +5,4 @@ export interface DetectionDePointDEntree {
 }
 
 /** Détections du point d'entrée écrites à la main dans `source` (définition : en-tête de `pointDEntree.mjs`). */
-export function detectionsDePointDEntree(source: string): DetectionDePointDEntree[];
+export function detectionsDePointDEntree(source: string, chemin?: string): DetectionDePointDEntree[];
