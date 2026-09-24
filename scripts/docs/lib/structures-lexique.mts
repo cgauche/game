@@ -32,9 +32,11 @@ export type StatutSignature = 'cible' | 'historique' | 'declaree';
  * d'entité — concepts lotés L3).
  *
  * Le DATASET seul ne suffit pas et c'est mesuré : `creatures.json` porte `{id,value}` sur `skills`
- * (cible) ET sur `traits`/`optionals` (historique). Le champ entre donc dans la clé.
+ * (cible) ET sur `traits`/`optionals` (historique). Le champ entre donc dans la clé. `datasets`
+ * absent = le champ, dans TOUT dataset : un champ d'ENVELOPPE (`alsoIn`, `grammaire/document.ts`)
+ * est le même nœud partout où la fabrique `document()` le pose.
  */
-export type SiteDeSignature = { readonly datasets: readonly string[]; readonly champs: readonly string[] };
+export type SiteDeSignature = { readonly datasets?: readonly string[]; readonly champs: readonly string[] };
 export type SignatureLexique = { sig: string; statut: StatutSignature; note?: string; site?: SiteDeSignature };
 
 /** Les documents qui portent un STATBLOC à valeurs de Test imprimées : le bestiaire et les statblocs
@@ -44,6 +46,10 @@ export const SITE_STATBLOC: SiteDeSignature = {
   datasets: ['creatures.json', 'arene-projet.json', 'barge-du-sel-projet.json', 'diligence-projet.json', 'loup-et-saumure-projet.json'],
   champs: ['skills'],
 };
+
+/** L'emplacement SECONDAIRE d'une entrée (`alsoIn`, `secondarySourceRefSchema` de
+ *  `grammaire/valeurs.ts`) : la référence de source plus sa preuve `quote`, dans tout document. */
+export const SITE_EMPLACEMENT_SECONDAIRE: SiteDeSignature = { champs: ['alsoIn'] };
 
 /**
  * Strate de la grammaire (#1463, design 2026-08-23) à laquelle une forme appartient.
@@ -378,6 +384,8 @@ export const CONCEPTS: readonly Concept[] = [
     signatures: [
       { sig: 'book,page', statut: 'cible' },
       { sig: 'book,note,page', statut: 'cible', note: 'note = précision optionnelle de `sourceRefSchema` (`src/data/schemas/grammaire/valeurs.ts`)' },
+      { sig: 'book,page,quote', statut: 'cible', site: SITE_EMPLACEMENT_SECONDAIRE, note: 'emplacement secondaire + sa preuve verbatim (`secondarySourceRefSchema`)' },
+      { sig: 'book,note,page,quote', statut: 'cible', site: SITE_EMPLACEMENT_SECONDAIRE, note: 'idem, avec la précision `note`' },
       { sig: 'book,chapter', statut: 'historique', note: 'folio obligatoire (#1463, 2026-08-23)' },
       { sig: 'book,chapter,page', statut: 'historique' },
     ],

@@ -1,6 +1,6 @@
 *Pages PDF 163*
 
-# **MOVING IN COMBAT** V
+# **MOVING IN COMBAT**
 
 How much detail you need for movement depends on how you track positions. In 'theatre of the mind', relative positions are described and the GM adjudicates movement as required. Even during tightly controlled combat Rounds, it is usually enough to narrate how your character negotiates the frenetic action, leaping barrels, sprinting for cover, or dancing around opponents as required.
 

@@ -228,7 +228,7 @@ Quand **plusieurs facteurs** affectent un même test, on **somme** leurs modific
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 12` (l.189) → `useExtendedTestJetProps`, `soutien`, `BargainModalView`, `SequenceParams`, `runSceneConsumableFlow`, `test-extended-min-sl`, `RollRequest`, `buildStageSteps`, `PendingTest`, `hasSkillAdvance`, +35 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/grammaire/mecanique.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, +22 fichiers
 - `LDB 14` (l.48, l.91-96) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `COVER_MOD`, `SceneCombatMods`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `decorCover`, `fr`, `SANS_LIVRE`, `10-a-votre-action-au-prochain-round`, `doc`, `sceneCombatModifiers`, +69 — `src/data/actions.json`, `src/data/oups.json`, `src/data/props.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs-scenes/scene.ts`, +26 fichiers
-- `LDB 16` (l.11) → `effectiveChar`, `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `GameOp`, `FREE_ATTACK_LABEL`, `combatTestPenaltyParts`, +7 — `src/data/index.ts`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, +2 fichiers
+- `LDB 16` (l.11) → `effectiveChar`, `addCondition`, `addClockCondition`, `defenseValueMods`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `GameOp`, `FREE_ATTACK_LABEL`, +10 — `src/data/index.ts`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, +2 fichiers
 
 ---
 
@@ -489,7 +489,7 @@ En dépensant un Point de Résilience, un personnage peut choisir *lui-même* le
 - S'il s'agit d'un test opposé, le personnage l'emporte avec **au moins DR +1**.
 - Peut être déclenché *après* un test raté (rétroactif).
 
-> « "Je ne faillirai pas !" : au lieu de lancer les dés pour un Test, vous choisissez le résultat, ce qui vous permet de réussir, même dans les pires conditions. […] S'il s'agit d'un Test opposé, vous l'emportez avec au moins DR +1. Vous pouvez même faire ce choix après un Test qui a échoué. » — `LDB 17 l.68`
+> « **Je ne faillirai pas ! :** au lieu de lancer les dés pour un Test, vous choisissez le résultat, ce qui vous permet de réussir, même dans les pires conditions. […] S'il s'agit d'un Test opposé, vous l'emportez avec au moins DR +1. Vous pouvez même faire ce choix après un Test qui a échoué. » — `LDB 17 l.68`
 
 **Sources RAW** :
 - `LDB 17 l.17-25` — dépense de Chance : relance ou +1 DR
@@ -543,7 +543,7 @@ Autrement dit : chaque fois qu'un personnage *réussit* un test utilisant une Co
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.453, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `useAttackJetProps`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `artiste`, +104 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, +11 fichiers
+- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.453, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `useAttackJetProps`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `slotCovers`, +108 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/schemas/grammaire/ref.ts`, `src/data/skills.json`, `src/data/talents.json`, `src/engine/careerSlots.ts`, +14 fichiers
 
 ---
 
@@ -580,7 +580,7 @@ Talents concernés (LDB 10) :
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.176, l.634, l.834, l.899, l.950, l.966) → `MedicState`, `MODAL_DEFS`, `CombatFeature`, `surgeryNext`, `MedicModal`, `surgery-roll`, `caid`, `cavalier-emerite`, `chanceux`, `charge-berserk`, +63 — `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/i18n/messages/fr.ts`, `src/state/combatFlow.ts`, +5 fichiers
+- `LDB 10` (l.176, l.634, l.834, l.899, l.950, l.966) → `MedicState`, `CombatFeature`, `MODAL_DEFS`, `surgeryNext`, `MedicModal`, `surgery-roll`, `caid`, `cavalier-emerite`, `chanceux`, `charge-berserk`, +64 — `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/i18n/messages/fr.ts`, `src/state/combatFlow.ts`, +5 fichiers
 - `LDB 12` (l.42) → `canReroll`, `test-auto-bands`, `getTestPolicy`, `ChanceButtons`, `test-over-100`, `RollRowCore`, `test-auto-band-width`, `rerollAvailable`, `NightEntry`, `PendingTest`, +12 — `src/data/reglesOptionnelles.json`, `src/engine/fortune.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +4 fichiers
 
 ---

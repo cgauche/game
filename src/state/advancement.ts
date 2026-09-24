@@ -178,8 +178,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     if (!slot.needsChoice || designations[slot.key]) continue;
     const o = slot.options[0];
     if (!o.optionId) continue; // garde défensive (un joker a toujours un optionId en pratique)
-    const specPool = o.specOptions ?? wildcardSpecs(o.label);
-    const options = specPool
+    const options = wildcardSpecs(o, 'skill')
       .filter((spec) => !taken.has(refKey(o.optionId!, spec)))
       .map((spec) => ({
         spec,
@@ -210,8 +209,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     const options: { refKey: string; display: string; owned: boolean }[] = [];
     for (const o of slot.options) {
       if (!o.optionId) continue;
-      const specs = o.specOptions ?? wildcardSpecs(o.label);
-      const pool: (string | undefined)[] = o.wildcard ? (specs.length ? specs : [undefined]) : [o.spec];
+      const pool: (string | undefined)[] = o.wildcard ? wildcardSpecs(o, 'talent') : [o.spec];
       for (const spec of pool) {
         const rk = refKey(o.optionId, spec);
         if (taken.has(rk)) continue;

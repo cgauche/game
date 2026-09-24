@@ -1,6 +1,6 @@
 *Pages PDF 349-350*
 
-# **DAEMONS, THE GIBBERING HOSTS** XII
+# **DAEMONS, THE GIBBERING HOSTS**
 
 Daemons are blasphemous horrors from the Realms of Chaos, the manifest will of the Dark Gods. In the Reikland, they rarely appear except when summoned by cultists of the Ruinous Powers. Most daemons serve one of the four Chaos Gods, but some are little more than mindless beasts of the Aethyr, owing allegiance to none.
 

@@ -38,19 +38,27 @@
 // rouges : un écart MESURÉ hors du stock (ré-extraire le livre, ou déclarer par `CLIQUET:`), une
 // entrée SANS écart mesuré (livre ré-extrait : la retirer).
 //
+// MOBILIER DE PAGE (famille `mobilier`, #1739) : pour tout livre dont la liste de découpe porte des
+// `onglets`, un chiffre d'onglet ou un folio mêlé au flux est un ROUGE NOMMÉ, sans stock — le geste
+// est `node scripts/raw/reparer-mobilier.mjs <id>`. Le prédicat est celui de la sonde
+// (`lib/mobilier.mjs`), importé, jamais redit ; un mot du livre qui y tombe s'exempte AU SITE
+// (`scripts/guards/lib/mobilierExemptions.mjs`) pour ses `jetons` sites exactement : au-delà, le site
+// est rouge ; en deçà, l'exemption l'est.
+//
 // Re-run    : node scripts/raw/check-source-format.mjs
-// Régénérer : node scripts/raw/check-source-format.mjs --ecrire-stock
+// Régénérer : node scripts/raw/check-source-format.mjs --ecrire-stock [--lot <#N …>] — le lot est REQUIS dès qu'une entrée NEUVE naît (`ecrireStockSousLot`, scripts/guards/lib/stock.mjs)
 import { existsSync, writeFileSync, statSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
-import { ecartDuVolet, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
+import { ecartDuVolet, ecrireStockSousLot, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
 import { readStock } from './stockNominatif.mjs'
-import { graphieDeChapitre, graphieDuFichier, largeurDeChapitre, ligne1DePlage, numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
+import { estSeparateur, graphieDeChapitre, graphieDuFichier, largeurDeChapitre, ligne1DePlage, numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { estLigneDeTitre, ouvreSur } from './lib/titres.mjs'
-import { decoupeDe, livreDuDossier, livresDecoupes, REGISTRE_LIVRES } from './_lib.mjs'
-import { nomAscii } from '../source/nom-ascii.mjs'
+import { decoupeDe, livreDuDossier, livresDecoupes, nomsDeLaListe, ongletsDe, REGISTRE_LIVRES } from './_lib.mjs'
+import { exemptionsFausses, mobilierDuDossier } from './lib/mobilier.mjs'
+import { EXEMPTIONS_MOBILIER } from '../guards/lib/mobilierExemptions.mjs'
 
 export const STOCK_PATH = join(dirname(fileURLToPath(import.meta.url)), 'source-format-stock.json')
 
@@ -105,12 +113,6 @@ export function formeDeLigne1(ligne) {
 /** Le titre d'un chapitre est-il un SIGNET Word (`_GoBack`, `_gjdgxs`, `Sans titre`) plutôt que le
  *  titre imprimé ? Ces noms polluent l'index et rendent la réf de chapitre illisible. */
 export const estNomDeSignet = (titre) => titre.startsWith('_') || /^sans titre$/i.test(titre.trim())
-
-/** Une ligne de SÉPARATEUR de table Markdown (`| --- | --- |`, `|--|--|--|`). */
-export function estSeparateur(ligne) {
-  const t = ligne.trim().replace(/\s+/g, '')
-  return t.startsWith('|') && /^[|:-]+$/.test(t) && t.includes('--')
-}
 
 /** La ligne DÉBARRASSÉE de ses ancres de page (une table ouverte par une ancre reste une table). */
 const sansAncres = (ligne) => ligne.replace(ANCRE_PAGE, '')
@@ -318,8 +320,7 @@ export function ecartsAuGrain(dir, fichiers, liste) {
   const out = []
   const chemin = (nom) => `${dir}/${nom}`
   const parNom = new Map(fichiers.map((f) => [f.nom, f.texte]))
-  const largeur = largeurDeChapitre(Math.max(1, liste.length))
-  const attendus = liste.map((e, i) => nomAscii(`${graphieDeChapitre(i + 1, largeur)} - ${e.titre}.md`))
+  const attendus = nomsDeLaListe(liste)
 
   const servis = fichiers.filter((f) => numeroDuFichier(f.nom) != null).map((f) => f.nom)
   const enTrop = servis.filter((n) => !attendus.includes(n))
@@ -385,6 +386,30 @@ export const grainDuDossier = (dir) => {
 
 /** Écarts au grain de TOUS les dossiers FR, dans l'ordre du corpus. */
 export const grainAll = (dossiers = dossiersFR()) => dossiers.flatMap((d) => grainDuDossier(d))
+
+/**
+ * Les ROUGES de la famille `mobilier` pour des sites mesurés (`lib/mobilier.mjs#mobilierDuDossier`) :
+ * chaque site NON exempté, puis chaque exemption qui ne couvre pas exactement ses `jetons` sites —
+ * `{ file, ref }`. PURE.
+ */
+export const rougesDuMobilier = (sites, exemptions = EXEMPTIONS_MOBILIER) => [
+  ...sites.filter((s) => !s.exemption).map((s) => ({ file: s.fichier, ref: `l.${s.ligne} ${s.classe} « ${s.jeton} » : ${s.texte.trim().slice(0, 60)}` })),
+  ...exemptionsFausses(sites, exemptions).map(({ exemption: e, couverts }) => ({ file: e.fichier, ref: `exemption qui couvre ${couverts} site(s) pour ${e.jetons} déclaré(s) : ${e.motif}` })),
+]
+
+/**
+ * MOBILIER DE PAGE de tous les dossiers FR dont le livre a des `onglets` (`rougesDuMobilier`).
+ * @param {string[]} [dossiers] @param {object[]} [exemptions]
+ */
+export function mobilierAll(dossiers = dossiersFR(), exemptions = EXEMPTIONS_MOBILIER, avecListe = livresDecoupes()) {
+  const sites = dossiers.flatMap((d) => {
+    const livre = livreDuDossier(d)
+    if (!livre || !avecListe.includes(livre.id)) return []
+    const textes = new Map(lireDossier(d).map((f) => [f.nom, f.texte]))
+    return mobilierDuDossier(cheminDe(d), (nom) => textes.get(nom) ?? '', decoupeDe(livre.id), ongletsDe(livre.id), { exemptions })
+  })
+  return rougesDuMobilier(sites, exemptions)
+}
 
 /**
  * Les DOSSIERS FR suivis, dans l'ordre POSIX : l'union des livres à `dir` de `books.json` et du
@@ -513,10 +538,14 @@ function main() {
   const stock = readStock(STOCK_PATH)
 
   if (args.includes('--ecrire-stock')) {
-    const lot = '#1739 S1'
-    const date = new Date().toISOString().slice(0, 10)
-    writeFileSync(STOCK_PATH, stockDe(sites, { lot, date, dossiers: dossiers.length, ancien: stock }))
-    console.log(`stock écrit : ${STOCK_PATH} — ${entreesDe(sites, { lot, date, ancien: stock }).length} entrée(s)`)
+    const r = ecrireStockSousLot(
+      args,
+      (lot, date) => ({ entrees: entreesDe(sites, { lot, date, ancien: stock }), texte: stockDe(sites, { lot, date, dossiers: dossiers.length, ancien: stock }) }),
+      (texte) => writeFileSync(STOCK_PATH, texte),
+      STOCK_PATH,
+    )
+    ;(r.code ? console.error : console.log)(r.message)
+    process.exitCode = r.code
     return
   }
 
@@ -537,6 +566,13 @@ function main() {
     for (const g of grain) console.log(`  ${g.file} — ${g.ref}`)
   }
 
+  // MOBILIER : rouge nommé, jamais stocké — son geste est `node scripts/raw/reparer-mobilier.mjs <id>`.
+  const mobilier = mobilierAll(dossiers)
+  if (mobilier.length) {
+    console.log(`MOBILIER — ${mobilier.length} site(s) de mobilier de page (geste : node scripts/raw/reparer-mobilier.mjs <id>) :`)
+    for (const m of mobilier) console.log(`  ${m.file} — ${m.ref}`)
+  }
+
   const { neuves, perimees } = ecartDuStock(sites, stock)
   if (neuves.length) {
     console.log('RÉGRESSION — écart(s) hors du stock :')
@@ -546,8 +582,8 @@ function main() {
     console.log('Entrée(s) SOLDÉE(s) (livre ré-extrait) :')
     for (const s of perimees) console.log(`  ${s}`)
   }
-  if (!neuves.length && !perimees.length && !grain.length) {
-    console.log('OK — cliquet aligné, aucune régression, aucun écart au grain.')
+  if (!neuves.length && !perimees.length && !grain.length && !mobilier.length) {
+    console.log('OK — cliquet aligné, aucune régression, aucun écart au grain, aucun mobilier de page.')
     return
   }
   process.exitCode = 1

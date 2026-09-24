@@ -269,7 +269,7 @@ Le JSDoc est rapporté en ENTIER : le contrat d'une couture relationnelle tient 
 | `tokenizeLinks` | function | `src/ui/compendium/relations.ts:502` | Tokenise une prose en alternant texte brut et mentions d'entité à LIER (auto-liage du Codex, façon `dev.html`). PUR & locale-scoped (matcher dérivé des libellés de la locale active, jamais une chaîne FR en dur → multilingue de principe). Écarte les liens vers SOI et les libellés inconnus/courts — la comparaison est 100 % id-based (`selfId` si l'appelant le connaît, sinon résolu depuis `selfLabel` via `idByLabelCached`, repli des appelants non encore migrés). `selfCategory` (catégorie de la fiche affichante) tranche les homonymes en priorité — cf. `resolveLink`/`PRIORITY_CAT_ORDER`. Seul le vocabulaire de RÈGLES est lié. |
 
 `bookContents` est projeté DANS le `build` (paresseux) de la catégorie Livres
-(`src/ui/compendium/registry.ts:1800`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
+(`src/ui/compendium/registry.ts:1794`) : il ne lit que l'identité STATIQUE des catégories, jamais leurs
 items — aucun cycle de projection.
 
 ## Barre de catégories — sous-groupes repliables (`cluster`)
@@ -320,4 +320,4 @@ Regrouper une catégorie = poser `cluster: '…'` sur son littéral dans `CODEX_
 - `npx vitest run src/ui/compendium/humanize.test.ts`
 - `npx vitest run src/data/schemas/exposition-contrats.test.ts`
 - `npx vitest run src/data/serialize.test.ts`
-<!-- sources-empreinte: 2af88dadd5f1f45362f005972043593542bdae6b (769 fichiers, 0 dossiers) corps: c7389c0c0f236a4c391641cb9e57806e78b0cdf0 -->
+<!-- sources-empreinte: e695fff023f0efb398465890f54ee09200044361 (772 fichiers, 0 dossiers) corps: 0b28db504a40873a4550c78c3d4863521b698c7f -->

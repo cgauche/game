@@ -20,5 +20,3 @@ As you make your Character, you will record everything about them on your Charac
 ### **FITTING IN**
 
 Your Character needs to work well with the other PCs and fit into the game the GM has planned, so talk as a group about your Character plans. For example, it would be hard to investigate a rogue wizard if none of the Characters can detect the use of magic!
-
-II

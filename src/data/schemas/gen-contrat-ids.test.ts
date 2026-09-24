@@ -1,5 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { verifieExhaustiviteDesIds, idsDuDataset } from '../../../scripts/gen-registry.mjs';
+import { describe, it, expect, afterAll } from 'vitest';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { verifieExhaustiviteDesIds, idsDuDataset, discriminantsDeclares, marqueursDeclares, idsParMarqueur, lireDefs } from '../../../scripts/gen-registry.mjs';
 
 /**
  * Contrat FERMÉ famille ⇄ registre d'ids (`scripts/gen-registry.mjs::verifieExhaustiviteDesIds`) —
@@ -93,4 +96,60 @@ describe('extraction des ids — record enveloppé sous `entries` (#1467 L1b V-F
   it('l’enveloppe SEULE n’est jamais un record à ids (`id`+`label` de racine = UN document)', () => {
     expect(idsDuDataset(enveloppe({ 'zone-marche': '#111111' }), 'entite')).toBeNull();
   });
+});
+
+/**
+ * LECTEUR UNIQUE des exports d'un def (`scripts/gen-registry.mjs › lireExports`) : un export absent est
+ * un champ absent, un export présent hors de sa forme canonique fait LEVER la génération en nommant le
+ * def et le champ. Fixtures sous `os.tmpdir()`, un dossier par def (une levée arrête la lecture du dossier).
+ */
+describe('lecteur des exports d’un def (#1897)', () => {
+  const racine = mkdtempSync(join(tmpdir(), 'gen-registry-lecteur-'));
+  afterAll(() => rmSync(racine, { recursive: true, force: true }));
+  const dossierDe = (nom: string, src: string): string => {
+    const dir = join(racine, nom);
+    mkdirSync(dir);
+    writeFileSync(join(dir, `${nom}.ts`), src);
+    return dir;
+  };
+
+  it('la forme CANONIQUE se lit : `file`, `discriminant`, `marqueurs`', () => {
+    const dir = dossierDe('canon', "export const file = 'a.json';\nexport const discriminant = 'domain';\nexport const marqueurs = ['volume', 'toit'];\n");
+    expect(discriminantsDeclares(dir)).toEqual(new Map([['a.json', 'domain']]));
+    expect(marqueursDeclares(dir)).toEqual(new Map([['a.json', ['volume', 'toit']]]));
+  });
+
+  it('une entrée PORTE le marqueur quand le champ est présent et autre que `false` (décochage au Codex)', () => {
+    const racine = [{ id: 'coche', m: true }, { id: 'decoche', m: false }, { id: 'absent' }, { id: 'objet', m: { h: 1 } }];
+    expect(idsParMarqueur(racine, ['m'], 'x.json')).toEqual({ m: ['coche', 'objet'] });
+  });
+
+  it('un export ABSENT est un champ absent, sans levée', () => {
+    const dir = dossierDe('absent', "export const file = 'a.json';\n");
+    expect(discriminantsDeclares(dir)).toEqual(new Map());
+    expect(marqueursDeclares(dir)).toEqual(new Map());
+    expect(lireDefs(dir, ['file', 'meta', 'chargeParDiscriminant'])).toEqual([{ module: 'absent.ts', file: 'a.json', meta: undefined, chargeParDiscriminant: undefined }]);
+  });
+
+  const horsForme: [string, string, string][] = [
+    ['commentaire-discriminant', "export const file = 'b.json';\nexport const discriminant = 'domain'; // commentaire\n", 'discriminant'],
+    ['commentaire-marqueurs', "export const file = 'b.json';\nexport const marqueurs = ['volume']; // commentaire\n", 'marqueurs'],
+    ['asconst-discriminant', "export const file = 'c.json';\nexport const discriminant = 'domain' as const;\n", 'discriminant'],
+    ['asconst-marqueurs', "export const file = 'c.json';\nexport const marqueurs = ['volume'] as const;\n", 'marqueurs'],
+    ['type-discriminant', "export const file = 'd.json';\nexport const discriminant: string = 'domain';\n", 'discriminant'],
+    ['type-marqueurs', "export const file = 'd.json';\nexport const marqueurs: readonly string[] = ['volume'];\n", 'marqueurs'],
+    ['guillemets-discriminant', "export const file = 'e.json';\nexport const discriminant = \"domain\";\n", 'discriminant'],
+    ['guillemets-marqueurs', "export const file = 'e.json';\nexport const marqueurs = [\"volume\"];\n", 'marqueurs'],
+    ['guillemets-file', 'export const file = "e.json";\nexport const discriminant = \'domain\';\n', 'file'],
+    ['espace-file', "export const file = 'f.json' ;\nexport const marqueurs = ['volume'];\n", 'file'],
+  ];
+  for (const [nom, src, champ] of horsForme) {
+    it(`hors forme canonique LÈVE en nommant le def et le champ : ${nom}`, () => {
+      const dir = dossierDe(nom, src);
+      const attendu = new RegExp(`${nom}\\.ts : export « ${champ} » hors de sa forme canonique`);
+      // Chaque projection lit `file` et SON champ : `file` hors forme fait lever les deux.
+      if (champ !== 'marqueurs') expect(() => discriminantsDeclares(dir)).toThrow(attendu);
+      if (champ !== 'discriminant') expect(() => marqueursDeclares(dir)).toThrow(attendu);
+    });
+  }
 });

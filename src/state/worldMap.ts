@@ -11,6 +11,7 @@
  * marche forcée au niveau carte.
  */
 import type { Effect, Fige, ReliefDefaults, Scene, SceneRoofDefaults } from './scene';
+import { remapSortsFusionnesDeep } from '../data/sortsFusionnes';
 import { normalizeScene } from './scene';
 import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
@@ -756,6 +757,25 @@ function migreActionsAuthorees(scenes: unknown): unknown {
   });
 }
 
+/** La forme SOURCE d'une référence de sort de preset au format 12 : objet de clé UNIQUE `id`, chaîne
+ *  non vide — le seul élément qui se dénude SANS PERTE (`{ id, spec }` perdrait `spec`). */
+const estSortSource = (s: unknown): s is { id: string } =>
+  !!s && typeof s === 'object' && !Array.isArray(s) && Object.keys(s).length === 1
+  && typeof (s as { id?: unknown }).id === 'string' && (s as { id: string }).id.length > 0;
+
+/** `{ id }` → id nu dans `presetsPnj[].profil.spells` (bump 12 → 13, #1897) ; le reste traverse intact. */
+function denudeSortsDePreset(narratif: unknown): unknown {
+  const nb = narratif as { presetsPnj?: unknown } | null;
+  if (!nb || typeof nb !== 'object' || !Array.isArray(nb.presetsPnj)) return narratif;
+  const presetsPnj = nb.presetsPnj.map((p) => {
+    const profil = (p as { profil?: { spells?: unknown } } | null)?.profil;
+    if (!profil || !Array.isArray(profil.spells)) return p;
+    const spells = profil.spells.map((s) => (estSortSource(s) ? s.id : s));
+    return { ...(p as object), profil: { ...profil, spells } };
+  });
+  return { ...nb, presetsPnj };
+}
+
 /** Migrations SÉQUENTIELLES de ProjectDoc : la clé N met à niveau un schema N → N+1. `2` injecte le
  *  bloc `narratif` vide (#765 — un projet schema 2 est un paquet SANS narratif). `3` porte les
  *  RÔLES DE PROSE du lot #1467 L1b V-P2 : c'est la MÊME transformation que les migrations de dépôt
@@ -763,7 +783,7 @@ function migreActionsAuthorees(scenes: unknown): unknown {
  *  projet exporté avant ce lot (bibliothèque utilisateur, `.json` portable) mourrait sur le schéma.
  *  Ajouter ici la migration N→N+1 pour tout futur bump (cf. `MIGRATIONS` de `saves.ts`), plutôt que
  *  de refuser en silence des projets antérieurs valides. */
-export const PROJECT_MIGRATIONS: MigrationMap = {
+export const PROJECT_MIGRATIONS = {
   2: (doc) => ({ ...doc, version: 3, schema: 3, narratif: emptyNarratif() }),
   3: (doc) => {
     // Un document SANS `scenes` valide traverse INTACT : c'est `parseProject` qui le refuse, avec son
@@ -948,7 +968,33 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
     version: 12,
     schema: 12,
   }),
-};
+  /**
+   * `12` DÉNUDE la référence de sort d'un preset de PNJ (#1897) : `narratif.presetsPnj[].profil` reprend
+   * le def créature, dont `spells` adopte `refs('spell')` — `{ id }` devient l'id nu, À SA PLACE. Sans ce
+   * passage, un projet de bibliothèque utilisateur serait REFUSÉ au parse sur son premier sort de preset.
+   * Un élément déjà nu traverse INTACT ; ce qui ne se dénude pas SANS PERTE (`{ id, spec }`, `{ id: '' }`)
+   * et ce qui n'est pas une liste traversent tels quels (`parseProject` les refuse ensuite, en les nommant).
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-23-1897-projet-sorts-de-preset-ids-nus.mjs`,
+   * qui refuse les mêmes formes : parité mesurée par `projet-migration-12-vers-13.test.ts`, qui joue la
+   * MÊME fixture par les deux.
+   */
+  12: (doc) => ({
+    ...doc,
+    ...(doc.narratif !== undefined ? { narratif: denudeSortsDePreset(doc.narratif) } : {}),
+    version: 13,
+    schema: 13,
+  }),
+  /**
+   * `13` fait désigner à chaque id de sort FUSIONNÉ par #1897 l'entrée qui l'a absorbé
+   * (`SORTS_FUSIONNES_1897`, table GELÉE), à toute place de sort du document — primitive
+   * `remapSortsFusionnesDeep` (`src/data/sortsFusionnes.ts`), la même que `ROSTER_MIGRATIONS[4]`. Sans ce
+   * passage, un projet de bibliothèque utilisateur qui cite un sort fusionné serait REFUSÉ au parse
+   * (`idDe('spell')`).
+   * Pendant applicatif du script de dépôt `scripts/migrations/2026-09-24-1897-projet-sorts-fusionnes.mjs`
+   * (parité mesurée par `projet-migration-13-vers-14.test.ts`, qui joue la MÊME fixture par les deux).
+   */
+  13: (doc) => ({ ...(remapSortsFusionnesDeep(doc) as Record<string, unknown>), version: 14, schema: 14 }),
+} satisfies MigrationMap;
 
 /** Provenance d'une campagne AUTHORÉE À L'ÉDITEUR : aucun livre ne la publie, et un folio ne se
  *  devine pas. SOURCE UNIQUE — posée par la migration 6→7 sur un projet qui n'en portait aucune,
@@ -988,7 +1034,7 @@ export function exigerUnRefus(err: unknown): asserts err is ProjetRefuse {
 
 /** Refus hors schéma : une seule faute, rapportée `Projet invalide : <faute>.` */
 export function refusDeForme(cause: CauseDeRefus, chemin: readonly (string | number)[], faute: string): ProjetRefuse {
-  return new ProjetRefuse(cause, [{ chemin, message: faute, code: cause }], `Projet invalide : ${faute}.`);
+  return new ProjetRefuse(cause, [{ chemin, lieu: chemin, message: faute, code: cause }], `Projet invalide : ${faute}.`);
 }
 
 /** Ce que la porte dit d'un refus de MIGRATION, par la raison que `migrateDoc` NOMME : un numéro
@@ -1020,6 +1066,26 @@ function refusDeMigration(raison: RaisonDeRefus, schema: unknown, detail?: strin
   return refusDeForme(cause, chemin, faute(JSON.stringify(schema), detail));
 }
 
+/** La chaîne de FORME du projet (`PROJECT_MIGRATIONS`), SEULE : le document monté au format courant,
+ *  AVANT la porte du schéma. `version` est la clé de travail de `migrateDoc` : le `schema` du document
+ *  y est recopié. Seul `null`/`undefined` n'a pas de champ à lire ; tout le reste, `migrateDoc` le juge.
+ *  Refus NOMMÉ (`ProjetRefuse`, `REFUS_DE_MIGRATION`). Partagée par `parseProject` et `migreSceneDeProjet`. */
+function migreFormeDeProjet(data: unknown): Record<string, unknown> {
+  const obj = data as Record<string, unknown> | null | undefined;
+  const issue = migrateDoc(obj == null ? obj : { ...obj, version: obj.schema }, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS);
+  if (!issue.ok) throw refusDeMigration(issue.raison, issue.version, issue.detail);
+  return issue.doc;
+}
+
+/** Une scène persistée HORS de son projet (filet de crash de l'éditeur, `editorAutosave.ts`), au
+ *  `schema` de projet qu'elle portait à l'écriture : montée au format courant par la MÊME chaîne que
+ *  `parseProject`, puis `normalizeScene`. Sans `schema` lisible, la chaîne refuse
+ *  (`version-absente`) : aucune version n'est supposée. */
+export function migreSceneDeProjet(scene: unknown, schema: unknown): Scene {
+  const doc = migreFormeDeProjet({ schema, scenes: [scene] });
+  return normalizeScene((doc.scenes as Scene[])[0]);
+}
+
 /** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (`ProjetRefuse`,
  *  jamais un throw sec sans espoir de migration), dont la cause se LIT : la raison d'un refus de
  *  migration est celle que `migrateDoc` nomme (`REFUS_DE_MIGRATION`) ; puis forme finale invalide
@@ -1030,12 +1096,7 @@ function refusDeMigration(raison: RaisonDeRefus, schema: unknown, detail?: strin
  *  consommateur. La porte n'altère JAMAIS ce qu'on lui passe. Ce qui suit le schéma travaille sur
  *  un document PROUVÉ : une exception y est une faute du jeu, pas de l'auteur, et se propage. */
 export function parseProject(data: unknown): Omit<ProjectDoc, 'schema'> {
-  // `version` est la clé de travail de `migrateDoc` : le `schema` du document y est recopié. Seul
-  // `null`/`undefined` n'a pas de champ à lire ; tout le reste, `migrateDoc` le juge.
-  const obj = data as Record<string, unknown> | null | undefined;
-  const issue = migrateDoc(obj == null ? obj : { ...obj, version: obj.schema }, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS);
-  if (!issue.ok) throw refusDeMigration(issue.raison, issue.version, issue.detail);
-  const migrated = issue.doc;
+  const migrated = migreFormeDeProjet(data);
   if (!Array.isArray(migrated.scenes)) {
     throw refusDeForme('mal-forme', ['scenes'], '« scenes » absent ou non-tableau');
   }

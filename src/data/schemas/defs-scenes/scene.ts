@@ -25,8 +25,8 @@ import { conditionSchema, flowTestSchema, gameOpSchema } from '../grammaire/meca
 import { refIndiceSchema } from '../grammaire/reference';
 import { customStatblockSchema, ptSchema, skillRefSchema, wallSideSchema } from './communs';
 import { sceneFlowSchema } from './effets';
-import { PROPS_VOLUMIQUES } from '../_ids.generated';
-import { idDe } from '../grammaire/ref';
+import { idDe, porteLeMarqueur, refs } from '../grammaire/ref';
+import { listeCle } from '../grammaire/liste-cle';
 import { capDecorAdmis } from '../../props.types';
 import { PARTS_RELIEF, type PartRelief } from '../../materials.types';
 import type { AuthoredShipPoste } from '../../../engine/types';
@@ -60,12 +60,12 @@ export const seatOccupantSchema = z.discriminatedUnion('kind', [
  *  l'interaction (dialogueId) ne distinguaient pas. */
 export const entityKindSchema = enumNomme({ heroStart: 'Départ héros', personnage: 'Personnage', prop: 'Décor' });
 
-const VOLUMIQUES = new Set(PROPS_VOLUMIQUES);
+/** Sous-liste des décors à recette VOLUMIQUE : le marqueur `volume` de `defs/props.ts`. */
+const estVolumique = porteLeMarqueur('prop', 'volume');
 
 /** Une ACTION AUTHORÉE sur une instance de décor (#1687) — le vocabulaire OUVERT des gestes qu'un
- *  auteur pose. `id` : identité STABLE et non vide, unique sur l'entité (l'unicité est gardée par le
- *  `refine` de `usable`, qui seul voit la liste) ; `label` : surcharge d'AFFICHAGE, absent le libellé
- *  vient du catalogue i18n à la clé `usable.<id>` ; `consume` : l'entité est retirée après ;
+ *  auteur pose. `id` : identité STABLE et non vide, unique sur l'entité (`listeCle`) ; `label` :
+ *  surcharge d'AFFICHAGE, absent le libellé vient du catalogue i18n à la clé `usable.<id>` ; `consume` : l'entité est retirée après ;
  *  `unique` : jouable une fois (drapeau `__action_<entId>_<id>`), absent ou `false` = REJOUABLE ;
  *  `minutes` : ce que l'action coûte à l'horloge, absent = `TIME_COST.search` (`engine/timeCost.ts`). */
 export const actionAuthoreeSchema = z.strictObject({
@@ -130,19 +130,15 @@ const baseDEntiteSchema = z.strictObject({
   usable: z
     .strictObject({
       assise: z.literal(true).optional(),
-      actions: z.array(actionAuthoreeSchema).optional(),
+      actions: listeCle(actionAuthoreeSchema, 'id').optional(),
     })
-    .refine(
-      (u) => !u.actions || new Set(u.actions.map((a) => a.id)).size === u.actions.length,
-      { message: 'usable.actions : deux actions partagent le même `id` — l’id est l’identité de l’action sur cette entité (drapeau d’épuisement, clé d’offre), il est unique.' },
-    )
     .optional(),
   /** RÔLE combat optionnel : ce que l'auteur choisit pour CETTE personne au combat. */
   combat: z
     .strictObject({
       /** OPTIONNELS choisis (`LDB 76 l.45`). */
       optionals: z.array(optionalEntrySchema).optional(),
-      spells: z.array(z.string()).optional(),
+      spells: refs('spell').optional(),
       /** Caractéristiques aléatoires au spawn (`LDB 77 l.108`). */
       randomChars: z.boolean().optional(),
       skills: z.array(skillRefSchema).optional(),
@@ -168,20 +164,19 @@ export const sceneEntitySchema = z.discriminatedUnion('kind', [
   brancheDEntite('personnage', z.string().optional()),
   brancheDEntite('prop', idDe('prop').optional()).superRefine((ent, ctx) => {
     // REF DE DÉCOR — verrou AU PARSE (#877) : le type est REQUIS ; sa résolution au registre est celle
-    // de la feuille `idDe('prop')`. Une ref absente se DIT ici, en nommant l'entité.
+    // de la feuille `idDe('prop')`. Une ref absente se DIT ici.
     if (ent.ref === undefined) {
       ctx.addIssue({
         code: 'custom',
         path: ['ref'],
-        message: `décor « ${ent.id} » : « ref » absente — un décor NOMME son type au catalogue (props.json)`,
+        message: '« ref » absente — un décor NOMME son type au catalogue (props.json)',
       });
     }
     // CAP D'UN DÉCOR VOLUMIQUE — verrou AU PARSE (#1680 ligne 3) : un décor dont le TYPE porte une
     // recette ne prend qu'un cap CARDINAL. Sa recette tourne (`rotatePropLocal`) là où son empreinte
     // solide ne tourne pas (#1509) : une diagonale poserait son corps en travers de cases restées
-    // traversables. La couche schémas ne lit pas le catalogue au runtime (`src/data/index.ts` importe
-    // les schemas) : elle lit le registre GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
-    if (capDecorAdmis(ent.ref !== undefined && VOLUMIQUES.has(ent.ref), ent.facing)) return;
+    // traversables. La sous-liste se lit au régime vif, sinon au registre généré (`porteLeMarqueur`).
+    if (capDecorAdmis(ent.ref !== undefined && estVolumique(ent.ref), ent.facing)) return;
     ctx.addIssue({
       code: 'custom',
       path: ['facing'],
@@ -202,7 +197,7 @@ export const architecturePartSchema = z.strictObject({ id: z.string(), foot: arc
 export const architectureStoreySchema = z.strictObject({
   id: z.string(),
   z: z.number(),
-  parts: z.array(architecturePartSchema),
+  parts: listeCle(architecturePartSchema, 'id'),
   roomZoneIds: z.array(z.string()),
 });
 /** Nature d'un ornement de façade — les trois `KINDS_DE_DECOR` (`builders/walls.ts`) portent le libellé
@@ -231,7 +226,7 @@ export const facadeSectionSchema = z.strictObject({
   edges: z.array(architectureEdgeRefSchema),
   appearance: z.string(),
   roomZoneIds: z.array(z.string()).optional(),
-  features: z.array(facadeFeatureSchema).optional(),
+  features: listeCle(facadeFeatureSchema, 'id').optional(),
 });
 /** Profil de toiture d'une masse/d'une intention de toiture. */
 export const roofProfileSchema = enumNomme({
@@ -415,11 +410,11 @@ export const architectureBodySchema = z.strictObject({
    *  corps sans identité de bâtiment (un bourg, un hameau : plusieurs bâtiments sous UN corps) — la
    *  dérivation le coiffe, aucun ornement n'est émis. */
   style: typeDeBatimentSchema.optional(),
-  storeys: z.array(architectureStoreySchema),
-  facades: z.array(facadeSectionSchema),
+  storeys: listeCle(architectureStoreySchema, 'id'),
+  facades: listeCle(facadeSectionSchema, 'id'),
   /** SURCHARGES (#829, cf. doc `buildingMassSchema`) — jamais l'obligation de couvrir tout le bâti à
    *  la main : la dérivation couvre le reste. */
-  masses: z.array(buildingMassSchema),
+  masses: listeCle(buildingMassSchema, 'id'),
   /** Intention des masses DÉRIVÉES (#829) — SURCHARGE de `Scene.roofDefaults`, champ par champ. */
   roofDefaults: roofDefaultsSchema.optional(),
   /** Cases à NE JAMAIS couvrir par la dérivation par défaut (cour intérieure à ciel ouvert…), par
@@ -462,7 +457,7 @@ export const dialogueNodeSchema = z.strictObject({
 export const dialogueSchema = z.strictObject({
   id: z.string(),
   start: z.string(),
-  nodes: z.array(dialogueNodeSchema),
+  nodes: listeCle(dialogueNodeSchema, 'id'),
 });
 
 // ── Déclencheur ─────────────────────────────────────────────────────────────────────────────────
@@ -492,7 +487,7 @@ export const threatTierSchema = z.enum(['dangereuse', 'tresDangereuse', 'extreme
 /** OBJECTIF de victoire d'une rencontre (#197) — AUTHORABLE en donnée, lu par `checkBattleOver`.
  *  Absent = `allEnemiesDead` (comportement HISTORIQUE, tous les scénarios existants inchangés).
  *  `destroyStructure` référence l'arête par son identifiant STABLE (x/y/side/z), le même couple que
- *  `structureIsDown`/`Combatant.structureEdge` (bélier-porte, `AA 10 p.120-121`) — la victoire se déclenche
+ *  `structureIsDown`/`Combatant.structureEdge` (bélier-porte, `AA 10 l.94-102`) — la victoire se déclenche
  *  à la BRÈCHE, indépendamment du sort des combattants. `surviveRounds` : victoire posée au début du
  *  Round `rounds + 1` (le groupe a tenu N Rounds complets). `reachZone` réutilise le rectangle de zone
  *  des `Trigger`/`SceneEffectZone` (`inRect`, `combatGeometry.ts`) — aucun 2e mécanisme de zone.
@@ -546,7 +541,7 @@ export const encounterDefSchema = z.strictObject({
   /** Membres référençant des entités de la scène (peuplés par l'éditeur, ou à l'authoring via
    *  `buildEncounter`). SOURCE UNIQUE lue par le runtime — chaque membre pointe une `SceneEntity`
    *  'personnage' qui porte tout le profil (ref/statblock/apparence/arme/`combat.hiddenUntilCombat`). */
-  members: z.array(encounterMemberSchema).optional(),
+  members: listeCle(encounterMemberSchema, 'entityId').optional(),
   /** Scène/flag déclenché à la victoire — Flow (UN seul format avec `Trigger.flow`/`DialogueChoice.flow`).
    *  Aplati en `Effect[]` par `finishVictory` (la déférence transition/dialogue + la mesure de récompense
    *  restent sur la séquence plate). */
@@ -680,34 +675,16 @@ export const wallSegSchema = z.strictObject({
   climb: wallClimbSchema.optional(),
 });
 
-/** Clé d'ARÊTE d'un segment — la MÊME graphie que l'index d'arêtes (`state/wallIndex.ts`). */
-const cleDArete = (w: z.infer<typeof wallSegSchema>): string => `${w.x},${w.y},${w.side},${w.z ?? 0}`;
-
 /**
  * UNE arête, UN segment — verrou AU PARSE (#1624). L'index d'arêtes (`state/wallIndex.ts`) est la
  * seule lecture de « quels segments tiennent cette arête ? », et ses consommateurs prennent le
  * PREMIER (`aretesA(...)[0]`, composé par `gameIso/builders/roofs.ts`) : un second segment sur la
  * même clé `x,y,side,z` serait une donnée MUETTE, jamais rendue ni lue. `setEdgeWall`
  * (`state/sceneEdit.ts`) dédoublonne à la pose, mais l'authoring littéral, `asciiMap`, les
- * migrations et l'import de projet ne passent pas par lui : le verrou est ICI.
+ * migrations et l'import de projet ne passent pas par lui : le verrou est ICI. La clé est la MÊME
+ * graphie que l'index d'arêtes.
  */
-const refuseAretesDupliquees = (walls: z.infer<typeof wallSegSchema>[], ctx: z.RefinementCtx): void => {
-  const parArete = new Map<string, number[]>();
-  walls.forEach((w, i) => {
-    const k = cleDArete(w);
-    const vus = parArete.get(k);
-    if (vus) vus.push(i);
-    else parArete.set(k, [i]);
-  });
-  for (const [k, vus] of parArete) {
-    if (vus.length < 2) continue;
-    ctx.addIssue({
-      code: 'custom',
-      path: [vus[1]],
-      message: `arête ${k} × ${vus.length} — une arête ne porte qu'un segment (index d'arêtes, state/wallIndex.ts)`,
-    });
-  }
-};
+const cleDArete = { nom: 'x,y,side,z', de: (w: z.infer<typeof wallSegSchema>): string => `${w.x},${w.y},${w.side},${w.z ?? 0}` };
 
 /** Ancre AUTHORÉE d'une Scène de bataille (S2) sur le plan : `MassBattleState.pool` = l'id d'une
  *  Scène de bataille, `ActivityDef` contexte 'bataille-round', posée sur une case de la carte. La
@@ -718,6 +695,12 @@ export const sceneStationAnchorSchema = z.strictObject({
   sceneId: z.string(),
   pos: z.strictObject({ x: z.number(), y: z.number(), z: z.number().optional() }),
 });
+
+/** Les trois BLOCS DE LOGIQUE d'une scène, listes à clé : la scène les compose, et la modale « Avancé »
+ *  de l'éditeur (`SCHEMA_BLOCS_AVANCES`) les reprend TELS QUELS — une seule déclaration de leur clé. */
+export const dialoguesSchema = listeCle(dialogueSchema, 'id');
+export const triggersSchema = listeCle(triggerSchema, 'id');
+export const encountersSchema = listeCle(encounterDefSchema, 'id');
 
 // ── La scène ────────────────────────────────────────────────────────────────────────────────────
 
@@ -766,24 +749,24 @@ export const sceneSchema = z.strictObject({
       }),
     )
     .optional(),
-  effectZones: z.array(sceneEffectZoneSchema).optional(),
+  effectZones: listeCle(sceneEffectZoneSchema, 'id').optional(),
   /** Ids de pistes du registre audio ; `null` = SILENCE forcé, absent = AUTOMATIQUE. */
   music: z.strictObject({ ambient: z.string().nullable().optional(), combat: z.string().nullable().optional() }).optional(),
   /** Matière de chaque PARTIE de relief (#1691) — EXIGÉE : c'est la donnée que le builder LIT. */
   reliefDefaults: reliefDefaultsSchema,
   /** Toiture par défaut de la scène (#1715) — EXIGÉE : c'est la donnée que la dérivation LIT. */
   roofDefaults: sceneRoofDefaultsSchema,
-  layers: z.array(layerSchema).optional(),
-  /** Cloisons sur arête — au plus UNE par clé `x,y,side,z` (`refuseAretesDupliquees`). */
-  walls: z.array(wallSegSchema).superRefine(refuseAretesDupliquees).optional(),
-  entities: z.array(sceneEntitySchema).optional(),
+  layers: listeCle(layerSchema, 'z').optional(),
+  /** Cloisons sur arête — au plus UNE par clé `x,y,side,z` (`cleDArete`). */
+  walls: listeCle(wallSegSchema, cleDArete).optional(),
+  entities: listeCle(sceneEntitySchema, 'id').optional(),
   /** `SeatAssignments` (`state/seating.ts:65`) — `propId → slotId → occupant` (rang du groupe ou entité). */
   seatAssignments: z.record(z.string(), z.record(z.string(), seatOccupantSchema)).optional(),
-  architecture: z.array(architectureBodySchema).optional(),
-  dialogues: z.array(dialogueSchema).optional(),
-  triggers: z.array(triggerSchema).optional(),
-  encounters: z.array(encounterDefSchema).optional(),
-  stations: z.array(sceneStationAnchorSchema).optional(),
+  architecture: listeCle(architectureBodySchema, 'id').optional(),
+  dialogues: dialoguesSchema.optional(),
+  triggers: triggersSchema.optional(),
+  encounters: encountersSchema.optional(),
+  stations: listeCle(sceneStationAnchorSchema, 'sceneId').optional(),
   flags: z.record(z.string(), z.boolean()).optional(),
   /** Points d'arrivée nommés — `z` = étage visé (défaut 0, #835 FU-5). */
   entryPoints: z.record(z.string(), z.strictObject({ x: z.number(), y: z.number(), z: z.number().optional() })).optional(),
@@ -802,9 +785,7 @@ export const sceneSchema = z.strictObject({
       ctx.addIssue({
         code: 'custom',
         path: ['layers', i, champ],
-        message:
-          `scène « ${scene.id} », couche z=${l.z} : \`${champ}\` porte ${n} entrée(s) pour une grille ` +
-          `${scene.dimensions.w}×${scene.dimensions.h} — il en faut EXACTEMENT ${attendu}`,
+        message: `\`${champ}\` porte ${n} entrée(s) pour une grille ${scene.dimensions.w}×${scene.dimensions.h} — il en faut EXACTEMENT ${attendu}`,
       });
     }
   });

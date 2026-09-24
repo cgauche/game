@@ -20,7 +20,8 @@ import { descRefSchema, enumNomme, sourceRefSchema } from './valeurs';
 import { proseAdressable, versDisque } from './prose';
 import { PROSE_INLINE_TOLEREE } from './prose-inline';
 import type { DescRef as DescRefParseur } from '../../source/decoupe';
-import { ref, refs, specRef, pick, idDe, estSpecialisable, TYPES, type Id } from './ref';
+import { ref, refs, specRef, refOuSpec, pick, idDe, estSpecialisable, entreeOuverte, refusDeSpec, type Id } from './ref';
+import { flowTestSchema } from './mecanique';
 import { byId, type SkillData, type TypeResolu } from '../../index';
 import { avancement } from './avancement';
 import { SANS_LIVRE } from './sans-livre';
@@ -636,7 +637,7 @@ describe('contrats d’enveloppe REQUIS dans les defs `entite` — la métrique 
     // DEUX ÉCARTS entre ce que la mesure PERD et ce que `exiges` REPREND, tous deux de la MÊME
     // classe — une entrée MÉTA ou sans prose citable dont la `desc: ""` est purgée, si bien
     // qu'exiger `desc` la refuserait :
-    //   • vague 12  : `talents` (187ᵉ entrée `talent-aleatoire`, vocabulaire de tirage LDB 10 p.132,
+    //   • vague 12  : `talents` (187ᵉ entrée `talent-aleatoire`, vocabulaire de tirage LDB 05 l.484,
     //     exemptée d'obtenabilité par `META_CATALOG_ENTRIES`), purgée par la migration 12a ;
     //   • vague 12b : `species` (5ᵉ entrée `humains-tileens`), purgée par la migration 12b.
     // Les deux renvois viennent NOMMÉMENT de `2026-08-27-l1b-3h-desc-null.mjs:25-28`, verbatim :
@@ -1002,10 +1003,12 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
     expect(attendu).toBe(UNE_COMPETENCE.id);
   });
 
-  it('REFUSE un id inventé en nommant le type, l’id et le dataset', () => {
+  it('REFUSE un id inventé en nommant l’id, le catalogue et le dataset', () => {
     const res = ref('skill').safeParse({ id: 'competence-qui-n-existe-pas' });
     expect(res.success).toBe(false);
-    expect(JSON.stringify(res.error?.issues)).toMatch(/ref\('skill'\).*competence-qui-n-existe-pas.*skills\.json/);
+    expect(res.error?.issues.map((i) => i.message)).toEqual([
+      '« competence-qui-n-existe-pas » est absent du catalogue des compétences (skills.json).',
+    ]);
   });
 
   it('compose FERMÉ avec les champs du porteur (`extra`) et refuse le reste', () => {
@@ -1031,14 +1034,14 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
   it('une entrée de `of` est une réf NUE, une réf à SPÉCIALISATION, ou un `pick` IMBRIQUÉ', () => {
     const p = pick('skill');
     expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE.id }, { id: UNE_COMPETENCE_GROUPEE.id }] }).success).toBe(true);
-    expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE_GROUPEE.id, spec: 'forgeron' }] }).success).toBe(true);
+    expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE_GROUPEE.id, spec: UNE_COMPETENCE_GROUPEE.specs![0].id }] }).success).toBe(true);
     expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE_GROUPEE.id, choix: true }] }).success).toBe(true);
-    expect(p.safeParse({ pick: 2, of: [{ id: UNE_COMPETENCE.id }, { id: UNE_COMPETENCE_GROUPEE.id, choix: ['a', 'b'] }] }).success).toBe(true);
+    expect(p.safeParse({ pick: 2, of: [{ id: UNE_COMPETENCE.id }, { id: UNE_COMPETENCE_GROUPEE.id, choix: UNE_COMPETENCE_GROUPEE.specs!.slice(0, 2).map((e) => e.id) }] }).success).toBe(true);
     expect(p.safeParse({ pick: 1, of: [{ id: UNE_COMPETENCE.id }, { pick: 1, table: { id: UNE_TABLE.id } }] }).success).toBe(true);
     expect(
       p.safeParse({
         pick: 1,
-        of: [{ pick: 1, of: [{ id: UNE_COMPETENCE_GROUPEE.id, spec: 'orfevre' }, { pick: 1, of: [{ id: UNE_COMPETENCE.id }] }] }],
+        of: [{ pick: 1, of: [{ id: UNE_COMPETENCE_GROUPEE.id, spec: UNE_COMPETENCE_GROUPEE.specs![0].id }, { pick: 1, of: [{ id: UNE_COMPETENCE.id }] }] }],
       }).success,
     ).toBe(true);
   });
@@ -1061,7 +1064,7 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
 
   /**
    * DEUX RÉGIMES, UN SEUL NŒUD (`_ids.generated.ts`) : le fichier généré figé au commit, et les ids
-   * VIVANTS que `ref.ts` lit d'abord (`idsVivants(dataset) ?? IDS_PAR_DATASET[dataset]`, `ref.ts:77`),
+   * VIVANTS que `ref.ts` lit d'abord (`idsDe` : `idsVivants(dataset)`, sinon `IDS_PAR_DATASET[dataset]`),
    * posés par la couche donnée. Un schéma se construit une fois au chargement du module, la donnée se
    * valide après ; la liste admise doit donc se lire à la VALIDATION. Sans quoi une entité créée au
    * Compendium rendrait rouge toute donnée qui la référence.
@@ -1075,6 +1078,7 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
     const precedente = poserSourceDIdsVivants({
       entrees: (f) =>
         f === 'etats.json' ? [...avant.map((id) => ({ id })), { id: 'etat-cree-au-compendium' }] : precedente?.entrees(f),
+      version: (f) => precedente?.version(f) ?? 0,
       discriminantDe: (f) => precedente?.discriminantDe(f),
     });
     try {
@@ -1099,21 +1103,34 @@ describe('ref() — id validé AU PARSE contre le registre généré', () => {
   });
 });
 
-describe('specRef() — spécialisation ouverte vs pool fermé', () => {
-  it('Compétence : spécialisation OUVERTE (`LDB 09 l.40`) — une spec créée passe', () => {
-    expect(TYPES.skill.specsOpen).toBe(true);
-    const r = specRef('skill');
-    expect(r.safeParse({ id: UNE_COMPETENCE_GROUPEE.id, spec: 'une-specialisation-creee' }).success).toBe(true);
-  });
+describe('specRef() — l’ENTRÉE visée dit si sa spécialisation est ouverte', () => {
+  type EntreeOuvrable = EntreeASpecs & { specsOpen?: boolean };
+  const aSpecsInline = (e: EntreeOuvrable) => !!e.specs?.length && !e.specsSource;
+  const cas = [
+    ['skill', skillsJson as EntreeOuvrable[]],
+    ['talent', talentsJson as EntreeOuvrable[]],
+  ] as const;
 
-  it('Talent : pool FERMÉ — une spec déclarée passe, une spec hors pool est nommée', () => {
-    expect(TYPES.talent.specsOpen).toBe(false);
-    const r = specRef('talent');
-    expect(r.safeParse({ id: UN_TALENT_A_SPECS.id, spec: UN_TALENT_A_SPECS.specs![0].id }).success).toBe(true);
-    const res = r.safeParse({ id: UN_TALENT_A_SPECS.id, spec: 'spec-hors-pool' });
-    expect(res.success).toBe(false);
-    expect(JSON.stringify(res.error?.issues)).toMatch(/spec-hors-pool.*talents\.json/);
-  });
+  for (const [type, entrees] of cas) {
+    const ouverte = entrees.find((e) => aSpecsInline(e) && e.specsOpen === true)!;
+    const fermee = entrees.find((e) => aSpecsInline(e) && !e.specsOpen)!;
+
+    it(`${type} : une entrée OUVERTE (\`specsOpen\`) admet un texte libre`, () => {
+      expect(entreeOuverte(type, ouverte.id)).toBe(true);
+      expect(refusDeSpec(type, ouverte.id, 'une-specialisation-creee')).toBeNull();
+      expect(specRef(type).safeParse({ id: ouverte.id, spec: 'une-specialisation-creee' }).success).toBe(true);
+    });
+
+    it(`${type} : une entrée FERMÉE admet ses specs déclarées, refuse et NOMME un texte libre`, () => {
+      expect(entreeOuverte(type, fermee.id)).toBe(false);
+      const r = specRef(type);
+      expect(r.safeParse({ id: fermee.id, spec: fermee.specs![0].id }).success).toBe(true);
+      expect(refusDeSpec(type, fermee.id, 'spec-hors-pool')).toBe('horsCatalogue');
+      const res = r.safeParse({ id: fermee.id, spec: 'spec-hors-pool' });
+      expect(res.success).toBe(false);
+      expect(JSON.stringify(res.error?.issues)).toMatch(new RegExp(`spec-hors-pool.*${type}s\\.json`));
+    });
+  }
 
   it('« spec » XOR « choix » : jamais les deux, jamais aucun', () => {
     const r = specRef('skill');
@@ -1153,6 +1170,31 @@ describe('specRef() — spécialisation ouverte vs pool fermé', () => {
   });
 });
 
+describe('régime d’une réf à spécialisation — un porteur qui DÉSIGNE refuse « choix » (#1897)', () => {
+  const messages = (r: { success: boolean; error?: { issues: { message: string }[] } }) => (r.error?.issues ?? []).map((i) => i.message).join(' | ');
+
+  it('un Test de Compétence désigne : `{ savoir, choix: true }` est refusé par `flowTestSchema`, en le nommant', () => {
+    const res = flowTestSchema.safeParse({ skill: { id: 'savoir', choix: true } });
+    expect(res.success).toBe(false);
+    expect(messages(res)).toMatch(/savoir.*« choix ».*n'y est pas admis/);
+    expect(flowTestSchema.safeParse({ skill: { id: 'savoir', spec: 'loi' } }).success).toBe(true);
+    expect(flowTestSchema.safeParse({ skill: { id: 'savoir' } }).success).toBe(true);
+  });
+
+  it('un porteur d’EMPLACEMENT l’ouvre (`specOuChoixFacultatifs`) : l’avancement admet `choix`', () => {
+    expect(avancement('talent').safeParse({ id: 'beni', choix: true }).success).toBe(true);
+    expect(refOuSpec('talent', undefined, 'specOuChoixFacultatifs').safeParse({ id: 'beni', choix: true }).success).toBe(true);
+    expect(refOuSpec('talent').safeParse({ id: 'beni', choix: true }).success).toBe(false);
+  });
+
+  it('le refus de la sentinelle sur un Talent ne porte AUCUNE référence de livre', () => {
+    const res = refOuSpec('talent').safeParse({ id: 'beni', spec: 'Au choix' });
+    expect(res.success).toBe(false);
+    expect(messages(res)).toMatch(/Au choix.*EMPLACEMENT non désigné de « beni »/);
+    expect(messages(res)).not.toMatch(/09 l\.40|LDB/);
+  });
+});
+
 describe('byId — la PORTE de résolution d’une entité par son id STABLE', () => {
   it('rend l’entrée RÉELLE du dataset, et `undefined` sur un id absent', () => {
     expect(byId('skill', UNE_COMPETENCE.id)?.id).toBe(UNE_COMPETENCE.id);
@@ -1189,26 +1231,27 @@ describe('avancement() — l’emplacement d’avancement, vocabulaire CLOS', ()
   const t = avancement('talent');
   const s = avancement('skill');
   const CAS: [string, unknown, ReturnType<typeof avancement>, boolean][] = [
-    ['spéc arrêtée en ID', { id: 'savoir-vivre', spec: 'erudits' }, t, true],
-    ['spéc arrêtée en LIBELLÉ', { id: 'savoir-vivre', spec: 'Érudit' }, t, false],
-    ['spéc inconnue du pool', { id: 'savoir-vivre', spec: 'plombiers' }, t, false],
-    ['choix BORNÉ en ids', { id: 'savoir-vivre', choix: ['criminels', 'guildes'] }, t, true],
-    ['choix BORNÉ en libellés', { id: 'savoir-vivre', choix: ['Criminel', 'Guilde'] }, t, false],
-    ['choix LIBRE', { id: 'savoir-vivre', choix: true }, t, true],
-    ['id fantôme', { id: 'savoir-vivre-fantome' }, t, false],
-    ['`spec` ET `choix` ensemble', { id: 'savoir-vivre', spec: 'erudits', choix: true }, t, false],
-    ['« n parmi », branche de tirage comprise', { pick: 1, of: [{ id: 'savoir-vivre', spec: 'erudits' }, { random: 1 }] }, t, true],
+    ['spéc arrêtée en ID', { id: 'sens-aiguise', spec: 'ouie' }, t, true],
+    ['spéc arrêtée en LIBELLÉ', { id: 'sens-aiguise', spec: 'Ouïe' }, t, false],
+    ['spéc inconnue du pool', { id: 'sens-aiguise', spec: 'plombiers' }, t, false],
+    ['choix BORNÉ en ids', { id: 'sens-aiguise', choix: ['ouie', 'vue'] }, t, true],
+    ['choix BORNÉ en libellés', { id: 'sens-aiguise', choix: ['Ouïe', 'Vue'] }, t, false],
+    ['choix LIBRE', { id: 'sens-aiguise', choix: true }, t, true],
+    ['id fantôme', { id: 'sens-aiguise-fantome' }, t, false],
+    ['`spec` ET `choix` ensemble', { id: 'sens-aiguise', spec: 'ouie', choix: true }, t, false],
+    ['« n parmi », branche de tirage comprise', { pick: 1, of: [{ id: 'sens-aiguise', spec: 'ouie' }, { random: 1 }] }, t, true],
     ['tirage « n aléatoires »', { random: 2 }, t, true],
     ['tirage de ZÉRO', { random: 0 }, t, false],
-    ['graphie MORTE `{ref}`', { ref: { id: 'savoir-vivre' } }, t, false],
-    ['graphie MORTE `{wildcard}`', { wildcard: { id: 'savoir-vivre' } }, t, false],
-    ['graphie MORTE `{choice}`', { choice: [{ ref: { id: 'savoir-vivre' } }] }, t, false],
+    ['graphie MORTE `{ref}`', { ref: { id: 'sens-aiguise' } }, t, false],
+    ['graphie MORTE `{wildcard}`', { wildcard: { id: 'sens-aiguise' } }, t, false],
+    ['graphie MORTE `{choice}`', { choice: [{ ref: { id: 'sens-aiguise' } }] }, t, false],
+    ['Talent OUVERT : spéc hors catalogue', { id: 'savoir-vivre', spec: 'plombiers' }, t, true],
     ['Compétence : spéc de catalogue', { id: 'signes-secrets', spec: 'guilde' }, s, true],
-    // La spécialisation de COMPÉTENCE est OUVERTE (`LDB 09 l.40`) : une spéc hors catalogue passe au
+    // `signes-secrets` est une entrée OUVERTE (`entreeOuverte`) : une spéc hors catalogue passe au
     // schéma, y compris l'id `guilde-au-choix` fusionné dans `guilde` au commit 4. C'est la DONNÉE
-    // qui est gardée contre sa survivance (`src/data/refs-migrated.test.ts`, 14 paires nommées), pas
-    // la porte — un pool FERMÉ de Compétence contredirait le RAW.
-    ['Compétence : spéc HORS catalogue (spécialisation ouverte)', { id: 'signes-secrets', spec: 'guilde-au-choix' }, s, true],
+    // qui est gardée contre sa survivance (`src/data/refs-migrated.test.ts`), pas la porte.
+    ['Compétence OUVERTE : spéc HORS catalogue', { id: 'signes-secrets', spec: 'guilde-au-choix' }, s, true],
+    ['Compétence FERMÉE : spéc HORS catalogue', { id: 'art', spec: 'plombiers' }, s, false],
     ['un id de TALENT dans un emplacement de Compétence', { id: 'savoir-vivre' }, s, false],
   ];
 

@@ -8,7 +8,7 @@
  *
  * ÉCART D'EXIGENCE MESURÉ : `exiges` ne nomme que `source`. `desc` est portée par 186/187 entrées ;
  * la 187ᵉ, `talent-aleatoire`, est une entrée MÉTA du vocabulaire de tirage (« N Talent(s) au hasard »,
- * LDB 10 p.132 — exemptée d'obtenabilité par `META_CATALOG_ENTRIES`,
+ * LDB 05 l.484 — exemptée d'obtenabilité par `META_CATALOG_ENTRIES`,
  * `scripts/guards/lib/entityConsumers.mjs:144`), sans prose à citer. Sa `desc: ""` — l'un des deux
  * porteurs que la migration `2026-08-27-l1b-3h-desc-null.mjs` a nommément renvoyés « au lot qui posera
  * `min(1)` » — est PURGÉE par la migration de ce lot ; exiger `desc` ici refuserait cette entrée.
@@ -21,6 +21,10 @@ import { refOuSpec } from '../grammaire/ref';
 
 export const file = 'talents.json';
 export const famille = 'entite';
+/** Champ MARQUEUR (#1897) : `specsOpen` définit la SOUS-LISTE des Talents OUVERTS, dont la `spec`
+ *  admet un texte libre hors de `specs[]` — lue par `entreeOuverte` (`grammaire/ref.ts`).
+ *  @generateur lu au TEXTE par `lireExports` (`scripts/gen-registry.mjs`), qu'aucun import ne dit à knip. */
+export const marqueurs = ['specsOpen'];
 
 // ── TestMatch / TalentTest (src/data/index.ts) ──────────────────────────────────────────────────
 /** Un `TestMatch` désigne la spec visée d'UNE façon : `skill.spec` FIXE, `specFromInstance` (la spec

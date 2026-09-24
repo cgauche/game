@@ -28,7 +28,7 @@ Let the Players piece the evidence together where possible, and if they still be
 | Spot a forgery | An Evaluate Test, with a Difficulty set by the quality of the work. |
 | Follow someone's trail | A Track Test, with a Difficulty set by the conditions and age of the trail. Opposed by your quarry's Track only if they took the time to cover their trail. |
 
-# **COMMON MEANS OF INVESTIGATION AND RESEARCH** V
+# **COMMON MEANS OF INVESTIGATION AND RESEARCH**
 
 | Action | Test |
 |---|---|
@@ -94,8 +94,6 @@ Battle Tongue is a specialised language that conveys complex tactical informatio
 If players spend too long discussing tactics during combat, the GM can remind them that only Characters with Battle Tongue can exchange detailed plans in the heat of battle.
 
 The following are the most common languages of the Old World, and the peoples who speak them. Many other tongues exist, but these are the ones most often encountered in the Reikland.
-
-V
 
 | LANGUAGE       | FAMILY                                    | SPOKEN BY…                                                                                                                                                                                                                    |
 |----------------|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -175,7 +173,7 @@ Investigation is about interpreting clues, not finding them. Essential clues sho
 
 Searching a room usually requires a **Challenging (+0 SL) Perception Test**. Higher SL reveal better-hidden clues or provide additional insights. If several Characters search the same area, try to reward every successful Test with something useful, rather than letting the highest result reveal everything.
 
-# V **EXAMPLE OUTCOMES**
+# **EXAMPLE OUTCOMES**
 
 **A Challenging (+0 SL) Perception Test to search the scene of a murder**
 

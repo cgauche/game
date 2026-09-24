@@ -188,7 +188,7 @@
 
 | M                                   | Miracles of Rhya 225            | Orc 337                               | Psychological Traits 183          |   |
 |-------------------------------------|---------------------------------|---------------------------------------|-----------------------------------|---|
-| Magic 230                           | Miracles of Shallya 226         | Orientation (Talent) 123              | Psychology 183                    | I |
+| Magic 230                           | Miracles of Shallya 226         | Orientation (Talent) 123              | Psychology 183                    |   |
 | Magic Flame (Spell) 241             | Miracles of Sigmar 226          | Outcomes Table 131                    | Public Speaker (Talent) 124       |   |
 | Magic Missiles 235                  | Miracles of Taal 227            | Outdoor Survival (Skill) 112          | Public Speaking (Rules) 145       |   |
 | Magic Resistance (Talent) 122       | Miracles of Ulric 228           | Outlaw (Career) 78                    | Pulling Your Blows 171            |   |

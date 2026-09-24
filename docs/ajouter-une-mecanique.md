@@ -122,7 +122,7 @@ Documents porteurs :
 | `src/data/mutations.json` | `effects` | `src/data/schemas/defs/mutations.ts` | 1 / 116 |
 | `src/data/psychology.json` | `effects` | `src/data/schemas/defs/psychology.ts` | 1 / 9 |
 | `src/data/qualities.json` | `effects` | `src/data/schemas/defs/qualities.ts` | 10 / 59 |
-| `src/data/spells.json` | `effects` | `src/data/schemas/defs/spells.ts` | 576 / 576 |
+| `src/data/spells.json` | `effects` | `src/data/schemas/defs/spells.ts` | 526 / 526 |
 | `src/data/symptoms.json` | `effects` | `src/data/schemas/defs/symptoms.ts` | 1 / 18 |
 | `src/data/talents.json` | `effects` | `src/data/schemas/defs/talents.ts` | 4 / 187 |
 | `src/data/traits.json` | `effects` | `src/data/schemas/defs/traits.ts` | 25 / 132 |
@@ -136,10 +136,10 @@ un chiffre qui s'additionne.
 
 | Interface | Site | Drapeaux déclarés |
 |---|---|---|
-| `TraitCapabilities` | `src/data/index.ts:1701` | 43 |
-| `QualityCapabilities` | `src/data/index.ts:1899` | 26 |
-| `ItemCapabilities` | `src/data/index.ts:1110` | 12 |
-| `SymptomCapabilities` | `src/data/index.ts:1966` | 6 |
+| `TraitCapabilities` | `src/data/index.ts:1703` | 43 |
+| `QualityCapabilities` | `src/data/index.ts:1901` | 26 |
+| `ItemCapabilities` | `src/data/index.ts:1112` | 12 |
+| `SymptomCapabilities` | `src/data/index.ts:1968` | 6 |
 
 Lecture — un seul point d'entrée par portée, chaque canal restant disjoint par nom de capacité :
 
@@ -220,4 +220,4 @@ primitives, `CLAUDE.md`). Ne pas dupliquer une op qui existe déjà sous un autr
 | `src/engine/trauma.test.ts` | traumaFromKind (LDB 18-Traumatisme) |
 | `src/state/triggered-effects.test.ts` | fireTriggers — Traits et Atouts sur le même système flow+déclencheur |
 | `src/state/combat-hardcode-guard.test.ts` | garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8) |
-<!-- sources-empreinte: 86a328a2f7e89e9d55f16a18ea28408bf45e768e (158 fichiers, 1 dossiers) corps: 1061ca10d9b1c5229cc76ae1a87c8c41b14cf526 -->
+<!-- sources-empreinte: 7321a2a6add611aed2c6294604581f259dd05d43 (158 fichiers, 1 dossiers) corps: b2d8cbe50c4f75c60a7c98ed3dca94fda6342cc5 -->

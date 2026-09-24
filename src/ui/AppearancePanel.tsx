@@ -3,6 +3,7 @@ import type { Appearance } from '../gameIso/rig/appearance';
 import type { EquipCtx } from '../gameIso/rig/parts/equipment';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { hairstylesForSex } from '../gameIso/rig/parts/hairstyles';
+import { coiffureRetombee } from '../gameIso/rig/parts/cosmetic';
 import { Icon } from './Icon';
 
 /**
@@ -22,7 +23,7 @@ export function AppearancePanel({
   career?: string;
   onChange: (a: Appearance) => void;
 }) {
-  const set = (patch: Partial<Appearance>) => onChange({ ...value, ...patch });
+  const set = (patch: Partial<Appearance>) => onChange(coiffureRetombee({ ...value, ...patch }));
   return (
     <div className="appear-panel">
       <svg viewBox="0 0 120 150" className="appear-figure">

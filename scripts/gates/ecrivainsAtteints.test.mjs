@@ -118,27 +118,6 @@ const ATTENDU = {
     // fait `migrations:replay` — elle est en `--dry` et n'écrit rien. L'arbre n'est jamais touché.
     'scripts/migrations/2026-09-14-1699-source-chemins-ascii.mjs',
     'scripts/migrations/lib/1699-source-chemins-ascii.test.mjs',
-    // +1 le 2026-09-22 (#1873) : le banc de la migration #1825 des stocks de l'Atlas ; son dépôt
-    // jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
-    'scripts/migrations/lib/1825-stocks-atlas-chemins-par-coeur.test.mjs',
-    // +3 le 2026-09-05 : morsure des portes des trois migrations #1686 (lot 1 ids composés, lot 2
-    // fusion des matières, lot 3a-2 purge de `structureAppearance.material`) ; leur dépôt jetable vit
-    // sous `os.tmpdir()`, l'arbre n'est jamais écrit.
-    'scripts/migrations/lib/1686-ardoise-portes.test.mjs',
-    'scripts/migrations/lib/1686-materials-portes.test.mjs',
-    'scripts/migrations/lib/1686-structure-material-portes.test.mjs',
-    // +1 le 2026-09-07 (#1691 lot 2) : morsure des portes des deux migrations #1691 (relief) ; son
-    // dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
-    'scripts/migrations/lib/1691-relief-portes.test.mjs',
-    // +1 le 2026-09-09 (#1715 volet b) : morsure des portes de la migration #1715 (toiture par défaut
-    // de la scène) ; son dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
-    'scripts/migrations/lib/1715-roof-defaults-portes.test.mjs',
-    // +1 le 2026-09-10 (#1687 lot 2) : morsure des portes de la migration #1687 (activation des
-    // décors à places) ; son dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
-    'scripts/migrations/lib/1687-usable-sieges-portes.test.mjs',
-    // +1 le 2026-09-23 (#1343 lot B) : morsure des portes de la migration #877 (ref de décor
-    // nommée) ; son dépôt jetable vit sous `os.tmpdir()`, l'arbre n'est jamais écrit.
-    'scripts/migrations/lib/877-ref-de-decor-portes.test.mjs',
     // +2 le 2026-09-18 (#1812) : le mode CROISSANCE fait grandir les documents d'un EXPORT jetable
     // (`os.tmpdir()`, `replay-head.mjs:exporter`) avant de rejouer les migrations — l'arbre n'est
     // jamais écrit, et son banc travaille sur un dépôt `mkdtemp`.
@@ -148,7 +127,13 @@ const ATTENDU = {
     'scripts/migrations/lib/idempotence-ordre-des-cles.test.mjs',
     // +1 le 2026-09-22 (#1873) : `joue.mjs` COPIE la migration jouée dans le dépôt jetable que lui donne
     // chaque banc de migration (`copyFileSync`, sous `os.tmpdir()`) ; l'arbre n'est jamais écrit.
+    // −8 le 2026-09-23 (#1897) : les bancs de migration fabriquent leur dépôt jetable par `joue.mjs`
+    // (`depot`, `efface`), unique écrivain de la famille. +1 le 2026-09-23 (#1897) : son banc
+    // `joue.test.mjs` réécrit (`writeFileSync`) les fichiers du dépôt jetable de `depot()` pour faire
+    // mordre `crees`/`rienTouche` ; ce dépôt vit sous `os.tmpdir()` (`efface` en `t.after`), l'arbre
+    // n'est jamais écrit.
     'scripts/migrations/lib/joue.mjs',
+    'scripts/migrations/lib/joue.test.mjs',
     'scripts/migrations/replay-head.mjs',
     'scripts/raw/build-implemente.mjs',
     'scripts/test/verrou.mjs',
@@ -369,6 +354,14 @@ const ATTENDU = {
     // et le passe à la couture par son `source` INJECTÉ ; la couture (`_lib.mjs`) n'écrit rien — le
     // seul écrivain, la CLI `pdf-de.mjs`, n'est pas importé (le banc la LANCE, sans argument).
     'scripts/raw/pdf-de.test.mjs',
+    // +1 le 2026-09-23 (#1739) : la réparation du mobilier de page, ACQUISE par l'import de son banc —
+    // son unique `writeFileSync` vit dans `main()`, derrière `isMain` ET `--apply` ; le banc n'appelle
+    // que ses fonctions PURES sur des textes en mémoire, l'arbre n'est jamais écrit.
+    'scripts/raw/reparer-mobilier.mjs',
+    // +1 le 2026-09-23 (#1739) : la sonde des titres d'entrée, ACQUISE par l'import de son banc — elle
+    // lit le PDF dans un dossier `mkdtempSync` d'os.tmpdir(), et son `--json` refuse tout chemin sous
+    // le dépôt ; le banc n'appelle que ses fonctions PURES sur des fixtures, l'arbre n'est jamais écrit.
+    'scripts/raw/sonde-titres.mjs',
   ],
   'raw:check-refs': [],
   // +1 le 2026-09-11 (#925) : la gate enchaîne `citation-graphy-guard.mjs`, qui IMPORTE

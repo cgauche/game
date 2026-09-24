@@ -290,17 +290,17 @@ describe('porte de clic — elle laisse passer l’infaisable pour qu’il soit 
 });
 
 describe('spellAffinity — HELPFUL_TARGET_OPS (#131)', () => {
-  it("Bénédiction de Sauvagerie (op cible unique critTwice, LDB 41 p.221) → 'ally'", () => {
+  it("Bénédiction de Sauvagerie (op cible unique critTwice, LDB 41 l.164) → 'ally'", () => {
     const spell = findSpellById('benediction-de-sauvagerie')!;
     expect(spellAffinity(spell)).toBe('ally');
   });
 
-  it("Baume pour un esprit blessé (op cible unique suppressPsych, LDB 43 p.225) → 'ally'", () => {
+  it("Baume pour un esprit blessé (op cible unique suppressPsych, LDB 43 l.62) → 'ally'", () => {
     const spell = findSpellById('baume-pour-un-esprit-blesse')!;
     expect(spellAffinity(spell)).toBe('ally');
   });
 
-  it("Malédiction de malchance (op cible unique testMod AMBIGU, amount:-10, LDB 49 p.255) reste 'any' — un malus ne doit jamais retomber en 'ally'", () => {
+  it("Malédiction de malchance (op cible unique testMod AMBIGU, amount:-10, LDB 49 l.52) reste 'any' — un malus ne doit jamais retomber en 'ally'", () => {
     const spell = findSpellById('malediction-de-malchance')!;
     expect(spellAffinity(spell)).toBe('any');
   });

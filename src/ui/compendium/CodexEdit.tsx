@@ -37,6 +37,7 @@ import type { GameOp } from '../../engine/ops';
 import type { ConsumableDuration } from '../../engine/consumables';
 import { JsonField } from '../editor/JsonField';
 import { creatureSpeciesOptions, QUAD_SPECIES, WINGED_SPECIES } from '../../gameIso/rig/creatures';
+import { coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
 import { CreaturePreview } from './CreaturePreview';
 import { porteurDApercu } from './apercuPorteur';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
@@ -142,8 +143,7 @@ type Entry = Record<string, unknown>;
 /** ids d'un champ-liste de refs — descend dans les branches `of` d'un `{pick}` (`AdvancementRef`) et
  *  dans le `choice` d'une `TrappingRef` ; ignore les `{text}` narratifs et jokers. Une CHAÎNE BRUTE (ex.
  *  `criticalsTete.traumas: string[]`) est traitée comme un id DIRECT (#173 : ces listes référencent
- *  leur dataset par id, jamais par libellé — cf. `STRING_LIST_LABEL_EXCEPTIONS` pour l'unique
- *  contre-exemple documenté). */
+ *  leur dataset par id, jamais par libellé). */
 function refIdsIn(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
   const out: string[] = [];
@@ -158,14 +158,6 @@ function refIdsIn(v: unknown): string[] {
   }
   return out;
 }
-
-/** (categorie.champ) où un champ-liste de CHAÎNES de `REF_LIST_DATASET` porte légitimement des
- *  LIBELLÉS et non des ids — SEULE exception connue : `pregens.pettySpells` (libellés d'AUTHORING de
- *  sorts de Magie mineure, validés + résolus en id par la fabrique du pré-tiré, `src/data/pregens.ts`
- *  fonction `buildPregenHero` — #421 ; jamais relu par id depuis le JSON). Toute autre liste de
- *  chaînes d'un champ-réf DOIT contenir des ids qui résolvent (#173 : un éditeur par datalist-de-
- *  labels y écrivait un libellé, cassant `traumaFicheById` au runtime — cf. `criticalsTete.traumas`). */
-const STRING_LIST_LABEL_EXCEPTIONS = new Set(['pregens.pettySpells']);
 
 /** Champs-réf NICHÉS (une valeur ou une liste, sous un sous-objet/sous-tableau — hors de portée de
  *  `REF_LIST_DATASET`, qui ne regarde QUE les champs top-level de `entry`) : même garantie de
@@ -196,10 +188,9 @@ export function validateEntry(categoryKey: string, entry: Entry, entries: Entry[
   // que le navigateur du Codex et l'éditeur utilisent pour retrouver l'entrée.
   if (!entryKey(entry).trim()) errors.push('libellé vide');
   // Refs résolvables : chaque `{id}` (ou chaîne directe) d'un champ-réf doit exister dans son dataset —
-  // détecté par nom de champ (table unique), sauf la contre-exception déclarée ci-dessus.
+  // détecté par nom de champ (table unique).
   for (const [field, ds] of Object.entries(REF_LIST_DATASET)) {
     if (!(field in entry)) continue;
-    if (STRING_LIST_LABEL_EXCEPTIONS.has(`${categoryKey}.${field}`)) continue;
     const known = new Set((datasetArray(ds) as { id?: string }[]).map((e) => e.id).filter(Boolean));
     for (const id of refIdsIn(entry[field])) {
       if (id === '') errors.push(`${field} : réf à choisir (${ds})`);
@@ -449,7 +440,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   const [needsGrant, setNeedsGrant] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [msg, setMsg] = useState('');
-  // Refus de SCHÉMA (contrat de donnée #176) : message champ-par-champ (formatZodError) quand la donnée
+  // Refus de SCHÉMA (contrat de donnée #176) : message champ-par-champ (validateDataset) quand la donnée
   // sérialisée ne parse pas son schéma zod — l'écriture disque est bloquée. Effacé à toute ré-édition.
   const [schemaError, setSchemaError] = useState<string | null>(null);
 
@@ -875,7 +866,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
  *  `creatures.json` ; le rig le lit comme couche de défaut → l'apparence en jeu reflète l'édition. */
 function AppearanceField({ label, porteur, value, onChange }: { label: string; porteur?: string; value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
   const a = value ?? {};
-  const patch = (p: Partial<EntityAppearance>) => onChange({ ...a, ...p });
+  const patch = (p: Partial<EntityAppearance>) => onChange(coiffureRetombee({ ...a, ...p }));
   // Le harnachement est un canal du pipeline QUADRUPÈDE (quad ∪ ailé) : hors de ces gabarits, la
   // clé serait de la donnée absurde, ignorée au rendu — le sélecteur n'est donc pas offert.
   const quadrupede = !!a.species && (a.species in QUAD_SPECIES || a.species in WINGED_SPECIES);
@@ -1362,7 +1353,7 @@ function RestartTestField({ value, onChange }: { value: RestartTest[] | undefine
   );
 }
 
-/** Test de Résistance d'Exposition hydrique (`waterExposure.test`, MSRC 16 p.91, #157 suite) :
+/** Test de Résistance d'Exposition hydrique (`waterExposure.test`, MSRC 16 l.13, #157 suite) :
  *  Compétence + Difficulté — sorti du repli générique (le repli traiterait ce couple {skill,difficulty}
  *  en `recordText` renommable, ce qui autoriserait de corrompre les clés d'un objet à forme FIXE). */
 function WaterTestField({ value, onChange }: { value: WaterTest | undefined; onChange: (v: WaterTest) => void }) {
@@ -1370,7 +1361,7 @@ function WaterTestField({ value, onChange }: { value: WaterTest | undefined; onC
   const v = value ?? { skill: { id: '' }, difficulty: DIFFICULTIES[0] };
   return (
     <div className="ed-field">
-      <span>Test de Résistance (MSRC 16 p.91) — Compétence + Difficulté</span>
+      <span>Test de Résistance (MSRC 16 l.13) — Compétence + Difficulté</span>
       <div className="tf-row">
         <select value={v.skill.id} onChange={(e) => onChange({ ...v, skill: { ...v.skill, id: e.target.value } })}>
           {!v.skill.id && <option value="">— (choisir une compétence) —</option>}
@@ -1387,7 +1378,7 @@ function WaterTestField({ value, onChange }: { value: WaterTest | undefined; onC
 const WATER_APPLIES_TO_OPTS = optionsDuNoeud(waterAppliesToSchema) as [WaterExposureModifier['appliesTo'][number], string][];
 const WATER_TABLE_OPTS = optionsDuNoeud(waterTableSchema);
 
-/** Modificateurs du Test de Résistance d'Exposition hydrique (`waterExposure.modifiers`, MSRC 16 p.91) :
+/** Modificateurs du Test de Résistance d'Exposition hydrique (`waterExposure.modifiers`, MSRC 16 l.23-47) :
  *  id/libellé/valeur + contexte (Ingestion/Immersion, cumulables) + table d'origine. `auto` (dérivation
  *  automatique depuis le Combatant — PB restants/perdus, État) reste en JSON : union à 5 formes, rare
  *  (6/12 entrées), pas assez structurante pour justifier un 2ᵉ éditeur dédié. */
@@ -1400,7 +1391,7 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
   };
   return (
     <div className="ed-field">
-      <span>modificateurs du Test de Résistance (MSRC 16 p.91) — cumulables</span>
+      <span>modificateurs du Test de Résistance (MSRC 16 l.23-47) — cumulables</span>
       {list.map((m, i) => (
         <div className="ed-subfield" key={i}>
           <div className="tf-row">
@@ -1425,7 +1416,7 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
   );
 }
 
-/** Maladies contractées sur Exposition hydrique (`waterExposure.diseases`, MSRC 16 p.91) : plage d100
+/** Maladies contractées sur Exposition hydrique (`waterExposure.diseases`, MSRC 16 l.49-61) : plage d100
  *  (jet APRÈS échec du Test) → maladie référencée par ID (sélecteur, comme `SkillSpecListField`/
  *  `ProsthesisField`/`MutationTableField` — la donnée est un id, jamais un label). */
 function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['diseases'] | undefined; onChange: (v: WaterExposureData['diseases']) => void }) {
@@ -1434,7 +1425,7 @@ function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['dis
   const set = (i: number, patch: Partial<WaterExposureData['diseases'][number]>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   return (
     <div className="ed-field">
-      <span>maladies contractées — jet d100 après échec du Test de Résistance (MSRC 16 p.91)</span>
+      <span>maladies contractées — jet d100 après échec du Test de Résistance (MSRC 16 l.49-61)</span>
       {list.map((r, i) => (
         <div className="tf-row" key={i}>
           <label className="dr">d100&nbsp;<NumberField variant="nu" label="Plage d100 — borne basse" min={1} max={100} value={r.min} onChange={(min) => set(i, { min })} />–<NumberField variant="nu" label="Plage d100 — borne haute" min={1} max={100} value={r.max} onChange={(max) => set(i, { max })} /></label>

@@ -1,7 +1,7 @@
 /**
  * Schéma zod d'un PROJET DE SCÈNE (`ProjectDoc`, `src/state/worldMap.ts`) — le paquet de campagne
- * auto-suffisant `{ type: 'projet', schema: 8, id, label, versionContenu, narratif, scenes,
- * worldMap?, activeAxes? }`.
+ * auto-suffisant `{ type: 'projet', schema, id, label, versionContenu, narratif, scenes,
+ * worldMap?, activeAxes? }`, `schema` étant la version de forme courante (`SCHEMA_PROJET`).
  *
  * C'est la porte UNIQUE du seam `parseProject`. Le document ADOPTE la fabrique `document()`
  * (`../grammaire/document.ts`, #1552) en famille `config` — même code que les defs de configuration
@@ -22,12 +22,13 @@
 import { z } from 'zod';
 import { document } from '../grammaire/document';
 import { refs } from '../grammaire/ref';
+import { listeCle } from '../grammaire/liste-cle';
 import { sceneSchema } from './scene';
 import { worldMapSchema } from './worldmap';
 import { narratifSchema } from './narratif';
 
 /** Version de FORME du document de projet — reprise par `CURRENT_PROJECT_SCHEMA` (`worldMap.ts`). */
-export const SCHEMA_PROJET = 12;
+export const SCHEMA_PROJET = 14;
 
 /** Handle du document de projet : `schema` sert `parseProject`, `meta`/`exposition` le registre. */
 export const projetDoc = document(
@@ -39,7 +40,9 @@ export const projetDoc = document(
      *  proposé). La version de FORME du document est `schema`, jamais ce champ. */
     versionContenu: z.number(),
     auteur: z.string().min(1).optional(),
-    scenes: z.array(sceneSchema).min(1, 'le projet ne porte aucune scène : il en faut au moins une pour l’ouvrir ou le jouer.'),
+    scenes: listeCle(sceneSchema, 'id', {
+      min: { taille: 1, message: 'le projet ne porte aucune scène : il en faut au moins une pour l’ouvrir ou le jouer.' },
+    }),
     worldMap: worldMapSchema.optional(),
     /** Axes de forces/faiblesses ACTIFS de la campagne (#409) — absent = socle `coreAxisIds`. */
     activeAxes: refs('axe').optional(),
@@ -75,7 +78,7 @@ export const projetDoc = document(
     affinerEntree: (entree) =>
       entree.superRefine((valeur, ctx) => {
         const doc = valeur as {
-          scenes: { id: string; entities?: { id: string; presetId?: string }[] }[];
+          scenes: { entities?: { presetId?: string }[] }[];
           narratif: { presetsPnj: { id: string }[] };
         };
         /** FK INTRA-document (#671) : tout `presetId` d'entité de scène résout un preset déclaré. */
@@ -86,7 +89,7 @@ export const projetDoc = document(
             ctx.addIssue({
               code: 'custom',
               path: ['scenes', is, 'entities', ie, 'presetId'],
-              message: `l'entité « ${e.id} » de la scène « ${s.id} » référence un preset de PNJ inconnu « ${e.presetId} » (narratif.presetsPnj).`,
+              message: `preset de PNJ inconnu « ${e.presetId} » (narratif.presetsPnj).`,
             });
           });
         });

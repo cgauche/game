@@ -11,6 +11,9 @@ import { pickView } from './parts/types';
 import { CLAWFOOT, MAIN_GRIFFUE } from './parts/bodies/extremites';
 import { armourPart } from './parts/equipment';
 import { spawnEnemy } from '../../state/spawn';
+import { hairstylesForSex } from './parts/hairstyles';
+import { resolveRig } from './composeRig';
+import { bonesToSvg } from './renderBones';
 import type { Combatant, Weapon, ItemInstance, ArmourPoints } from '../../engine/types';
 
 const noArmour: ArmourPoints = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
@@ -276,5 +279,20 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
     expect(entityRigProfile(id, 1, { enrolled: true })!.equip.weapons.length).toBeGreaterThan(0); // enrôlée → kit
     expect(entityRigProfile(id, 1)!.equip.weapons).toEqual([]); // ambiance (défaut non enrôlée) → mains libres
     expect(entityRigProfile(id, 1)!.equip.armour).toEqual([]);
+  });
+});
+
+/** L'override d'apparence du combattant (`spawnEnemy`) porte TOUTE l'apparence d'auteur posée — pas une
+ *  liste de champs tenue à la main : un PNJ dont la seule surcharge est une coiffure la garde en combat. */
+describe('spawnEnemy — une coiffure seule traverse jusqu’au rendu du combattant', () => {
+  it('coiffure imposée seule : le profil de combat la porte et le rig change', () => {
+    const sansCoiffure = spawnEnemy('mutant', undefined, 'pnj-coiffe', { x: 0, y: 0 });
+    const avant = enemyRigProfile(sansCoiffure)!;
+    const coiffure = hairstylesForSex(avant.appearance.sex)[1].id;
+    const coiffe = spawnEnemy('mutant', undefined, 'pnj-coiffe', { x: 0, y: 0 }, { appearance: { hairstyle: coiffure } });
+    const apres = enemyRigProfile(coiffe)!;
+    expect(apres.appearance.hairstyle).toBe(coiffure);
+    const rendu = (p: typeof apres) => bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, 'front', []));
+    expect(rendu(apres)).not.toBe(rendu(avant));
   });
 });

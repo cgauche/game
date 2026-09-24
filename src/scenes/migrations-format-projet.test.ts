@@ -20,14 +20,13 @@
  * tant que la pénultième n'a pas ouvert sa borne, sans qu'on édite ce banc.
  */
 import { describe, it, expect } from 'vitest';
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, copyFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SCHEMA_PROJET } from '../data/schemas/defs-scenes/projet';
 import { DEFAULT_RELIEF_DEFAULTS, DEFAULT_ROOF_DEFAULTS } from '../state/scene';
 import { listerDossier } from '../../scripts/guards/lib/lister.mjs';
+import { FORME_PROJET, serialise } from '../../scripts/migrations/lib/croissance.mjs';
+import { depot, efface, joue as jouerDans, lireArbre, lireDans } from '../../scripts/migrations/lib/joue.mjs';
 
 const RACINE = fileURLToPath(new URL('../../', import.meta.url));
 const SCRIPT_3I = '2026-08-27-l1b-3i-projet-schema-4.mjs';
@@ -39,6 +38,8 @@ const SCRIPT_1715 = '2026-09-09-1715-roof-defaults-scenes.mjs';
 const SCRIPT_1687 = '2026-09-10-1687-usable-sieges.mjs';
 const SCRIPT_1687_ACTIONS = '2026-09-11-1687-actions-authorees.mjs';
 const SCRIPT_877 = '2026-09-21-877-ref-de-decor-nommee.mjs';
+const SCRIPT_1897 = '2026-09-23-1897-projet-sorts-de-preset-ids-nus.mjs';
+const SCRIPT_1897_FUSIONS = '2026-09-24-1897-projet-sorts-fusionnes.mjs';
 
 /** La CHAÎNE du format projet, DÉRIVÉE du dossier : tout script daté qui lit le `schema` d'un
  *  `<campagne>-projet.json`, dans l'ordre lexical du rejeu (`scripts/migrations/replay.mjs`). */
@@ -46,14 +47,11 @@ const DOSSIER_MIGRATIONS = join(RACINE, 'scripts', 'migrations');
 const CHAINE = listerDossier(DOSSIER_MIGRATIONS)
   .filter((f) => /^\d{4}-\d{2}-\d{2}-.+\.mjs$/.test(f))
   .filter((f) => {
-    const source = readFileSync(join(DOSSIER_MIGRATIONS, f), 'utf8');
+    const source = lireArbre(`scripts/migrations/${f}`);
     return source.includes('-projet.json') && /\bdoc\.schema\b/.test(source);
   });
 /** La DERNIÈRE de la chaîne dans l'ordre lexical — celle qui NOMME un `schema` inconnu. */
 const DERNIERE = CHAINE[CHAINE.length - 1];
-
-/** Sérialiseur des documents de SCÈNE (indentation 1) — les deux scripts l'exigent avant de lire. */
-const canonique = (doc: unknown) => `${JSON.stringify(doc, null, 1)}\n`;
 
 /** Document de projet minimal à la forme demandée, GELÉ ici. */
 function projet(over: Record<string, unknown>): Record<string, unknown> {
@@ -66,33 +64,22 @@ function projet(over: Record<string, unknown>): Record<string, unknown> {
   };
 }
 
-/** Joue `script` sur un arbre jetable portant `doc` ; rend le code de sortie et l'état APRÈS. */
-function joue(script: string, doc: Record<string, unknown>): { code: number; err: string; avant: string; apres: string } {
-  const dir = mkdtempSync(join(tmpdir(), 'mig-projet-'));
+/** Le document de projet posé dans le dépôt jetable. */
+const CIBLE = 'src/scenes/camp/camp-projet.json';
+
+/** Joue `script` sur un dépôt jetable portant `doc` (`scripts/migrations/lib/joue.mjs`) ; rend le code
+ *  de sortie, la sortie (le MOTIF d'un refus : deux refus distincts sortent tous deux 1) et l'état
+ *  APRÈS. `src/data/props.json` (les TYPES de décor à places, lus par `2026-09-10-1687-usable-sieges.mjs`)
+ *  et `src/data/sortsFusionnes.ts` (la primitive importée par `2026-09-24-1897-projet-sorts-fusionnes.mjs`)
+ *  sont des ENTRÉES déclarées de la chaîne : le dépôt les porte, sinon le script mourrait sur un fichier
+ *  absent au lieu de rendre le refus qu'on mesure. */
+function joue(script: string, doc: Record<string, unknown>): { code: number | null; err: string; avant: string; apres: string } {
+  const d = depot({ [CIBLE]: serialise(doc, FORME_PROJET) }, ['src/data/props.json', 'src/data/sortsFusionnes.ts']);
   try {
-    mkdirSync(join(dir, 'scripts', 'migrations'), { recursive: true });
-    mkdirSync(join(dir, 'src', 'scenes', 'camp'), { recursive: true });
-    const cible = join(dir, 'src', 'scenes', 'camp', 'camp-projet.json');
-    copyFileSync(join(RACINE, 'scripts', 'migrations', script), join(dir, 'scripts', 'migrations', script));
-    // `src/data/props.json` est une ENTRÉE déclarée de la chaîne (les TYPES de décor à places, lus par
-    // `2026-09-10-1687-usable-sieges.mjs`) : l'arbre jetable la porte, sinon le script mourrait sur
-    // un fichier absent au lieu de rendre le refus qu'on mesure.
-    mkdirSync(join(dir, 'src', 'data'), { recursive: true });
-    copyFileSync(join(RACINE, 'src', 'data', 'props.json'), join(dir, 'src', 'data', 'props.json'));
-    writeFileSync(cible, canonique(doc), 'utf8');
-    const avant = readFileSync(cible, 'utf8');
-    let code = 0;
-    let err = '';
-    try {
-      execFileSync(process.execPath, [join(dir, 'scripts', 'migrations', script)], { encoding: 'utf8', stdio: 'pipe' });
-    } catch (e) {
-      code = (e as { status?: number }).status ?? 1;
-      // Le MOTIF du refus, pas seulement son code : deux refus distincts sortent tous deux 1.
-      err = String((e as { stderr?: string; stdout?: string }).stderr ?? '') + String((e as { stdout?: string }).stdout ?? '');
-    }
-    return { code, err, avant, apres: readFileSync(cible, 'utf8') };
+    const { code, sortie } = jouerDans(d.racine, script);
+    return { code, err: sortie, avant: d.avant.get(CIBLE) ?? '', apres: lireDans(d.racine, CIBLE) };
   } finally {
-    rmSync(dir, { recursive: true, force: true });
+    efface(d.racine);
   }
 }
 
@@ -139,11 +126,11 @@ describe(`${SCRIPT_13} — le bump de forme 4 → 5 (aplatissement de la poche \
   it('t6. RATTRAPAGE : un `schema` FUTUR, avalé par TOUTES les amont, est REFUSÉ par la DERNIÈRE de la chaîne', () => {
     // La DÉRIVATION couvre la chaîne connue : un script qui perdrait sa marque sortirait du banc en
     // silence, et la « dernière » dérivée mentirait.
-    expect(CHAINE).toEqual(expect.arrayContaining([SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552, SCRIPT_1691, SCRIPT_1715, SCRIPT_1687, SCRIPT_1687_ACTIONS, SCRIPT_877]));
+    expect(CHAINE).toEqual(expect.arrayContaining([SCRIPT_3I, SCRIPT_13, SCRIPT_15B, SCRIPT_1552, SCRIPT_1691, SCRIPT_1715, SCRIPT_1687, SCRIPT_1687_ACTIONS, SCRIPT_877, SCRIPT_1897, SCRIPT_1897_FUSIONS]));
     const schemaFutur = SCHEMA_PROJET + 1;
     // Un TYPE de décor à places, LU au catalogue : sans entité à places, `SCRIPT_1687` s'arrête sur
     // un périmètre vide au lieu de mesurer sa borne.
-    const props = JSON.parse(readFileSync(join(RACINE, 'src', 'data', 'props.json'), 'utf8')) as { id: string; seatSlots?: unknown[] }[];
+    const props = JSON.parse(lireArbre('src/data/props.json')) as { id: string; seatSlots?: unknown[] }[];
     const typeAPlaces = props.find((p) => p.seatSlots?.length)?.id;
     expect(typeAPlaces, 'aucun type de décor à places au catalogue').toBeTruthy();
     // Le document est à la forme d'ARRIVÉE de chaque amont (annoncé, provenance posée, relief et

@@ -139,7 +139,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `SpectatorChip` |  |  |  |  |  |  |  |  | U | U |  |  |  |  |  |  |
 | `GearAssignList` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `RewardRecap` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `SceneErrorBoundary` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `SceneErrorBoundary` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U |  |
 | `LogDrawer` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `InspectPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `EquipmentPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
@@ -175,7 +175,6 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 - `CombatStartSplash` (src/ui/CombatStartSplash.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `GearAssignList` (src/ui/GearAssignList.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `RewardRecap` (src/ui/RewardRecap.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
-- `SceneErrorBoundary` (src/ui/SceneErrorBoundary.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `LogDrawer` (src/ui/LogDrawer.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `InspectPanel` (src/ui/InspectPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `EquipmentPanel` (src/ui/EquipmentPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
@@ -208,4 +207,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 4996d724eced9620c94a1e7ad93d1cdb7ef1650c (1824 fichiers, 2 dossiers) corps: a78feaa35ac0c2f6c1d6e2b5c0c08cbee1eea72b -->
+<!-- sources-empreinte: b4993b8737ecf13b1b5034e1e4c25eb341ecdbf8 (1829 fichiers, 2 dossiers) corps: 04c923afae03369b7f056c83456ea5175ba37eab -->

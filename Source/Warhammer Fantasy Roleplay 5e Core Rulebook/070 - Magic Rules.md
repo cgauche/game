@@ -52,8 +52,6 @@ When Spells provide bonuses or impose penalties, the best bonus and worst penalt
 
 Unless otherwise stated, you must have line of sight to your target.
 
-235
-
 # **Channelling**
 
 You can gather the magical energy needed to cast powerful Spells by channelling. To channel magic, you must decide which Wind of Magic you wish to channel and use your Action to make a **Challenging (+0 SL) Channelling** Test.
@@ -110,8 +108,6 @@ If a Casting Test generates SL beyond those required to cast a spell, you can sp
 | Ulgu                            | Spellcasters who study the Lore of Shadows                                    | Mist shrouded moors, shadowy forests, caves                             |
 | Waaagh!                         | Orc and goblin shamans                                                        | Wherever enough orcs and goblins gather                                 |
 
-VIII
-
 # **Spells**
 
 The Spells presented in this book come in four varieties. Petty Spells are simple tricks involving small amounts of magic. Lore Spells are those which are exclusive to a particular tradition of magic. Arcane Spells are additional Lore Spells exclusive to their traditions that have similar effects to Arcane Spells of other traditions. Chaos Spells are practised by those who have sold their souls to Chaos.
@@ -162,8 +158,6 @@ Multiple spellcasters attempting to dispel the same Spell make Tests separately.
 
 An elf spellcaster may learn a number of Arcane Lores equal to their Willpower Bonus. An elf Character may not purchase a new Arcane Magic Talent until they have learned at least 8 Spells from the previous Lore. Any spellcaster may learn a single Dark Lore in addition to another Lore.
 
-237
-
 #### **MINOR MISCAST TABLE**
 
 | d100       | Effect                                                                                                                                                                                                                                                                                                                                                            |
@@ -188,8 +182,6 @@ An elf spellcaster may learn a number of Arcane Lores equal to their Willpower B
 | 86–90      | Marked by Magic: The Wind you work with leaves a permanent mark on your body. Usually this manifests in a change in your eyes, so that they shimmer with fire, shine with light, or are wreathed in shadow.                                                                                                                                                       |
 | 91–95      | Multiplying Misfortune: Roll twice on this table, rerolling any results between 91–00 and ignoring modifiers.                                                                                                                                                                                                                                                     |
 | 96–00      | Cascading Chaos: Roll on the Major Miscast Table. If a Minor Miscast roll is positively modified, any overflow past 00 is carried over into the Major Miscast Table.                                                                                                                                                                                              |
-
-VIII
 
 #### **MAJOR MISCAST TABLE**
 

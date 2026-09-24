@@ -72,7 +72,7 @@ Whether you cheated the wrong gambler or laughed at the wrong joke, the trickste
 
 #### **85–90: Scandalous Rumours**
 
-VI **57–59: Arcane Auction** Through no fault of your own — or perhaps entirely through your own doing — you become embroiled in a local scandal. Awkward conversations and sidelong glances follow wherever you go. During the next adventure, you cannot spend Fortune on social Tests.
+**57–59: Arcane Auction** Through no fault of your own — or perhaps entirely through your own doing — you become embroiled in a local scandal. Awkward conversations and sidelong glances follow wherever you go. During the next adventure, you cannot spend Fortune on social Tests.
 
 #### **91–92: Betrayed!**
 

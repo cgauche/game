@@ -15,6 +15,13 @@ import { messagePorteSansDuree } from '../../../engine/ops';
 export const file = 'spells.json';
 export const famille = 'entite';
 
+/**
+ * CHAMP DISCRIMINANT du document (patron `defs/materials.ts`) : `family` partitionne les sorts, et
+ * `npm run gen` en dérive la sous-liste contre laquelle `idDe('spell', 'mineure')` refine AU PARSE
+ * (`pregens.json › pettySpells`, LDB 10 l.714).
+ */
+export const discriminant = 'family';
+
 /** Toute op `condition { carried }` de l'arbre d'effets d'une entrée (#1695). */
 function* opsPortees(noeud: unknown): Generator<Record<string, unknown>> {
   if (Array.isArray(noeud)) { for (const e of noeud) yield* opsPortees(e); return; }

@@ -25,7 +25,8 @@ import domainesData from './domaines.json' with { type: 'json' }
 import { normalize, ELLIPSIS_SENTINEL } from '../../src/data/source/normalize.ts'
 // Le NUMÉRO DE CHAPITRE (prédicat, motif de nom, résolution) vit dans sa maison unique
 // `src/data/source/decoupe.ts` — module PUR, chargé tel quel par Node nu comme par vitest.
-import { fichierDuChapitre, numeroDuFichier } from '../../src/data/source/decoupe.ts'
+import { fichierDuChapitre, graphieDeChapitre, largeurDeChapitre, numeroDuFichier } from '../../src/data/source/decoupe.ts'
+import { nomAscii } from '../source/nom-ascii.mjs'
 // « Livre EXTRAIT » : définition UNIQUE app/outillage, `src/data/source/livre-extrait.ts` (#1739).
 import { estLivreExtrait } from '../../src/data/source/livre-extrait.ts'
 
@@ -54,14 +55,25 @@ export const booksDe = (registre) => registre.filter(estLivreExtrait).map((b) =>
 // part ailleurs, pour que tout consommateur puisse recevoir un registre FIXTURE par injection.
 export const REGISTRE_LIVRES = booksData
 export const BOOKS = booksDe(booksData)
+/** Dossier d'extraction d'un livre, quel que soit le champ qui le porte : `dir` pour les livres de
+ *  l'Atlas RAW, `extractionDir` pour une extraction citable HORS Atlas (`frenchy-bzh`) — ou `null`. */
+export function sourceDirOf(book) {
+  const d = book?.dir ?? book?.extractionDir
+  return typeof d === 'string' && d ? d : null
+}
+/** Livre CITABLE : EXTRAIT pour l'Atlas (`estLivreExtrait`), ou porteur d'une extraction hors Atlas
+ *  (`extractionDir`). Le prédicat que passe aux résolutions ci-dessous un outil qui atteste une citation
+ *  sans relever de l'Atlas (emplacements secondaires, `folioIntegrity.mjs`). */
+export const estLivreCitable = (b) => estLivreExtrait(b) || Boolean(b?.abbr && b?.extractionDir)
 /** L'entrée du registre d'un livre EXTRAIT (porteur d'un `dir`), par son id STABLE — ou `null`.
- *  SEULE résolution id → livre de l'outillage : un outil reçoit un id, il ne compare rien lui-même. */
-export const livreExtraitDe = (id, registre = REGISTRE_LIVRES) =>
-  registre.find((b) => b.id === id && estLivreExtrait(b)) ?? null
+ *  SEULE résolution id → livre de l'outillage : un outil reçoit un id, il ne compare rien lui-même.
+ *  `retenu` élargit le périmètre à `estLivreCitable`, jamais au-delà du registre. */
+export const livreExtraitDe = (id, registre = REGISTRE_LIVRES, retenu = estLivreExtrait) =>
+  registre.find((b) => b.id === id && retenu(b)) ?? null
 /** L'entrée du registre d'un livre EXTRAIT par son SIGLE — ou `null`. SEULE résolution sigle → livre
  *  de l'outillage, pour les outils qui reçoivent un sigle (ligne de commande, réf `<ABRÉV> <ch>`). */
-export const livreDuSigle = (abbr, registre = REGISTRE_LIVRES) =>
-  registre.find((b) => b.abbr === abbr && estLivreExtrait(b)) ?? null
+export const livreDuSigle = (abbr, registre = REGISTRE_LIVRES, retenu = estLivreExtrait) =>
+  registre.find((b) => b.abbr === abbr && retenu(b)) ?? null
 /** L'entrée du registre d'un livre EXTRAIT par son DOSSIER `Source/…` (séparateurs `\` ou `/`, barre
  *  finale indifférente) — ou `null`. SEULE résolution dossier → livre de l'outillage. */
 export function livreDuDossier(dir, registre = REGISTRE_LIVRES) {
@@ -71,7 +83,8 @@ export function livreDuDossier(dir, registre = REGISTRE_LIVRES) {
 }
 /** Le SIGLE d'un livre EXTRAIT par son id STABLE — ou `null`. SEULE traduction id → sigle de
  *  l'outillage : le sigle est de l'affichage (dossiers, réfs `<ABRÉV> <ch>`). */
-export const sigleDe = (id, registre = REGISTRE_LIVRES) => livreExtraitDe(id, registre)?.abbr ?? null
+export const sigleDe = (id, registre = REGISTRE_LIVRES, retenu = estLivreExtrait) =>
+  livreExtraitDe(id, registre, retenu)?.abbr ?? null
 
 // CŒUR de règles d'un livre (`books.json`, champ `coeur`) : le corps de règles dont ce livre est le
 // livre de base, ou `null` pour un supplément. C'est LUI qui porte le régime de réconciliation
@@ -220,6 +233,22 @@ export function decoupeDe(bookId, dir = DECOUPES_DIR) {
     throw new Error(`_lib: la liste de découpe de « ${bookId} » (${chemin}) ne porte aucun fichier`)
   return brut.fichiers
 }
+
+/** Les NOMS de fichier que la liste de découpe déclare, dans son ordre. PURE. */
+export const nomsDeLaListe = (liste) => {
+  const largeur = largeurDeChapitre(Math.max(1, liste.length))
+  return liste.map((e, i) => nomAscii(`${graphieDeChapitre(i + 1, largeur)} - ${e.titre}.md`))
+}
+
+/** Les ONGLETS DE CHAPITRE d'un livre, `[{ chiffre, pages: [a, b] }]`, ou `null` déclaré pour un livre
+ *  qui n'en imprime aucun — champ `onglets` de sa liste de découpe, lu ICI et nulle part ailleurs.
+ *  @param {string} bookId @param {string} [dir] @returns {{ chiffre: string, pages: [number, number] }[] | null} */
+export const ongletsDe = (bookId, dir = DECOUPES_DIR) => JSON.parse(readText(join(dir, `${bookId}.json`))).onglets
+
+/** Le GABARIT des titres d'entrée d'un livre, `{ titre, accompagnement, encadre, capitales, exclusions }` (typographies
+ *  `{ police, taille? }`), ou `null` déclaré — champ `gabaritTitre` de sa liste de découpe, lu ICI et
+ *  nulle part ailleurs. @param {string} bookId @param {string} [dir] */
+export const gabaritTitreDe = (bookId, dir = DECOUPES_DIR) => JSON.parse(readText(join(dir, `${bookId}.json`))).gabaritTitre
 
 // PDF d'un livre et sorties Marker — #1739 (2026-09-19, bloquant 3). Les PDF et `Source/_marker/` sont
 // gitignorés (`.gitignore`) : ils n'existent que dans l'ARBRE PRINCIPAL, jamais dans un worktree

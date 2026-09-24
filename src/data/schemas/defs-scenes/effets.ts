@@ -16,7 +16,8 @@ import { z } from 'zod';
 import { proseDeScene } from '../grammaire/prose';
 import { chaosAlignSchema, enumNomme, exposureLevelSchema, hitLocationSchema, moneyPartialSchema, refTestDeCorruption } from '../grammaire/valeurs';
 import { conditionSchema, effectOpSchema, extendedTestSchema, gameOpSchema, noeudTest } from '../grammaire/mecanique';
-import { refOuSpec } from '../grammaire/ref';
+import { idDe, refOuSpec } from '../grammaire/ref';
+import { listeCle } from '../grammaire/liste-cle';
 import { customStatblockSchema, ptSchema, wallSideSchema } from './communs';
 import { waterAppliesToSchema } from '../defs/water-exposure';
 import type { Effect } from '../../../state/scene';
@@ -455,6 +456,10 @@ export const waterExposureSchema = z.strictObject({
   heroId: z.string().optional(),
 });
 
+/** Id de `spells.json` : porte `idDe('spell')`, FORME DE SORTIE déclarée nue (patron `couvertureSchema`,
+ *  `./scene.ts`) — `Effect` est un `z.infer` écrit par l'éditeur et par la console. */
+const sortSchema: z.ZodType<string, string> = idDe('spell');
+
 /** Enseigne un sort SANS coût en PX (trouvaille de campagne : grimoire d'un maître, parchemin…) au
  *  héros que son Talent de lanceur rend éligible, désigné ou non — sinon refus NOMMÉ au journal
  *  (`LDB 46 l.14`). Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable ;
@@ -462,7 +467,7 @@ export const waterExposureSchema = z.strictObject({
  *  (buySpell, `LDB 46 l.44-47`). */
 export const learnSpellSchema = z.strictObject({
   type: z.literal('learnSpell'),
-  spell: z.string(),
+  spell: sortSchema,
   heroId: z.string().optional(),
 });
 
@@ -478,7 +483,7 @@ export const learnSpellSchema = z.strictObject({
 export const castSpellSchema = z.strictObject({
   type: z.literal('castSpell'),
   casterId: z.string(),
-  spellId: z.string(),
+  spellId: sortSchema,
   targetId: z.string().optional(),
   mode: z.enum(['jet', 'forceSuccess']).optional(),
 });
@@ -524,7 +529,7 @@ export const startPursuitSchema = z.strictObject({
   distance: z.number(),
   escapeAt: z.number().optional(),
   skill: refOuSpec('skill'),
-  foes: z.array(pursuitFoeSchema),
+  foes: listeCle(pursuitFoeSchema, 'id'),
   encounter: z.string().optional(),
   policy: pursuitPolicySchema.optional(),
 });

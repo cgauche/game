@@ -126,6 +126,35 @@ export function survieDeLecheance(mesurees, { lot, date, ancien = [] }) {
   });
 }
 
+/** Le LOT passé en ligne de commande (`--lot <#N …>`), ou `null`. PURE. */
+function lotDeLaLigne(args) {
+  const i = args.indexOf('--lot');
+  const v = i >= 0 ? String(args[i + 1] ?? '').trim() : '';
+  return v && !v.startsWith('--') ? v : null;
+}
+
+/**
+ * RÉGÉNÉRATION d'un stock nominatif SOUS LOT — seule définition du dépôt, appelée par les
+ * régénérateurs datés (`check-source-format.mjs`, `check-source-puces.mjs`, `check-source-tables.mjs`).
+ * Un régénérateur n'étiquette JAMAIS seul : une entrée NEUVE (sans lot survivant,
+ * `survieDeLecheance`) exige le lot du chantier en argument, `--lot <#N …>` ; sans lui, RIEN n'est
+ * écrit et le refus nomme la première. Les entrées existantes gardent le leur. PURE hors `ecrire`,
+ * INJECTÉ (le banc n'écrit rien).
+ * @param {string[]} args @param {(lot: string | null, date: string) => { entrees: { lot?: string | null }[], texte: string }} rendre
+ * @param {(texte: string) => void} ecrire @param {string} ou @param {string} [date]
+ * @returns {{ code: 0 | 1, message: string }}
+ */
+export function ecrireStockSousLot(args, rendre, ecrire, ou, date = new Date().toISOString().slice(0, 10)) {
+  const lot = lotDeLaLigne(args);
+  const { entrees, texte } = rendre(lot, date);
+  const neuves = entrees.filter((e) => !e.lot);
+  if (neuves.length) {
+    return { code: 1, message: `${ou} : ${neuves.length} entrée(s) NEUVE(s) sans lot — passer \`--lot <#N …>\`, rien n'est écrit. Première : ${cleDeSite(neuves[0])}` };
+  }
+  ecrire(texte);
+  return { code: 0, message: `stock écrit : ${ou} — ${entrees.length} entrée(s)` };
+}
+
 /** La clé d'une entrée, ou l'entrée elle-même en JSON compact quand cette clé ne NOMME rien. Une
  *  entrée sans `fichier` ni `ref` (faute de saisie, champ renommé, entrée bidon) rend une clé réduite
  *  à ses séparateurs (` ::  ::  :: `) : le refus désigne alors une entrée que le lecteur ne peut pas
@@ -155,6 +184,10 @@ export function ecartDuVolet({ sites, stock, famille, ou }) {
     },
   });
 }
+
+/** Une ligne de remède de `ecartDuVolet` NOMME-t-elle cette clé ? (le remède décore la clé d'une phrase)
+ *  @param {readonly string[]} lignes @param {string} cle @returns {boolean} */
+export const remedeNomme = (lignes, cle) => lignes.some((l) => l.includes(cle))
 
 /**
  * REFUS d'un RÉGÉNÉRATEUR de stock : la phrase à afficher quand la MESURE porte un site que le stock

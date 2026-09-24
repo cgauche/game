@@ -1,6 +1,6 @@
 *Pages PDF 345-346*
 
-# **BEASTMEN, THE CHILDREN OF CHAOS** XII
+# **BEASTMEN, THE CHILDREN OF CHAOS**
 
 Beastmen are grotesque hybrids of animal and human who consider themselves the true children of Chaos, blessed by the Dark Gods before all other species. Their savage herds stalk the forests, gathering numbers and worshipping at profane altars of stone.
 

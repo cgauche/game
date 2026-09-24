@@ -38,7 +38,7 @@ Marrisith's envoys reveal little of their purpose, and strike the Reikland's hum
 
 — Cynwrawn Fartrack, Hunter from the Laurelorn
 
-II **Names** Elves use their forename and an epithet translated into Reikspiel when travelling, as they usually consider it a futile task to explain the deeper meanings of their names to non-elves.
+**Names** Elves use their forename and an epithet translated into Reikspiel when travelling, as they usually consider it a futile task to explain the deeper meanings of their names to non-elves.
 
 **Forenames:** Aeslornoc, Athmarddu, Dornilstra, Farsorhan, Gynferth, Imilanhu, Linerianryn, Malmarstra, Morandrilwyth, Ullifinarha
 

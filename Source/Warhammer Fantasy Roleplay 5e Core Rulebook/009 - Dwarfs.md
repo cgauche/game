@@ -68,7 +68,7 @@ Add one Advance (+5) to any five of the following Skills: Consume Alcohol, Cool,
 
 ### **Starting Talents**
 
-II **Names** *Magic Resistance*, *Night Vision*, *Read/Write* or *Relentless*, *Resolute* or *Strong-minded*, *Sturdy*
+**Names** *Magic Resistance*, *Night Vision*, *Read/Write* or *Relentless*, *Resolute* or *Strong-minded*, *Sturdy*
 
 #### **Fate**
 

@@ -431,8 +431,14 @@ function checkSum(frag: Fragment, md: string, ou: string): ErreurResolution | nu
 }
 
 /** Cellules d'une ligne de table markdown (barres de bord retirées, cellules détourées). */
-const cellulesDe = (l: string): string[] =>
+export const cellulesDe = (l: string): string[] =>
   l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+
+/** Une ligne de SÉPARATEUR de table Markdown (`| --- | --- |`, `|--|--|--|`). */
+export function estSeparateur(ligne: string): boolean {
+  const t = ligne.trim().replace(/\s+/g, '');
+  return t.startsWith('|') && /^[|:-]+$/.test(t) && t.includes('--');
+}
 
 /** Texte d'une rangée-BANNIÈRE — ≥ 2 cellules dont exactement UNE est non vide —, ou `null`. */
 function texteDeBanniere(cells: string[]): string | null {

@@ -79,8 +79,6 @@ Athletics 60, Dodge 60
 
 *Dark Vision, Frenzy, Horns +8, Size (Tiny–Enormous), Trained (Guard, Mount)*
 
-329
-
 # **Demigryph**
 
 With the head of an eagle and body of a lion, demigryphs are powerful creatures with a noble bearing. They roam the forests and grasslands of the Empire, usually far from human habitation, hunting as individuals. Captive demigryphs are deployed by the Empire's doughtiest knightly orders as war mounts. Unlike larger monstrous mounts, which are generally taken when young or bred in captivity, the capture of a full-grown demigryph is a rite of passage among some orders.
@@ -120,8 +118,6 @@ Athletics 55, Endurance 45, Melee (Brawling) 50
 #### **Optional Traits**
 
 *Trained (Broken, Drive, Guard, Mount, War)*
-
-329
 
 # **Dragon**
 
@@ -298,7 +294,7 @@ Fortunately rare, manticores are relentlessly ferocious, driven to clear their t
 
 — Konrad Nachtwey, Amethyst Mage of Bechafen
 
-# **MANTICORE** XII
+# **MANTICORE**
 
 | M | WS | BS | S  | T  | I  | Ag | Dex | Int | WP | Fel | W  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -338,11 +334,7 @@ Melee (Brawling) 60, Track 55
 
 *Hatred (Predators), Mutation, Trained (Broken, Magic, Mount)*
 
-333
-
 # **Pegasus**
-
-334
 
 Pegasi are handsome white horses with great swan-like wings. They are dogged and inexhaustible flyers that fly in great herds in the high mountains, seemingly taking great delight as they swoop and swirl on the spiralling thermal currents. They are obvious candidates for steeds and many a warrior or scout has tried to catch a pegasus of their own. They are very intelligent, and some believe they only allow themselves to be captured if they wish to be, which has led to all manner of fancifully romantic legends insisting only those worthy or virtuous enough may be chosen.
 
@@ -352,7 +344,7 @@ Pegasi are handsome white horses with great swan-like wings. They are dogged and
 
 > — Berthold Bruner, Farmer and Pegasus-watcher
 
-**Troll** XII Trolls are filthy, foul creatures that infest every corner of the Old World. Quick to adapt to their surroundings, they come in many forms, but all are huge and imposing. Dim-witted and driven by an endless hunger, they nevertheless hoard anything that catches their eye, making their lairs a trove of valuable treasures... and the grisly remains of previous meals. There are many species of troll, all of which share several common traits: they are exceptionally stupid, allowing cunning foes to outwit them; they regenerate, making them notoriously difficult to kill; and they can regurgitate their last meal at will, vomiting acrid bile over astonishing distances — although they are loath to do this as it leaves them extremely hungry.
+**Troll** Trolls are filthy, foul creatures that infest every corner of the Old World. Quick to adapt to their surroundings, they come in many forms, but all are huge and imposing. Dim-witted and driven by an endless hunger, they nevertheless hoard anything that catches their eye, making their lairs a trove of valuable treasures... and the grisly remains of previous meals. There are many species of troll, all of which share several common traits: they are exceptionally stupid, allowing cunning foes to outwit them; they regenerate, making them notoriously difficult to kill; and they can regurgitate their last meal at will, vomiting acrid bile over astonishing distances — although they are loath to do this as it leaves them extremely hungry.
 
 ### **TROLL TYPES**
 

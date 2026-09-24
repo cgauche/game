@@ -18,8 +18,6 @@ Where an *Armour* value is provided, the total Toughness Bonus + Armour Points i
 
 *Armour* and *Weapons* given to bipedal creatures with hands are just suggestions. If the GM wishes, such creatures could be armed and armoured with anything from the Consumer Guide, and can be assumed to have any Skills they need to use the items without penalty.
 
-XII
-
 ### **BESTIARY FORMAT**
 
 - **Name:** The creature's name.

@@ -175,12 +175,12 @@ export interface SceneEntity {
     /** OPTIONNELS choisis (LDB 76 l.45) : `TraitInstance` fusionnés au spawn OU notes composées
      *  (joker « tous les traits », variante « swap » retirant des Traits + octroyant un bonus, ZI). */
     optionals?: import('../engine/statEntry').OptionalEntry[];
-    /** Sorts connus (ids de spells.json, créature `ref`) — choix d'auteur (la donnée bestiaire n'en liste pas). */
+    /** Sorts connus (ids de spells.json) — choix d'auteur, remplace ceux de la créature `ref` (`src/state/spawn.ts` › `spells`). */
     spells?: string[];
     /** Caractéristiques aléatoires au spawn (LDB 77 l.108 : −10 + 2d10, graine stable par id). */
     randomChars?: boolean;
     /** Compétences d'AUTEUR ajoutées (réfs `SkillRef`) — fusionnées par-dessus celles du bestiaire au spawn.
-     *  Qualifie p.ex. un servant de pièce pour le Groupe de Projectiles APPROPRIÉ à son engin (AA 10 p.122 l.3900). */
+     *  Qualifie p.ex. un servant de pièce pour le Groupe de Projectiles APPROPRIÉ à son engin (AA 10 l.230). */
     skills?: import('../data').SkillRef[];
     /** Invisible en EXPLORATION (embuscade) : n'apparaît qu'au combat. `false`/absent = PNJ visible
      *  qui devient hostile au déclenchement. */

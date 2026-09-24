@@ -130,7 +130,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
       rng: makeRNG(3),
       manualChars: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       charAdvancesAlloc: { 'capacite-de-combat': 5 },
-      careerTalent: 'Infatigable', // PAS Guerrier né (+5 CC), pour isoler les Augmentations
+      careerTalent: { talentId: 'infatigable' }, // PAS Guerrier né (+5 CC), pour isoler les Augmentations
       speciesTalentsResolved: ['Affable', 'Destinée'], // pas de tirages → déterministe
     });
     expect(manual.charAdvances!['capacite-de-combat']).toBe(5);
@@ -156,11 +156,11 @@ describe('createHero — applique compétences et talents raciaux', () => {
   it('talent de carrière = talent d\'espèce → times 2 (LDB 05 l.502) ; Blessures avec Dur à cuire', () => {
     const hero = createHero({
       speciesId: REIK,
-      careerId: 'soldat', // Recrue propose « Dur à cuire »
+      careerId: 'milicien', // Niveau 1 propose « Dur à cuire »
       label: 'T',
       manualChars: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       charAdvancesAlloc: { 'capacite-de-combat': 5 },
-      careerTalent: 'Dur à cuire',
+      careerTalent: { talentId: 'dur-a-cuire' },
       speciesTalentsResolved: ['Affable', 'Destinée', 'Dur à cuire'],
       rng: makeRNG(3),
     });
@@ -188,11 +188,20 @@ describe('createHero — applique compétences et talents raciaux', () => {
       speciesId: 'halflings',
       careerId: 'herboriste',
       label: 'T',
-      careerTalent: 'Sens aiguisé (Goût)',
+      careerTalent: { talentId: 'sens-aiguise', spec: 'gout' },
       speciesTalentsResolved: ['Petit', 'Résistance (Corruption)', 'Sens aiguisé (Goût)', 'Vision nocturne'],
       rng: makeRNG(3),
     });
     expect(hero.talents.find((t) => talentConcrete(t) === 'Sens aiguisé (Goût)')!.times).toBe(2);
+  });
+
+  it('Talent de carrière : pris au Niveau 1 (LDB 05 l.535), un emplacement « (Au choix) » exige sa spécialisation (LDB 10 l.17)', () => {
+    const cree = (careerTalent: { talentId: string; spec?: string }) =>
+      () => createHero({ speciesId: 'humains-reiklander', careerId: 'pretre', label: 'T', careerTalent, rng: makeRNG(5) });
+    expect(cree({ talentId: 'beni' })).toThrow(/Talent de carrière « beni ».*pretre.*exige une spécialisation \(LDB 10 l\.17\)/);
+    expect(cree({ talentId: 'acrobate' })).toThrow(/Talent de carrière « acrobate ».*absent du Niveau 1 de « pretre » \(LDB 05 l\.535\)/);
+    const hero = cree({ talentId: 'beni', spec: 'sigmar' })();
+    expect(Object.values(hero.careerSlotChoices?.pretre ?? {})).toContain('beni|sigmar');
   });
 
   it('entrée d\'espèce mixte « Destinée ou Talent aléatoire » : la branche aléatoire tire un talent', () => {

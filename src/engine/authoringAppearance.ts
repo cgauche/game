@@ -59,7 +59,7 @@ export interface EntityAppearance {
    *  PURS, aucun art d'armure synthétisé (`synthArmour`). */
   armurePortee?: boolean;
   /** Coiffure IMPOSÉE — id STABLE d'une coiffure (`hairstyles/defs`, jamais un index ni un libellé, #637).
-   *  Vide = tirage sexe+ordre dérivé du seed. Fail-fast au rendu si l'id est introuvable. */
+   *  Vide = tirage sexe+ordre dérivé du seed. Hors du pool espèce×sexe : chevelure d'erreur visible au rendu. */
   hairstyle?: string;
   /** Yeux personnalisés (clés du catalogue `EYE_OPTIONS` : chat/caprin/reptilien/noir/rouge/
    *  verre) — remplacés EN PLACE sur l'orbite du visage. Vide = yeux normaux. */

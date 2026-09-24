@@ -58,7 +58,7 @@ For each Wound you recover by any means, remove a *Bleeding*  Condition. A **Cha
 
 #### **Blinded**
 
-V Because of a powerful flash of light, blood in your eyes, or a terrible wound, you cannot see, and cannot undertake any task that requires sight, such as reading or making Ranged Attacks. You suffer Disadvantage to Melee Attacks and other Tests that rely heavily on sight but do not strictly require it, such as Climb or Ride. Melee Attacks against you benefit from Advantage, unless your foe is also *Blinded.* 
+Because of a powerful flash of light, blood in your eyes, or a terrible wound, you cannot see, and cannot undertake any task that requires sight, such as reading or making Ranged Attacks. You suffer Disadvantage to Melee Attacks and other Tests that rely heavily on sight but do not strictly require it, such as Climb or Ride. Melee Attacks against you benefit from Advantage, unless your foe is also *Blinded.* 
 
 > Normally, one *Blinded* Condition is removed at the end of your Turn. However, if you have received a *Blinded* Condition as a result of imbibing a poison or an injury, it may persist for a longer period.
 

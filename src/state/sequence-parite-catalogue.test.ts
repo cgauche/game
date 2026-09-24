@@ -513,8 +513,8 @@ const V8C3: Site[] = [
     apres: t('crew.crewDelta', { delta: `${'−'}${3}`, left: 17, nominal: 20 }),
   },
   {
-    // CORRIGÉ (micro-passe) : la clé rendait « babord » ; MDG 13 l.263 écrit « bâbord ».
-    site: 'seaVoyageFlow.ts:1739 — changement de cap (CÔTÉ de dérive lu au catalogue, MDG 13 l.263)',
+    // CORRIGÉ (micro-passe) : la clé rendait « babord » ; MDG 13 l.322 écrit « bâbord ».
+    site: 'seaVoyageFlow.ts:1739 — changement de cap (CÔTÉ de dérive lu au catalogue, MDG 13 l.322)',
     avant: `Changement de cap (d10 ${3}, dérive ${'bâbord'}) : ${'Le navire pique vers la côte.'}`,
     apres: t('sv.courseChange', { roll: 3, side: t('sv.sideBabord'), desc: 'Le navire pique vers la côte.' }),
   },

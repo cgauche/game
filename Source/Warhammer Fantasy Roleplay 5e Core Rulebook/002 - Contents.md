@@ -107,8 +107,6 @@
 | Spending XP191                | Miracles of Sigmar226                  | Other?264                  |  |
 |                               |                                        |                            |  |
 
-4
-
 | Using the Rules265                  | Armour and Size306             | The Restless Dead338                 |  |
 |-------------------------------------|--------------------------------|--------------------------------------|--|
 | Awarding XP267                      | Packs and Containers308        | Crypt Ghoul338                       |  |
@@ -163,5 +161,3 @@
 | Armour Qualities306                 | Orc 337                     | Appendix III                         |  |
 | Armour Flaws306                     | Snotling338                    | Appendix IV                          |  |
 |                                     |                                | Appendix V                           |  |
-
-I

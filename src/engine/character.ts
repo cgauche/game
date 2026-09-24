@@ -43,7 +43,7 @@ import {
   specLabel,
   talents as talentTable,
 } from '../data';
-import { splitTopLevelOu, splitLabel, concreteLabel, refKey, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
+import { splitTopLevelOu, splitLabel, parseOption, concreteLabel, refKey, isUnresolvedChoice, skillSlots, talentSlots, designateSlot, freeSlotFor, statutOuRefus, designationsFor, talentMaxReached, wildcardSpecs } from './careerSlots';
 import { resolveTrappingChoices } from './trappingChoices';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from './talentEffects';
 import { applyStarOps } from './creation';
@@ -77,8 +77,8 @@ function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: strin
 }
 
 /**
- * Identité STABLE d'un talent à spécialisation depuis un libellé CONCRET d'authoring
- * (« Sens aiguisé (Vue) ») → `refKey(talentId, specId)` — couture label→id du bord AUTHORING
+ * Identité STABLE d'un talent à spécialisation depuis un libellé CONCRET
+ * (« Sens aiguisé (Vue) ») → `refKey(talentId, specId)`, via `talentRefOfLabel`
  * (mêmes résolveurs que `addTalent` : `findTalent` pour le nom, `resolveSpecId` pour la spec, qui
  * ramène un libellé de spec issu d'un round-trip à son id de `specs[]`/`specsSource`, et laisse
  * verbatim une spec libre — domaine `specsOpen`, où la valeur saisie EST l'identité persistée).
@@ -86,9 +86,20 @@ function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: strin
  * collections du moteur — plus jamais `concreteLabel` (affichage, multilangue).
  */
 export function talentRefKeyOf(label: string): string {
+  const { talentId, spec } = talentRefOfLabel(label);
+  return refKey(talentId, spec);
+}
+
+/** Talent désigné par id (et id de spécialisation) — la forme que `createHero` reçoit pour le Talent
+ *  de carrière. */
+export type TalentChoisi = Pick<TalentInstance, 'talentId' | 'spec'>;
+
+/** Libellé CONCRET (« Béni (Sigmar) ») → `{ talentId, spec }` en ids : `talentIdByLabel` pour le nom,
+ *  `resolveSpecId` pour la spec. */
+export function talentRefOfLabel(label: string): TalentChoisi {
   const { name, spec } = splitLabel(label);
-  const id = talentIdByLabel(name);
-  return refKey(id, spec != null ? resolveSpecId('talents', id, spec) : undefined);
+  const talentId = talentIdByLabel(name);
+  return { talentId, spec: spec != null ? resolveSpecId('talents', talentId, spec) : spec };
 }
 
 /**
@@ -188,8 +199,9 @@ export function resolveSpeciesTalents(
     if (!isUnresolvedChoice(opt)) return opt;
     const chosen = opts.choices?.[entryKey];
     if (chosen && !isUnresolvedChoice(chosen)) return chosen;
-    const { name, spec } = splitLabel(opt);
-    const specOptions = /\sou\s/i.test(spec!) ? spec!.split(/\s+ou\s+/i).map((s) => s.trim()) : wildcardSpecs(name);
+    const joker = parseOption(opt);
+    const name = joker.label;
+    const specOptions = wildcardSpecs(joker);
     // Les options d'un joker RESTREINT sont des libellés de spec d'authoring, celles d'un joker plein
     // des ids (`wildcardSpecs`) : `talentRefKeyOf` normalise les deux vers l'identité stable.
     const free = specOptions.find((s) => !owned.has(talentRefKeyOf(concreteLabel(name, s)))) ?? specOptions[0];
@@ -223,9 +235,9 @@ export interface CreateHeroOptions {
   label: string;
   /** Caractéristiques saisies manuellement (sinon tirage base + 2d10). */
   manualChars?: Partial<Characteristics>;
-  /** Talent de carrière choisi — libellé CONCRET (spec résolue) ; peut être un talent d'espèce
-   *  déjà possédé (→ times 2, l.502). Défaut : 1re entrée du Niveau (résolue). */
-  careerTalent?: string;
+  /** Talent de carrière choisi, en ids ; peut être un talent d'espèce déjà possédé (→ times 2,
+   *  l.502). Défaut : 1re entrée du Niveau (résolue). */
+  careerTalent?: TalentChoisi;
   /** Répartition des 40 augmentations, clé = entrée BRUTE de la liste de carrière ou ajoutée
    *  par un talent (sinon +5 sur les 8 entrées du Niveau). */
   skillAdvances?: Record<string, number>;
@@ -277,14 +289,12 @@ export function rollCharacteristics(sp: SpeciesData, rng: RNG = defaultRNG): Cha
  *  liste restreinte « (A ou B) »). */
 function resolveEntry(raw: string, specChoices?: Record<string, string>): string {
   if (!isUnresolvedChoice(raw)) return raw;
-  const { name, spec } = splitLabel(raw);
+  const joker = parseOption(raw);
   const choice = specChoices?.[raw];
-  if (choice) return concreteLabel(name, choice);
-  const options = /\sou\s/i.test(spec!)
-    ? spec!.split(/\s+ou\s+/i).map((s) => s.trim())
-    : wildcardSpecs(name);
+  if (choice) return concreteLabel(joker.label, choice);
+  const options = wildcardSpecs(joker);
   const concrete = options.filter((o) => !/au choix/i.test(o));
-  return concrete.length ? concreteLabel(name, concrete[0]) : name;
+  return concrete.length ? concreteLabel(joker.label, concrete[0]) : joker.label;
 }
 
 export function createHero(opts: CreateHeroOptions): Combatant {
@@ -308,19 +318,17 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     chars[k] += n; // l'Augmentation s'ajoute à la valeur initiale (LDB 05 l.463)
   }
 
-  // 4a) Talents : 1 Talent de carrière (libellé concret) + Talents d'espèce. Le talent de
+  // 4a) Talents : 1 Talent de carrière (`TalentChoisi`, ids) + Talents d'espèce. Le talent de
   // carrière peut être un talent d'espèce → times 2 (l.502), Maxi respecté.
   const speciesTalents = opts.speciesTalentsResolved
     ?? resolveSpeciesTalents(sp, { rng, choices: opts.speciesTalentChoices });
   const talents: TalentInstance[] = [];
-  const addTalent = (label: string) => {
-    const { name, spec: rawSpec } = splitLabel(label);
-    const id = talentIdByLabel(name);
-    const spec = rawSpec != null ? resolveSpecId('talents', id, rawSpec) : rawSpec;
-    const existing = talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''));
+  const addTalentRef = ({ talentId, spec }: TalentChoisi) => {
+    const existing = talents.find((t) => t.talentId === talentId && (t.spec ?? '') === (spec ?? ''));
     if (existing) existing.times += 1;
-    else talents.push({ talentId: id, spec, times: 1 });
+    else talents.push({ talentId, spec, times: 1 });
   };
+  const addTalent = (label: string) => addTalentRef(talentRefOfLabel(label));
   for (const t of speciesTalents) addTalent(t);
 
   const talentEntries = level?.talents ?? [];
@@ -329,18 +337,15 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     // Défaut : 1re entrée du Niveau dont le Maxi n'est pas atteint (les Maxi 1 déjà possédés
     // via l'espèce sont sautés — cas Nain Lire/Écrire + Agitateur).
     for (const ref of talentEntries) {
-      const candidate = resolveEntry(advancementLabel('talents', ref), opts.specChoices);
+      const candidate = talentRefOfLabel(resolveEntry(advancementLabel('talents', ref), opts.specChoices));
       const probe: Combatant = { characteristics: chars, talents } as Combatant;
-      const { name, spec: rawSpec } = splitLabel(candidate);
-      const candidateId = talentIdByLabel(name);
-      const spec = rawSpec != null ? resolveSpecId('talents', candidateId, rawSpec) : rawSpec;
-      if (!talentMaxReached(probe, candidateId, spec)) {
+      if (!talentMaxReached(probe, candidate.talentId, candidate.spec)) {
         chosenTalent = candidate;
         break;
       }
     }
   }
-  if (chosenTalent) addTalent(chosenTalent);
+  if (chosenTalent) addTalentRef(chosenTalent);
 
   // Signe astral (ADE II 3) : effet appliqué AUX ATTRIBUTS DE DÉPART (±carac) + Talents octroyés.
   // AVANT heroSoFar (careerSkillAdditions voit un « Maître artisan » du signe) et avant les effets
@@ -397,7 +402,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   // le spawn de créature bestiaire, #513).
   const speciesTraits: import('./statEntry').TraitList = sp.traits ?? [];
 
-  // Taille (LDB 85 p.342) — portée par `TalentData.size` (DATA-DRIVEN, jamais un id de talent
+  // Taille (LDB 85 l.344-354) — portée par `TalentData.size` (DATA-DRIVEN, jamais un id de talent
   // nommé dans le moteur, #572) : la plus grande catégorie parmi les talents résolus (espèce +
   // carrière + signe astral) ci-dessus, sinon Moyenne.
   const size = sizeFromTalents(talents.map((tt) => tt.talentId), (id) => findTalentById(id)?.size);
@@ -451,7 +456,8 @@ export function createHero(opts: CreateHeroOptions): Combatant {
 
   // Désignations des emplacements de carrière utilisés à la création (cf. careerSlots) :
   // compétences « (Au choix) » ayant reçu des augmentations + talent de carrière à choix.
-  // Résolution (nom → id) FAITE ICI, au bord authoring — careerSlots ne reçoit que du (id, spec).
+  // Les compétences arrivent en libellés concrets, résolus en (id, spec) par `skillIdByLabel` avant
+  // `designateSlot`, qui ne reçoit que des ids.
   const sSlots = skillSlots(levels, 1);
   const tSlots = talentSlots(levels, 1);
   for (const { raw, label } of advancedEntries) {
@@ -463,11 +469,18 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     }
   }
   if (chosenTalent) {
-    const { name, spec: rawSpec } = splitLabel(chosenTalent);
-    const talentOptionId = talentIdByLabel(name);
-    const spec = rawSpec != null ? resolveSpecId('talents', talentOptionId, rawSpec) : rawSpec;
-    const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerId), talentOptionId, spec);
-    if (slot) designateSlot(hero, opts.careerId, slot, talentOptionId, spec, [...sSlots, ...tSlots]);
+    const { talentId, spec } = chosenTalent;
+    const all = [...sSlots, ...tSlots];
+    const designations = designationsFor(hero, opts.careerId);
+    const statut = statutOuRefus(tSlots, designations, talentId, spec, all);
+    const quoi = `Talent de carrière « ${refKey(talentId, spec)} »`;
+    switch (statut) {
+      case 'free': designateSlot(hero, opts.careerId, freeSlotFor(tSlots, designations, talentId, spec)!, talentId, spec, all); break;
+      case 'explicit': case 'designated': break;
+      case 'absent': throw new Error(`${quoi} : absent du Niveau 1 de « ${opts.careerId} » (LDB 05 l.535).`);
+      case 'sansSpec': throw new Error(`${quoi} : l'emplacement « (Au choix) » du Niveau 1 de « ${opts.careerId} » exige une spécialisation (LDB 10 l.17).`);
+      case 'nonCouvert': throw new Error(`${quoi} : aucun emplacement libre du Niveau 1 de « ${opts.careerId} » ne couvre cette spécialisation.`);
+    }
   }
 
   recomputeLoadout(hero); // dérive weapons/armure/encombrement ; auto-génère le loadout par défaut (Mêlée/Distance)

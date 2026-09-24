@@ -2106,7 +2106,7 @@
     {
       "famille": "br-litteral",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/028 - Flattery, Bribery, and Status.md",
-      "ref": "status-and-social-standing#1 :: difficulty|action",
+      "ref": "example-difficulties-of-common-social-actions#1 :: difficulty|action",
       "occurrence": 1,
       "lot": "#1384 B2",
       "date": "2026-09-20",
@@ -2124,7 +2124,7 @@
     {
       "famille": "br-litteral",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/031 - Cunning Crafts.md",
-      "ref": "v-selection-of-poisons#1 :: name|source|resistance test|effect",
+      "ref": "selection-of-poisons#1 :: name|source|resistance test|effect",
       "occurrence": 1,
       "lot": "#1384 B2",
       "date": "2026-09-20",

@@ -206,13 +206,13 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
 export function entityRigProfile(
   name: string | undefined,
   seed: number,
-  opts?: { /** Graine POSÉE sur l'entité (`appearance.seed`) — l'emporte sur `seed` (instance) et sur le record. */
-    seed?: number; species?: string; tenue?: string; monster?: MonsterParts; features?: string[]; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; hairstyle?: string; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string };
+  /** L'apparence d'AUTEUR ENTIÈRE (`EntityAppearance`) — sa graine POSÉE l'emporte sur `seed` (instance)
+   *  et sur le record ; `armurePortee` pour une entité SANS record, repli sur `cd?.armurePortee` sinon. */
+  opts?: EntityAppearance & {
+    /** Arme d'authoring (`trappingId`, `SceneEntity.weapon`). */
+    weapon?: string;
     /** Profil de combat de l'entité (statbloc d'éditeur) → équipement affiché en explo, comme au combat. */
     traits?: TraitList; armour?: number;
-    /** Armure de statblock VISIBLE/portée (#774) — override d'authoring (`ent.appearance.armurePortee`)
-     *  pour une entité SANS record de bestiaire ; repli sur `cd?.armurePortee` (record) sinon. */
-    armurePortee?: boolean;
     /** L'entité est ENRÔLÉE dans une rencontre (membre d'un `EncounterDef`) : elle porte les ARMES que
      *  les traits de son record déclarent (parité avec le spawn `creatureToCombatant`). Non enrôlée (défaut
      *  `false`) : mains libres. */
@@ -264,10 +264,6 @@ export function entityRigProfileFor(ent: SceneEntity, enrolled?: boolean): Enemy
   if (import.meta.env?.DEV && !refName && !ent.appearance?.species)
     diagOnce(`rig:entite:${diagSubject() || ent.id}`, () => console.error(`[rig] entité « ${ent.id} » (${ent.label ?? 'sans libellé'}) : ni réf de créature ni Espèce — donnée de scène à corriger.`));
   return entityRigProfile(refName, hashSeed(ent.id), {
-    seed: ent.appearance?.seed, species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster,
-    features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors,
-    parts: ent.appearance?.parts, hairstyle: ent.appearance?.hairstyle, sex: ent.appearance?.sex, build: ent.appearance?.build,
-    eyes: ent.appearance?.eyes, traits: ent.statblock?.traits, armour: ent.statblock?.armour, enrolled,
-    armurePortee: ent.appearance?.armurePortee,
+    ...ent.appearance, weapon: ent.weapon, traits: ent.statblock?.traits, armour: ent.statblock?.armour, enrolled,
   });
 }

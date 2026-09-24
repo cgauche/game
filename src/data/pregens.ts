@@ -23,7 +23,8 @@ import { Money } from '../engine/money';
 import { makeRNG } from '../engine/dice';
 import { createHero } from '../engine/character';
 import { rollInitialWealth, parseStatus, pettySpellQuotaFor, fillPettySpellsToQuota } from '../engine/creation';
-import { findSpell, levelsForCareer, pregens, rigSpeciesId, trappingRefLabel } from './index';
+import { levelsForCareer, pregens, rigSpeciesId, trappingRefLabel } from './index';
+import type { RefDesignee } from './schemas/grammaire/ref';
 import type { Appearance } from '../gameIso/rig/appearance';
 
 export interface PregenDef {
@@ -42,11 +43,11 @@ export interface PregenDef {
   ambitionLong?: string;
   /** Âge (LDB 05 étape 6) — sinon laissé indéfini (pas de tirage moteur côté pré-tiré). */
   age?: number;
-  /** Talent de carrière CHOISI (libellé concret) — sans lui, `createHero` prend la 1re option
-   *  éligible du Niveau 1, qui n'est pas forcément le talent d'incantation requis (Magie mineure,
-   *  Béni…). */
-  careerTalent?: string;
-  /** Sorts de Magie mineure CHOISIS (libellés de `spells.json`, famille `mineure`) — n'a de sens que
+  /** Talent de carrière CHOISI : id de talent, et id de sa spécialisation s'il en porte une — sans
+   *  lui, `createHero` prend la 1re option éligible du Niveau 1, qui n'est pas forcément le talent
+   *  d'incantation requis (Magie mineure, Béni…). */
+  careerTalent?: RefDesignee;
+  /** Sorts de Magie mineure CHOISIS (ids de `spells.json`, famille `mineure`) — n'a de sens que
    *  si `careerTalent` porte le Talent Magie mineure. Complétés jusqu'au quota BFM exact (LDB 10
    *  l.714 : « vous mémorisez... un nombre de Sorts égal à votre Bonus de Force Mentale ») par des
    *  sorts mineurs supplémentaires — jamais moins que le quota, jamais un remplacement des sorts
@@ -68,19 +69,13 @@ export interface PregenDef {
  *  engine) — APPEND uniquement : les Bénédictions du Talent Béni, déjà octroyées par
  *  `applyTalentAcquisition` dans `createHero`, ne sont JAMAIS écrasées. */
 function buildPregenHero(d: PregenDef): Combatant {
-  const authoredIds = (d.pettySpells ?? []).map((label) => {
-    const sp = findSpell(label);
-    if (!sp || sp.family !== 'mineure') {
-      throw new Error(`Pré-tiré « ${d.label} » : « ${label} » n'est pas un sort de Magie mineure valide (LDB 10 l.714).`);
-    }
-    return sp.id;
-  });
+  const authoredIds = d.pettySpells ?? [];
   const hero = createHero({
     speciesId: d.species,
     careerId: d.career,
     label: d.label,
     id: `pregen-${d.seed}`,
-    careerTalent: d.careerTalent,
+    careerTalent: d.careerTalent && { talentId: d.careerTalent.id, spec: d.careerTalent.spec },
     trappingChoices: d.weaponChoice ? { [trappingRefLabel({ wildcard: 'arme' })]: d.weaponChoice } : undefined,
     details: {
       age: d.age,

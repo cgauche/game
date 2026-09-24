@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { rosterLoad, rosterAdd, rosterRemove, rosterUpdate, rosterExport, rosterImport, RosterEntry } from './roster';
 import { Combatant } from '../engine/types';
 import { skillBaseValue } from '../engine/skills';
+import { findSpellById } from '../data';
+import { SORTS_FUSIONNES_1897 } from '../data/sortsFusionnes';
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
 function fakeStorage(): Storage {
@@ -239,5 +241,79 @@ describe('roster — remap `skillId`→`id` des Compétences persistées (#1548 
     expect((un[0].hero.skills as unknown as Record<string, unknown>[])[0]).toEqual({ id: 'resistance', characteristic: 'endurance', advances: 20 });
     rosterAdd(un[0]); // ré-écrit puis relit : 2e passage
     expect(rosterLoad()[0].hero.skills).toEqual(un[0].hero.skills);
+  });
+});
+
+/** #1897 : 54 ids de sort du livre fan sont FUSIONNÉS dans l'entrée qui les double (`SORTS_FUSIONNES_1897`).
+ *  Un héros exporté ou gardé au roster avant le lot porte l'ancien id : aux DEUX canaux il désigne
+ *  l'entrée absorbante, jamais un sort que `findSpellById` ne résout plus. */
+describe('roster — ids de sort FUSIONNÉS remappés (#1897, les DEUX canaux)', () => {
+  const heros = (id: string) => ({ id, label: 'Apprenti d’avant le lot', kind: 'hero', spells: ['alarme', 'alerte', 'flamme', 'choc'], skills: [], talents: [] });
+
+  beforeEach(() => {
+    (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
+  });
+  afterEach(() => {
+    delete (globalThis as { localStorage?: Storage }).localStorage;
+  });
+
+  it('(a) un export v4 CHARGE avec ses sorts vivants, dédoublonnés à la fusion', () => {
+    const res = rosterImport(JSON.stringify({ kind: 'wfrp4-hero', v: 4, hero: heros('h-export'), wealth: { gold: 0, silver: 0, brass: 0 } }));
+    expect(res.error).toBeUndefined();
+    expect(res.entry!.hero.spells).toEqual(['alerte', 'flamme-magique', 'choc']);
+    expect(res.entry!.hero.spells!.every((id) => findSpellById(id))).toBe(true);
+  });
+
+  it('(b) une entrée localStorage d’avant le lot est remappée à la lecture, et une 2ᵉ lecture ne change rien', () => {
+    localStorage.setItem('wfrp4.roster.v1', JSON.stringify([{ hero: heros('h-prelot'), wealth: { gold: 0, silver: 0, brass: 0 } }]));
+    const un = rosterLoad();
+    expect(un[0].hero.spells).toEqual(['alerte', 'flamme-magique', 'choc']);
+    rosterAdd(un[0]);
+    expect(rosterLoad()[0].hero.spells).toEqual(['alerte', 'flamme-magique', 'choc']);
+  });
+
+  /** Toutes les places d'un id de sort dans un héros (`Combatant`, `src/engine/types.ts`), chacune
+   *  garnie d'un id FUSIONNÉ ; à côté, des chaînes HOMONYMES hors place de sort (`bouclier` objet,
+   *  case d'objet `q-objet-bouclier`) qui doivent traverser intactes. */
+  const heroAToutesLesPlaces = (id: string) => ({
+    id, label: 'Sorcier d’avant le lot', kind: 'hero', skills: [], talents: [],
+    spells: ['alarme', 'projectile'],
+    componentSpells: ['projectile'],
+    focus: { spell: 'projectile', dr: 2 },
+    ritual: { spellId: 'alarme', drDone: 0, drTarget: 3 },
+    dispel: { spellId: 'alarme', spellCasterId: 'x', total: 1 },
+    summon: { byId: 'x', spellId: 'nuee' },
+    activeEffects: [{ id: 'e', sourceSpellId: 'soins', spell: { spellId: 'soins', ni: 0, casterId: id, label: 'Soins' } }],
+    barre: { capacites: { 0: { actionId: 'lancer-sort', cle: 'sort-projectile' }, 1: { actionId: 'objet', cle: 'q-objet-bouclier' } } },
+    items: [{ trappingId: 'bouclier' }],
+  });
+  const FUSIONNES = Object.keys(SORTS_FUSIONNES_1897).join('|');
+  /** Les ids fusionnés qui SURVIVENT dans le héros sérialisé, à une place de sort (`sort-` compris). */
+  const survivants = (hero: unknown): string[] =>
+    JSON.stringify(hero).match(new RegExp(`"(?:sort-)?(?:${FUSIONNES})"`, 'g'))?.filter((m) => m !== '"bouclier"') ?? [];
+  const attendu = {
+    spells: ['alerte', 'carreau'],
+    componentSpells: ['carreau'],
+    focus: { spell: 'carreau', dr: 2 },
+    ritual: { spellId: 'alerte', drDone: 0, drTarget: 3 },
+    dispel: { spellId: 'alerte', spellCasterId: 'x', total: 1 },
+    summon: { byId: 'x', spellId: 'menace-rampante' },
+    activeEffects: [{ id: 'e', sourceSpellId: 'benediction-de-guerison', spell: { spellId: 'benediction-de-guerison', ni: 0, casterId: 'h', label: 'Soins' } }],
+    barre: { capacites: { 0: { actionId: 'lancer-sort', cle: 'sort-carreau' }, 1: { actionId: 'objet', cle: 'q-objet-bouclier' } } },
+    items: [{ trappingId: 'bouclier' }],
+  };
+
+  it('(c) un export v4 : AUCUN id fusionné ne survit, à aucune place de sort du héros ; les homonymes hors place traversent', () => {
+    const res = rosterImport(JSON.stringify({ kind: 'wfrp4-hero', v: 4, hero: heroAToutesLesPlaces('h'), wealth: { gold: 0, silver: 0, brass: 0 } }));
+    expect(res.error).toBeUndefined();
+    expect(survivants(res.entry!.hero)).toEqual([]);
+    expect(res.entry!.hero).toMatchObject(attendu);
+  });
+
+  it('(d) le repli `rosterLoad` : AUCUN id fusionné ne survit, à aucune place de sort du héros', () => {
+    localStorage.setItem('wfrp4.roster.v1', JSON.stringify([{ hero: heroAToutesLesPlaces('h'), wealth: { gold: 0, silver: 0, brass: 0 } }]));
+    const [entree] = rosterLoad();
+    expect(survivants(entree.hero)).toEqual([]);
+    expect(entree.hero).toMatchObject(attendu);
   });
 });

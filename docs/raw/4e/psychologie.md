@@ -155,7 +155,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Peur (Indice), État Brisé (`etats.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.54-56) → `nightmare`, `terreur`, `calme-d-approche`, `resolvePsychRow`, `endEncounterPsych`, `resolvePsychAI`, `humanizePerSL`, `amour`, `camaraderie`, `phobie`, +7 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
+- `LDB 21` (l.54-56) → `nightmare`, `terreur`, `resolvePsychRow`, `endEncounterPsych`, `resolvePsychAI`, `humanizePerSL`, `amour`, `camaraderie`, `phobie`, `failConditionAmount`, +6 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
 
 ---
 
@@ -212,7 +212,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Talent Haine (Groupe)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.37-39, l.41) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `fearSourceFor`, `psychImmuneToFrom`, `terreur`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `calme-d-approche`, +39 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +22 fichiers
+- `LDB 21` (l.37-39, l.41) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `fearSourceFor`, `psychImmuneToFrom`, `terreur`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, +38 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +22 fichiers
 
 ---
 
@@ -232,7 +232,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.43-50` — définition, succès/échec, comportement obligatoire, conditions de fin
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.43-50) → `hasMeaningfulOption`, `nightmare`, `fearSourceFor`, `psychImmuneToFrom`, `terreur`, `availableFreeAttackOps`, `calme-d-approche`, `Condition`, `resolvePsychRow`, `endEncounterPsych`, +27 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +15 fichiers
+- `LDB 21` (l.43-50) → `hasMeaningfulOption`, `nightmare`, `fearSourceFor`, `psychImmuneToFrom`, `terreur`, `availableFreeAttackOps`, `Condition`, `resolvePsychRow`, `endEncounterPsych`, `resolvePsychAI`, +26 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +15 fichiers
 
 ---
 
@@ -254,7 +254,7 @@ Reflète une très forte relation émotionnelle (romantique, familiale, amitié 
 - `LDB 21 l.73-77` — définition et effets
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.73-77) → `encounterPsych`, `nightmare`, `fearSourceFor`, `terreur`, `refreshDefendedPsych`, `calme-d-approche`, `targetCausesEntries`, `targetCausedSourcesFor`, `targetCausedTrigger`, `aaBleedUnconsciousApply`, +9 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/encounterPsych.ts`, +4 fichiers
+- `LDB 21` (l.73-77) → `encounterPsych`, `nightmare`, `fearSourceFor`, `terreur`, `refreshDefendedPsych`, `targetCausesEntries`, `targetCausedSourcesFor`, `targetCausedTrigger`, `aaBleedUnconsciousApply`, `amour`, +8 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/encounterPsych.ts`, +4 fichiers
 
 ---
 
@@ -270,7 +270,7 @@ Sentiments positifs envers un groupe d'individus.
 - `LDB 21 l.79-83` — définition et effets
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.79-83) → `encounterPsych`, `nightmare`, `fearSourceFor`, `terreur`, `refreshDefendedPsych`, `calme-d-approche`, `targetCausesEntries`, `targetCausedSourcesFor`, `targetCausedTrigger`, `aaBleedUnconsciousApply`, +9 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/encounterPsych.ts`, +4 fichiers
+- `LDB 21` (l.79-83) → `encounterPsych`, `nightmare`, `fearSourceFor`, `terreur`, `refreshDefendedPsych`, `targetCausesEntries`, `targetCausedSourcesFor`, `targetCausedTrigger`, `aaBleedUnconsciousApply`, `amour`, +8 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/encounterPsych.ts`, +4 fichiers
 
 ---
 
@@ -284,7 +284,7 @@ Peur spécifique envers un Type de créature, un objet ou une situation.
 - `LDB 21 l.85-89` — définition ; traitement comme Peur 1
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.85-89) → `encounterPsych`, `nightmare`, `combat-psych`, `fearSourceFor`, `encounter-psych`, `needsRecoveryRoll`, `terreur`, `refreshDefendedPsych`, `calme-d-approche`, `targetCausesEntries`, +21 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +12 fichiers
+- `LDB 21` (l.85-89) → `encounterPsych`, `nightmare`, `combat-psych`, `fearSourceFor`, `encounter-psych`, `needsRecoveryRoll`, `terreur`, `refreshDefendedPsych`, `targetCausesEntries`, `restRecovery`, +20 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +12 fichiers
 
 ---
 
@@ -301,7 +301,7 @@ Conséquence d'une expérience traumatisante. Peut se manifester de diverses fa�
 
 **Voir aussi** : `src/data/traumatisme.md` (`traumatisme.md` pour les Blessures Critiques)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.91-95) → `encounterPsych`, `nightmare`, `combat-psych`, `fearSourceFor`, `encounter-psych`, `needsRecoveryRoll`, `terreur`, `calme-d-approche`, `targetCausesEntries`, `restRecovery`, +17 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +10 fichiers
+- `LDB 21` (l.91-95) → `encounterPsych`, `nightmare`, `combat-psych`, `fearSourceFor`, `encounter-psych`, `needsRecoveryRoll`, `terreur`, `targetCausesEntries`, `restRecovery`, `targetCausedSourcesFor`, +16 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, +10 fichiers
 
 ---
 
@@ -326,7 +326,7 @@ L'immunité est conditionnelle : elle ne s'applique que si la créature a **plus
 **Sources RAW** : `LDB 85 l.51` — condition d'immunité
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.23, l.51) → `a-distance`, `arme`, `a-sang-froid`, `affame`, `amphibie`, `caudale`, `weaponFromTrait`, `cornes`, `FreeAttackHook`, `animosite`, +27 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`, `src/state/combat/triggeredTest.ts`, +4 fichiers
+- `LDB 85` (l.23, l.51) → `TraitDef`, `a-distance`, `arme`, `a-sang-froid`, `affame`, `amphibie`, `caudale`, `weaponFromTrait`, `cornes`, `FreeAttackHook`, +32 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`, `src/engine/traits/dispatch.ts`, +8 fichiers
 
 ---
 
@@ -349,7 +349,7 @@ Applique exactement les mêmes règles que la Frénésie des personnages (sectio
 **Sources RAW** : `LDB 85 l.150` — renvoi LDB 21
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.122, l.150) → `scene`, `planClimb`, `scenario`, `TraverseCapability`, `maxWounds`, `moveEnv`, `EnemyTurnInput`, `effectiveMaxWounds`, `SpawnExtras`, `etreinte-glaciale`, +32 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/psychology.ts`, +9 fichiers
+- `LDB 85` (l.122, l.150) → `TraitDef`, `scene`, `planClimb`, `scenario`, `TraverseCapability`, `maxWounds`, `spawnMutations`, `moveEnv`, `EnemyTurnInput`, `effectiveMaxWounds`, +40 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/ops.ts`, +11 fichiers
 
 ---
 
@@ -373,7 +373,7 @@ La créature ignore **toutes** les règles de Psychologie sans Test.
 - `LDB 85 l.178-179` — définition
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.166, l.178-180) → `scene`, `planClimb`, `morsure`, `scenario`, `TraverseCapability`, `Formula`, `moveEnv`, `EnemyTurnInput`, `Condition`, `langue-prehensile`, +55 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +12 fichiers
+- `LDB 85` (l.166, l.178-180) → `TraitDef`, `scene`, `planClimb`, `morsure`, `scenario`, `TraverseCapability`, `spawnMutations`, `Formula`, `moveEnv`, `EnemyTurnInput`, +59 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +15 fichiers
 
 ---
 
@@ -396,7 +396,7 @@ La créature cause la Peur (Indice) aux adversaires. Applique les règles de Peu
 **Sources RAW** : `LDB 85 l.266` — renvoi LDB 21 + Indice défini dans le statbloc
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.253, l.266) → `morsure`, `StatblockEditor`, `applySwarmBuild`, `doc`, `resolvePsychAI`, `langue-prehensile`, `creatureToCombatant`, `statblockToCombatant`, `regard-petrifiant`, `souffle-feu`, +48 — `src/data/maneuvers.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/traits/dispatch.ts`, +7 fichiers
+- `LDB 85` (l.253, l.266) → `TraitDef`, `morsure`, `StatblockEditor`, `applySwarmBuild`, `spawnMutations`, `doc`, `resolvePsychAI`, `langue-prehensile`, `creatureToCombatant`, `traitAuras`, +54 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +10 fichiers
 
 ---
 
@@ -448,7 +448,7 @@ Les créatures agressives de grande Taille inspirent automatiquement Peur ou Ter
 - `LDB 85 l.382-383` — règle Peur/Terreur par Taille
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.274, l.282, l.382-384) → `StatblockEditor`, `cannotStopOn`, `markAttacked`, `agressifEnvers`, `seuilsDeSauvegarde`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `toucheSauvee`, `displaceSmaller`, +52 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, +17 fichiers
+- `LDB 85` (l.274, l.282, l.382-384) → `TraitDef`, `StatblockEditor`, `cannotStopOn`, `markAttacked`, `agressifEnvers`, `seuilsDeSauvegarde`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `toucheSauvee`, +54 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, +19 fichiers
 
 ---
 
@@ -461,7 +461,7 @@ Un Test de FM raté est relu avec ses chiffres inversés (ex. 91 → 19) ; si le
 **Sources RAW** : `LDB 85 l.13`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.13) → `a-distance`, `arme`, `a-sang-froid`, `affame`, `creatureWeapon`, `amphibie`, `caudale`, `cornes`, `animosite`, `arboricole`, +14 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`
+- `LDB 85` (l.13) → `TraitDef`, `a-distance`, `arme`, `a-sang-froid`, `affame`, `creatureWeapon`, `amphibie`, `caudale`, `cornes`, `animosite`, +16 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`, `src/engine/traits/dispatch.ts`, `src/engine/traits/types.ts`
 
 ---
 
@@ -504,7 +504,7 @@ Confère la capacité d'entrer en Frénésie (idem trait de créature Frénésie
 **Sources RAW** : `LDB 10 l.506`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.255, l.398, l.506) → `distraire-roll`, `distraire`, `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `costaud`, `coude-a-coude`, +39 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`, `src/state/combatFlow.ts`
+- `LDB 10` (l.255, l.398, l.506) → `distraire-roll`, `distraire`, `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `costaud`, `coude-a-coude`, +40 — `src/data/actions.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/skills.json`, `src/data/talents.json`, `src/engine/flowCore.ts`, +1 fichiers
 
 ---
 
@@ -539,7 +539,7 @@ Exemples de groupes : hommes-bêtes, peaux-vertes, monstres, hors-la-loi, sigmar
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.548, l.1051) → `fearImmuneVs`, `fearSourceFor`, `CombatFeature`, `resolvePsychAI`, `sansPeurVs`, `resolvePeurTest`, `resolveTerreurTest`, `CascadeStepMeta`, `frappe-assommante`, `frappe-blessante`, +22 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/psychology.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`, +1 fichiers
-- `LDB 21` (l.37-39) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `fearSourceFor`, `psychImmuneToFrom`, `terreur`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `calme-d-approche`, +39 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +22 fichiers
+- `LDB 21` (l.37-39) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `fearSourceFor`, `psychImmuneToFrom`, `terreur`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, +38 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +22 fichiers
 
 ---
 
@@ -611,8 +611,8 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.1051) → `fearImmuneVs`, `fearSourceFor`, `CombatFeature`, `resolvePsychAI`, `sansPeurVs`, `resolvePeurTest`, `resolveTerreurTest`, `CascadeStepMeta`, `robuste`, `sans-peur`, +8 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/psychology.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`, +1 fichiers
 - `LDB 17` (l.59) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `sourceSuspended`, `CorruptionModal`, `ForcedRollPicker`, `suspendSource`, `forceCrewRole`, +96 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/etats.ts`, `src/engine/combat.ts`, +50 fichiers
-- `LDB 21` (l.5-95) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `encounterPsych`, `nightmare`, `PsychAffliction`, `combat-psych`, `fearSourceFor`, `opRow`, `encounter-psych`, +78 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +34 fichiers
-- `LDB 85` (l.178-179, l.382-383) → `morsure`, `cannotStopOn`, `markAttacked`, `agressifEnvers`, `Formula`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, `Condition`, +67 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +16 fichiers
+- `LDB 21` (l.5-95) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `encounterPsych`, `nightmare`, `PsychAffliction`, `combat-psych`, `fearSourceFor`, `opRow`, `encounter-psych`, +77 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +34 fichiers
+- `LDB 85` (l.178-179, l.382-383) → `TraitDef`, `morsure`, `cannotStopOn`, `markAttacked`, `agressifEnvers`, `spawnMutations`, `Formula`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, +70 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +19 fichiers
 
 ---
 

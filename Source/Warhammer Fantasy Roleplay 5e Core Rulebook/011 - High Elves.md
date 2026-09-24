@@ -58,7 +58,7 @@ Copper Blond, Red Blond, Auburn, Red, Black
 
 Take six Advances (+30) in both the Language (Elthárin) and Language (Reikspiel) Skills
 
-II **Starting Skills** Add one Advance (+5) to any five of the following Skills: Cool, Entertain (Sing), Evaluate, Leadership, Melee (Basic), Navigation, Perception, Play (any one), Ranged (Bow), Sail, Swim
+**Starting Skills** Add one Advance (+5) to any five of the following Skills: Cool, Entertain (Sing), Evaluate, Leadership, Melee (Basic), Navigation, Perception, Play (any one), Ranged (Bow), Sail, Swim
 
 #### **Starting Talents**
 

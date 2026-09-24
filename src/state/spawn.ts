@@ -5,7 +5,7 @@
 import { Combatant, Characteristics, CHAR_KEYS, BodyShape, SkillInstance, TalentInstance, type AuthoredShipPoste, type NavalTraitRef } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
 import { isOptionalNote, type TraitInstance, type TraitList, type OptionalEntry, type OptionalSwap } from '../engine/statEntry';
-import { findCreatureById, byId, findTalentById, findSpellById, findVehicleById, findTrappingById, specPoolOf, CreatureData, type SkillData, type SkillRef, type TalentRef } from '../data';
+import { findCreatureById, byId, findTalentById, findVehicleById, findTrappingById, specPoolOf, CreatureData, type SkillData, type SkillRef, type TalentRef } from '../data';
 import { vehicleCombatant } from '../engine/vehicle';
 import { inanimateCombatant } from '../engine/inanimate';
 import { hullArmourBonus, hullNavalTraits } from '../engine/navalTraits';
@@ -37,8 +37,8 @@ export function placeCombatant(c: { pos?: { x: number; y: number; z?: number; h?
   const z = p.z ?? 0;
   const h = scene ? heightAt(scene, p.x, p.y, z) : 0;
   c.pos = { x: p.x, y: p.y, ...(z ? { z } : {}), ...(h ? { h } : {}) };
-  // Drapeau POSITIONNEL « hors de son terrain » (op passive `offTerrainMod` — Créature marine MDG 16 p.140 /
-  // Aquatique MSRC 15 p.90) : re-dérivé à CHAQUE placement (chokepoint UNIQUE du positionnement). Un porteur
+  // Drapeau POSITIONNEL « hors de son terrain » (op passive `offTerrainMod` — Créature marine MDG 16 l.17 /
+  // Aquatique MSRC 15 l.139) : re-dérivé à CHAQUE placement (chokepoint UNIQUE du positionnement). Un porteur
   // dont la case n'est pas de son terrain d'élection (`eau`) subit mSet/testDR ; sans passif, no-op.
   const req = c.traits ? requiredTerrains(c as Combatant) : [];
   if (req.length) c.offTerrain = !req.includes(tileAt2(scene ?? null, p.x, p.y, z));
@@ -52,7 +52,7 @@ function tileAt2(scene: Scene | null, x: number, y: number, z: number): string {
   return scene ? tileAt(scene, x, y, z) : terrainAbsent();
 }
 
-/** Forme du corps d'un Combattant (Tableau de Localisation, LDB 76 p.312) : dérivée de l'ESPÈCE du record
+/** Forme du corps d'un Combattant (Tableau de Localisation, LDB 76 l.15-29) : dérivée de l'ESPÈCE du record
  *  (donnée neutre `bodyShapeForSpecies`), plus du registre de rendu du rig (#187). Une Nuée retombe sur
  *  la table par défaut. Une créature sans espèce, un statbloc (nom hors bestiaire) → humanoïde. */
 export function bodyShapeOf(id: string): BodyShape {
@@ -97,7 +97,7 @@ function applySwarmBuild(chars: Characteristics, wounds: number): { chars: Chara
   return { chars, wounds: wounds * 5 };
 }
 
-/** Mutation / Corruption mentale (LDB 85 p.339-340) : tirage sur les Tableaux des Corruptions au
+/** Mutation / Corruption mentale (LDB 85 l.92/245) : tirage sur les Tableaux des Corruptions au
  *  spawn — graine STABLE dérivée de l'id (déterministe, rejouable). */
 function spawnMutations(traits: TraitList | undefined, id: string) {
   const specs = mutationsAtSpawn(traits);
@@ -178,7 +178,7 @@ export interface SpawnExtras {
   /** OPTIONNELS choisis (LDB 76 l.45) : `TraitInstance` ordinaires (fusionnés avant dérivation) OU
    *  NOTES composées (joker « tous les traits », variante « swap » qui RETIRE des Traits + octroie un bonus). */
   optionals?: OptionalEntry[];
-  /** Sorts connus (la donnée bestiaire n'en liste pas — choix d'auteur). */
+  /** Sorts connus choisis par l'auteur (`combat.spells`) — priment sur ceux de la créature. */
   spells?: string[];
   /** Caractéristiques aléatoires (LDB 77 l.108). */
   randomChars?: boolean;
@@ -199,7 +199,7 @@ export interface SpawnExtras {
   upgrades?: NavalTraitRef[];
   /** Compétences d'AUTEUR ajoutées (réfs `SkillRef` : id + valeur de Test imprimée) — FUSIONNÉES par-dessus
    *  celles du bestiaire au spawn. Qualifie p.ex. un servant de pièce pour le Groupe de Projectiles APPROPRIÉ
-   *  à son engin (AA 10 p.122 l.3900 : sans cette Compétence, il n'est « pas un membre de l'équipe », l.3923). */
+   *  à son engin (AA 10 l.230 : sans cette Compétence, il n'est « pas un membre de l'équipe », AA 10 l.253). */
   skills?: SkillRef[];
 }
 
@@ -234,7 +234,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   for (const g of swapGrants) if ('char' in g) chars[g.char] += g.value;
   // Compétences/talents de la donnée (PNJ nommés : Eusapia, Horreurs…) — avances dérivées du profil IMPRIMÉ.
   // + compétences d'AUTEUR ajoutées (extras.skills : qualifier un servant de pièce pour le Groupe de
-  // Projectiles de son engin, AA 10 p.122-124).
+  // Projectiles de son engin, AA 10 l.142-146).
   const bookSkills = [...skillsFromBook(creature.skills, chars, `spec:${id}`), ...skillsFromBook(extras?.skills, chars, `spec:auteur:${id}`)];
   // Compétences octroyées par une variante « swap » (ZI, Vouivre : Discrétion (Rurale) 65) — dérivées
   // PLUS BAS, sur le profil FINAL (après Taille facultative éventuelle) : la valeur de Test IMPRIMÉE par
@@ -287,17 +287,16 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     weapons: weaponsFromTraits(traits),
     armour: armourFromTraits(traits),
     size,
-    bodyShape: bodyShapeOf(creature.id), // Tableau de Localisation par forme du corps (LDB p.312)
+    bodyShape: bodyShapeOf(creature.id), // Tableau de Localisation par forme du corps (LDB 76 l.15-29)
     ...(creature.followsCharacterRules ? { followsCharacterRules: true } : {}), // #152 : bestiaire HUMAIN rétro-flagué (CreatureData) — même prédicat unique que statblockToCombatant (#143)
     ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (LDB 85 l.253)
-    ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
+    ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 l.142)
     ...spawnMutations(traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
     // Sorts : ceux de la DONNÉE (PNJ nommés — Eusapia en a 12), surchargés par le choix d'auteur.
-    // Combatant.spells = IDS de sort (runtime) : créature = ids des refs ; choix d'auteur = ids (filtrés valides).
-    ...(extras?.spells?.length
-      ? { spells: extras.spells.filter((id) => !!findSpellById(id)) }
-      : creature.spells.length ? { spells: creature.spells.map((s) => s.id) } : {}),
+    // Combatant.spells = IDS de sort, prouvés par le schéma de scène (`refs('spell')`) : au parse, et à
+    // `validateScene` pour une scène vivante de l'éditeur.
+    ...(extras?.spells?.length ? { spells: extras.spells } : creature.spells.length ? { spells: creature.spells } : {}),
     groups: groupsFor({ extras: creature.grantGroups, traits, talents }), // Groupes DÉCLARÉS par l'entrée (`grantGroups` : catégorie + dieu du Chaos) + Traits (`capabilities.grantGroups`) + culte (Talent de Prière, P3)
     traits, // conservés (facultatifs inclus) → attaques gratuites de créature en combat
     skills,
@@ -331,7 +330,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   // Blessures sur le profil INCLUANT les traits (Coriace +E…) ; `characteristics` ne garde que la base saisie.
   const charsEff = withTraitChars(chars, traits);
   let wounds = typeof sb.char.B === 'number' && !rolled ? (sb.char.B as number) : maxWounds(charsEff, size, traits);
-  // Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures (sur la formule — un B explicite du
+  // Endurant (LDB 85 l.130) : +Bonus d'Endurance Blessures (sur la formule — un B explicite du
   // statbloc est réputé final, comme au bestiaire).
   if ((typeof sb.char.B !== 'number' || rolled) && traitBonusWoundsBE(traits)) wounds += Math.floor(charsEff.endurance / 10);
   const swarm = isSwarm(traits);
@@ -351,14 +350,14 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     weapons: traits.length ? weaponsFromTraits(traits) : [buildWeapon({ label: 'Arme', damage: { literal: sb.weaponDamage ?? '+BF' } })], // uid universel
     armour: emptyArmour(sb.armour ?? 0),
     size,
-    bodyShape: swarm ? 'humanoide' : bodyShapeForSpecies(appearance?.species), // Tableau de Localisation (LDB p.312) — espèce AUTHORÉE (id, jamais sb.label), Nuée force 'humanoide' (#814 : divergence possible avec `bodyShapeOf` sur un preset de campagne fusionnant Nuée hors registre global)
+    bodyShape: swarm ? 'humanoide' : bodyShapeForSpecies(appearance?.species), // Tableau de Localisation (LDB 76 l.15-29) — espèce AUTHORÉE (id, jamais sb.label), Nuée force 'humanoide' (#814 : divergence possible avec `bodyShapeOf` sur un preset de campagne fusionnant Nuée hors registre global)
     ...(sb.inert ? { inert: true } : {}), // affût inerte servi (AA/MDG 12) : ciblable, sans réaction de combat ni tour
     ...(sb.followsCharacterRules ? { followsCharacterRules: true } : {}), // #143 : PNJ humain hostile MODÉLISÉ (Corruption/composant/maladie de personnage)
     ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (LDB 85 l.253)
-    ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)
+    ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 l.142)
     ...spawnMutations(traits, id), // Mutation / Corruption mentale : tirage au spawn (LDB 85)
-    ...(sb.spells?.length ? { spells: sb.spells.filter((id) => !!findSpellById(id)) } : {}), // ids d'auteur (filtrés valides)
+    ...(sb.spells?.length ? { spells: sb.spells } : {}), // ids d'auteur, prouvés par le schéma de scène (`refs('spell')`) : au parse, et à `validateScene` pour une scène vivante
     groups: groupsFor({ extras: sb.groups, traits, talents }), // extras manuels (déjà des ids) + traits (Mort-vivant…) + religieux (Talent Béni) — espèce/carrière non portées par le statbloc (P3)
     traits, // structurés → attaques gratuites + lecture sans re-parsing
     skills,
@@ -408,7 +407,7 @@ export function spawnEnemy(
     c.kind = 'enemy';
     c.pos = { ...pos };
   } else {
-    // Engin de siège (AA 10 p.122-123) : affût INERTE non-destructible (RAW : pas de Blessures), servi par son
+    // Engin de siège (AA 10 l.175-193) : affût INERTE non-destructible (RAW : pas de Blessures), servi par son
     // équipage. Neutralisé en tuant l'équipage, pas en le détruisant. Son espèce de rendu est DÉRIVÉE de la
     // `ref` (l'art d'affût `siegeRig` du trapping) → plus aucun `appearance.species` forcé à l'authoring.
     // Dernière branche du faisceau : `refEntiteResolue` a déjà écarté créature et coque au-dessus.
@@ -438,9 +437,7 @@ export function spawnEnemy(
   // rendu dérivé du nom inchangé.
   const a = opts?.appearance;
   if (a?.species) c.species = a.species; // espèce/race d'auteur → rig en combat comme en exploration
-  if (a && (a.species || a.monster || a.features || a.colors || a.parts || a.eyes || a.sex || a.build !== undefined || a.seed !== undefined || a.armurePortee !== undefined)) {
-    c.appearanceOverride = a;
-  }
+  if (a && Object.values(a).some((v) => v !== undefined)) c.appearanceOverride = a;
   // Tenue éditée (libellé) → portée par le rig (via Combatant.career, qui sert de tenue) en
   // combat comme en exploration.
   if (a?.tenue) c.career = a.tenue;

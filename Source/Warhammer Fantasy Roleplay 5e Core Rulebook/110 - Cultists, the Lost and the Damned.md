@@ -65,8 +65,6 @@ Strength of Minor **Mutation:** Roll on the **Physical Corruption Table**
 
 *Any Creature Traits the GM feels appropriate*
 
-347
-
 # **Chaos Warrior**
 
 Heavily armoured hulking brutes adorned with ornate spikes and eye-watering symbols of their gods, chaos warriors can barely be considered human. Nothing is left of their former lives; they exist to serve their dark patrons and nothing more. While most chaos warriors are exalted marauders from lands far to the north, a select few cultists may be gifted a prize of Chaos Armour by the Dark Gods, affording them great power at the cost of never removing the armour for as long as they live. Since few warriors are their better, and no knight better protected, their lives are often very long indeed.

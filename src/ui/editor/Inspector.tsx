@@ -22,6 +22,7 @@ import { hashSeed } from '../../engine/dice';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { tokenBodyKind } from '../../gameIso/tokenBodyKind';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
+import { coiffureRetombee } from '../../gameIso/rig/parts/cosmetic';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { buildingsMeta } from '../../state/buildings';
 import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
@@ -65,6 +66,7 @@ import { LayerField, LayerChip, sceneLayerZs } from './LayerField';
 import { estCardinal, type Dir8 } from '../../state/dir8';
 import { propFootTiles } from '../../state/footprint';
 import { Row, Stack } from '../Layout';
+import { CAP_IDENTITE_PROP } from '../../data/props.types';
 
 /** Caps OFFERTS au sélecteur d'orientation, dans l'ordre horaire de `DIR8_ORDER` : les huit pour une
  *  entité ordinaire, les quatre CARDINAUX pour un décor volumique (`Dir4`, #1680 ligne 3). Un seul
@@ -1278,6 +1280,30 @@ function EmpreinteDeLInstance({ scene, ent }: { scene: Scene; ent: SceneEntity }
   );
 }
 
+/**
+ * ORIENTATION d'une entité. Un décor VOLUMIQUE n'a que les quatre cardinaux À OFFRIR (#1509, #1680
+ * ligne 3) ; source de la règle : le CATALOGUE (`refEstVolumique`), la même que lit le schéma de scène
+ * au parse et `validateScene` à l'écran. Un cap que la donnée porte HORS de l'offre se MONTRE en option
+ * non élisible, comme l'état de `SelecteurDeDecor` : sans elle, le DOM afficherait la première option
+ * comme si c'était le cap de l'instance, et la choisir n'émettrait aucun `change`.
+ */
+function SelecteurDOrientation({ ent, updateSel }: { ent: SceneEntity; updateSel: (patch: Partial<SceneEntity>) => void }) {
+  const offerts = refEstVolumique(ent.ref) && ent.kind === 'prop' ? CAPS_OFFERTS_CARDINAUX : CAPS_OFFERTS;
+  const cap = ent.facing ?? CAP_IDENTITE_PROP;
+  const horsOffre = offerts.some(([c]) => c === cap) ? null : CAPS_OFFERTS.find(([c]) => c === cap);
+  return (
+    <label className="ed-field">
+      Orientation
+      <select value={cap} onChange={(e) => updateSel({ facing: e.target.value as SceneEntity['facing'] })}>
+        {horsOffre && <option value={cap} disabled>{horsOffre[1]} — refusé pour ce décor</option>}
+        {offerts.map(([c, libelle]) => (
+          <option key={c} value={c}>{libelle}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 /** Panneau d'une ENTITÉ sélectionnée (personnage / décor / départ héros). */
 function EntityPanel({
   ent,
@@ -1319,19 +1345,7 @@ function EntityPanel({
           Libellé
           <input value={ent.label ?? ''} onChange={(e) => updateSel({ label: e.target.value })} />
         </label>
-        <label className="ed-field">
-          Orientation
-          {/* Un décor VOLUMIQUE n'a que les quatre cardinaux À OFFRIR : sa recette tourne là où son
-              empreinte solide ne tourne pas (#1509), et une diagonale poserait son corps en travers
-              de cases restées traversables. Le geste n'a donc pas à être réparé après coup — il
-              n'est pas proposable. Source de la règle : le CATALOGUE (`refEstVolumique`), la même
-              que lit le schéma de scène au parse et `validateScene` à l'écran. */}
-          <select value={ent.facing ?? 'S'} onChange={(e) => updateSel({ facing: e.target.value as SceneEntity['facing'] })}>
-            {(refEstVolumique(ent.ref) && ent.kind === 'prop' ? CAPS_OFFERTS_CARDINAUX : CAPS_OFFERTS).map(([cap, libelle]) => (
-              <option key={cap} value={cap}>{libelle}</option>
-            ))}
-          </select>
-        </label>
+        <SelecteurDOrientation ent={ent} updateSel={updateSel} />
         <LayerField z={ent.z} layers={sceneLayerZs(scene)} onChange={(z) => updateSel({ z: z || undefined })} />
       </Fold>
       {ent.kind === 'personnage' && (
@@ -1342,7 +1356,7 @@ function EntityPanel({
               {/* Espèce EXPLICITE de rendu (`appearance.species`) — découple l'apparence du nom/ref
                   (cf. scene.ts). Vide = bipède Humain par défaut. Le profil de stats se choisit via la
                   réf de créature (fold Rôle/Combat), distincte de l'apparence. */}
-              <select value={ent.appearance?.species ?? ''} onChange={(e) => updateSel({ appearance: { ...ent.appearance, species: e.target.value || undefined } })}>
+              <select value={ent.appearance?.species ?? ''} onChange={(e) => updateSel({ appearance: coiffureRetombee({ ...ent.appearance, species: e.target.value || undefined }) })}>
                 <option value="">(par défaut : Humain)</option>
                 {creatureSpeciesOptions().map((o) => (
                   <option key={o.id} value={o.id}>
@@ -1381,7 +1395,7 @@ function EntityPanel({
               onMonster={(patch) => updateSel({ appearance: { ...ent.appearance, monster: { ...(ent.appearance?.monster ?? {}), ...patch } } })}
               onWeapon={(w) => updateSel({ weapon: w })}
               onColors={(patch) => updateSel({ appearance: { ...ent.appearance, colors: { ...(ent.appearance?.colors ?? {}), ...patch } } })}
-              onSex={(s) => updateSel({ appearance: { ...ent.appearance, sex: s } })}
+              onSex={(s) => updateSel({ appearance: coiffureRetombee({ ...ent.appearance, sex: s }) })}
               onBuild={(b) => updateSel({ appearance: { ...ent.appearance, build: b } })}
               onHairstyle={(id) => updateSel({ appearance: { ...ent.appearance, hairstyle: id } })}
               onTenue={(c) => updateSel({ appearance: { ...ent.appearance, tenue: c } })}

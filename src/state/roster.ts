@@ -5,6 +5,7 @@ import { migrateDoc, type MigrationMap, type RaisonDeRefus } from './migrateDoc'
 import { remapCharKeysDeep } from './charKeyMigration';
 import { remapNameToLabelDeep } from './instanceIdMigration';
 import { remapSkillIdDeep } from './skillIdMigration';
+import { remapSortsFusionnesDeep } from '../data/sortsFusionnes';
 import { t } from '../i18n';
 
 /** Roster persistant (localStorage) des personnages créés via le créateur.
@@ -50,11 +51,12 @@ export function rosterLoad(): RosterEntry[] {
     const arr: unknown = JSON.parse(raw);
     if (!Array.isArray(arr)) return [];
     // Le roster localStorage n'est PAS un doc versionné (liste nue, sans `version`) — le renommage
-    // CharKey→slugs (#311), celui de `name`→`label` des porteurs de libellé (#604) et celui de
-    // `skillId`→`id` des `SkillInstance` (#1548 L2) s'appliquent donc en repli IDEMPOTENT à chaque
+    // CharKey→slugs (#311), celui de `name`→`label` des porteurs de libellé (#604), celui de
+    // `skillId`→`id` des `SkillInstance` (#1548 L2) et celui des ids de sort FUSIONNÉS (#1897,
+    // `remapSortsFusionnesDeep`) s'appliquent donc en repli IDEMPOTENT à chaque
     // lecture (aucun ancien token restant après un 1er passage → no-op), plutôt que via `migrateDoc`
     // (réservé au format `EXPORT_VERSION`).
-    return (remapSkillIdDeep(remapNameToLabelDeep(remapCharKeysDeep(arr))) as unknown[]).filter(
+    return (remapSortsFusionnesDeep(remapSkillIdDeep(remapNameToLabelDeep(remapCharKeysDeep(arr)))) as unknown[]).filter(
       (e): e is RosterEntry =>
         !!e && typeof e === 'object' && typeof (e as RosterEntry).hero?.id === 'string',
     );
@@ -87,7 +89,7 @@ export function rosterUpdate(hero: Combatant): void {
 }
 
 const EXPORT_KIND = 'wfrp4-hero';
-export const EXPORT_VERSION = 4;
+export const EXPORT_VERSION = 5;
 
 /** Migrations SÉQUENTIELLES de l'export roster. À CHAQUE bump d'`EXPORT_VERSION`, ajouter ici
  *  l'entrée `vN → vN+1` — sinon les exports antérieurs sont refusés (jamais acceptés en silence
@@ -101,6 +103,10 @@ export const ROSTER_MIGRATIONS: MigrationMap = {
   // v3 → v4 (#1548 L2) : renommage `skillId` → `id` des `SkillInstance` du héros exporté —
   // primitive `skillIdMigration.ts`. Sans elle, les avancements de Compétence sont perdus en silence.
   3: (doc) => ({ ...doc, version: 4, hero: remapSkillIdDeep(doc.hero) }),
+  // v4 → v5 (#1897) : les ids de sort du livre fan FUSIONNÉS désignent l'entrée qui les absorbe —
+  // primitive `remapSortsFusionnesDeep` (`src/data/sortsFusionnes.ts`). Sans elle, un sort appris est
+  // perdu en silence (`findSpellById` ne le résout plus).
+  4: (doc) => ({ ...doc, version: 5, hero: remapSortsFusionnesDeep(doc.hero) }),
 };
 
 /** Sérialise un héros (avec sa Richesse) en chaîne portable — sauvegarde, transfert d'appareil,

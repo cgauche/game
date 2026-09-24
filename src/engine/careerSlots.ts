@@ -29,7 +29,8 @@
  */
 import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
-import { findTalentById, findDomainById, findSpeciesById, advancementLabel, refLabel, wildcardSpecIds, talentIdByLabel, CareerLevelData, type AdvancementRef } from '../data';
+import { byId, specPoolOf, levelsForCareer, findTalentById, findDomainById, findSpeciesById, advancementLabel, refLabel, wildcardSpecIds, talentIdByLabel, CareerLevelData, type AdvancementRef } from '../data';
+import { entreeOuverte, refusDeSpec } from '../data/schemas/grammaire/ref';
 import { domainSpellsKnown } from './grimoire';
 import { splitLabel } from './statEntry';
 import { effectiveEntry } from './variants';
@@ -106,17 +107,23 @@ export function parseEntry(raw: string): SlotOption[] {
 }
 
 /**
- * Specs valides d'un libellé à joker (« (Au choix) ») — SOURCE UNIQUE, partagée par le CRÉATEUR (dont
- * l'étape de dépense de PX) ET l'AVANCEMENT. Le pool DÉRIVE de `specPoolOf` (SSOT `SPEC_SOURCES`) : un
- * domaine `specsSource` (Corps à corps/Projectiles → Groupes d'arme filtrés par `combat` ; Focalisation →
- * Vents ; Magie des Arcanes → Domaines arcanes ; Béni/Invocation/Magie du Chaos → cultes filtrés par
- * Bénédictions/Miracles/Sorts du Chaos) énumère son registre ; sinon les ids des `specs[]` inline. Les
- * valeurs sont des IDS (jamais le libellé FR d'affichage) — c'est la `spec` PERSISTÉE de l'instance créée.
- * Une entrée `SpecEntry.pool: false` reste VALIDE mais n'est pas proposée ici (`LDB 09 l.40`).
- * `[]` si le nom ne porte aucune spec.
+ * Pool de spécialisations PROPOSÉES par une option joker — SOURCE UNIQUE : la liste restreinte
+ * `specOptions` (« (A ou B) »), sinon `specPoolOf` de la def. La def se résout par `optionId` + `kind`
+ * (avancement), sinon par libellé via `wildcardSpecIds` (créateur, #1923/#1924). Valeurs = ids de
+ * spec. `[]` si la def ne porte aucune spec ou n'est pas au catalogue.
  */
-export function wildcardSpecs(name: string): string[] {
-  return wildcardSpecIds(name);
+export function wildcardSpecs(o: Pick<SlotOption, 'label' | 'specOptions'>): string[];
+export function wildcardSpecs(o: SlotOption, kind: 'skill' | 'talent'): string[];
+export function wildcardSpecs(o: Pick<SlotOption, 'label' | 'optionId' | 'specOptions'>, kind?: 'skill' | 'talent'): string[] {
+  if (o.specOptions) return o.specOptions;
+  if (o.optionId == null || kind == null) return wildcardSpecIds(o.label);
+  const def = defDeJoker(kind, o.optionId);
+  return def ? specPoolOf(def) : [];
+}
+
+/** Def (Compétence/Talent) d'une option par son id STABLE. */
+function defDeJoker(kind: 'skill' | 'talent', id: string) {
+  return kind === 'skill' ? byId('skill', id) : findTalentById(id);
 }
 
 /** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». AFFICHAGE seulement — ne
@@ -208,20 +215,33 @@ export function availableChars(levels: CareerLevelData[], level: number): CharKe
 }
 
 /** Une (id, spec) concrète est-elle couverte par CE slot (désignations ignorées) ? Compare par
- *  `optionId` STABLE — jamais par libellé (i18n-safe). */
+ *  `optionId` STABLE — jamais par libellé (i18n-safe). Un joker exige une spec : Compétence `LDB 09 l.40`, Talent `LDB 10 l.17`.
+ *  La spec d'un joker doit être ADMISE par l'entrée (`refusDeSpec`, le prédicat du schéma) et, pour un
+ *  joker restreint ou une entrée FERMÉE (`entreeOuverte`), appartenir au pool du joker (`wildcardSpecs`). */
 export function slotCovers(slot: CareerSlot, optionId: string, spec?: string): boolean {
   return slot.options.some((o) => {
     if (o.optionId !== optionId) return false;
     if (!o.wildcard) return (o.spec ?? '') === (spec ?? '');
-    if (o.specOptions) return spec != null && o.specOptions.includes(spec);
-    return true; // joker plein : toute spec du groupe (y compris sans spec)
+    if (spec == null || refusDeSpec(slot.kind, optionId, spec) !== null) return false;
+    return (!o.specOptions && entreeOuverte(slot.kind, optionId)) || wildcardSpecs(o, slot.kind).includes(spec);
   });
 }
 
 /** Désignations d'un héros pour une carrière : slotKey → clé d'identité `refKey(id, spec)`
- *  (OPAQUE — jamais un libellé concret ; l'affichage se fait via `refLabel`/`specLabel`). */
+ *  (OPAQUE — jamais un libellé concret ; l'affichage se fait via `refLabel`/`specLabel`). Une
+ *  désignation persistée que son emplacement ne couvre pas (`slotCovers`) n'est pas lue : l'emplacement
+ *  redevient à désigner. */
 export function designationsFor(hero: Combatant, career: string): Record<string, string> {
-  return hero.careerSlotChoices?.[career] ?? {};
+  const stored = hero.careerSlotChoices?.[career] ?? {};
+  const levels = levelsForCareer(career);
+  const top = Math.max(0, ...levels.map((l) => l.level));
+  const slots = new Map([...skillSlots(levels, top), ...talentSlotsUpTo(levels, top)].map((s) => [s.key, s]));
+  return Object.fromEntries(Object.entries(stored).filter(([slotKey, key]) => {
+    const slot = slots.get(slotKey);
+    if (!slot) return true;
+    const { id, spec } = parseRefKey(key);
+    return slotCovers(slot, id, spec);
+  }));
 }
 
 /**
@@ -272,6 +292,27 @@ export function inCareerStatus(
     if (s.needsChoice && !designations[s.key] && slotCovers(s, optionId, spec)) return 'free';
   }
   return null;
+}
+
+/** Motif pour lequel (optionId, spec) n'entre dans aucun emplacement : `absent` (aucune option de
+ *  cet id), `sansSpec` (seuls des jokers le portent, sans spécialisation), `nonCouvert` (sinon). */
+export type RefusDEmplacement = 'absent' | 'sansSpec' | 'nonCouvert';
+
+/** `inCareerStatus`, ou le motif de son `null` — une seule lecture pour qui construit (`createHero`)
+ *  et qui valide avant de construire (créateur). */
+export function statutOuRefus(
+  slots: CareerSlot[],
+  designations: Record<string, string>,
+  optionId: string,
+  spec?: string,
+  allSlotsForUniqueness: CareerSlot[] = slots,
+): Exclude<InCareerStatus, null> | RefusDEmplacement {
+  const status = inCareerStatus(slots, designations, optionId, spec, allSlotsForUniqueness);
+  if (status) return status;
+  const options = slots.flatMap((s) => s.options).filter((o) => o.optionId === optionId);
+  if (!options.length) return 'absent';
+  if (spec == null && options.every((o) => o.wildcard)) return 'sansSpec';
+  return 'nonCouvert';
 }
 
 /** Premier slot à choix non désigné pouvant couvrir (optionId, spec) — pour l'auto-désignation. */

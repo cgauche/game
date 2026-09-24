@@ -22,8 +22,6 @@ There is a noticeable elf population in Altdorf — founded by high elf merchant
 
 Asur in the Reikland gravitate to Altdorf, where they feel more comfortable around their peers. The streets of Turmgarten are asur merchants deal with the elf clans in Marienburg.
 
-X
-
 Altdorf is also a renowned centre of learning. The sons and daughters of the wealthy matriculate at the University of Altdorf, regardless of academic ability. The famed Imperial Engineers School, founded by Tilean genius Leonardo da Miragliano, also lies within Altdorf 's walls. The most mysterious places of learning in Altdorf are the Colleges of Magic. Founded over two centuries ago, they train magically-gifted citizens to channel their dangerous talents in the defence of the Empire.
 
 Standing in stark contrast to the arcane mysteries of the Colleges of Magic, Altdorf is also the beating heart of the Cult of Sigmar. Sigmar's own city now boasts more Sigmarite temples and holy sites than all the other cities of the Empire combined, including the Grand Cathedral of Sigmar.
@@ -83,8 +81,6 @@ Given the excellent quality of its alcoholic beverages, Eilhart has become a pop
 #### **BITTER BREW**
 
 Stopping off in Eilhart for their Brauzeit festival, the Characters become aware of a spate of poisonings. Suspects abound, from grudgeful dwarf traders from the Grey Mountains, to inept brewers whose guild licenses were revoked. Fingers soon start to point to Renauld Turpin, a Bretonnian wine merchant jealous of Eilhart's success. He was last seen headed to Axe Bite Pass in great haste, and the Characters will have to move fast if they
-
-X
 
 #### **Grünburg**
 
@@ -153,8 +149,6 @@ Many strongholds defend the Reikland, built to protect the province from invasio
 The Crooked Corridor is a narrow gorge, which winds through the Grey Mountains near the Wasteland border. It perches precariously on the edge of steep cliffs, far too tight for wagons or horses; the slightest slip of a foot could lead to a painfully inglorious end. It is completely impassable in the winter.
 
 The Crooked Corridor was once known only to goat herders and smugglers, until a spate of goblin raids in 2454 IC brought the pass to the attention of the Emperor Mattheus II. He decreed the construction of a fortress here to watch for invasion, and so his masons raised Blackstone Tower from the local dark stone and slate to stand sentinel over the gorge.
-
-X
 
 Due to an oversight by surveyors, the new tower stood on land belonging to the dwarfs of Karak Ziflin. Not wanting to upset them, the emperor ceded the bastion, and today, the dwarfs repay the emperor's generosity by permitting a limited Reikland garrison of halberdiers and handgunners to barrack alongside their own troops at Blackstone Tower.
 
@@ -225,8 +219,6 @@ Zahnstadt is in the grip of something far worse than a lack of sunlight: a vampi
 Almost three hundred years later, he hides there still, and time has made him bold. He now sleeps beneath the *Wayward Sun* in an ostentatious, velvet-lined coffin, rising each evening to drink the blood of its visitors.
 
 Rumours of Janos von Carstein have reached the witch hunters *and* the pawns of the recently resurrected Mannfred. It would be unfortunate if poor, unsuspecting souls happened to hostel in the *Wayward Sun* on the same night the various parties arrive to investigate...
-
-X
 
 # **The Ancient Sites and Terrible Ruins**
 

@@ -98,7 +98,7 @@ describe('cœur de règles — une graphie par corps de règles (#1825)', () => 
  * 157 dettes affichées, CI verte). Le relever est un geste délibéré, visible en revue — l'inverse
  * d'un append discret. Il ne DESCEND qu'en soldant des folios au Source.
  */
-const FOLIO_RATCHET_MAX = 109;
+const FOLIO_RATCHET_MAX = 108;
 
 describe('intégrité du folio — source.page pointe sur la page qui porte la desc (#536)', () => {
   const { violations } = AUDIT;
@@ -136,53 +136,22 @@ describe('intégrité du folio — source.page pointe sur la page qui porte la d
 const FOLIO_TITLE_RATCHET_MAX = 0;
 
 /**
- * Plafond des entrées IRRÉSOLUES — ni desc verbatim, ni titre de section. C'est le compte de ce que
- * la garde ne PEUT pas juger ; il ne se solde qu'en recollant des descs au verbatim (règle 5) ou en
+ * Plafond des entrées IRRÉSOLUES — ni desc verbatim, ni titre de section : ce que la garde ne PEUT
+ * pas juger. 488 au relevé du 2026-09-23 (#1897), `normMap` lisant le `<br>` d'une cellule de table
+ * comme une espace et la voie desc situant une tête de chapitre par `preMarkerRange`, dont
+ * `trappings.json` 93, `mutations.json` 69, `careers.json` 49, `gods.json` 37, `sea-events.json` 34
+ * (la liste complète est rendue par le dernier `it` de ce bloc). C'est la
+ * POPULATION auditée qui le fixe : l'audit ne voit qu'une entrée à `desc`, et chaque famille qui y
+ * entre apporte ses irrésolues. Il ne descend qu'en recollant des descs au verbatim (règle 5) ou en
  * nommant les entrées comme leur livre les intitule. Plafonné pour la même raison que les stocks :
  * sans plafond, « la garde couvre de plus en plus » n'est qu'un commentaire.
+ * Classes identifiées :
+ *  - phrase coupée par un encadré : `reseau-routier.json:patrouille-routiere` (« LES JUSTICIERS ») ;
+ *  - chapitre sans aucun marqueur `data-folio` : 9 entrées de `trappings.json` dans LDB `64 - Sacs et
+ *    contenants`, `69 - Outils professionnels et Ateliers` et `72 - Herbes et potions` (verdict
+ *    `sans-marqueur`).
  */
-/**
- * Plafond des IRRÉSOLUES. Relevé 661 → 713 le 2026-08-27 (#1467 L1b V-P2) : c'est la POPULATION
- * mesurée qui a grandi, pas le détecteur qui a faibli. L'audit ne voit une entrée que si elle porte
- * une `desc` ; la migration `text` → `desc` fait entrer d'un coup la prose d'`interludeEvents`,
- * `peripeties`, `mass-battle › hazards` et `land-cargo › rumours` (mesuré au rendu de la garde :
- * 30 + 10 + 10 + 20 irrésolues sur ces quatre fichiers). Le plafond ne DESCEND qu'en soldant des
- * folios au `Source/` ; l'entrée `interludeEvents:kleptomane`, elle, n'était pas irrésolue mais
- * RÉFUTÉE (folio 193 déclaré, desc en 194) — corrigée à la donnée dans le même lot.
- *
- * Relevé 713 → 771 le 2026-08-28 (#1467 L1b V-FLIP-CONFIG), même lecture — `aa-criticals.json` est
- * depuis #1657 B2a l'un des deux jeux de `criticals.json`, ces 80 entrées y sont toujours : il ne
- * portait AUCUNE `source` (une note libre `_source` approximative), ses 80 entrées étaient donc hors
- * de l'audit. Sourcées au folio, elles y entrent : 22 sont prouvées par leur desc, 58 restent
- * irrésolues (51 `desc-introuvable`, 7 `desc-trop-courte` — les cellules du tableau AA portent des
- * `<br>` que la desc recolle sans les reproduire). Zéro réfutée : le volet « aucune entrée NEUVE
- * réfutée » est resté VERT sur ces 80. Population qui grandit, pas détecteur qui faiblit.
- *
- * Relevé 771 → 775 le 2026-08-31 (#677) : `reseau-routier.json` entre à l'audit avec 9 `desc`
- * citées, dont 4 restent irrésolues — 3 classes de route déclarées au folio 19, qu'`EDOC 06` ne
- * marque d'AUCUNE ancre `data-folio` (verdict `sans-marqueur` : le span est introuvable, pas la
- * desc), et `patrouille-routiere` (folio 39) dont la desc recolle les deux moitiés d'une phrase que
- * l'extraction coupe autour de l'encadré « LES JUSTICIERS » — même classe que les `<br>` des tables
- * d'Aux Armes ci-dessus. Population qui grandit, pas détecteur qui faiblit.
- */
-// 775 → 776 (#1657 B3-2b-a). MESURÉ : les 3 irrésolues neuves sont les stations `pont` (p.119),
-// `greement` (p.118) et `avirons` (p.120) de `ship-stations.json` — desc-introuvable ET
-// titre-introuvable. Leur `desc` recolle une CELLULE de tableau MDG 13 que l'extraction coupe par des
-// `<br>` (« se trouve sur le pont, il<br>doit réussir », l.730 ; « se trouve<br>dans le gréement »,
-// l.714 ; « se trouve aux<br>avirons », l.751) : la voie DESC cherche le verbatim d'un seul tenant et
-// ne le retrouve pas. Les 3 autres entrées du lot (`nid-de-pie` MDG 12 l.303, station `cale` et Trait
-// `cale` MSRC 07 l.94) citent de la PROSE continue et sont RÉSOLUES. Le cliquet est un PLAFOND : le
-// compte réel à l'arbre précédent était sous 775.
-//
-// ÉTAT DU MATCHER après #1384 B2 : `normMap` (`scripts/guards/lib/folioIntegrity.mjs:90`) ne compose
-// PAS `sansBr`, là où l'adressage (`normText`) le compose. Mesure du 2026-09-14, les deux branches
-// jouées sur le corpus : la composition ferait tomber les irrésolues de 775 à 538 (les 3 stations
-// ci-dessus résolvent) et convertirait 66 sites en réfutations NEUVES sur ce volet à tolérance zéro —
-// 55 `criticals.json` (LDB, p.174 déclarée, desc encadrée en 175-178), 10 `mass-battle.json` (ADE2,
-// p.88 → 90+), 1 `traits.json:destabilisant` (ZI, p.82 → 135). C'est la classe « ambiguïté prose/table »
-// de `folioRatchetStock.mjs:31-35` : elle se tranche au PDF, site par site, au train B3 de #1384
-// (relever `FOLIO_RATCHET_MAX` de 109 à 175 serait l'inverse du cliquet).
-const UNRESOLVED_MAX = 776;
+const UNRESOLVED_MAX = 488;
 
 describe('intégrité du folio — voie TITRE de section, et skip BRUYANT de ce qui reste (#1200)', () => {
   const { titleViolations, noteAuthored, unresolved, stats, total } = AUDIT;
@@ -271,6 +240,24 @@ describe('preuve de folio sur la prose ADRESSÉE — même hôte, même verdict 
       source: SOURCE_TERREUR,
     };
     expect(() => citedEntriesOf([faux])).toThrow(/empreinte-divergente/);
+  });
+});
+
+/**
+ * TÊTE DE CHAPITRE (#1897) : une desc placée AVANT le premier marqueur de son chapitre est située par
+ * CONTINUITÉ (`preMarkerRange`), la même primitive que la voie titre. Fixture SYNTHÉTIQUE sur le
+ * `Source/` : ZI `11 - Chat sauvage.md` l.27 (tête, premier marqueur l.47 = 83 ; `10 - Macareux a bec
+ * tranchant.md` finit sur 82 ; sommaire du livre `00 - Index.md` l.106).
+ */
+const PASSAGE_DESTABILISANT =
+  "En présence d'une créature Déstabilisante, une créature Instable compte ses Avantages à la fin de " +
+  'chaque Round comme si elle en avait deux de moins. Ses Avantages ne sont pas perdus, seulement ignorés.';
+
+describe('preuve de folio en TÊTE de chapitre — située par continuité (#1897)', () => {
+  it('une desc avant le premier marqueur de son chapitre reçoit le folio que la partition établit', () => {
+    const r = auditFolio({ book: 'zoo-imperial', page: 82, desc: PASSAGE_DESTABILISANT });
+    expect(r.ranges).toContainEqual({ lo: 82, hi: 82, file: '11 - Chat sauvage.md' });
+    expect(r.verdict).toBe('folio-ok');
   });
 });
 

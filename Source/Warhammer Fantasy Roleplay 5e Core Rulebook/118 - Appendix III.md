@@ -1,6 +1,6 @@
 *Pages PDF 365-367*
 
-# **APPENDIX III** I
+# **APPENDIX III**
 
 # **Critical wounds**
 
@@ -54,7 +54,7 @@
 | 111–115        | Internal Bleeding             | 5      | Gain a Bleeding Condition that can only be removed through Surgery. Contract Blood Rot (see Disease and Infection, page 179).                                                                                                                                         |
 | 116 or more | Torn Apart                    | Death  | You are hacked in two. The top half lands in a random direction, and all creatures within 2 yards are showered in blood.                                                                                                                                              |
 
-# **LEG CRITICAL WOUNDS** I
+# **LEG CRITICAL WOUNDS**
 
 | d100           | Description           | Wounds | Additional Effects                                                                                                                                                                                                                                                                       |
 |----------------|-----------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

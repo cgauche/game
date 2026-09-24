@@ -56,7 +56,7 @@ Take six Advances (+30) in both the Language (Haffennaff ) and Language (Reikspi
 
 #### **Starting Skills**
 
-II **Names** Add one Advance (+5) to any five of the following Skills: Charm, Consume Alcohol, Dodge, Gamble, Haggle, Intuition, Lore (Reikland), Perception, Sleight of Hand, Stealth (Any), Trade (Cook)
+**Names** Add one Advance (+5) to any five of the following Skills: Charm, Consume Alcohol, Dodge, Gamble, Haggle, Intuition, Lore (Reikland), Perception, Sleight of Hand, Stealth (Any), Trade (Cook)
 
 #### **Starting Talents**
 

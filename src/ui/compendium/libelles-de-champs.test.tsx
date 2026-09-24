@@ -28,6 +28,7 @@ import { metaPourFichier, DEFS_DE_DOCUMENT, noeudObjet, schemaForFile } from '..
 import { enumNomme } from '../../data/schemas/grammaire/valeurs';
 import { defDe } from '../../data/schemas/grammaire/descente';
 import { stripComments } from '../../../scripts/guards/lib/hardcode.mjs';
+import { lireExports } from '../../../scripts/gen-registry.mjs';
 
 const handleDemo = () => document(
   'demo', 'entite',
@@ -296,13 +297,12 @@ describe('cliquet — part des champs de premier niveau qui portent un libellé'
 
 /**
  * CONVENTION D'EXPORT du générateur de registre (`scripts/gen-registry.mjs`) : il est TEXTUEL et
- * lit chaque nom PAR REGEX — `fields: ['file', 'schema', 'famille', 'exposition']` plus
- * `optionalFields: ['meta']`, pour les DEUX registres de schémas. Conséquences MESURÉES, une par export :
- *  - `file` non conforme au filtre `scripts/gen-registry.mjs:388` (`^export const file = '`, guillemet
- *    SIMPLE littéral) : le def est ÉCARTÉ du registre, en silence — double quote, `: string` annoté,
- *    littéral gabarit et `= doc.file` compilent tous et sortent pourtant du registre ;
- *  - `meta` non PLAT : invisible de `presents()` (`scripts/gen-registry.mjs:400`), donc absent de
- *    l'entrée générée — l'atelier retombe sur la clé technique sans qu'aucun gate ne rougisse ;
+ * lit `file` et `meta` par son lecteur UNIQUE `lireExports` — `fields: ['file', 'schema', 'famille',
+ * 'exposition']` plus `optionalFields: ['meta', …]`, pour les DEUX registres de schémas. Conséquences, une
+ * par export :
+ *  - `file` hors de sa forme canonique (double quote, `: string` annoté, littéral gabarit, `= doc.file`,
+ *    destructuration) : la génération LÈVE — ces formes compilent toutes, le gen les refuse ;
+ *  - `meta` non PLAT (`export { meta }`, destructuration) : la génération LÈVE aussi ;
  *  - `schema`/`famille` destructurés (`export const { schema } = doc`) COMPILERAIENT (la destructuration
  *    crée un vrai nom importé) : ici la garde ne protège pas la compilation mais la CONVENTION du lot
  *    — forme plate unique sur les adoptions, lisible par le codemod. C'est cette garde qui la tient.
@@ -315,11 +315,11 @@ const RACINES_DE_DEFS = ['src/data/schemas/defs', 'src/data/schemas/defs-scenes'
 const APPELLE_DOCUMENT = /\bdocument\s*\(/;
 /**
  * Ce qui fait d'un module un DEF : nommer un fichier de données. C'est le critère du générateur
- * lui-même (`scripts/gen-registry.mjs:388`, registre à champ `file`) — un module du dossier qui ne
+ * lui-même (`lireExports`, registre à champ `file`) — un module du dossier qui ne
  * déclare aucun `export const file` n'entre pas au registre : c'est un module de FORME partagé entre
  * defs (`defs-scenes/projet.ts` déclare LE document de projet, que les 4 defs de campagne nomment
  * chacun pour SON fichier). Ici cette forme large (`export const file`, guillemet libre) borne la
- * POPULATION ; le verdict d'appartenance, lui, reste la regex STRICTE du gen (`FILE_DU_GEN`), si bien
+ * POPULATION ; le verdict d'appartenance, lui, reste le lecteur STRICT du gen (`luParLeGen`), si bien
  * qu'un `file` à double quote/annoté/indirect reste ROUGE au lieu de sortir du périmètre.
  * La forme large couvre AUSSI la destructuration (`export const { file, … } = doc`) : ce module-là
  * PRÉTEND nommer un fichier, il reste donc jugé — et rouge, la forme n'étant pas celle du gen.
@@ -329,11 +329,16 @@ const APPELLE_DOCUMENT = /\bdocument\s*\(/;
 const NOMME_UN_FICHIER = /^export const (?:file\b|\{[^}]*\bfile\b[^}]*\})/m;
 /** Les quatre exports PLATS lus par le gen, dans l'ordre du message d'échec. */
 const EXPORTS_PLATS = ['file', 'schema', 'famille', 'meta'] as const;
-/** LA regex du générateur pour `file`, recopiée de `scripts/gen-registry.mjs:388` — guillemet SIMPLE
- *  littéral : elle seule décide de l'appartenance au registre. */
-const FILE_DU_GEN = /^export const file = '/m;
-const exportPlat = (nom: string) =>
-  nom === 'file' ? FILE_DU_GEN : new RegExp(`^export const ${nom}\\b`, 'm');
+/** Verdict DU GEN sur un export qu'il lit : `lireExports` le rend (forme canonique) ou lève. */
+const luParLeGen = (src: string, nom: 'file' | 'meta'): boolean => {
+  try {
+    return lireExports(src, [nom], 'fixture')[nom] !== undefined;
+  } catch {
+    return false;
+  }
+};
+const exportPlat = (nom: (typeof EXPORTS_PLATS)[number], src: string): boolean =>
+  nom === 'file' || nom === 'meta' ? luParLeGen(src, nom) : new RegExp(`^export const ${nom}\\b`, 'm').test(src);
 
 /**
  * Defs qui déclarent un document sans exporter les quatre noms À PLAT — une ligne
@@ -344,13 +349,13 @@ export function defsSansExportsPlats(sources: { file: string; src: string }[]): 
   // à la fabrique, et l'import nommé de `document` non plus — seuls les SITES d'appel comptent.
   return sources
     .filter((s) => APPELLE_DOCUMENT.test(stripComments(s.src)) && NOMME_UN_FICHIER.test(stripComments(s.src)))
-    .map((s) => ({ file: s.file, manquants: EXPORTS_PLATS.filter((nom) => !exportPlat(nom).test(s.src)) }))
+    .map((s) => ({ file: s.file, manquants: EXPORTS_PLATS.filter((nom) => !exportPlat(nom, s.src)) }))
     .filter((r) => r.manquants.length > 0)
     .map((r) => `${r.file} : manque ${r.manquants.join(', ')}`);
 }
 
 /** Les modules DIRECTS des racines de defs : la population est celle du générateur, qui liste chaque
- *  racine À PLAT (`scripts/gen-registry.mjs:371,543,582` — aucune récursion) ; un module posé dans un
+ *  racine À PLAT (`scripts/gen-registry.mjs › modulesDeDefs` — aucune récursion) ; un module posé dans un
  *  sous-dossier n'entre pas au registre, il n'a donc pas la convention à tenir. Le corpus est
  *  récursif : la profondeur se borne ICI, comme la garde le mesure. */
 function sourcesDesDefs(): { file: string; src: string }[] {
@@ -397,8 +402,8 @@ describe('convention d’export lue par le générateur de registre', () => {
   });
 
   it('le bras `file` rend le verdict DU GEN, forme par forme (un `file` qui compile peut être hors registre)', () => {
-    // Verdicts du générateur MESURÉS sur son filtre `scripts/gen-registry.mjs:388` : seule la forme
-    // `= '…'` (guillemet SIMPLE littéral) entre au registre — les quatre autres compilent et en sortent.
+    // Verdicts du générateur MESURÉS sur son lecteur `lireExports` : seule la forme `= '…';`
+    // (guillemet SIMPLE littéral) se lit — les quatre autres compilent et font lever la génération.
     const formes: { nom: string; ligne: string; auRegistre: boolean }[] = [
       { nom: 'simple-quote', ligne: "export const file = 'z.json';", auRegistre: true },
       { nom: 'double-quote', ligne: 'export const file = "z.json";', auRegistre: false },
@@ -435,7 +440,7 @@ describe('convention d’export lue par le générateur de registre', () => {
     for (const nom of ['arene', 'barge-du-sel', 'diligence', 'loup-et-saumure']) {
       const src = parFichier.get(`src/data/schemas/defs-scenes/${nom}.ts`)!;
       expect(NOMME_UN_FICHIER.test(stripComments(src)), `${nom}.ts nomme son fichier de campagne`).toBe(true);
-      expect(FILE_DU_GEN.test(src), `${nom}.ts : \`file\` à la forme que le gen collecte`).toBe(true);
+      expect(luParLeGen(src, 'file'), `${nom}.ts : \`file\` à la forme que le gen collecte`).toBe(true);
     }
   });
 });

@@ -130,7 +130,7 @@ You are seriously ill and perhaps close to Morr's Portal as deadly poisons flood
 
 #### **Buboes**
 
-V **Sea Sickness** You have huge swellings of the lymph nodes, possibly in the groin, neck, or armpits. These are enormously painful and may bleed or seep pus. They are disgusting and stink of rot — though cultists of the Lord of Pestilence consider them a sure sign of his favour, believing they hide tiny, growing daemons. Common practice is to lance these terrible expressions of taint to remove whatever nestles within, though doing so often results in *Festering Wounds*.
+**Sea Sickness** You have huge swellings of the lymph nodes, possibly in the groin, neck, or armpits. These are enormously painful and may bleed or seep pus. They are disgusting and stink of rot — though cultists of the Lord of Pestilence consider them a sure sign of his favour, believing they hide tiny, growing daemons. Common practice is to lance these terrible expressions of taint to remove whatever nestles within, though doing so often results in *Festering Wounds*.
 
 > Suffer a -1 SL penalty to all physical Tests, and to all Fellowship Tests if the buboes can be seen or smelled. A Heal Test made by a character with the *Surgery* Talent can lance your buboes, removing the penalty. If the Test is failed, gain a *Festering Wound*. If your Buboes are lanced, make a **Difficult (-1 SL) Endurance** Test once per day or more swell into place.
 

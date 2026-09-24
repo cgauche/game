@@ -835,7 +835,8 @@
     "css": "src/ui/styles/error-boundary.css",
     "poseurs": [
       "src/ui/App.tsx",
-      "src/ui/CampaignView.tsx"
+      "src/ui/CampaignView.tsx",
+      "src/ui/editor/Editor.tsx"
     ],
     "concept": "filet d’un crash de RENDU : capture, journalise, et montre un panneau de reprise en français au lieu de l’écran noir",
     "perimetre": "autour du stage (scène iso/POV), autour de tout l’écran de jeu (#225)",

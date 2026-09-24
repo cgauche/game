@@ -27,7 +27,7 @@ import {
 // pas la façade `index.ts`) — importés DIRECTEMENT ici (même patron que `massBattle*` ci-dessus, qui
 // vient déjà d'`engine/massBattle.ts`). Le module JSON est un singleton ESM : cette référence EST la
 // même que celle lue par le moteur → l'édition Codex (splice en place) reste visible en jeu.
-import type { RefASpecialisation } from './schemas/grammaire/ref';
+import type { RefDesignee } from './schemas/grammaire/ref';
 import { versDisque } from './schemas/grammaire/prose';
 import { ACTIVITIES } from '../engine/activities';
 import { MOUNT_PROFILES } from '../engine/mountTravel';
@@ -46,9 +46,9 @@ import landCargoRawJson from './land-cargo.json';
 import seaCargoRawJson from './sea-cargo.json';
 import riverPerilsRawJson from './river-perils.json';
 import crewMoraleRawJson from './crew-morale.json';
-import { DATASET_FICHIER_DERIVE } from './schemas/exposition-derivee';
+import { DATASET_FICHIER_DERIVE, DATASETS_EDITABLES_DERIVE } from './schemas/exposition-derivee';
 import { poserSourceDIdsVivants } from './schemas/grammaire/idsVivants';
-import { bumperDataset } from './versionDataset';
+import { bumperDataset, versionDuDataset } from './versionDataset';
 import { DEFS_DE_DOCUMENT } from './schemas/validate';
 import { critiqueEntries, type CritEntry } from './criticals';
 import { SHIP_CRITICAL_TABLES, RIVER_CRIT_SET } from './shipCriticals';
@@ -108,7 +108,7 @@ import { ARTILLERY_MISFIRE } from './artilleryMisfire';
 export interface MiscastRowEntry {
   id: string; min: number; max: number; label: string;
   ops?: Record<string, unknown>[];
-  test?: { skill?: RefASpecialisation; characteristic?: string; difficulty: string; onFail: Record<string, unknown>[]; onFailHard?: { dr: number; ops: Record<string, unknown>[] } };
+  test?: { skill?: RefDesignee; characteristic?: string; difficulty: string; onFail: Record<string, unknown>[]; onFailHard?: { dr: number; ops: Record<string, unknown>[] } };
   reroll?: 'majeure' | 'mineure-x2';
   source?: SourceRef;
 }
@@ -426,7 +426,7 @@ const NESTED_ARRAY_ROOT: Partial<Record<DatasetKey, { root: () => unknown }>> = 
 /** Fichier disque d'un dataset-tableau (`<clé>.json` par défaut ; le fichier PARENT pour un tableau niché). */
 export function datasetFile(key: DatasetKey): string {
   const fichier = DATASET_FICHIER_DERIVE[key];
-  if (fichier === undefined) {
+  if (fichier === undefined || !DATASETS_EDITABLES_DERIVE.has(key)) {
     throw new Error(
       `datasetFile('${key}') : aucun document de \`SCHEMA_DEFS\` ne déclare l'édition de ce dataset ` +
         `(\`exposition.edit\` = dataset ou niche) — sans route d'édition déclarée il n'y a pas de fichier ` +
@@ -441,32 +441,45 @@ export function datasetFile(key: DatasetKey): string {
  * c'est ici que vivent les bindings mutés en place : une entité créée ou renommée à l'atelier est
  * référençable par la donnée AVANT tout `npm run gen` (`ref.ts` lit ce seam à chaque validation).
  *
- * PÉRIMÈTRE : les datasets-TABLEAUX dont un def déclare le fichier (`DATASET_FICHIER_DERIVE`), NICHÉS
- * EXCLUS — un tableau niché (`mass-battle.json` en porte 5, `criticals.json` 8) n'est pas la liste
- * d'entrées de son document, et son fichier désigne le PARENT. Un fichier revendiqué par DEUX
- * datasets non nichés serait une ambiguïté : elle lève, nommément. Hors périmètre, `ref.ts` retombe
- * sur le registre généré — le régime d'avant, inchangé.
+ * PÉRIMÈTRE : TOUS les datasets-TABLEAUX du seam (`ARRAYS`), éditables ou non — chacun a son fichier
+ * déclaré au def (`DATASET_FICHIER_DERIVE`), un dataset sans fichier lève, nommément. NICHÉS EXCLUS —
+ * un tableau niché (`mass-battle.json` en porte 5, `criticals.json` 8) n'est pas la liste d'entrées de
+ * son document, et son fichier désigne le PARENT. Un fichier revendiqué par DEUX datasets non nichés
+ * serait une ambiguïté : elle lève, nommément.
  */
-const ENTREES_VIVES: Record<string, () => readonly Record<string, unknown>[]> = {};
+const DATASET_DU_FICHIER: Record<string, DatasetKey> = {};
 for (const cle of DATASET_KEYS) {
   const fichier = DATASET_FICHIER_DERIVE[cle];
-  if (fichier === undefined || NESTED_ARRAY_ROOT[cle]) continue;
-  if (ENTREES_VIVES[fichier]) {
+  if (fichier === undefined) {
+    throw new Error(
+      `ids vivants : le dataset '${cle}' n'a aucun fichier déclaré — son def le nomme (\`exposition.edit\` : ` +
+        `\`dataset\`, \`niche\`, ou \`none\` + \`dataset\`).`,
+    );
+  }
+  if (NESTED_ARRAY_ROOT[cle]) continue;
+  if (DATASET_DU_FICHIER[fichier]) {
     throw new Error(
       `ids vivants : le fichier '${fichier}' est revendiqué par DEUX datasets-tableaux non nichés — ` +
         `un fichier, une liste d'entrées : trancher au def (\`exposition.edit\`).`,
     );
   }
-  ENTREES_VIVES[fichier] = () => ARRAYS[cle] as unknown as readonly Record<string, unknown>[];
+  DATASET_DU_FICHIER[fichier] = cle;
 }
 poserSourceDIdsVivants({
-  entrees: (fichier) => ENTREES_VIVES[fichier]?.(),
+  entrees: (fichier) => {
+    const cle = DATASET_DU_FICHIER[fichier];
+    return cle === undefined ? undefined : (ARRAYS[cle] as unknown as readonly Record<string, unknown>[]);
+  },
+  version: (fichier) => {
+    const cle = DATASET_DU_FICHIER[fichier];
+    return cle === undefined ? 0 : versionDuDataset(cle);
+  },
   discriminantDe: (fichier) => DEFS_DE_DOCUMENT.find((d) => d.file === fichier)?.discriminant,
 });
 
 /** Ce dataset a-t-il une route d'ÉDITION déclarée ? (sinon `datasetFile` refuse — #1530) */
 export function datasetEditable(key: DatasetKey): boolean {
-  return DATASET_FICHIER_DERIVE[key] !== undefined;
+  return DATASETS_EDITABLES_DERIVE.has(key);
 }
 /** Racine à SÉRIALISER au save (le tableau lui-même par défaut ; l'objet PARENT entier pour un tableau
  *  niché — ses tableaux frères doivent survivre à l'édition d'un seul), en FORME DISQUE.

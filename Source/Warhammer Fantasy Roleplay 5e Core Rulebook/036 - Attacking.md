@@ -61,7 +61,7 @@ As blows rain down on your armour, it can be damaged, possibly permanently. When
 
 If this lowers the AP to 0 in that Location, the armour there is rendered useless.
 
-# **Critical Hits and Fumbles** V
+# **Critical Hits and Fumbles**
 
 In the cut and thrust of combat, moments of extraordinary skill and disastrous mistakes can happen. These are represented by Critical Hits and Fumbles.
 
@@ -165,7 +165,7 @@ These modifiers apply to Attack Tests only, not to Tests made to oppose an attac
 | Target is Entangled (+1 SL)                         | Attacker's weapon is in the off-hand (-2 SL)                                                   |
 |                                                     | Defender has high ground (-1 SL)                                                               |
 
-V **Aimed Shots** If you spend an Action aiming at your target, you gain +1 SL on your next ranged attack against them. You must have your ranged weapon in hand to aim, and the bonus is lost if you do anything else before taking your shot, such as moving or defending yourself.
+**Aimed Shots** If you spend an Action aiming at your target, you gain +1 SL on your next ranged attack against them. You must have your ranged weapon in hand to aim, and the bonus is lost if you do anything else before taking your shot, such as moving or defending yourself.
 
 # **Called Shots**
 

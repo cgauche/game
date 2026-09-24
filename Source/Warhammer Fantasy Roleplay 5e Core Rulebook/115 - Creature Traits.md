@@ -55,7 +55,9 @@ The creature is an extraordinarily skilled warrior. If they win an Opposed Test 
 
 The creature's touch chills their enemies' souls. If they lose Momentum, then for their Action, they can attempt an Opposed Weapon Skill/Dodge or Melee Test. If they win, the target loses 1d10 + SL Wounds ignoring Toughness Bonus and Armour Points. This attack is *Magical*.
 
-#### **Bounce** XII **Cold-blooded**
+### **Bounce**
+
+### **Cold-blooded**
 
 The creature is cold-blooded and slow to react. They gain Advantage to Cool Tests. If they gain the *Surprised* Condition, this Condition is not lost the first time it should be (typically at the end of the Round or if they are attacked).
 
@@ -155,7 +157,7 @@ One of the dark powers has marked this creature with a physical brand, proclaimi
 
 **Khorne:** The creature benefits from the Frenzy Talent. This creature gains the *Etiquette* (*Followers of Khorne*) Talent and is subject to *Animosity* towards overt followers of Slaanesh. The creature is also subject to *Animosity* by followers of Slaanesh, so long as the Mark of Khorne is visible. The Character may not use the Language (Magick) or Channelling skills unless it is to dispel a spell. Additionally, they may purchase the following Talents as if they were Career Advances for the normal XP costs: *Berserk Charge, Combat Aware, Combat Reflexes, Furious Assault, Implacable, Magic Resistance, Resistance (Magic), Resolute, Strike Mighty Blow, Warrior Born*.
 
-**Infected** XII **Nurgle:** The creature benefits from a bonus of +10 to its Toughness. This creature gains the *Etiquette* (*Followers of Nurgle*) Talent and is subject to *Animosity* towards overt followers of Tzeentch. The creature is also subject to *Animosity* by followers of Tzeentch, so long as the Mark of Nurgle is visible. Additionally they may purchase the following Talents as if they were Career Advances for the normal XP costs: *Frightening, Hardy, Implacable, Iron Jaw, Menacing, Resistance (Poison), Resistance (Disease), Robust, Tenacious*, and *Very Resilient*.
+**Infected** **Nurgle:** The creature benefits from a bonus of +10 to its Toughness. This creature gains the *Etiquette* (*Followers of Nurgle*) Talent and is subject to *Animosity* towards overt followers of Tzeentch. The creature is also subject to *Animosity* by followers of Tzeentch, so long as the Mark of Nurgle is visible. Additionally they may purchase the following Talents as if they were Career Advances for the normal XP costs: *Frightening, Hardy, Implacable, Iron Jaw, Menacing, Resistance (Poison), Resistance (Disease), Robust, Tenacious*, and *Very Resilient*.
 
 > **Slaanesh:** The creature gains the *Fearless* (*Everything*) Talent. This creature gains the *Etiquette* (*Followers of Slaanesh*) Talent and is subject to *Animosity* towards overt followers of Khorne. The creature is also subject to *Animosity* by followers of Khorne, so long as the Mark of Slaanesh is visible. Additionally, they may purchase the following Talents as if they were Career Advances for the normal XP costs: *Attractive, Blather, Careful Strike, Combat Master, Gregarious, Inspiring, Lightning Reflexes, Nimblefingered, Resistant (Poison)*, and *Sharp*.
 
@@ -176,8 +178,6 @@ The creature has Chaos on the mind. Roll on the **Mental Corruption Table** foun
 # **Miracles (Deity)**
 
 The creature can enact Miracles; the relevant deity is indicated in parentheses. A creature with this Trait has a Pray Skill at Fel + 10 (or more at the GM's discretion).
-
-359
 
 ### **Mutation**
 
@@ -253,8 +253,6 @@ So, you would need 4 *Size (Average)* creatures to outnumber a *Size (Large)* cr
 
 Conversely, for the sake of larger opponents being daunting enough, they do not themselves count as multiple opponents when working out if they receive a bonus for outnumbering themselves. 2 *Size (Large)* Ogres outnumber 1 *Size (Average)* Human 2 to 1, not 4 to 1.
 
-XII
-
 #### **Stomp**
 
 Creatures that are larger than their opponents may lose Momentum to make one Stomp as a Free Attack, kicking downwards or otherwise bashing smaller opponents out of the way. This attack has a Damage equal to their Strength Bonus and uses *Melee (Brawling)*.
@@ -298,8 +296,6 @@ If you wish to use Size to make a creature bigger then increase *Strength* and *
 ### **Skittish**
 
 The creature is scared by spectacular visible effects of magic or noises such as thunderclaps or explosions. If such occurs, they receive +3 *Broken* Conditions.
-
-361
 
 # **Stupid**
 
@@ -357,7 +353,9 @@ The undead are neither living nor dead, meaning they are not reliant on the usua
 
 The creature's corpus is maintained by foul magics that are inherently unstable in the material realm. Whenever they end a Round Engaged with any opponents who possess Momentum when they do not, the creature is driven back, and the magics holding them together weaken and the creature loses 2 Wounds. If the creature ever reaches 0 Wounds, the magics holding them in place collapse, and they are destroyed or driven back from whence they came.
 
-#### **Tracker** XII **Vampiric**
+### **Tracker**
+
+### **Vampiric**
 
 The creature feeds on blood and draws great physical strength from this act. Whenever they perform a successful Bite attack against an appropriate opponent, they heal as many Wounds as the opponent loses. Drinking blood in this way is the *only* way they can heal.
 

@@ -12,6 +12,11 @@ import { CAP_IDENTITE_PROP, PROP_CYLINDER_SIDES } from '../../props.types';
 
 export const file = 'props.json';
 export const famille = 'entite';
+/** Champs MARQUEURS (#1897) : chacun définit la SOUS-LISTE des décors qui le portent — `volume` = les
+ *  décors à recette volumique, cap cardinal seul (`defs-scenes/scene.ts`). `npm run gen` en dérive
+ *  `IDS_PAR_MARQUEUR` (`schemas/_ids.generated.ts`), lue par `porteLeMarqueur` (`grammaire/ref.ts`).
+ *  @generateur lu au TEXTE par `lireExports` (`scripts/gen-registry.mjs`), qu'aucun import ne dit à knip. */
+export const marqueurs = ['volume'];
 
 /** `PropPoint3` / `PropSize3` (`src/data/props.types.ts`) — repère LOCAL d'une recette de décor, en
  *  MÈTRES sur les trois axes (#1507) : `xM`/`yM` depuis l'ancre du décor, `hM` depuis le sol de la case.
@@ -46,7 +51,7 @@ export const propPrimitiveSchema = z.discriminatedUnion('kind', [
  *  égal au défaut du monde (`CAP_IDENTITE_PROP`, même source que le type et `rotatePropLocal` — une
  *  chaîne recopiée ici dériverait au premier changement de repère). REQUIS : une recette écrite sous un
  *  autre repère ne peut pas entrer en silence (#1680 ligne 16). */
-export const propVolumeRecipeSchema = z.strictObject({ capIdentite: z.literal(CAP_IDENTITE_PROP), primitives: z.array(propPrimitiveSchema) });
+export const propVolumeRecipeSchema = z.strictObject({ capIdentite: z.literal(CAP_IDENTITE_PROP), primitives: z.array(propPrimitiveSchema).min(1) });
 
 /** `PropSeatSlot` (`src/data/props.types.ts`) — place assise offerte par un décor : ancre MÉTRIQUE du
  *  corps (`propPoint3Schema`), cap du corps assis (Dir8), et case d'ABORD relative à l'ancre de
@@ -94,10 +99,10 @@ const doc = document(
       exempt: {
         kind: 'vocabulaire-app-interne',
         raison:
-          'catalogue des placeables de décor (art, pas règle) — aucune catégorie du Codex ne l’expose ; il s’édite à la palette de l’éditeur de carte',
+          'catalogue des placeables de décor (art, pas règle) — aucune catégorie du Codex ne l’expose, aucun écran ne l’écrit : il s’édite au fichier `src/data/props.json`',
       },
     },
-    edit: { none: 'édité à la PALETTE de décor de l’éditeur de carte, jamais par une catégorie du Codex' },
+    edit: { none: 'catalogue d’art, édité au fichier `src/data/props.json` — aucun écran ne l’écrit (la palette de l’éditeur de carte le LIT)', dataset: 'props' },
   },
   {
     /**

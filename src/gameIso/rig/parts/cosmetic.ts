@@ -3,6 +3,8 @@ import { baseSpeciesOf } from '../skeletons';
 import { PART_BEHIND_SEP, PART_DROP_SEP } from '../bones';
 import { HEADS_BY_KEY } from './heads';
 import { hairstylesForSex, type HairArt } from './hairstyles';
+import { MISSING_ART } from '../viewArt';
+import { diagOnce, diagSubject } from '../devDiag';
 // Têtes (visage + coiffure défaut) en heads/defs, coiffures en hairstyles/defs — CHAQUE chevelure
 // porte ses 3 vues + composantes `behind` (masse qui épouse le crâne) et `drop` (chute qui dépasse
 // la tête) éventuelles PAR vue (HairArt), pliées ici dans la chaîne de vue (dépliées par composeRig :
@@ -93,14 +95,36 @@ export function hairPool(species: string, sex: 'M' | 'F'): HairArt[] {
   return [...(head?.cheveux != null ? [head.cheveux] : []), ...hairstylesForSex(sex)];
 }
 
-/** Index dans le pool de la coiffure d'`id` donné — IMPOSITION d'une coiffure par id (#637), p.ex.
- *  `appearance.hairstyle`. FAIL-FAST si l'id n'existe pas pour cette espèce×sexe (jamais de repli
- *  silencieux : une coiffure imposée introuvable est un bug d'authoring à corriger). La coiffure par
+/** Position de la coiffure NOMMÉE `id` dans le pool espèce×sexe, `-1` hors du pool. La coiffure par
  *  DÉFAUT de la tête (HairArt sans `id`) ne matche jamais : imposer vise les coiffures NOMMÉES. */
-export function hairIndexById(species: string, sex: 'M' | 'F', id: string): number {
-  const i = hairPool(species, sex).findIndex((h) => (h as { id?: string }).id === id);
-  if (i < 0) throw new Error(`Coiffure imposée introuvable : id="${id}" (espèce=${species}, sexe=${sex}).`);
-  return i;
+function rangDeCoiffure(species: string, sex: 'M' | 'F', id: string): number {
+  return hairPool(species, sex).findIndex((h) => (h as { id?: string }).id === id);
+}
+
+/** Chevelure d'ERREUR (#223, `MISSING_ART`) d'une coiffure imposée hors du pool : la faute se VOIT, elle
+ *  ne prend jamais l'art d'une autre coiffure. */
+export const COIFFURE_HORS_POOL: string = MISSING_ART.profile!();
+
+/** Index dans le pool de la coiffure d'`id` — IMPOSITION par id (#637, `appearance.hairstyle`, donnée
+ *  d'AUTEUR). Hors du pool espèce×sexe : `undefined` et un diagnostic qui nomme l'id ; l'appelant rend
+ *  `COIFFURE_HORS_POOL`. */
+export function hairIndexById(species: string, sex: 'M' | 'F', id: string): number | undefined {
+  const i = rangDeCoiffure(species, sex, id);
+  if (i >= 0) return i;
+  // `?.` : le rig est importé par les scripts tsx (galeries QC), où `import.meta.env` n'existe pas.
+  if (import.meta.env?.DEV)
+    diagOnce(`rig:coiffure:${diagSubject()}:${species}:${sex}:${id}`, () => console.warn(`[rig] coiffure « ${id} » hors du pool (espèce ${species}, sexe ${sex}) — chevelure d'erreur visible, donnée à corriger.`));
+  return undefined;
+}
+
+/** Apparence d'AUTEUR dont la coiffure imposée RETOMBE (champ retiré) quand elle sort du pool de
+ *  l'espèce×sexe posés — patron `propRefPatch` : un geste d'édition (sexe, espèce) ne crée pas de
+ *  faute. Sexe non posé : le sexe rendu se tire au rendu (`rigAppearance`), rien à juger ici. PURE. */
+export function coiffureRetombee<T extends { species?: string; sex?: 'M' | 'F'; hairstyle?: string }>(a: T): T {
+  if (a.hairstyle == null || a.sex == null || rangDeCoiffure(a.species ?? '', a.sex, a.hairstyle) >= 0) return a;
+  const sans = { ...a };
+  delete sans.hairstyle;
+  return sans;
 }
 
 /** Part cosmétique (toujours espèce×sexe). slot ∈ {visage, cheveux}.

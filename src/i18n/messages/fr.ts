@@ -4,7 +4,7 @@
  * (mêmes clés) ; la logique ne change pas. Phase B : on y MIGRE les maps de labels jusqu'ici en dur.
  */
 export const fr = {
-  // Caractéristiques (LDB) — migré de engine/types.ts (CHAR_LABELS).
+  // Caractéristiques (LDB) — lu par `CHAR_LABELS` (`engine/types.ts`).
   'char.capacite-de-combat': 'Capacité de Combat',
   'char.capacite-de-tir': 'Capacité de Tir',
   'char.force': 'Force',
@@ -15,7 +15,7 @@ export const fr = {
   'char.intelligence': 'Intelligence',
   'char.force-mentale': 'Force Mentale',
   'char.sociabilite': 'Sociabilité',
-  // Difficultés de Test (LDB 12) — migré de engine/types.ts (DIFFICULTY_LABELS).
+  // Difficultés de Test (LDB 12) — lu par `DIFFICULTY_LABELS` (`engine/types.ts`).
   'difficulty.tresFacile': 'Très facile (+60)',
   'difficulty.facile': 'Facile (+40)',
   'difficulty.accessible': 'Accessible (+20)',
@@ -34,27 +34,27 @@ export const fr = {
   // du jet (`ui/RollLine.tsx`) — la cellule du dé y dit qu'aucun second tirage n'a lieu.
   'roll.secondeLecture': '{label} · 2ᵉ lecture',
   'roll.memeDe': 'même dé',
-  // Localisations d'impact (LDB) — migré de engine/types.ts (HIT_LOCATION_LABELS).
+  // Localisations d'impact (LDB) — lu par `HIT_LOCATION_LABELS` (`engine/types.ts`).
   'hitloc.tete': 'Tête',
   'hitloc.brasG': 'Bras gauche',
   'hitloc.brasD': 'Bras droit',
   'hitloc.corps': 'Corps',
   'hitloc.jambeG': 'Jambe gauche',
   'hitloc.jambeD': 'Jambe droite',
-  // Modes de défense (LDB 13) — migré de engine/combat.ts (DEFENSE_LABEL).
+  // Modes de défense (LDB 13) — lu par `DEFENSE_LABEL` (`engine/combat.ts`).
   'defense.parade': 'Parade',
   'defense.esquive': 'Esquive',
   // Attente d'une Défense qui va s'interposer (#1004, libellé validé 2026-07-31) — la modale d'attaque
   // tait sa résolution `defense:'none'` tant que le défenseur surfacé n'a pas joué.
   'defense.awaiting': 'En attente de la Défense de {cible}.',
-  // Attaques gratuites de créature (LDB 85) — migré de engine/combat.ts (FREE_ATTACK_LABEL).
+  // Attaques gratuites de créature (LDB 85) — lu par `FREE_ATTACK_LABEL` (`engine/combat.ts`).
   'freeAttack.morsure': 'Morsure',
   'freeAttack.caudale': 'Attaque caudale',
   'freeAttack.cornes': 'Cornes (charge)',
   'freeAttack.pietinement': 'Piétinement',
   'freeAttack.langue': 'Langue',
   'freeAttack.hurlement': 'Hurlement',
-  // Localisations par forme de corps (LDB 76 p.312) — migré de engine/types.ts (BODY_SHAPE_LOC_LABELS).
+  // Localisations par forme de corps (LDB 76 l.17-29) — lu par `BODY_SHAPE_LOC_LABELS` (`engine/types.ts`).
   'hitloc.quadrupede.brasG': 'Membre antérieur gauche',
   'hitloc.quadrupede.brasD': 'Membre antérieur droit',
   'hitloc.quadrupede.jambeG': 'Membre postérieur gauche',
@@ -895,7 +895,8 @@ export const fr = {
   'if.identifyConfusedWeek': '{name} confond {item} avec un objet similaire — la semaine est perdue.',
   'if.identifyConfusedType': "{name} confond {item} avec un objet d'un type similaire — il se méprend sur sa nature (Échec).",
   'if.identifyFailAware': "{name} n'identifie pas {item} cette semaine — il en est conscient (l'étude peut reprendre).",
-  'if.masterWeapon': '{name} a maîtrisé {item} (ACE p.219).',
+  // ACE 12 l.21
+  'if.masterWeapon': '{name} a maîtrisé {item}.',
   'if.researchDeep': '{name} étudie {item} en profondeur : Particularités et dangers révélés.',
   'if.researchMain': '{name} cerne la fonction principale de {item} et son activation.',
   'if.combatTrainingKo': '{name} peine à retrouver ses réflexes de combat ({skill}) cette semaine — aucun bénéfice.',
@@ -916,11 +917,13 @@ export const fr = {
   'if.orderTooExpensive': 'Commande trop chère ({cost}).',
   'if.orderPlaced': '{name} passe commande : {label} ({cost}) — livraison après la prochaine aventure.',
   'if.bankTierKo': '{name} : « Vous devez être des échelons Or et Argent pour épargner dans une banque ».',
-  'if.mecenatMin': 'Mécénat : mise minimale {min} (« au moins 5 CO », ACE p.220).',
+  // ACE 12 l.49
+  'if.mecenatMin': 'Mécénat : mise minimale {min}.',
   'if.depositPurseKo': 'La bourse de {name} ne couvre pas ce dépôt.',
   'if.eventBankPct': "Événement : {pct} % sur l'argent placé ({event}).",
   'if.bankInvest': "{name} investit {money} (Indice d'intérêts {rate} — {rate} % de gains, faillite sur ≤ {rate}).",
-  'if.bankMecenat': "{name} sponsorise un dramaturge prometteur : {money} (retrait par Test d'Évaluation Intermédiaire — Mécénat, ACE p.220).",
+  // ACE 12 l.49
+  'if.bankMecenat': "{name} sponsorise un dramaturge prometteur : {money} (retrait par Test d'Évaluation Intermédiaire).",
   'if.bankStash': '{name} planque {money} (retrait libre — découverte sur ≤ 10).',
   'if.withdrawNeedsActivity': 'Retirer un investissement exige une Activité.',
   'if.bankLost': '{name} — {roll} ≤ {threshold} : {what} — {money} perdus !',
@@ -1779,7 +1782,7 @@ export const fr = {
   'sv.hullTakes': '{label} : la coque encaisse {n} Blessure(s) (MDG 13 l.142).',
   'sv.sailsStruckInTime': 'Les voiles sont affalées à temps (MDG 13 l.292).',
   'sv.courseChange': 'Changement de cap (d10 {roll}, dérive {side}) : {desc}',
-  // Côtés de dérive (`courseChange.side`, ids `tribord`/`babord`) — MDG 13 l.263 écrit « bâbord ».
+  // Côtés de dérive (`courseChange.side`, ids `tribord`/`babord`) — MDG 13 l.322 écrit « bâbord ».
   'sv.sideTribord': 'tribord',
   'sv.sideBabord': 'bâbord',
   'sv.lighthouseSeen': "La lumière du phare est en vue — l'atterrage se précise (+{dr} DR d'Orientation, MDG 13 l.335).",
@@ -1816,7 +1819,8 @@ export const fr = {
   'sv.detailFuir': 'Course-poursuite : distancer la cogue (MDG 13 l.362-370).',
   'sv.detailCombattre': 'Refuser l’abordage et se défendre — abordage immédiat.',
   'sv.detailSoumettre': 'Laisser fouiller la cale ({pct} % de la cargaison pillée) puis livrer un tribut à Stromfels.',
-  'sv.pillaged': 'Les forbans fouillent la cale et emportent {enc} Enc de cargaison ({pct} %, MDG 15 p.131).',
+  // MDG 15 l.171-173
+  'sv.pillaged': 'Les forbans fouillent la cale et emportent {enc} Enc de cargaison ({pct} %).',
   'sv.pillagedEmpty': 'Les forbans fouillent une cale vide — rien à prendre.',
   'sv.detailLivrer': 'Un marin est emmené — perte réelle d’équipage, l’équipage est ébranlé.',
   'sv.detailRefuser': 'Les forbans passent à l’abordage.',
@@ -2288,7 +2292,7 @@ export const fr = {
   'drunk.hangover': '{name} a la gueule de bois : 1 Exténué pendant {h} h.',
 
   // ── #1318 V8c₅ — MUNITION attendue par une arme à distance (`engine/items.ts`, `ammo.*`, hint
-  // d'achat/chargement quand carquois et coffre sont vides ; LDB 62 l.110-123, MDG 12 p.101).
+  // d'achat/chargement quand carquois et coffre sont vides ; LDB 62 l.110-123, MDG 12 l.410-424).
   'ammo.artillerie': 'Boulet et poudre',
   'ammo.poudreIngenierie': 'Balles et poudre',
   'ammo.arc': 'Flèches',
@@ -2314,7 +2318,7 @@ export const fr = {
   'social.statusMod': 'Statut ({beg}{side}) {sign}{mod}',
   'social.fragBegging': 'mendicité ',
 
-  // ── #1318 V8c₅ — CRITIQUE DE STRUCTURE de siège (`engine/structureCritical.ts`, AA 10 p.120-121).
+  // ── #1318 V8c₅ — CRITIQUE DE STRUCTURE de siège (`engine/structureCritical.ts`, AA 10 l.112-127).
   'structCrit.line': 'Critique de Structure : {label}{suite}{collapse}.',
   'structCrit.fragTrivial': ' (Triviale)',
   'structCrit.fragWounds': ' — {n} Blessure(s)',
@@ -2347,7 +2351,7 @@ export const fr = {
   'traitArg.paren': '({what})',
 
   // ── #1318 V8c₅ — VOYAGE À PIED : marche forcée et fatigue d'Encombrement (`engine/travel.ts`,
-  // `trv.*`, LDB 51 l.195 / LDB 61 p.295). La Compétence vient de `skills.json` (jamais bakée).
+  // `trv.*`, LDB 51 l.195 / LDB 61 l.35-48). La Compétence vient de `skills.json` (jamais bakée).
   'trv.forcedMarchOk': "{name} — marche forcée : il tient l'allure.",
   'trv.forcedMarchFail': '{name} — marche forcée : ÉCHEC, +{n} Exténué{over}.',
   'trv.fragOverloaded': ' (surchargé)',

@@ -118,8 +118,6 @@ by 20 yards
 
 — Gurkk Skulltaka, Orc Boss
 
-337
-
 # **Snotling**
 
 Pea-brained creatures akin to enthusiastic, uncontrolled puppies, snotlings are natural scavengers and mimics. They collect bones, shiny objects, and whatever else catches their eye, while happily copying the actions of anything they see. If driven into battle by goblins or orcs, they fight in stinking swarms, hoping to overwhelm their foes through sheer weight of numbers. To aid this, they gather all manner of disgusting and noxious substances, from poisonous fungi to bodily waste, to hurl at their enemies.

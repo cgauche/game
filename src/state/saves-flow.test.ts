@@ -7,6 +7,7 @@
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useGame } from './store';
+import { idDeSortVivant } from '../data/sortsFusionnes';
 import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, parseSave, snapshotSave, takeObsoleteNotice, SAVE_VERSION, type SaveGame } from './saves';
 import { rule, setRule, loadRuleOverrides } from '../engine/policy';
 import { talents, careerLevels, specResolves, combatStakeRef } from '../data/index';
@@ -225,6 +226,16 @@ describe('parseSave — la version DOIT être la courante', () => {
     // décide — sans cette moitié, le contrat ci-dessus passerait aussi sur une scène mal formée.
     const courant = { 'table-1': { 'place-1': { kind: 'entity' as const, entityId: 'pnj-1' } } };
     expect(pruneSeatAssignments({ ...scene, seatAssignments: courant }, 4)).toEqual(courant);
+  });
+  it('MESURE du motif de bump 50 → 51 (#1897) : un sort FUSIONNÉ ne se résout plus — la save de 50 se jette', () => {
+    // Une save de 50 porte `Combatant.spells` tel quel (`snapshotSave` recopie le `state`) : un héros qui
+    // a appris « Alarme » (frenchy-bzh, fusionnée dans « Alerte ») rouvrirait avec un id que plus rien
+    // ne résout. D'où le REJET, et non une purge silencieuse du grimoire.
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(51);
+    const heros = { id: 'h', kind: 'hero', spells: ['alarme', 'alerte'] };
+    expect(parseSave({ ...cur, version: 50, data: { party: [heros] } })).toBeNull();
+    expect(findSpellById('alarme'), 'l’id fusionné n’existe plus au catalogue').toBeUndefined();
+    expect(idDeSortVivant('alarme')).toBe('alerte');
   });
   it('MESURE du motif de bump 41 → 42 (#1509) : l’empreinte d’un décor à recette TOURNE avec son cap', () => {
     // La scène ÉDITÉE du joueur est PERSISTÉE telle quelle (`snapshotSave` recopie `state.scene`). Rien

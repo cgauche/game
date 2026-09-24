@@ -7,16 +7,16 @@
 import { z } from 'zod';
 import { document, type EnveloppeDocument } from '../grammaire/document';
 import { availabilitySchema, harvestRaritySchema, entityAppearanceSchema, moneySchema } from '../grammaire/valeurs';
-import { refSchema, talentRefSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
-import { refOuSpec } from '../grammaire/ref';
+import { talentRefSchema, trappingRefSchema, traitInstanceSchema } from '../grammaire/reference';
+import { refOuSpec, refs } from '../grammaire/ref';
 
 export const file = 'creatures.json';
 export const famille = 'entite';
 
 /** `OptionalEntry` (`src/engine/statEntry.ts`) — un élément d'`optionals` (LDB 76) : soit un
  *  `TraitInstance` ordinaire, soit une NOTE composée irréductible à un trait (discriminée par `note`) :
- *  joker « tous les traits » (Mutant, LDB 83 p.333) ou variante « remplacer des Traits par un bonus »
- *  (Grand Loup ZI 1 p.16, Griffon ZI). La note porte son `label` source VERBATIM + les champs d'application. */
+ *  joker « tous les traits » (Mutant, LDB 83 l.91) ou variante « remplacer des Traits par un bonus »
+ *  (Grand Loup ZI 1 l.229, Griffon ZI). La note porte son `label` source VERBATIM + les champs d'application. */
 const optionalWildcardSchema = z.strictObject({
   note: z.literal('all-traits'),
   label: z.string(),
@@ -36,11 +36,12 @@ const optionalSwapSchema = z.strictObject({
 });
 const optionalEntrySchema = z.union([traitInstanceSchema, optionalWildcardSchema, optionalSwapSchema]);
 
-/** `SkillRef` (`src/data/index.ts`) — la réf de Compétence de la GRAMMAIRE (`refOuSpec`, régimes
- *  `spec` XOR `choix`) composée avec la charge utile du statbloc : `value`, le nombre IMPRIMÉ
- *  (#1463, « `value` = le seul nom du NOMBRE IMPRIMÉ au statbloc »). MÊME nœud que `swapGrantSchema`
- *  ci-dessus — une seule graphie de Compétence dans ce document. */
-const skillRefSchema = refOuSpec('skill', { value: z.number() });
+/** `SkillRef` (`src/data/index.ts`) — la réf de Compétence de la GRAMMAIRE (`refOuSpec`, régime
+ *  `specOuChoixFacultatifs` : un statbloc porte des EMPLACEMENTS, désignés au spawn) composée avec la
+ *  charge utile du statbloc : `value`, le nombre IMPRIMÉ (#1463, « `value` = le seul nom du NOMBRE
+ *  IMPRIMÉ au statbloc »). MÊME nœud que `swapGrantSchema` ci-dessus, dont l'octroi DÉSIGNE (régime
+ *  par défaut) — une seule graphie de Compétence dans ce document. */
+const skillRefSchema = refOuSpec('skill', { value: z.number() }, 'specOuChoixFacultatifs');
 
 
 /** `HarvestDanger` (`src/data/index.ts`). */
@@ -72,9 +73,9 @@ const champs = {
     skills: z.array(skillRefSchema),
     talents: z.array(talentRefSchema),
     trappings: z.array(trappingRefSchema),
-    spells: z.array(refSchema),
+    spells: refs('spell'),
     /** Emplacements SECONDAIRES (#563) — le MÊME statbloc réimprimé par un autre livre (Bête des
-     *  marais : LDB 79 p.318, republiée verbatim par VDM 13 folio 179). L'ANCRE `source` reste seule
+     *  marais : LDB 79 l.14, republiée verbatim par VDM 13 folio 179). L'ANCRE `source` reste seule
      *  à porter la `desc` ; jamais une seconde entrée. */
     appearance: entityAppearanceSchema.optional(),
     harvest: z.strictObject({ rarity: harvestRaritySchema, danger: harvestDangerSchema, uses: z.string() }).optional(),

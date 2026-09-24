@@ -1,6 +1,6 @@
 *Pages PDF 297-298*
 
-# **GOING TO MARKET** XI
+# **GOING TO MARKET**
 
 Once you start play, the availability of rarer goods is restricted. A village market may only have a few locally sourced goods for sale, whilst the emporiums and market squares of the Empire's cities may contain all manner of exotic fare.
 

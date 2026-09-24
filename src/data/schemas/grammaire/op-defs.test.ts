@@ -96,7 +96,7 @@ describe('OP_DEFS — payload strict par op, repli nominatif, rouge au SITE', ()
     }
     const fantome = gameOpSchema.safeParse({ op: 'rollTable', tableId: 'table-fantome' });
     expect(fantome.error!.issues.map((i) => [i.path.join('.'), i.message])).toEqual([
-      ['tableId', "GameOp « rollTable » : ref('table') : id « table-fantome » absent de tables.json (registre _ids.generated.ts)."],
+      ['tableId', 'GameOp « rollTable » : « table-fantome » est absent du catalogue des tables (tables.json).'],
     ]);
     // Les ops de rangée sont PARSÉES : une op fantôme sous `rows` est refusée à son chemin.
     const imbriquee = gameOpSchema.safeParse({ op: 'rollTable', die: 'd10', rows: [{ min: 1, max: 10, ops: [{ op: 'contractDisease', disease: 'maladie-fantome' }] }] });
@@ -110,14 +110,14 @@ describe('OP_DEFS — payload strict par op, repli nominatif, rouge au SITE', ()
     expect(gameOpSchema.safeParse({ op: 'contractDisease', disease: ARG_TEMPLATE }).success).toBe(false);
     expect(gameOpSchema.safeParse({ op: 'summon', ref: SELF_REF, count: 1 }).success).toBe(false);
     expect(gameOpSchema.safeParse({ op: 'exposeDisease', disease: INDICE_TEMPLATE }).success).toBe(false);
-    for (const [op, champ, type, dataset, reste] of [
-      ['exposeDisease', 'disease', 'maladie', 'maladies.json', {}],
-      ['scheduleRespawn', 'ref', 'creature', 'creatures.json', { delayDays: 1 }],
+    for (const [op, champ, catalogue, dataset, reste] of [
+      ['exposeDisease', 'disease', 'maladies', 'maladies.json', {}],
+      ['scheduleRespawn', 'ref', 'créatures', 'creatures.json', { delayDays: 1 }],
     ] as const) {
       const res = gameOpSchema.safeParse({ op, [champ]: 'entite-fantome', ...reste });
       expect(res.success, `${op}.${champ}`).toBe(false);
       expect(res.error!.issues.map((i) => [i.path.join('.'), i.message]), `${op}.${champ}`).toEqual([
-        [champ, `GameOp « ${op} » : ref('${type}') : id « entite-fantome » absent de ${dataset} (registre _ids.generated.ts).`],
+        [champ, `GameOp « ${op} » : « entite-fantome » est absent du catalogue des ${catalogue} (${dataset}).`],
       ]);
     }
   });

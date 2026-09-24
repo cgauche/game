@@ -46,7 +46,7 @@ If Damage would reduce a character to below 0 Wounds, instead reduce them to 0 W
 
 Any Critical on a Melee or Ranged Test, whether attacking or defending, is a Critical Hit and inflicts a Critical Wound.
 
-**HEALING ANIMALS** V For a Critical Wound caused by a Critical Hit, do not reverse your attack roll to find out the Location of your strike as you would do for a normal hit. Instead, roll a d100 again to work out where your hit landed (see page 164), then roll a d100 again on the relevant **Critical Wounds** table for that Location.
+**HEALING ANIMALS** For a Critical Wound caused by a Critical Hit, do not reverse your attack roll to find out the Location of your strike as you would do for a normal hit. Instead, roll a d100 again to work out where your hit landed (see page 164), then roll a d100 again on the relevant **Critical Wounds** table for that Location.
 
 > Attack Tests that both result in a Critical Hit and which inflict Damage that would reduce Wounds below zero inflict two Critical Wounds — one inflicted to a hit location determined by reversing the roll, and an additional one inflicted to a random hit location, as explained above.
 
@@ -95,7 +95,7 @@ As the GM, you may not wish to track the details of injuries for all participant
 
 Sudden Death is useful for determining the fate of background NPCs such as brigands or low-tier cultists, but it should not be used to determine the fate of Player Characters, or for NPCs with the *Luck* Talent.
 
-# V **HEAD CRITICAL WOUNDS**
+# **HEAD CRITICAL WOUNDS**
 
 | d100          | Description         | Wounds | Additional Effects                                                                                                                                                                                                            |
 |---------------|---------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -145,7 +145,7 @@ Sudden Death is useful for determining the fate of background NPCs such as briga
 | 131–135        | Sliced Tendons          | 5      | The blow leaves your arm useless — Amputation (Very Hard -3 SL). Gain 3 Bleeding and 1 Stunned Condition.                                                                                                                                                                                    |
 | 136 or more | Brutal Dismemberment | Death  | Your arm is severed or torn away. You expire from shock and blood loss almost instantly.                                                                                                                                                                                                     |
 
-# V **BODY CRITICAL WOUNDS**
+# **BODY CRITICAL WOUNDS**
 
 | d100           | Description                   | Wounds | Additional Effects                                                                                                                                                                                                                                                       |
 |----------------|-------------------------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -202,8 +202,6 @@ Injuries are lasting ailments inflicted by Critical Wounds that require speciali
 ## **Broken Bones**
 
 Small fractures may heal on their own accord, but severe breaks, with bone protruding at odd angles from the flesh, are a different matter entirely. If you suffer a Broken Bone, it will be marked as *Minor* or *Major*.
-
-V
 
 # **CHARACTERISTIC LOSS**
 
@@ -291,7 +289,7 @@ A loss of a nose is an unsettling injury. This always counts as an Impressive Sc
 
 Loss of teeth may be unsightly and can make eating difficult. For every two teeth you lose, you also suffer a permanent loss of 1 from your Fellowship Characteristic.
 
-V Further, once more than half your teeth (Humans: 16; Elves: 18; Halflings and Dwarfs: 20) are lost, you find consuming solids significantly more difficult than your peers, doubling eating times, and making some foodstuffs nigh-on impossible to eat, which is largely a matter of roleplaying and narrative description of your actions.
+Further, once more than half your teeth (Humans: 16; Elves: 18; Halflings and Dwarfs: 20) are lost, you find consuming solids significantly more difficult than your peers, doubling eating times, and making some foodstuffs nigh-on impossible to eat, which is largely a matter of roleplaying and narrative description of your actions.
 
 #### **Toes**
 

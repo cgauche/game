@@ -24,8 +24,8 @@ Ce fichier couvre tout ce qui concerne **l'acquisition et la dépense de Points 
 
 ## Vue d'ensemble
 
-> « Votre Carrière va influer sur son gain en expérience. Chaque Carrière propose trois formes d'Augmentation : Augmentation de Caractéristique, Augmentation de Compétence et Augmentation de Talent — chacune d'entre elles étant acquise avec des Points d'Expérience (PX). Vous pouvez également utiliser des PX pour Changer de Carrière. Votre Niveau de Carrière détermine quels sont les Caractéristiques, Compétences et Talents disponibles pour vous. »
-> — LDB 07 l.43
+> « La Carrière de votre Personnage va influer sur son gain en expérience. Chaque Carrière propose trois formes d'Augmentation : *Augmentation de Caractéristique, Augmentation de Compétence* et *Augmentation de Talent* – chacune d'entre elles étant acquise avec des Points d'Expérience (PX). Vous pouvez également utiliser des PX pour Changer de Carrière. Votre Niveau de Carrière détermine quels sont les Caractéristiques, Compétences et Talents disponibles pour vous. »
+> — LDB 07 l.37
 
 Les trois formes d'Augmentation partagent le même principe : chaque Augmentation ajoute +1 et coûte un nombre de PX qui dépend du nombre d'Augmentations déjà achetées pour cet élément précis. Les coûts de Caractéristique et de Compétence sont dans le même tableau (à des colonnes différentes) ; les Talents suivent une formule linéaire séparée.
 
@@ -112,7 +112,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 
 **Disponibilité** : les Compétences de tous les Niveaux de Carrière **jusqu'au courant inclus** sont accessibles. Un personnage au Niveau 3 peut augmenter les Compétences des Niveaux 1, 2 et 3 (`LDB 07 l.76`). Chaque Spécialisation est une Compétence distincte (LDB 09 l.44).
 
-> **Note** : une des Compétences du 1er Niveau de Carrière est écrite en italique — c'est la Compétence de Carrière pour « Gagner de l'argent » (`LDB 07 l.84`).
+> **Note** : une des Compétences du 1er Niveau de Carrière est écrite en italique — c'est la Compétence de Carrière « que vous utiliserez pour Gagner de l'argent » (`LDB 07 l.82`).
 
 **Sources RAW** : `LDB 07 l.75-84`
 
@@ -120,7 +120,7 @@ Les Caractéristiques des niveaux inférieurs restent disponibles aux niveaux su
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 7` (l.75-84) → `adv-0-5`, `feu`, `inCareerChar`, `adv-6-10`, `AdvanceCostBand`, `adv-11-15`, `advanceCost`, `adv-16-20`, `adv-21-25`, `doc`, +28 — `src/data/advancementCosts.json`, `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/advancementCosts.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/engine/activities.ts`, +5 fichiers
-- `LDB 9` (l.44) → `specIdOf`, `CibleDeType`, `art`, `athletisme`, `buySkillAdvance`, `wildcardSpecs`, `estSpecialisable`, `designateSpec`, `buildAdvancementView`, `combatBaseValue`, +15 — `src/data/index.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, +13 fichiers
+- `LDB 9` (l.44) → `marqueurs`, `specIdOf`, `art`, `buySkillAdvance`, `athletisme`, `designateSpec`, `buildAdvancementView`, `entreeOuverte`, `estSpecialisable`, `combatBaseValue`, +15 — `src/data/index.ts`, `src/data/schemas/defs/skills.ts`, `src/data/schemas/grammaire/ref.ts`, `src/data/schemas/grammaire/valeurs.ts`, `src/data/skills.json`, `src/engine/activities.ts`, +14 fichiers
 
 ---
 
@@ -205,7 +205,7 @@ Pour compléter un Niveau de Carrière, il faut (`LDB 07 l.124`) :
 **Sources RAW** : `LDB 07 l.121-133`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.121-133) → `feu`, `careerCompletionAdvances`, `lumiere`, `isCareerLevelComplete`, `careerChangeCost`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, +9 — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
+- `LDB 7` (l.121-133) → `feu`, `careerCompletionAdvances`, `lumiere`, `isCareerLevelComplete`, `careerChangeCost`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, +8 — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
 
 ---
 
@@ -228,7 +228,7 @@ Coût d'un saut accordé par le MJ : 100 PX si le Niveau courant est achevé, 20
 **Sources RAW** : `LDB 07 l.136-139`, `LDB 07 l.140`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.136-139, l.140) → `feu`, `careerCompletionAdvances`, `AdvancementView`, `lumiere`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, `cieux`, +8 — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
+- `LDB 7` (l.136-139, l.140) → `feu`, `careerCompletionAdvances`, `AdvancementView`, `lumiere`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, `cieux`, +7 — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
 
 ---
 
@@ -253,7 +253,7 @@ Coût d'un saut accordé par le MJ : 100 PX si le Niveau courant est achevé, 20
 **Sources RAW** : `LDB 07 l.144-148`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.144-148) → `feu`, `careerCompletionAdvances`, `AdvancementView`, `lumiere`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, `cieux`, +8 — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
+- `LDB 7` (l.144-148) → `feu`, `careerCompletionAdvances`, `AdvancementView`, `lumiere`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, `cieux`, +7 — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
 - `LDB 23` (l.104) → `craft`, `learn`, `entrainement`, `interlude-elf-duty`, `dressage`, `Combatant` — `src/data/activities.json`, `src/data/reglesOptionnelles.json`, `src/engine/types.ts`
 
 ---
@@ -272,7 +272,7 @@ Verbatim depuis `LDB 07 l.152-159` (tableau « Coût des Changements de Carrièr
 **Sources RAW** : `LDB 07 l.152-159`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.152-159) → `AdvancementView`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `changeCareer`, `advancement-career-jump`, `sorcellerie` — `src/data/domains.json`, `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`
+- `LDB 7` (l.152-159) → `AdvancementView`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `changeCareer`, `advancement-career-jump` — `src/data/reglesOptionnelles.json`, `src/engine/advancement.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`
 
 ---
 

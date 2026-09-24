@@ -9,6 +9,7 @@ import {
   talentSlots,
   availableChars,
   inCareerStatus,
+  slotCovers,
   designateSlot,
   designationsFor,
   freeSlotFor,
@@ -81,13 +82,13 @@ const C1: CareerLevelData[] = [
   {
     id: 'C1-1', type: 'careerLevels', label: 'N1', career: 'C1', level: 1,
     skills: A(['Charme', 'Savoir (Au choix)']),
-    talents: A(['Sens aiguisé (Au choix)', 'Baratiner']),
+    talents: [{ id: 'sens-aiguise', choix: true }, { id: 'baratiner' }],
     trappings: [], characteristics: ['force', 'endurance', 'sociabilite'], status: 'Bronze 1',
   },
   {
     id: 'C1-2', type: 'careerLevels', label: 'N2', career: 'C1', level: 2,
     skills: A(['Ragot', 'Savoir (Au choix)']),
-    talents: A(['Sens aiguisé (Au choix)', 'Sociable']),
+    talents: [{ id: 'sens-aiguise', choix: true }, { id: 'sociable' }],
     trappings: [], characteristics: ['agilite'], status: 'Bronze 2',
   },
 ];
@@ -102,68 +103,67 @@ describe('disponibilité par niveaux (LDB 07 l.43/76/103)', () => {
 });
 
 describe('scénario complet : Sens aiguisé espèce + emplacements « (Au choix) » par carrière', () => {
-  // NB : `A()`/`parseAdvancement` (parseur de TEST) garde le nom brut comme `optionId` (pas de
-  // résolution vers un id réel de données — cf. sa doc) ; les héros de fixture utilisent donc le
-  // même `talentId: 'Sens aiguisé'` pour rester cohérents avec les slots construits ci-dessus.
+  // Les Talents de `C1` sont des références STRUCTURÉES par id (`sens-aiguise`, specs `gout`/`ouie`…) :
+  // la couverture d'un joker juge la spec contre le catalogue de l'entrée (`slotCovers`).
   it('1) désignation GRATUITE de la spec déjà possédée → in-carrière, montable (200 PX au ×2)', () => {
-    const h = hero({ talents: [{ talentId: 'Sens aiguisé', spec: 'Goût', times: 1 }] });
+    const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'gout', times: 1 }] });
     const slots1 = talentSlots(C1, 1);
     // Avant désignation : le slot libre couvre Goût.
-    expect(inCareerStatus(slots1, {}, 'Sens aiguisé', 'Goût')).toBe('free');
-    const slot = freeSlotFor(slots1, {}, 'Sens aiguisé', 'Goût')!;
-    expect(designateSlot(h, 'C1', slot, 'Sens aiguisé', 'Goût', slots1).ok).toBe(true);
-    expect(inCareerStatus(slots1, designationsFor(h, 'C1'), 'Sens aiguisé', 'Goût')).toBe('designated');
+    expect(inCareerStatus(slots1, {}, 'sens-aiguise', 'gout')).toBe('free');
+    const slot = freeSlotFor(slots1, {}, 'sens-aiguise', 'gout')!;
+    expect(designateSlot(h, 'C1', slot, 'sens-aiguise', 'gout', slots1).ok).toBe(true);
+    expect(inCareerStatus(slots1, designationsFor(h, 'C1'), 'sens-aiguise', 'gout')).toBe('designated');
     // Une AUTRE spec n'est plus couverte par ce slot (désigné).
-    expect(inCareerStatus(slots1, designationsFor(h, 'C1'), 'Sens aiguisé', 'Ouïe')).toBe(null);
+    expect(inCareerStatus(slots1, designationsFor(h, 'C1'), 'sens-aiguise', 'ouie')).toBe(null);
   });
 
   it('2) au niveau 2, le NOUVEAU slot ne peut pas re-désigner la spec prise au niveau 1', () => {
-    const h = hero({ careerLevel: 2, talents: [{ talentId: 'Sens aiguisé', spec: 'Goût', times: 1 }, { talentId: 'Sens aiguisé', spec: 'Ouïe', times: 1 }] });
+    const h = hero({ careerLevel: 2, talents: [{ talentId: 'sens-aiguise', spec: 'gout', times: 1 }, { talentId: 'sens-aiguise', spec: 'ouie', times: 1 }] });
     const slots1 = talentSlots(C1, 1);
     const slots2 = talentSlots(C1, 2);
     const all = [...slots1, ...slots2];
     // Niveau 1 : Ouïe avait été désignée (achat à 100 PX à l'époque).
-    designateSlot(h, 'C1', slots1[0], 'Sens aiguisé', 'Ouïe', all);
+    designateSlot(h, 'C1', slots1[0], 'sens-aiguise', 'ouie', all);
     const des = designationsFor(h, 'C1');
     // Le slot du niveau 2 ne peut PAS reprendre Ouïe…
-    expect(designateSlot(h, 'C1', slots2[0], 'Sens aiguisé', 'Ouïe', all).ok).toBe(false);
-    expect(inCareerStatus(slots2, des, 'Sens aiguisé', 'Ouïe', all)).toBe(null);
+    expect(designateSlot(h, 'C1', slots2[0], 'sens-aiguise', 'ouie', all).ok).toBe(false);
+    expect(inCareerStatus(slots2, des, 'sens-aiguise', 'ouie', all)).toBe(null);
     // …mais peut désigner Goût (gratuit, déjà possédé) ou Toucher (achat 100 PX).
-    expect(inCareerStatus(slots2, des, 'Sens aiguisé', 'Goût', all)).toBe('free');
-    expect(inCareerStatus(slots2, des, 'Sens aiguisé', 'Toucher', all)).toBe('free');
-    expect(designateSlot(h, 'C1', slots2[0], 'Sens aiguisé', 'Goût', all).ok).toBe(true);
+    expect(inCareerStatus(slots2, des, 'sens-aiguise', 'gout', all)).toBe('free');
+    expect(inCareerStatus(slots2, des, 'sens-aiguise', 'toucher', all)).toBe('free');
+    expect(designateSlot(h, 'C1', slots2[0], 'sens-aiguise', 'gout', all).ok).toBe(true);
   });
 
   it('3) changement de carrière : les désignations sont PAR carrière — tout sens redevient désignable', () => {
-    const h = hero({ talents: [{ talentId: 'Sens aiguisé', spec: 'Goût', times: 1 }, { talentId: 'Sens aiguisé', spec: 'Ouïe', times: 1 }] });
+    const h = hero({ talents: [{ talentId: 'sens-aiguise', spec: 'gout', times: 1 }, { talentId: 'sens-aiguise', spec: 'ouie', times: 1 }] });
     const slots1 = talentSlots(C1, 1);
-    designateSlot(h, 'C1', slots1[0], 'Sens aiguisé', 'Ouïe', slots1);
+    designateSlot(h, 'C1', slots1[0], 'sens-aiguise', 'ouie', slots1);
     // Carrière C2 (autre carrière, même type de slot) : aucune désignation → tout est libre.
     const C2: CareerLevelData[] = [{ ...C1[0], id: 'C2-1', career: 'C2' }];
     const slots = talentSlots(C2, 1);
     const des = designationsFor(h, 'C2');
     expect(des).toEqual({});
-    for (const spec of ['Goût', 'Ouïe', 'Toucher']) {
-      expect(inCareerStatus(slots, des, 'Sens aiguisé', spec)).toBe('free');
+    for (const spec of ['gout', 'ouie', 'toucher']) {
+      expect(inCareerStatus(slots, des, 'sens-aiguise', spec)).toBe('free');
     }
   });
 
   it('4) un slot ne peut pas désigner le libellé d\'une entrée EXPLICITE de la même carrière', () => {
     const LV: CareerLevelData[] = [{
       ...C1[0],
-      talents: A(['Sens aiguisé (Vue)', 'Sens aiguisé (Au choix)']),
+      talents: [{ id: 'sens-aiguise', spec: 'vue' }, { id: 'sens-aiguise', choix: true }],
     }];
     const h = hero();
     const slots = talentSlots(LV, 1);
-    expect(designateSlot(h, 'C1', slots[1], 'Sens aiguisé', 'Vue', slots).ok).toBe(false);
-    expect(designateSlot(h, 'C1', slots[1], 'Sens aiguisé', 'Odorat', slots).ok).toBe(true);
+    expect(designateSlot(h, 'C1', slots[1], 'sens-aiguise', 'vue', slots).ok).toBe(false);
+    expect(designateSlot(h, 'C1', slots[1], 'sens-aiguise', 'odorat', slots).ok).toBe(true);
   });
 
   it('5) joker RESTREINT « (Goût ou Toucher) » : limité à la liste', () => {
-    const LV: CareerLevelData[] = [{ ...C1[0], talents: A(['Sens aiguisé (Goût ou Toucher)']) }];
+    const LV: CareerLevelData[] = [{ ...C1[0], talents: [{ id: 'sens-aiguise', choix: ['gout', 'toucher'] }] }];
     const slots = talentSlots(LV, 1);
-    expect(inCareerStatus(slots, {}, 'Sens aiguisé', 'Goût')).toBe('free');
-    expect(inCareerStatus(slots, {}, 'Sens aiguisé', 'Vue')).toBe(null);
+    expect(inCareerStatus(slots, {}, 'sens-aiguise', 'gout')).toBe('free');
+    expect(inCareerStatus(slots, {}, 'sens-aiguise', 'vue')).toBe(null);
   });
 });
 
@@ -199,23 +199,78 @@ describe('désignation d\'un emplacement de Groupe d\'arme par specId (données 
   });
 });
 
-describe('wildcardSpecs — specs valides à joker (SOURCE UNIQUE créateur + avancement)', () => {
+describe('un emplacement « (Au choix) » se désigne par une spécialisation (LDB 10 l.17)', () => {
+  const tSlots = talentSlots(levelsForCareer('pretre'), 1);
+  const beni = tSlots.find((s) => s.options.some((o) => o.optionId === 'beni' && o.wildcard))!;
+  it('Béni (Au choix) du Prêtre : couvert par une spécialisation, jamais nu', () => {
+    expect(beni, 'Prêtre N1 porte « Béni (Au choix) »').toBeDefined();
+    expect(slotCovers(beni, 'beni', undefined)).toBe(false);
+    expect(slotCovers(beni, 'beni', 'sigmar')).toBe(true);
+  });
+  it('une désignation « beni » nue déjà persistée n\'est pas lue : l\'emplacement redevient à désigner', () => {
+    const h = hero({ career: 'pretre', careerSlotChoices: { pretre: { [beni.key]: 'beni' } } });
+    expect(designationsFor(h, 'pretre')).toEqual({});
+    expect(inCareerStatus(tSlots, designationsFor(h, 'pretre'), 'beni', undefined)).toBeNull();
+    expect(freeSlotFor(tSlots, designationsFor(h, 'pretre'), 'beni', 'sigmar')).toBe(beni);
+    expect(designateSlot(h, 'pretre', beni, 'beni', 'sigmar', tSlots).ok).toBe(true);
+    expect(h.careerSlotChoices?.pretre).toEqual({ [beni.key]: 'beni|sigmar' });
+  });
+  it('Béni du Prêtre (catalogue FERMÉ) : la sentinelle et une spécialisation hors pool ne couvrent pas', () => {
+    expect(slotCovers(beni, 'beni', 'Au choix')).toBe(false);
+    expect(slotCovers(beni, 'beni', 'zzz-inexistant')).toBe(false);
+  });
+  it('un joker de Compétence (spécialisations OUVERTES) est couvert par un texte libre, jamais par la sentinelle', () => {
+    const savoir = skillSlots(levelsForCareer('enqueteur'), 3).find((s) => s.options.some((o) => o.optionId === 'savoir' && o.wildcard))!;
+    expect(savoir, 'Enquêteur N3 porte « Savoir (Au choix) »').toBeDefined();
+    expect(slotCovers(savoir, 'savoir', 'une-specialisation-creee')).toBe(true);
+    expect(slotCovers(savoir, 'savoir', 'Au choix')).toBe(false);
+  });
+  it('un joker de Compétence au catalogue FERMÉ (`specsOpen` absent de l’entrée) n’est couvert que par son pool', () => {
+    const cac = skillSlots(levelsForCareer('milicien'), 1).find((s) => s.options.some((o) => o.optionId === 'corps-a-corps' && o.wildcard))!;
+    expect(cac, 'Milicien N1 porte « Corps à corps (Au choix) »').toBeDefined();
+    expect(slotCovers(cac, 'corps-a-corps', 'une-specialisation-creee')).toBe(false);
+    expect(slotCovers(cac, 'corps-a-corps', 'escrime')).toBe(true);
+  });
+  it('un joker de Talent à entrée OUVERTE (`specsOpen` de l’entrée) est couvert par un texte libre, jamais par la sentinelle', () => {
+    const savant = talentSlots(levelsForCareer('erudit'), 3).find((s) => s.options.some((o) => o.optionId === 'savant' && o.wildcard))!;
+    expect(savant, 'Érudit N3 porte « Savant (Au choix) »').toBeDefined();
+    expect(slotCovers(savant, 'savant', 'une-specialisation-creee')).toBe(true);
+    expect(slotCovers(savant, 'savant', 'Au choix')).toBe(false);
+  });
+  it('freeSlotFor / designateSlot refusent Béni nu', () => {
+    expect(freeSlotFor(tSlots, {}, 'beni', undefined)).toBeUndefined();
+    const h = hero({ career: 'pretre' });
+    expect(designateSlot(h, 'pretre', beni, 'beni', undefined, tSlots).ok).toBe(false);
+    expect(designationsFor(h, 'pretre')).toEqual({});
+  });
+});
+
+describe('wildcardSpecs — pool d’un joker (SOURCE UNIQUE créateur + avancement)', () => {
   it('Béni → cultes du registre (ids ; dont les dieux gnomes NADJ)', () => {
-    const s = wildcardSpecs('Béni');
+    const s = wildcardSpecs({ label: 'Béni' });
     expect(s).toContain('sigmar');
     expect(s).toContain('evawn');
   });
   it('Magie des Arcanes → ids de domaine (specs id-based, data-driven)', () => {
-    expect(wildcardSpecs('Magie des Arcanes')).toEqual(expect.arrayContaining(['feu', 'ombres', 'metal']));
+    expect(wildcardSpecs({ label: 'Magie des Arcanes' })).toEqual(expect.arrayContaining(['feu', 'ombres', 'metal']));
   });
   it('Magie du Chaos → ids nurgle / slaanesh / tzeentch', () => {
-    expect(wildcardSpecs('Magie du Chaos').sort()).toEqual(['nurgle', 'slaanesh', 'tzeentch']);
+    expect(wildcardSpecs({ label: 'Magie du Chaos' }).sort()).toEqual(['nurgle', 'slaanesh', 'tzeentch']);
   });
   it('Invocation → cultes (ids)', () => {
-    expect(wildcardSpecs('Invocation')).toContain('sigmar');
+    expect(wildcardSpecs({ label: 'Invocation' })).toContain('sigmar');
   });
   it('libellé sans domaine/culte/specs → []', () => {
-    expect(wildcardSpecs('Inexistant-xyz')).toEqual([]);
+    expect(wildcardSpecs({ label: 'Inexistant-xyz' })).toEqual([]);
+  });
+  it('entrée par id (avancement) = entrée par libellé (créateur) : un seul pool', () => {
+    expect(wildcardSpecs({ label: 'Béni', optionId: 'beni', wildcard: true }, 'talent')).toEqual(wildcardSpecs({ label: 'Béni' }));
+    expect(wildcardSpecs({ label: 'Savoir', optionId: 'savoir', wildcard: true }, 'skill')).toEqual(wildcardSpecs({ label: 'Savoir' }));
+    expect(wildcardSpecs({ label: 'Béni', optionId: 'beni', wildcard: true }, 'talent').length).toBeGreaterThan(0);
+  });
+  it('liste restreinte « (A ou B) » : prime sur le pool de la def, par les deux entrées', () => {
+    expect(wildcardSpecs({ label: 'Béni', optionId: 'beni', wildcard: true, specOptions: ['sigmar'] }, 'talent')).toEqual(['sigmar']);
+    expect(wildcardSpecs({ label: 'Béni', specOptions: ['sigmar'] })).toEqual(['sigmar']);
   });
 });
 

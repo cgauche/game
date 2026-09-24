@@ -41,8 +41,8 @@ import {
   pettySpellQuotaFor,
 } from '../../engine/creation';
 import { rule } from '../../engine/policy';
-import { createHero, resolveSpeciesTalents, RANDOM_ENTRY_RE } from '../../engine/character';
-import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs } from '../../engine/careerSlots';
+import { createHero, resolveSpeciesTalents, RANDOM_ENTRY_RE, talentRefOfLabel } from '../../engine/character';
+import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs, skillSlots, talentSlots, statutOuRefus } from '../../engine/careerSlots';
 import { careerSkillAdditions } from '../../engine/talentEffects';
 import { findSpeciesById, rigSpeciesId, findTalent, careers, levelsForCareer, findSpell, advancementLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData, trappingRefLabel, type TrappingRef } from '../../data';
 import { slugId } from '../../data/slug';
@@ -582,11 +582,11 @@ export function speciesSkillStep(d: CreatorDraft, skill: string, dir: 1 | -1): (
   return null;
 }
 
-/** Options de spec d'une entrée « (Au choix) » (liste restreinte, sinon `wildcardSpecs` partagé). */
+/** Options de spec d'une entrée « (Au choix) » (`wildcardSpecs`). */
 export function specOptionsFor(entry: string): string[] {
   const opt = parseEntry(entry)[0];
   if (!opt.wildcard) return [];
-  return opt.specOptions ?? wildcardSpecs(opt.label);
+  return wildcardSpecs(opt);
 }
 
 /** Libellés concrets proposés par une entrée de talent à choix (joker, joker restreint,
@@ -597,7 +597,7 @@ export function talentEntryChoices(entry: string): string[] | null {
   const out: string[] = [];
   for (const o of opts) {
     if (!o.wildcard) out.push(concreteLabel(o.label, o.spec));
-    else for (const s of o.specOptions ?? wildcardSpecs(o.label)) out.push(concreteLabel(o.label, s));
+    else for (const s of wildcardSpecs(o)) out.push(concreteLabel(o.label, s));
   }
   return out;
 }
@@ -608,6 +608,23 @@ export function talentEntryChoices(entry: string): string[] | null {
  *  fonction que `src/data/pregens.ts`), le probe portant déjà les talents résolus en id. */
 export function pettySpellQuota(d: CreatorDraft): number {
   return pettySpellQuotaFor(probeHero(d, true, true));
+}
+
+/** Refus du Talent de carrière du brouillon, ou `null` : même lecture des emplacements du Niveau 1
+ *  que `createHero` (`statutOuRefus`), puis le Maxi. Un brouillon restauré passe par ici avant
+ *  toute construction. */
+export function careerTalentMessage(d: CreatorDraft): string | null {
+  if (!d.careerTalent) return 'Choisissez votre Talent de carrière.';
+  const { talentId, spec } = talentRefOfLabel(d.careerTalent);
+  const levels = levelsForCareer(d.careerId);
+  const tSlots = talentSlots(levels, 1);
+  switch (statutOuRefus(tSlots, {}, talentId, spec, [...skillSlots(levels, 1), ...tSlots])) {
+    case 'absent': return `« ${d.careerTalent} » ne figure pas parmi les Talents de votre premier niveau de carrière : choisissez-en un autre.`;
+    case 'sansSpec': return `Choisissez la spécialisation de votre Talent de carrière « ${d.careerTalent} ».`;
+    case 'nonCouvert': return `« ${d.careerTalent} » n'est proposé par aucun Talent de votre premier niveau de carrière : choisissez-en un autre.`;
+  }
+  if (talentMaxReached(probeHero(d, false), talentId, spec)) return `« ${d.careerTalent} » : Maxi déjà atteint.`;
+  return null;
 }
 
 /** Options du talent de carrière (entrées brutes du Niveau 1) : libellé sélectionné + Maxi. */
@@ -740,12 +757,8 @@ const STEP_VALIDATORS: Record<StepId, (c: StepCtx) => string | null> = {
       if (adv < 0 || adv > MAX_ADV_PER_SKILL) return `Maximum ${MAX_ADV_PER_SKILL} Augmentations par Compétence à la création (« ${e} »).`;
       if (adv > 0 && isUnresolvedChoice(e) && !d.specChoices[e]) return `Choisissez la Spécialisation de « ${e} ».`;
     }
-    if (!d.careerTalent) return 'Choisissez votre Talent de carrière.';
-    {
-      const { name, spec } = splitLabel(d.careerTalent);
-      const talentId = findTalent(name)?.id ?? slugId(name);
-      if (talentMaxReached(probeHero(d, false), talentId, spec)) return `« ${d.careerTalent} » : Maxi déjà atteint.`;
-    }
+    const refusTalent = careerTalentMessage(d);
+    if (refusTalent) return refusTalent;
     const quota = pettySpellQuota(d);
     if (quota && d.pettySpells.length !== quota) {
       return `Choisissez vos ${quota} sorts de Magie mineure (actuel : ${d.pettySpells.length}).`;
@@ -785,7 +798,7 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
     label: d.label.trim() || 'Aventurier',
     manualChars: draftChars(d),
     charAdvancesAlloc: d.charAdvancesAlloc,
-    careerTalent: d.careerTalent,
+    careerTalent: d.careerTalent ? talentRefOfLabel(d.careerTalent) : undefined,
     skillAdvances: d.skillAdvances,
     speciesSkillAdvances: { plus5, plus3 },
     speciesTalentsResolved: resolvedSpeciesTalents(d),
@@ -845,7 +858,7 @@ export function careerSkillsDone(d: CreatorDraft): boolean {
 export function talentsDone(d: CreatorDraft): boolean {
   if (speciesTalentRandomCount(d) > 0 && !d.talentsRolled) return false;
   if (!speciesTalentChoicesDone(d)) return false;
-  if (!d.careerTalent) return false;
+  if (careerTalentMessage(d)) return false;
   const quota = pettySpellQuota(d);
   if (quota && d.pettySpells.length !== quota) return false;
   return true;
@@ -885,7 +898,8 @@ export function skillsSubMessage(d: CreatorDraft, sub: SkillsSub): string {
         const entry = advancementLabel('talents', ref);
         if (splitTopLevelOu(entry).length > 1 && !d.speciesTalentChoices[entry]) return `Choisissez : « ${entry} ».`;
       }
-      if (!d.careerTalent) return 'Choisissez votre Talent de carrière.';
+      const refusTalent = careerTalentMessage(d);
+      if (refusTalent) return refusTalent;
       const quota = pettySpellQuota(d);
       if (quota && d.pettySpells.length !== quota) return `Choisissez vos ${quota} sorts de Magie mineure (actuel : ${d.pettySpells.length}).`;
       return 'Talents tranchés — race, carrière et Magie mineure réglés.';
