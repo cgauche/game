@@ -523,8 +523,8 @@ export const LANES = [
       'tous les LECTEURS de docs/ et docs/raw/ — aucun n’y écrit : `docs:check:tout` vérifie chaque dérivé ' +
       'sans l’écrire. `build` y tient parce que c’est une des gates les moins chères (22,5 s au ' +
       'dernier run : il ne joue plus que `gen && vite build`) et que cette lane est la plus courte — 70,8 s ' +
-      'sans lui, 93,2 s avec (durees.json, 2026-09-08), loin sous le mur de `types` ; il n’écrit rien : ' +
-      '`npm run gen -- --check` a jugé les registres à jour avant toute lane',
+      'sans lui, 93,2 s avec (durees.json, 2026-09-08), loin sous le mur de `types` ; il n’écrit ni docs/ ' +
+      'ni docs/raw/ : ses écritures sont celles de son entrée `build`',
   },
 ]
 

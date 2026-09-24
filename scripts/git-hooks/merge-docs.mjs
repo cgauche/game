@@ -19,6 +19,7 @@
 //                   puis entrant, puis ancêtre — une section AJOUTÉE par l'entrant garde donc SON
 //                   champ. Conflit résiduel = divergence de prose, donc humain : marqueurs écrits
 //                   dans %A et exit 1.
+import '../node-requis.mjs'
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'

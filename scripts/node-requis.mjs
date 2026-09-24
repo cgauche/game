@@ -4,7 +4,9 @@
 // Chargé sans condition, par effet d'évaluation — un point d'entrée `import.meta.main` (Node >= 22.18)
 // ne se déclare pas « principal » sous un Node plus ancien et sort 0 sans rien faire. Les points
 // d'entrée qui rendent un verdict refusent donc avant lui :
-//   - les hooks shell de `scripts/git-hooks/`, avant leur `.mjs` (un `post-*` sort 0 sans le lancer) ;
+//   - les hooks shell du `core.hooksPath` de `postinstall`, avant leur `.mjs` (un `post-*` sort 0 sans
+//     le lancer) ;
+//   - les pilotes de fusion `merge.<nom>.driver` de `postinstall` : leur premier import ;
 //   - `npm run gates` : premier import de `scripts/gates/toutes.mjs` ;
 //   - `npm install`/`npm ci` : `.npmrc` `engine-strict`.
 // Un script lancé seul (`npm run docs:check`) n'est pas couvert. `.npmrc` `node-options` le

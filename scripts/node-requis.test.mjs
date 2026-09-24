@@ -1,23 +1,30 @@
 // Porte de version de Node (#1801) : la règle PURE, puis son CÂBLAGE dans chaque point d'entrée qui
-// rend un verdict. `.npmrc` et les hooks shell de `scripts/git-hooks/` se jouent de bout en bout sur un
-// FAUX ARBRE en dossier temporaire — `package.json` `engines.node` y exige un Node inexistant, et les
-// VRAIS `.npmrc`, `scripts/node-requis.mjs` et hooks shell y sont copiés. `npm run gates` se juge sur l'AST de
-// `scripts/gates/toutes.mjs`, dont les imports ne se copient pas.
+// rend un verdict, tel que `package.json` le déclare. `.npmrc` et les hooks shell du `core.hooksPath`
+// se jouent de bout en bout sur un FAUX ARBRE en dossier temporaire — `engines.node` y exige un Node
+// inexistant, et les VRAIS `.npmrc`, `scripts/node-requis.mjs` et hooks shell y sont copiés. Les
+// modules Node lancés sans hook shell (`npm run gates`, pilotes `merge.<nom>.driver`) se jugent sur
+// leur AST : leurs imports ne se copient pas.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { scriptKindDe, typescript } from './guards/lib/dialecte.mjs'
 import { listerDossier } from './guards/lib/lister.mjs'
 import { refusDeVersion } from './node-requis.mjs'
 
 const RACINE = fileURLToPath(new URL('..', import.meta.url))
-const DOSSIER_HOOKS = join(RACINE, 'scripts', 'git-hooks')
-/** Les hooks shell : chaque fichier de `scripts/git-hooks/` sans extension. */
+const { scripts: SCRIPTS } = JSON.parse(readFileSync(join(RACINE, 'package.json'), 'utf8'))
+/** Le dossier de hooks que `postinstall` déclare à git (`core.hooksPath`). */
+const DOSSIER_HOOKS = join(RACINE, /core\.hooksPath (\S+)/.exec(SCRIPTS.postinstall)[1])
+/** Les hooks shell : chaque fichier du dossier de hooks sans extension. */
 const HOOKS_SHELL = listerDossier(DOSSIER_HOOKS).filter((f) => !f.includes('.'))
+/** Les modules Node lancés sans hook shell : `npm run gates` et chaque pilote `merge.<nom>.driver` de
+ *  `postinstall`. */
+const PILOTES = [...new Set([...SCRIPTS.postinstall.matchAll(/merge\.[\w-]+\.driver "node (\S+)/g)].map((m) => m[1]))]
+const MODULES_LANCES = [/^node (\S+)/.exec(SCRIPTS.gates)[1], ...PILOTES]
 /** githooks(5) : un hook `post-*` ne peut pas faire échouer l'opération qui vient d'avoir lieu. */
 const estPostHook = (hook) => hook.startsWith('post-')
 /** Les `.mjs` qu'un hook shell lance à côté de lui, `"$(dirname "$0")/<nom>.mjs"`. */
@@ -108,11 +115,15 @@ test('câblage des hooks shell de `scripts/git-hooks/` : chacun refuse AVANT son
   }
 })
 
-test('câblage de `npm run gates` : la PREMIÈRE requête de module de `scripts/gates/toutes.mjs` est la porte', () => {
+test('câblage de `npm run gates` et des pilotes de fusion : la PREMIÈRE requête de module de chacun est la porte', () => {
+  assert.ok(PILOTES.length, `aucun pilote de fusion lu dans postinstall : ${SCRIPTS.postinstall}`)
   const ts = typescript()
-  const chemin = join(RACINE, 'scripts', 'gates', 'toutes.mjs')
-  const source = ts.createSourceFile(chemin, readFileSync(chemin, 'utf8'), ts.ScriptTarget.Latest, true, scriptKindDe(chemin))
-  const premiere = source.statements.find((s) => (ts.isImportDeclaration(s) || ts.isExportDeclaration(s)) && s.moduleSpecifier)
-  assert.equal(premiere?.moduleSpecifier.text, '../node-requis.mjs')
-  assert.equal(premiere.importClause, undefined, 'la porte s’importe pour son seul effet d’évaluation')
+  for (const module of MODULES_LANCES) {
+    const chemin = join(RACINE, module)
+    const source = ts.createSourceFile(chemin, readFileSync(chemin, 'utf8'), ts.ScriptTarget.Latest, true, scriptKindDe(chemin))
+    const premiere = source.statements.find((s) => (ts.isImportDeclaration(s) || ts.isExportDeclaration(s)) && s.moduleSpecifier)
+    const porte = relative(dirname(chemin), join(RACINE, 'scripts', 'node-requis.mjs')).replaceAll('\\', '/')
+    assert.equal(premiere?.moduleSpecifier.text, porte.startsWith('.') ? porte : `./${porte}`, module)
+    assert.equal(premiere.importClause, undefined, `${module} : la porte s’importe pour son seul effet d’évaluation`)
+  }
 })

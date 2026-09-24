@@ -352,6 +352,8 @@ test('ANGLE MORT de la fraîcheur : un corps « rendu sous une autre plateforme 
 })
 
 const AUTRES_PLATEFORMES = Object.keys(PLATEFORMES).filter((p) => p !== process.platform)
+/** Raison d'un corps périmé que `docs:build` ne guérit pas : l'hôte et `p` en déclarent d'autres. */
+const DIVERGENT = (p) => ` : l'hôte et ${p} ne déclarent pas les mêmes corps périmés, \`docs:build\` ne le guérit pas\n`
 
 test('`--check --tout` : corps committé périmé ET rendu propre à la plateforme — `docs:build` ne guérit pas l’écart de la plateforme, sortie 1', { skip: !AUTRES_PLATEFORMES.length && 'hôte sans autre plateforme à rendre' }, () => {
   const { racine, git } = depotReel({ separateur: true })
@@ -361,9 +363,10 @@ test('`--check --tout` : corps committé périmé ET rendu propre à la platefor
     git('add', DOC_A)
     const rouge = executer(racine, ['--check', '--tout'])
     assert.equal(rouge.status, 1, `le corps rendu sous une autre plateforme n'est pas celui que \`docs:build\` écrit : ${rouge.sortie}`)
-    assert.match(rouge.sortie, /docs:check — g\/a\.mjs — corps périmé\n/)
+    const [premiere] = AUTRES_PLATEFORMES
+    assert.ok(rouge.sortie.includes(`docs:check — g/a.mjs — corps périmé${DIVERGENT(premiere)}`), rouge.sortie)
     for (const p of AUTRES_PLATEFORMES) {
-      assert.ok(rouge.sortie.includes(`docs:check — g/a.mjs — rendu sous ${p} — corps périmé\n`), rouge.sortie)
+      assert.ok(rouge.sortie.includes(`docs:check — g/a.mjs — rendu sous ${p} — corps périmé${DIVERGENT(premiere)}`), rouge.sortie)
     }
 
     // `docs:build` régénère : le rouge de l'hôte guérit, celui de la plateforme SUBSISTE.
@@ -371,9 +374,9 @@ test('`--check --tout` : corps committé périmé ET rendu propre à la platefor
     git('add', '-A')
     const apres = executer(racine, ['--check', '--tout'])
     assert.equal(apres.status, 1, apres.sortie)
-    assert.doesNotMatch(apres.sortie, /docs:check — g\/a\.mjs — corps périmé\n/)
+    assert.doesNotMatch(apres.sortie, /docs:check — g\/a\.mjs — corps périmé/)
     for (const p of AUTRES_PLATEFORMES) {
-      assert.ok(apres.sortie.includes(`docs:check — g/a.mjs — rendu sous ${p} — corps périmé\n`), apres.sortie)
+      assert.ok(apres.sortie.includes(`docs:check — g/a.mjs — rendu sous ${p} — corps périmé${DIVERGENT(premiere)}`), apres.sortie)
     }
   } finally {
     rmSync(racine, { recursive: true, force: true })
@@ -388,7 +391,7 @@ test('`--check --tout` : corps committé = rendu d’une AUTRE plateforme — le
     git('add', DOC_A)
     const rouge = executer(racine, ['--check', '--tout'])
     assert.equal(rouge.status, 1, `\`docs:build\` écrirait le rendu de l'hôte et ferait naître le rouge de l'autre plateforme : ${rouge.sortie}`)
-    assert.match(rouge.sortie, /docs:check — g\/a\.mjs — corps périmé\n/)
+    assert.ok(rouge.sortie.includes(`docs:check — g/a.mjs — corps périmé${DIVERGENT(AUTRES_PLATEFORMES[0])}`), rouge.sortie)
     for (const p of AUTRES_PLATEFORMES) assert.ok(!rouge.sortie.includes(`rendu sous ${p} — corps périmé`), rouge.sortie)
   } finally {
     rmSync(racine, { recursive: true, force: true })
@@ -430,7 +433,10 @@ test('`--check --tout` : une sortie 2 sans corps DÉCLARÉ périmé ne se dit pa
   try {
     const rouge = executer(racine, ['--check', '--tout'], { BANC_SORTIE: String(CODE_CORPS_PERIME) })
     assert.equal(rouge.status, 1, `aucun corps déclaré : \`docs:build\` n'a rien de prouvé à guérir : ${rouge.sortie}`)
-    assert.match(rouge.sortie, /docs:check — g\/b\.mjs — corps périmé\n/)
+    assert.ok(
+      rouge.sortie.includes('docs:check — g/b.mjs — corps périmé : aucun corps déclaré périmé (`declarerCorpsPerime`), `docs:build` ne le guérit pas\n'),
+      rouge.sortie,
+    )
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }

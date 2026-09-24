@@ -582,7 +582,8 @@ function argumentsDe(argv, drapeau) {
  * En `--check`, rien n'est écrit : chaque générateur et chaque vérificateur rend son verdict, et tous
  * les rouges sont nommés à la fin. Le code de sortie dit si `docs:build` les guérit :
  * `CODE_CORPS_PERIME` quand CHAQUE rouge est un corps, un pied ou `.sources-lues.json` périmé, 1 dès
- * qu'un rouge ne se régénère pas (cliquet, vérificateur, refus) — c'est ce que lit `publier.mjs`.
+ * qu'un rouge ne se régénère pas (cliquet, vérificateur, refus, corps périmé qu'aucun corps déclaré
+ * ne prouve ou que l'hôte et une plateforme ne déclarent pas pareil) — c'est ce que lit `publier.mjs`.
  */
 export async function executer({
   cwd,
@@ -659,9 +660,8 @@ export async function executer({
     const parGenerateur = {}
     // Verdicts de `--check`, TOUS collectés : un générateur rouge ne masque pas les suivants.
     const rouges = []
-    // Par générateur : l'hôte a-t-il déclaré au moins un corps périmé, et chaque plateforme rendue les
-    // mêmes ?
-    const memesPerimes = new Map()
+    // Par générateur : pourquoi `docs:build` ne guérirait PAS son corps périmé ; `null` s'il le guérit.
+    const nonGueri = new Map()
     // Chaque refus dit s'il se GUÉRIT en régénérant (`docs:build`) : c'est le code de sortie.
     const refus = []
     const refuser = (message, { guerit = false } = {}) => {
@@ -713,7 +713,13 @@ export async function executer({
         rouges.push({ script: g.script, issue, plateforme })
       }
       const perimesHote = corpsRendus(corpsDe(null))
-      memesPerimes.set(g.script, perimesHote !== '' && enPlus.every((plateforme) => corpsRendus(corpsDe(plateforme)) === perimesHote))
+      const divergente = enPlus.find((plateforme) => corpsRendus(corpsDe(plateforme)) !== perimesHote)
+      nonGueri.set(
+        g.script,
+        divergente
+          ? `l'hôte et ${divergente} ne déclarent pas les mêmes corps périmés`
+          : perimesHote === '' ? 'aucun corps déclaré périmé (`declarerCorpsPerime`)' : null,
+      )
       if (rougePrincipal) continue
       const lues = fusionnerLectures(dossier)
       // Un chemin lu hors racine sort de la mesure : dit ici, il cesse d'être indiscernable d'une
@@ -804,9 +810,10 @@ export async function executer({
     // plateforme, n'y guérit que si l'hôte l'a DÉCLARÉ (`declarerCorpsPerime`) et que chaque plateforme
     // déclare les MÊMES corps périmés que lui. Une sortie 2 sans corps déclaré ne prouve rien.
     for (const { script, issue, plateforme } of rouges) {
+      const raison = guerissable(issue) ? nonGueri.get(script) : null
       refus.push({
-        message: `docs:check — ${script}${plateforme ? ` — rendu sous ${plateforme}` : ''} — ${natureDuRouge(issue)}`,
-        guerit: guerissable(issue) && memesPerimes.get(script),
+        message: `docs:check — ${script}${plateforme ? ` — rendu sous ${plateforme}` : ''} — ${natureDuRouge(issue)}${raison ? ` : ${raison}, \`docs:build\` ne le guérit pas` : ''}`,
+        guerit: guerissable(issue) && !raison,
       })
     }
     if (refus.length) {
