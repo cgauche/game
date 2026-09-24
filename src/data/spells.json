@@ -17971,7 +17971,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "Lame de fond : une vague énorme s'écrase sur la cible (personne, bateau, phare…) — collision d'IC 15 (Indice de Collision, MDG p.111) — arbitrage MJ (collisions navales non modélisées)."
+                "text": "Lame de fond : une vague énorme s'écrase sur la cible (personne, bateau, phare…) — collision d'IC 15 (Indice de Collision) — arbitrage MJ (collisions navales non modélisées)."
               }
             ]
           }
@@ -18298,7 +18298,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "Tourbillon : un tourbillon (rotation lente, MDG p.113) se forme dans la ZdE ; Surincantation : 5 DR → Tourbillon, 8 → Puissant vortex, 13 → Maelstrom, 21+ → Maelstrom primordial — arbitrage MJ (périls nautiques non modélisés)."
+                "text": "Tourbillon : un tourbillon (rotation lente) se forme dans la ZdE ; Surincantation : 5 DR → Tourbillon, 8 → Puissant vortex, 13 → Maelstrom, 21+ → Maelstrom primordial — arbitrage MJ (périls nautiques non modélisés)."
               }
             ]
           }
@@ -18394,7 +18394,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "Mer d'huile : l'effet Calme plat (tableau Effet du vent, MDG p.107) s'applique dans une ZdE de (BFM) milles pendant (BFM) minutes — arbitrage MJ (échelle de vent non modélisée)."
+                "text": "Mer d'huile : l'effet Calme plat (tableau Effet du vent) s'applique dans une ZdE de (BFM) milles pendant (BFM) minutes — arbitrage MJ (échelle de vent non modélisée)."
               }
             ]
           }
@@ -18690,7 +18690,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "Collet d'Abulla : le collet soulève la cible à 2 mètres du sol, l'attire au round suivant à 5 mètres au-dessus de vous et la fait se déplacer avec vous ; elle subit des Dégâts de chute quand elle est relâchée (LDB p.166) — arbitrage MJ."
+                "text": "Collet d'Abulla : le collet soulève la cible à 2 mètres du sol, l'attire au round suivant à 5 mètres au-dessus de vous et la fait se déplacer avec vous ; elle subit des Dégâts de chute quand elle est relâchée — arbitrage MJ."
               }
             ]
           }
@@ -18936,7 +18936,7 @@
               },
               {
                 "op": "narrative",
-                "text": "Édifice érigé : le mur fait 1 mètre de haut et 15 centimètres d'épaisseur et vaut couverture totale (LDB p.161) ; chaque +2 DR permet aussi 1 mètre de hauteur (et 15 centimètres d'épaisseur) de plus, une ouverture par section de 2 mètres, ou une forme courbe ou inclinée ; lancé plusieurs fois il bâtit un squelette de bâtiment qui s'effondre en (Bonus de Force Mentale + DR) jours sans Savoir (Ingénierie) ni Métier (Maçonnerie) — arbitrage MJ."
+                "text": "Édifice érigé : le mur fait 1 mètre de haut et 15 centimètres d'épaisseur et vaut couverture totale ; chaque +2 DR permet aussi 1 mètre de hauteur (et 15 centimètres d'épaisseur) de plus, une ouverture par section de 2 mètres, ou une forme courbe ou inclinée ; lancé plusieurs fois il bâtit un squelette de bâtiment qui s'effondre en (Bonus de Force Mentale + DR) jours sans Savoir (Ingénierie) ni Métier (Maçonnerie) — arbitrage MJ."
               }
             ]
           }
@@ -19040,7 +19040,7 @@
               },
               {
                 "op": "narrative",
-                "text": "Halo purificateur : le Talent Résistance (Maladie) profite à quiconque se tient dans la zone éclairée par la source empreinte ; les sorciers y reçoivent, pour dissiper les sorts de Magie noire et du Chaos, un bonus égal au total de vos DR d'Incantation ; la source de lumière (LDB p.308-309) fixe la Portée et la Durée, dans la limite d'1 kilomètre et d'une journée — arbitrage MJ."
+                "text": "Halo purificateur : le Talent Résistance (Maladie) profite à quiconque se tient dans la zone éclairée par la source empreinte ; les sorciers y reçoivent, pour dissiper les sorts de Magie noire et du Chaos, un bonus égal au total de vos DR d'Incantation ; la source de lumière fixe la Portée et la Durée, dans la limite d'1 kilomètre et d'une journée — arbitrage MJ."
               }
             ]
           }
@@ -19325,7 +19325,7 @@
                 "ops": [
                   {
                     "op": "narrative",
-                    "text": "Mains de Karkora : les cibles attrapées sont Empoignées (LDB p.163) par les mains, dont la Force égale votre Force Mentale — Empoignade non modélisée, arbitrage MJ."
+                    "text": "Mains de Karkora : les cibles attrapées sont Empoignées par les mains, dont la Force égale votre Force Mentale — Empoignade non modélisée, arbitrage MJ."
                   }
                 ]
               }
@@ -19425,7 +19425,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "Orbe de Hysh : vous maniez par télékinésie un objet d'Encombrement au maximum égal à votre (Bonus de Force Mentale + DR), à une vitesse égale à votre Bonus de Force Mentale ; si l'objet a une Influence malveillante (LDB p.236), l'orbe l'emprisonne et les Tests de Corruption dus à son exposition deviennent Accessible (+20) — télékinésie non modélisée, arbitrage MJ."
+                "text": "Orbe de Hysh : vous maniez par télékinésie un objet d'Encombrement au maximum égal à votre (Bonus de Force Mentale + DR), à une vitesse égale à votre Bonus de Force Mentale ; si l'objet a une Influence malveillante, l'orbe l'emprisonne et les Tests de Corruption dus à son exposition deviennent Accessible (+20) — télékinésie non modélisée, arbitrage MJ."
               }
             ]
           }
@@ -21928,7 +21928,7 @@
               "ops": [
                 {
                   "op": "narrative",
-                  "text": "Mistral de la stratosphère : la cible subit la première pénalité d'Exposition au Froid (WFJDR, page 181) — Exposition au Froid non modélisée, arbitrage MJ."
+                  "text": "Mistral de la stratosphère : la cible subit la première pénalité d'Exposition au Froid — Exposition au Froid non modélisée, arbitrage MJ."
                 }
               ]
             }
@@ -22128,7 +22128,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "Projection astrale : votre esprit quitte votre corps, qui reste en sommeil profond ; invisible, il se déplace normalement, voit et entend, traverse les obstacles solides, mais ne peut ni lancer de sorts, ni communiquer, ni manipuler d'objets matériels ; si vous ne le regagnez pas avant la fin du Sort, vous effectuez un Test contre l'Exposition Modérée à la Corruption (WFJDR, page 182) — forme astrale et exposition conditionnée au non-retour non modélisées, arbitrage MJ."
+                "text": "Projection astrale : votre esprit quitte votre corps, qui reste en sommeil profond ; invisible, il se déplace normalement, voit et entend, traverse les obstacles solides, mais ne peut ni lancer de sorts, ni communiquer, ni manipuler d'objets matériels ; si vous ne le regagnez pas avant la fin du Sort, vous effectuez un Test contre l'Exposition Modérée à la Corruption — forme astrale et exposition conditionnée au non-retour non modélisées, arbitrage MJ."
               }
             ]
           }
@@ -22998,7 +22998,7 @@
                         },
                         {
                           "op": "narrative",
-                          "text": "Désorientation (9–10) : la cible se roule en boule et est Sans défense (WFJDR, page 162) — arbitrage MJ."
+                          "text": "Désorientation (9–10) : la cible se roule en boule et est Sans défense — arbitrage MJ."
                         }
                       ]
                     }
