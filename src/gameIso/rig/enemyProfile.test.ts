@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { classifyEnemy, enemyRigProfile, entityRigProfile } from './enemyProfile';
 import { combatantOverlays } from './parts/combatantVisuals';
 import { creatures } from '../../data';
+import { setDataset } from '../../data/overrides';
 import { mutationById } from '../../data/mutations';
 import { raceById, DEFAULT_RACE_ID } from './races';
 import { bipedDef } from './creatures';
@@ -286,11 +287,12 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
 /** Sexe et coiffure posés par deux couches différentes (`rigAppearance`) : `coiffureRetombee` (#1897). */
 describe('coiffure du record, sexe de l’entité — la coiffure retombe', () => {
   it('coiffure F au record + `sex: M` sur l’entité → coiffure par défaut de l’espèce et du sexe rendus, jamais la chevelure d’erreur', () => {
-    const rec = creatures.find((c) => c.id === 'villageois')!;
-    const avant = rec.appearance;
+    const avant = [...creatures];
     const rendu = (p: NonNullable<ReturnType<typeof entityRigProfile>>) => bonesToSvg(resolveRig(p.appearance, p.equip, {}, p.tenue, 'front', []));
     const attendu = rendu(entityRigProfile('villageois', 1, { sex: 'M' })!);
-    rec.appearance = { ...avant!, sex: 'F', hairstyle: 'queue-de-cheval-haute-f' };
+    setDataset('creatures', creatures.map((c) => (c.id === 'villageois'
+      ? { ...c, appearance: { ...c.appearance!, sex: 'F' as const, hairstyle: 'queue-de-cheval-haute-f' } }
+      : c)));
     try {
       expect(entityRigProfile('villageois', 1)!.appearance).toMatchObject({ sex: 'F', hairstyle: 'queue-de-cheval-haute-f' });
       const p = entityRigProfile('villageois', 1, { sex: 'M' })!;
@@ -301,7 +303,7 @@ describe('coiffure du record, sexe de l’entité — la coiffure retombe', () =
       // La contradiction posée par UNE couche reste une faute de donnée VISIBLE (le schéma la nomme).
       expect(rendu(entityRigProfile('villageois', 1, { sex: 'M', hairstyle: 'queue-de-cheval-haute-f' })!)).toContain(COIFFURE_HORS_POOL);
     } finally {
-      rec.appearance = avant;
+      setDataset('creatures', avant);
     }
   });
 });
