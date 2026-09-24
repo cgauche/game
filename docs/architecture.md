@@ -133,6 +133,15 @@ scripts/migrations/         Migrations de donnée REJOUABLES (une par lot, daté
                             jetable de la tête, mesuré par EMPREINTE (`lib/empreinteRejeu.mjs` —
                             hors dépôt, `git diff` bascule en `--no-index` et rend un faux vert), et
                             le hook `pre-push` l'arme dès que la plage poussée touche le périmètre
+src/lib/                     Couche NEUTRE, en amont de `engine`, `data`, `state` et `ui` : ce que
+                            plusieurs couches emploient sans qu’aucune ne le possède (`eslint.config.js`,
+                            `AVALS_DATA`). `normalize.ts` : normalisation d'un nom (`norm`).
+                            `indexedDb.ts` : plomberie des magasins IndexedDB (disponibilité, ouverture
+                            bornée #776 par `{ nom, version, upgrade }`, requête/transaction en
+                            promesse, une connexion par opération) — bibliothèque de projets, calque
+                            de référence, sauvegarde automatique, dossier `src/data` du Codex (#1956).
+                            `fileIo.ts` : téléchargement d'un texte (`downloadText`), nom de fichier
+                            sûr (`fileSlug`).
 src/geometry/                Géométrie/simulation PURE partagée `state` ⇄ `gameIso` (#161 : `state` en a
                             besoin pour SA PROPRE logique — curseur de combat, IA, cadence des beats —
                             pas seulement le rendu ; zéro dépendance framework). `iso.ts` : projection

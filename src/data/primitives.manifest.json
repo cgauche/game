@@ -969,5 +969,14 @@
     "concept": "ce qu'un site fera APRÈS son coup, déclaré en DONNÉE à l'entrée (enchaînement, attaque gratuite, drapeaux du coup) et joué par une écriture unique à la reprise — y compris quand une fenêtre de défense s'interpose",
     "perimetre": "toute frappe qui peut être suspendue : balayage, gratuites de créature et de talent, attaque pilotée, sauvegarde, Déviation",
     "verrou": "src/state/defense-suite.test.ts"
+  },
+  {
+    "id": "indexedDb",
+    "type": "primitives.manifest",
+    "label": "ouvrirBase/lireDansBase/ecrireDansBase",
+    "fichier": "src/lib/indexedDb.ts",
+    "concept": "magasin local IndexedDB : disponibilité, ouverture bornée d'une base `{ nom, version, upgrade }` (délai, bloqué, un seul règlement, #776), requête et transaction en promesse, une connexion par opération",
+    "perimetre": "tout magasin IndexedDB : bibliothèque de projets, calque de référence, sauvegarde automatique de l'éditeur, dossier src/data de l'atelier du Codex",
+    "verrou": "src/lib/indexedDb.test.ts"
   }
 ]

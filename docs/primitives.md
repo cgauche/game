@@ -27,7 +27,7 @@ manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-g
 mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
 au hook, ou une primitive née ailleurs n'y passent jamais.
 
-97 primitives.
+98 primitives.
 
 | Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |
 |---|---|---|---|---|---|
@@ -68,6 +68,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | registre-par-defs auto-chargé (dépose un fichier → intégré) | `gen-registry (_registry.generated)` | `scripts/gen-registry.mjs` | — | tout dataset extensible (créatures, tenues, armes, sons, icônes…) | npm run gen && git diff --exit-code |
 | grille de sélection en sections par famille ou classe, role listbox et roving tabindex | `GroupedPickGrid` | `src/ui/GroupedPickGrid.tsx` | — | tout picker groupé | — |
 | corps de fiche héros : en-tête figurine, caractéristiques et dérivées, forces seuillées, chips codex | `HeroSheet` | `src/ui/HeroSheet.tsx` | `src/ui/styles/hero-sheet.css` | résumé du créateur, écran de groupe | réflexe avant toute fiche de personnage recodée |
+| magasin local IndexedDB : disponibilité, ouverture bornée d'une base `{ nom, version, upgrade }` (délai, bloqué, un seul règlement, #776), requête et transaction en promesse, une connexion par opération | `ouvrirBase/lireDansBase/ecrireDansBase` | `src/lib/indexedDb.ts` | — | tout magasin IndexedDB : bibliothèque de projets, calque de référence, sauvegarde automatique de l'éditeur, dossier src/data de l'atelier du Codex | src/lib/indexedDb.test.ts |
 | rangée d'influence Chance/Pacte/Résilience/Détermination | `InfluenceRow` | `src/ui/InfluenceRow.tsx` | — | toute modale de jet influençable ; porte aussi ResilienceButton et DeterminationButton | — |
 | frise d'initiative : colonne de bois à cartouche de Round collé, une entrée par combattant, badges de premier coup et de pré-emption en débord | `InitiativeStrip` | `src/ui/InitiativeStrip.tsx` | `src/ui/styles/initiative-strip.css` | HUD de combat (colonne à gauche ; bande horizontale défilable ≤700) | scripts/recette/hud-clickables.mjs — la bande défile, va jusqu'au bord, garde sa tête (cartouche collé couvrant la boîte de rembourrage) et son acteur au trait dans le champ, à pas d'entrée CONSTANT et relief de l'unité au trait réservé |
 | panneau d’INSPECTION en lecture seule : identité + jauge, badges de camp/états, statbloc | `InspectPanel` | `src/ui/InspectPanel.tsx` | `src/ui/styles/inspect-panel.css` | clic sur l’ordre de bataille ; l’en-tête est partagé avec l’inspecteur de l’éditeur | statbloc rendu par le rendu PARTAGÉ du Codex (CodexSections) |
@@ -128,4 +129,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 4c5b5c72ab9314c648dcd763cf7c8ec3b69c68cf (6 fichiers, 0 dossiers) corps: 517756781f595a158b19b460a8f7c01bdd24c802 -->
+<!-- sources-empreinte: d1fc6ff21259fa989c1cb69e754498c45e39c5ac (6 fichiers, 0 dossiers) corps: 56a901ecb947347f7688911763b576a4322b1de6 -->

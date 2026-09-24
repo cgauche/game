@@ -440,11 +440,17 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   const [needsGrant, setNeedsGrant] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [msg, setMsg] = useState('');
+  const fsApi = fs.fsApiDisponible();
   // Refus de SCHÉMA (contrat de donnée #176) : message champ-par-champ (validateDataset) quand la donnée
   // sérialisée ne parse pas son schéma zod — l'écriture disque est bloquée. Effacé à toute ré-édition.
   const [schemaError, setSchemaError] = useState<string | null>(null);
 
-  useEffect(() => { fs.restoreDataDir().then((r) => { if (r) { setDir(r.handle); setNeedsGrant(!r.granted); } }); }, []);
+  useEffect(() => {
+    fs.restoreDataDir().then(
+      (r) => { if (r) { setDir(r.handle); setNeedsGrant(!r.granted); } },
+      (e) => setMsg(`Échec de la reconnexion à src/data : ${String(e)}`),
+    );
+  }, []);
   useEffect(() => { setEntry(structuredClone(src.initial)); setDirty(false); setMsg(''); setSchemaError(null); }, [src]);
 
   // L'apparence (MonsterPartsFields) ET les EFFETS d'un sort (FlowEditor) ont leur éditeur dédié — on les
@@ -613,7 +619,7 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
     setSchemaError(null);
     const text = serializeDataset(root);
     try {
-      if (fs.FS_API && dir && !needsGrant) { await fs.writeFile(dir, src.file, text); setMsg(`Enregistré ${src.file} — Vite recharge…`); }
+      if (fsApi && dir && !needsGrant) { await fs.writeFile(dir, src.file, text); setMsg(`Enregistré ${src.file} — Vite recharge…`); }
       else { fs.downloadFallback(src.file, text); setMsg(`Téléchargé ${src.file} — reposez-le dans src/data/`); }
       setDirty(false);
     } catch (e) { setMsg(`Échec : ${String(e)}`); }
@@ -622,10 +628,16 @@ export function CodexEdit({ categoryKey, label, id, onClose, isNew }: CodexEditP
   return (
     <div className="codex-edit">
       <div className="codex-edit-bar">
-        {!fs.FS_API && <span className="de-warn">FS Access indisponible — sauvegarde par téléchargement</span>}
-        {fs.FS_API && !dir && <button className="btn small" onClick={() => fs.connectDataDir().then((h) => { setDir(h); setNeedsGrant(false); }).catch(() => {})}><Icon id="file/folder" size="sm" /> Connecter src/data…</button>}
-        {fs.FS_API && dir && needsGrant && <button className="btn small" onClick={() => dir && fs.grantPermission(dir).then((ok) => ok && setNeedsGrant(false))}>Autoriser l'écriture</button>}
-        {fs.FS_API && dir && !needsGrant && <span className="de-ok"><Icon id="file/folder" size="sm" /> connecté</span>}
+        {!fsApi && <span className="de-warn">FS Access indisponible — sauvegarde par téléchargement</span>}
+        {fsApi && !dir && <button className="btn small" onClick={() => fs.connectDataDir().then(
+          (h) => { if (h) { setDir(h); setNeedsGrant(false); } },
+          (e) => setMsg(`Échec de la connexion à src/data : ${String(e)}`),
+        )}><Icon id="file/folder" size="sm" /> Connecter src/data…</button>}
+        {fsApi && dir && needsGrant && <button className="btn small" onClick={() => fs.grantPermission(dir).then(
+          (ok) => { if (ok) setNeedsGrant(false); },
+          (e) => setMsg(`Échec de l’autorisation d’écriture dans src/data : ${String(e)}`),
+        )}>Autoriser l'écriture</button>}
+        {fsApi && dir && !needsGrant && <span className="de-ok"><Icon id="file/folder" size="sm" /> connecté</span>}
         <span className="de-spacer" />
         {msg && <span className="de-msg">{msg}</span>}
         <button className="btn small" onClick={onClose}>Fermer</button>

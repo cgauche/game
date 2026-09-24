@@ -19,7 +19,7 @@ import { WorldMapEditor } from './WorldMapEditor';
 import { NarratifEditor } from './NarratifEditor';
 import { OpenProjectModal, SaveProjectModal, ChipDeRefus, refusDeLaPorteDuProjet, refusMotive, type GesteDePorte, type RefusRendu } from './ProjectModals';
 import { projectSave, projectsLoad, documentDeLEntree, SavedProject } from '../../state/projectLibrary';
-import { downloadText } from '../../state/fileIo';
+import { downloadText } from '../../lib/fileIo';
 import { sceneToAscii, type SceneAsciiExport } from '../../state/sceneToAscii';
 import { testScenarios, type TestScenario } from '../../scenes/test-scenarios';
 import { allBuiltinCampaigns, copieDuJeu, type BuiltinCampaign } from '../../scenes/campaign';

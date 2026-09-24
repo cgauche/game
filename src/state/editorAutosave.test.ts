@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   autosaveLoad,
   autosaveSave,
@@ -8,7 +8,10 @@ import {
   type EditorAutosaveBackend,
   type EditorAutosaveRecord,
   type RepriseLocale,
+  upgradeAutosave,
 } from './editorAutosave';
+import { __setOuvertureIdbForTest } from '../lib/indexedDb';
+import { baseSimulee, brancherBaseSimulee } from '../lib/indexedDb.testkit';
 import { cheminLisible } from '../data/schemas/validate';
 import { emptyScene } from './scene';
 import { CURRENT_PROJECT_SCHEMA } from './worldMap';
@@ -128,5 +131,30 @@ describe('editorAutosave — filet local de crash de l’éditeur', () => {
       const lu = await relu({ entities: [{ id: 'e1', kind: 'personnage', pos: { x: 1, y: 1 }, presetId: 'fantome' }] });
       expect(lu?.ok && lu.record.scene.entities[0].presetId).toBe('fantome');
     });
+  });
+});
+
+describe('upgradeAutosave — montée de `wfrp4-editor-autosave`', () => {
+  afterEach(() => {
+    __setOuvertureIdbForTest(null);
+    __setAutosaveBackendForTest(null);
+  });
+
+  it('base neuve : crée `autosave` keyé sceneId', () => {
+    const base = baseSimulee();
+    upgradeAutosave(base.db, 0);
+    expect([...base.magasins.keys()]).toEqual(['autosave']);
+    expect(base.magasins.get('autosave')?.keyPath).toBe('sceneId');
+  });
+
+  it('le backend réel passe par la base : sauvegarde, reprise, suppression', async () => {
+    const base = baseSimulee();
+    brancherBaseSimulee(base);
+    __setAutosaveBackendForTest(null);
+    await autosaveSave({ sceneId: 's1', scene: { ...emptyScene(), id: 's1' }, savedAt: 5 });
+    expect((await repris('s1')).savedAt).toBe(5);
+    await autosaveDelete('s1');
+    expect(await autosaveLoad('s1')).toBeNull();
+    expect(base.fermetures).toBe(base.transactions.length);
   });
 });
