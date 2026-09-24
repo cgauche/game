@@ -248,10 +248,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       // Égout et FAÎTE lus sur le CHAMP de la nappe (`resolveNappes`) — la MÊME hauteur que les pans
       // que `buildRoofs` émet, jamais une seconde formule. Un ornement de FAÎTE se pose à ~60 % de la
       // pente sous l'apex.
-      // Masse sans nappe : son ornement est OMIS (le reste des props se construit).
-      const nappe = nappes.get(nappeKey(body.id, mass.id));
-      if (!nappe) continue;
-      const { cells, field, roomZoneIds } = nappe;
+      const { cells, field, roomZoneIds } = nappes.get(nappeKey(body.id, mass.id))!;
       const eaveM = field.shape.eaveHeightM;
       let apexM = eaveM;
       for (const key of cells) {

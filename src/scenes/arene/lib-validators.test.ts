@@ -117,3 +117,10 @@ describe('lib.mjs — `scene()` FORWARDE l’échelle demandée au MapSpec compi
     expect(sceneMetresPerTile(sc)).toBe(sceneMetresPerTile({ layers: [] } as never));
   });
 });
+
+describe('lib.mjs — `scene()` refuse une option qu’elle ne lit pas', () => {
+  it('une clé inconnue LÈVE en se nommant, au lieu d’être perdue en silence', () => {
+    expect(() => scene({ id: 'faute', nom: 'Faute', label: 'Faute', base: 'terre', rows: ['..'] }))
+      .toThrow(/scène « faute » — option\(s\) inconnue\(s\) de scene\(\) : nom\./);
+  });
+});

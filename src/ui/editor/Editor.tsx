@@ -1166,18 +1166,27 @@ export function Editor({
           title="Reprendre une sauvegarde locale ?"
           onClose={hideAutosaveRecovery}
         >
-          <p className="hint">
-            Une sauvegarde automatique de « {autosaveRecovery.scene.label || autosaveRecovery.scene.id} » diffère de
-            la version actuellement chargée. Elle date du {new Date(autosaveRecovery.savedAt).toLocaleString('fr-FR')}.
-            La restaurer, ou l'ignorer et repartir de la version chargée ?
-          </p>
+          {autosaveRecovery.ok ? (
+            <p className="hint">
+              Une sauvegarde automatique de « {autosaveRecovery.record.scene.label || autosaveRecovery.record.sceneId} » diffère de
+              la version actuellement chargée. Elle date du {new Date(autosaveRecovery.record.savedAt).toLocaleString('fr-FR')}.
+              La restaurer, ou l'ignorer et repartir de la version chargée ?
+            </p>
+          ) : (
+            <p className="hint">
+              Une sauvegarde automatique de « {autosaveRecovery.sceneId} », datée du {new Date(autosaveRecovery.savedAt).toLocaleString('fr-FR')},
+              ne peut pas être restaurée : {autosaveRecovery.refus}.
+            </p>
+          )}
           <div className="modal-actions">
             <button type="button" className="btn-ghost" onClick={dismissAutosave}>
               Ignorer et supprimer
             </button>
-            <button type="button" className="btn" onClick={restoreAutosave} title="Annulable ensuite par Ctrl+Z — rien ne prouve que cette sauvegarde locale est plus récente que la version chargée">
-              Restaurer
-            </button>
+            {autosaveRecovery.ok && (
+              <button type="button" className="btn" onClick={restoreAutosave} title="Annulable ensuite par Ctrl+Z — rien ne prouve que cette sauvegarde locale est plus récente que la version chargée">
+                Restaurer
+              </button>
+            )}
           </div>
         </Modal>
       )}

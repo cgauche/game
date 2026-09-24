@@ -783,7 +783,7 @@ function denudeSortsDePreset(narratif: unknown): unknown {
  *  projet exporté avant ce lot (bibliothèque utilisateur, `.json` portable) mourrait sur le schéma.
  *  Ajouter ici la migration N→N+1 pour tout futur bump (cf. `MIGRATIONS` de `saves.ts`), plutôt que
  *  de refuser en silence des projets antérieurs valides. */
-export const PROJECT_MIGRATIONS: MigrationMap = {
+export const PROJECT_MIGRATIONS = {
   2: (doc) => ({ ...doc, version: 3, schema: 3, narratif: emptyNarratif() }),
   3: (doc) => {
     // Un document SANS `scenes` valide traverse INTACT : c'est `parseProject` qui le refuse, avec son
@@ -994,7 +994,7 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
    * (parité mesurée par `projet-migration-13-vers-14.test.ts`, qui joue la MÊME fixture par les deux).
    */
   13: (doc) => ({ ...(remapSortsFusionnesDeep(doc) as Record<string, unknown>), version: 14, schema: 14 }),
-};
+} satisfies MigrationMap;
 
 /** Provenance d'une campagne AUTHORÉE À L'ÉDITEUR : aucun livre ne la publie, et un folio ne se
  *  devine pas. SOURCE UNIQUE — posée par la migration 6→7 sur un projet qui n'en portait aucune,
@@ -1066,6 +1066,26 @@ function refusDeMigration(raison: RaisonDeRefus, schema: unknown, detail?: strin
   return refusDeForme(cause, chemin, faute(JSON.stringify(schema), detail));
 }
 
+/** La chaîne de FORME du projet (`PROJECT_MIGRATIONS`), SEULE : le document monté au format courant,
+ *  AVANT la porte du schéma. `version` est la clé de travail de `migrateDoc` : le `schema` du document
+ *  y est recopié. Seul `null`/`undefined` n'a pas de champ à lire ; tout le reste, `migrateDoc` le juge.
+ *  Refus NOMMÉ (`ProjetRefuse`, `REFUS_DE_MIGRATION`). Partagée par `parseProject` et `migreSceneDeProjet`. */
+function migreFormeDeProjet(data: unknown): Record<string, unknown> {
+  const obj = data as Record<string, unknown> | null | undefined;
+  const issue = migrateDoc(obj == null ? obj : { ...obj, version: obj.schema }, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS);
+  if (!issue.ok) throw refusDeMigration(issue.raison, issue.version, issue.detail);
+  return issue.doc;
+}
+
+/** Une scène persistée HORS de son projet (filet de crash de l'éditeur, `editorAutosave.ts`), au
+ *  `schema` de projet qu'elle portait à l'écriture : montée au format courant par la MÊME chaîne que
+ *  `parseProject`, puis `normalizeScene`. Sans `schema` lisible, la chaîne refuse
+ *  (`version-absente`) : aucune version n'est supposée. */
+export function migreSceneDeProjet(scene: unknown, schema: unknown): Scene {
+  const doc = migreFormeDeProjet({ schema, scenes: [scene] });
+  return normalizeScene((doc.scenes as Scene[])[0]);
+}
+
 /** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (`ProjetRefuse`,
  *  jamais un throw sec sans espoir de migration), dont la cause se LIT : la raison d'un refus de
  *  migration est celle que `migrateDoc` nomme (`REFUS_DE_MIGRATION`) ; puis forme finale invalide
@@ -1076,12 +1096,7 @@ function refusDeMigration(raison: RaisonDeRefus, schema: unknown, detail?: strin
  *  consommateur. La porte n'altère JAMAIS ce qu'on lui passe. Ce qui suit le schéma travaille sur
  *  un document PROUVÉ : une exception y est une faute du jeu, pas de l'auteur, et se propage. */
 export function parseProject(data: unknown): Omit<ProjectDoc, 'schema'> {
-  // `version` est la clé de travail de `migrateDoc` : le `schema` du document y est recopié. Seul
-  // `null`/`undefined` n'a pas de champ à lire ; tout le reste, `migrateDoc` le juge.
-  const obj = data as Record<string, unknown> | null | undefined;
-  const issue = migrateDoc(obj == null ? obj : { ...obj, version: obj.schema }, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS);
-  if (!issue.ok) throw refusDeMigration(issue.raison, issue.version, issue.detail);
-  const migrated = issue.doc;
+  const migrated = migreFormeDeProjet(data);
   if (!Array.isArray(migrated.scenes)) {
     throw refusDeForme('mal-forme', ['scenes'], '« scenes » absent ou non-tableau');
   }

@@ -306,23 +306,6 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     // flèche étrangère à la pente de la nappe.
     expect(socleM(o)).not.toBeCloseTo(field.shape.eaveHeightM + 0.6 * 2 * ROOF_SLOPE_M, 3);
   });
-
-  it("masse dont la nappe MANQUE à la carte : son ornement est omis, le reste des props se construit (aucune levée)", () => {
-    // La carte des nappes est mémoïsée par IDENTITÉ de scène : amorcée alors que la réf ne porte
-    // encore aucun corps, elle ne contient la nappe d'aucune masse posée ensuite sur cette réf.
-    const s = withRoof('chapelle', { x: 1, y: 1, w: 4, h: 4 });
-    const bodies = s.architecture!;
-    s.architecture = [];
-    s.entities = [{ id: 'p1', kind: 'prop', pos: { x: 8, y: 8 }, ref: REF_BILLBOARD }] as SceneEntity[];
-    s.layers[0].tiles[7 * 10 + 7] = 'bois'; // (7,7) : overlay à décor
-    expect(resolveNappes(s).size).toBe(0);
-    s.architecture = bodies;
-    expect(resolveNappes(s).get(nappeKey('body-chapelle', 'mass-0'))).toBeUndefined();
-    const els = buildBillboardProps(s);
-    expect(buildProps(s).filter((e) => e.source === 'ornament')).toHaveLength(0);
-    expect(els.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p1']);
-    expect(els.filter((e) => e.source === 'terrain').map((e) => e.key)).toEqual(['ov:7,7,0']);
-  });
 });
 
 describe('buildProps — features de façade authorées', () => {

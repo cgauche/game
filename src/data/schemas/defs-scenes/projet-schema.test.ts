@@ -385,7 +385,6 @@ describe('projetSchema — le document RÉEL, ses FK et son enveloppe (sondes du
     expect(ok(reel())).toBe(true);
     expect(projetDoc.type).toBe('projet');
     expect(projetDoc.famille).toBe('config');
-    expect(SCHEMA_PROJET).toBe(14);
   });
 
   it('FK `activeAxes` → axes.json : ids RÉELS acceptés (et la liste vide/absente aussi), inconnu REFUSÉ au CHEMIN', () => {

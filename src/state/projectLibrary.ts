@@ -1,23 +1,15 @@
-import { parseProject, exigerUnRefus, refusDeForme, type ProjectDoc } from './worldMap';
+import { parseProject, exigerUnRefus, refusDeForme, type PROJECT_MIGRATIONS, type ProjectDoc } from './worldMap';
 import type { NarratifBlock } from './campaignNarratif';
 import type { GameState } from './store';
 
 /** Un projet éditeur SÉRIALISÉ en localStorage. Même forme que `ProjectDoc` (SOURCE UNIQUE du schéma
  *  de projet, jamais un littéral `schema`/champs dupliqués), mais RELÂCHÉE pour le stock legacy : un
- *  projet enregistré avant #765 est un schema 2 sans `narratif`, un projet enregistré avant #1467 est
- *  un schema 3 aux anciens rôles de prose ou un schema 4 à poche `meta`, un projet enregistré avant
- *  #1552 est un schema ≤ 6 sans `type` ni identité requise, un projet enregistré avant #1691 est un
- *  schema 7 dont les scènes n'ont pas de matières de relief, un projet enregistré avant #1715 est un
- *  schema 8 dont les scènes n'ont pas de toiture par défaut, un projet enregistré pendant #1687 est
- *  un schema 9 dont les décors à places ne sont pas activés, ou un schema 10 dont les décors
- *  fouillables portent encore un champ `interact`, un projet enregistré avant #877 est un schema 11
- *  dont un décor peut ne NOMMER aucun type, un projet enregistré avant #1897 est un schema 12 dont un
- *  preset de PNJ peut lister ses sorts en `{ id }`, ou un schema 13 qui peut citer un sort FUSIONNÉ par
- *  #1897. La montée au format courant se fait au CHARGEMENT via
- *  `parseProject` (chaîne 2→3→4→5→6→7→8→9→10→11→12→13→14), jamais dans ce module — et c'est là, pas ici,
+ *  projet enregistré à un format antérieur peut manquer de `narratif`, de `type` ou d'identité. Son
+ *  `schema` est le courant ou tout format que `PROJECT_MIGRATIONS` sait monter. La montée au format
+ *  courant se fait au CHARGEMENT via `parseProject`, jamais dans ce module — et c'est là, pas ici,
  *  que l'absence d'identité se fait REFUSER. */
 export type StoredProject = Omit<ProjectDoc, 'schema' | 'narratif' | 'type' | 'id' | 'label' | 'versionContenu'> & {
-  schema: 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14;
+  schema: ProjectDoc['schema'] | keyof typeof PROJECT_MIGRATIONS;
   narratif?: NarratifBlock;
   type?: 'projet';
   id?: string;

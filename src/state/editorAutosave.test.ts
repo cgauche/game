@@ -10,6 +10,13 @@ import {
 } from './editorAutosave';
 import { emptyScene } from './scene';
 
+/** La scène d'une reprise relue — l'enregistrement est au format courant, donc repris. */
+const repris = async (sceneId: string) => {
+  const lu = await autosaveLoad(sceneId);
+  if (!lu?.ok) throw new Error(`reprise attendue pour « ${sceneId} »`);
+  return lu.record;
+};
+
 /** Backend en mémoire pour les tests — même contrat que `EditorAutosaveBackend` (cf. `projectLibrary.test.ts`). */
 function fakeBackend(): EditorAutosaveBackend & { store: Map<string, EditorAutosaveRecord> } {
   const store = new Map<string, EditorAutosaveRecord>();
@@ -40,10 +47,9 @@ describe('editorAutosave — filet local de crash de l’éditeur', () => {
     __setAutosaveBackendForTest(backend);
     const scene = { ...emptyScene(), id: 'scene-a', label: 'Auberge' };
     await autosaveSave({ sceneId: scene.id, scene, savedAt: 123 });
-    const rec = await autosaveLoad('scene-a');
-    expect(rec).not.toBeNull();
-    expect(rec!.scene.label).toBe('Auberge');
-    expect(rec!.savedAt).toBe(123);
+    const rec = await repris('scene-a');
+    expect(rec.scene.label).toBe('Auberge');
+    expect(rec.savedAt).toBe(123);
     __setAutosaveBackendForTest(null);
   });
 
@@ -54,8 +60,7 @@ describe('editorAutosave — filet local de crash de l’éditeur', () => {
     await autosaveSave({ sceneId: scene.id, scene: { ...scene, label: 'v1' }, savedAt: 1 });
     await autosaveSave({ sceneId: scene.id, scene: { ...scene, label: 'v2' }, savedAt: 2 });
     expect(backend.store.size).toBe(1);
-    const rec = await autosaveLoad('scene-a');
-    expect(rec!.scene.label).toBe('v2');
+    expect((await repris('scene-a')).scene.label).toBe('v2');
     __setAutosaveBackendForTest(null);
   });
 
@@ -74,8 +79,8 @@ describe('editorAutosave — filet local de crash de l’éditeur', () => {
     __setAutosaveBackendForTest(backend);
     await autosaveSave({ sceneId: 'scene-a', scene: { ...emptyScene(), id: 'scene-a', label: 'A' }, savedAt: 1 });
     await autosaveSave({ sceneId: 'scene-b', scene: { ...emptyScene(), id: 'scene-b', label: 'B' }, savedAt: 1 });
-    expect((await autosaveLoad('scene-a'))!.scene.label).toBe('A');
-    expect((await autosaveLoad('scene-b'))!.scene.label).toBe('B');
+    expect((await repris('scene-a')).scene.label).toBe('A');
+    expect((await repris('scene-b')).scene.label).toBe('B');
     __setAutosaveBackendForTest(null);
   });
 

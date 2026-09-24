@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { normalizeScene, type Scene } from '../../state/scene';
-import { autosaveLoad, autosaveSave, autosaveDelete, type EditorAutosaveRecord } from '../../state/editorAutosave';
+import type { Scene } from '../../state/scene';
+import { autosaveLoad, autosaveSave, autosaveDelete, type RepriseLocale } from '../../state/editorAutosave';
 
 /** Délai de débattue avant écriture (pas à chaque frappe/pas de pinceau — cf. `editorAutosave.ts`). */
 const DEBOUNCE_MS = 1500;
@@ -22,7 +22,7 @@ const MAX_WAIT_MS = 5000;
  * périmé pour le reste de la session). `show` referme la fenêtre de suspension.
  */
 export function useEditorAutosave(scene: Scene, applyRecovered: (s: Scene) => void) {
-  const [recovery, setRecovery] = useState<EditorAutosaveRecord | null>(null);
+  const [recovery, setRecovery] = useState<RepriseLocale | null>(null);
   const [hidden, setHidden] = useState(false);
   const [ready, setReady] = useState(false); // reste faux tant que la vérification de reprise n'a pas conclu pour CETTE scène
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -37,10 +37,11 @@ export function useEditorAutosave(scene: Scene, applyRecovered: (s: Scene) => vo
     checkedRef.current = scene.id;
     setReady(false);
     let cancelled = false;
-    autosaveLoad(scene.id).then((rec) => {
+    autosaveLoad(scene.id).then((lu) => {
       if (cancelled) return;
-      const stale = !!rec && JSON.stringify(rec.scene) !== JSON.stringify(scene);
-      setRecovery(stale ? rec : null);
+      // Un enregistrement ÉCARTÉ se montre toujours : l'auteur apprend pourquoi, et le supprime.
+      const stale = !!lu && (!lu.ok || JSON.stringify(lu.record.scene) !== JSON.stringify(scene));
+      setRecovery(stale ? lu : null);
       setHidden(false);
       setReady(true);
     });
@@ -88,14 +89,11 @@ export function useEditorAutosave(scene: Scene, applyRecovered: (s: Scene) => vo
     };
   }, []);
 
-  /** Le magasin du filet de crash n'a PAS d'axe de version : un enregistrement écrit par une version
-   *  antérieure de l'application y dort tel quel, et il rentre en mémoire ICI. Il passe donc par le
-   *  normaliseur du dépôt (`normalizeScene`) comme toute Scène d'un document ancien — sans quoi le
-   *  travail restauré repartirait dans un « Enregistrer » en forme d'hier, que sa propre porte
-   *  (`parseProject`) refuserait à la relecture. */
+  /** La scène proposée est DÉJÀ montée au format courant par `autosaveLoad` (chaîne de forme du
+   *  projet) : un enregistrement écarté n'a rien à restaurer. */
   function restore(): void {
-    if (!recovery) return;
-    applyRecovered(normalizeScene(recovery.scene));
+    if (!recovery?.ok) return;
+    applyRecovered(recovery.record.scene);
     setRecovery(null);
     setHidden(false);
   }
@@ -113,7 +111,7 @@ export function useEditorAutosave(scene: Scene, applyRecovered: (s: Scene) => vo
 
   /** Geste EXPLICITE et nommé (« Ignorer et supprimer ») : supprime la sauvegarde locale. */
   function dismiss(): void {
-    if (recovery) autosaveDelete(recovery.sceneId);
+    if (recovery) autosaveDelete(recovery.ok ? recovery.record.sceneId : recovery.sceneId);
     setRecovery(null);
     setHidden(false);
   }
