@@ -14,6 +14,8 @@ import {
   specLabel, refLabel, specEntryId, specEntryLabel, specResolves, SPEC_SOURCES, type SpecsSource, type SpecEntry, books,
 } from './index';
 import { avancement } from './schemas/grammaire/avancement';
+import { gameOpSchema } from './schemas/grammaire/mecanique';
+import { mesureDuParse } from './schemas/grammaire/ref';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
@@ -39,7 +41,7 @@ import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import {
   GAMEOP_FIELD_TARGETS, auditFieldCoverage, scanGameOpRefs, formatOffender,
 } from '../../scripts/guards/lib/gameOpRefFk.mjs';
-import { champsDOpASlot, slotsDuParse } from '../../scripts/docs/lib/slots-registre.mjs';
+import { champsDOpASlot, opsDuParse } from '../../scripts/docs/lib/slots-registre.mjs';
 import { scanDuCorpus } from '../../scripts/docs/lib/structures-scan.mjs';
 import { NARRATIVE_MARKERS } from '../engine/conditions';
 import { extractedBooks, frenchSourceDirs, isSentinel, sourceDirOf, walkSkillRefs } from '../../scripts/data/lib/skillSpecWalk.mjs';
@@ -1229,15 +1231,15 @@ describe('GameOp — toute référence de la donnée committée résout dans son
   };
 
   /** Le corpus des DEUX racines, celui que parse le registre des slots (`scanDuCorpus`) : une seule
-   *  lecture, pour que la jointure des cases se fasse par IDENTITÉ de porteur. */
+   *  lecture, pour que les nœuds d’op du scan se joignent à ceux du parse par IDENTITÉ d’objet. */
   const { defs: DEFS, scan: CORPUS } = scanDuCorpus(REPO_ROOT);
   const sources = [...CORPUS.brutParNom].map(([file, data]) => ({ file, data }));
   const CHAMPS_A_SLOT = champsDOpASlot();
   const softIds = { etats: Object.keys(NARRATIVE_MARKERS) };
-  const scan = scanGameOpRefs({ sources, resolvers, softIds, champsASlot: CHAMPS_A_SLOT.keys() });
+  const scan = scanGameOpRefs({ sources, resolvers, softIds, champsASlot: CHAMPS_A_SLOT });
 
   it('le périmètre est DÉRIVÉ de l’union GameOp moins les champs d’op à slot : aucun champ de référence sans cible déclarée', () => {
-    const { derived, unclassified, stale } = auditFieldCoverage(REPO_ROOT, { champsASlot: CHAMPS_A_SLOT.keys() });
+    const { derived, unclassified, stale } = auditFieldCoverage(REPO_ROOT, { champsASlot: CHAMPS_A_SLOT });
     expect(derived.length, 'aucun champ dérivé — l’extraction du type a échoué').toBeGreaterThan(40);
     expect(unclassified, `champs de GameOp sans cible déclarée (gameOpRefFk.mjs) :\n${unclassified.join('\n')}`).toEqual([]);
     expect(stale.map((c) => `${c.key} — ${c.raison}`), 'cibles déclarées hors périmètre').toEqual([]);
@@ -1248,7 +1250,7 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     const declare = GAMEOP_FIELD_TARGETS as Record<string, unknown>;
     declare['removeTrait.traitId'] = { registry: 'traits' };
     try {
-      const { stale: doublon } = auditFieldCoverage(REPO_ROOT, { champsASlot: CHAMPS_A_SLOT.keys() });
+      const { stale: doublon } = auditFieldCoverage(REPO_ROOT, { champsASlot: CHAMPS_A_SLOT });
       expect(doublon.map((c) => c.key)).toEqual(['removeTrait.traitId']);
       expect(doublon[0].raison).toMatch(/typé AU PARSE par sa feuille `idDe` d’`OP_DEFS`/);
     } finally {
@@ -1256,22 +1258,30 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     }
   });
 
-  // COUVERTURE (#1473) : un champ d'op à slot ne sort du scan que si CHAQUE occurrence committée que le
-  // scan visite est une CASE validée par `idDe` au parse de mesure (`slotsDuParse`, même porteur, même
-  // clé), ou une VALEUR RÉSERVÉE déclarée au même nœud du schéma (`champsDOpASlot`). Une op typée sous
-  // un conteneur LOOSE (`OPS_NON_TYPEES`) n'est pas parsée : son conteneur se type avant ou avec elle.
-  it('toute occurrence d’un champ d’op à slot est un slot du parse, ou une valeur réservée de son nœud', () => {
-    const SLOTS = slotsDuParse(CORPUS, DEFS);
-    const cases = new Map<object, Set<string | number>>();
-    for (const s of SLOTS) {
-      if (!cases.has(s.porteur)) cases.set(s.porteur, new Set());
-      cases.get(s.porteur)!.add(s.cle);
-    }
-    expect(scan.occurrencesASlot.length, 'aucune occurrence de champ d’op à slot — la jointure est vide').toBeGreaterThan(50);
-    const hors = scan.occurrencesASlot
-      .filter((o) => !cases.get(o.porteur)?.has(o.cle) && !(CHAMPS_A_SLOT.get(o.key) ?? []).includes(o.value))
-      .map((o) => `${o.file} ${o.path} : ${o.key} = ${JSON.stringify(o.value)}`);
-    expect(hors, `occurrences hors du parse — typer leur conteneur (OP_DEFS) :\n${hors.join('\n')}`).toEqual([]);
+  // COUVERTURE (#1473) : un champ d'op à slot ne sort du scan que parce que le PARSE le juge. TOUT nœud
+  // `GameOp` que le scan visite est donc un nœud ATTEINT par le parse de mesure (`opsDuParse`, par
+  // IDENTITÉ d'objet), quelle que soit son op et quelle que soit la forme de ses valeurs. Un nœud non
+  // atteint pend sous un conteneur LOOSE (`OPS_NON_TYPEES`) ou hors de tout schéma : son conteneur se type.
+  // Stock NOMINATIF, compte EXACT par document : les ops du dialecte `jsonOpSchema`
+  // (`schemas/defs/miscast.ts`), lot de mort #1902.
+  const HORS_PARSE: Record<string, number> = { 'miscast.json': 77 };
+  it('tout nœud GameOp du corpus est atteint par le parse de mesure, hors stock nominatif', () => {
+    const atteintes = opsDuParse(CORPUS, DEFS);
+    expect(scan.noeudsDOp.length, 'aucun nœud d’op visité — le scan est vide').toBeGreaterThan(500);
+    const hors = scan.noeudsDOp.filter((n) => !atteintes.has(n.noeud));
+    const parDocument: Record<string, number> = {};
+    for (const n of hors) parDocument[n.file] = (parDocument[n.file] ?? 0) + 1;
+    const lignes = hors.filter((n) => !(n.file in HORS_PARSE)).map((n) => `${n.path} : ${n.op}`);
+    expect(lignes, `nœuds d’op hors du parse — typer leur conteneur (OP_DEFS) :\n${lignes.join('\n')}`).toEqual([]);
+    expect(parDocument, 'le stock HORS_PARSE est EXACT : un compte qui baisse se reporte au stock').toEqual(HORS_PARSE);
+  });
+
+  it('une op sous un conteneur d’ops est atteinte par le parse : une valeur OBJET fantôme y est REFUSÉE (contre-épreuve)', () => {
+    const delayed = (id: string) => ({ op: 'delayed', afterDays: 1, ops: [{ op: 'testMod', amount: -10, exceptSkills: [{ id }] }] });
+    expect(mesureDuParse(gameOpSchema, delayed('athletisme')).ops).toEqual([[], ['ops', 0]]);
+    const refus = gameOpSchema.safeParse(delayed('competence-fantome'));
+    expect(refus.success).toBe(false);
+    expect(refus.error?.issues.map((i) => i.path.join('.'))).toEqual(['ops.0.exceptSkills.0.id']);
   });
 
   it('chaque registre visé par la table a son résolveur câblé', () => {

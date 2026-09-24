@@ -4,7 +4,7 @@
  * `resolveFormula` et crashe en plein combat. GÉNÉRIQUE : balaie TOUS les `.json` (aucune liste codée
  * en dur), messages d'échec ACTIONNABLES (fichier + chemin JSON + valeur fautive).
  *
- * Six familles de checks :
+ * Cinq familles de checks :
  *  1. SYNTAXE        — chaque fichier `JSON.parse` (échec → rouge avec le fichier).
  *  2. OPS CONNUES    — toute `{op:'…'}` (hors Condition `kind`) a un `op` du vocabulaire `GameOp` réel
  *                      (extrait de l'union `GameOp` de `engine/ops.ts` par regex → zéro dérive).
@@ -12,9 +12,6 @@
  *                      (number fini OU objet à clé connue). Une string qui fuit → rouge.
  *  4. PLACEHOLDERS   — une string `$…` n'est tolérée QUE si elle vaut `'$arg'`/`'$indice'` ET vit dans
  *                      les `effects` de `traits.json` (substituée par `withArg`, state/triggeredEffects).
- *  5. REFS           — `grantTrait.traitId` → trait ; `condition/removeCondition.id` → État. Les refs
- *                      des ops TYPÉES (`OP_DEFS`, `src/data/schemas/grammaire/mecanique.ts`) sont
- *                      vérifiées AU PARSE par leur feuille `idDe`.
  *  6. FLOW PUR       — chaque `TriggeredEffect.flow` (champs `TriggeredEffect[]` du catalogue, extraits
  *                      par regex de `data/index.ts` — JAMAIS une liste de fichiers à la main) ne porte pas
  *                      une op de `STRAY_IMPURE_OPS` (`interruptFocus`/`breakBlade`/`delayed`) HORS branche
@@ -24,10 +21,10 @@
  *                      avalerait en silence. `grantFreeAttack` top-level reste légitime (résolu par
  *                      `resolveFreeAttacks`).
  *
- * EXCLUSION `miscast.json` (familles 3 & 5) : ce fichier est un DIALECTE source (`JsonOp`/`JsonFormula` :
+ * EXCLUSION `miscast.json` (famille 3) : ce fichier est un DIALECTE source (`JsonOp`/`JsonFormula` :
  * `{sinPlus1:true}`, `sinPlus1Value`, noms paramétrés par `sinPoints`) COMPILÉ en `GameOp` réels par
  * `engine/miscast.ts::expandOp`, et validé par `engine/miscast-ops.test.ts`. Ses `op` restent vérifiés
- * (famille 2 : ce sont des noms `GameOp` standard), mais ses Formules/refs suivent un autre vocabulaire.
+ * (famille 2 : ce sont des noms `GameOp` standard), mais ses Formules suivent un autre vocabulaire.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -37,9 +34,7 @@ import { isValidFormula } from '../engine/ops';
 import { ICON_DEFS } from '../ui/icons';
 import { ARG_TEMPLATE, INDICE_TEMPLATE, flowHasImpureOpOutsideTest } from '../engine/flowCore';
 import type { Flow } from '../engine/flowCore';
-import { findTraitById, findConditionById } from './index';
 import { ruleDef } from '../engine/policy';
-import { NARRATIVE_MARKERS } from '../engine/conditions';
 import { listerArbre, listerDossier } from '../../scripts/guards/lib/lister.mjs';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
@@ -61,11 +56,8 @@ const TRIGGERED_EFFECT_FIELDS = new Set(
   [...INDEX_SRC.matchAll(/(\w+)\?:\s*import\('\.\.\/(?:state\/flow|engine\/flowCore)'\)\.TriggeredEffect\[\]/g)].map((m) => m[1]),
 );
 
-// Fichier DIALECTE compilé (cf. en-tête) : exclu des familles Formule & Refs.
+// Fichier DIALECTE compilé (cf. en-tête) : exclu de la famille Formule.
 const MISCAST = 'miscast.json';
-// Marqueurs narratifs tolérés pour `condition.id` : REGISTRE UNIQUE `NARRATIVE_MARKERS`
-// (`src/engine/conditions.ts`).
-const SOFT_CONDITIONS = new Set<string>(Object.keys(NARRATIVE_MARKERS));
 
 // Champs d'une `GameOp` typés `Formula` (ou `number`, qui passe `isValidFormula`) — au minimum amount/count.
 const FORMULA_FIELDS = [
@@ -97,17 +89,7 @@ const isTemplate = (v: unknown, file: string, path: string): boolean =>
 const isGameOp = (o: Record<string, unknown>): boolean => typeof o.op === 'string' && !('kind' in o);
 
 interface Issue { file: string; path: string; detail: string }
-interface Scan { parseErrors: Issue[]; unknownOps: Issue[]; badFormulas: Issue[]; badPlaceholders: Issue[]; badRefs: Issue[]; strayImpureOps: Issue[] }
-
-function refResolves(op: string, o: Record<string, unknown>, file: string, path: string, out: Issue[]): void {
-  const tol = (v: unknown) => isTemplate(v, file, path);
-  const ref = (field: string, val: unknown, ok: (s: string) => boolean, kind: string) => {
-    if (typeof val !== 'string' || tol(val)) return;
-    if (!ok(val)) out.push({ file, path: `${path}.${field}`, detail: `ref ${kind} introuvable : ${JSON.stringify(val)}` });
-  };
-  if (op === 'grantTrait') ref('traitId', o.traitId, (s) => !!findTraitById(s), 'trait');
-  if (op === 'condition' || op === 'removeCondition') ref('id', o.id, (s) => !!findConditionById(s) || SOFT_CONDITIONS.has(s), 'État');
-}
+interface Scan { parseErrors: Issue[]; unknownOps: Issue[]; badFormulas: Issue[]; badPlaceholders: Issue[]; strayImpureOps: Issue[] }
 
 function walk(node: unknown, file: string, path: string, scan: Scan): void {
   if (Array.isArray(node)) { node.forEach((v, i) => walk(v, file, `${path}[${i}]`, scan)); return; }
@@ -125,8 +107,6 @@ function walk(node: unknown, file: string, path: string, scan: Scan): void {
         if (isTemplate(v, file, `${path}.${ff}`)) continue; // template de trait substitué par withArg
         if (!isValidFormula(v)) scan.badFormulas.push({ file, path: `${path}.${ff}`, detail: `Formule invalide (op '${op}') : ${JSON.stringify(v)}` });
       }
-      // (5) refs
-      refResolves(op, o, file, path, scan.badRefs);
     }
   }
   // (4) placeholders — toute string $… hors template toléré.
@@ -147,7 +127,7 @@ function walk(node: unknown, file: string, path: string, scan: Scan): void {
   }
 }
 
-const scan: Scan = { parseErrors: [], unknownOps: [], badFormulas: [], badPlaceholders: [], badRefs: [], strayImpureOps: [] };
+const scan: Scan = { parseErrors: [], unknownOps: [], badFormulas: [], badPlaceholders: [], strayImpureOps: [] };
 for (const f of files) {
   let data: unknown;
   try { data = JSON.parse(readFileSync(join(DIR, f), 'utf8')); }
@@ -173,32 +153,9 @@ describe('Intégrité des données src/data/*.json', () => {
   it("4 — aucune string $… non substituée (sauf template $arg/$indice dans les effects de traits.json / qualities.json)", () => {
     expect(scan.badPlaceholders, `Placeholder(s) $… qui fuiraient au runtime :\n${fmt(scan.badPlaceholders)}`).toEqual([]);
   });
-  it('5 — les refs (créature/trait/État/maladie) résolvent', () => {
-    expect(scan.badRefs, `Ref(s) non résolue(s) :\n${fmt(scan.badRefs)}`).toEqual([]);
-  });
-  it("5bis — la famille REFS n'est pas vacante : chaque champ gardé refuse une ref fantôme (contre-épreuve)", () => {
-    const probe = (op: Record<string, unknown>) => {
-      const s: Scan = { parseErrors: [], unknownOps: [], badFormulas: [], badPlaceholders: [], badRefs: [], strayImpureOps: [] };
-      walk([op], 'fixture.json', '', s);
-      return s.badRefs;
-    };
-    // Vert : le champ RÉEL de l'union GameOp, avec une valeur qui résout.
-    expect(probe({ op: 'condition', id: 'a-terre' })).toEqual([]);
-    expect(probe({ op: 'removeCondition', id: 'a-terre' })).toEqual([]);
-    expect(probe({ op: 'condition', id: 'petrifie' })).toEqual([]); // marqueur narratif toléré
-    expect(probe({ op: 'grantTrait', traitId: 'peur' })).toEqual([]);
-    // Rouge : la même op avec une valeur fantôme sur le MÊME champ.
-    for (const [op, field] of [
-      ['condition', 'id'], ['removeCondition', 'id'], ['grantTrait', 'traitId'],
-    ] as const) {
-      const bad = probe({ op, [field]: 'entite-fantome-inexistante' });
-      expect(bad, `${op}.${field} : la garde n'a rien vu`).toHaveLength(1);
-      expect(bad[0].path).toBe(`[0].${field}`);
-    }
-  });
   it("4bis — le périmètre de template est PAR FICHIER : `$arg` dans une qualité est un placeholder (contre-épreuve)", () => {
     const probe = (file: string, gabarit: string) => {
-      const s: Scan = { parseErrors: [], unknownOps: [], badFormulas: [], badPlaceholders: [], badRefs: [], strayImpureOps: [] };
+      const s: Scan = { parseErrors: [], unknownOps: [], badFormulas: [], badPlaceholders: [], strayImpureOps: [] };
       walk({ effects: [{ trigger: 'onCrit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'a-terre', durationRounds: gabarit }] } } }] }, file, '', s);
       return s.badPlaceholders;
     };

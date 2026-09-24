@@ -10,9 +10,12 @@ import { CATEGORY_BY_SOURCE_KIND, type EffectSourceKind } from '../../../engine/
 import type { StakeRef } from '../../index';
 import { messageRecurrenceHorloge, SELF_REF, type GameOp } from '../../../engine/ops';
 import { ARG_TEMPLATE, INDICE_TEMPLATE, type Condition, type EffectOp, type EffectTrigger, type Flow } from '../../../engine/flowCore';
-import { chaosAlignSchema, charKeySchema, diceSpecSchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, ouReserve, plageSchema, refTestDeCorruption, sizeCategorySchema, symptomSeveritySchema } from './valeurs';
+import { chaosAlignSchema, charKeySchema, diceSpecSchema, difficultySchema, enumNomme, exposureLevelSchema, formulaSchema, hitLocationSchema, ouReserve, plageSchema, reachSchema, refTestDeCorruption, sizeCategorySchema, symptomSeveritySchema } from './valeurs';
 import { traitInstanceSchema } from './reference';
-import { idDe, ref, refs, refOuSpec } from './ref';
+import { idDe, marquerOpAtteinte, ref, refs, refOuSpec } from './ref';
+
+/** `ArmourBypass` (`src/engine/types.ts`) — PA ignorés : un nombre, ou une catégorie d'armure. */
+const armourBypassSchema = z.union([z.number(), z.enum(['all', 'metal', 'leather', 'nonMagic', 'nonMetal'])]);
 
 /** `PerSL` (`src/engine/ops.ts:146`) — échelle « par +N DR » d'un payload d'op. */
 export const perSLSchema = z.strictObject({ every: z.number(), amount: z.number(), onFailure: z.boolean().optional() });
@@ -217,10 +220,66 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
     combatOnly: z.boolean().optional(),
     movementOnly: z.boolean().optional(),
     hearingOnly: z.boolean().optional(),
-    exceptSkills: z.array(refOuSpec('skill')).optional(),
+    exceptSkills: z.array(ref('skill')).optional(),
     weaponHand: z.enum(['main', 'off']).optional(),
   }),
   perRound: z.strictObject({ op: z.literal('perRound'), ops: z.array(z.lazy(() => gameOpSchema)) }),
+  delayed: z.strictObject({
+    op: z.literal('delayed'),
+    afterMinutes: formulaSchema.optional(),
+    afterHours: formulaSchema.optional(),
+    afterDays: formulaSchema.optional(),
+    afterDuration: z.literal(true).optional(),
+    forMinutes: formulaSchema.optional(),
+    forHours: formulaSchema.optional(),
+    forDays: formulaSchema.optional(),
+    ops: z.array(z.lazy(() => gameOpSchema)),
+  }),
+  zone: z.strictObject({
+    op: z.literal('zone'),
+    shape: z.enum(['disc', 'wall']),
+    radiusMeters: formulaSchema.optional(),
+    lengthMeters: formulaSchema.optional(),
+    lengthPerSL: z.strictObject({ every: z.number(), metersFormula: formulaSchema }).optional(),
+    blocksLoS: z.boolean().optional(),
+    onCross: z.array(z.lazy(() => gameOpSchema)).optional(),
+    perRound: z.array(z.lazy(() => gameOpSchema)).optional(),
+    crossTest: z.lazy(() => flowTestSchema).optional(),
+    barrier: z.boolean().optional(),
+    gate: z.literal('profane').optional(),
+    noCorruption: z.boolean().optional(),
+  }),
+  /** `addQualities`/`removeQualities` : ids de Qualité, et `requiresWeapon`, hors de `TYPES` — gardés
+   *  par `GAMEOP_FIELD_TARGETS` (`scripts/guards/lib/gameOpRefFk.mjs`). */
+  augmentWeapon: z.strictObject({
+    op: z.literal('augmentWeapon'),
+    addQualities: z.array(z.string()).optional(),
+    damageBonus: formulaSchema.optional(),
+    bypass: armourBypassSchema.optional(),
+    requiresWeapon: z.string().optional(),
+    removeQualities: z.array(z.string()).optional(),
+    removeType: z.enum(['atout', 'defaut']).optional(),
+    suppressEnchants: z.boolean().optional(),
+    passive: z.array(z.lazy(() => gameOpSchema)).optional(),
+    onHitEffects: z.array(z.lazy(() => triggeredEffectSchema)).optional(),
+  }),
+  /** `qualities` (ids de Qualité) et `subType` (id de Groupe d'arme), hors de `TYPES` — gardés par
+   *  `GAMEOP_FIELD_TARGETS` (`scripts/guards/lib/gameOpRefFk.mjs`). */
+  grantWeapon: z.strictObject({
+    op: z.literal('grantWeapon'),
+    label: z.string(),
+    damage: formulaSchema,
+    damagePlus: z.number().optional(),
+    plusBF: z.boolean().optional(),
+    qualities: z.array(z.string()).optional(),
+    subType: z.string().optional(),
+    reach: reachSchema.optional(),
+    hands: z.union([z.literal(1), z.literal(2)]).optional(),
+    onHitEffects: z.array(z.lazy(() => triggeredEffectSchema)).optional(),
+    skin: z.record(z.string(), z.string()).optional(),
+    form: idDe('trapping').optional(),
+    chooseForm: z.boolean().optional(),
+  }),
   rollThreshold: z.strictObject({
     op: z.literal('rollThreshold'),
     sides: z.number(),
@@ -237,16 +296,16 @@ export const OP_DEFS: Readonly<Record<string, z.ZodType<unknown>>> = {
  * Une entrée ne se retire que par le commit qui TYPE l'op dans `OP_DEFS`.
  */
 export const OPS_NON_TYPEES: readonly string[] = [
-  'actGate', 'ap', 'armourPierce', 'arrowWard', 'attackKeyword', 'attackWardFM', 'attrMod', 'augmentWeapon',
+  'actGate', 'ap', 'armourPierce', 'arrowWard', 'attackKeyword', 'attackWardFM', 'attrMod',
   'beginPsych', 'breakBlade', 'castWard', 'chain', 'charDRBonus', 'charDamage', 'charMod', 'condition',
-  'crewTestMod', 'critOnRoll', 'critTwice', 'cureCriticalWound', 'cureDisease', 'damageArmour', 'delayed', 'disarm',
+  'crewTestMod', 'critOnRoll', 'critTwice', 'cureCriticalWound', 'cureDisease', 'damageArmour', 'disarm',
   'endPsych', 'endTransform', 'freeReroll', 'gainAdvantage', 'gainResource', 'grantCareerTalent', 'grantFreeAttack',
-  'grantNaturalWeapon', 'grantPsychTrait', 'grantTalent', 'grantTrait', 'grantWeapon', 'handGate', 'ignoreAnimosity',
+  'grantNaturalWeapon', 'grantPsychTrait', 'grantTalent', 'grantTrait', 'handGate', 'ignoreAnimosity',
   'ignoreStatePenalties', 'incomingAdvantage', 'incomingAttackMod', 'incomingSpellDRMod', 'interruptFocus',
   'intoxicate', 'lifeSteal', 'light', 'martyr', 'maxWeaponHands', 'mitigateIncoming', 'moveMod', 'moveScale',
   'narrative', 'preventInfection', 'push', 'reduceToZero', 'removeCondition', 'removePsychTrait', 'removeShipPoste',
   'rollMutation', 'sbBonus', 'senseLoss', 'sinMod', 'spendAdvantage', 'statusMod', 'suppressPsych', 'teamCommander',
-  'teleport', 'weaponDamageMod', 'weaponRollMod', 'weatherWard', 'wounds', 'zone',
+  'teleport', 'weaponDamageMod', 'weaponRollMod', 'weatherWard', 'wounds',
 ];
 
 /** Champs de l'op `condition` qu'un État PORTÉ (#1695) ne peut PAS tenir — LISTE CLOSE, alignée sur ce
@@ -319,6 +378,7 @@ export function sujetsNonGarantis(cond: unknown): string[] {
  * la portent aussi).
  */
 export const gameOpSchema: z.ZodType<GameOp> = z.looseObject({ op: z.string() }).superRefine((v, ctx) => {
+  marquerOpAtteinte(ctx);
   const payload = OP_DEFS[v.op];
   if (payload) {
     const res = payload.safeParse(v);

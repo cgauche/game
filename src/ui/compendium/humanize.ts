@@ -88,9 +88,9 @@ export function humanizeQuantite(f: Formula): { valeur: string; note: string } {
  *  COLLECTÉES (le nombre s'imprime nu) ; nul = chacune se nomme sur place. PURE. */
 function formuleEnMots(f: Formula, regles: string[] | null): string {
   if (typeof f === 'number') return String(f);
-  // Placeholder RUNTIME baké ('$indice' — Redoutable ZI, substitué à l'attache) qui peut atteindre
+  // Placeholder RUNTIME baké (`INDICE_TEMPLATE` — Redoutable ZI, substitué à l'attache) qui peut atteindre
   // l'affichage : jamais un objet Formula, donc gardé AVANT les `in` (mirroir de `resolveFormula`).
-  if (typeof f !== 'object' || f === null) return String(f) === '$indice' ? "l'Indice" : String(f);
+  if (typeof f !== 'object' || f === null) return String(f) === INDICE_TEMPLATE ? "l'Indice" : String(f);
   if ('bonusOf' in f) return `le Bonus de ${CHAR_LABELS[f.bonusOf]}`;
   if ('charOf' in f) return `la ${CHAR_LABELS[f.charOf]}`;
   if ('dice' in f) return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;

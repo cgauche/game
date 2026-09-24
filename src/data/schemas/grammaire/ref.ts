@@ -139,7 +139,10 @@ export function estSpecialisable(type: TypeEntite, id: string): boolean {
  */
 const REPERE: unique symbol = Symbol('repère de parse de mesure');
 
-/** Vrai le temps SYNCHRONE d'un `reperesDuParse`, qui seul l'écrit, et jamais ailleurs : aucun export n'expose l'état. */
+/** Clé du repère de NŒUD D'OP : même régime que `REPERE`, émis par `marquerOpAtteinte`. */
+const REPERE_OP: unique symbol = Symbol('repère de nœud d’op');
+
+/** Vrai le temps SYNCHRONE d'un `mesureDuParse`, qui seul l'écrit, et jamais ailleurs : aucun export n'expose l'état. */
 let parseDeMesure = false;
 
 /** Les feuilles construites par `idDe` — ce que la garde du masquage (`parse-de-mesure.test.ts`) instrumente. */
@@ -152,7 +155,7 @@ export const estFeuilleDId = (noeud: unknown): boolean =>
 /**
  * Schéma d'un id NU de `type` : refiné contre le registre, brandé `Id<type>` à la sortie. C'est la
  * FEUILLE porteuse de la référence, et la SEULE vérification d'un id contre le registre sous
- * `src/data/schemas` : au parse de mesure (`reperesDuParse`), chaque validation réussie y émet un
+ * `src/data/schemas` : au parse de mesure (`mesureDuParse`), chaque validation réussie y émet un
  * REPÈRE, que le volet SLOTS de `docs/structures-donnees.md` lit comme le côté DÉCLARÉ.
  *
  * La liste admise se LIT À CHAQUE VALIDATION, parce que le registre a deux régimes déclarés
@@ -187,6 +190,15 @@ export function idDe<T extends TypeEntite>(type: T, valeur?: string): z.ZodType<
   return feuille;
 }
 
+/**
+ * Marque le nœud en cours de validation comme un NŒUD D'OP ATTEINT par le parse (`gameOpSchema`,
+ * `grammaire/mecanique.ts`). Hors du parse de mesure, l'appel ne fait rien : le parse normal n'y
+ * gagne aucun chemin.
+ */
+export function marquerOpAtteinte(ctx: z.RefinementCtx): void {
+  if (parseDeMesure) ctx.addIssue({ code: 'custom', message: 'repère de nœud d’op', params: { [REPERE_OP]: true }, continue: true });
+}
+
 /** Une référence validée par `idDe` au parse de mesure : son path de DONNÉE et son type. `parCle` :
  *  la valeur validée est la CLÉ d'un record (dernier segment du path), pas la valeur qu'elle pose. */
 export interface RepereDeMesure {
@@ -195,30 +207,45 @@ export interface RepereDeMesure {
   readonly parCle: boolean;
 }
 
-/** Une issue zod telle que `reperesDuParse` la lit. */
+/** Une issue zod telle que `mesureDuParse` la lit. */
 type IssueLue = {
   readonly code: string;
   readonly path: readonly PropertyKey[];
   readonly message: string;
-  readonly params?: { readonly [REPERE]?: TypeEntite };
+  readonly params?: { readonly [REPERE]?: TypeEntite; readonly [REPERE_OP]?: true };
   readonly errors?: readonly (readonly IssueLue[])[];
   readonly issues?: readonly IssueLue[];
 };
 
 const typeDuRepere = (issue: IssueLue): TypeEntite | undefined => issue.params?.[REPERE];
+const estRepereDOp = (issue: IssueLue): boolean => issue.params?.[REPERE_OP] === true;
 
 /** L'issue n'est-elle faite QUE de repères (union dont une branche l'est, clé/élément dont toutes les issues le sont) ? */
 const estPropre = (issue: IssueLue): boolean =>
   typeDuRepere(issue) !== undefined ||
+  estRepereDOp(issue) ||
   (issue.code === 'invalid_union' && (issue.errors ?? []).some((b) => b.length > 0 && b.every(estPropre))) ||
   ((issue.code === 'invalid_key' || issue.code === 'invalid_element') && (issue.issues ?? []).length > 0 && issue.issues!.every(estPropre));
 
-function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[], parCle: boolean, out: RepereDeMesure[]): void {
+/** Ce que rend le parse de mesure : les références validées par `idDe`, et le path de DONNÉE de
+ *  chaque nœud d'op que `gameOpSchema` a validé (`marquerOpAtteinte`). */
+export interface MesureDuParse {
+  readonly reperes: readonly RepereDeMesure[];
+  readonly ops: readonly (readonly PropertyKey[])[];
+}
+
+type Recueil = { reperes: RepereDeMesure[]; ops: (readonly PropertyKey[])[] };
+
+function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[], parCle: boolean, out: Recueil): void {
   for (const issue of issues) {
     const path = [...prefixe, ...issue.path];
     const type = typeDuRepere(issue);
     if (type !== undefined) {
-      out.push({ path, type, parCle });
+      out.reperes.push({ path, type, parCle });
+      continue;
+    }
+    if (estRepereDOp(issue)) {
+      out.ops.push(path);
       continue;
     }
     // La PREMIÈRE branche propre est celle que le parse normal choisit : la première sans issue.
@@ -234,8 +261,8 @@ function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[]
 }
 
 /**
- * PARSE DE MESURE d'une donnée par son schéma RÉEL : les références que `idDe` y valide, à leur path
- * de DONNÉE. Le mode est borné par construction : `parseDeMesure` n'est vrai que pendant l'appel
+ * PARSE DE MESURE d'une donnée par son schéma RÉEL : les références que `idDe` y valide, et les nœuds
+ * d'op que `gameOpSchema` y valide, à leur path de DONNÉE. Le mode est borné par construction : `parseDeMesure` n'est vrai que pendant l'appel
  * SYNCHRONE à `safeParse` (zod lève sur tout nœud async), et le `finally` le rend à sa valeur
  * précédente, y compris quand le recueil lève. Les seuls parses exécutés dans cette fenêtre sont
  * ceux que ce `safeParse` imbrique (payload d'une op, `grammaire/mecanique.ts › gameOpSchema`).
@@ -245,7 +272,7 @@ function recueillir(issues: readonly IssueLue[], prefixe: readonly PropertyKey[]
  * parse normal LÈVE en nommant sa première issue ; dans la fenêtre, une issue qui n'est pas un repère
  * LÈVE aussi.
  */
-export function reperesDuParse(schema: z.ZodType, donnee: unknown): RepereDeMesure[] {
+export function mesureDuParse(schema: z.ZodType, donnee: unknown): MesureDuParse {
   const normal = schema.safeParse(donnee);
   if (!normal.success) {
     const [premiere] = normal.error.issues;
@@ -257,12 +284,17 @@ export function reperesDuParse(schema: z.ZodType, donnee: unknown): RepereDeMesu
   parseDeMesure = true;
   try {
     const resultat = schema.safeParse(donnee);
-    const out: RepereDeMesure[] = [];
+    const out: Recueil = { reperes: [], ops: [] };
     if (!resultat.success) recueillir(resultat.error.issues as unknown as readonly IssueLue[], [], false, out);
     return out;
   } finally {
     parseDeMesure = precedent;
   }
+}
+
+/** Les seules références de `mesureDuParse`. */
+export function reperesDuParse(schema: z.ZodType, donnee: unknown): readonly RepereDeMesure[] {
+  return mesureDuParse(schema, donnee).reperes;
 }
 
 /**

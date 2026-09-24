@@ -25,20 +25,18 @@ export interface JsonSource {
   data: unknown;
 }
 
-/** Valeur `string` d'un champ d'op à slot, et la CASE `(porteur, cle)` qui la porte. */
-export interface OccurrenceASlot {
+/** Un nœud `GameOp` visité par le scan : son document, son path, son op et l'OBJET lui-même. */
+export interface NoeudDOp {
   file: string;
   path: string;
-  key: string;
-  porteur: object;
-  cle: string | number;
-  value: string;
+  op: string;
+  noeud: object;
 }
 
 export interface ScanResult {
   offenders: GameOpRefOffender[];
   missingResolvers: string[];
-  occurrencesASlot: OccurrenceASlot[];
+  noeudsDOp: NoeudDOp[];
 }
 
 export interface CibleStale {

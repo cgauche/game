@@ -373,13 +373,17 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
     expect(rules(sain, 'fixture.tsx')).toEqual([]);
   });
 
-  it('CONTRE-ÉPREUVE : `ref === \'self\'` est un MOT DU VOCABULAIRE, un id d’entrée reste compté', () => {
-    // `'self'` (comme `''`) est un mot réservé du vocabulaire `GameOp` — `{op:'scheduleRespawn', ref:'self'}`
-    // désigne le PORTEUR de l'op, aucune entrée de registre ne porte cet id. Le TROU ne laisse passer que
-    // le vocabulaire : le MÊME site, comparé à un id d'entrée plausible, est compté par les DEUX gardes.
-    const vocabulaire = "function respawn(op: Op, actor: C) {\n  return op.ref === 'self' ? actor.creatureId : op.ref;\n}";
+  it('CONTRE-ÉPREUVE : une valeur réservée se lit par sa CONSTANTE (`SELF_REF`) ; son littéral, comme un id d’entrée, est compté', () => {
+    // `{op:'scheduleRespawn', ref: SELF_REF}` désigne le PORTEUR de l'op : le code lit la constante du
+    // moteur (`src/engine/ops.ts`), hors de portée du scan per-fichier. Le LITTÉRAL `'self'` n'est pas
+    // au vocabulaire exempté : le MÊME site l'écrivant en dur est compté par les DEUX gardes.
+    const vocabulaire = "import { SELF_REF } from '../engine/ops';\nfunction respawn(op: Op, actor: C) {\n  return op.ref === SELF_REF ? actor.creatureId : op.ref;\n}";
     expect(rules(vocabulaire)).toEqual([]);
     expect(scanRawIdEqualities('fixture.ts', vocabulaire)).toEqual([]);
+
+    const litteral = "function respawn(op: Op, actor: C) {\n  return op.ref === 'self' ? actor.creatureId : op.ref;\n}";
+    expect(rules(litteral)).toEqual(['id-equality']);
+    expect(scanRawIdEqualities('fixture.ts', litteral)).toHaveLength(1);
 
     const idDEntree = "function respawn(op: Op, actor: C) {\n  return op.ref === 'phillipe' ? actor.creatureId : op.ref;\n}";
     expect(rules(idDEntree)).toEqual(['id-equality']);
@@ -436,7 +440,7 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
   it('FIGEAGE : le CONTENU des deux vocabulaires exemptés est dit, pas seulement leur mécanique', () => {
     // Étendre l'une de ces listes SE FAIT JUGER, jamais au geste de confort : un mot de plus
     // blanchirait des branchements réels sans que rien ne le dise. Le contenu est donc figé ICI.
-    expect([...OP_VOCABULARY].sort()).toEqual(['', 'self']);
+    expect([...OP_VOCABULARY].sort()).toEqual(['']);
     expect([...VOCABULARY_TYPES.entries()]).toEqual([['BoneId', 'src/gameIso/rig/bones']]);
   });
 
@@ -584,7 +588,7 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
     // La résolution s'arrête au FICHIER : une constante IMPORTÉE reste hors de portée (scan per-fichier).
     expect(scanRawIdEqualities('fixture.ts', "import { CLE } from './cles';\nfunction f(e: E) { return e.id === CLE; }")).toEqual([]);
     // Un mot du VOCABULAIRE tenu par une constante ne désigne pas plus d'entrée que son littéral.
-    expect(scanRawIdEqualities('fixture.ts', "const SOI = 'self';\nfunction f(o: Op) { return o.ref === SOI; }")).toEqual([]);
+    expect(scanRawIdEqualities('fixture.ts', "const VIDE = '';\nfunction f(o: Op) { return o.ref === VIDE; }")).toEqual([]);
     // Une constante qui n'est PAS un littéral chaîne ne désigne rien non plus.
     expect(scanRawIdEqualities('fixture.ts', 'const CLE = compute();\nfunction f(e: E) { return e.id === CLE; }')).toEqual([]);
   });

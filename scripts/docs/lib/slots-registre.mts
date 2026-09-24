@@ -11,7 +11,7 @@
 import { SCHEMA_DEFS } from '../../../src/data/schemas/_registry.generated';
 import { SCHEMA_DEFS_SCENES } from '../../../src/data/schemas/_registry-scenes.generated';
 import type { SchemaDef } from '../../../src/data/schemas/types';
-import { estFeuilleDId, reperesDuParse, type TypeEntite } from '../../../src/data/schemas/grammaire/ref';
+import { estFeuilleDId, mesureDuParse, reperesDuParse, type TypeEntite } from '../../../src/data/schemas/grammaire/ref';
 import { defDe, descendre, enfantsDe } from '../../../src/data/schemas/grammaire/descente';
 import { OP_DEFS } from '../../../src/data/schemas/grammaire/mecanique';
 import { nomDeDocument, type OccurrenceDeReference, type ReferencesParPorteur } from './structures-scan.mjs';
@@ -50,17 +50,23 @@ function pathNormalise(path: readonly PropertyKey[], parCle: boolean): string {
   return segments.join('').replace(/^\./, '');
 }
 
+/** Le nœud du document au path d'un repère, et son porteur (le nœud qui le contient). */
+function auPath(dataset: string, document: unknown, path: readonly PropertyKey[]): { porteur: unknown; noeud: unknown } {
+  let porteur: unknown = null;
+  let noeud: unknown = document;
+  for (const k of path) {
+    if (noeud === null || typeof noeud !== 'object')
+      throw new Error(`slots : le repère « ${path.map(String).join('.')} » de ${dataset} ne descend pas dans le document parsé.`);
+    porteur = noeud;
+    noeud = (noeud as Record<PropertyKey, unknown>)[k];
+  }
+  return { porteur, noeud };
+}
+
 /** Les slots d'UN document : chaque repère de son parse de mesure, rendu en case du document. */
 function slotsDuDocument(dataset: string, schema: SchemaDef['schema'], document: unknown): Slot[] {
   return reperesDuParse(schema, document).map((r) => {
-    let porteur: unknown = null;
-    let noeud: unknown = document;
-    for (const k of r.path) {
-      if (noeud === null || typeof noeud !== 'object')
-        throw new Error(`slots : le repère « ${r.path.map(String).join('.')} » de ${dataset} ne descend pas dans le document parsé.`);
-      porteur = noeud;
-      noeud = (noeud as Record<PropertyKey, unknown>)[k];
-    }
+    const { porteur, noeud } = auPath(dataset, document, r.path);
     if (porteur === null || typeof porteur !== 'object' || (!r.parCle && typeof noeud !== 'string'))
       throw new Error(`slots : le repère « ${r.path.map(String).join('.')} » de ${dataset} ne tombe sur aucune chaîne du document parsé.`);
     const cle = r.path[r.path.length - 1] as string | number;
@@ -81,34 +87,48 @@ export function slotsDuParse(scan: Pick<ScanDesReferences, 'brutParNom'>, defs: 
 }
 
 /**
+ * Les NŒUDS D'OP que le parse de mesure atteint (`mesureDuParse › ops`) dans les documents du scan,
+ * par IDENTITÉ d'objet : un nœud `GameOp` du corpus absent de cet ensemble n'est validé par aucun
+ * schéma — ses références échappent au parse.
+ */
+export function opsDuParse(scan: Pick<ScanDesReferences, 'brutParNom'>, defs: readonly SchemaDef[] = defsDeDocument()): Set<object> {
+  const atteintes = new Set<object>();
+  for (const d of defs) {
+    if (!scan.brutParNom.has(d.file)) continue;
+    const document = scan.brutParNom.get(d.file);
+    for (const path of mesureDuParse(d.schema, document).ops) {
+      const { noeud } = auPath(d.file, document, path);
+      if (noeud === null || typeof noeud !== 'object')
+        throw new Error(`ops : le repère « ${path.map(String).join('.')} » de ${d.file} ne tombe sur aucun objet du document parsé.`);
+      atteintes.add(noeud);
+    }
+  }
+  return atteintes;
+}
+
+/**
  * CHAMPS D'OP À SLOT, lus STATIQUEMENT sur `OP_DEFS` : pour chaque op (chaque membre objet d'une union
  * comprise), chaque champ dont le sous-arbre porte une feuille `idDe`. Une op IMBRIQUÉE (`z.lazy` vers
  * `gameOpSchema`) n'y compte pas : son payload est lu par un raffinement, pas par un enfant du schéma
- * (`grammaire/descente.ts › enfantsDe`), et chaque op a son entrée ici. La valeur : les VALEURS
- * RÉSERVÉES du champ, branches `z.literal` du MÊME nœud (atteintes par des seules branches d'union ou
- * enveloppes, `grammaire/valeurs.ts › ouReserve`), qu'aucun repère ne marque.
+ * (`grammaire/descente.ts › enfantsDe`), et chaque op a son entrée ici.
  * Clé : `op.champ`, la graphie de `GAMEOP_FIELD_TARGETS` (`scripts/guards/lib/gameOpRefFk.mjs`).
  */
-export function champsDOpASlot(opDefs: Readonly<Record<string, unknown>> = OP_DEFS): Map<string, string[]> {
-  const out = new Map<string, string[]>();
+export function champsDOpASlot(opDefs: Readonly<Record<string, unknown>> = OP_DEFS): Set<string> {
+  const out = new Set<string>();
   for (const [op, schema] of Object.entries(opDefs)) {
     const membres = defDe(schema)?.type === 'union' ? enfantsDe(schema).map((e) => e.noeud) : [schema];
     for (const membre of membres) {
       for (const champ of enfantsDe(membre)) {
         if (champ.cle === undefined || champ.cle === 'op') continue;
         let aFeuille = false;
-        const reserves: string[] = [];
-        descendre([champ.noeud], ({ noeud, def, path }) => {
+        descendre([champ.noeud], ({ noeud }) => {
           if (estFeuilleDId(noeud)) aFeuille = true;
-          if (def.type === 'literal' && /^(\|\d+)*$/.test(path)) reserves.push(...((def.values as unknown[]) ?? []).map(String));
         });
-        if (!aFeuille) continue;
-        const cle = `${op}.${champ.cle}`;
-        out.set(cle, [...new Set([...(out.get(cle) ?? []), ...reserves])].sort(parUnitesDeCode));
+        if (aFeuille) out.add(`${op}.${champ.cle}`);
       }
     }
   }
-  return new Map([...out].sort(([a], [b]) => parUnitesDeCode(a, b)));
+  return new Set([...out].sort(parUnitesDeCode));
 }
 
 const cleDeCouple = (c: { dataset: string; champ: string }) => `${c.dataset} | ${c.champ}`;

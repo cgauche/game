@@ -480,10 +480,10 @@ function dropWorst(cand: PoolCandidate[], n: number): PoolCandidate[] {
   return cand.filter((_, i) => !dropped.has(i));
 }
 
-/** Le gagnant du POOL : « vous choisissez la pénalité la plus importante » (LDB 16 l.13). Le RAW ne
- *  départage PAS deux candidats de même magnitude ; arbitrage maison DÉTERMINISTE : le PREMIER dans
- *  l'ordre de collecte (États dans l'ordre de `Combatant.conditions`, puis états psychologiques,
- *  puis auras projetées) — comparaison STRICTE, un ex æquo ne détrône pas le tenant. */
+/** Le gagnant du POOL (LDB 16 l.13). Deux candidats de même magnitude portent la MÊME pénalité : seule
+ *  la SOURCE affichée les distingue, celle du PREMIER dans l'ordre de collecte (États dans l'ordre de
+ *  `Combatant.conditions`, puis états psychologiques, puis auras projetées) — comparaison STRICTE, un
+ *  ex æquo ne détrône pas le tenant. */
 function poolWinner(cand: PoolCandidate[]): PoolCandidate | undefined {
   return cand.reduce<PoolCandidate | undefined>((best, x) => (best == null || x.amount < best.amount ? x : best), undefined);
 }

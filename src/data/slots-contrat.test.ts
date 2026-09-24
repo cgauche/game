@@ -172,10 +172,10 @@ describe('registre des SLOTS — déclaré × observé (#1466 L1a, volet A)', ()
   });
 
   it('un couple ATTEINT EN PARTIE reste au stock à son compte OBSERVÉ total', () => {
-    const c = couple('spells.json', 'skill')!;
+    const c = couple('arene-projet.json', 'ref')!;
     expect(c.atteintes).toBeGreaterThan(0);
     expect(c.atteintes).toBeLessThan(c.occurrences);
-    expect(SLOTS_SANS_DECLARATION.find((l) => l.dataset === 'spells.json' && l.champ === 'skill')?.occurrences).toBe(c.occurrences);
+    expect(SLOTS_SANS_DECLARATION.find((l) => l.dataset === 'arene-projet.json' && l.champ === 'ref')?.occurrences).toBe(c.occurrences);
   });
 
   it('RÉCURSION : un `test.skill` sous un flux de dialogue est un slot (`loup-et-saumure-projet.json › skill`, joint)', () => {

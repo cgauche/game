@@ -120,20 +120,22 @@ describe('OP_DEFS — payload strict par op, repli nominatif, rouge au SITE', ()
         [champ, `GameOp « ${op} » : ref('${type}') : id « entite-fantome » absent de ${dataset} (registre _ids.generated.ts).`],
       ]);
     }
-    // Les valeurs réservées se LISENT sur le nœud : aucune liste recopiée.
-    expect(champsDOpASlot().get('exposeDisease.disease')).toEqual([ARG_TEMPLATE]);
-    expect(champsDOpASlot().get('scheduleRespawn.ref')).toEqual([SELF_REF]);
+  });
+
+  it('`testMod.exceptSkills` exempte des Compétences ENTIÈRES (LDB 16 l.52) : `{ id }` strict, une spécialisation est refusée', () => {
+    expect(gameOpSchema.safeParse({ op: 'testMod', amount: -10, exceptSkills: [{ id: 'langue' }] }).success).toBe(true);
+    expect(gameOpSchema.safeParse({ op: 'testMod', amount: -10, exceptSkills: [{ id: 'langue', spec: 'bretonnien' }] }).success).toBe(false);
   });
 
   it('les CHAMPS D’OP À SLOT se lisent sur `OP_DEFS` : feuille `idDe` du champ, jamais celles d’une op imbriquée', () => {
     const champs = champsDOpASlot();
     // `summon.count` : une `Formula` porte le terme `{rule}`, feuille `idDe('regleOptionnelle')`.
-    for (const k of ['removeTrait.traitId', 'diseaseTestMod.diseases', 'testMod.exceptSkills', 'rollTable.tableId', 'transform.morphRef', 'summon.count']) {
+    for (const k of ['removeTrait.traitId', 'diseaseTestMod.diseases', 'testMod.exceptSkills', 'rollTable.tableId', 'transform.morphRef', 'summon.count', 'grantWeapon.form']) {
       expect(champs.has(k), k).toBe(true);
     }
-    // `rows`/`ops`/`thresholds` portent des ops IMBRIQUÉES (`z.lazy`), `addTraits` un `traitInstanceSchema`
+    // `rows`/`ops`/`thresholds`/`onCross`/`perRound`/`passive` portent des ops IMBRIQUÉES (`z.lazy`), `addTraits` un `traitInstanceSchema`
     // dont l'`id` n'est pas une feuille `idDe` : aucun n'est un champ à slot.
-    for (const k of ['rollTable.rows', 'transform.ops', 'perRound.ops', 'rollThreshold.thresholds', 'summon.addTraits', 'skillDRBonus.testType']) {
+    for (const k of ['rollTable.rows', 'transform.ops', 'perRound.ops', 'rollThreshold.thresholds', 'delayed.ops', 'zone.onCross', 'zone.perRound', 'augmentWeapon.passive', 'summon.addTraits', 'skillDRBonus.testType']) {
       expect(champs.has(k), k).toBe(false);
     }
   });

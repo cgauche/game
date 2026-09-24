@@ -14,10 +14,16 @@
 // mecanique.ts`) porte une feuille `idDe` est vérifié AU PARSE, et sa cible est déclarée par cette
 // feuille : c'est un CHAMP D'OP À SLOT (`champsDOpASlot`, `scripts/docs/lib/slots-registre.mts`),
 // injecté ici par le consommateur TS. Il sort du périmètre dérivé, et une entrée de la table sur lui
-// sort en `stale` — une cible ne se déclare qu'une fois. Que chaque occurrence committée d'un tel
-// champ SOIT un slot du parse de mesure est prouvé par le consommateur (jointure `slotsDuParse`).
-// Cette table garde le RESTE : les champs des ops de `OPS_NON_TYPEES`, et ceux dont le type n'a pas
-// d'entrée à `TYPES` (`src/data/schemas/grammaire/ref.ts`).
+// sort en `stale` — une cible ne se déclare qu'une fois. Que le parse juge CHAQUE occurrence est
+// prouvé par le consommateur : tout nœud `GameOp` que ce scan visite (`noeudsDOp`) est un nœud d'op
+// ATTEINT par le parse de mesure (`opsDuParse`, `scripts/docs/lib/slots-registre.mts`).
+// Cette table garde le RESTE, et chaque reste a son lot de mort :
+//   - les champs des ops de `OPS_NON_TYPEES` (`src/data/schemas/grammaire/mecanique.ts`) meurent au
+//     typage de leur op dans `OP_DEFS`, lot L1c #1468 ;
+//   - les champs dont le type n'a pas d'entrée à `TYPES` (`src/data/schemas/grammaire/ref.ts` :
+//     Qualité, Groupe d'arme, Groupe, Psychologie, Séquelle, type de Test d'équipage, table de
+//     Mutation, ton de lumière) meurent à l'entrée de leur type, lot R2 de #1473 ;
+//   - les `nonRef` ne visent aucun registre : ils restent, justifiés.
 //
 // POURQUOI PARTIR DU CHAMP, PAS DU LITTÉRAL. `scripts/guards/lib/registryIdBranch.mjs` a mesuré
 // et écarté le critère « ce littéral est-il un id réel d'un `src/data/*.json` ? » : 648 sites, quasi
@@ -94,9 +100,6 @@ export const GAMEOP_FIELD_TARGETS = {
   'grantNaturalWeapon.qualities': { registry: 'qualities' },
   'grantWeapon.subType': { registry: 'weaponGroups' },
   'grantNaturalWeapon.subType': { registry: 'weaponGroups' },
-  // Silhouette de rendu d'une arme invoquée, résolue par id (`findTrappingById(w.form)`,
-  // src/gameIso/rig/parts/equipment.ts › weaponFamily).
-  'grantWeapon.form': { registry: 'trappings' },
   // ── Tables ──
   'rollMutation.table': { registry: 'mutationTables' },
   // ── Tons de lumière (lightTones.json) — APPARENCE d'une source, résolue au bord du rendu
@@ -223,31 +226,24 @@ const isGameOp = (o) => typeof o.op === 'string' && !('kind' in o);
  * par la table sans résolveur fourni est rapporté en `missingResolvers` (jamais ignoré en silence).
  * `softIds` : `{ <registre>: ids[] }`, marqueurs NARRATIFS d'un registre sans entrée d'entité, injectés
  * par le consommateur depuis leur registre unique — valides partout où ce registre est visé.
- * `champsASlot` : clés `op.champ` des champs d'op à slot ; leurs valeurs `string` sont rendues en
- * `occurrencesASlot` (`{ file, path, key, porteur, cle, value }`, la CASE qui les porte), jamais jugées ici.
- * Retourne `{ offenders, missingResolvers, occurrencesASlot }` : TOUTE valeur d'un champ à `registry`
- * qui ne résout pas, hors `softIds`, est un offenseur — la garde n'accorde aucun budget.
+ * `champsASlot` : clés `op.champ` des champs d'op à slot, jamais jugées ici (le parse les juge).
+ * Retourne `{ offenders, missingResolvers, noeudsDOp }` : TOUTE valeur d'un champ à `registry` qui ne
+ * résout pas, hors `softIds`, est un offenseur — la garde n'accorde aucun budget. `noeudsDOp` : chaque
+ * nœud `GameOp` visité (`{ file, path, op, noeud }`), que le consommateur joint au parse de mesure.
  */
 export function scanGameOpRefs({ sources, resolvers, softIds = {}, champsASlot = [] }) {
   const aSlot = new Set(champsASlot);
   const missingResolvers = new Set();
   const found = []; // { file, path, op, field, value, registry }
-  const occurrencesASlot = [];
+  const noeudsDOp = [];
   const walk = (node, file, where) => {
     if (Array.isArray(node)) { node.forEach((v, i) => walk(v, file, `${where}[${i}]`)); return; }
     if (!node || typeof node !== 'object') return;
     if (isGameOp(node)) {
       const op = node.op;
+      noeudsDOp.push({ file, path: where, op, noeud: node });
       for (const [field, raw] of Object.entries(node)) {
-        if (aSlot.has(`${op}.${field}`)) {
-          const cases = Array.isArray(raw) ? raw.map((v, i) => [raw, i, v]) : [[node, field, raw]];
-          for (const [porteur, cle, value] of cases) {
-            if (typeof value !== 'string') continue;
-            const at = Array.isArray(raw) ? `${where}.${field}[${cle}]` : `${where}.${field}`;
-            occurrencesASlot.push({ file, path: at, key: `${op}.${field}`, porteur, cle, value });
-          }
-          continue;
-        }
+        if (aSlot.has(`${op}.${field}`)) continue;
         const target = GAMEOP_FIELD_TARGETS[`${op}.${field}`];
         if (!target || !target.registry) continue;
         const resolve = resolvers[target.registry];
@@ -267,7 +263,7 @@ export function scanGameOpRefs({ sources, resolvers, softIds = {}, champsASlot =
   };
   for (const s of sources) walk(s.data, s.file, s.file);
 
-  return { offenders: found, missingResolvers: [...missingResolvers].sort(), occurrencesASlot };
+  return { offenders: found, missingResolvers: [...missingResolvers].sort(), noeudsDOp };
 }
 
 /** Rendu d'un offender en une ligne actionnable. */

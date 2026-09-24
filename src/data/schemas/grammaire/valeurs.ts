@@ -5,7 +5,7 @@
  * fichier ne compose que la RÉFÉRENCE (`refOuSpec`).
  */
 import { z } from 'zod';
-import { AVAILABILITIES, COUVERT_DIFFICULTES, STAKE_FORMS } from '../../../engine/types';
+import { AVAILABILITIES, COUVERT_DIFFICULTES, REACH_LABELS, REACH_VARIABLE, STAKE_FORMS } from '../../../engine/types';
 import { refOuSpec, idDe } from './ref';
 import { estGraphieDeChapitre } from '../../source/decoupe';
 
@@ -695,6 +695,11 @@ export const hitLocationSchema = z.enum(['tete', 'brasG', 'brasD', 'corps', 'jam
 /** `Formula` (`src/engine/ops.ts:87`) — quantité résolue à l'application (littéral/dés/bonus/Indice/
  *  jet-associé/pions/écart d'Avantage/Blessures/somme/facteur/borne basse). Resserré ici sur `CharKey`
  *  (fidèle à `src/engine/ops.ts:87`), sans risque pour les datasets (vérifié au parse). */
+/** `ReachValue` (`src/engine/types.ts`) : les SEPT longueurs de l'axe d'Allonge (LDB 62 l.156-164) ou
+ *  « Variable » (Arme improvisée, l.31). Vocabulaire FERMÉ, validé au CHARGEMENT (fail-fast) : hors de
+ *  cette liste, `reachIdOf` ne rendrait aucun rang et toute règle d'Allonge se tairait en silence. */
+export const reachSchema = z.enum([REACH_VARIABLE, ...Object.values(REACH_LABELS)]);
+
 /** Feuille de référence du terme `{rule}`, instanciée UNE fois : `formulaSchema` est un `z.lazy` que
  *  chaque composition ré-évalue — une fabrique appelée DANS le `lazy` poserait une marque par instance
  *  (58 mesurées), là où le site de référence est UN. */
@@ -941,8 +946,7 @@ export function catalogueSaisonnier<A extends EntreeMarchande, B extends EntreeM
  * FEUILLE ou VALEUR RÉSERVÉE — un champ qui admet, en plus de sa feuille, UN littéral que le moteur
  * lit à part : gabarit d'instance substitué par `withArg` (`engine/flowCore › INDICE_TEMPLATE`,
  * `ARG_TEMPLATE`) ou mot réservé interprété à l'application (`engine/ops › SELF_REF`). Le littéral est
- * une branche `z.literal` du MÊME nœud : le parse de mesure n'y pose aucun repère, et la jointure des
- * slots le lit sur le schéma (`scripts/docs/lib/slots-registre.mts › champsDOpASlot`).
+ * une branche `z.literal` du MÊME nœud : le parse de mesure n'y pose aucun repère.
  * Une valeur ni feuille ni réservée est refusée par le message de la FEUILLE (celui d'`idDe` nomme
  * l'id absent et son dataset), jamais par l'« Entrée invalide » générique d'une union.
  */
