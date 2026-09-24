@@ -41,7 +41,7 @@ import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import {
   GAMEOP_FIELD_TARGETS, auditFieldCoverage, scanGameOpRefs, formatOffender,
 } from '../../scripts/guards/lib/gameOpRefFk.mjs';
-import { champsDOpASlot, opsDuParse } from '../../scripts/docs/lib/slots-registre.mjs';
+import { champsDOpASlot, opsDuParse, slotsDOpNonJuges, slotsDuParse } from '../../scripts/docs/lib/slots-registre.mjs';
 import { scanDuCorpus } from '../../scripts/docs/lib/structures-scan.mjs';
 import { NARRATIVE_MARKERS } from '../engine/conditions';
 import { extractedBooks, frenchSourceDirs, isSentinel, sourceDirOf, walkSkillRefs } from '../../scripts/data/lib/skillSpecWalk.mjs';
@@ -1265,15 +1265,42 @@ describe('GameOp — toute référence de la donnée committée résout dans son
   // Stock NOMINATIF, compte EXACT par document : les ops du dialecte `jsonOpSchema`
   // (`schemas/defs/miscast.ts`), lot de mort #1902.
   const HORS_PARSE: Record<string, number> = { 'miscast.json': 77 };
+  const ATTEINTES = opsDuParse(CORPUS, DEFS);
   it('tout nœud GameOp du corpus est atteint par le parse de mesure, hors stock nominatif', () => {
-    const atteintes = opsDuParse(CORPUS, DEFS);
     expect(scan.noeudsDOp.length, 'aucun nœud d’op visité — le scan est vide').toBeGreaterThan(500);
-    const hors = scan.noeudsDOp.filter((n) => !atteintes.has(n.noeud));
+    const hors = scan.noeudsDOp.filter((n) => !ATTEINTES.has(n.noeud));
     const parDocument: Record<string, number> = {};
     for (const n of hors) parDocument[n.file] = (parDocument[n.file] ?? 0) + 1;
     const lignes = hors.filter((n) => !(n.file in HORS_PARSE)).map((n) => `${n.path} : ${n.op}`);
     expect(lignes, `nœuds d’op hors du parse — typer leur conteneur (OP_DEFS) :\n${lignes.join('\n')}`).toEqual([]);
     expect(parDocument, 'le stock HORS_PARSE est EXACT : un compte qui baisse se reporte au stock').toEqual(HORS_PARSE);
+  });
+
+  // Le stock HORS_PARSE n'a pas de parse d'op : chaque chaîne de ses champs d'op à slot, que le scan
+  // saute, est une CASE validée par `idDe` au parse de SON document (`slotsDuParse`), ou elle n'est
+  // jugée par personne.
+  const renduNonJuge = (v: { path: string; valeur: string }) => `${v.path} = ${JSON.stringify(v.valeur)}`;
+  it('hors du parse d’op, toute chaîne d’un champ d’op à slot est jugée par le parse de son document', () => {
+    const nonJuges = slotsDOpNonJuges(scan.noeudsDOp, ATTEINTES, slotsDuParse(CORPUS, DEFS), CHAMPS_A_SLOT).map(renduNonJuge);
+    expect(nonJuges, `champs d’op à slot jugés par AUCUN parse — typer leur porteur (idDe) :\n${nonJuges.join('\n')}`).toEqual([]);
+  });
+
+  it('hors du parse d’op, un champ d’op à slot que le dialecte ne type pas est REFUSÉ (contre-épreuve)', () => {
+    const miscastDef = DEFS.find((d) => d.file === 'miscast.json');
+    expect(miscastDef, 'def de miscast.json introuvable').toBeTruthy();
+    const [table] = structuredClone(CORPUS.brutParNom.get('miscast.json')) as { entries: { id: string; ops?: object[] }[] }[];
+    const rangee = table.entries.find((e) => e.id === 'mineure-langue-maladroite')!;
+    rangee.ops!.push({ op: 'condition', id: 'etat-fantome' });
+    table.entries = [rangee];
+    const brutParNom = new Map<string, unknown>([['miscast.json', [table]]]);
+    const noeuds = scanGameOpRefs({ sources: [{ file: 'miscast.json', data: [table] }], resolvers }).noeudsDOp;
+    const atteintes = opsDuParse({ brutParNom }, [miscastDef!]);
+    expect(noeuds.filter((n) => atteintes.has(n.noeud)), 'la fixture doit rester HORS du parse d’op').toEqual([]);
+    const slots = slotsDuParse({ brutParNom }, [miscastDef!]);
+    expect(slotsDOpNonJuges(noeuds, atteintes, slots, CHAMPS_A_SLOT)).toEqual([]);
+    const avecSlot = new Set([...CHAMPS_A_SLOT, 'condition.id']);
+    expect(slotsDOpNonJuges(noeuds, atteintes, slots, avecSlot).map(renduNonJuge))
+      .toEqual(['miscast.json[0].entries[0].ops[1].id = "etat-fantome"']);
   });
 
   it('une op sous un conteneur d’ops est atteinte par le parse : une valeur OBJET fantôme y est REFUSÉE (contre-épreuve)', () => {

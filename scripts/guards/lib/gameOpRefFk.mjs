@@ -16,7 +16,9 @@
 // injecté ici par le consommateur TS. Il sort du périmètre dérivé, et une entrée de la table sur lui
 // sort en `stale` — une cible ne se déclare qu'une fois. Que le parse juge CHAQUE occurrence est
 // prouvé par le consommateur : tout nœud `GameOp` que ce scan visite (`noeudsDOp`) est un nœud d'op
-// ATTEINT par le parse de mesure (`opsDuParse`, `scripts/docs/lib/slots-registre.mts`).
+// ATTEINT par le parse de mesure (`opsDuParse`, `scripts/docs/lib/slots-registre.mts`), hors d'un
+// stock nominatif dont chaque chaîne de champ à slot est une case validée par `idDe` au parse de son
+// document (`slotsDOpNonJuges`, même fichier).
 // Cette table garde le RESTE, et chaque reste a son lot de mort :
 //   - les champs des ops de `OPS_NON_TYPEES` (`src/data/schemas/grammaire/mecanique.ts`) meurent au
 //     typage de leur op dans `OP_DEFS`, lot L1c #1468 ;
