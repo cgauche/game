@@ -163,13 +163,15 @@ describe('validateScene', () => {
     }];
     // Couche d'étage NON cotée : plancher, murs et toiture de l'étage retombent tous au rez.
     expect(validateScene([s]).some((w) => w.scope === 'architecture' && w.refId === 'toit' && w.level === 'error' && /plancher/.test(w.message))).toBe(true);
+    // Une scène validée est IMMUABLE (`memoByRefDeps`) : chaque cotation est une COPIE.
+    const cotee = (hauteurs: Record<number, number>): Scene => ({
+      ...s,
+      layers: s.layers.map((layer) => (layer.z in hauteurs ? { ...layer, height: new Array(25).fill(hauteurs[layer.z]) } : layer)),
+    });
     // CONTRE-ÉPREUVE : cotée au sommet des murs du rez, la même masse ne dit plus rien.
-    s.layers.find((layer) => layer.z === 1)!.height = new Array(25).fill(METRES_PER_LEVEL);
-    expect(validateScene([s]).filter((w) => w.scope === 'architecture')).toEqual([]);
+    expect(validateScene([cotee({ 1: METRES_PER_LEVEL })]).filter((w) => w.scope === 'architecture')).toEqual([]);
     // RELIEF LIBRE : bâtiment sur une BUTTE — les deux couches montent ensemble, l'empilement tient.
-    s.layers.find((layer) => layer.z === 0)!.height = new Array(25).fill(6);
-    s.layers.find((layer) => layer.z === 1)!.height = new Array(25).fill(6 + METRES_PER_LEVEL);
-    expect(validateScene([s]).filter((w) => w.scope === 'architecture')).toEqual([]);
+    expect(validateScene([cotee({ 0: 6, 1: 6 + METRES_PER_LEVEL })]).filter((w) => w.scope === 'architecture')).toEqual([]);
   });
 
   it('architecture : refuse ids dupliqués, arêtes invalides et valeurs de masse incohérentes', () => {
@@ -472,12 +474,9 @@ describe('validateScene', () => {
 
   it('musique de scène inconnue au registre → avertissement ; piste réelle / silence / auto = OK', () => {
     const s = base();
-    s.music = { ambient: 'piste-fantome', combat: 'musique-combat' };
-    expect(msgs(validateScene([s])).some((m) => /Musique .*piste-fantome/.test(m))).toBe(true);
-    s.music = { ambient: null, combat: 'musique-combat' }; // silence + piste réelle
-    expect(validateScene([s])).toEqual([]);
-    s.music = undefined; // automatique
-    expect(validateScene([s])).toEqual([]);
+    expect(msgs(validateScene([{ ...s, music: { ambient: 'piste-fantome', combat: 'musique-combat' } }])).some((m) => /Musique .*piste-fantome/.test(m))).toBe(true);
+    expect(validateScene([{ ...s, music: { ambient: null, combat: 'musique-combat' } }])).toEqual([]); // silence + piste réelle
+    expect(validateScene([{ ...s, music: undefined }])).toEqual([]); // automatique
   });
 });
 

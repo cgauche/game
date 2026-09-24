@@ -215,7 +215,7 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 | `cover` | 3 | `src/data/props.types.ts:572` |
 | `light` | 3 | `src/data/props.types.ts:581` |
 | `foot` | 2 | `src/data/props.types.ts:362` |
-| `volume` | 17 | `src/data/props.types.ts:429` |
+| `volume` | 16 | `src/data/props.types.ts:429` |
 | `seatSlots` | 4 | `src/data/props.types.ts:390` |
 
 ### `PropVolumeRecipe` (src/data/props.types.ts)
@@ -299,4 +299,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: 3de00265c387a4f7cc47ef9dcf69e4820ce7b1b3 (2099 fichiers, 172 dossiers) corps: 0ad02b49a3dede62f94045cb7da4dc77b47ce647 -->
+<!-- sources-empreinte: d333d67401f0fb3ed1a10ae51da46dcc99204095 (2099 fichiers, 172 dossiers) corps: f0ea3cc43fbcfd534e6e338c9237341fb3b55a99 -->

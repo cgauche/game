@@ -587,7 +587,8 @@ describe('Inspector — places assises d’un décor', () => {
  * CAP D'UN DÉCOR VOLUMIQUE (#1680 ligne 3) — verrou au GESTE : le sélecteur d'orientation n'OFFRE pas
  * la diagonale sur un décor dont le type porte une recette. Un cap qu'on ne peut pas choisir n'a pas
  * à être réparé après coup ; le schéma de scène (`sceneEntitySchema`) reste le refus au chargement,
- * `validateScene` le signalement, `buildProps` le dernier filet. La règle est celle du CATALOGUE
+ * `validateScene` le signalement, `buildProps` le billboard d'erreur. Un cap refusé que la donnée
+ * porte quand même se MONTRE, non élisible. La règle est celle du CATALOGUE
  * (`refEstVolumique`) : un décor BILLBOARD garde ses huit caps.
  */
 describe('Inspector — orientation : les caps OFFERTS suivent le catalogue', () => {
@@ -612,6 +613,22 @@ describe('Inspector — orientation : les caps OFFERTS suivent le catalogue', ()
     const h = mount({ id: 'pnj-1', kind: 'personnage', pos: { x: 1, y: 1 }, facing: 'SE' });
     h.mount();
     expect(capsOfferts(h.container)).toEqual(['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']);
+  });
+
+  it('cap HORS offre porté par la donnée : montré en option NON élisible, les cardinaux restent élisibles', () => {
+    const h = mount({ id: 'table-1', kind: 'prop', pos: { x: 1, y: 1 }, ref: 'table-ronde-4-tabourets', facing: 'NE' });
+    h.mount();
+    const champ = [...h.container.querySelectorAll('label')].find((l) => l.textContent?.startsWith('Orientation'));
+    const select = champ!.querySelector('select') as HTMLSelectElement;
+    expect(select.value, 'le DOM montre le cap de la donnée, pas la première option').toBe('NE');
+    expect([...select.options].map((o) => [o.value, o.disabled])).toEqual([
+      ['NE', true], ['N', false], ['E', false], ['S', false], ['O', false],
+    ]);
+    act(() => {
+      select.value = 'N';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(h.entOf().facing).toBe('N');
   });
 });
 

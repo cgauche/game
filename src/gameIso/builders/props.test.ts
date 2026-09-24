@@ -33,7 +33,7 @@ const MPT = sceneMetresPerTile(emptyScene(1, 1));
 const poseA = (el: PropEl, ancre: { x: number; y: number }, facing: Dir8) =>
   volume(el).faces.every((face, i) =>
     face.poly.every((p, k) => {
-      const attendu = buildPropVolumes(findPropById(el.ref)!, { ancre, facing: capVolumique(facing, volume(el).ref), baseHeightM: socleM(el) }, MPT)[i].poly[k];
+      const attendu = buildPropVolumes(findPropById(el.ref)!, { ancre, facing: capVolumique(facing)!, baseHeightM: socleM(el) }, MPT)[i].poly[k];
       return Math.abs(p.x - attendu.x) < 1e-9 && Math.abs(p.y - attendu.y) < 1e-9 && Math.abs(p.h - attendu.h) < 1e-9;
     }));
 

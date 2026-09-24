@@ -20,6 +20,7 @@ import { placeServices, type WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
 import { scenePlanDefects, type PlanDefectAt, type PlanDefectFamily } from './planDefects';
 import { seatAssignmentDefects } from './seating';
+import { memoByRefDeps } from './sceneMemo';
 
 /** Ids de la sous-liste `roof` que la DONNÉE ne déclare PAS couvrants (`materials.json`, champ
  *  `couverture` — le plan vu du dessus) : le schéma prouve l'appartenance à `roof`, ce sous-filtre de
@@ -48,18 +49,13 @@ export type ArchitectureWarningRef =
   | { type: 'facadeSection'; bodyId: string; id: string }
   | { type: 'roofSection'; bodyId: string; id: string };
 
-/** Verdict d'un SCHÉMA par objet validé (une scène, la carte), daté par la version des datasets : les
- *  éditions de l'éditeur sont IMMUABLES (`useSceneHistory`), seul l'objet modifié se re-parse, et une
- *  écriture au catalogue (Compendium) re-date tous les verdicts — les réfs se résolvent au catalogue VIF. */
-const verdictsDeSchema = new WeakMap<object, { version: number; fautes: readonly Faute[] | null }>();
-function fautesDeSchema(schema: Parameters<typeof validateDocument>[0], objet: object): readonly Faute[] | null {
-  const version = versionDesDatasets();
-  const connu = verdictsDeSchema.get(objet);
-  if (connu?.version === version) return connu.fautes;
-  const fautes = validateDocument(schema, objet);
-  verdictsDeSchema.set(objet, { version, fautes });
-  return fautes;
-}
+/** Verdict d'un SCHÉMA par objet validé (une scène, la carte), par le mémo CANONIQUE (`memoByRefDeps`),
+ *  daté par la version des datasets : les éditions de l'éditeur sont IMMUABLES (`useSceneHistory`),
+ *  seul l'objet modifié se re-parse, et une écriture au catalogue (Compendium) re-date tous les
+ *  verdicts — les réfs se résolvent au catalogue VIF. */
+const verdictsDeSchema = memoByRefDeps<object, readonly Faute[] | null>();
+const fautesDeSchema = (schema: Parameters<typeof validateDocument>[0], objet: object): readonly Faute[] | null =>
+  verdictsDeSchema(objet, [versionDesDatasets(), schema], () => validateDocument(schema, objet));
 
 /** PORTÉE d'une faute pour l'éditeur (clic → sélection), par la suite des LISTES à clé que son lieu
  *  traverse depuis la racine ; les clés rencontrées nomment la sélection. Choix d'ÉCRAN : une façade

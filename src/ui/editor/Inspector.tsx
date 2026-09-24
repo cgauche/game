@@ -65,6 +65,7 @@ import { LayerField, LayerChip, sceneLayerZs } from './LayerField';
 import { estCardinal, type Dir8 } from '../../state/dir8';
 import { propFootTiles } from '../../state/footprint';
 import { Row, Stack } from '../Layout';
+import { CAP_IDENTITE_PROP } from '../../data/props.types';
 
 /** Caps OFFERTS au sélecteur d'orientation, dans l'ordre horaire de `DIR8_ORDER` : les huit pour une
  *  entité ordinaire, les quatre CARDINAUX pour un décor volumique (`Dir4`, #1680 ligne 3). Un seul
@@ -1278,6 +1279,30 @@ function EmpreinteDeLInstance({ scene, ent }: { scene: Scene; ent: SceneEntity }
   );
 }
 
+/**
+ * ORIENTATION d'une entité. Un décor VOLUMIQUE n'a que les quatre cardinaux À OFFRIR (#1509, #1680
+ * ligne 3) ; source de la règle : le CATALOGUE (`refEstVolumique`), la même que lit le schéma de scène
+ * au parse et `validateScene` à l'écran. Un cap que la donnée porte HORS de l'offre se MONTRE en option
+ * non élisible, comme l'état de `SelecteurDeDecor` : sans elle, le DOM afficherait la première option
+ * comme si c'était le cap de l'instance, et la choisir n'émettrait aucun `change`.
+ */
+function SelecteurDOrientation({ ent, updateSel }: { ent: SceneEntity; updateSel: (patch: Partial<SceneEntity>) => void }) {
+  const offerts = refEstVolumique(ent.ref) && ent.kind === 'prop' ? CAPS_OFFERTS_CARDINAUX : CAPS_OFFERTS;
+  const cap = ent.facing ?? CAP_IDENTITE_PROP;
+  const horsOffre = offerts.some(([c]) => c === cap) ? null : CAPS_OFFERTS.find(([c]) => c === cap);
+  return (
+    <label className="ed-field">
+      Orientation
+      <select value={cap} onChange={(e) => updateSel({ facing: e.target.value as SceneEntity['facing'] })}>
+        {horsOffre && <option value={cap} disabled>{horsOffre[1]} — refusé pour ce décor</option>}
+        {offerts.map(([c, libelle]) => (
+          <option key={c} value={c}>{libelle}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 /** Panneau d'une ENTITÉ sélectionnée (personnage / décor / départ héros). */
 function EntityPanel({
   ent,
@@ -1319,19 +1344,7 @@ function EntityPanel({
           Libellé
           <input value={ent.label ?? ''} onChange={(e) => updateSel({ label: e.target.value })} />
         </label>
-        <label className="ed-field">
-          Orientation
-          {/* Un décor VOLUMIQUE n'a que les quatre cardinaux À OFFRIR : sa recette tourne là où son
-              empreinte solide ne tourne pas (#1509), et une diagonale poserait son corps en travers
-              de cases restées traversables. Le geste n'a donc pas à être réparé après coup — il
-              n'est pas proposable. Source de la règle : le CATALOGUE (`refEstVolumique`), la même
-              que lit le schéma de scène au parse et `validateScene` à l'écran. */}
-          <select value={ent.facing ?? 'S'} onChange={(e) => updateSel({ facing: e.target.value as SceneEntity['facing'] })}>
-            {(refEstVolumique(ent.ref) && ent.kind === 'prop' ? CAPS_OFFERTS_CARDINAUX : CAPS_OFFERTS).map(([cap, libelle]) => (
-              <option key={cap} value={cap}>{libelle}</option>
-            ))}
-          </select>
-        </label>
+        <SelecteurDOrientation ent={ent} updateSel={updateSel} />
         <LayerField z={ent.z} layers={sceneLayerZs(scene)} onChange={(z) => updateSel({ z: z || undefined })} />
       </Fold>
       {ent.kind === 'personnage' && (
