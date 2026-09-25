@@ -32,7 +32,10 @@
 //    UNE fois au PDF et porté une seconde fois par le `.md` — preuve : les deux comptes.
 // Pour les encadrés, les tableaux et les capitales, seules S et F sont rendues (leur place dans le `.md`
 // suit la mise en page, pas l'ordre du PDF), et, des capitales, le S′ par COMPTAGE : un titre que les
-// pages de son fichier impriment PLUS de fois que son `.md` ne le porte (une fois au moins).
+// pages de son fichier impriment PLUS de fois que son `.md` ne le porte (une fois au moins). Le même
+// comptage (zéro fois au moins), sur la légende UNIQUE d'un bloc de tableau, est RAPPORTÉ
+// (`legende-absente`) : la forme d'une légende n'est pas un titre, la réparation ne le pose pas.
+// Un corps en tableau se juge par la ligne qui précède l'EN-TÊTE de son bloc.
 // Toute CIBLE (`cible`, `devant`) est le DÉBUT d'un bloc Markdown ; une ligne de tableau se remonte à
 // l'en-tête de son bloc ; sinon le site sort en `cible-invalide`, avec sa forme visée et la ligne visée.
 // `titreMd` : le texte EXACT du titre dans le `.md` (S, F, M, B, O), ce que la réparation déplace.
@@ -222,6 +225,20 @@ export function classer(pages, fichiers, gabarit) {
   const pris = new Set()
   let curseur = { f: -1, l: -1 }
   const adresse = (f, l) => `${fichiers[f].nom.slice(0, 3)}:${l + 1}`
+  const ligneDeTable = (s) => /^\s*\|/.test(stripSpans(s ?? ''))
+  /** L'en-tête du bloc de tableau contigu qui porte la ligne `l` (la ligne elle-même hors tableau). */
+  const enteteDeTable = (f, l) => {
+    const x = fichiers[f].lignes
+    if (ligneDeTable(x[l])) while (l > 0 && ligneDeTable(x[l - 1])) l--
+    return l
+  }
+  /** Le nombre de clés `suite` que porte la section du `.md` ouverte à la ligne `v` (jusqu'au titre suivant). */
+  const corroboration = (v, suite) => {
+    let fin = v.l + 1
+    while (fin < cles[v.f].length && !enTete(fichiers[v.f].lignes[fin])) fin++
+    const section = cles[v.f].slice(v.l, fin).join(' ')
+    return suite.filter((k) => section.includes(k)).length
+  }
 
   for (const t of titres) {
     const l = flux[t.index]
@@ -239,13 +256,28 @@ export function classer(pages, fichiers, gabarit) {
     t.corpsPdf = suivantes[0] ?? null
     t.cles = clesDeCorps(suivantes)
     t.corps = null
-    for (const k of t.cles) {
+    // Une clé à PLUSIEURS candidats se départage par les clés suivantes que porte la section de chacun
+    // (jusqu'au titre suivant) : le mieux corroboré l'emporte ; aucun corroboré, la clé suivante est
+    // essayée, puis le 1er choix revient (CRB p.176, p.335, p.367).
+    let repli = null
+    for (const [i, k] of t.cles.entries()) {
       const vus = fichiersDeLaPage(t.page).flatMap((fi) =>
         cles[fi].flatMap((c, j) => (c.includes(k) && !pris.has(`corps ${fi}:${j}:${k}`) ? [{ f: fi, l: j, cle: k }] : [])),
       )
-      t.corps = vus.find((v) => v.f > curseur.f || (v.f === curseur.f && v.l > curseur.l)) ?? vus[0] ?? null
-      if (t.corps) break
+      const choix = (vs) => vs.find((v) => v.f > curseur.f || (v.f === curseur.f && v.l > curseur.l)) ?? vs[0] ?? null
+      if (vus.length < 2) {
+        t.corps = choix(vus)
+        if (t.corps) break
+        continue
+      }
+      const notes = vus.map((v) => corroboration(v, t.cles.slice(i + 1)))
+      const max = Math.max(...notes)
+      repli ??= choix(vus)
+      if (!max) continue
+      t.corps = choix(vus.filter((_, n) => notes[n] === max))
+      break
     }
+    t.corps ??= repli
     if (!t.corps) {
       t.forme = 'corps-introuvable'
       t.cause = !suivantes.length ? 'sans-ligne' : !t.cles.length ? 'cle-courte' : 'hors-md'
@@ -254,7 +286,7 @@ export function classer(pages, fichiers, gabarit) {
     curseur = t.corps
     const { f, l: li, cle: k } = t.corps
     pris.add(`corps ${f}:${li}:${k}`)
-    if (t.gabarit === 'encadre' && /^\s*\|/.test(fichiers[f].lignes[li])) t.famille = 'tableau'
+    if (t.gabarit === 'encadre' && ligneDeTable(fichiers[f].lignes[li])) t.famille = 'tableau'
     const pos = cles[f][li].indexOf(k)
     const prefixe = cles[f][li].slice(0, pos).trim().replace(/:$/, '')
     if (pos > 0 && prefixe === t.cle) {
@@ -264,8 +296,9 @@ export function classer(pages, fichiers, gabarit) {
       continue
     }
     {
-      // Un corps en LISTE se lit dès sa 1re puce : on remonte les puces qui précèdent la ligne trouvée.
-      let depuis = li
+      // Un corps en LISTE se lit dès sa 1re puce : on remonte les puces qui précèdent la ligne trouvée ;
+      // un corps en TABLEAU, dès l'en-tête de son bloc.
+      let depuis = enteteDeTable(f, li)
       while (/^- /.test(fichiers[f].lignes[depuis] ?? '') && /^- /.test(fichiers[f].lignes[precedente(f, depuis)?.l ?? -1] ?? '') && precedente(f, depuis).f === f) {
         depuis = precedente(f, depuis).l
       }
@@ -296,12 +329,19 @@ export function classer(pages, fichiers, gabarit) {
   // composite avec son JUMEAU, ou un gras de TÊTE de ligne qui n'est pas une étiquette (`X:`) : soudé au
   // corps de son jumeau ou à un autre corps. Le reste est MENTION.
   // Règle du DOUBLON inversée : les pages du fichier de son corps impriment le titre PLUS de fois que
-  // ce `.md` ne le porte, une fois au moins (le `.md` a gardé l'en-tête de profil, perdu le titre).
-  const comptage = (t) => {
+  // ce `.md` ne le porte, `plancher` fois au moins (capitales : 1, le `.md` a gardé l'en-tête de profil,
+  // perdu le titre ; tableau : 0, la table imprimée sous sa légende est la preuve).
+  const comptage = (t, plancher) => {
     const f = t.corps.f
     const auPdf = clesDuFlux.filter((l) => fichiers[f].page <= l.page && l.page <= fichiers[f].pageFin && l.cle === t.cle).length
     const auMd = cles[f].filter((c) => c === t.cle).length
-    return auMd && auPdf > auMd ? { auPdf, auMd } : null
+    return auMd >= plancher && auPdf > auMd ? { auPdf, auMd } : null
+  }
+  // Une table n'a qu'une LÉGENDE : plusieurs titres `tableau` sur le même bloc en sont les en-têtes de
+  // colonne (CRB p.149, p.188).
+  const legendeUnique = (t) => {
+    const bloc = (u) => `${u.corps.f}:${enteteDeTable(u.corps.f, u.corps.l)}`
+    return !titres.some((u) => u !== t && u.famille === 'tableau' && u.corps && bloc(u) === bloc(t))
   }
   const jumeaux = (t) => titres.filter((u) => u !== t && u.page === t.page && Math.abs(u.y0 - t.y0) <= 2)
   const ordreDeRecherche = (p) => [...new Set([...fichiersDeLaPage(p), ...fichiers.keys()])]
@@ -332,7 +372,8 @@ export function classer(pages, fichiers, gabarit) {
     } else {
       t.forme = "S'"
       t.mentions = fichiers.flatMap((fx, fi) => fx.lignes.flatMap((x, li) => (cles[fi][li].includes(t.cle) ? [adresse(fi, li)] : [])))
-      if (t.famille === 'capitales' && t.corps) t.comptage = comptage(t)
+      if (t.famille === 'capitales' && t.corps) t.comptage = comptage(t, 1)
+      if (t.famille === 'tableau' && legendeUnique(t)) t.comptage = comptage(t, 0)
     }
   }
 
@@ -362,7 +403,7 @@ export function classer(pages, fichiers, gabarit) {
   // casserait le bloc.
   const debutDeBloc = ({ f, l }) => {
     const x = fichiers[f].lignes
-    if (/^\s*\|/.test(x[l] ?? '')) while (l > 0 && /^\s*\|/.test(x[l - 1])) l--
+    l = enteteDeTable(f, l)
     return x[l]?.trim() && (l === 0 || !x[l - 1].trim() || enTete(x[l - 1])) ? { f, l } : null
   }
   const sites = []
@@ -409,6 +450,7 @@ export function classer(pages, fichiers, gabarit) {
     if (!ENTREES.has(t.famille)) {
       if (t.forme === 'S') sites.push({ forme: 'S', site, titreMd: exact(t), ...pose(), ...base })
       else if (t.forme === 'F') emettre({ forme: 'F', site, titreMd: exact(t), cible: cible(t), ...pose(), ...decoupe(t, t.corps), comment: t.comment, ...base }, { cible: t.corps })
+      else if (t.forme === "S'" && t.comptage && t.famille === 'tableau') emettre({ forme: 'legende-absente', site: null, cible: cible(t), mentions: t.mentions, comptage: t.comptage, ...base }, { cible: t.corps })
       else if (t.forme === "S'" && t.comptage) emettre({ forme: "S'", site: null, cible: cible(t), ...pose(), mentions: t.mentions, comptage: t.comptage, ...base }, { cible: t.corps })
       return
     }
@@ -764,7 +806,7 @@ function boitesDuPdf(id) {
 }
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'P', 'D', 'E', 'A', 'G', 'T', 'J', 'paragraphe-non-prouve', 'libelle-non-prouve', 'cesure', 'N', 'corps-introuvable', 'cible-invalide', 'doublon']
+const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'P', 'D', 'E', 'A', 'G', 'T', 'J', 'paragraphe-non-prouve', 'libelle-non-prouve', 'cesure', 'legende-absente', 'N', 'corps-introuvable', 'cible-invalide', 'doublon']
 const FAMILLES = ['entree', 'encadre', 'tableau', 'capitales', 'intertitre']
 /** Les familles d'ENTRÉE : titres du fil du texte, dans l'ordre du PDF, sondés dans toutes leurs formes. */
 const ENTREES = new Set(['entree', 'intertitre'])

@@ -210,3 +210,13 @@ test('D (CRB 018 l.1106, p.62) : la ligne déplacée rejoint la prose qu’elle 
   assert.equal(infidelite(D_TEXTE, textes, D_SITES), null)
   assert.deepEqual(reparerLivre(textes, D_SITES).refus, ['018:3 D : la ligne n\'est plus « for the world. »'])
 })
+
+test('S′ déjà dans le fichier sous une AUTRE forme (ancre, niveau, emphase) : refusé ; imprimé deux fois et porté une, posé (CRB 070:161, 013:63)', () => {
+  const texte = ['## <span id="page-237-0" data-folio="238"></span>MINOR MISCAST TABLE', '', '| d100 | Effect |', '', '#### **RANDOM TABLE**', '', '| a | b |', ''].join('\n')
+  const site = (ligneTitre, cible, comptage) => ({ forme: "S'", site: null, cible, ligneTitre, titre: ligneTitre, ...(comptage ? { comptage } : {}) })
+  const { refus } = reparerLivre(new Map([['070', texte]]), [site('#### **MINOR MISCAST TABLE**', '070:3')])
+  assert.deepEqual(refus, ['070:3 S′ « #### **MINOR MISCAST TABLE** » : « #### **MINOR MISCAST TABLE** » déjà dans le fichier (« ## <span id="page-237-0" data-folio="238"></span>MINOR MISCAST TABLE »)'])
+  const deux = reparerLivre(new Map([['013', texte]]), [site('#### **RANDOM TABLE**', '013:3', { auPdf: 2, auMd: 1 })])
+  assert.deepEqual([deux.refus, deux.textes.get('013').split('\n').filter((l) => /RANDOM TABLE/.test(l)).length], [[], 2])
+  assert.equal(reparerLivre(new Map([['013', texte]]), [site('#### **RANDOM TABLE**', '013:3', { auPdf: 1, auMd: 1 })]).refus.length, 1)
+})

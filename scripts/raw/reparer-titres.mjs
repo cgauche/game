@@ -25,6 +25,8 @@
 // La ligne de titre posée est `ligneTitre` de la sonde (texte du `.md`, niveau du frère typographique).
 // Un titre posé est un bloc : une ligne vide avant et après, jamais deux vides de suite.
 // REFUS D'ÉCRIRE : un site dont la ligne ne porte plus ce que la sonde a vu (rejeu d'un JSON périmé),
+// un S′ dont le fichier porte déjà autant de lignes de sa clé (`cle` de la sonde : ancres, `#`, emphase
+// ôtés) que ses pages en impriment (`comptage.auPdf`, une sans comptage),
 // deux gestes sur une ligne, ou un MULTI-ENSEMBLE DES MOTS du livre qui gagne autre chose que les mots
 // des S′ ou perd autre chose que les débris et les appels de figure.
 //
@@ -36,7 +38,7 @@ import { fileURLToPath } from 'node:url'
 import { decoupeDe, livreExtraitDe, nomsDeLaListe, readText } from './_lib.mjs'
 import { grasOuvert, recoller } from './lib/titres-soudes.mjs'
 import { motsDe, ecartDeMots } from './reparer-mobilier.mjs'
-import { enTete, sondeDuLivre } from './sonde-titres.mjs'
+import { cle, enTete, sondeDuLivre } from './sonde-titres.mjs'
 
 const FORMES = new Set(['S', 'F', 'M', 'B', "S'", 'O', 'doublon'])
 /** `NNN:l` → rang de tri, de la plus basse ligne à la plus haute. PURE. */
@@ -94,7 +96,8 @@ export function reparerLivre(textes, sites) {
       if (slot(site.site)?.texte.trim() !== site.titreMd) refus.push(`${site.site} B « ${site.titre} » : la ligne n'est plus « ${site.titreMd} »`)
       else retoucher(site.site, site.ligneTitre)
     } else if (site.forme === "S'") {
-      if (lignes.get(lieu(site.cible).nnn).includes(site.ligneTitre)) refus.push(`${site.cible} S′ « ${site.titre} » : « ${site.ligneTitre} » déjà dans le fichier`)
+      const deja = lignes.get(lieu(site.cible).nnn).filter((l) => cle(l) === cle(site.ligneTitre))
+      if (deja.length >= (site.comptage?.auPdf ?? 1)) refus.push(`${site.cible} S′ « ${site.titre} » : « ${site.ligneTitre} » déjà dans le fichier (« ${deja.join(' », « ')} »)`)
       else poser(site.cible, [site.ligneTitre])
     } else if (site.forme === 'O') {
       const { nnn, i } = lieu(site.site)

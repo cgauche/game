@@ -475,3 +475,49 @@ test('#1739 : D — ligne déplacée sous l’ancre d’une autre page (CRB p.62
   const rompue = pages.map((p) => ({ ...p, lignes: p.lignes.map((l) => (l.texte === 'for the world.' ? { ...l, spans: l.spans.map((s) => ({ ...s, police: 'CaslonAntique' })) } : l)) }))
   assert.deepEqual(sondeDe(rompue, md), [], 'typographie rompue de `a` à `b` : pas de preuve de P, pas de site')
 })
+
+test('#1739 : légende de TABLE (CRB p.164, p.191, pages pdfminer réelles) — jugée au-dessus de l’EN-TÊTE de son bloc ; absente du `.md`, RAPPORTÉE par comptage (`legende-absente`), jamais posée', () => {
+  const { fichiers } = JSON.parse(readFileSync(new URL('./lib/fixtures/legendes-crb.json', import.meta.url), 'utf8'))
+  const pages = [164, 191].map((n) => ({ page: n, lignes: lignes(pageCrb(n)), cercles: [] }))
+  const { sites: ss, titres: ts } = classer(pages, fichiers, gabaritTitreDe('core-rulebook-5e'))
+  const hit = ts.find((t) => t.texte === 'HIT LOCATIONS')
+  assert.deepEqual([hit.famille, hit.forme], ['tableau', "S'"])
+  const s = ss.find((x) => x.titre === 'HIT LOCATIONS')
+  assert.deepEqual([s?.forme, s?.cible, s?.comptage, s?.ligneTitre], ['legende-absente', '036:23', { auPdf: 1, auMd: 0 }, undefined])
+  const adv = ts.find((t) => t.texte === 'ADVANCEMENT XP COSTS')
+  assert.notEqual(adv.corps.l, adv.titreMd?.l + 2, 'le corps apparié est une ligne AU MILIEU du bloc')
+  assert.deepEqual([adv.famille, adv.forme, adv.titreMd?.l + 1], ['tableau', 'ok', 33])
+  assert.equal(ss.some((x) => x.titre === 'ADVANCEMENT XP COSTS'), false)
+})
+
+test('#1739 : légendes de TABLE — corps départagé par les clés suivantes de sa section ; une seule légende par bloc ; absente, rapportée sans ligne à poser', () => {
+  const E = (colonne, y0, texte) => L(colonne, y0, texte, 'CaslonAntique-Bold', 15)
+  const pages = [{
+    page: 10,
+    lignes: [
+      E(0, 700, 'FIRST TABLE'), L(0, 690, 'Roll Result'), L(0, 680, 'alpha row one here'),
+      E(0, 600, 'SECOND TABLE'), L(0, 590, 'Roll Result'), L(0, 580, 'beta row two here'),
+      E(0, 500, 'SIDEBAR'), L(0, 490, 'Sidebar prose runs along here'),
+      E(0, 400, 'THIRD TABLE'), L(0, 390, 'Die Outcome'), L(0, 380, 'gamma row three here'),
+      E(1, 700, 'COL A'), L(1, 690, 'delta row four here'),
+      E(2, 700, 'COL B'), L(2, 690, 'epsilon row five here'),
+    ],
+  }]
+  const md = [
+    '*Pages PDF 10-10*',
+    '#### **FIRST TABLE**', '| Roll | Result |\n|---|---|\n| alpha row one here | x |',
+    '#### **UNTITLED**', '| Roll | Result |\n|---|---|\n| zeta row six here | z |',
+    '#### **SECOND TABLE**', '| Roll | Result |\n|---|---|\n| beta row two here | y |',
+    '### **SIDEBAR**', 'Sidebar prose runs along here',
+    'Intro prose line.', '| Die | Outcome |\n|---|---|\n| gamma row three here | w |',
+    'Before columns prose.', '| Name | Other |\n|---|---|\n| delta row four here | epsilon row five here |',
+  ].flatMap((l, i) => (i ? ['', ...l.split('\n')] : [l]))
+  const { sites: ss, titres: ts } = classer(pages, [{ nom: '001 - Forge.md', page: 10, pageFin: 10, lignes: md }], GABARIT)
+  const forme = (t) => ts.find((x) => x.texte === t).forme
+  assert.deepEqual(['FIRST TABLE', 'SECOND TABLE', 'SIDEBAR'].map(forme), ['ok', 'ok', 'ok'])
+  const s = ss.find((x) => x.titre === 'THIRD TABLE')
+  assert.deepEqual([s?.forme, s?.cible, s?.ligneTitre], ['legende-absente', '001:27', undefined])
+  assert.equal(ss.some((x) => x.forme === "S'" && x.famille === 'tableau'), false)
+  assert.deepEqual([forme('COL A'), forme('COL B')], ["S'", "S'"])
+  assert.equal(ss.some((x) => x.titre === 'COL A' || x.titre === 'COL B'), false, 'deux titres sur un bloc : en-têtes de colonne, aucune légende posée')
+})

@@ -232,13 +232,17 @@ par `python scripts/raw/lib/pdf-lignes.py <id> <boites.json>` : l'analyse de mis
 boîtes et lignes avec leurs spans typographiques ; `scripts/raw/lib/colonnes.mjs` ne fait qu'ORDONNER
 ces boîtes (colonnes par grappes d'abscisses de boîte, pur et joué en CI sur des pages réelles
 réduites, `scripts/raw/lib/fixtures/pages-crb/`). Chaque titre imprimé s'apparie à la ligne qui précède
-la 1re ligne de SON corps dans le `.md` ; un titre imprimé sur deux lignes (même gabarit, même colonne,
+la 1re ligne de SON corps dans le `.md` (d'un corps en tableau, la ligne qui précède l'EN-TÊTE de son
+bloc ; une clé de corps à plusieurs candidats se départage par les clés suivantes que porte la
+section de chacun) ; un titre imprimé sur deux lignes (même gabarit, même colonne,
 interligne serré) est UN titre. Familles : entrée, encadré, tableau, capitales,
 intertitre ; entrée et intertitre sont les familles d'ENTRÉE. Formes des entrées : S soudé, F fragment soudé à un corps étranger, M migré, S′ absent, B gras sans `#`, O hors
 d'ordre (à poser `devant` le titre qui la suit au PDF), N niveau, `corps-introuvable` avec sa cause ;
 des autres familles, S et F seuls, plus le S′ de capitales par COMPTAGE (imprimé sur les pages de son
 fichier plus de fois que son `.md` ne le porte, une fois au moins ; restauré dans la forme de ses
-frères du `.md`). Débris devant un corps à sa place, toutes familles : `doublon` — les folios sont
+frères du `.md`). La légende de tableau absente du `.md` (même comptage, zéro fois au moins, légende
+UNIQUE de son bloc — plusieurs titres sur un bloc en sont les en-têtes de colonne) est RAPPORTÉE,
+`legende-absente`, jamais posée : la forme d'une légende n'est pas celle d'un titre de section. Débris devant un corps à sa place, toutes familles : `doublon` — les folios sont
 du mobilier de page, jamais un débris de titre. Toute cible est le DÉBUT d'un bloc Markdown (en tête
 de fichier, après une ligne vide ou un titre ; une ligne de tableau se remonte à l'en-tête de son
 bloc) ; sinon le site sort en `cible-invalide`. Les ancres `<span id="page-…">` ne comptent pas
@@ -284,7 +288,8 @@ ligne, rend `***x***` aux **G** et le `—` aux **T**, `X/Y` aux **J**, coupe le
 sa ligne `avec`, de la plus basse à la plus haute (un paragraphe en trois morceaux se recolle entier) :
 l'emphase coupée refaite une (`**A** **B**`, `*A* *B*`), aucune espace après un trait d'union ou une
 barre de fin de ligne (`Nimble-fingered`, `Read/Write`), la ligne repartant à son `etiquette` s'il y en a une. Elle REFUSE d'écrire si une
-ligne ne porte plus ce que la sonde a vu (JSON périmé), si deux gestes tombent sur une ligne, ou si
+ligne ne porte plus ce que la sonde a vu (JSON périmé), si un S′ est déjà dans son fichier sous une
+autre forme (même clé, ancre, `#` et emphase ôtés, autant de fois que ses pages l'impriment), si deux gestes tombent sur une ligne, ou si
 le multi-ensemble des MOTS du LIVRE gagne autre chose que les mots des S′ ou perd autre chose que les
 débris et les appels de figure. Rejouée sur un livre réparé, la sonde ne rend plus aucun site à réparer (N reste rapporté), et la réparation rien. Puis le
 recalage du § 7, étape 2. **La garde** : la famille `titre-soude` de `raw:check-source-format`,
