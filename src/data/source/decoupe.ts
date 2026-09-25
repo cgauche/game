@@ -26,10 +26,10 @@
 //    est le numéro 1-based, dans le fichier du chapitre, de la ligne où commence `md` : la première
 //    ligne du segment ouvrant dont le texte, spans retirés, est non vide (un segment réduit à un
 //    marqueur de folio n'ouvre aucun bloc ; un bloc recollé garde la ligne de son premier morceau).
-//  - FOLIO COURANT : les marqueurs `data-folio` sont rares et arbitrairement placés dans le flux ; un
-//    état ROULANT sur le chapitre donne à chaque section et à chaque bloc le dernier folio rencontré
-//    à ou avant son ouverture (`folio`), en plus des marqueurs INTERNES au bloc (`folios`). Une ancre
-//    VIDE (`ancreVide`, `ancre-vide.ts`) n'entre ni dans l'un ni dans l'autre.
+//  - FOLIO COURANT : les marqueurs `data-folio` sont rares et arbitrairement placés dans le flux ; le
+//    folio ROULANT par ligne (`foliosRoulants`, `ancre-vide.ts`) donne à chaque bloc celui de sa ligne
+//    `line`, à chaque section celui qui court au bout de la ligne de son titre (`folio`), en plus des marqueurs
+//    INTERNES au bloc (`folios`). Une ancre VIDE (`ancreVide`) n'entre ni dans l'un ni dans l'autre.
 //  - RECOLLAGE DE FOLIO : un saut de folio coupe des paragraphes en plein milieu
 //    (`21 - Psychologie.md:45-48`, `05 - _gjdgxs.md:44`). Deux blocs séparés par une coupure PORTEUSE
 //    DE FOLIO (bloc vide réduit à son marqueur, ou bloc suivant ouvert par un marqueur) sont recollés
@@ -39,7 +39,7 @@
 //    (emphase `*`/`**`, puce, table).
 import { normalize as normalizeCitation, sansBr, brEnSaut } from './normalize.ts';
 import { hash32 } from '../hash.ts';
-import { ANCRE_FOLIO, FOLIO_ATTR, ancreVide } from './ancre-vide.ts';
+import { ANCRE_FOLIO, FOLIO_ATTR, ancreVide, foliosRoulants } from './ancre-vide.ts';
 
 /** Bloc d'affichage : le markdown rendu, sa ligne de début dans le fichier du chapitre, le folio
  *  courant à son ouverture, ses marqueurs internes. */
@@ -337,10 +337,11 @@ function recollable(prev: string, next: string): boolean {
  * Découpe un corps de section en blocs d'affichage (spans retirés, folios collectés, recollage des
  * paragraphes coupés par un saut de folio).
  * @param debut ligne 1-based, dans le fichier du chapitre, de `lignes[0]`
+ * @param roulant folio roulant de chaque ligne du chapitre (`foliosRoulants`, index 0-based)
  */
 function toBlocks(
-  lignes: string[], debut: number, folioIn: number | null,
-): { blocks: Bloc[]; folioOut: number | null } {
+  lignes: string[], debut: number, roulant: (number | null)[],
+): { blocks: Bloc[] } {
   const raw: { text: string; start: number }[] = [];
   let cur: string[] = [];
   let start = debut;
@@ -355,16 +356,11 @@ function toBlocks(
   if (cur.length) raw.push({ text: cur.join('\n'), start });
 
   const out: Bloc[] = [];
-  let running = folioIn;
   let carry: number[] = [];
   let carryCut = false;
   for (const { text, start } of raw) {
     const folios = foliosIn(text);
     const md = stripSpans(text).trim();
-    const at = carry.length
-      ? carry[carry.length - 1]
-      : (OPENS_ON_FOLIO.test(text) && folios.length ? folios[0] : running);
-    if (folios.length) running = folios[folios.length - 1];
     if (!md) { carry.push(...folios); carryCut = true; continue; }
     const line = start + text.split('\n').findIndex((l) => stripSpans(l).trim() !== '');
     const cut = carryCut || OPENS_ON_FOLIO.test(text);
@@ -375,10 +371,10 @@ function toBlocks(
       prev.md = `${prev.md} ${md}`;
       prev.folios.push(...blockFolios);
     } else {
-      out.push({ md, line, folio: at ?? null, folios: blockFolios });
+      out.push({ md, line, folio: roulant[line - 1], folios: blockFolios });
     }
   }
-  return { blocks: out, folioOut: running };
+  return { blocks: out };
 }
 
 /**
@@ -391,17 +387,17 @@ export function parseChapitre(texte: string): ChapitreParse {
   // Mesuré sur `21 - Psychologie.md` du livre de base : en CRLF, `HEADING` ne reconnaît aucun titre
   // (`.` ne franchit pas `\r`, et `$` sans `/m` ne se pose pas devant un `\r` final) — 1 section au
   // lieu de 17, et l'empreinte du premier bloc passe de `ad420a63fa3b93c2` à `3eef49e6fee82961`.
-  const lignes = marquerAncresVides(texte.replace(/\r\n?/g, '\n')).split('\n');
+  const brutes = texte.replace(/\r\n?/g, '\n').split('\n');
+  const roulant = foliosRoulants(brutes);
+  const lignes = marquerAncresVides(brutes.join('\n')).split('\n');
   const sections: Section[] = [];
   const seen = new Map<string, number>();
-  let running: number | null = null;
   let cur: Omit<Section, 'blocks'> & { lines: string[]; debut: number } =
     { slug: '', occ: 1, title: '', level: 0, line: 1, folio: null, lines: [], debut: 1 };
   const push = () => {
     const { lines: body, debut, ...rest } = cur;
-    const { blocks, folioOut } = toBlocks(body, debut, cur.folio);
+    const { blocks } = toBlocks(body, debut, roulant);
     sections.push({ ...rest, blocks });
-    running = folioOut;
   };
   for (let i = 0; i < lignes.length; i++) {
     const m = HEADING.exec(lignes[i]);
@@ -412,8 +408,7 @@ export function parseChapitre(texte: string): ChapitreParse {
     const occ = (seen.get(slug) ?? 0) + 1;
     seen.set(slug, occ);
     const head = foliosIn(lignes[i]);
-    if (head.length) running = head[head.length - 1];
-    cur = { slug, occ, title, level: m[1].length, line: i + 1, folio: running, lines: [], debut: i + 2 };
+    cur = { slug, occ, title, level: m[1].length, line: i + 1, folio: head.length ? head[head.length - 1] : roulant[i], lines: [], debut: i + 2 };
   }
   push();
   return { sections };

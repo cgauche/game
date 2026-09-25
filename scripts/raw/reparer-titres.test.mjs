@@ -198,3 +198,15 @@ test('J et P au joint `/` (CRB 018 p.50, p.107) : `Read/ Write` et `Read/` + `Wr
   assert.equal(textes.get('018'), ['**Talents:** Kingpin, Read/Write', '', '**Talents:** Petty Magic, Read/Write, Second Sight'].join('\n'))
   assert.equal(infidelite(texte, textes, sites), null)
 })
+
+const D_TEXTE = new Map([['018', ['**Trappings:** Warehouse', '', 'for the world.', '', '## <span id="page-61-0" data-folio="62"></span>**FLAGELLANT**', '', 'and only through suffering can they hope to win divine deliverance', '', 'Most Flagellants wander', ''].join('\n')]])
+const D_SITES = [{ forme: 'D', site: '018:3', avec: '018:7', ligneMd: 'for the world.', titre: 'for the world.' }]
+
+test('D (CRB 018 l.1106, p.62) : la ligne déplacée rejoint la prose qu’elle suit au PDF et quitte sa place ; rejouée, REFUSÉE', () => {
+  const { textes, refus, appliques } = reparerLivre(D_TEXTE, D_SITES)
+  assert.deepEqual(refus, [])
+  assert.deepEqual(appliques, ['D 018:3 → 018:7 « for the world. »'])
+  assert.equal(textes.get('018'), ['**Trappings:** Warehouse', '', '## <span id="page-61-0" data-folio="62"></span>**FLAGELLANT**', '', 'and only through suffering can they hope to win divine deliverance for the world.', '', 'Most Flagellants wander', ''].join('\n'))
+  assert.equal(infidelite(D_TEXTE, textes, D_SITES), null)
+  assert.deepEqual(reparerLivre(textes, D_SITES).refus, ['018:3 D : la ligne n\'est plus « for the world. »'])
+})

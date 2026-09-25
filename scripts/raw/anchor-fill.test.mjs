@@ -9,6 +9,7 @@ import {
   planChapter, remonter, sequencesDeTete,
 } from './anchor-fill.mjs'
 import { lignes } from './lib/colonnes.mjs'
+import { pageCrb } from './lib/fixtures/page-crb.mjs'
 
 /** Une page synthétique : une ligne par texte, de haut en bas, dans une seule colonne. */
 const page = (...textes) => textes.map((texte, i) => ({ colonne: 0, x0: 50, x1: 500, y0: 700 - 14 * i, texte, spans: [{ texte, police: '', taille: 10 }] }))
@@ -45,9 +46,7 @@ test('compactAnchor : le préfixe retenu commence AU DÉBUT de la tête (offset 
 // ---------- têtes de page pdfminer ----------
 
 test('sequencesDeTete : page à COLONNES (CRB p.117) — la colonne gauche d’abord, le folio de pied écarté', () => {
-  const f = JSON.parse(readFileSync(new URL('./lib/fixtures/pages-crb/p117.json', import.meta.url), 'utf8'))
-  const boites = f.boites.map(([x0, y0, x1, y1, ls]) => ({ x0, y0, x1, y1, lignes: ls.map(([lx0, ly0, lx1, texte, spans]) => ({ x0: lx0, y0: ly0, x1: lx1, texte, spans: spans.map(([t, i, taille]) => [t, f.polices[i], taille]) })) }))
-  const [colonnes] = sequencesDeTete(lignes(boites))
+  const [colonnes] = sequencesDeTete(lignes(pageCrb(117)))
   const rang = (re) => colonnes.findIndex((t) => re.test(t))
   assert.equal(colonnes[0], 'Combat Reflexes')
   assert.ok(rang(/^Crack the Whip$/) > rang(/completed or not\.$/), 'la colonne droite après la gauche')

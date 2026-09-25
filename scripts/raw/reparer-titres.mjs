@@ -21,6 +21,7 @@
 //  — P : la ligne recollée à la ligne de prose `avec` (`lib/titres-soudes.mjs#recoller`), les lignes
 //    entre elles ôtées ; avec une `etiquette`, seule la tête qui la précède se recolle, la ligne repart
 //    à l'étiquette ; de la plus basse à la plus haute, une chaîne de morceaux se recolle entière.
+//  — D : la ligne déplacée recollée à la ligne de prose `avec`, qu'elle suit au PDF ; elle quitte sa place.
 // La ligne de titre posée est `ligneTitre` de la sonde (texte du `.md`, niveau du frère typographique).
 // Un titre posé est un bloc : une ligne vide avant et après, jamais deux vides de suite.
 // REFUS D'ÉCRIRE : un site dont la ligne ne porte plus ce que la sonde a vu (rejeu d'un JSON périmé),
@@ -167,6 +168,17 @@ export function reparerLivre(textes, sites) {
     }
     recolles.push({ nnn, ligne: i + 1, avec: j + 1 })
     fusions.set(`${nnn}:${i}`, j)
+  }
+  for (const site of sites.filter((x) => x.forme === 'D')) {
+    const { nnn, i } = lieu(site.site)
+    const j = lieu(site.avec).i
+    const ss = slots.get(nnn)
+    if (lignes.get(nnn)?.[i] !== site.ligneMd) { refus.push(`${site.site} D : la ligne n'est plus « ${site.ligneMd} »`); continue }
+    if (ss[i].touche || ss[j].touche || ss[i].texte !== site.ligneMd || typeof ss[j].texte !== 'string') { refus.push(`${site.site} D : ligne déjà retouchée`); continue }
+    ss[j].texte = recoller(ss[j].texte, site.ligneMd)
+    ss[i].texte = null
+    ss[i].touche = ss[j].touche = true
+    appliques.push(`D ${site.site} → ${site.avec} « ${site.titre} »`)
   }
   for (const site of sites.filter((x) => x.forme === 'G')) {
     const re = new RegExp(`(?<!\\*)${echappe(site.texteMd)}(?!\\*)`)

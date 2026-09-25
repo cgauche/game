@@ -1103,8 +1103,6 @@ Playing a Fence lets you move comfortably between respectable society and the cr
 
 **Trappings:** Gang of Racketeers, Network of Informers, Warehouse
 
-for the world.
-
 ## <span id="page-61-0" data-folio="62"></span>**FLAGELLANT**
 
 **Ranger Class:** Human
@@ -1113,7 +1111,7 @@ for the world.
 
 *'We scourge this flesh and spill this blood, for his Empire, in Sigmar's name!'* — Viktorina Schwefel, Flagellant
 
-Flagellants travel the Empire, flogging themselves in penance for their own sins and the sins of others. The vast majority are devout followers of Sigmar, though a rare few dedicate themselves to other gods. Whatever their creed, all believe the End Times are imminent, and only through suffering can they hope to win divine deliverance
+Flagellants travel the Empire, flogging themselves in penance for their own sins and the sins of others. The vast majority are devout followers of Sigmar, though a rare few dedicate themselves to other gods. Whatever their creed, all believe the End Times are imminent, and only through suffering can they hope to win divine deliverance for the world.
 
 Most Flagellants wander in large bands led by a Prophet of Doom who interprets Sigmar's will. They wear little more than rags, chains, and outlandish garments intended to cause discomfort and pain. Some follow armies, whipping themselves into a frenzy as battle is joined and fighting without thought for their own safety. Others
 

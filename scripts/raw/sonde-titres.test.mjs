@@ -7,6 +7,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { classer, grasDeTete, plusLongueCroissante } from './sonde-titres.mjs'
 import { gabaritTitreDe } from './_lib.mjs'
+import { lignes } from './lib/colonnes.mjs'
+import { pageCrb } from './lib/fixtures/page-crb.mjs'
 
 const GABARIT = {
   titre: { police: 'ACaslonPro-Bold', taille: 12 },
@@ -459,4 +461,17 @@ test('#1739 : joint de fin de ligne — `Read/` + `Write` : P recollé sans espa
   const md = ['**Talents:** Argumentative, Kingpin, Read/ Write', '', '**Talents:** Petty Magic, Read/', '', 'Write, Second Sight', '', 'a masterful demon-', '', 'stration of power', '', 'the demonstration ends', '', 'make an Unopposed Acid- and Poison-type attack', '', 'shown on the Character Sheet and/ or the entry']
   assert.deepEqual(formesDe(lignes, md, ['J']).map((s) => [s.site, s.avant, s.apres]), [['001:1', 'Read/', 'Write']])
   assert.deepEqual(formesDe(lignes, md, ['P', 'cesure']).map((s) => [s.forme, s.site]), [['P', '001:5'], ['cesure', '001:9']])
+})
+
+test('#1739 : D — ligne déplacée sous l’ancre d’une autre page (CRB p.62, .md 018 l.1106, pages pdfminer réelles) : recollée à la prose que le PDF lui fait suivre ; à sa place, ou sans preuve de P, pas de site', () => {
+  const { md } = JSON.parse(readFileSync(new URL('./lib/fixtures/ligne-deplacee-crb.json', import.meta.url), 'utf8'))
+  const pages = [61, 62].map((n) => ({ page: n, lignes: lignes(pageCrb(n)), cercles: [] }))
+  const sondeDe = (p, texte) => classer(p, [{ nom: '018 - Class and Careers.md', page: 61, pageFin: 62, lignes: texte }], gabaritTitreDe('core-rulebook-5e')).sites.filter((s) => s.forme === 'D')
+  const i = md.indexOf('for the world.')
+  const j = md.findIndex((l) => l.endsWith('win divine deliverance'))
+  assert.deepEqual(sondeDe(pages, md).map((s) => [s.site, s.avec, s.preuve]), [[`018:${i + 1}`, `018:${j + 1}`, 'p.62 col.0 y554→541, folio 62 ≠ folio roulant 61']])
+  const aSaPlace = md.flatMap((l, k) => (k === i ? [] : k === j ? [l, '', md[i]] : [l]))
+  assert.deepEqual(sondeDe(pages, aSaPlace), [], 'sous l’ancre de SA page, la ligne n’est pas déplacée')
+  const rompue = pages.map((p) => ({ ...p, lignes: p.lignes.map((l) => (l.texte === 'for the world.' ? { ...l, spans: l.spans.map((s) => ({ ...s, police: 'CaslonAntique' })) } : l)) }))
+  assert.deepEqual(sondeDe(rompue, md), [], 'typographie rompue de `a` à `b` : pas de preuve de P, pas de site')
 })

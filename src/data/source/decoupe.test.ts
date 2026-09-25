@@ -19,6 +19,7 @@ import {
   graphieDuFichier, largeurDeChapitre, normText, numeroDuFichier, parseChapitre, parseTable,
   prefixesDeChapitres, resoudreAdresse, resoudreFragment, stripSpans, sumOf, tablesOf, titreDuFichier,
 } from './decoupe.ts';
+import { foliosRoulants } from './ancre-vide.ts';
 
 const RACINE = fileURLToPath(new URL('../../../', import.meta.url));
 const LDB = 'livre-de-base';
@@ -195,6 +196,20 @@ describe('parseChapitre — blocs, folios, sections', () => {
 });
 
 describe('ancre de page VIDE (`ancreVide`) — ni folio roulant, ni `folios` (CRB)', () => {
+  it('`foliosRoulants` : une ancre vaut pour la ligne dont elle précède le texte, posée après du texte pour la suivante ; vide, pour aucune', () => {
+    const A = (n: number) => `<span id="page-${n - 1}-0" data-folio="${n}"></span>`;
+    expect(foliosRoulants(['avant', `${A(10)}Texte`, `suite ${A(11)}fin`, 'après', `${A(12)}`, 'douze', `  ${A(13)}${A(14)}Page 14`, `# ${A(15)}Titre`, 'quinze', `${A(16)}`, `${A(17)}dix-sept`, `x ${A(18)}`])).toEqual([null, 10, 10, 11, 12, 12, 14, 14, 15, 15, 17, 17]);
+  });
+  it('folio de SECTION : celui qui court au bout de la ligne du titre — ancre en tête de la ligne SUIVANTE exclue, ancre de la ligne du titre comprise', () => {
+    const A = (n: number) => `<span id="page-${n - 1}-0" data-folio="${n}"></span>`;
+    const { sections } = parseChapitre([`${A(1)}Avant`, '', '# **Titre**', `${A(2)}Suite`, '', `## ${A(3)}**Trois**`, '', 'Corps'].join('\n'));
+    expect(sections.map((s) => [s.title, s.folio, s.blocks.map((b) => b.folio)])).toEqual([['', null, [1]], ['Titre', 1, [2]], ['Trois', 3, [3]]]);
+  });
+  it('`foliosRoulants` sur le CRB réel : 004 l.75 → 10 ; titre `# <ancres 12-14>` l.109 → 11, l.110 → 14 ; ancre vide en fin de ligne : 032 l.137 → 159, 122 l.89 → 377', () => {
+    const lignes = (ch: string) => readFileSync(cheminChapitre('core-rulebook-5e', ch), 'utf8').replace(/\r\n|\r/g, '\n').split('\n');
+    const l004 = foliosRoulants(lignes('004'));
+    expect([l004[74], l004[108], l004[109], foliosRoulants(lignes('032'))[136], foliosRoulants(lignes('122'))[88]]).toEqual([10, 11, 14, 159, 377]);
+  });
   const blocDe = (ch: string, trouve: (md: string) => boolean) =>
     chapitreDe('core-rulebook-5e', ch).sections.flatMap((s) => s.blocks).find((b) => trouve(b.md))!;
   it('004 l.75 : ancres vides 8 et 9 enchaînées devant l’ancre à texte 10 → folio 10, folios [10]', () => {

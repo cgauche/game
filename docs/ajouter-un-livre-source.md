@@ -251,7 +251,11 @@ plus grand de son bloc (même colonne, même bord gauche) —, ou texte qui CONT
 ligne est rapportée (`paragraphe-non-prouve`, avec son motif), comme le joint d'une césure (`cesure` :
 le livre imprime `Xy`, jamais `X-y`) ; le site
 nomme la ligne `avec` laquelle recoller, l'`etiquette` avant laquelle recouper s'il y en a une, sa
-`preuve` ; une preuve ne sert qu'une ligne, une ligne à plusieurs preuves reste sans site), **E**
+`preuve` ; une preuve ne sert qu'une ligne, une ligne à plusieurs preuves reste sans site), **D**
+ligne déplacée (une ligne du `.md` commence par une ligne du PDF que la preuve de P fait suivre la fin
+d'une AUTRE ligne de prose du fichier ; le folio imprimé de sa page, lu aux ancres, n'est pas le folio
+roulant de la ligne — `parseChapitre` — mais celui de cette prose ; une seule paire, sinon pas de
+site), **E**
 libellé soudé (un `**X:**` au milieu d'une ligne du `.md` ouvre, avec la suite de la ligne, sa ligne au
 PDF, alors que son 1er mot tenait sur la précédente — ou que le livre ne l'imprime jamais en milieu de
 ligne, et l'y ouvre au moins `OUVERTURES_PROBANTES` fois ou suit une ligne qui CLÔT son élément (ni
@@ -276,7 +280,7 @@ rejouée) et n'en relève aucun : S détaché de la tête de sa ligne ; F et M r
 étrangère (la ligne part si rien ne reste) et posés devant leur corps ; B promu ; S′ inséré ; O,
 l'entrée entière, posée devant le titre qui la suit au PDF ; le débris d'un doublon retiré. Le titre
 posé est un bloc (une ligne vide avant et après, jamais deux). Elle retire les appels **A** de leur
-ligne, rend `***x***` aux **G** et le `—` aux **T**, `X/Y` aux **J**, coupe les **E**, puis recolle chaque site **P** à
+ligne, rend `***x***` aux **G** et le `—` aux **T**, `X/Y` aux **J**, coupe les **E**, recolle chaque ligne **D** à sa prose `avec` (elle quitte sa place), puis chaque site **P** à
 sa ligne `avec`, de la plus basse à la plus haute (un paragraphe en trois morceaux se recolle entier) :
 l'emphase coupée refaite une (`**A** **B**`, `*A* *B*`), aucune espace après un trait d'union ou une
 barre de fin de ligne (`Nimble-fingered`, `Read/Write`), la ligne repartant à son `etiquette` s'il y en a une. Elle REFUSE d'écrire si une
@@ -287,8 +291,9 @@ recalage du § 7, étape 2. **La garde** : la famille `titre-soude` de `raw:chec
 pour tout livre à `gabaritTitre`, sur TOUT le livre — P5 (`**X** Y…` : groupe hors étiquette
 `X:`, hors repère `A)`, hors gras fini par `,` ou `;`, `Y` ni minuscule ni `:-–—(|=`) et titre à
 deux groupes gras, prédicats de `scripts/raw/lib/titres-soudes.mjs`. La sonde PDF reste la porte de
-S′, F, M, O, P, E, A, G, T et J, que le `.md` seul ne trahit pas sans bruit : une prose qui s'arrête sans
-ponctuation devant une ligne neuve est aussi un item de liste ; un libellé en milieu de ligne, un nombre
+S′, F, M, O, P, D, E, A, G, T et J, que le `.md` seul ne trahit pas sans bruit : une prose qui s'arrête sans
+ponctuation devant une ligne neuve est aussi un item de liste ; une ligne n'a pas de page au `.md`, seul
+le PDF dit sous quelle ancre elle s'imprime ; un libellé en milieu de ligne, un nombre
 en queue de ligne, un `*x*`, un `X Y` ou un `X/ Y` sont du texte ordinaire hors de leur preuve au PDF.
 
 **Le critère à tenir** : mettre le livre N+1 au grain de ses sections coûte **UN fichier de donnée,

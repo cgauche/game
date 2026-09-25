@@ -20,8 +20,9 @@
 //    rapportées, elles ne valent pas fragment ;
 //  — B : gras sans `#` ;
 //  — O : entrée hors de l'ordre du PDF, à poser `devant` le titre qui la suit au PDF ;
-//  — P, E, A, G, T, J : les formes du TEXTE (`formesDuTexte`) — paragraphe scindé, libellé soudé, appel
-//    de figure mêlé, gras italique perdu, tiret cadratin perdu, joint `X/ Y` —, chacune PROUVÉE au PDF
+//  — P, D, E, A, G, T, J : les formes du TEXTE (`formesDuTexte`) — paragraphe scindé, ligne déplacée
+//    sous l'ancre d'une autre page, libellé soudé, appel de figure mêlé, gras italique perdu, tiret
+//    cadratin perdu, joint `X/ Y` —, chacune PROUVÉE au PDF
 //    site par site ; `paragraphe-non-prouve`, `libelle-non-prouve` et `cesure` sont rapportés, avec leur motif ;
 //  — N : niveau différent du frère de même famille qui précède (rapporté) ;
 //  — `corps-introuvable`, avec sa cause (`sans-ligne` : suivi d'un autre titre ; `cle-courte` : aucune
@@ -49,6 +50,7 @@ import { fileURLToPath } from 'node:url'
 import { decoupeDe, gabaritTitreDe, livreExtraitDe, nomsDeLaListe, normalize, readText } from './_lib.mjs'
 import { lignes } from './lib/colonnes.mjs'
 import { stripSpans } from '../../src/data/source/decoupe.ts'
+import { FOLIO_ATTR, foliosRoulants } from '../../src/data/source/ancre-vide.ts'
 import { grasOuvert, prosePrecedenteCoupee, recoller } from './lib/titres-soudes.mjs'
 import { canoniser, relatifSousRacine } from '../docs/lib/chemin-mesure.mjs'
 
@@ -439,6 +441,13 @@ export function classer(pages, fichiers, gabarit) {
  *    livre imprime `Xy`, jamais `X-y`/`X/y`) aussi (`cesure`). Si `i` porte ensuite un libellé `**X:**`
  *    qui ouvre une ligne du PDF après `b`, la ligne se COUPE avant lui (`etiquette`). Entre deux preuves,
  *    l'emphase du `.md` de part et d'autre de la coupure (`*`, `**`) départage ; sans elle, pas de site ;
+ *  — D : ligne déplacée — la ligne `i` du `.md` commence par la ligne `b` du PDF, que précède `a` avec
+ *    la preuve de P (même colonne, sans retrait, typographie continue, 1er mot qui ne tenait pas ou texte
+ *    qui continue) ; le folio de la page de `b` (lu aux ancres du livre) n'est PAS le folio roulant de `i`
+ *    (`ancre-vide.ts#foliosRoulants`), c'est celui d'une autre ligne de prose `j` du fichier, qui FINIT par
+ *    `a`. Une seule paire `(b, j)`, sinon pas de site. Les deux clés font au moins `CLE_MIN` caractères ;
+ *    une ligne d'une page qu'aucune ancre du livre ne folioie n'a pas de folio, D ne la voit pas (mesure
+ *    #1739, CRB : 378 pages PDF, 378 folioées) ;
  *  — A : appel de figure — un nombre imprimé dans une pastille (`cercles` de `lib/pdf-lignes.py`), MÊLÉ
  *    en queue de la ligne du `.md` qui porte les mots d'une ligne voisine (même colonne, 16 pt) ;
  *  — G : gras italique perdu — un run `BoldItalic` du PDF rendu `*x*` par la ligne du `.md` qui porte
@@ -460,6 +469,8 @@ export function classer(pages, fichiers, gabarit) {
  */
 // Mesure #1739 (CRB) : ouvertures de ligne des libellés que la preuve typographique de E porte — 1, 2, 3, 5 | 7, 10, 29, 257, 259.
 const OUVERTURES_PROBANTES = 6
+// Clé la plus courte qu'une ligne DÉPLACÉE (D) doit porter pour se juger : « for the world. » (CRB p.62) en porte 14.
+const CLE_MIN = 8
 
 function formesDuTexte({ pages, flux, fichiers, cles, adresse, estTitre, titres }) {
   const sites = []
@@ -553,6 +564,37 @@ function formesDuTexte({ pages, flux, fichiers, cles, adresse, estTitre, titres 
     jointures.push({ f, i: j, ligne: recoller(fichiers[f].lignes[j], etiquette ? ligne.slice(0, ligne.indexOf(etiquette, 1)).trimEnd() : ligne) })
     sites.push({ forme: 'P', site: adresse(f, i), avec: adresse(f, j), ligneMd: ligne, etiquette, par: nePasTenir(flux[k - 1], b) ? 'marge' : 'suite', famille: 'paragraphe', page: b.page, colonne: b.colonne, x0: b.x0, y0: b.y0, titre: b.texte, preuve })
   }
+
+  // D — la page PDF de chaque ancre (`id="page-K-…"` : page K + 1) porte son folio imprimé
+  const folioDePage = new Map()
+  const ANCRE_PAGE = new RegExp(`id="page-(\\d+)-\\d+"[^>]*${FOLIO_ATTR.source}`, 'g')
+  for (const fx of fichiers) for (const m of fx.lignes.join('\n').matchAll(ANCRE_PAGE)) folioDePage.set(Number(m[1]) + 1, Number(m[2]))
+  const parTete = new Map()
+  flux.forEach((b, n) => {
+    const k = cleDuPdf(b.texte)
+    if (n > 0 && k.length >= CLE_MIN) parTete.set(k.slice(0, CLE_MIN), [...(parTete.get(k.slice(0, CLE_MIN)) ?? []), n])
+  })
+  const prose = (l) => !!l.trim() && !/^(#|\||- |>|\*Pages PDF)/.test(l)
+  fichiers.forEach((fx, f) => {
+    const roulant = foliosRoulants(fx.lignes)
+    const folioDe = (i) => roulant[i]
+    fx.lignes.forEach((ligne, i) => {
+      const ci = cles[f][i]
+      if (!prose(ligne) || ci.length < CLE_MIN || folioDe(i) == null) return
+      const preuves = (parTete.get(ci.slice(0, CLE_MIN)) ?? []).flatMap((n) => {
+        const [a, b] = [flux[n - 1], flux[n]]
+        const folio = folioDePage.get(b.page)
+        if (folio == null || folio === folioDe(i) || !surSesPages(fx, b.page) || estTitre.has(n) || !suit(a, b) || b.x0 > a.x0 + 2 || libelle(b)) return []
+        if (!prefixes(cleDuPdf(b.texte), ci) || !continu(a, b, flux[n + 1]) || !(nePasTenir(a, b) || enchaine(a, b))) return []
+        const ka = cleDuPdf(a.texte)
+        return fx.lignes.flatMap((lj, j) => (j !== i && prose(lj) && folioDe(j) === folio && suffixes(ka, cles[f][j]) ? [{ n, j }] : []))
+      })
+      if (preuves.length !== 1) return
+      const [{ n, j }] = preuves
+      const [a, b] = [flux[n - 1], flux[n]]
+      sites.push({ forme: 'D', site: adresse(f, i), avec: adresse(f, j), ligneMd: ligne, famille: 'paragraphe', page: b.page, colonne: b.colonne, x0: b.x0, y0: b.y0, titre: b.texte, preuve: `p.${b.page} col.${b.colonne} y${Math.round(a.y0)}→${Math.round(b.y0)}, folio ${folioDePage.get(b.page)} ≠ folio roulant ${folioDe(i)}` })
+    })
+  })
 
   // E — une preuve que deux libellés réclament ne sert aucun des deux
   const enMilieu = new Set()
@@ -722,7 +764,7 @@ function boitesDuPdf(id) {
 }
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'P', 'E', 'A', 'G', 'T', 'J', 'paragraphe-non-prouve', 'libelle-non-prouve', 'cesure', 'N', 'corps-introuvable', 'cible-invalide', 'doublon']
+const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'P', 'D', 'E', 'A', 'G', 'T', 'J', 'paragraphe-non-prouve', 'libelle-non-prouve', 'cesure', 'N', 'corps-introuvable', 'cible-invalide', 'doublon']
 const FAMILLES = ['entree', 'encadre', 'tableau', 'capitales', 'intertitre']
 /** Les familles d'ENTRÉE : titres du fil du texte, dans l'ordre du PDF, sondés dans toutes leurs formes. */
 const ENTREES = new Set(['entree', 'intertitre'])
