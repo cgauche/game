@@ -4274,7 +4274,7 @@ dans `src/data/slots-contrat.test.ts`.
 
 Ce volet est le REMPLAÇANT committé du « test FK générique » re-scopé au commentaire #1466 du 2026-08-23 : « le registre des SLOTS pour `docs/structures-donnees.md` (déclaré × observé) ».
 
-Slots déclarés : **3369** — espèce `id` **379**, espèce `acteur` **2990**.
+Slots déclarés : **3449** — espèce `id` **459**, espèce `acteur` **2990**.
 
 ### 6.1 Slots RÉSOLUBLES (espèce `id`, type du registre `_ids.generated`)
 
@@ -4502,37 +4502,57 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `arene-projet.json` | `scenes[].roofDefaults.material` | `material` | `material` | liste | 18 | 18 / 18 |
 | `arene-projet.json` | `scenes[].layers[].tiles[]` | `tiles` | `terrain` | liste | 13940 | 13940 / 13940 |
 | `arene-projet.json` | `scenes[].entities[].statblock.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 4 | 4 / 4 |
 | `arene-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 9 | 9 / 9 |
 | `arene-projet.json` | `scenes[].architecture[].roofDefaults.material` | `material` | `material` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | `id` | `skill` | liste | 3 | 3 / 3 |
+| `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].triggers[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
+| `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.places[].port.ref` | `ref` | `navalPort` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `arene-projet.json` | `worldMap.routes[].perils[].effects[]\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `narratif.presetsPnj[].base` | `base` | `creature` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `arene-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4544,37 +4564,57 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `barge-du-sel-projet.json` | `scenes[].roofDefaults.material` | `material` | `material` | liste | 3 | 3 / 3 |
 | `barge-du-sel-projet.json` | `scenes[].layers[].tiles[]` | `tiles` | `terrain` | liste | 504 | 504 / 504 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].statblock.skills[].id` | `id` | `skill` | liste | 6 | 6 / 6 |
+| `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].architecture[].roofDefaults.material` | `material` | `material` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.places[].port.ref` | `ref` | `navalPort` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `barge-du-sel-projet.json` | `worldMap.routes[].perils[].effects[]\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `narratif.presetsPnj[].base` | `base` | `creature` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `barge-du-sel-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4586,37 +4626,57 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `diligence-projet.json` | `scenes[].roofDefaults.material` | `material` | `material` | liste | 2 | 2 / 2 |
 | `diligence-projet.json` | `scenes[].layers[].tiles[]` | `tiles` | `terrain` | liste | 2624 | 2624 / 2624 |
 | `diligence-projet.json` | `scenes[].entities[].statblock.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 1 | 1 / 1 |
 | `diligence-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].architecture[].roofDefaults.material` | `material` | `material` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].triggers[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.places[].port.ref` | `ref` | `navalPort` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `diligence-projet.json` | `worldMap.routes[].perils[].effects[]\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `narratif.presetsPnj[].base` | `base` | `creature` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `diligence-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -4628,37 +4688,57 @@ des ids. Une valeur non résolue est un rouge NOMINATIF de la garde, jamais une 
 | `loup-et-saumure-projet.json` | `scenes[].roofDefaults.material` | `material` | `material` | liste | 5 | 5 / 5 |
 | `loup-et-saumure-projet.json` | `scenes[].layers[].tiles[]` | `tiles` | `terrain` | liste | 1086 | 1086 / 1086 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].statblock.skills[].id` | `id` | `skill` | liste | 12 | 12 / 12 |
+| `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].usable.actions[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].entities[].combat.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].architecture[].style` | `style` | `building` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].architecture[].masses[].material` | `material` | `material` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].architecture[].roofDefaults.material` | `material` | `material` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].dialogues[].nodes[].choices[].flow\|3.test.skill.id` | `id` | `skill` | liste | 2 | 2 / 2 |
+| `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].triggers[].flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|1.effect\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `scenes[].encounters[].onVictory\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.places[].port.ref` | `ref` | `navalPort` | liste | 2 | 2 / 2 |
+| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|0\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|4.ref\|1.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|16.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|19.flow\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|46.reward\|3.test.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|51.skill.id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|0.creatureId` | `creatureId` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|51.foes[].ref\|1.custom.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
+| `loup-et-saumure-projet.json` | `worldMap.routes[].perils[].effects[]\|54.vehicleId` | `vehicleId` | `vehicle` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `narratif.presetsPnj[].base` | `base` | `creature` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.optionals[]\|2.grant[]\|1.id` | `id` | `skill` | liste | 0 | 0 / 0 |
 | `loup-et-saumure-projet.json` | `narratif.presetsPnj[].profil.skills[].id` | `id` | `skill` | liste | 0 | 0 / 0 |
@@ -5026,7 +5106,7 @@ par concept en L2/L3 (#1473), et ne fait que DÉCROÎTRE.
 ### 6.3 Angles morts DÉCLARÉS de ce volet
 
 Source UNIQUE `ANGLES_MORTS_SLOTS` (`scripts/docs/lib/structures-lexique.mts`) — l’espèce `acteur`
-pèse **2990** slots sur 3369.
+pèse **2990** slots sur 3449.
 
 - L’espèce `acteur` (`actorRefSchema`) est HORS résolution : elle désigne l’acteur d’une mécanique par un ENUM, pas l’id d’une entité d’un dataset — ce n’est pas une FK.
 - Un slot dont le `type` n’est pas un type du registre `_ids.generated` (entité INTERNE à une scène : pion, nœud de dialogue) n’est pas résoluble ici — l’index qui les porte est celui du scan (documents EMBARQUÉS), pas le registre généré. Ces slots sont au stock `SLOTS_INTERNES`, listés et jamais résolus ; l’unification passe par `typedRef` en L2 (#1473).
@@ -5034,4 +5114,4 @@ pèse **2990** slots sur 3369.
 - Symétrique et INVERSE : une référence ENVELOPPÉE (`{id}` posé par `ref(type)`) projette sur la clé `id`, jamais sur le champ PORTEUR que le scan observe — mesuré 2026-09-01, `species.json › [].previewCareer.id` → `id`, `structures.json › [].traits[].id` → `id`, `vehicles.json › [].ship.traits[].id` → `id`. La couverture est donc SOUS-estimée sur toute référence à enveloppe, et la ligne de `SLOTS_SANS_DECLARATION` du champ porteur NE SE SOLDE PAS par l’adoption de la fabrique : elle survit à la migration qui la rendait caduque.
 - `valeursAuPath` traverse une branche d’union (`|N`) sans la discriminer : la donnée ne porte pas la branche qui la parse, chaque branche lit donc les valeurs de toutes — mesuré le 2026-09-22 sur `props.json › [].volume.primitives[]|0..2.material`, 297 valeurs à chacune des trois branches : la résolution y est comptée une fois par branche.
 
-<!-- sources-empreinte: d6aacfc73adfac0abdd2eb4581c45004506debfe (387 fichiers, 10 dossiers) corps: 25cbbf9a8f3669213fe4ea43943f5cba65bcefda -->
+<!-- sources-empreinte: 69ec114157222686a7ad63587632af6e14f9b398 (387 fichiers, 10 dossiers) corps: 167210a62c14df8c89eed169a49459201e80a9af -->

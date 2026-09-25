@@ -57,15 +57,15 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 62 | `src/data/index.ts:3043` |
-| `spec` | 18 | `src/data/index.ts:3565` |
+| `id` | 62 | `src/data/index.ts:3073` |
+| `spec` | 18 | `src/data/index.ts:3595` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 5 | `src/data/index.ts:3577` |
-| `value` | 4 | `src/data/index.ts:3578` |
+| `id` | 5 | `src/data/index.ts:3607` |
+| `value` | 4 | `src/data/index.ts:3608` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -85,8 +85,8 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fixed` | 4 | `src/data/index.ts:3646` |
-| `roll` | 3 | `src/data/index.ts:3646` |
+| `fixed` | 4 | `src/data/index.ts:3676` |
+| `roll` | 3 | `src/data/index.ts:3676` |
 
 ### `TrappingRef` (src/data/index.ts)
 
@@ -94,27 +94,27 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `id` | 8 | `src/engine/items.ts:307` |
 | `spec` | 2 | `src/engine/items.ts:309` |
-| `count` | 10 | `src/data/index.ts:3646` |
-| `qualities` | 4 | `src/data/index.ts:3649` |
-| `qualityChoice` | 6 | `src/data/index.ts:3647` |
-| `text` | 2 | `src/data/index.ts:3640` |
-| `vehicleId` | 5 | `src/data/index.ts:3642` |
+| `count` | 10 | `src/data/index.ts:3676` |
+| `qualities` | 4 | `src/data/index.ts:3679` |
+| `qualityChoice` | 6 | `src/data/index.ts:3677` |
+| `text` | 2 | `src/data/index.ts:3670` |
+| `vehicleId` | 5 | `src/data/index.ts:3672` |
 | `label` | 7 | `src/engine/possessionGrants.ts:25` |
-| `creatureId` | 5 | `src/data/index.ts:3644` |
-| `choice` | 5 | `src/data/index.ts:3637` |
-| `wildcard` | 3 | `src/data/index.ts:3638` |
+| `creatureId` | 5 | `src/data/index.ts:3674` |
+| `choice` | 5 | `src/data/index.ts:3667` |
+| `wildcard` | 3 | `src/data/index.ts:3668` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 8 | `src/data/index.ts:3619` |
+| `id` | 8 | `src/data/index.ts:3649` |
 | `spec` | 2 | `src/engine/careerSlots.ts:170` |
-| `choix` | 7 | `src/data/index.ts:3043` |
-| `pick` | 2 | `src/data/index.ts:3622` |
-| `of` | 6 | `src/data/index.ts:3621` |
+| `choix` | 7 | `src/data/index.ts:3073` |
+| `pick` | 2 | `src/data/index.ts:3652` |
+| `of` | 6 | `src/data/index.ts:3651` |
 | `table` | — | *absent du type TS* |
-| `random` | 3 | `src/data/index.ts:3624` |
+| `random` | 3 | `src/data/index.ts:3654` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -164,14 +164,14 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 2 | `src/state/travelFlow.ts:1153` |
+| `min` | 2 | `src/state/travelFlow.ts:1154` |
 | `max` | 1 | `src/ui/compendium/registry.ts:822` |
 | `id` | 8 | `src/engine/mountTravel.ts:217` |
 | `label` | 8 | `src/engine/mountTravel.ts:201` |
 | `desc` | 1 | `src/state/travelPostes.ts:362` |
 | `stageOutcome` | 1 | `src/state/travelPostes.ts:363` |
 | `vehicleWounds` | 3 | `src/engine/vehicle.ts:59` |
-| `occupantOps` | 3 | `src/state/travelFlow.ts:1157` |
+| `occupantOps` | 3 | `src/state/travelFlow.ts:1158` |
 | `mount` | 2 | `src/engine/mountTravel.ts:202` |
 
 ### `ShipCrewHit` (src/data/shipCriticals.ts)
@@ -299,4 +299,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: 5c183249bd8aff1d425a840cbd02afbeefbef3c0 (2100 fichiers, 172 dossiers) corps: 347925d97c73383d4d24f63cf0836e2441e82204 -->
+<!-- sources-empreinte: 4f1492c90274265726f2a178af9bbbc96f789ebf (2100 fichiers, 172 dossiers) corps: 505c513f7691b5f473681a0013009def0f982a18 -->
