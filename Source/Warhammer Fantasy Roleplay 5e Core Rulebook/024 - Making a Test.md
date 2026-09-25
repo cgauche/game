@@ -1,6 +1,6 @@
 *Pages PDF 130-132*
 
-# MAKING A TEST
+# <span id="page-129-0" data-folio="130"></span>MAKING A TEST
 
 # **DESCRIBE ACTION**
 
@@ -49,7 +49,7 @@ Sometimes a rule, ability, or circumstance will grant you Advantage or Disadvant
 
 Advantage and Disadvantage cancel each other out. If you have multiple sources of Advantage, each one after the first grants +1 SL, while multiple sources of Disadvantage inflict -1 SL.
 
-# **DIFFICULTY AND CHARACTER MODIFIERS**
+# <span id="page-130-0" data-folio="131"></span>**DIFFICULTY AND CHARACTER MODIFIERS**
 
 Not all Tests are as simple as the one above. The Success Level of a Test can be modified by how difficult it is to succeed, or by the Character's abilities and equipment:
 
@@ -107,7 +107,7 @@ Often, you will only need to know whether a Test results in a success or failure
 
 Sometimes the GM may ask you to make multiple rolls over time, such as once per round, or once each day, while keeping a running total of the SL you have achieved. This is known as an Extended Test, and it is used when time and resources matter, such as repairing a battered breastplate or picking a lock before a guard arrives. An Extended Test succeeds once you have achieved a set target number of SL, and fails should you run out of time or resources. See page 266 for more on Extended Tests.
 
-# **Test Examples**
+# <span id="page-131-0" data-folio="132"></span>**Test Examples**
 
 Here are a few examples of Tests to help you get to grips with the rules.
 

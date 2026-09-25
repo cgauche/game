@@ -28,7 +28,8 @@
 //    marqueur de folio n'ouvre aucun bloc ; un bloc recollé garde la ligne de son premier morceau).
 //  - FOLIO COURANT : les marqueurs `data-folio` sont rares et arbitrairement placés dans le flux ; un
 //    état ROULANT sur le chapitre donne à chaque section et à chaque bloc le dernier folio rencontré
-//    à ou avant son ouverture (`folio`), en plus des marqueurs INTERNES au bloc (`folios`).
+//    à ou avant son ouverture (`folio`), en plus des marqueurs INTERNES au bloc (`folios`). Une ancre
+//    VIDE (`ancreVide`, `ancre-vide.ts`) n'entre ni dans l'un ni dans l'autre.
 //  - RECOLLAGE DE FOLIO : un saut de folio coupe des paragraphes en plein milieu
 //    (`21 - Psychologie.md:45-48`, `05 - _gjdgxs.md:44`). Deux blocs séparés par une coupure PORTEUSE
 //    DE FOLIO (bloc vide réduit à son marqueur, ou bloc suivant ouvert par un marqueur) sont recollés
@@ -38,6 +39,7 @@
 //    (emphase `*`/`**`, puce, table).
 import { normalize as normalizeCitation, sansBr, brEnSaut } from './normalize.ts';
 import { hash32 } from '../hash.ts';
+import { ANCRE_FOLIO, FOLIO_ATTR, ancreVide } from './ancre-vide.ts';
 
 /** Bloc d'affichage : le markdown rendu, sa ligne de début dans le fichier du chapitre, le folio
  *  courant à son ouverture, ses marqueurs internes. */
@@ -246,9 +248,8 @@ const MAX_FRAGMENTS = 3;
 const PROBE = 24;
 
 const SPAN_TAG = /<\/?span[^>]*>/g;
-const FOLIO_ATTR = /data-folio="(\d+)"/g;
 const HEADING = /^(?:<span[^>]*>\s*<\/span>\s*)*(#{1,6})\s+(.*)$/;
-const OPENS_ON_FOLIO = /^\s*<span[^>]*data-folio=/;
+const OPENS_ON_FOLIO = /^\s*<span[^>]*data-folio(?:-vide)?=/;
 const TERMINAL = /[.!?»”:;]$/;
 const TRAILING_DECOR = /[*_`~\s]+$/;
 const OPENS_EMPHASIS = /^\s*\*/;
@@ -259,6 +260,12 @@ const RANGE_KEY = /^\d+\s*[-–—]?\s*\d*$/;
 
 /** Retire les balises `<span>` (le contenu textuel est conservé). */
 export const stripSpans = (s: string): string => s.replace(SPAN_TAG, '');
+
+/** Ancres de page VIDES (`ancreVide`) marquées `data-folio-vide` : elles coupent encore un paragraphe
+ *  (`OPENS_ON_FOLIO`), mais ne portent aucun folio (`FOLIO_ATTR`) — ni roulant, ni dans `folios`. */
+const marquerAncresVides = (t: string): string =>
+  t.replace(ANCRE_FOLIO, (m: string, _folio: string, debut: number) =>
+    (ancreVide(t, debut + m.length) ? m.replace('data-folio=', 'data-folio-vide=') : m));
 
 /** Folios (`data-folio`) portés par un fragment de texte, dans l'ordre. */
 function foliosIn(s: string): number[] {
@@ -384,7 +391,7 @@ export function parseChapitre(texte: string): ChapitreParse {
   // Mesuré sur `21 - Psychologie.md` du livre de base : en CRLF, `HEADING` ne reconnaît aucun titre
   // (`.` ne franchit pas `\r`, et `$` sans `/m` ne se pose pas devant un `\r` final) — 1 section au
   // lieu de 17, et l'empreinte du premier bloc passe de `ad420a63fa3b93c2` à `3eef49e6fee82961`.
-  const lignes = texte.replace(/\r\n?/g, '\n').split('\n');
+  const lignes = marquerAncresVides(texte.replace(/\r\n?/g, '\n')).split('\n');
   const sections: Section[] = [];
   const seen = new Map<string, number>();
   let running: number | null = null;

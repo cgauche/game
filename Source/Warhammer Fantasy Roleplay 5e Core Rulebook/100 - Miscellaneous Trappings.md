@@ -1,6 +1,6 @@
 *Pages PDF 316*
 
-# **MISCELLANEOUS TRAPPINGS**
+# <span id="page-315-0" data-folio="316"></span>**MISCELLANEOUS TRAPPINGS**
 
 If players wish to buy something that is not included on this list, the GM can use these prices and availabilities for similar items.
 

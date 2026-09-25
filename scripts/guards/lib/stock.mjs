@@ -88,15 +88,16 @@ export const cleDeSite = (e) => [e.famille ?? '', e.fichier, e.ref, e.occurrence
  * inchangés — une paire neuve/périmée fantasme un geste qui n'a pas eu lieu. Portée mesurée le
  * 2026-09-12 : latent sur `reanchor-low` (21 entrées, toutes à l'occurrence 1) ; atteignable sur
  * `empty-line-code-refs` (occurrence 2) et `graphy` (jusqu'à 8), qui portent des homonymes.
- * @param {{ file: string, ref: string }[]} sites @param {{ famille?: string }} [p]
+ * Le `nombre` d'un site (ses occurrences dans le fichier) passe à l'entrée HORS CLÉ (`cleDeSite`).
+ * @param {{ file: string, ref: string, nombre?: number }[]} sites @param {{ famille?: string }} [p]
  */
 export function sitesEnEntrees(sites, { famille } = {}) {
   const vus = new Map();
-  return sites.map(({ file, ref }) => {
+  return sites.map(({ file, ref, nombre }) => {
     const k = [famille ?? '', file, ref].join(' :: ');
     const occurrence = (vus.get(k) ?? 0) + 1;
     vus.set(k, occurrence);
-    return { famille, fichier: file, ref, occurrence };
+    return { famille, fichier: file, ref, occurrence, ...(nombre == null ? {} : { nombre }) };
   });
 }
 
@@ -107,7 +108,8 @@ export function sitesEnEntrees(sites, { famille } = {}) {
  * `ancien` (les entrées déjà committées) fait SURVIVRE, à CLÉ IDENTIQUE, ce qu'un humain a posé sur
  * l'entrée : son échéance (`lot`, `date` — un site inchangé garde la date à laquelle il a été
  * qualifié, une régénération ne rajeunit pas une dette) et sa `preuve` (le site a été tranché au
- * PDF). Un site NEUF prend le lot et la date du run, et ne porte rien d'autre.
+ * PDF). Un site NEUF prend le lot et la date du run, et ne porte rien d'autre ; un site dont le
+ * `nombre` a GRANDI (`accru`) aussi : sa croissance est une dette neuve, datée par le lot du run.
  * L'ORDRE et la FORME rendus sont ceux de `mesurees` : la survie ne réordonne ni n'ajoute une clé
  * que l'ancienne entrée ne portait pas (une `preuve` absente de `vieux` ne s'écrit pas).
  * @template {Record<string, unknown>} E
@@ -119,7 +121,8 @@ export function survieDeLecheance(mesurees, { lot, date, ancien = [] }) {
   const parCle = new Map();
   for (const e of ancien) parCle.set(cleDeSite(e), e);
   return [...mesurees].map((e) => {
-    const vieux = parCle.get(cleDeSite(e));
+    const tenu = parCle.get(cleDeSite(e));
+    const vieux = tenu && !accru(e, tenu) ? tenu : undefined;
     const sortie = { ...e, lot: vieux?.lot ?? lot, date: vieux?.date ?? date };
     if (vieux?.preuve !== undefined) sortie.preuve = vieux.preuve;
     return sortie;
@@ -133,10 +136,13 @@ function lotDeLaLigne(args) {
   return v && !v.startsWith('--') ? v : null;
 }
 
+/** Le `nombre` mesuré de `mesure` dépasse-t-il celui de son entrée `tenue` ? Sans nombre : non. PURE. */
+const accru = (mesure, tenue) => mesure.nombre != null && tenue.nombre != null && mesure.nombre > tenue.nombre;
+
 /**
  * RÉGÉNÉRATION d'un stock nominatif SOUS LOT — seule définition du dépôt, appelée par les
  * régénérateurs datés (`check-source-format.mjs`, `check-source-puces.mjs`, `check-source-tables.mjs`).
- * Un régénérateur n'étiquette JAMAIS seul : une entrée NEUVE (sans lot survivant,
+ * Un régénérateur n'étiquette JAMAIS seul : une entrée NEUVE ou ACCRUE (sans lot survivant,
  * `survieDeLecheance`) exige le lot du chantier en argument, `--lot <#N …>` ; sans lui, RIEN n'est
  * écrit et le refus nomme la première. Les entrées existantes gardent le leur. PURE hors `ecrire`,
  * INJECTÉ (le banc n'écrit rien).
@@ -149,7 +155,7 @@ export function ecrireStockSousLot(args, rendre, ecrire, ou, date = new Date().t
   const { entrees, texte } = rendre(lot, date);
   const neuves = entrees.filter((e) => !e.lot);
   if (neuves.length) {
-    return { code: 1, message: `${ou} : ${neuves.length} entrée(s) NEUVE(s) sans lot — passer \`--lot <#N …>\`, rien n'est écrit. Première : ${cleDeSite(neuves[0])}` };
+    return { code: 1, message: `${ou} : ${neuves.length} entrée(s) NEUVE(s) ou ACCRUE(s) sans lot — passer \`--lot <#N …>\`, rien n'est écrit. Première : ${cleDeSite(neuves[0])}` };
   }
   ecrire(texte);
   return { code: 0, message: `stock écrit : ${ou} — ${entrees.length} entrée(s)` };
@@ -174,15 +180,38 @@ const cleOuEntree = (cle, entree) => (entree?.fichier || entree?.ref ? cle : JSO
  *   `ou` nomme le fichier de stock dans le remède.
  */
 export function ecartDuVolet({ sites, stock, famille, ou }) {
-  return ecartsDeStock({
-    observe: sitesEnEntrees(sites, { famille }),
-    stock,
+  const observe = sitesEnEntrees(sites, { famille });
+  const tenues = [...stock];
+  const ecart = ecartsDeStock({
+    observe,
+    stock: tenues,
     cle: cleDeSite,
     remede: {
       neuve: (k) => `${k} — site NEUF : corriger la réf, ou déclarer une entrée dans ${ou} et la porter au message par \`CLIQUET:\`.`,
       perimee: (k, e) => `${cleOuEntree(k, e)} — entrée SOLDÉE : le site a disparu, retirer cette entrée de ${ou}.`,
     },
   });
+  return { ...ecart, neuves: [...ecart.neuves, ...nombresAccrus(observe, tenues, ou)] };
+}
+
+/**
+ * CLIQUET du `nombre` (occurrences d'un site, hors clé) : un site dont le nombre MESURÉ dépasse celui
+ * de son entrée en stock est une dette qui GRANDIT — une ligne de remède, rendue parmi les neuves.
+ * Plus petit : la régénération recale le stock (`survieDeLecheance` garde le nombre mesuré) ; plus
+ * grand, elle exige un `--lot` (`ecrireStockSousLot`) ; égal ou sans nombre : rien. PURE.
+ * @param {Iterable<object>} observe entrées mesurées @param {Iterable<object>} stock @param {string} [ou]
+ * @returns {string[]}
+ */
+export function nombresAccrus(observe, stock, ou) {
+  const tenues = new Map();
+  for (const e of stock) if (!tenues.has(cleDeSite(e))) tenues.set(cleDeSite(e), e);
+  const out = [];
+  for (const e of observe) {
+    const tenue = tenues.get(cleDeSite(e));
+    if (tenue && accru(e, tenue))
+      out.push(`${cleDeSite(e)} — nombre ${e.nombre} > ${tenue.nombre} en stock : la dette GRANDIT, corriger le site (${ou}).`);
+  }
+  return out;
 }
 
 /**

@@ -315,6 +315,11 @@ const ATTENDU = {
     // retirés par `rmSync`) pour éprouver `mdsDeMarker`/`mdsDeRestitutions` sur le disque. Aucune
     // écriture DANS l'arbre : même classe que `check-source-format.test.mjs` ci-dessus.
     'scripts/raw/lib/marker-pages.test.mjs',
+    // +1 le 2026-09-25 (#1739) : l'extraction pypdf quitte `anchor-fill.mjs` pour sa maison, importée
+    // par `empty-folios-stock.mjs` et `marker-pages.mjs`. `extractPages` n'écrit que la sortie de
+    // `pdf-extract.py` sous un `mkdtempSync` de os.tmpdir(), `rmSync` en finally : aucune écriture
+    // DANS l'arbre, même classe que `anchor-fill.mjs` ci-dessus.
+    'scripts/raw/lib/pdf-extract.mjs',
     'scripts/raw/reanchor-split.mjs',
     'scripts/raw/reanchor.mjs',
     'scripts/raw/reanchor.test.mjs',

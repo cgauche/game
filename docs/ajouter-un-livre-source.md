@@ -38,9 +38,9 @@ committé :
   il lit les anciens `NN - X.md` et leur marqueur `Pages PDF` pour retrouver les frontières. Un
   dossier qui n'en porte pas (les 6 livres en `*Folio N+*`, les 4 dossiers pré-pipeline) ne lui
   donne aucun chapitre : sa structure cible se pose d'abord (§2).
-- Folios ensuite : `scripts/raw/folio-bootstrap.mjs` puis `scripts/raw/anchor-fill.mjs`. Le bootstrap
-  ne retient comme folio imprimé que l'UNIQUE nombre nu non nul de la page, présent à ses bords :
-  deux nombres nus distincts (bandeau de double page, cellule `d10`) rendent la page non lue.
+- Folios ensuite : `scripts/raw/folio-bootstrap.mjs` puis `scripts/raw/anchor-fill.mjs` (§ 7, étape 5).
+  Le bootstrap ne retient comme folio imprimé que l'UNIQUE nombre nu non nul de la page, présent à
+  ses bords : deux nombres nus distincts (bandeau de double page, cellule `d10`) rendent la page non lue.
 
 **Découpage en tranches (reste de #1739).** La session d'extraction produit le PDF par tranches de
 40 pages ; le séparateur `{N}----` portant l'index **absolu** de page quelle que soit la tranche,
@@ -727,9 +727,22 @@ stock et rougit la garde — c'est ainsi qu'un geste non canonique se voit.
    entière `PERDUE`, même si un autre fragment n'était qu'`AMBIGUË`. **`--apply` n'écrit que les
    `RECALÉE`** ; les trois autres se règlent à la main, au PDF.
 5. `node scripts/raw/anchor-fill.mjs <ABBR> --ch NN --apply` s'il reste des blocs sans folio (PDF du
-   registre SEUL) : il pose des ancres `data-folio` **ciblées**, et saute tout candidat absent, multiple ou
-   hors bornes. Une page qui porte déjà une ancre nue Marker `<span id="page-K-0"></span>` est sautée
-   avec sa raison : poser la sienne ferait deux ancres de même `id`.
+   registre SEUL, lu par pdfminer : `lib/pdf-lignes.py` puis `lib/colonnes.mjs`) : il pose des ancres
+   `data-folio` **ciblées**, et saute tout candidat absent, multiple ou hors bornes. Aucune ligne ne
+   bouge, aucun mot ne change ; l'ancre se pose APRÈS la marque de bloc de sa ligne (`# `, `> `,
+   puce), en tête du texte qu'elle ouvre :
+   - les pages d'un fichier se consomment dans l'ordre : la tête d'une page est la 1re ligne de contenu
+     après la fin du texte de la page précédente ancrée, si elle s'ouvre sur les 1res lignes de la page
+     au PDF ; sinon, la plus petite ligne trouvée par ses ordres de lecture (colonnes, titres remontés,
+     rangées de table) ;
+   - une ancre nue Marker `<span id="page-K-0"></span>` est **complétée** de son `data-folio`, en place
+     (jamais un second `id` identique) ;
+   - la 1re page de la plage `*Pages PDF a-b*` s'ancre en tête de la 1re ligne de contenu : un chapitre
+     qui s'ouvre en milieu de page porte ainsi le MÊME folio que celui qui la commence ;
+   - une page sans texte (planche, intercalaire) reçoit une ancre VIDE juste avant l'ancre de la page à
+     texte qui la suit dans le fichier, à défaut en fin de sa dernière ligne de contenu —
+     `check-folio-continuity` la trie ensuite bénigne (`empty-folios-benignes-stock.json`).
+   Le banc des têtes de page réelles, étiquetées au PDF, est `scripts/raw/lib/fixtures/tetes-de-page.json`.
 6. `npm run gates && git commit` — tout dans le même commit.
 
 ### Défaut de table → geste

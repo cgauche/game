@@ -1,6 +1,6 @@
 *Pages PDF 183*
 
-# **POISONS**
+# <span id="page-182-0" data-folio="183"></span>**POISONS**
 
 Poisons can inflict some of the same symptoms as a disease, but the effects usually don't last quite as long, and treating them requires identifying the poison and administering an appropriate antidote. A **Difficult (-1 SL) Heal** Test, or an **Average (+2 SL) Trade (Poisoner)** Test correctly identifies the poison and the antidote required, which could be anything from a herbal preparation to an alchemical concoction to something far more esoteric.
 

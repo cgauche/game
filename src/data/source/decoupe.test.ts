@@ -194,6 +194,21 @@ describe('parseChapitre — blocs, folios, sections', () => {
   });
 });
 
+describe('ancre de page VIDE (`ancreVide`) — ni folio roulant, ni `folios` (CRB)', () => {
+  const blocDe = (ch: string, trouve: (md: string) => boolean) =>
+    chapitreDe('core-rulebook-5e', ch).sections.flatMap((s) => s.blocks).find((b) => trouve(b.md))!;
+  it('004 l.75 : ancres vides 8 et 9 enchaînées devant l’ancre à texte 10 → folio 10, folios [10]', () => {
+    const b = blocDe('004', (md) => md.startsWith('Being the thoughts'));
+    expect([b.line, b.folio, b.folios]).toEqual([75, 10, [10]]);
+  });
+  it('032 : ancre vide 160 en fin de la dernière ligne du fichier → folios []', () => {
+    expect(blocDe('032', (md) => md.includes('OBSTACLE TABLE')).folios).toEqual([]);
+  });
+  it('122 : ancre vide 378 en fin de fichier → folios [377]', () => {
+    expect(blocDe('122', (md) => md.includes('WEALTH')).folios).toEqual([377]);
+  });
+});
+
 describe('resoudreFragment — cellules, empreinte, bornes', () => {
   it('C : adresse de cellule — clé de ligne × en-tête de colonne', () => {
     const res = cellule() as Resolu;

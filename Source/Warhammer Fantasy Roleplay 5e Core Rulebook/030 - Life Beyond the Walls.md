@@ -1,6 +1,6 @@
 *Pages PDF 152*
 
-# **LIFE BEYOND THE WALLS**
+# <span id="page-151-0" data-folio="152"></span>**LIFE BEYOND THE WALLS**
 
 Beyond the walls of the cities and towns of the Empire, the landscape is anything but welcoming. Aside from a few hardy farmers, daring merchants, and cautious Roadwardens, travellers are unlikely to meet a friendly face among the bandits and beastmen that trouble them. Occasional relief can be had at a price from Coaching Houses along the Empire's highways, but otherwise Characters must fend for themselves.
 

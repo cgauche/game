@@ -1,6 +1,6 @@
 *Pages PDF 140-145*
 
-# **FLATTERY, BRIBERY, AND STATUS**
+# <span id="page-139-0" data-folio="140"></span>**FLATTERY, BRIBERY, AND STATUS**
 
 Conversations between Characters and NPCs are at the heart of **WFRP**. If a Character says the right thing, or asks for something an NPC has no reason to refuse, there is usually no need for a Test. Asking a bystander about recent events or a merchant the price of their wares, for example, simply works.
 
@@ -38,7 +38,7 @@ The number after your Status is your Standing, your social position relative to 
 | Spread a Nasty Rumour                   | A Gossip Test, with a difficulty depending on how hard the rumour is to believe and what evidence you might have to support it.                                                                                                                                                     |
 | Negotiate a Discount                       | A Haggle Test to convince the merchant to offer you a better rate.                                                                                                                                                                                                                        |
 
-### **EXAMPLE DIFFICULTIES OF COMMON SOCIAL ACTIONS**
+### <span id="page-140-0" data-folio="141"></span>**EXAMPLE DIFFICULTIES OF COMMON SOCIAL ACTIONS**
 
 | Difficulty             | Action                                                                                                                                                                                                                                                       |
 |------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -76,7 +76,7 @@ Status also affects how much you earn from the *Income* Endeavour (page 199).
 
 **Charm and Fellowship Tests:** Charm, Gossip, and most other Fellowship Tests suffer -1 SL for each tier of Status between the characters. A Silver Status merchant incurs -1 SL when dealing with a Brass Status peasant, while that same peasant suffers -2 SL when dealing with a Gold Status noble.
 
-**Intimidate Tests:** While within civilisation, Gold Status characters gain Advantage when intimidating those of lower Status. In the wilds, or once violence has already begun, this benefit does not apply.
+<span id="page-141-0" data-folio="142"></span>**Intimidate Tests:** While within civilisation, Gold Status characters gain Advantage when intimidating those of lower Status. In the wilds, or once violence has already begun, this benefit does not apply.
 
 **Leadership:** Status plays a very important role in Leadership. Indeed, the State Army normally only grants higher ranks to those of noble birth. Characters gain Advantage on Leadership Tests made to command those of lower Status.
 
@@ -134,7 +134,7 @@ Building a useful relationship usually happens naturally through roleplay, as ch
 
 **Astounding Failure (-5 SL):** Your half-hearted threats are seen as rank weakness, and the merchant laughs in your face, or offers to duel you right now and settle the matter outright.
 
-#### **SUCCESS AND CONSEQUENCE**
+#### <span id="page-142-0" data-folio="143"></span>**SUCCESS AND CONSEQUENCE**
 
 Charm, Intimidate, and similar Skills are not mind control. A successful Test can make someone more helpful, compliant, or fearful, but most people will not risk everything for a stranger. Success also has consequences. A convincing lie falls apart when the truth comes to light, and those bullied or intimidated into helping you may later seek revenge — or simply inform the authorities.
 
@@ -180,7 +180,7 @@ When honeyed words fail, a threat can often succeed. To get your way, or simply 
 
 Most purchases are resolved by paying the prices listed in **Chapter 11: Consumer Guide**. Characters wishing to haggle can instead make an **Opposed Challenging (+0 SL) Haggle Test** against the seller. On a success, the total price is reduced by 10%, or 20% with an Astounding Success (+6 SL). Only one Haggle Test can be made per vendor, as most merchants have little patience for negotiating every individual item.
 
-#### **EXAMPLE OUTCOMES**
+#### <span id="page-143-0" data-folio="144"></span>**EXAMPLE OUTCOMES**
 
 **A Hard (-2 SL) Gossip Test to spread word that an unpleasant but quite mundane merchant is actually a vampire**
 
@@ -212,7 +212,7 @@ When carousing, make a Consume Alcohol Test, with the Difficulty determined by t
 
 These effects last for two hours after you cease drinking, at which time they end, and you become hungover, suffering a *Fatigued*  Condition that lasts 12 - TB (Toughness Bonus) hours.
 
-#### **STINKING DRUNK**
+#### <span id="page-144-0" data-folio="145"></span>**STINKING DRUNK**
 
 | 1d10 | Outcome                                                                                                                                                                                                                                                                                           |
 |------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

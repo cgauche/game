@@ -1,6 +1,6 @@
 *Pages PDF 313*
 
-# **TRAVEL PRICES**
+# <span id="page-312-0" data-folio="313"></span>**TRAVEL PRICES**
 
 The prices listed here do not include meals, lodging, or fodder, although coaches and passenger boats usually charge for the whole package for longer journeys. Package prices can be worked out by combining travel with food and boarding prices.
 

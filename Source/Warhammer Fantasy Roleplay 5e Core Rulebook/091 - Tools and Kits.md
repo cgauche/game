@@ -1,6 +1,6 @@
 *Pages PDF 310*
 
-# **TOOLS AND KITS**
+# <span id="page-309-0" data-folio="310"></span>**TOOLS AND KITS**
 
 The majority of tools count as Improvised Weapons when used in combat, however GMs may rule that heavy or sharp tools (e.g. crowbars and sickles) count as Hand Weapons. Many of the individual tools listed here are included in Trade Tool packages and Workshops, and need not be bought separately.
 

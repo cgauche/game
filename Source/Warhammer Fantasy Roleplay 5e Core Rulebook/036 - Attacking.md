@@ -1,6 +1,6 @@
 *Pages PDF 164-168*
 
-# **ATTACKING**
+# <span id="page-163-0" data-folio="164"></span>**ATTACKING**
 
 To make a Ranged Attack, your target must be within your weapon's range (see **Chapter 11: Consumer Guide**) and in your line of sight. To make a Melee Attack, you must be Engaged with your target (page 163) and have a weapon ready.
 
@@ -61,7 +61,7 @@ As blows rain down on your armour, it can be damaged, possibly permanently. When
 
 If this lowers the AP to 0 in that Location, the armour there is rendered useless.
 
-# **Critical Hits and Fumbles**
+# <span id="page-164-0" data-folio="165"></span>**Critical Hits and Fumbles**
 
 In the cut and thrust of combat, moments of extraordinary skill and disastrous mistakes can happen. These are represented by Critical Hits and Fumbles.
 
@@ -111,7 +111,7 @@ There are some extra considerations that apply to ranged attacks:
 - You cannot make Ranged Attacks while Engaged, unless your weapon has the Pistol Quality (see page 305).
 - If you make a Ranged Attack against a target you are Engaged with, they may oppose the attack with any Melee Skill.
 
-#### **Weapon Groups**
+#### <span id="page-165-0" data-folio="166"></span>**Weapon Groups**
 
 Knowing how to swing a sword doesn't necessarily make you an expert with a spear, and the technique and understanding required to use a bow is quite different from the skills required to use a blackpowder weapon. When you use a weapon, roll against the appropriate Skill Specialisation, such as Melee (Basic) or Ranged (Blackpowder). Weapons are broken into various Weapon Groups, each tied to a Skill Specialisation.
 
@@ -165,7 +165,7 @@ These modifiers apply to Attack Tests only, not to Tests made to oppose an attac
 | Target is Entangled (+1 SL)                         | Attacker's weapon is in the off-hand (-2 SL)                                                   |
 |                                                     | Defender has high ground (-1 SL)                                                               |
 
-#### **Aimed Shots**
+#### <span id="page-166-0" data-folio="167"></span>**Aimed Shots**
 
 If you spend an Action aiming at your target, you gain +1 SL on your next ranged attack against them. You must have your ranged weapon in hand to aim, and the bonus is lost if you do anything else before taking your shot, such as moving or defending yourself.
 
@@ -227,7 +227,7 @@ Instead of inflicting damage with an unarmed attack, you can attempt to Grapple 
 
 For those lacking claws, fangs, or some other natural enchancement, attacks made without a weapon are *Undamaging*. Any AP the target posses are doubled, attacks do not inflict a minimum of 1 Wound, and, if a Critical Wound is inflicted, roll twice on the Critical Wound table and choose the lower result.
 
-# **Mounted Combat**
+# <span id="page-167-0" data-folio="168"></span>**Mounted Combat**
 
 Riding into combat, sword swinging, guns blazing, is not only terrifying for those on the receiving end, it also brings bonuses to the rider. Mounted combat uses the same rules as any other combat, with the following additions:
 

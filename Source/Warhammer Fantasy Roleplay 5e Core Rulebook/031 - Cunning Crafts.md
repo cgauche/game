@@ -1,6 +1,6 @@
 *Pages PDF 153-155*
 
-# **CUNNING CRAFTS**
+# <span id="page-152-0" data-folio="153"></span>**CUNNING CRAFTS**
 
 Life may be cheap in the Empire, but the necessities of living are anything but. Most commoners are used to making what they can for themselves and purchasing only those essentials they can't get by without. Clothes, simple tools, and damp hovels of mud and stone are often made by their owners, while skilled artisans create more complicated and hard wearing goods.
 
@@ -45,7 +45,7 @@ Unlike creating a herbal remedy, the ingredients for alchemical preparations are
 | Summer (18th Sigmarzeit to 16th Nachgeheim) | 5           |
 | Autumn (17th Nachgeheim to 17th Kaldzeit)   | 10          |
 
-#### **Herbal Remedies**
+#### <span id="page-153-0" data-folio="154"></span>**Herbal Remedies**
 
 Make a Trade (Herbalist) Test to create 1 dose of a herbal remedy. The difficulty depends on the symptoms of the disease to be treated. This takes around 15 minutes. Each dose remains effective for a month.
 
@@ -81,7 +81,7 @@ When you make the Trade Test, refer to the following table for the results.
 | –1 to –5                   | The remedy has no effect.                                                                                                                                                 |
 | –6 or less, or Fumble   | Not only does the remedy fail to alleviate the Symptom, the patient must Test to see if they contract the Galloping Trots in addition to their current ailments. |
 
-# **SELECTION OF POISONS**
+# <span id="page-154-0" data-folio="155"></span>**SELECTION OF POISONS**
 
 | Name                    | Source                                                                | Resistance Test                                                                                | Effect                                                                                                                                                                                                                          |
 |-------------------------|-----------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
