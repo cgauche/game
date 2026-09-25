@@ -12,6 +12,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { readCorpus } from '../scripts/guards/lib/sourceCorpus.mjs';
+import { estSuiteVitest } from '../scripts/guards/lib/fichierVitest.mjs';
 import { findCreatureById, refEntiteResolue, structures } from './data';
 
 /** Les réfs MORTES que leur test PROUVE (refus, repli signalé) — `fichier|ligne du site` (texte, espaces réduits). */
@@ -43,7 +44,7 @@ const MOTIFS: { re: RegExp; resout: (id: string) => boolean }[] = [
 function sites(): { rel: string; ligne: number; id: string; resolu: boolean; motif: number; texte: string }[] {
   const out: { rel: string; ligne: number; id: string; resolu: boolean; motif: number; texte: string }[] = [];
   for (const { rel, text: src } of readCorpus(['src'], { tests: true })) {
-    if (!/\.test\.tsx?$/.test(rel) || rel === 'src/creature-id-litteral-guard.test.ts') continue;
+    if (!estSuiteVitest(rel) || rel === 'src/creature-id-litteral-guard.test.ts') continue;
     const lignes = src.split('\n');
     MOTIFS.forEach(({ re, resout }, motif) => {
       for (const m of src.matchAll(re)) {
