@@ -16,7 +16,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { ecrivainsParGate } from './ecrivainsAtteints.mjs'
+import { corpusParGate, ecrivainsParGate, sansImportsDeType, transitif } from './ecrivainsAtteints.mjs'
+import { statSync } from 'node:fs'
+import { join } from 'node:path'
 import { ECRIT_LU } from './toutes.mjs'
 
 const RACINE = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
@@ -475,4 +477,29 @@ test('toute gate qui atteint un écrivain a une entrée ÉCRIT/LU qui en parle',
       `${gate} atteint ${scripts.length} module(s) écrivain(s) et ne déclare NI écriture NI raison de n'en pas avoir`,
     )
   }
+})
+
+test('un import de DOSSIER se résout en son `index`, jamais en dossier (src/data/index.ts : `../i18n`)', () => {
+  const corpus = transitif(['src/data/index.ts'], RACINE)
+  assert.ok(corpus.includes('src/i18n/index.ts'), '`../i18n` doit atteindre src/i18n/index.ts')
+  assert.ok(!corpus.includes('src/i18n'), 'un dossier n’est jamais un module du corpus')
+})
+
+test('le corpus de chaque gate ne compte que des FICHIERS', () => {
+  for (const [gate, corpus] of Object.entries(corpusParGate(RACINE))) {
+    const dossiers = corpus.filter((f) => !statSync(join(RACINE, f)).isFile())
+    assert.deepEqual(dossiers, [], `${gate} : corpus porteur de dossiers`)
+  }
+})
+
+test('un import de TYPE seul n’entre pas au corpus, un import mixte y entre', () => {
+  assert.equal(sansImportsDeType("import type { A } from './a'\n").trim(), '')
+  assert.equal(sansImportsDeType("export type { A } from './a'\n").trim(), '')
+  assert.equal(sansImportsDeType("import { type A, type B } from './a'\n").trim(), '')
+  assert.equal(sansImportsDeType("import { type A, b } from './a'"), "import { type A, b } from './a'")
+  assert.equal(sansImportsDeType("import { a } from './a'"), "import { a } from './a'")
+  // `renvoi.ts` n'importe `valeurs.ts` que pour le TYPE `SourceRef`, et `decoupe.ts` pour du code.
+  const corpus = transitif(['src/data/source/renvoi.ts'], RACINE)
+  assert.ok(corpus.includes('src/data/source/decoupe.ts'))
+  assert.ok(!corpus.includes('src/data/schemas/grammaire/valeurs.ts'))
 })
