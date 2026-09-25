@@ -285,6 +285,10 @@ const ATTENDU = {
     // `--ecrire-stock` sous `isMain` (check-source-puces.mjs:159) — déclarée en `ecritFerme` de
     // `test:raw` (ECRIT_LU).
     'scripts/raw/check-source-puces.mjs',
+    // +1 le 2026-09-25 (#1393 lot 1) : `check-renvois.test.mjs` importe la garde des renvois « page N »,
+    // dont l'unique écriture (régénération du stock) est fermée par `--ecrire-stock` sous `isMain`
+    // (check-renvois.mjs:89) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
+    'scripts/raw/check-renvois.mjs',
     // +1 le 2026-09-14 (#1739 H-0) : `check-source-format.test.mjs` importe le détecteur du format
     // des extractions, dont l'unique écriture (régénération du stock) est fermée par `--ecrire-stock`
     // sous `isMain` (check-source-format.mjs:396) — déclarée en `ecritFerme` de `test:raw` (ECRIT_LU).
@@ -422,6 +426,11 @@ const ATTENDU = {
   // `--ecrire-stock` (check-source-puces.mjs:159) que ci.yml ne passe pas ; déclarée en
   // `ecritFerme` sur `scripts/raw/source-puces-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
   'raw:check-source-puces': ['scripts/raw/check-source-puces.mjs'],
+  // +1 le 2026-09-25 (#1393 lot 1) : la gate neuve est la garde des renvois « page N », qui porte UN
+  // `writeFileSync` — la régénération de son stock nominatif, fermée par la porte `--ecrire-stock`
+  // (check-renvois.mjs:89) que ci.yml ne passe pas ; déclarée en `ecritFerme` sur
+  // `scripts/raw/renvois-stock.json` (ECRIT_LU, scripts/gates/toutes.mjs).
+  'raw:check-renvois': ['scripts/raw/check-renvois.mjs'],
   'raw:reanchor': ['scripts/docs/lib/empreinte-sources.mjs', 'scripts/raw/reanchor.mjs'],
   'server:typecheck': [],
 }

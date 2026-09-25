@@ -337,7 +337,7 @@ séquence est celle du § 7 (`reanchor --apply --remap` AVANT de committer, `pro
 `scripts/source/reparer-adresses.mjs`), et les gardes le disent bruyamment si elle est sautée.
 
 Les PORTES après la re-découpe, dans le même commit : `npm run -s test:raw`,
-`raw:check-source-format`, `raw:check-source-tables`, `raw:check-source-puces`,
+`raw:check-source-format`, `raw:check-source-tables`, `raw:check-source-puces`, `raw:check-renvois`,
 `raw:check-folio-continuity`, `raw:check-refs`, `raw:check-code-refs`, `raw:coverage`,
 `raw:reconcile`, `raw:check-catalogue-complete` — plus le recalage des références (§ 4,
 `reanchor.mjs`) et des coordonnées citées hors `docs/raw/`.
@@ -829,6 +829,13 @@ sert d'arbitre — jamais comme source de la donnée affichée, qui reste recoll
   item). COUVERTURE : l'item ISOLÉ et la puce INTERNE à une ligne (colonnes effondrées) restent
   invisibles à la garde ; ils se tranchent à la page, pas au stock.
   `--ecrire-stock` régénère le stock après une correction.
+- `node scripts/raw/check-renvois.mjs` (#1393) — les renvois « page N » du texte, résolus en ADRESSE
+  par `src/data/source/renvoi.ts` (niveaux `table`, `section-adjacente`, `section-phrase`, `page`),
+  pour tout livre extrait dont la `language` a ses motifs (`MOTIFS_DE_RENVOI`, construits par comptage
+  du corpus — une langue neuve se mesure avant de s'y ajouter). Stock nominatif décroissant
+  `scripts/raw/renvois-stock.json` : les renvois `ambigu` et `introuvable`, clé
+  `slug#occ :: p.N :: rang R` de la section porteuse. Une entrée part quand son renvoi se résout ;
+  `--ecrire-stock` régénère le stock, `--lot <#N>` requis pour toute entrée neuve.
 - `node scripts/raw/check-source-format.mjs` — écart de FORME des 20 dossiers FR au format canonique
   (sept familles, stock nominatif décroissant `scripts/raw/source-format-stock.json`) ; le geste est
   de REJOUER la chaîne canonique sur le livre (§0), jamais une correction manuelle.

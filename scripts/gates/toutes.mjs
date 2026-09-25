@@ -332,6 +332,11 @@ export const ECRIT_LU = {
         '`check-source-puces.test.mjs` IMPORTE le détecteur des puces lues comme un jeton, dont l’unique ' +
         'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
         '(scripts/raw/check-source-puces.mjs:159) ; le banc ne fait que LIRE le stock (`readStock`)',
+      'scripts/raw/renvois-stock.json':
+        '`check-renvois.test.mjs` IMPORTE la garde des renvois « page N », dont l’unique écriture (la ' +
+        'régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
+        '(scripts/raw/check-renvois.mjs:89) ; le banc ne fait que LIRE le stock (`readStock`), son ' +
+        'refus de croissance passe une écriture INJECTÉE (`ecrireStockSousLot`) qui ne touche pas le disque',
       'scripts/raw/source-format-stock.json':
         '`check-source-format.test.mjs` IMPORTE le détecteur du format des extractions, dont l’unique ' +
         'écriture (la régénération de ce stock) vit derrière `--ecrire-stock` sous sa porte `isMain` ' +
@@ -469,6 +474,20 @@ export const ECRIT_LU = {
       'à `dir` de Source/ et son stock nominatif scripts/raw/source-puces-stock.json ; le seul module ' +
       'écrivain atteint est le détecteur lui-même, dont l’écriture est fermée par sa porte `--ecrire-stock`',
   },
+  'raw:check-renvois': {
+    ecrit: [],
+    ecritFerme: {
+      'scripts/raw/renvois-stock.json':
+        'le stock NOMINATIF des renvois « page N » non résolus ne se réécrit que sous `--ecrire-stock` ' +
+        '(scripts/raw/check-renvois.mjs:89), option que la commande de .github/workflows/ci.yml ' +
+        'ne passe pas ; sans elle la gate COMPARE le stock à sa mesure et ne touche à rien',
+    },
+    lit: ['Source/', 'src/data/books.json', 'src/data/source/', 'src/data/hash.ts', 'scripts/raw/', 'scripts/source/', 'scripts/guards/lib/'],
+    raison:
+      'LIT le registre de livres, les chapitres des livres couverts par le lecteur fs (scripts/source/lecteur-fs.mjs), ' +
+      'le résolveur PUR src/data/source/renvoi.ts et son stock nominatif scripts/raw/renvois-stock.json ; le seul ' +
+      'module écrivain atteint est la garde elle-même, dont l’écriture est fermée par sa porte `--ecrire-stock`',
+  },
   'raw:check-source-format': {
     ecrit: [],
     ecritFerme: {
@@ -566,7 +585,7 @@ export const LANES = [
     gates: [
       'docs:check', 'docs:empreinte', 'test:raw', 'raw:check-refs', 'raw:check-code-refs', 'raw:check-ancres',
       'raw:check-folio-continuity', 'raw:check-source-tables', 'raw:check-source-format',
-      'raw:check-source-puces', 'test:docs',
+      'raw:check-source-puces', 'raw:check-renvois', 'test:docs',
       'agents:check', 'build',
     ],
     raison:
