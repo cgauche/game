@@ -21,6 +21,7 @@ import type { StakeRef, SpellData } from '../data';
 import type { CastResult, MissileResult, FocusResult, CounterspellOutcome } from '../engine/magic';
 import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
+import type { RecoverOpposition } from './combat/recover';
 import type { RecapLine } from './recapLine';
 import type { RollParticipant, MultiPending, PendingBase } from './rollFlowFactory';
 import type { PlayerText } from '../i18n/playerText';
@@ -246,12 +247,8 @@ export interface PendingStateRecovery {
   /** Valeur NUE de l'acteur (`LDB 09 l.17`) — grandeur du départage à DR égal (`LDB 12 l.160`). */
   skillBase: number;
   difficulty: Difficulty;
-  /** Empêtré avec une source vivante → Test opposé ; sinon Test simple. */
-  opposed: boolean;
-  opponentValue?: number; // Force de la source (Empêtré opposé)
-  /** Valeur NUE de l'entrave (`LDB 12 l.160`), posée avec `opponentValue`. */
-  opponentBase?: number;
-  opponentName?: string;
+  /** Empêtré opposé à son entrave ; absente : Test simple. */
+  opposition?: RecoverOpposition;
   /** Seuil de DR exigé sur un Test NON opposé (Filets, Zoo Impérial p.29 : DR ≥ Indice du filet). */
   requireSl?: number;
   /** Aggravation sur ÉCHEC (Filets, Zoo Impérial p.29 : « gagne un État Empêtré supplémentaire »). */
@@ -647,6 +644,8 @@ export interface PendingApproach {
   combatantId: string;
   /** Source de Peur la plus proche dont le déplacement RAPPROCHE. */
   sourceId: string;
+  /** Son nom, FIGÉ au geste qui ouvre le Test. */
+  sourceName: string;
   /** Intention différée, relancée après un succès — avec le VERDICT D'ARMEMENT du geste d'origine
    *  (`courseArmee`/`approche`, spec HUD § ARBITRAGE 2026-08-19). Il est CAPTURÉ ici parce que le clic
    *  qui a ouvert ce gate a déjà dissous l'intention : le relire au store à la relance refuserait le
@@ -664,6 +663,8 @@ export interface PendingWard {
   attackerId: string;
   /** Cible bénie (porte le drapeau `attackWardFM`). */
   targetId: string;
+  /** Son nom, FIGÉ au geste qui ouvre le Test. */
+  targetName: string;
   /** VERDICT D'ARMEMENT capturé au clic qui a ouvert ce gate (même raison que `PendingApproach`). */
   approche?: boolean;
   result: { success: boolean; roll: number; target?: number; sl: number } | null;
@@ -1373,8 +1374,8 @@ export interface OpposedFreeze {
   /** Id de l'attaquant, quand c'est un COMBATTANT réel (`actorIn`) — porte l'en-tête A→B (`VsHeader`).
    *  Absent pour un adversaire ABSTRAIT (table sans Combatant, ex. jeux de taverne contre la maison). */
   attackerId?: string;
-  /** Nom de l'attaquant (affichage de la ligne d'opposition). */
-  attackerName?: string;
+  /** Nom de l'attaquant (affichage de la ligne d'opposition) — tout producteur a un adversaire nommé. */
+  attackerName: string;
   /** CE QUE TESTE l'attaquant, en STRUCTURE (ids de Compétence/Caractéristique) : le libellé de sa
    *  ligne en est DÉRIVÉ par le rendu (`testSkillLabel`), jamais composé par le flux qui fige le jet —
    *  un flux déclare, le renderer écrit. */

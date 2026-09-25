@@ -27,6 +27,7 @@ import { customStatblockSchema, ptSchema, skillRefSchema, wallSideSchema } from 
 import { sceneFlowSchema } from './effets';
 import { PROPS_VOLUMIQUES } from '../_ids.generated';
 import { idDe } from '../grammaire/ref';
+import { refEntiteResolue } from '../../index';
 import { capDecorAdmis } from '../../props.types';
 import { PARTS_RELIEF, type PartRelief } from '../../materials.types';
 import type { AuthoredShipPoste } from '../../../engine/types';
@@ -70,8 +71,9 @@ const refDeDecor = idDe('prop');
 
 /** Les PORTEURS du type d'une entité, par `kind` (#877, #1882) : une entité NOMME son type, ou elle est
  *  refusée. La PRÉSENCE se juge au parse (`superRefine` en pied) et dans `validateScene` ; la
- *  RÉSOLUTION reste au registre `props.json` (décor) ou à `refEntiteResolue` (personnage, `state/spawn`).
- *  L'exclusivité des porteurs d'un personnage est #1892. */
+ *  RÉSOLUTION se juge au parse aussi : `refDeDecor` (décor), `refEntiteResolue` (personnage, lue au
+ *  catalogue `src/data/index.ts`, patron `narratif.ts`). Une chaîne
+ *  vide n'est pas un porteur. L'exclusivité des porteurs d'un personnage est #1892. */
 export const PORTEURS_DU_TYPE = {
   prop: { porteurs: ['ref'], entite: 'décor', nomme: 'son type au catalogue (props.json)' },
   personnage: { porteurs: ['ref', 'statblock', 'presetId'], entite: 'personnage', nomme: 'sa fiche (bestiaire, statbloc ou preset de PNJ)' },
@@ -81,7 +83,7 @@ export const PORTEURS_DU_TYPE = {
  *  un, ou si son `kind` n'en exige aucun. Source unique du schéma et de `validateScene`. */
 export function typeNonNomme(ent: { id: string; kind: string; ref?: unknown; statblock?: unknown; presetId?: unknown }): string | undefined {
   const regle = (PORTEURS_DU_TYPE as Partial<Record<string, (typeof PORTEURS_DU_TYPE)[keyof typeof PORTEURS_DU_TYPE]>>)[ent.kind];
-  if (!regle || regle.porteurs.some((p: 'ref' | 'statblock' | 'presetId') => ent[p] !== undefined)) return undefined;
+  if (!regle || regle.porteurs.some((p: 'ref' | 'statblock' | 'presetId') => ent[p] !== undefined && ent[p] !== '')) return undefined;
   const cles = regle.porteurs.map((p) => `« ${p} »`);
   const absence = cles.length === 1 ? `${cles[0]} absente` : `${cles.join(', ')} absents`;
   return `${regle.entite} « ${ent.id} » : ${absence} — un ${regle.entite} NOMME ${regle.nomme}`;
@@ -187,6 +189,8 @@ export const sceneEntitySchema = z.strictObject({
   // l'entité ; rien ne la remplace.
   const absence = typeNonNomme(ent);
   if (absence) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['ref'], message: absence });
+  if (ent.kind === 'personnage' && ent.ref && !refEntiteResolue(ent.ref))
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['ref'], message: `personnage « ${ent.id} » : ref « ${ent.ref} » ni créature, ni coque de véhicule, ni engin de siège` });
   if (ent.kind !== 'prop') return;
   // REF DE DÉCOR (#877) : résolue au registre `props.json` ; une ref morte se DIT, jamais remplacée.
   if (ent.ref !== undefined) {
@@ -198,8 +202,7 @@ export const sceneEntitySchema = z.strictObject({
   // CAP D'UN DÉCOR VOLUMIQUE — verrou AU PARSE (#1680 ligne 3) : un décor dont le TYPE porte une
   // recette ne prend qu'un cap CARDINAL. Sa recette tourne (`rotatePropLocal`) là où son empreinte
   // solide ne tourne pas (#1509) : une diagonale poserait son corps en travers de cases restées
-  // traversables. La couche schémas ne lit pas le catalogue au runtime (`src/data/index.ts` importe
-  // les schemas) : elle lit le registre GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
+  // traversables. Le cap lit le registre GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
   if (capDecorAdmis(ent.ref !== undefined && VOLUMIQUES.has(ent.ref), ent.facing)) return;
   ctx.addIssue({
     code: z.ZodIssueCode.custom,

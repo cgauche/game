@@ -643,9 +643,8 @@ function genIds() {
   }
   verifieExhaustiviteDesIds(new Set(ids.map(([f]) => f)));
   // Ids des décors À RECETTE volumique : dérivé de `props.json` (`volume.primitives`), pas une liste
-  // à la main. La couche SCHÉMAS ne peut pas lire le catalogue au runtime (`src/data/index.ts`
-  // importe les schemas) ; c'est par ce registre qu'elle sait, AU PARSE, si le `ref` d'une entité
-  // désigne un volume — et qu'elle refuse alors un `facing` diagonal (#1680 ligne 3).
+  // à la main. C'est par ce registre que le schéma de scène sait, AU PARSE, si le `ref` d'une entité
+  // désigne un volume — et qu'il refuse alors un `facing` diagonal (#1680 ligne 3).
   const volumiques = litJson('props.json')
     .filter((p) => p && typeof p.id === 'string' && p.volume && Array.isArray(p.volume.primitives) && p.volume.primitives.length)
     .map((p) => p.id)

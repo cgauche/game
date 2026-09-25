@@ -22,6 +22,7 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useGame } from '../../state/store';
 import { toggleDoorIn } from '../../state/scene';
 import { entityBlockedAt } from '../../state/sceneRules';
+import { ficheDEntite } from '../../state/sceneNpc';
 import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
 import { aPorteeDe, exploreMovePlan, exploreSeatPlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
 import { placesJouables, RANG_MENEUR, seatPoseOf } from '../../state/seating';
@@ -423,7 +424,7 @@ export function useStagePointer({
       // d'une case adjacente, ou on le dit s'il est déjà à côté.
       setHover(null);
       st.setPendingInteract(null);
-      if (aPorteeDe(st.partyPos, ent)) st.log(`${ent.label ?? 'Ce badaud'} n’a rien à vous dire.`);
+      if (aPorteeDe(st.partyPos, ent)) st.log(`${ficheDEntite(ent).label} n’a rien à vous dire.`);
       else if (plan) moveAlong(sc.id, plan);
       return;
     }

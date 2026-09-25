@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type ComponentProps, type ReactNode, type Ref } from 'react';
+import { nomDuSiege } from '../state/netFlow';
 import { useGame, activeCombatant, movementRemaining, type BattleState, type ShootingStanceKey } from '../state/store';
 import type { Combatant, Weapon, WeaponLoadout } from '../engine/types';
 import { hasMeaningfulOption } from '../state/turnEconomy';
@@ -1196,7 +1197,7 @@ export function CombatConsole() {
       {!phase && !controlled && (
         <div className="cc-phase skin-bois" data-phase={spectatrice ? 'spectatrice' : 'pont'}>
           {siegeDistant !== null ? (
-            <SpectatorChip label={net.seatNames[siegeDistant] ?? 'L’hôte'} action={`joue ${active.label}…`} />
+            <SpectatorChip label={nomDuSiege(net, siegeDistant)} action={`joue ${active.label}…`} />
           ) : (
             <span className="cc-phase-label">
               <Icon id="ui/wait" size="sm" /> {active.kind === 'enemy' ? 'Tour de l’ennemi' : `Tour de ${active.label}`}

@@ -5,8 +5,7 @@
  *    standard de l'espèce (`LDB 77 l.7`, `species.json › profilStandard`) en QUEUE de tout personnage
  *    sans `ref`/`statblock`/`presetId`, et porte le document au `schema` 13. Un personnage dont
  *    l'espèce n'a pas de profil standard se NOMME : « ARBITRAGE REQUIS », rien d'écrit. Sa borne haute
- *    est CLOSE (`schema` ∈ {12, 13}) : DERNIÈRE de la chaîne dans l'ordre lexical, elle NOMME un
- *    `schema` futur.
+ *    est OUVERTE (`schema` ≥ 12) : un document déjà porté au-delà traverse, jamais rabaissé.
  *
  * Une déclaration n'est pas une porte tant qu'on ne l'a pas vue MORDRE : ce banc joue la migration
  * sur un dépôt JETABLE (`os.tmpdir()`), une fois par scénario, et exige la sortie attendue, un
@@ -30,7 +29,7 @@ import { joue } from './joue.mjs';
 
 const MIGRATION = '2026-09-23-1882-fiche-de-personnage-nommee.mjs';
 
-/** Forme d'entrée et CIBLE du bump porté par cette migration — borne haute CLOSE. */
+/** Forme d'entrée et CIBLE du bump porté par cette migration — borne haute OUVERTE. */
 const SCHEMA_AVANT = 12;
 const SCHEMA_APRES = 13;
 
@@ -202,19 +201,21 @@ test('(c) SANS PROFIL STANDARD : espèce sans profil, id de rig, espèce absente
   }
 });
 
-test('(d) BORNE HAUTE CLOSE : un `schema` FUTUR est refusé et NOMMÉ, rien d’écrit — pas même le projet sain', () => {
+test('(d) BORNE HAUTE OUVERTE : un document déjà porté au-delà de 13 traverse à l’octet, jamais rabaissé', (t) => {
   const futur = SCHEMA_APRES + 1;
-  refuse(
-    { [SPECIES]: especes(), [ALPHA]: serialise(alpha(futur)), [BETA]: serialise(beta()) },
-    `${ALPHA} : \`schema\` inattendu ${futur} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`,
-  );
+  const d = depot({ [SPECIES]: especes(), [ALPHA]: serialise({ ...alphaApres(), schema: futur }), [BETA]: serialise(beta(futur)) });
+  t.after(() => efface(d.racine));
+  const { code, sortie } = joue(d.racine, MIGRATION);
+  assert.equal(code, 0, `sortie ${code} — un schema futur doit TRAVERSER : ${sortie.slice(0, 1200)}`);
+  assert.ok(sortie.includes(`${ALPHA} — schema ${futur} → ${futur} — DÉJÀ MIGRÉ au-delà de ${SCHEMA_APRES}`), `le no-op au-delà ne se DIT pas : ${sortie.slice(0, 1200)}`);
+  assert.deepEqual(rienTouche(d.racine, d.avant), [], 'le document est réécrit ou rabaissé');
 });
 
 test('(e) BORNE BASSE : un `schema` antérieur à la chaîne est refusé et NOMMÉ, rien d’écrit', () => {
   const ancien = SCHEMA_AVANT - 1;
   refuse(
     { [SPECIES]: especes(), [ALPHA]: serialise(alpha(ancien)), [BETA]: serialise(beta()) },
-    `${ALPHA} : \`schema\` inattendu ${ancien} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`,
+    `${ALPHA} : \`schema\` inattendu ${ancien} (${SCHEMA_AVANT} ou plus récent attendu)`,
   );
 });
 
@@ -222,14 +223,14 @@ test('(f) FAIL-FAST `schema` ABSENT → sortie 1 NOMINATIVE, rien d’écrit', (
   const { schema: _retire, ...sansSchema } = alpha();
   refuse(
     { [SPECIES]: especes(), [ALPHA]: serialise(sansSchema), [BETA]: serialise(beta()) },
-    `${ALPHA} : \`schema\` inattendu undefined (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`,
+    `${ALPHA} : \`schema\` inattendu undefined (${SCHEMA_AVANT} ou plus récent attendu)`,
   );
 });
 
 test('(g) FAIL-FAST `schema` NON NUMÉRIQUE (la chaîne "12") → sortie 1 NOMINATIVE, rien d’écrit', () => {
   refuse(
     { [SPECIES]: especes(), [ALPHA]: serialise(alpha(String(SCHEMA_AVANT))), [BETA]: serialise(beta()) },
-    `${ALPHA} : \`schema\` inattendu "${SCHEMA_AVANT}" (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`,
+    `${ALPHA} : \`schema\` inattendu "${SCHEMA_AVANT}" (${SCHEMA_AVANT} ou plus récent attendu)`,
   );
 });
 

@@ -353,6 +353,17 @@ describe('parseSave — la version DOIT être la courante', () => {
     expect(parseSave({ ...cur, version: 49 })).toBeNull();
   });
 
+  it('MESURE du motif de bump 51 → 52 (#1882, #1906) : les jets en attente sauvés portent le nom figé et l’opposition structurée', () => {
+    // `snapshotSave` persiste les pendings de jet : leur forme a changé (`RecoverOpposition`, `sourceName`,
+    // `targetName`, `attackerName` requis). Une save de 51 rouvrirait une modale sans nom : elle se jette.
+    expect(SAVE_VERSION).toBeGreaterThanOrEqual(52);
+    expect(parseSave({ ...cur, version: 51 })).toBeNull();
+    const init = useGame.getInitialState();
+    const approche = { combatantId: 'H', sourceId: 'E', sourceName: 'Ogre', intent: { kind: 'entity' as const, id: 'E' }, result: null };
+    const s = snapshotSave({ ...init, pendingApproach: approche } as unknown as Record<string, unknown>, init as unknown as Record<string, unknown>, 'x');
+    expect((s.data as { pendingApproach?: unknown }).pendingApproach, 'la forme neuve est PERSISTÉE').toEqual(approche);
+  });
+
   it('MESURE du motif de bump 33 → 34 : la spéc en LIBELLÉ ne couvre plus son emplacement', () => {
     const sv = talents.find((t) => t.id === 'savoir-vivre')!;
     expect(specResolves(sv, 'Érudit'), 'valeur PERSISTÉE par un héros de 33').toBe(false);

@@ -557,17 +557,3 @@ export function placeEntity(scene: Scene, outil: EntityTool, p: Pt, z = 0): { sc
       : base;
   return { scene: addEntity(scene, ent, z), id }; // l'étage se pose à la porte d'ajout
 }
-
-/**
- * Ce qu'un pinceau de catalogue porte AVANT tout choix d'auteur : le PREMIER élément OFFERT, dans
- * l'ordre où la famille le déroule plus bas. Un défaut d'éditeur se DÉRIVE de la donnée — patron
- * `terrainDElectionParDefaut` (`GameOpEditor.tsx`) : aucun id en dur, et le pinceau ne pose jamais un
- * id que le registre ne rend pas (#877). Un catalogue VIDE n'a PAS de défaut : l'outil le DIT, au
- * lieu de suppléer d'un littéral. Écrit UNE fois — décor, engin de siège et fiche de personnage posent
- * la même question.
- */
-export const premierOffert = (catalogue: readonly { id: string }[], quoi: string): string => {
-  const premier = catalogue[0];
-  if (!premier) throw new Error(`${quoi} : le catalogue est VIDE — l’outil n’a plus de pinceau dérivable.`);
-  return premier.id;
-};

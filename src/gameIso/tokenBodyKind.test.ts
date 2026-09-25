@@ -19,8 +19,8 @@ describe('tokenBodyKind — classifieur de backend (rig / plan / sprite)', () =>
     expect(r.id).toBe('e-a');
   });
 
-  it('personnage humanoïde (Villageois) → rig', () => {
-    const r = tokenBodyKind({ kind: 'sceneEntity', ent: ent({ id: 'b', kind: 'personnage', ref: 'Villageois' }) });
+  it('personnage humanoïde (villageois) → rig', () => {
+    const r = tokenBodyKind({ kind: 'sceneEntity', ent: ent({ id: 'b', kind: 'personnage', ref: 'villageois' }) });
     expect(r.bodyKind).toBe('rig');
     expect(r.id).toBe('e-b');
   });

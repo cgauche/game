@@ -14,7 +14,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseId, IMPERIAL_MONTHS, type ScheduleSpec } from '../../engine/clock';
 import { diseaseDefs } from '../../engine/disease';
-import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById, crewRoles, memoParVersion } from '../../data';
+import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById, crewRoles, memoParVersion, creatureSemee, vehiculeSeme, libelleOuAbsence } from '../../data';
 import { MANANN_FACTORS, findManannFactor } from '../../engine/seaVoyage';
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
@@ -29,7 +29,7 @@ import { chaosAlignSchema } from '../../data/schemas/grammaire/valeurs';
 import { valeursDe } from '../../data/schemas/grammaire/meta';
 import { POWER_ESTIMATE, clampMight, type MassBattleSpec } from '../../engine/massBattle';
 import { PURSUIT_ESCAPE_DISTANCE } from '../../engine/pursuit';
-import { battleSceneById } from '../../state/massBattleFlow';
+import { battleSceneById, nomDArmee } from '../../state/massBattleFlow';
 import { libelleDeValeur } from '../../data/schemas/grammaire/meta';
 import { sceneKindSchema } from '../../data/schemas/defs/activities';
 import { activitiesFor } from '../../engine/activities';
@@ -141,7 +141,7 @@ const hasSchedule = (e: Partial<ScheduleSpec>): boolean =>
 /** Résumé humain d'une `ScheduleSpec` (résolution RELATIVE — pas d'accès à `gameTime` ici, cf. `scheduleAt`). */
 function scheduleSummary(spec: ScheduleSpec): string {
   if (spec.atDate) {
-    const mn = IMPERIAL_MONTHS[spec.atDate.month]?.label ?? `mois ${spec.atDate.month}`;
+    const mn = libelleOuAbsence(IMPERIAL_MONTHS[spec.atDate.month], 'mois', String(spec.atDate.month));
     return `${spec.atDate.day} ${mn}${spec.atDate.hour || spec.atDate.minute ? ` ${String(spec.atDate.hour ?? 0).padStart(2, '0')}:${String(spec.atDate.minute ?? 0).padStart(2, '0')}` : ''}`;
   }
   if (spec.afterDays != null) return `J+${spec.afterDays} ${String(spec.atHour ?? 0).padStart(2, '0')}:${String(spec.atMinute ?? 0).padStart(2, '0')}`;
@@ -213,7 +213,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
       const b: MassBattleSpec = e.battle ?? {};
       const rounds = b.plannedRounds ?? 1;
       const sit = b.situations?.length ? `, ${b.situations.length} situation(s)` : '';
-      return `Combat de masse : ${b.allyName || 'Alliés'} (${b.allyMight ?? 0}) vs ${b.enemyName || 'Ennemis'} (${b.enemyMight ?? 0}) — ${rounds} Round${rounds > 1 ? 's' : ''}${sit}`;
+      return `Combat de masse : ${nomDArmee(b, 'ally')} (${b.allyMight ?? 0}) vs ${nomDArmee(b, 'enemy')} (${b.enemyMight ?? 0}) — ${rounds} Round${rounds > 1 ? 's' : ''}${sit}`;
     }
     case 'transition': {
       const sc = ctx?.scenes?.find((s) => s.id === e.scene);
@@ -334,7 +334,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         )}
         {effect.type === 'givePossession' && (
           <>
-            <select value={e.nature ?? 'bete'} onChange={(ev) => upd({ nature: ev.target.value, ref: ev.target.value === 'vehicule' ? { vehicleId: '' } : { creatureId: '' } })}>
+            <select value={e.nature ?? 'bete'} onChange={(ev) => upd({ nature: ev.target.value, ref: ev.target.value === 'vehicule' ? { vehicleId: vehiculeSeme() } : { creatureId: creatureSemee() } })}>
               <option value="bete">Bête</option>
               <option value="serviteur">Serviteur</option>
               <option value="vehicule">Véhicule</option>
@@ -787,14 +787,14 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               </select>
             </label>
             <div className="eff-list-head">Adversaires
-              <button type="button" className="btn small" onClick={() => upd({ foes: [...(e.foes ?? []), { ref: { creatureId: '' } }] })}>+ adversaire</button>
+              <button type="button" className="btn small" onClick={() => upd({ foes: [...(e.foes ?? []), { ref: { creatureId: creatureSemee() } }] })}>+ adversaire</button>
             </div>
             <span className="branch-label">Chaque adversaire est une créature du bestiaire : son Mouvement et sa valeur de Test se lisent sur SA fiche.</span>
             {(e.foes ?? []).map((f: { id?: string; ref: { creatureId?: string } }, i: number) => {
               const patchFoe = (patch: Partial<typeof f>) => upd({ foes: (e.foes ?? []).map((x: typeof f, k: number) => (k === i ? { ...x, ...patch } : x)) });
               return (
                 <div key={i} className="eff-row">
-                  <RefField cfg={{ ds: 'creatures', single: true }} fieldKey="Créature" value={f.ref?.creatureId ?? ''} onChange={(v) => patchFoe({ ref: { creatureId: (v as string) ?? '' } })} />
+                  <RefField cfg={{ ds: 'creatures', single: true }} fieldKey="Créature" value={f.ref?.creatureId ?? ''} onChange={(v) => { if (v) patchFoe({ ref: { creatureId: v as string } }); }} />
                   <button type="button" className="btn small" onClick={() => upd({ foes: (e.foes ?? []).filter((_: typeof f, k: number) => k !== i) })}>×</button>
                 </div>
               );
@@ -1009,8 +1009,8 @@ function MassBattleFields({ battle, onChange, ctx }: { battle: MassBattleSpec; o
   return (
     <div className="test-fields">
       <div className="tf-row">
-        <label className="dr" style={{ flex: 1 }}>Alliés<input value={b.allyName ?? ''} placeholder="Armée des Personnages" onChange={(ev) => set({ allyName: ev.target.value || undefined })} /></label>
-        <label className="dr" style={{ flex: 1 }}>Ennemis<input value={b.enemyName ?? ''} placeholder="Armée ennemie" onChange={(ev) => set({ enemyName: ev.target.value || undefined })} /></label>
+        <label className="dr" style={{ flex: 1 }}>Alliés<input value={b.allyName ?? ''} placeholder={nomDArmee({ ...b, allyName: undefined }, 'ally')} onChange={(ev) => set({ allyName: ev.target.value || undefined })} /></label>
+        <label className="dr" style={{ flex: 1 }}>Ennemis<input value={b.enemyName ?? ''} placeholder={nomDArmee({ ...b, enemyName: undefined }, 'enemy')} onChange={(ev) => set({ enemyName: ev.target.value || undefined })} /></label>
       </div>
       <div className="tf-row">
         <label className="dr">Puissance alliée<NumberField variant="nu" label="Puissance alliée" min={0} max={100} value={b.allyMight ?? 0} onChange={(n) => set({ allyMight: clampMight(n) })} /></label>

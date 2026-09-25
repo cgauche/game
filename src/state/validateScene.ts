@@ -1,7 +1,8 @@
 import { heightAt, isMerScene, isWalkable, type Scene, type Effect } from './scene';
 import { startOf, unreachableDescriptiveZones } from './mapQC';
 import { footprintTiles, sizeFootprint } from './footprint';
-import { entitySize, refEntiteResolue } from './spawn';
+import { entitySize } from './spawn';
+import { refEntiteResolue } from '../data';
 import { METRES_PER_LEVEL } from './relief';
 import { realFloorAt } from './sceneEdit';
 import { CHAR_KEYS } from '../engine/types';
@@ -172,10 +173,9 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       // d'erreur (`missingPropSvg`) : un décor se DIT, il ne se remplace jamais.
       if (e.kind === 'prop' && e.ref !== undefined && !findPropById(e.ref))
         add('error', 'entity', e.id, `${e.label ?? e.id} → décor inexistant « ${e.ref} »`);
-      // RÉF de personnage : la résolution est CELLE du spawn (`refEntiteResolue`, `state/spawn`) —
-      // un statbloc ou un preset de PNJ prime sur la réf et la rend sans objet, comme au runtime. Une réf
-      // fournie mais irrésoluble pose un mannequin `RÉF ?` à l'écran (#223) : l'auteur l'apprend ici.
-      if (e.kind === 'personnage' && e.ref !== undefined && !e.statblock && !e.presetId && !refEntiteResolue(e.ref))
+      // RÉF de personnage : la résolution est CELLE du spawn (`refEntiteResolue`, `data/index.ts`), qu'un
+      // autre porteur la côtoie ou non (#1882) ; la réf vide est dite par `typeNonNomme`.
+      if (e.kind === 'personnage' && e.ref && !refEntiteResolue(e.ref))
         add('error', 'entity', e.id, `${e.label ?? e.id} → créature inexistante « ${e.ref} »`);
       if (e.statblock?.char)
         for (const k of Object.keys(e.statblock.char))

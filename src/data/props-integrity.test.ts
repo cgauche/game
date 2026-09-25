@@ -444,9 +444,8 @@ describe('FERMETURE — une primitive est une COQUILLE CLOSE', () => {
 });
 
 /**
- * REGISTRE GÉNÉRÉ des décors À RECETTE (`PROPS_VOLUMIQUES`, `schemas/_ids.generated.ts`) — le seul
- * canal par lequel la couche SCHÉMAS sait, au parse, qu'un `ref` désigne un volume (elle ne peut pas
- * lire le catalogue au runtime : `src/data/index.ts` importe les schémas). Ce contrat le tient ÉGAL à
+ * REGISTRE GÉNÉRÉ des décors À RECETTE (`PROPS_VOLUMIQUES`, `schemas/_ids.generated.ts`) — le
+ * canal par lequel le schéma de scène sait, au parse, qu'un `ref` désigne un volume. Ce contrat le tient ÉGAL à
  * la mesure sur `props.json` : une recette ajoutée sans `npm run gen` est rouge ici, et le verrou de
  * cap du schéma ne peut donc pas se périmer en silence.
  */

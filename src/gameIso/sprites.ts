@@ -8,6 +8,7 @@ import { propSvg } from './catalog/decor';
 import { MISSING_GRADIENT, terrainGradientId, terrainStopsOrdonnes } from './catalog/terrain';
 import { MISSING_TONE, MISSING_TONE_DARK } from './catalog/missing';
 import type { Dir8 } from '../state/dir8';
+import type { EntityKind } from '../state/scene';
 import { tousLesTerrains, type TerrainDef } from '../state/terrain';
 import { memoParVersion } from '../data/versionDataset';
 import { rigFxGradients } from './rig/fxGradients';
@@ -19,7 +20,7 @@ import { rigFxGradients } from './rig/fxGradients';
 
 /** Vue minimale d'une entité pour le rendu (type structurel : pas d'import scene). */
 export interface EntityViz {
-  kind: string;
+  kind: EntityKind;
   id: string;
   ref?: string;
   appearance?: { seed?: number };

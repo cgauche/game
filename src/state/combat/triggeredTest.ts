@@ -25,7 +25,7 @@
 import { rollTest, resolveOpposed, opposedBranchSuccess, type TestResult } from '../../engine/tests';
 import { combatTestPenalty } from '../../engine/conditions';
 import { testValue, rawCombatTestBase, skillBaseValue } from '../../engine/skills';
-import { type OpsCtx } from '../../engine/ops';
+import { type OpsCtx, nomDeSource } from '../../engine/ops';
 import { traceLineOf, testTraceLabel } from '../../engine/traceLine';
 import { CHAR_LABELS } from '../../engine/types';
 import type { CharKey, Combatant, Difficulty, EffectSource } from '../../engine/types';
@@ -392,7 +392,7 @@ registerCascadeApplier('triggeredBatchTest', (get, set, step) => {
     if (!hero || !part.result) continue;
     journal.push(...applyTriggeredTestBranch(hero, part.result, { onSuccess, onFail }, { get, set, ...(caster ? { caster } : {}), ...(hull ? { hull } : {}) }));
     syncCombatant(get, set);
-    playAfter(get, set, hero, step.meta?.after, step.label ?? 'Effet');
+    playAfter(get, set, hero, step.meta?.after, nomDeSource(step));
   }
   return { consequences: freeCons(journal) };
 });
@@ -461,7 +461,7 @@ function playAfter(get: Get, set: SetFn, c: Combatant, after: Flow | undefined, 
  */
 export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
   const stack: Flow[] = [flow];
-  const label = ctx.label ?? '';
+  const label = ctx.label;
   const oc: OpsCtx = { rng: battleRng(), caster: ctx.caster, ...ctx.opsCtx };
   while (stack.length) {
     const node = stack.shift()!;
@@ -690,7 +690,7 @@ registerCascadeApplier('triggeredTest', (get, set, step, hero) => {
   syncCombatant(get, set); // refléter la mutation du héros (États) dans party/battle
   // Continuation `after` (le reste du `seq` qui suivait le `test`) — peut ré-appender une étape
   // `triggeredTest` à la MÊME cascade (commitStep `liveMerge` repart des participants courants).
-  playAfter(get, set, hero, step.meta?.after, step.label ?? 'Effet', exec.source);
+  playAfter(get, set, hero, step.meta?.after, nomDeSource(step), exec.source);
   return { consequences: freeCons(journal) };
 });
 
@@ -817,7 +817,7 @@ export function routeTriggeredTest(get: Get, set: SetFn, target: Combatant, acto
     openSkillTest(get, set, ft, flow.success, flow.fail, EMPTY_FLOW, { actorId: target.id, noOwnTestFailed: opsCtx?.noReentryOwnTestFailed });
     return;
   }
-  runCombatFlow({ mode: 'combat', get, set, target, caster: actor, label: opsCtx?.label ?? 'Effet', opsCtx }, flow);
+  runCombatFlow({ mode: 'combat', get, set, target, caster: actor, label: nomDeSource(opsCtx), opsCtx }, flow);
 }
 
 /**
@@ -839,7 +839,7 @@ export function bandeTriggeredTest(
   const surfaces: Combatant[] = [];
   for (const c of testeurs) {
     if (surfaceOf(get, c.id)) { surfaces.push(c); continue; }
-    runCombatFlow({ mode: 'combat', get, set, target: c, caster: c, label: opsCtx?.label ?? 'Effet', ...(opsCtx ? { opsCtx } : {}) }, node);
+    runCombatFlow({ mode: 'combat', get, set, target: c, caster: c, label: nomDeSource(opsCtx), ...(opsCtx ? { opsCtx } : {}) }, node);
   }
   if (!surfaces.length) return undefined;
   const ft = withDerivedStake(node.test, opsCtx?.source);

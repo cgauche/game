@@ -10,7 +10,8 @@
  * serait REFUSÉE au parse dès son premier personnage sans fiche.
  *
  * Une entité qui porte DÉJÀ un porteur traverse INTACTE, y compris si sa ref est MORTE : une ref hors
- * registre n'est pas du ressort d'une migration, `validateScene` la NOMME et l'auteur la corrige.
+ * registre n'est pas du ressort d'une migration, la porte `parseProject` la REFUSE en la nommant. Un
+ * porteur VIDE (`ref: ''`) n'est pas un porteur : il est retiré et la fiche se nomme.
  *
  * SANS PROFIL STANDARD (espèce absente, id de rig, espèce qui n'en porte pas) : ce script n'ÉCRIT RIEN
  * et sort « ARBITRAGE REQUIS » en nommant l'entité. Le migrateur de CHARGEMENT
@@ -33,9 +34,9 @@
  * entité existante (`editEntity`), et celle que pose `poseSurChaqueEntite` (`src/state/worldMap.ts`).
  * Parité avec `PROJECT_MIGRATIONS[12]` mesurée par `src/state/projet-migration-12-vers-13.test.ts`.
  * IDEMPOTENT : rejouée sur l'état final, la migration n'écrit rien et sort 0.
- * BORNE HAUTE CLOSE (`schema` ∈ {12, 13}, jamais « ≥ 12 ») : DERNIÈRE de la chaîne dans l'ordre
- * lexical, elle est la seule à savoir ce qui existe après elle et NOMME un `schema` futur.
- * FAIL-FAST : `schema` absent, non numérique ou ∉ {12, 13}, `scenes` non-tableau, personnage sans
+ * BORNE HAUTE OUVERTE (`schema` ≥ 12) : `2026-09-24-1882-refs-vivantes-semees.mjs` porte le document
+ * plus loin ; un document déjà au-delà de 13 traverse, jamais rabaissé.
+ * FAIL-FAST : `schema` absent, non numérique ou < 12, `scenes` non-tableau, personnage sans
  * profil standard, périmètre vide → rien n'est écrit, sortie 1.
  */
 import fs from 'node:fs';
@@ -47,7 +48,7 @@ const NOM = '2026-09-23-1882-fiche-de-personnage-nommee';
 const RACINE = path.join(ROOT, 'src/scenes');
 const SPECIES = path.join(ROOT, 'src/data/species.json');
 
-/** Forme du document AVANT et APRÈS ce bump — la borne haute est CLOSE (cf. en-tête). */
+/** Forme du document AVANT et APRÈS ce bump — la borne haute est OUVERTE (cf. en-tête). */
 const SCHEMA_AVANT = 12;
 const SCHEMA_APRES = 13;
 
@@ -56,10 +57,17 @@ const canonique = (doc) => `${JSON.stringify(doc, null, 1)}\n`;
 
 const echecs = [];
 
+/** Un porteur absent ou VIDE (`''`) — même politique que `typeNonNomme`. */
+const vide = (v) => v === undefined || v === '';
+
 /** Un personnage qui ne NOMME aucune fiche — la seule population de ce passage. */
 const sansFiche = (ent) =>
   !!ent && typeof ent === 'object' && ent.kind === 'personnage'
-  && ent.ref === undefined && ent.statblock === undefined && ent.presetId === undefined;
+  && vide(ent.ref) && ent.statblock === undefined && vide(ent.presetId);
+
+/** L'entité sans ses porteurs VIDES, avant que sa fiche se nomme en QUEUE. */
+const sansPorteurVide = (ent) =>
+  Object.fromEntries(Object.entries(ent).filter(([k, v]) => !((k === 'ref' || k === 'presetId') && v === '')));
 
 const cibles = fs
   .readdirSync(RACINE, { withFileTypes: true })
@@ -88,8 +96,8 @@ for (const abs of cibles) {
   const doc = JSON.parse(brut);
 
   if (canonique(doc) !== brut) { echecs.push(`${rel} : FORME NON CANONIQUE`); continue; }
-  if (doc.schema !== SCHEMA_AVANT && doc.schema !== SCHEMA_APRES) {
-    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou ${SCHEMA_APRES} attendus)`);
+  if (typeof doc.schema !== 'number' || !Number.isInteger(doc.schema) || doc.schema < SCHEMA_AVANT) {
+    echecs.push(`${rel} : \`schema\` inattendu ${JSON.stringify(doc.schema)} (${SCHEMA_AVANT} ou plus récent attendu)`);
     continue;
   }
   if (!Array.isArray(doc.scenes)) { echecs.push(`${rel} : \`scenes\` absent ou non-tableau`); continue; }
@@ -108,7 +116,7 @@ for (const abs of cibles) {
         return e;
       }
       nommes++;
-      return { ...e, ref: profil }; // QUEUE : la place de l'éditeur
+      return { ...sansPorteurVide(e), ref: profil }; // QUEUE : la place de l'éditeur
     });
     return { ...s, entities };
   });
@@ -129,8 +137,10 @@ if (echecs.length) {
 }
 
 for (const r of rapports) {
+  // Le document ne REDESCEND jamais : porté plus loin par un passage postérieur, il garde son numéro.
+  const cible = Math.max(r.doc.schema, SCHEMA_APRES);
   const sortie = Object.fromEntries(
-    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, SCHEMA_APRES] : [k, v])),
+    Object.entries(r.doc).map(([k, v]) => (k === 'scenes' ? [k, r.scenes] : k === 'schema' ? [k, cible] : [k, v])),
   );
   const out = canonique(sortie);
   if (out !== r.brut) fs.writeFileSync(r.abs, out, 'utf8');
@@ -141,11 +151,12 @@ for (const r of rapports) {
     .flatMap((s) => (Array.isArray(s.entities) ? s.entities : []))
     .filter(sansFiche)
     .map((e) => e.id);
-  if (restes.length || apres.schema !== SCHEMA_APRES) {
+  if (restes.length || apres.schema < SCHEMA_APRES) {
     console.error(`[${NOM}] VÉRIFICATION POST-ÉCRITURE ROUGE — ${r.rel} : schema=${apres.schema}, ${restes.join(', ')}`);
     process.exit(1);
   }
-  console.log(`[${NOM}] ${r.rel} — schema ${r.doc.schema} → ${apres.schema}, personnages dont la fiche se NOMME désormais : ${r.nommes} (scènes : ${apres.scenes.length}) — fichier ${out !== r.brut ? 'réécrit' : 'INCHANGÉ'}`);
+  const deja = r.doc.schema > SCHEMA_APRES ? ` — DÉJÀ MIGRÉ au-delà de ${SCHEMA_APRES}` : '';
+  console.log(`[${NOM}] ${r.rel} — schema ${r.doc.schema} → ${apres.schema}${deja}, personnages dont la fiche se NOMME désormais : ${r.nommes} (scènes : ${apres.scenes.length}) — fichier ${out !== r.brut ? 'réécrit' : 'INCHANGÉ'}`);
 }
 
 console.log(`[${NOM}] TOTAL — ${cibles.length} projet(s), ${scenesVues} Scène(s), ${nommesVus} personnage(s) nommé(s) ; population : ${personnagesVus} personnage(s)`);

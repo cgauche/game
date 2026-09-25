@@ -964,7 +964,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Jeux de taverne (option `tavern-games`, NADJ 16) : ouvrir la modale / jouer une partie
    *  (choisir un jeu + un adversaire, résolution par le moteur générique) / fermer. */
   openTavernGames: (npcId?: string) => void;
-  playTavernGame: (opts: { gameId: string; challengerId: string; opponent: tavernFlow.TavernOpponent; stakeBrass?: number; allyValue?: number; tablePlayers?: number }) => void;
+  playTavernGame: (opts: { gameId: string; challengerId: string; opponent: tavernFlow.TavernOpponent; stakeBrass?: number; allyProfil?: string; tablePlayers?: number }) => void;
   closeTavernGames: () => void;
   /** Troc (LDB 59 l.64-76) : céder N exemplaires d'un objet contre M exemplaires du stock, sans argent. */
   barterExchange: (opts: { giveHeroId: string; giveTrappingId: string; getStockId: string; getCount?: number }) => void;
@@ -2346,13 +2346,15 @@ export const useGame = create<GameState>((set, get) => ({
     // Grimpeur (LDB 15 l.57) : porté par le meneur (exploration) ou le héros actif (combat). Grimpant
     // (LDB 85 l.160-162, créature, combat seulement) : `autoClimb` dispense de tout Test — et de la garde
     // `requiresGrimpeur`, réservée au Talent joueur (`planClimb` arbitre `autoSucceed`, réf ci-dessous).
+    // Sans Point de Blessure, un héros ne peut que ramper (LDB 16 l.35) : aucun grimpeur, refus NOMMÉ.
     const mover = mode === 'battle' ? (battle ? activeCombatantOf(battle) : undefined) : get().party.find((h) => !h.dead && h.wounds.current > 0);
+    if (!mover) { get().log(t('climb.personne')); return; }
     const hasGrimpeur = !!mover?.talents?.some((tl) => tl.talentId === 'grimpeur' && tl.times > 0);
     const autoClimb = mode === 'battle' && hasAutoClimb(mover?.traits);
     const plan = planClimb(scene, from, to, hasGrimpeur, mode === 'battle' ? mover?.id : undefined, autoClimb);
     if (!plan) return; // arête non grimpable → refus silencieux (aucun marqueur ne s'y affiche)
     if (plan.kind === 'impossible') {
-      get().log(t('climb.tooHard', { name: mover?.label ?? t('store.climberFallback') }));
+      get().log(t('climb.tooHard', { name: mover.label }));
       return;
     }
     if (mode === 'exploration') {

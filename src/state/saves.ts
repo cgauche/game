@@ -135,7 +135,12 @@ import type { Scene } from './scene';
 // sans fiche sont refusés par `validateScene` et par le seam `parseProject` au prochain export/import de
 // son projet. Même bump : `ScheduledRespawn.summon` (file `scheduledEffects`, sauvée) porte le
 // `PorteurDeFiche` du défunt au lieu d'une réf. nue. La save se jette (politique 2 ci-dessus).
-export const SAVE_VERSION = 51;
+// 51 → 52 (#1882, #1906) : les jets en attente SAUVÉS changent de forme — `pendingStateRecovery` porte
+// `opposition: RecoverOpposition` au lieu de `opposed`/`opponentValue`/`opponentBase`/`opponentName` ;
+// `pendingApproach.sourceName` et `pendingWard.targetName` sont figés au geste ; `OpposedFreeze.attackerName`
+// (`pendingCascade`, `sequence`) est requis ; `TavernPayload.allyValue` est posé à l'ouverture d'un jeu
+// d'équipe. Une save de 51 rouvrirait une modale sans nom ni opposition. La save se jette (politique 2).
+export const SAVE_VERSION = 52;
 
 export interface SaveMeta {
   version: number;

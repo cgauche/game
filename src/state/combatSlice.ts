@@ -84,7 +84,7 @@ import { resolveSteamSave, continueSeaDayAfterCascade, continueSeaDayAfterScorbu
 import { continueSeaActivitiesAfterCascade } from './seaActivities';
 import { resolveCrewTestByRoles, rudeEpreuveMoraleDelta, crewTestSuccess, capToSuccesMinime } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
-import { findSeaShantyById, conditionLabel } from '../data';
+import { findSeaShantyById, conditionLabel, libelleOuAbsence } from '../data';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById, findStructureById, combatStakeRef } from '../data';
 import { structureCombatant } from '../engine/structures';
 import { targetArc, headingToBear } from './fireArc';
@@ -99,7 +99,7 @@ import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { seaMagicContext, windsMagicModOf } from './combatOrParty';
-import { actorIn, inBattleId } from './combatants';
+import { actorIn, inBattleId, garanti } from './combatants';
 import { aPorteeDe } from './exploreNav';
 import { controlsCombatant, defenseSurfaced, influencesLocally, quorumAtteint } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
@@ -579,7 +579,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || !active.mountId) return;
       const mount = mountOf(battle, active);
-      const mountName = mount?.label ?? 'sa monture';
+      const mountName = libelleOuAbsence(mount, 'combattant', active.mountId);
       const wasControlled = !!mount && isControlledMount(mount); // monture Nerveux exclue de l'ordre tant que montée
       dismount(battle, scene, active);
       // La monture Nerveux redevient un combattant indépendant → réintègre l'ordre à son rang d'Initiative.
@@ -982,7 +982,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // On rejoue le clic BRUT (`pt`) après le Test (l.962) → `battleClickTile` re-résout l'escalier
         // (sinon, stocker `dest` le re-traduirait une 2ᵉ fois et renverrait au pied). Le check de Peur, lui,
         // porte bien sur la destination réelle (`dest` ci-dessus).
-        set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, intent: { kind: 'tile', pt: { ...pt }, courseArmee: courseDemandee }, result: null }, battle: { ...battle, preview: null } });
+        set({ pendingApproach: { combatantId: active.id, sourceId: feared.id, sourceName: feared.label, intent: { kind: 'tile', pt: { ...pt }, courseArmee: courseDemandee }, result: null }, battle: { ...battle, preview: null } });
         bus.emit(EVT.SCENE_DIRTY);
         return true;
       };
@@ -1636,8 +1636,8 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!c) return;
       const ok = pa.result.success;
       const log = [...battle.log, ev('fear', ok
-        ? t('cs.courageYes', { name: c.label, src: src?.label ?? t('cs.fearSourceFallback') })
-        : t('cs.courageNo', { name: c.label, src: src?.label ?? t('cs.fearSourceFallback') }), c.id, src?.id)];
+        ? t('cs.courageYes', { name: c.label, src: pa.sourceName })
+        : t('cs.courageNo', { name: c.label, src: pa.sourceName }), c.id, src?.id)];
       set({ battle: { ...get().battle!, fearGate: ok ? 'passed' : 'failed', log } });
       if (ok) {
         // Relance l'intention différée (le gate est désormais 'passed') AVEC son verdict d'armement :
@@ -2145,7 +2145,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (pr.success && reloadGrantsAssessAdvantage(a)) campGain(get, a, 1); // AA 13 l.9/90 : recharger = Action Évaluer → +1 Avantage (mode groupe)
       // ISSUE dérivée par le goulot (`FLOWS.reload.apply`, canal COMBAT) : `progress` inclut le bonus de
       // Talent (réalisé à l'application), le nom d'arme est résolu ici (uid → NOM d'affichage).
-      const reloadName = a.weapons.find((w) => w.uid === pr.weaponUid)?.label ?? 'arme';
+      const reloadName = garanti(a.weapons.find((w) => w.uid === pr.weaponUid), pr.weaponUid, 'arme rechargée').label;
       const reloadIssue = FLOWS.reload.apply(get, { p: pr, ctx: { after: progress, weapon: reloadName } });
       set({ battle: { ...markActed(get, set, battle), action: null, log: [...battle.log, ...evLines(reloadIssue, 'reload', a.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -2199,7 +2199,7 @@ export function createCombatSlice(get: Get, set: Set) {
         pendingStateRecovery: {
           actorId: active.id, actorName: active.label, state,
           skillLabel: rt.skillLabel, skillValue: rt.skillValue, skillBase: rt.skillBase, difficulty: rt.difficulty,
-          opposed: rt.opposed, opponentValue: rt.opponentValue, opponentBase: rt.opponentBase, opponentName: rt.opponentName, requireSl: rt.requireSl,
+          opposition: rt.opposition, requireSl: rt.requireSl,
           entangleOnFail: rt.entangleOnFail, struggleDamage: rt.struggleDamage, stacks: n,
           roll: null, opponentRoll: null, netSL: 0, success: false,
         },

@@ -16,7 +16,7 @@ import { z } from 'zod';
 import { proseDeScene } from '../grammaire/prose';
 import { chaosAlignSchema, enumNomme, exposureLevelSchema, hitLocationSchema, moneyPartialSchema, refTestDeCorruption, surchargePaletteSchema } from '../grammaire/valeurs';
 import { conditionSchema, effectOpSchema, extendedTestSchema, gameOpSchema, noeudTest } from '../grammaire/mecanique';
-import { refOuSpec } from '../grammaire/ref';
+import { idDe, refOuSpec } from '../grammaire/ref';
 import { customStatblockSchema, ptSchema, wallSideSchema } from './communs';
 import { waterAppliesToSchema } from '../defs/water-exposure';
 import type { Effect } from '../../../state/scene';
@@ -30,8 +30,9 @@ export const dayPhaseIdSchema = z.enum(['aube', 'matin', 'midi', 'apresmidi', 'c
 export const effectTargetSchema = z.enum(['party', 'hero']);
 /** `LivingRef` (`engine/possession.ts`) — bestiaire (édition Codex vivante) OU statbloc custom
  *  d'éditeur (le snapshot EST son identité). */
+const idDeCreature: z.ZodType<string, string> = idDe('creature');
 export const livingRefSchema = z.union([
-  z.strictObject({ creatureId: z.string() }),
+  z.strictObject({ creatureId: idDeCreature }),
   z.strictObject({ custom: customStatblockSchema }),
 ]);
 /** `ChaosAlign` (`engine/corruption.ts`) — Puissance du Chaos d'une table de mutation alignée. MÊME
@@ -152,10 +153,11 @@ export const giveTrappingSchema = z.strictObject({
  *  `GameState.possessions`) à un héros propriétaire (défaut : le premier — même patron que
  *  `giveTrapping.heroId`, §4.3). `ref` réutilise `LivingRef` (bête/serviteur, bestiaire OU statbloc
  *  custom) ou `{vehicleId}` (véhicule, catalogue `vehicles.json`). */
+const idDeVehicule: z.ZodType<string, string> = idDe('vehicle');
 export const givePossessionSchema = z.strictObject({
   type: z.literal('givePossession'),
   nature: z.enum(['bete', 'serviteur', 'vehicule']),
-  ref: z.union([livingRefSchema, z.strictObject({ vehicleId: z.string() })]),
+  ref: z.union([livingRefSchema, z.strictObject({ vehicleId: idDeVehicule })]),
   heroId: z.string().optional(),
 });
 
@@ -543,7 +545,7 @@ export const openWorldMapSchema = z.strictObject({ type: z.literal('openWorldMap
  *  Le navire survit aux jours et aux combats (le voyage maritime et le Port en repartent). */
 export const setVesselSchema = z.strictObject({
   type: z.literal('setVessel'),
-  vehicleId: z.string(),
+  vehicleId: idDeVehicule,
   label: z.string().optional(),
   morale: z.number().optional(),
   hullCurrent: z.number().optional(),

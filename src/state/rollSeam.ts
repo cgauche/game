@@ -862,7 +862,7 @@ export function rollLine(spec: RollLineSpec): RollLineParts {
   if (!split.exact && !spec.valeurEtrangere) {
     const formule = spec.combat ? (spec.combat.kind === 'test' ? 'la valeur de Test de combat brute' : 'la valeur de combat NUE') : 'le Niveau de Compétence';
     const msg = `[seam] rollLine : la valeur (${value}) ne se reconstruit pas depuis ${formule} `
-      + `(${t.skill ?? t.char ?? spec.combat?.kind ?? '?'} de « ${spec.actor?.label ?? '?'} ») + ses composantes + ${fusedSum} déclaré(s) `
+      + `(${t.skill ?? t.char ?? spec.combat?.kind ?? '?'} ${spec.actor ? `de « ${spec.actor.label} »` : 'sans acteur'}) + ses composantes + ${fusedSum} déclaré(s) `
       + '— une poche est mal remplie (modificateur non fondu, ou fondu ET redéclaré). La base affichée serait FAUSSE.';
     console.error(msg);
     if (import.meta.env?.DEV) throw new Error(msg);

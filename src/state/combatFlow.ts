@@ -139,14 +139,14 @@ import {
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty, hydrateTR } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { testValue, type SupportDetail } from '../engine/skills';
-import { findManeuverById, findDomainById, diseaseLabel, refLabel, findPsychologyById, findVehicleById, combatStakeRef, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
+import { findManeuverById, findDomainById, diseaseLabel, refLabel, findPsychologyById, findVehicleById, combatStakeRef, GRAPPLE, type SpellData, type ManeuverDef, libelleOuAbsence } from '../data';
 import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
 import { endShanty, resolveShipUnits } from './shipCrew';
 import { beginShipwreck } from './shipwreck';
 import { isInanimate, isStructure, structureAimCell, ramVsNonDoor } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { STRUCTURE_CRITICALS } from '../data/structureCriticals';
-import { actorIn, inBattleId } from './combatants';
+import { actorIn, inBattleId, garanti } from './combatants';
 import { followsCharacterRules, effectivelyHostile } from '../engine/relations';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
@@ -7311,7 +7311,7 @@ export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue |
   for (const p of state) {
     if (p.type === 'peur' && (p.calmeDR ?? 0) < (p.indice ?? 0) && p.lastTestRound !== battle.round) {
       const src = inBattleId(battle, p.sourceId);
-      return { kind: 'peur', sourceId: p.sourceId!, sourceName: src?.label ?? '', indice: p.indice ?? 1, prevDR: p.calmeDR ?? 0 };
+      return { kind: 'peur', sourceId: p.sourceId!, sourceName: libelleOuAbsence(src, 'combattant', p.sourceId!), indice: p.indice ?? 1, prevDR: p.calmeDR ?? 0 };
     }
   }
   return null;
@@ -7632,7 +7632,7 @@ function aiSelectLoadout(set: SetFn, enemy: Combatant, battle: BattleState): voi
   enemy.activeLoadoutId = want.id;
   recomputeLoadout(enemy);
   const drawn = enemy.weapons.find((w) => w.type === (want === meleeSet ? 'melee' : 'ranged'));
-  battle.log.push(ev('detail', tr('cs.draw', { name: enemy.label, weapon: drawn?.label ?? '' }), enemy.id));
+  battle.log.push(ev('detail', tr('cs.draw', { name: enemy.label, weapon: garanti(drawn, want.id, 'arme du set dégainé').label }), enemy.id));
   set({ battle: { ...battle } });
 }
 
@@ -7999,14 +7999,13 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const rt = resolveRecoverTest(enemy, action.state, battle);
       if (!rt) return advanceTurn(get, set); // État non récupérable par Action (pas de `recover` en donnée)
       let success: boolean, netSL: number;
-      if (rt.opposed && rt.opponentValue != null && rt.opponentBase != null) {
-        // LDB 12 l.160 : les DEUX camps portent leur nue (`resolveRecoverTest` les pose ENSEMBLE, jamais
-        // l'une sans l'autre), comme la voie joueur (`FLOWS.recover`) — mêmes accesseurs.
+      if (rt.opposition) {
+        // LDB 12 l.160 : les DEUX camps portent leur nue (`RecoverOpposition` les porte ENSEMBLE), comme la voie joueur (`FLOWS.recover`) — mêmes accesseurs.
         // Difficultés ASYMÉTRIQUES (LDB 12 l.166) : l'acteur honore `rec.difficulty` (donnée), l'entrave
         // roule `intermediaire` — MÊME choix qu'au flux joueur (`FLOWS.recover`), verrouillé par
         // `combat/ai-recover-departage-nue.test`.
-        const opp = opposedTest(rt.skillValue, rt.opponentValue, battleRng(), rt.difficulty, 'intermediaire', {
-          attacker: rt.skillBase, defender: rt.opponentBase,
+        const opp = opposedTest(rt.skillValue, rt.opposition.value, battleRng(), rt.difficulty, 'intermediaire', {
+          attacker: rt.skillBase, defender: rt.opposition.base,
         });
         success = opp.attackerWins; netSL = opp.netSL;
       } else {
