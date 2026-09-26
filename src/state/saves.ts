@@ -145,7 +145,11 @@ import type { Scene } from './scene';
 // keyés par des id de héros que plus personne ne lit, et SANS entrée de groupe : le regard du plateau
 // et la vue subjective repartent au défaut sud, le pivot suivant aussi. La save se jette (politique 2
 // ci-dessus).
-export const SAVE_VERSION = 53;
+// 53 → 54 (#1874) : `PendingTest` porte `subi` (`{ casterId?, label?, source? }`) sur un Test SUBI
+// hors combat ; `resolveTest` aiguille sa branche sur ce champ (`reprendreTestSubi`). Une save de 53
+// rouvre un `pendingTest` sans `subi`, dont la branche `target`/`caster` part au marcheur de SCÈNE. La
+// save se jette (politique 2 ci-dessus).
+export const SAVE_VERSION = 54;
 
 export interface SaveMeta {
   version: number;

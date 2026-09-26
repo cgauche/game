@@ -11,7 +11,7 @@
 import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
 import { Icon } from '../Icon';
 import { EMPTY_FLOW } from '../../state/flow';
-import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
+import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER, CIBLES_PAR_RACINE, type RacineDeCatalogue, type TableDeCibles } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseId, IMPERIAL_MONTHS, type ScheduleSpec } from '../../engine/clock';
 import { diseaseDefs } from '../../engine/disease';
 import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById, crewRoles, memoParVersion, creatureSemee, vehiculeSeme, libelleOuAbsence } from '../../data';
@@ -85,8 +85,9 @@ export function effectCtxOf(
   scene: Scene,
   otherScenes: Scene[] = [],
   worldMap?: { places: { id: string; label: string }[] },
-): Pick<Ctx, 'merchants' | 'scenes' | 'places' | 'personas'> {
+): Pick<Ctx, 'merchants' | 'scenes' | 'places' | 'personas' | 'cibles'> {
   return {
+    cibles: CIBLES_PAR_RACINE.scene,
     merchants: scene.entities.filter((e) => e.merchant).map((e) => ({ id: e.id, label: e.label })),
     scenes: [scene, ...otherScenes].map((sc) => ({ id: sc.id, nom: sc.label, entries: Object.keys(sc.entryPoints ?? {}) })),
     places: worldMap?.places.map((p) => ({ id: p.id, label: p.label })),
@@ -107,7 +108,14 @@ export interface Ctx {
   places?: { id: string; label: string }[];
   /** Entités « personnage » de la scène (id + label) — lanceur/cible de `castSpell` (#98). Absent = input. */
   personas?: { id: string; label?: string }[];
+  /** Les cibles qu'offre la RACINE à ses Effets `ops` (`CIBLES_PAR_RACINE`, `state/combatEffects.ts`) :
+   *  sélecteur ET résumé la lisent. Sans défaut — chaque racine dit la sienne. */
+  cibles: TableDeCibles;
 }
+
+/** Contexte d'une racine de CATALOGUE (`src/data`, monté au Compendium) : ni rencontre ni dialogue de
+ *  scène ; ses Effets `ops` visent la table de SA racine. */
+export const ctxDeCatalogue = (racine: RacineDeCatalogue): Ctx => ({ encounters: [], dialogues: [], cibles: CIBLES_PAR_RACINE[racine] });
 
 /** Libellé / icône d'un type d'effet — dérivés du REGISTRE unique (aucun Record parallèle à
  *  maintenir : la source de vérité est `EFFECT_HANDLERS[t].label/icon`). */
@@ -151,7 +159,7 @@ function scheduleSummary(spec: ScheduleSpec): string {
 
 /** Résumé HUMAIN d'un effet (rangée repliée) — texte SEUL, PUR, testé. L'icône (`EFFECT_ICON`) est
  *  rendue séparément par l'appelant via `<Icon>` (même patron que `opSummary`/`OP_ICON`). */
-export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string {
+export function effectSummary(effect: Effect, ctx: Pick<Ctx, 'scenes' | 'cibles'>): string {
   const e = effect as any;
   switch (effect.type) {
     case 'journal': return `Journal : ${e.desc ? `« ${cut(e.desc)} »` : '(vide)'}`;
@@ -183,7 +191,10 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'ambitionLost': return `Ambition anéantie → Trauma${e.heroId ? ` → ${e.heroId}` : ''}`;
     case 'inflictPsychology': return `${e.kind === 'terreur' ? 'Terreur' : 'Peur'} ${e.indice ?? 1} — ${e.label || '?'} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
     case 'ops': {
-      const who = e.on === 'hero' ? '1ᵉʳ héros' : e.on === 'caster' ? 'lanceur' : e.on === 'target' ? 'cible' : 'groupe';
+      const on: string = e.on ?? ctx.cibles[0].on;
+      const cible = ctx.cibles.find((c) => c.on === on);
+      const who = !cible ? `« on: ${on} » hors du vocabulaire de cette racine`
+        : on === 'hero' ? `${cible.label} (${e.heroId || '1ᵉʳ'})` : cible.label;
       return `${who} : ${(e.ops ?? []).map(opSummary).join(', ') || '(aucune op)'}`;
     }
     case 'zoneBlast': return `Souffle ${(e.ops ?? []).length} op(s) rayon ${e.radius ?? 0} @(${e.center?.x ?? 0},${e.center?.y ?? 0})`;
@@ -216,7 +227,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
       return `Combat de masse : ${nomDArmee(b, 'ally')} (${b.allyMight ?? 0}) vs ${nomDArmee(b, 'enemy')} (${b.enemyMight ?? 0}) — ${rounds} Round${rounds > 1 ? 's' : ''}${sit}`;
     }
     case 'transition': {
-      const sc = ctx?.scenes?.find((s) => s.id === e.scene);
+      const sc = ctx.scenes?.find((s) => s.id === e.scene);
       return `Vers ${sc?.nom ?? e.scene ?? '?'}${e.entry ? ` @ ${e.entry}` : ''}`;
     }
     case 'transitionBack': return `Retour scène précédente`;
@@ -691,20 +702,20 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         )}
         {effect.type === 'ops' && (
           <div className="test-fields">
-            <div className="tf-row">
-              <label className="dr">
-                Cible
-                <select value={e.on ?? 'party'} onChange={(ev) => upd({ on: ev.target.value })}>
-                  <option value="party">Tout le groupe</option>
-                  <option value="hero">Un héros</option>
-                  <option value="target">La cible (sort)</option>
-                  <option value="caster">Le lanceur (sort)</option>
-                </select>
-              </label>
-              {e.on === 'hero' && (
-                <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
-              )}
-            </div>
+            {/* Une table à UNE entrée n'offre aucun choix : le résumé de la rangée dit sa cible. */}
+            {ctx.cibles.length > 1 && (
+              <div className="tf-row">
+                <label className="dr">
+                  Cible
+                  <select value={e.on ?? ctx.cibles[0].on} onChange={(ev) => upd({ on: ev.target.value })}>
+                    {ctx.cibles.map((c) => <option key={c.on} value={c.on}>{c.label}</option>)}
+                  </select>
+                </label>
+                {e.on === 'hero' && (
+                  <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
+                )}
+              </div>
+            )}
             <GameOpEditor ops={e.ops ?? []} onChange={(ops) => upd({ ops })} />
           </div>
         )}

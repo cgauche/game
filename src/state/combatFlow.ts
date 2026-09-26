@@ -1812,7 +1812,7 @@ export function applyCriticalToTarget(
   // Le(s) Test(s) que la Blessure impose (LDB 18 : « Réussissez un Test de Résistance… » ; l.74 pour un
   // déclencheur de séquelle) passent par la PORTE canonique, APRÈS la révélation du Critique : le SOCLE
   // seul décide de la surface (porteur tenu → étape influençable ; sinon voie inline). Patron
-  // `MiscastResult.testFlow` (l.4146). Létal : le RAW n'applique aucun effet supplémentaire (l'`applyOps`
+  // `MiscastResult.testFlow` (`finishMiscast`). Létal : le RAW n'applique aucun effet supplémentaire (l'`applyOps`
   // ci-dessus est gaté pareillement) — le Test n'a plus d'objet.
   if (crit.testFlow && !crit.lethal) routeTriggeredTest(get, set, target, target, crit.testFlow, { label: crit.label });
   return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
@@ -1856,7 +1856,7 @@ export function applyHullCriticalToTarget(
     });
   }
   // Les Test(s) que la rangée impose passent par la PORTE canonique, APRÈS la révélation — mêmes deux
-  // voies que `applyCriticalToTarget` (l.1801), et le socle seul décide de la surface :
+  // voies que `applyCriticalToTarget`, et le socle seul décide de la surface :
   //  · Localisation « Équipage » → le marin encaisse un Critique de PERSONNAGE, dont le nœud de rangée
   //    (LDB 18) est celui de `resolveCritique` ;
   //  · sinon → le coup à l'équipage de la rangée (MSRC 07 l.78/l.94, MDG 13 l.763) sur N marins :
