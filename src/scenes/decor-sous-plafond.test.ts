@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
 import { findPropById, props } from '../data';
 import { setDataset } from '../data/overrides';
-import { empriseLocaleM } from '../data/props.types';
+import { empriseLocaleM, type PropPrimitive } from '../data/props.types';
 import { emptyScene, heightAt, tileAt, sceneMetresPerTile, type Scene, type SceneEntity } from '../state/scene';
 import { propFootTiles } from '../state/footprint';
 import { parseProject } from '../state/worldMap';
@@ -84,13 +84,14 @@ describe('aucun décor volumique ne traverse une dalle ni un toit (#1343)', () =
     const [bas, haut] = [Math.min(...coins), Math.max(...coins)];
     const cible = (bas + haut) / 2 - heightAt(scene, pos.x, pos.y, 0);
     const tonneau = findPropById('tonneau')!;
-    const fut = tonneau.volume!.primitives.find((q) => q.kind === 'cylinder')!;
-    const fixture = { ...tonneau, id: '__fixture-sous-pan__', volume: { ...tonneau.volume!, primitives: [{ ...fut, center: { ...fut.center, hM: cible - 0.1 }, longueurM: 0.2 }] } };
+    const bloc: PropPrimitive = { kind: 'box', center: { xM: 0, yM: 0, hM: cible - 0.1 }, size: { xM: 0.6, yM: 0.6, hM: 0.2 }, material: 'bois-chene' };
+    const fixture = { ...tonneau, id: '__fixture-sous-pan__', volume: { ...tonneau.volume!, primitives: [bloc] } };
     scene.entities = [{ id: 'decor-sous-pan', kind: 'prop', ref: fixture.id, pos } as SceneEntity];
     const livres = [...props];
     try {
       setDataset('props', [...livres, fixture]);
       expect(haut - bas, 'la case de fixture est sous un pan en pente').toBeGreaterThan(0.5);
+      expect(propFootTiles(fixture.id, pos, undefined, sceneMetresPerTile(scene)), 'la fixture tient dans sa case de pose').toEqual([pos]);
       expect(decorsQuiTraversent(scene)).toEqual([expect.stringContaining('decor-sous-pan')]);
     } finally {
       setDataset('props', livres);
