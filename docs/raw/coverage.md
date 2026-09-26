@@ -17,7 +17,7 @@
 - **Cœur 5e** : ✅ 33 traités par une fiche · 📖 0 transcrits par un catalogue seul (jamais traités) · 🟡 17 effleurés · ⬜ 67 trous, sur 117 chapitres-règles (hors artefacts OCR).
 - **Livres sans cœur déclaré** : ✅ 48 traités par une fiche · 📖 45 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous, sur 95 chapitres-règles (hors artefacts OCR).
 
-Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3850 section(s) non couvertes par une fiche : **639 transcrite(s) en catalogue** (recopiées, pas traitées) · **2470 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **683 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 2 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅33·📖0·🟡17·⬜67 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
+Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE I/ADE II/EDO, H3 pour LDB/CRB/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ/MSR/PDT, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3848 section(s) non couvertes par une fiche : **639 transcrite(s) en catalogue** (recopiées, pas traitées) · **2470 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres de teneur `scenario` AU1/EDO/MSR/PDT : prose de campagne, aucune règle) · **681 candidat(s) trou de règle** (reste : LDB/CRB/AA/VDM/ADE I/ADE II/MCLB/ACE/ZI/MDG/EDOC/MSRC/NADJ — livres de règles et compagnons mixtes, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 2 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖33·🟡0·⬜1 · CRB ✅33·📖0·🟡17·⬜67 · AA ✅9·📖4·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MDG ✅8·📖2·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSRC ✅3·📖4·🟡1·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -384,7 +384,7 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.49-68 « Wood Elf Physical Characteristics » — candidat trou de règle, 0 réf
   - ⬜ l.87-94 « SYLVAN COUSINS » — candidat trou de règle, 0 réf
 - **CRB 013** (2. Class and Career) :
-  - ⬜ l.17-102 « CAREER LEVEL » — candidat trou de règle, 0 réf
+  - ⬜ l.17-104 « CAREER LEVEL » — candidat trou de règle, 0 réf
 - **CRB 017** (6. Personality and Background) :
   - ⬜ l.5-8 « Who are You? » — candidat trou de règle, 0 réf
   - ⬜ l.9-20 « Choose an Ambition » — candidat trou de règle, 0 réf
@@ -634,7 +634,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.189-192 « Dirty Fighting » — candidat trou de règle, 0 réf
   - ⬜ l.193-196 « Disarm » — candidat trou de règle, 0 réf
   - ⬜ l.197-200 « Distract » — candidat trou de règle, 0 réf
-  - ⬜ l.205-225 « DOOMINGS » — candidat trou de règle, 0 réf
   - ⬜ l.226-229 « Drilled » — candidat trou de règle, 0 réf
   - ⬜ l.230-233 « Dual Wielder » — candidat trou de règle, 0 réf
   - ⬜ l.234-239 « Embezzle » — candidat trou de règle, 0 réf
@@ -658,10 +657,10 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.318-321 « Holy Visions » — candidat trou de règle, 0 réf
   - ⬜ l.322-345 « Hunter's Eye » — candidat trou de règle, 0 réf
 - **CRB 028** (Flattery, Bribery, and Status) :
-  - ⬜ l.85-258 « Making Friends (and Enemies) » — candidat trou de règle, 0 réf
-  - ⬜ l.259-268 « Mistaken Identity » — candidat trou de règle, 0 réf
+  - ⬜ l.86-259 « Making Friends (and Enemies) » — candidat trou de règle, 0 réf
+  - ⬜ l.260-269 « Mistaken Identity » — candidat trou de règle, 0 réf
 - **CRB 029** (Nosing Around) :
-  - ⬜ l.202-207 « Tracking » — candidat trou de règle, 0 réf
+  - ⬜ l.203-208 « Tracking » — candidat trou de règle, 0 réf
 - **CRB 035** (Moving in Combat) :
   - ⬜ l.43-58 « Disengaging » — candidat trou de règle, 0 réf
 - **CRB 038** (Injury, Healing, and Death) :
@@ -751,7 +750,6 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
 - **CRB 083** (Going to Market) :
   - ⬜ l.7-56 « Availability » — candidat trou de règle, 0 réf
 - **CRB 085** (Encumbrance) :
-  - ⬜ l.36-48 « OVERBURDENED EXAMPLES » — candidat trou de règle, 0 réf
   - ⬜ l.49-52 « Encumbrance and Travel Fatigue » — candidat trou de règle, 0 réf
 - **CRB 103** (Creature Hit Locations) :
   - ⬜ l.21-30 « BESTIARY FORMAT » — candidat trou de règle, 0 réf
@@ -2134,4 +2132,4 @@ Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/VDM/ADE
   - ⬜ l.9-10 « La Compétence » — bruit de scénario, 0 réf
 - **PDT 13** (POINTS D'EXPERIENCE) :
   - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
-<!-- sources-empreinte: 8d7af1e639b74bcf2691e02136817ab8b89467b3 (468 fichiers, 20 dossiers) corps: 64f3ce06586b9f387b20301418c26a998b1ed4c7 -->
+<!-- sources-empreinte: e3868e5455a5ffe82ec782dc1d9477d6561ccd83 (468 fichiers, 20 dossiers) corps: 6f5610c5f954cbcac1217793fbbaea2fe6a1287c -->
