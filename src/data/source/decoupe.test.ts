@@ -654,15 +654,20 @@ describe('TITRE de table (#1739) — bannière absorbée, ou légende `**X**` du
     expect(tablesOf(s).map((t) => [t.table.titre, t.cle])).toEqual([[undefined, undefined], ['BANDEAU', 'bandeau#1']]);
   });
 
-  // Titres CONNUS de la graphie `**X**` hors CRB — sans effet : aucun consommateur ne vise ces tables par titre.
+  // #1739 #1970 : hors CRB, la légende `**X**` au-dessus d'une table est lue comme son titre.
+  const titresDe = (livre: string, ch: string) => chapitreDe(livre, ch).sections.flatMap((s) => tablesOf(s)).map((t) => t.table.titre);
+
   it.each([
-    ['aventures-a-ubersreik-1', '25', 'A'],
-    ['ennemi-dans-l-ombre', '12', 'Hexenstag - Jour du Nouvel An'],
-    ['ennemi-dans-l-ombre', '12', 'Geheimnistag - Le Jour des Mystères'],
-    ['ennemi-dans-l-ombre', '12', "Mittherbst - Équinoxe d'automne"],
-    ['ennemi-dans-l-ombre', '12', 'Mondstille - Solstice d\'hiver'],
-  ])('%s ch.%s : « %s » est lu titre de la table qui suit', (livre, ch, titre) => {
-    expect(chapitreDe(livre, ch).sections.flatMap((s) => tablesOf(s)).some((t) => t.table.titre === titre)).toBe(true);
+    'Hexenstag - Jour du Nouvel An',
+    'Geheimnistag - Le Jour des Mystères',
+    "Mittherbst - Équinoxe d'automne",
+    "Mondstille - Solstice d'hiver",
+  ])('ennemi-dans-l-ombre ch.12 : « %s » est lu titre de la table qui suit', (titre) => {
+    expect(titresDe('ennemi-dans-l-ombre', '12')).toContain(titre);
+  });
+
+  it('aventures-a-ubersreik-1 ch.25 : « A » est lu titre de la table qui suit', () => {
+    expect(titresDe('aventures-a-ubersreik-1', '25')).toContain('A');
   });
 });
 
