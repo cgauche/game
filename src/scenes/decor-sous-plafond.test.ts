@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { listerArbre } from '../../scripts/guards/lib/lister.mjs';
-import { findPropById } from '../data';
+import { findPropById, props } from '../data';
+import { setDataset } from '../data/overrides';
 import { empriseLocaleM } from '../data/props.types';
-import { heightAt, tileAt, sceneMetresPerTile, type Scene, type SceneEntity } from '../state/scene';
+import { emptyScene, heightAt, tileAt, sceneMetresPerTile, type Scene, type SceneEntity } from '../state/scene';
 import { propFootTiles } from '../state/footprint';
-import { effectiveArchitecture } from '../state/sceneEdit';
 import { parseProject } from '../state/worldMap';
-import { WALL_H_M } from '../gameIso/iso';
+import { fieldHeightAt, massCovers, resolveNappes } from '../gameIso/builders/roofs';
 import { SCENARIOS } from './test-scenarios/_registry.generated';
 
 /**
@@ -17,9 +17,8 @@ import { SCENARIOS } from './test-scenarios/_registry.generated';
  * `haut` de sa primitive la plus haute (`empriseLocaleM`). Son PLAFOND, case par case de son empreinte :
  * - le sol du premier niveau supérieur dont la case n'est pas `vide` — un volume à double hauteur
  *   (étage `vide` au-dessus) prend le plafond du niveau d'après ;
- * - sinon l'ÉGOUT de la masse de toiture qui coiffe la case à ce niveau : la cote la plus haute sous
- *   son emprise à l'étage `z` de la masse, plus `WALL_H_M` (`buildingMassSchema`,
- *   `data/schemas/defs-scenes/scene.ts`). L'égout est le point BAS du toit : la borne est prudente.
+ * - sinon le point le plus BAS du toit au-dessus de la case : parmi les nappes qui la coiffent à ce
+ *   niveau (`resolveNappes`, `massCovers`), le minimum de `fieldHeightAt` sur ses quatre coins ;
  * - sinon rien : une case à ciel ouvert n'a pas de plafond.
  */
 
@@ -29,22 +28,15 @@ const scenesDeProjet: Scene[] = projets.flatMap((f) => parseProject(JSON.parse(r
 const scenesDeScenario: Scene[] = (SCENARIOS as { scene?: Scene }[]).flatMap((sc) => (sc.scene?.entities ? [sc.scene] : []));
 const SCENES: Scene[] = [...scenesDeScenario, ...scenesDeProjet];
 
-const dans = (r: { x: number; y: number; w: number; h: number }, x: number, y: number) =>
-  x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
-
 function plafondM(scene: Scene, x: number, y: number, z: number): number | undefined {
   const dessus = scene.layers.map((l) => l.z).filter((zz) => zz > z).sort((a, b) => a - b);
   for (const zz of dessus) if (tileAt(scene, x, y, zz) !== 'vide') return heightAt(scene, x, y, zz);
   let toit: number | undefined;
-  for (const corps of effectiveArchitecture(scene))
-    for (const m of corps.masses) {
-      if (z > m.z || z < m.z - m.levels + 1 || !m.footprint.some((r) => dans(r, x, y))) continue;
-      let cote = -Infinity;
-      for (const r of m.footprint)
-        for (let cy = r.y; cy < r.y + r.h; cy++)
-          for (let cx = r.x; cx < r.x + r.w; cx++) cote = Math.max(cote, heightAt(scene, cx, cy, m.z));
-      toit = Math.min(toit ?? Infinity, cote + WALL_H_M);
-    }
+  for (const nappe of resolveNappes(scene).values()) {
+    if (!massCovers(nappe.mass, nappe.cells, x, y, z)) continue;
+    const coins = [{ x, y }, { x: x + 1, y }, { x, y: y + 1 }, { x: x + 1, y: y + 1 }];
+    toit = Math.min(toit ?? Infinity, ...coins.map((v) => fieldHeightAt(nappe.field, v)));
+  }
   return toit;
 }
 
@@ -72,11 +64,36 @@ function decorsQuiTraversent(scene: Scene): string[] {
 describe('aucun décor volumique ne traverse une dalle ni un toit (#1343)', () => {
   it('le corpus porte des scènes à étage ET des scènes coiffées de toits', () => {
     expect(SCENES.some((s) => s.layers.length > 1), 'une scène à étage au moins').toBe(true);
-    expect(SCENES.some((s) => effectiveArchitecture(s).some((c) => c.masses.length > 0)), 'une masse de toiture au moins').toBe(true);
+    expect(SCENES.some((s) => resolveNappes(s).size > 0), 'une nappe de toiture au moins').toBe(true);
   });
 
   it('dans toutes les scènes (scénarios de test et projets), chaque corps reste sous le plafond de ses cases', () => {
     const fautes = SCENES.flatMap(decorsQuiTraversent);
     expect(fautes, fautes.join('\n')).toEqual([]);
+  });
+
+  it('un corps dont le sommet passe entre le coin bas et le coin haut d\'un pan en pente le traverse', () => {
+    const scene = emptyScene(8, 8);
+    scene.architecture = [{
+      id: 'corps-fixture', label: 'Corps de fixture', style: 'maison', storeys: [], facades: [],
+      masses: [{ id: 'nef', z: 0, footprint: [{ x: 1, y: 1, w: 4, h: 4 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 45, material: 'tuile' }],
+    }];
+    const pos = { x: 2, y: 1 };
+    const nappe = [...resolveNappes(scene).values()][0];
+    const coins = [pos, { x: pos.x + 1, y: pos.y }, { x: pos.x, y: pos.y + 1 }, { x: pos.x + 1, y: pos.y + 1 }].map((v) => fieldHeightAt(nappe.field, v));
+    const [bas, haut] = [Math.min(...coins), Math.max(...coins)];
+    const cible = (bas + haut) / 2 - heightAt(scene, pos.x, pos.y, 0);
+    const tonneau = findPropById('tonneau')!;
+    const fut = tonneau.volume!.primitives.find((q) => q.kind === 'cylinder')!;
+    const fixture = { ...tonneau, id: '__fixture-sous-pan__', volume: { ...tonneau.volume!, primitives: [{ ...fut, center: { ...fut.center, hM: cible - 0.1 }, longueurM: 0.2 }] } };
+    scene.entities = [{ id: 'decor-sous-pan', kind: 'prop', ref: fixture.id, pos } as SceneEntity];
+    const livres = [...props];
+    try {
+      setDataset('props', [...livres, fixture]);
+      expect(haut - bas, 'la case de fixture est sous un pan en pente').toBeGreaterThan(0.5);
+      expect(decorsQuiTraversent(scene)).toEqual([expect.stringContaining('decor-sous-pan')]);
+    } finally {
+      setDataset('props', livres);
+    }
   });
 });
