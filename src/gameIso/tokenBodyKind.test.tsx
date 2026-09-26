@@ -6,7 +6,7 @@ import { resolveRender } from './rig/bodyPlan';
 import type { Combatant } from '../engine/types';
 import type { SceneEntity } from '../state/scene';
 
-const hero = { id: 'h1', kind: 'hero', name: 'Soldat', career: 'Soldat', appearance: { species: 'humain', sex: 'M', build: 0.5, seed: 3 } } as unknown as Combatant;
+const hero = { id: 'h1', kind: 'hero', species: 'humains-reiklander', name: 'Soldat', career: 'Soldat', appearance: { species: 'humain', sex: 'M', build: 0.5, seed: 3 } } as unknown as Combatant;
 
 describe('tokenBodyKind — view top', () => {
   it('héros bipède : flat=true + portraitBox + corps en vue de face (tête)', () => {

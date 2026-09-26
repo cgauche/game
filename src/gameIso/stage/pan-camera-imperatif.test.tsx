@@ -30,7 +30,7 @@ afterAll(() => setStageRendererFactory(null));
 
 function hero(id: string, pos: { x: number; y: number }): Combatant {
   return {
-    id, label: id, kind: 'hero', pos, size: 'moyenne',
+    id, label: id, kind: 'hero', species: 'humains-reiklander', pos, size: 'moyenne',
     wounds: { current: 12, max: 12 }, weapons: [],
     characteristics: {}, advantage: 0, conditions: [], armour: {},
     skills: [], talents: [], movement: 4,

@@ -31,6 +31,7 @@ const hero = (id: string, wounds: number, talents: { talentId: string; times: nu
     id,
     label: id.toUpperCase(),
     kind: 'hero',
+    species: 'humains-reiklander',
     xp: 0,
     wounds: { current: wounds, max: 12 },
     conditions: [],

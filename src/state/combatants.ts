@@ -109,10 +109,7 @@ function partyLeaderDeboutOf(party: readonly Combatant[]): Combatant | undefined
 
 /**
  * Le groupe d'un état — la part de `GameState` que l'élection du meneur consomme, et la SEULE.
- * Signature la plus ÉTROITE qui suffise. Quand le meneur deviendra ÉLU, c'est ce type qui s'élargira :
- * les appelants qui passent l'état entier ne bougeront pas ; les deux qui construisent un littéral
- * `{ party }` (`gameIso/stage/MondeDeCampagne.tsx`, `state/visionState.ts` — ils n'ont que le roster
- * en main) devront lui donner le champ neuf.
+ * Signature la plus ÉTROITE qui suffise.
  */
 export type MondeDuMeneur = Pick<GameState, 'party'>;
 

@@ -27,7 +27,7 @@ import { discCapPath, teamRingDecor } from '../builders/dynamicMarks';
 
 function hero(id: string, pos: { x: number; y: number }): Combatant {
   return {
-    id, label: id, kind: 'hero', pos, size: 'moyenne',
+    id, label: id, kind: 'hero', species: 'humains-reiklander', pos, size: 'moyenne',
     wounds: { current: 9, max: 12 }, weapons: [],
     characteristics: { 'capacite-de-combat': 40, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     advantage: 0, conditions: [], armour: {},
