@@ -36,8 +36,8 @@ import { buildProps } from '../builders/props';
  */
 const ID = 'banquette-de-fixture-3x1';
 const tabouret = (xM: number) => [
-  { kind: 'cylinder', center: { xM, yM: -0.4, hM: 0.425 }, radiusM: 0.32, heightM: 0.07, sides: 16, material: 'bois-chene' },
-  { kind: 'cylinder', center: { xM, yM: -0.4, hM: 0.195 }, radiusM: 0.15, heightM: 0.39, sides: 8, material: 'fer-noirci' },
+  { kind: 'cylinder', axis: 'h', center: { xM, yM: -0.4, hM: 0.425 }, radiusM: 0.32, longueurM: 0.07, sides: 16, material: 'bois-chene' },
+  { kind: 'cylinder', axis: 'h', center: { xM, yM: -0.4, hM: 0.195 }, radiusM: 0.15, longueurM: 0.39, sides: 8, material: 'fer-noirci' },
 ];
 const NEUF = {
   id: ID,

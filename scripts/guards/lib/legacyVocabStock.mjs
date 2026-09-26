@@ -2072,13 +2072,6 @@ export const LEGACY_VOCAB_SITES = [
     date: "2026-09-26",
   },
   {
-    fichier: "scripts/hooks/git-destructive-guard.mjs",
-    motif: "désormais",
-    ancre: "l'autre : un `Set-Location <worktree lié>; git reset --hard` passe désormais en silence comme son",
-    lot: "L7 désormais",
-    date: "2026-09-26",
-  },
-  {
     fichier: "scripts/hooks/memoire-tombale-guard.mjs",
     motif: "désormais",
     ancre: "daté légitime (49 lignes pour le premier mot, 28 pour « désormais », 43 pour le troisième) : les",
