@@ -2118,11 +2118,15 @@ export function estArbrePrincipal(dir = process.cwd()) {
  * (#1973). Graphie MSYS `/x/…` rendue native (`versCheminNatif`), relatif résolu contre `base`, puis :
  * `reel` = `canoniser` (jonctions et liens suivis, fichier à créer compris) ; `racine` = l'arbre git
  * qui le contient, ou `null` ; `relatif` = POSIX sous `racine`, ou `reel` entier sans arbre.
- * `horsDepot` (les hooks d'écriture gardent le contenu d'un dépôt et s'y taisent) se dérive de ce
- * MÊME calcul, sur preuve POSITIVE : l'ancêtre EXISTANT le plus proche n'est pas une racine de volume,
- * et `racine` est `null`. Lecteur absent, rien d'existant sous la racine : `false`, le hook garde.
- * `null` quand le `tool_input` ne porte aucun chemin.
- * @returns {{ reel: string, racine: string|null, relatif: string, horsDepot: boolean } | null}
+ * `horsContenu` : le fichier n'est pas du contenu VERSIONNÉ du dépôt, et les hooks d'écriture s'y
+ * taisent (#1973). Deux preuves POSITIVES, tirées de ce MÊME calcul :
+ *   - hors dépôt : `racine` est `null` et l'ancêtre EXISTANT le plus proche n'est pas une racine de
+ *     volume (lecteur absent, rien d'existant sous la racine : `false`, le hook garde) ;
+ *   - ignoré : `git check-ignore -q` sur `reel`, depuis `racine` — un fichier SUIVI qu'un motif
+ *     couvre n'est pas ignoré (`--no-index` absent à dessein).
+ * Évalué au premier accès, une fois : le spawn git ne se paie que dans un dépôt, et seulement quand
+ * le hook a quelque chose à dire. `null` quand le `tool_input` ne porte aucun chemin.
+ * @returns {{ reel: string, racine: string|null, relatif: string, readonly horsContenu: boolean } | null}
  */
 export function cheminDEcriture(toolInput, { base = process.cwd(), platform = process.platform } = {}) {
   const brut = toolInput?.file_path ?? toolInput?.path
@@ -2132,12 +2136,26 @@ export function cheminDEcriture(toolInput, { base = process.cwd(), platform = pr
   const reel = canoniser(absolu)
   const racine = racineDeLArbre(dirname(reel))
   const posix = (p) => p.split(sep).join('/')
+  let horsContenu
   return {
     reel,
     racine,
     relatif: racine === null ? posix(reel) : posix(relative(racine, reel)),
-    horsDepot: racine === null && ancetre !== null && dirname(ancetre) !== ancetre,
+    get horsContenu() {
+      horsContenu ??= racine === null
+        ? ancetre !== null && dirname(ancetre) !== ancetre
+        : ignoreParGit(reel, racine)
+      return horsContenu
+    },
   }
+}
+
+/** `true` si git PROUVE que `reel` est ignoré dans l'arbre `racine`. Git indisponible, ou dépôt que
+ *  git ne reconnaît pas : aucune preuve, `false` — le hook garde (`gitPorte.mjs`, `sortieOuNull`). */
+function ignoreParGit(reel, racine) {
+  const vu = lireGit(['check-ignore', '-q', '--', reel], { cwd: racine })
+  if (!vu.disponible || vu.absent) return false
+  return sortieOuNull(vu) !== null
 }
 
 /**

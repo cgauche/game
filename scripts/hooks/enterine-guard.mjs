@@ -11,7 +11,6 @@ for await (const chunk of process.stdin) raw += chunk
 let input = null
 try { input = JSON.parse(raw)?.tool_input ?? null } catch { /* stdin illisible → silence */ }
 const chemin = cheminDEcriture(input)
-if (chemin?.horsDepot) input = null
 
 const TAG = /\[entériné[^\]]*\]/i
 const tags = (s) => String(s ?? '').match(/\[entériné[^\]]*\]/gi) ?? []
@@ -45,7 +44,7 @@ const introduces = input && (
   (typeof input.new_string === 'string' && TAG.test(input.new_string) && !TAG.test(String(input.old_string ?? '')))
 )
 
-if (introduces) {
+if (introduces && !chemin?.horsContenu) {
   console.log(JSON.stringify({
     hookSpecificOutput: {
       hookEventName: 'PreToolUse',

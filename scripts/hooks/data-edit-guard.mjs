@@ -10,7 +10,7 @@ for await (const chunk of process.stdin) raw += chunk
 let chemin = null
 try { chemin = cheminDEcriture(JSON.parse(raw)?.tool_input) } catch { /* stdin illisible → silence */ }
 
-const isData = chemin !== null && !chemin.horsDepot && /(^|\/)src\/data\/[^/]+\.json$/.test(chemin.relatif)
+const isData = chemin !== null && /(^|\/)src\/data\/[^/]+\.json$/.test(chemin.relatif) && !chemin.horsContenu
 
 if (isData) {
   const rel = chemin.relatif.slice(chemin.relatif.lastIndexOf('src/data/'))

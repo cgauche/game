@@ -134,17 +134,14 @@ test('une note IGNORÉE par git (worktree mort sous `.claude/`) → silence', ()
   }
 })
 
-// `indisponible` n'a pas de repli (`gitPorte.mjs`) : git introuvable, le pointeur est émis et le
-// message dit que l'ignorance git n'a pas pu être lue.
-test('git INDISPONIBLE : le pointeur est émis, et le message nomme l’ignorance illisible', () => {
+// Git introuvable : rien ne prouve l'ignorance (`cheminDEcriture`, `horsContenu`), le hook garde.
+test('git INDISPONIBLE : une note que git ignorerait est jugée, le pointeur est émis', () => {
   const { racine } = instanceDeDepot({ fichiers: { '.gitignore': '.claude/*\n' } })
   try {
-    const note = { file_path: join(racine, 'docs', 'n.md'), old_string: '', new_string: 'voir #1591\n' }
+    const note = { file_path: join(racine, '.claude', 'worktrees', 'agent-x', 'n.md'), old_string: '', new_string: 'voir #1591\n' }
     const sansGit = { ...process.env, PATH: dirname(process.execPath), Path: dirname(process.execPath) }
-    const ctx = contexteDe(note, sansGit)
-    assert.match(ctx, /POINTEUR DÉRÉFÉRENCÉ/)
-    assert.match(ctx, /Ignorance git ILLISIBLE/)
-    assert.doesNotMatch(contexteDe(note), /ILLISIBLE/, 'git présent : rien à dire de plus')
+    assert.match(contexteDe(note, sansGit), /POINTEUR DÉRÉFÉRENCÉ/)
+    assert.equal(contexteDe(note), '', 'git présent : ignorée, silence')
   } finally {
     rmSync(racine, { recursive: true, force: true })
   }

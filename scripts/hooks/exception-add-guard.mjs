@@ -130,10 +130,9 @@ if (isMain) {
   let input = null
   try { input = JSON.parse(raw)?.tool_input ?? null } catch { /* stdin illisible → silence */ }
   const chemin = cheminDEcriture(input)
-  if (chemin?.horsDepot) process.exit(0)
   const w = readWrite(chemin ? { ...input, file_path: chemin.reel } : input)
   const decision = w ? evaluate(w) : null
-  if (decision) {
+  if (decision && !chemin?.horsContenu) {
     console.log(JSON.stringify({
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',

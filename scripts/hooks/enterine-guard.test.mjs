@@ -18,11 +18,11 @@ const HOOK = join(REPO, 'scripts', 'hooks', 'enterine-guard.mjs')
 const TAG = '[entériné 2026-09-14]'
 const TAG2 = '[entériné 2026-09-15]'
 
-function lanceBrut(entree) {
-  const r = spawnSync(process.execPath, [HOOK], { input: entree, encoding: 'utf8', cwd: REPO })
+function lanceBrut(entree, env = process.env) {
+  const r = spawnSync(process.execPath, [HOOK], { input: entree, encoding: 'utf8', cwd: REPO, env })
   return { code: r.status, out: r.stdout ?? '', err: r.stderr ?? '' }
 }
-const lance = (tool_input) => lanceBrut(JSON.stringify({ tool_input }))
+const lance = (tool_input, env) => lanceBrut(JSON.stringify({ tool_input }), env)
 const demande = (r) => {
   assert.equal(r.code, 0, 'le hook ne bloque jamais : il DEMANDE')
   if (r.out.trim() === '') return false
@@ -71,6 +71,23 @@ test('HORS DÉPÔT (scratchpad) : le même tag introduit ne demande rien (#1973)
   avecFichier('// raison\n', (cible) => {
     assert.equal(demande(lance({ file_path: cible, old_string: '// raison', new_string: `// raison ${TAG}` })), false, 'Edit')
   }, { horsDepot: true })
+})
+
+// Un fichier IGNORÉ par git n'est pas du contenu versionné (#1973). Le voisin que `.gitignore`
+// ré-inclut reste gardé.
+test('fichier IGNORÉ par git dans un dépôt → silence ; voisin ré-inclus → ask ; git indisponible → ask', () => {
+  const { racine } = instanceDeDepot({ fichiers: { '.gitignore': 'node_modules/\n.superpowers/\n.claude/*\n!.claude/memory/\n' } })
+  const ecrit = (rel, env) => demande(lance({ file_path: join(racine, ...rel.split('/')), content: `// raison ${TAG}\n` }, env))
+  try {
+    assert.equal(ecrit('node_modules/.cache/brief.md'), false, 'node_modules/.cache')
+    assert.equal(ecrit('.superpowers/sdd/x.md'), false, '.superpowers/')
+    assert.equal(ecrit('.claude/worktrees/agent-x/src/a.ts'), false, 'worktree mort sans `.git`')
+    assert.equal(ecrit('.claude/memory/x.md'), true, '`!.claude/memory/` : versionné')
+    const sansGit = { ...process.env, PATH: dirname(process.execPath), Path: dirname(process.execPath) }
+    assert.equal(ecrit('node_modules/.cache/brief.md', sansGit), true, 'git indisponible : aucune preuve, le hook garde')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
 })
 
 /** Graphie MSYS (`/c/Users/…`) d'un chemin win32 absolu. */

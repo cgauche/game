@@ -15,7 +15,6 @@ import {
 } from '../guards/lib/commentPoison.mjs';
 import { scanLabelLogic } from '../guards/lib/labelLogic.mjs';
 import { estFichierVitest } from '../guards/lib/fichierVitest.mjs';
-import { lireGit, sortieOuNull } from '../guards/lib/gitPorte.mjs';
 import { cheminDEcriture } from './solde-ticket-guard.mjs';
 
 let raw = '';
@@ -28,9 +27,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 // Chemin RÉEL RELATIF à la racine de l'arbre git qui CONTIENT le fichier (`cheminDEcriture`, un
 // relatif se résout contre la racine de ce hook) : périmètre, lecture et message se jugent sur lui,
 // jamais sur le chemin brut — un worktree lié vit lui-même sous `.claude/worktrees/`, et tout fichier
-// y passerait pour une note suivie.
+// y passerait pour une note suivie. Hors du contenu versionné (`horsContenu`), le hook se tait — jugé
+// à la sortie, pour que le spawn git ne se paie que si un volet a trouvé quelque chose.
 const chemin = cheminDEcriture(entree, { base: root });
-if (chemin === null || chemin.horsDepot) process.exit(0);
+if (chemin === null) process.exit(0);
 const rel = chemin.relatif;
 // MÊME périmètre que la suite Vitest et le pre-commit : `estFichierScanne` (source unique,
 // `commentPoison.mjs`) — les deux racines, les quatre extensions, tests compris.
@@ -82,16 +82,6 @@ if (isSrcTs) {
 
 /** Une note documentaire ou de mémoire : le pointeur nu s'y lit sans son ticket. */
 const estNoteSuivie = /^(\.claude|docs)\//.test(rel);
-/** Ignorée par git (`.gitignore` du dépôt : worktree mort sans `.git`, réglages locaux), la note
- *  n'est pas suivie. Un appel git : ne se paie que quand le volet a déjà quelque chose à dire.
- *  `{ ignoree }`, ou `{ indisponible: raison }` quand git n'a pas pu répondre — l'appelant signale
- *  alors, et le dit (`gitPorte.mjs` : `indisponible` n'a pas de repli). */
-function ignoranceGit() {
-  const vu = lireGit(['check-ignore', '-q', '--', chemin.reel], { cwd: chemin.racine });
-  if (!vu.disponible) return { indisponible: vu.raison };
-  if (vu.absent) return { indisponible: 'git ne connaît pas ce dépôt' };
-  return { ignoree: sortieOuNull(vu) !== null };
-}
 /** Un titre sur la MÊME ligne : guillemets (droits, français), ou parenthèse explicative. */
 const PORTE_UN_TITRE = /["“”«»()]/;
 /** Un numéro de ticket cité seul (jamais dans une URL, un chemin ou une ancre `issuecomment-…`). */
@@ -104,19 +94,17 @@ if (estNoteSuivie) {
   const nues = typeof neuf === 'string'
     ? neuf.split(/\r?\n/).filter((l) => !ancien.has(l.trim()) && POINTEUR_NU.test(l) && !PORTE_UN_TITRE.test(l))
     : [];
-  const git = nues.length > 0 ? ignoranceGit() : null;
-  if (git !== null && !git.ignoree) {
+  if (nues.length > 0) {
     sortie.push(
       `POINTEUR DÉRÉFÉRENCÉ (${nues.length} ligne(s) écrite(s) dans ${rel}) : un numéro de ticket seul ` +
       'ne se lit pas — recoller le TITRE sur la même ligne (`gh issue view <N> --json title`), sinon la ' +
-      'note est inerte pour qui la relit.' +
-      (git.indisponible ? ` (Ignorance git ILLISIBLE — ${git.indisponible} : la note est jugée suivie.)` : ''),
+      'note est inerte pour qui la relit.',
       ...nues.slice(0, MAX_POINTEURS).map((l) => `  ${l.trim().slice(0, 120)}`),
     );
   }
 }
 
-if (sortie.length) {
+if (sortie.length && !chemin.horsContenu) {
   console.log(JSON.stringify({
     hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: sortie.join('\n') },
   }));
