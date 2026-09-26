@@ -68,6 +68,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `findTableEntry` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `baseTestMods` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `actorIn/inBattleId` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
+| `estDebout/meneurDuMonde/meneurDeboutDuMonde/poserCapDuGroupe` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `applyOps/GameOp` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `GameOpEditor` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U | U |
 | `passiveMods` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
@@ -207,4 +208,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 0f2dba639cf8f31f005ab4977631bb7111cc10eb (1827 fichiers, 2 dossiers) corps: 821ac4427ade52af328902db61a066bf40af4c79 -->
+<!-- sources-empreinte: 5373d21cd819b28f58a1d42d529cd94b54bea8a4 (1827 fichiers, 2 dossiers) corps: 2588d70afd3affe32a3c519c0d6432896f9016ba -->

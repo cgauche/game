@@ -27,7 +27,7 @@ manifeste est invisible ici, et rien ne la révèle sauf le hook `new-src-file-g
 mord qu'à la CRÉATION d'un `.tsx` de `src/ui`/`src/gameIso` — un module `.ts`, un fichier antérieur
 au hook, ou une primitive née ailleurs n'y passent jamais.
 
-97 primitives.
+98 primitives.
 
 | Besoin | Primitive | Fichier | CSS possédé | Périmètre | Verrou |
 |---|---|---|---|---|---|
@@ -78,6 +78,7 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | fabrique de flux de jet + registre spec par kind | `makeRollFlow/FLOWS` | `src/state/rollFlowSpecs.ts` | — | tout Test interactif joueur | rollflow-no-drift.test.ts, rollFlowWiring.test.ts |
 | gabarit maître-détail (liste gauche + détail centre), layout pur sans état | `MasterDetail` | `src/ui/MasterDetail.tsx` | — | tout écran à sélection dans une liste + détail (interlude, Codex, palettes, pickers) | — |
 | sélecteur visuel (déclencheur + popover de rangées média + texte) là où un <select> natif ne peut pas porter d'icône | `MediaSelect` | `src/ui/MediaSelect.tsx` | `src/ui/styles/media-select.css` | sélecteurs d'arme/armure de la fiche, menu « Donner » | — |
+| le MENEUR du groupe hors combat, et le CAP du groupe — un seul id pour le jeton dessiné, le regard, l'assise, la lampe et l'escalade, et une seule valeur de regard que le changement de meneur ne fait pas sauter | `estDebout/meneurDuMonde/meneurDeboutDuMonde/poserCapDuGroupe` | `src/state/combatants.ts` | — | toute lecture du meneur et toute écriture du cap d'exploration dans src/state, src/gameIso, src/ui | hero-debout-guard.test.ts |
 | carte de menu : sections de grands boutons pleine largeur icône+libellé, séparateurs titrés, interrupteur | `MenuCard/MenuSection/MenuButton/MenuToggle` | `src/ui/MenuCard.tsx` | — | menu principal hors partie et menu système en jeu (Coopération, Options) | réflexe avant tout bouton ou carte de menu recodé |
 | chip de statut métallisé Bronze/Argent/Or avec son échelon | `MetalStatus` | `src/ui/MetalStatus.tsx` | — | tout affichage de statut social | — |
 | bilan MULTI-JETS d’un même temps : portrait, libellé, ligne de jet, note | `MultiRollList` | `src/ui/MultiRollList.tsx` | `src/ui/styles/multi-roll-list.css` | nuit de repos, journée de voyage, conseil de bord, cascade globalisée | — |
@@ -128,4 +129,4 @@ au hook, ou une primitive née ailleurs n'y passent jamais.
 | en-tête A→B d'une modale de combat/opposition | `VsHeader` | `src/ui/VsHeader.tsx` | `src/ui/styles/vs-header.css` | toute confrontation à 2 camps | — |
 | sceau de cire et plaque d’élu scellée | `WaxSeal/SealedPlaque` | `src/ui/WaxSeal.tsx` | — | tuiles de sélection, plaques d’élu | — |
 | rose des vents : direction + force du vent | `WindRose` | `src/ui/WindRose.tsx` | `src/ui/styles/gauges.css` | voyage en mer, dossier de navire | — |
-<!-- sources-empreinte: 3db868101a15921a99b8c8413d27c6a70eddb56f (6 fichiers, 0 dossiers) corps: 517756781f595a158b19b460a8f7c01bdd24c802 -->
+<!-- sources-empreinte: 86ffd3d544bef4df123dee15226a35e1491601c8 (6 fichiers, 0 dossiers) corps: 53a55fdd8129c35d9cded19b54921884d427b61c -->
