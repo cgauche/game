@@ -293,19 +293,12 @@ const BARE_BUTTON_OPAQUE_BASELINE: Record<string, number> = {};
 //    domaine (ex. `.city-hub-*`/`.voyage-*` → leur module) ABAISSE la baseline ; en ajouter une la fait
 //    monter → échec. Mesure STRUCTURELLE (pas une liste de noms) — la baseline est un COMPTE, pas un
 //    allowlist nominatif. L'usage TSX se lit dans les valeurs `className` (littéraux, gabarits, ternaires).
-// Couche PARTAGÉE gardée par xiii (chemins relatifs à `src/ui/`) : la couche atomique
-// (`base`/`components`), la primitive d'onglets `tabs`, et l'orchestrateur d'`@import` `styles.css`
-// (top-level) qui porte aussi les règles TRANSVERSES manette + le bandeau DEV du collecteur d'erreurs.
-// #1411 P2-C : `../gameIso/anim.css` entre au radar — c'est la feuille du CHROME DU MONDE (marques de
-// jeton, pastille d'état de fin, pastille d'ENTITÉ), consommée par plusieurs modules de `gameIso`, et
-// elle échappait aux DEUX cliquets (xii ne voit que `src/ui/styles/`, xiv ne parcourt que `src/ui`).
-// Une classe qui s'y planquerait sans être partagée ni cataloguée compte donc désormais comme fuite.
-const SHARED_CSS_FILES = [
-  ...FEUILLES_PARTAGEES.map((f) => f.slice('src/ui/'.length)),
-  'styles.css',
-  '../gameIso/anim.css',
-  '../gameIso/stage/iso-stage.css',
-];
+// Couche PARTAGÉE gardée par xiii (chemins relatifs à `src/ui/`) : `FEUILLES_PARTAGEES`, et
+// l'orchestrateur d'`@import` `styles.css` (top-level) qui porte aussi les règles TRANSVERSES manette +
+// le bandeau DEV du collecteur d'erreurs. Une feuille POSSÉDÉE par une primitive (manifeste, champ
+// `css`) n'en est jamais : son garde est §5.2 de `primitive-owners-guard`, et (xiv) refuse le double
+// statut.
+const SHARED_CSS_FILES = [...FEUILLES_PARTAGEES.map((f) => f.slice('src/ui/'.length)), 'styles.css'];
 const SHARED_LEAK_BASELINE: Record<string, number> = {
   // #1372 : 16 → 15 — `.lazy-fallback` cesse d'être mono-consommateur (le voile d'entrée en scène du
   // monde volumique le REPREND au lieu de définir sa propre classe, `stage/VolumetricWorld.tsx`).
@@ -332,15 +325,6 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   // `.master-detail-list`), aucune n'est mono-consommateur planqué.
   'styles/layout.css': 0,
   'styles.css': 6,
-  // Chrome du MONDE : les classes y sont mono-consommateur PAR NATURE (un peintre unique par marque —
-  // `TokenChromeMarks`, `PastilleEntite`, les animations de FX). Baseline posée à l'entrée au radar,
-  // GELÉE et DÉCROISSANTE comme les autres.
-  // #1806 2c : 26 → 22 — la feuille est celle de la primitive `GameStage` ; `.glow` et `.dmg-float`
-  // sont cataloguées à la charte avec `.iso-stage`, et les règles à ZÉRO poseur (`.bob`, `.gush`,
-  // `.crow` + `.crow .wing`) sont purgées (garde §5.2 de `primitive-owners-guard`).
-  '../gameIso/anim.css': 22,
-  // La boîte du plateau : `.iso-stage`, cataloguée à la charte et posée par deux modules.
-  '../gameIso/stage/iso-stage.css': 0,
 };
 
 /** Classes `.foo` citées entre backticks dans le catalogue de la charte (contrat de couche atomique). */
@@ -608,26 +592,28 @@ describe('#236 — cliquets d’hygiène UI', () => {
         if ((usage.get(c)?.size ?? 0) >= 2) continue; // usage transversal réel (≥2 modules)
         leaks++;
       }
-      counts[file] = leaks; // clé = le chemin DÉCLARÉ (une feuille partagée peut vivre hors `src/ui`)
+      counts[file] = leaks;
     }
     assertRatchet(counts, SHARED_LEAK_BASELINE, 'classe de domaine planquée en couche partagée — la déplacer dans le module de sa primitive ou la documenter au catalogue de charte-ui.md (#371)');
   });
 
-  // ── (xiv) EXHAUSTIVITÉ (#371, gap gauges.css ; recalée #1800) : une feuille de `src/ui/**` a un
+  // ── (xiv) EXHAUSTIVITÉ (#371, gap gauges.css ; recalée #1800) : une feuille de `src/**` a UN
   //    statut — PARTAGÉE (`SHARED_CSS_FILES`, gardée par xiii), de PRIMITIVE (une entrée du
   //    manifeste la nomme par son champ `css`), ou d'ÉCRAN (soumise à (xxi)). Le défaut fondateur :
   //    un module CSS oublié (`gauges.css`, ~40 classes de domaine naval) échappait à TOUT en
   //    silence. Toute feuille hors de `src/ui/styles/` doit donc être déclarée nommément, et les
   //    trois statuts couvrent `src/ui/styles/` par construction — ce que l'union vérifie.
-  it('(xiv) exhaustivité : chaque .css de src/ui est PARTAGÉ, de PRIMITIVE ou d’ÉCRAN', () => {
+  it('(xiv) exhaustivité : chaque .css de src est PARTAGÉ, de PRIMITIVE ou d’ÉCRAN, jamais deux', () => {
     const primitives = modulesDePrimitive();
-    const toutes = FICHIERS_UI().filter(estCss).map((f) => f.rel);
-    const partagees = new Set(SHARED_CSS_FILES.map((f) => (f.startsWith('..') ? f.replace('../', 'src/') : `src/ui/${f}`)));
+    const toutes = readCorpus(['src'], { exts: ['.css'] }).map((f) => f.rel);
+    const partagees = new Set(SHARED_CSS_FILES.map((f) => `src/ui/${f}`));
     const sansStatut = toutes.filter((f) => !partagees.has(f) && !primitives.has(f) && !f.startsWith('src/ui/styles/')).sort();
     expect(sansStatut, `CSS hors radar (ni partagé, ni de primitive, ni sous src/ui/styles/) :\n${sansStatut.join('\n')}`).toEqual([]);
     const couverts = new Set([...partagees, ...primitives, ...modulesDEcran().map((f) => f.rel)]);
     const oublies = toutes.filter((f) => !couverts.has(f)).sort();
     expect(oublies, `CSS qu'aucun des trois statuts ne prend :\n${oublies.join('\n')}`).toEqual([]);
+    const doubles = [...partagees].filter((f) => primitives.has(f)).sort();
+    expect(doubles, `CSS à la fois PARTAGÉ et de PRIMITIVE :\n${doubles.join('\n')}`).toEqual([]);
   });
 
   it('(xv) rangée TÉMOIN porteuse de valeur hors `opposedFrozen.ts` : gelée et décroissante (#990)', () => {

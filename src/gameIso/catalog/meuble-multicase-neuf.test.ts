@@ -114,12 +114,19 @@ describe('meuble multi-case NEUF : la donnée suffit, aucune couture ne le conna
     const abords = places.map((p) => cle(p.approach));
     expect(new Set(abords).size, 'abords distincts').toBe(3);
     for (const p of places) {
+      const assise = { x: Math.round(p.anchor.x), y: Math.round(p.anchor.y) };
+      expect(occupees.has(cle(assise)), `assise ${cle(assise)} sur le corps tourné`).toBe(true);
       expect(occupees.has(cle(p.approach)), `abord ${cle(p.approach)} hors du corps`).toBe(false);
       expect(isWalkable(scene, p.approach.x, p.approach.y), `abord ${cle(p.approach)} marchable`).toBe(true);
     }
 
     // CATALOGUE : la fiche neuve est intègre à l'échelle de la scène.
     expect(validatePropCatalog([NEUF], mpt)).toEqual([]);
+    // PRÉMISSE — la même fiche, abords posés SUR leur siège, est refusée trois fois : le validateur
+    // mesure l'empreinte 3×1 par la donnée (`data/props.types.ts:607`, abord dans l'empreinte).
+    const abordsSurLeSiege = { ...NEUF, seatSlots: NEUF.seatSlots!.map((s) => ({ ...s, approach: { x: 0, y: 0 } })) } as PropData;
+    expect(validatePropCatalog([abordsSurLeSiege], mpt).filter((e) => e.includes('tombe sur la case')), 'un abord par place dans le corps')
+      .toHaveLength(3);
 
     // INDEX, PICKING, CLIC D'ÉDITEUR, LIGNE DE VUE, VISION : chaque case du corps rend le meuble et
     // bloque la vue ; la case au-delà, non.
@@ -144,5 +151,12 @@ describe('meuble multi-case NEUF : la donnée suffit, aucune couture ne le conna
 
     // VALIDATEUR : un cap cardinal sur un décor volumique est licite, la scène ne dit rien du meuble.
     expect(validateScene([scene]).filter((w0) => w0.refId === 'banquette-1')).toEqual([]);
+    // PRÉMISSE — la MÊME pose au cap diagonal est signalée (`state/validateScene.ts:165`, cap d'un décor
+    // volumique) : le validateur lit bien le meuble neuf comme VOLUMIQUE, par sa donnée.
+    const diagonale: Scene = { ...scene, entities: scene.entities.map((e) => ({ ...e, facing: 'NE' as const })) };
+    expect(
+      validateScene([diagonale]).filter((w0) => w0.refId === 'banquette-1').map((w0) => w0.level),
+      'le cap diagonal d’un décor volumique est une erreur',
+    ).toEqual(['error']);
   });
 });

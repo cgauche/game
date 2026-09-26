@@ -6,19 +6,22 @@
  * n'entre dans le bundle que si un module l'IMPORTE : personne ne l'important, toutes ces classes
  * restent des noms morts, sans une seule erreur — les projectiles cessent de voler en silence.
  *
- * Ce que ce banc tient : (1) `anim.css` est importée par l'HÔTE du monde (`stage/MondeDeCampagne`),
- * qui vit tant que l'écran de campagne vit — pas par une surcouche, qui se démonte au changement de
- * regard ; (2) toute classe ANIMÉE référencée par un composant de `gameIso/` a bien sa règle dans ce
- * fichier ; (3) la BOÎTE du plateau, `.iso-stage`, a sa feuille à elle (`stage/iso-stage.css`), et
- * tout module de `src/` qui rend un élément de cette classe l'importe — le canevas (`GameStage3D`,
- * que montent la campagne et l'éditeur) comme le SVG posé dessus (`SurcoucheIso`).
+ * Ce que ce banc tient : (1) le BRANCHEMENT — `anim.css` est importée par l'HÔTE du monde
+ * (`stage/MondeDeCampagne`), qui vit tant que l'écran de campagne vit, et par lui SEUL : une surcouche
+ * se démonte au changement de regard, et une feuille globale a UN propriétaire ; (2) chaque classe de
+ * MISE EN PAGE du plateau a SA feuille (table `MISES_EN_PAGE` : `.iso-stage` → `stage/iso-stage.css`,
+ * `.pastille-entite` → `stage/pastille-entite.css`, `.plaque-nom` → `stage/plaque-nom.css`) : la
+ * feuille porte la règle, et tout module de `src/` qui rend un élément de cette classe l'importe. Une
+ * mise en page tient ainsi par son RENDEUR, jamais par l'hôte qui le monte.
  *
  * PÉRIMÈTRE ET ANGLE MORT, énoncés. Le scan est TEXTUEL et STATIQUE : il lit les sources, jamais un
  * DOM. jsdom n'exécute NI les keyframes NI la cascade CSS — aucun test de rendu ne pourrait dire ici
- * qu'une animation « tourne ». Une classe construite dynamiquement (`\u0060es-${kind}\u0060`) n'est vue que par sa
- * RACINE ; une règle supprimée du CSS pendant que son nom survit dans un template littéral échappe
- * donc au volet (2) — c'est assumé : le cliquet garde le BRANCHEMENT (volet 1), qui est ce qui a
- * cassé, et le motif courant du dépôt pour le reste.
+ * qu'une animation « tourne ». Une règle d'animation supprimée d'`anim.css` alors que son nom survit
+ * dans un composant est HORS DE PORTÉE : la feuille est la seule liste de ses classes, et un scan
+ * textuel n'a aucune autre source contre laquelle la confronter. Une classe est RÉCLAMÉE par une
+ * valeur `className`/`class`, par `classList.add(…)` ou par `setAttribute('class', …)` ; une classe
+ * construite dynamiquement (`\u0060es-${kind}\u0060`) n'est vue que par sa RACINE, et toute autre
+ * écriture (`classList.toggle`, concaténation hors littéral, nom tiré d'une variable) échappe au scan.
  */
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -28,10 +31,16 @@ import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 
 const GAMEISO = fileURLToPath(new URL('../', import.meta.url)); // …/stage/ → …/gameIso/
 const SOUS_GAMEISO = 'src/gameIso/';
-const CSS = join(GAMEISO, 'anim.css');
 /** L'HÔTE du monde : il ne se démonte qu'avec l'écran de campagne. */
 const HOTE = join(GAMEISO, 'stage/MondeDeCampagne.tsx');
-const FEUILLE_PLATEAU = join(GAMEISO, 'stage/iso-stage.css');
+const RACINE = fileURLToPath(new URL('../../../', import.meta.url)); // …/src/gameIso/stage/ → dépôt
+
+/** Classe de MISE EN PAGE → la feuille qui la porte, et les rendeurs que le scan DOIT voir (prémisse). */
+const MISES_EN_PAGE: readonly { classe: string; feuille: string; rendeurs: readonly string[] }[] = [
+  { classe: 'iso-stage', feuille: 'src/gameIso/stage/iso-stage.css', rendeurs: ['src/gameIso/stage/GameStage3D.tsx', 'src/gameIso/SurcoucheIso.tsx'] },
+  { classe: 'pastille-entite', feuille: 'src/gameIso/stage/pastille-entite.css', rendeurs: ['src/gameIso/stage/PastilleEntite.tsx'] },
+  { classe: 'plaque-nom', feuille: 'src/gameIso/stage/plaque-nom.css', rendeurs: ['src/gameIso/stage/PlaquesDeNom.tsx'] },
+];
 
 /** Le module IMPORTE-t-il la feuille ? Lecture LIGNE À LIGNE, commentaires écartés : un import mis en
  *  commentaire ne branche rien, et une regex posée sur le fichier entier le prendrait pour un import. */
@@ -44,17 +53,6 @@ export function importeFeuille(src: string, feuille: string): boolean {
     if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) return false;
     return rx.test(t);
   });
-}
-
-/** Les classes du CSS qui portent une ANIMATION (les seules dont l'absence se voit à l'écran). */
-export function classesAnimees(css: string): string[] {
-  const out = new Set<string>();
-  const bloc = /\.([\w-]+)(?:[^{}]*)\{([^}]*)\}/g;
-  let m: RegExpExecArray | null;
-  while ((m = bloc.exec(css))) {
-    if (/\banimation\s*:/.test(m[2])) out.add(m[1]);
-  }
-  return [...out];
 }
 
 /** Les sources de `gameIso/`, hors tests — chemin DEPUIS `gameIso/`, la forme que porte le rapport. */
@@ -72,7 +70,10 @@ export function classesReclamees(src: string, connues: readonly string[]): strin
     // La classe est réclamée si son nom apparaît dans une valeur de classe : littéral (`"proj"`,
     // `'fly crow'`) ou template (`` `es-${k}` ``). On exige une frontière de mot pour ne pas
     // confondre `.fly` avec `.flyover`.
-    const rx = new RegExp(`class(?:Name)?\\s*=\\s*(?:["'\`{][^"'\`]*)?\\b${c}\\b`);
+    const valeur = `(?:["'\`{][^"'\`]*)?\\b${c}\\b`;
+    const rx = new RegExp(
+      `class(?:Name)?\\s*=\\s*${valeur}|classList\\.add\\([^)]*?["'\`]${c}["'\`]|setAttribute\\(\\s*["']class["']\\s*,\\s*${valeur}`,
+    );
     if (rx.test(src)) out.add(c);
   }
   return [...out];
@@ -95,38 +96,21 @@ describe('keyframes du stage — la feuille est BRANCHÉE, et sur l’hôte du m
       .toEqual(['stage/MondeDeCampagne.tsx']);
   });
 
-  it('toute classe ANIMÉE réclamée par un composant de `gameIso/` a sa règle dans la feuille', () => {
-    const animees = classesAnimees(readFileSync(CSS, 'utf8'));
-    // PRÉMISSE — sans classes animées, tout ce qui suit serait vrai du vide.
-    expect(animees.length, 'la feuille ne déclare aucune animation : la mesure porterait sur rien')
-      .toBeGreaterThan(5);
-    const reclamees = new Set<string>();
-    for (const { code } of sources()) {
-      for (const c of classesReclamees(code, animees)) reclamees.add(c);
-    }
-    // PRÉMISSE — le scan MORD : des composants réclament bien ces classes.
-    expect(reclamees.size, 'aucune classe animée réclamée : le scan ne voit rien').toBeGreaterThan(3);
-    const orphelines = [...reclamees].filter((c) => !animees.includes(c));
-    expect(orphelines, `classes réclamées sans règle : ${orphelines.join(', ')}`).toEqual([]);
-  });
-
-  it('la BOÎTE du plateau : tout module de `src/` qui rend un élément `.iso-stage` importe `iso-stage.css`', () => {
+  it.each(MISES_EN_PAGE)('mise en page $classe : sa feuille porte la règle, tout module de `src/` qui la rend l’importe', ({ classe, feuille, rendeurs: attendus }) => {
+    const nomFeuille = feuille.slice(feuille.lastIndexOf('/') + 1);
     expect(
-      /^\.iso-stage\s*\{/m.test(readFileSync(FEUILLE_PLATEAU, 'utf8')),
-      '`stage/iso-stage.css` ne porte plus la règle `.iso-stage` : le plateau retombe à 300×150',
+      new RegExp(`^\\.${classe}\\s*\\{`, 'm').test(readFileSync(join(RACINE, feuille), 'utf8')),
+      `\`${feuille}\` ne porte plus la règle \`.${classe}\``,
     ).toBe(true);
-    const rendeurs = readCorpus(['src/'])
-      .filter(({ text }) => classesReclamees(text, ['iso-stage']).length > 0);
-    // PRÉMISSE — le scan MORD : le canevas et le SVG du plateau rendent bien la classe.
-    expect(rendeurs.map(({ rel }) => rel), 'aucun rendeur de `.iso-stage` : le scan ne voit rien')
-      .toEqual(expect.arrayContaining(['src/gameIso/stage/GameStage3D.tsx', 'src/gameIso/SurcoucheIso.tsx']));
-    const sansFeuille = rendeurs.filter(({ text }) => !importeFeuille(text, 'iso-stage.css')).map(({ rel }) => rel);
-    expect(sansFeuille, `rendent \`.iso-stage\` sans importer sa feuille :\n${sansFeuille.join('\n')}`).toEqual([]);
+    const rendeurs = readCorpus(['src/']).filter(({ text }) => classesReclamees(text, [classe]).length > 0);
+    // PRÉMISSE — le scan MORD : les rendeurs connus rendent bien la classe.
+    expect(rendeurs.map(({ rel }) => rel), `aucun rendeur de \`.${classe}\` : le scan ne voit rien`)
+      .toEqual(expect.arrayContaining([...attendus]));
+    const sansFeuille = rendeurs.filter(({ text }) => !importeFeuille(text, nomFeuille)).map(({ rel }) => rel);
+    expect(sansFeuille, `rendent \`.${classe}\` sans importer \`${nomFeuille}\` :\n${sansFeuille.join('\n')}`).toEqual([]);
   });
 
   it('fail-closed : le scanner voit une déclaration et une réclamation SYNTHÉTIQUES', () => {
-    expect(classesAnimees('.tourne { animation: tourne 2s linear infinite; }')).toEqual(['tourne']);
-    expect(classesAnimees('.plate { color: red; }')).toEqual([]);
     expect(classesReclamees('<g className="proj tourne" />', ['tourne'])).toEqual(['tourne']);
     expect(classesReclamees('<g className={`es-${k}`} />', ['es-mort'])).toEqual([]);
     expect(classesReclamees('<g className="tournevis" />', ['tourne'])).toEqual([]);
@@ -138,5 +122,9 @@ describe('keyframes du stage — la feuille est BRANCHÉE, et sur l’hôte du m
     expect(importeFeuille("import './iso-stage.css';", 'iso-stage.css')).toBe(true);
     expect(importeFeuille("import './faux-iso-stage.css';", 'iso-stage.css')).toBe(false);
     expect(classesReclamees('<svg className="iso-stage" />', ['iso-stage'])).toEqual(['iso-stage']);
+    expect(classesReclamees("el.classList.add('muet', 'plaque-nom');", ['plaque-nom'])).toEqual(['plaque-nom']);
+    expect(classesReclamees("el.setAttribute('class', 'plaque-nom halo-champ');", ['plaque-nom'])).toEqual(['plaque-nom']);
+    expect(classesReclamees("el.setAttribute('data-x', 'plaque-nom');", ['plaque-nom'])).toEqual([]);
+    expect(classesReclamees("el.classList.add('plaque-nommee');", ['plaque-nom'])).toEqual([]);
   });
 });
