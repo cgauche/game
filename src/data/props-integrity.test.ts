@@ -18,6 +18,9 @@ const propFixture = (patch: Partial<PropData>): PropData => ({ id: 'x', type: 'p
  *  unique et jamais réécrit — depuis #1509 l'empreinte effective d'un décor à recette en dépend. */
 const MPT = sceneMetresPerTile(undefined);
 
+/** La plus petite recette BIEN FORMÉE : ce que des places assises exigent pour entrer au parse. */
+const RECETTE_MINIMALE = { capIdentite: 'S', primitives: [{ kind: 'box', center: { xM: 0, yM: 0, hM: 0.5 }, size: { xM: 1, yM: 1, hM: 1 }, material: 'bois-chene' }] };
+
 describe('props.json — formes strictes de la recette volumique et des places assises', () => {
   it('refuse une primitive inconnue, un matériau absent et un matériau d’un AUTRE domaine — au PARSE', () => {
     // Le `type` d'enveloppe est POSÉ sur chaque sonde négative : sans lui, elles sortiraient rouges
@@ -60,18 +63,25 @@ describe('props.json — formes strictes de la recette volumique et des places a
    * refus est À L'ENTRÉE, sans quoi le champ mort reviendrait par le prochain authoring.
    */
   it('refuse un `foot` sur une recette volumique, et l’accepte sur un billboard', () => {
-    const avecRecette = {
-      id: 'x', type: 'props', label: 'X d’épreuve', foot: { w: 2, h: 1 },
-      volume: { capIdentite: 'S', primitives: [{ kind: 'box', center: { xM: 0, yM: 0, hM: 0.5 }, size: { xM: 1, yM: 1, hM: 1 }, material: 'bois-chene' }] },
-    };
-    const echec = propsSchema.safeParse([avecRecette]);
+    const billboard = { id: 'x', type: 'props', label: 'X d’épreuve', foot: { w: 2, h: 1 } };
+    const echec = propsSchema.safeParse([{ ...billboard, volume: RECETTE_MINIMALE }]);
     expect(echec.success).toBe(false);
     // Le message NOMME l'entrée et la raison — un refus muet n'apprendrait rien à l'auteur.
     expect(JSON.stringify(echec.error?.issues)).toContain('x : `foot` sur une recette volumique');
     // Un BILLBOARD au MÊME `foot` entre sans discuter : c'est bien la CO-PRÉSENCE qui est refusée.
-    const { volume, ...billboard } = avecRecette;
-    void volume;
     expect(propsSchema.safeParse([billboard]).success).toBe(true);
+  });
+
+  /** PLACES SANS RECETTE : `data/props.types.ts`, CAP D'IDENTITÉ. */
+  it('refuse des places assises sur un billboard, et les accepte sur une recette volumique', () => {
+    const billboard = {
+      id: 'x', type: 'props', label: 'X d’épreuve',
+      seatSlots: [{ id: 'place-1', anchor: { xM: 0, yM: -0.35, hM: 0.48 }, facing: 'S', approach: { x: 0, y: -1 } }],
+    };
+    expect(propsSchema.safeParse([{ ...billboard, volume: RECETTE_MINIMALE }]).success, 'places + recette').toBe(true);
+    const echec = propsSchema.safeParse([billboard]);
+    expect(echec.success, 'places sans recette').toBe(false);
+    expect(JSON.stringify(echec.error?.issues)).toContain('x : places assises sans recette volumique');
   });
 
   it('refuse une face de cylindre hors barème et une pente inconnue', () => {
@@ -94,7 +104,7 @@ describe('props.json — formes strictes de la recette volumique et des places a
    */
   it('refuse un id de place qui porte un CÔTÉ', () => {
     const place = (id: string) => [{
-      id: 'x', type: 'props', label: 'X d’épreuve',
+      id: 'x', type: 'props', label: 'X d’épreuve', volume: RECETTE_MINIMALE,
       seatSlots: [{ id, anchor: { xM: 0, yM: -0.35, hM: 0.48 }, facing: 'S', approach: { x: 0, y: -1 } }],
     }];
     for (const cote of ['place-nord', 'place-sud', 'place-est', 'place-ouest', 'place-gauche', 'place-droite'])
@@ -123,7 +133,7 @@ describe('props.json — formes strictes de la recette volumique et des places a
     expect(propsSchema.safeParse(recette([{ ...cylindre, radius: 0.3 }])).success, '`radius` en cases').toBe(false);
     // L'ANCRE d'une place suit la même règle ; son APPROCHE, elle, reste un offset de CASE.
     const place = (anchor: unknown) => [{
-      id: 'x', type: 'props', label: 'X d’épreuve',
+      id: 'x', type: 'props', label: 'X d’épreuve', volume: RECETTE_MINIMALE,
       seatSlots: [{ id: 'place-1', anchor, facing: 'S', approach: { x: 0, y: -1 } }],
     }];
     expect(propsSchema.safeParse(place({ xM: 0, yM: -0.7, hM: 0.48 })).success, 'ancre métrique').toBe(true);
@@ -355,8 +365,7 @@ describe('validatePropCatalog — invariants de données du décor', () => {
   })();
 
   it('le catalogue RÉEL est intègre à CHAQUE échelle en usage dans les documents livrés', () => {
-    // La liste est mesurée, pas écrite : si elle retombait à une seule échelle, ce contrat ne
-    // mesurerait plus que le défaut du monde — et c'est précisément le trou qu'il ferme.
+    // La liste est mesurée, pas écrite : si elle retombait à une seule échelle, ce contrat mesurerait seulement le défaut du monde — et c'est précisément le trou qu'il ferme.
     expect(ECHELLES_EN_USAGE.length, 'échelles en usage').toBeGreaterThan(1);
     expect(ECHELLES_EN_USAGE).toContain(MPT);
     const anomalies = ECHELLES_EN_USAGE.flatMap((mpt) => validatePropCatalog(props, mpt));
@@ -423,7 +432,7 @@ describe('FERMETURE — une primitive est une COQUILLE CLOSE', () => {
     const [[, boite]] = UNE_DE_CHAQUE;
     const polys = sommetsLocaux(boite);
     expect(polys).toHaveLength(6);
-    // Une face en moins : les 4 arêtes qu'elle portait n'ont plus qu'un seul sens.
+    // Une face en moins : les 4 arêtes qu'elle portait ont un seul sens.
     const percée = aretesNonAppariees(polys.slice(1));
     expect(percée).toHaveLength(4);
     for (const { sens, contreSens } of percée) expect([sens, contreSens]).toEqual([1, 0]);

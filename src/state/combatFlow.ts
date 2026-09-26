@@ -4100,7 +4100,7 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
         checkBattleOver(get, set);
       }
     }
-    // Attaques de ZONE/spéciales (Souffle/Vomi/Langue/Hurlement) : désormais des UNITÉS de la file — une
+    // Attaques de ZONE/spéciales (Souffle/Vomi/Langue/Hurlement) : des UNITÉS de la file — une
     // manœuvre de zone qui touche des HÉROS ouvre une cascade de défense INFLUENÇABLE (elle SUSPEND), donc
     // elle doit être RÉSUMABLE : la file est persistée sur l'ennemi ; la reprise re-appelle
     // `aiCreatureFreeAttacks` (file DÉFINIE → bloc d'init sauté, on enchaîne l'unité suivante). Ordre RAW
@@ -6696,7 +6696,7 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
     // utilisateur) : cadence-aware (héros manuel → cascade influençable). Si une cascade s'ouvre, on DIFFÈRE
     // la victoire — sa fermeture (`combatEndBoundary`) enchaîne sur `finishCombatEnd`/`finishVictory`.
     // Slot occupé par une cascade de SETUP (Surprise, purpose 'combat') : on DIFFÈRE sans ouvrir plutôt
-    // que d'y APPENDRE les Tests de fin (`startCascade` appende désormais à même `purpose`, #942 L1) —
+    // que d'y APPENDRE les Tests de fin (`startCascade` appende à même `purpose`, #942 L1) —
     // l'écran de victoire ne doit pas dépendre de la résolution d'une séquence de setup. À la clôture de
     // cette cascade 'combat', `dispatchCascadeDone` (combatSlice) RE-VÉRIFIE `checkBattleOver` — slot LIBRE
     // → il OUVRE alors la cascade de fin (#345). C'est ce re-check déterministe (PAS `resumeSuspendedAI`, qui
@@ -7002,7 +7002,7 @@ export function advanceTurn(get: Get, set: SetFn) {
       // refresh-wounds 20 → triggers 25 → Instable 30 → Bestial 40 → Perturbant 50 → Surnombre 55 →
       // Détermination 70/72 → broken-recovery 74 → tail 76-79.5 → règles optionnelles (se-fatiguer 80).
       // (Mâchoires d'acier n'est plus un hook de Round : c'est un effet `onGainCondition` data-driven.)
-      // advanceTurn n'orchestre plus que le CADRE (Round, ordre, révélation) ; le CONTENU vit en hooks.
+      // advanceTurn orchestre seulement le CADRE (Round, ordre, révélation) ; le CONTENU vit en hooks.
       // (Frénésie : l'Arme libre est un grant de DONNÉE plafonné par freeAttacksThisTurn, remis à zéro au tour.)
       // Unique porte (#316) : le site MÉTIER émet via le bus ; les boucles internes `fireTriggers`
       // (roundHooks, bus-owned) restent la machinerie du bus. Sans `audience`/`self` → diffusion data
@@ -7249,7 +7249,7 @@ export function sealApproachMoves(get: Get, set: SetFn, c: Combatant | null | un
 }
 
 /** SEULE couture qui pose `acted` (Action du Tour consommée) : elle scelle du même geste les
- *  déplacements en attente de l'acteur — une Action prise interdit désormais `cancelMove`, donc le
+ *  déplacements en attente de l'acteur — une Action prise interdit `cancelMove`, donc le
  *  déplacement est irrévocable et son approche est due (LDB 21 l.27). Rend le `BattleState` à poser. */
 export function markActed(get: Get, set: SetFn, battle: BattleState): BattleState {
   sealApproachMoves(get, set, inBattleId(battle, battle.order[battle.turn]));
@@ -7458,7 +7458,7 @@ export function openRoundStartPsych(get: Get, set: SetFn): void {
  * `roundBoundary` (poison-resist/broken-recovery/se-fatiguer). Ordre choisi : upkeep AVANT la
  * Peur (les effets de Round RAW — dont les hooks ennemi — précèdent la révélation/Psychologie de fin
  * de Round, et la sortie d'un État Sonné/Brisé peut influer sur l'état d'esprit) ; ENTRE familles cet
- * ordre est conservé, mais il vaut désormais famille par famille (tous les upkeeps, puis les bandes)
+ * ordre est conservé, mais il vaut famille par famille (tous les upkeeps, puis les bandes)
  * et non plus héros par héros — une bande est UNE question posée à N héros, elle ne peut pas
  * s'entrelacer avec l'entretien de chacun d'eux. Appelée au franchissement de Round APRÈS
  * l'entretien/le Destin ; suspend l'IA jusqu'à résolution.
@@ -7784,7 +7784,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // chemin ; le couple est solidaire (positions synchronisées à l'exécution du « move »).
   const geom = mountOf(battle, enemy) ?? enemy;
   // Entrée de l'IA MUTUALISÉE (sorts résolus + escouade/orientation/perception/mouvement/vol/blocage).
-  // « Vient d'enfourcher » → Mouvement consommé ce tour (l'IA n'a plus que son Action).
+  // « Vient d'enfourcher » → Mouvement consommé ce tour (l'IA a seulement son Action).
   let input = buildAiInput(enemy, get);
   if (justMounted) input.movement = 0;
   let action = chooseEnemyAction(input);

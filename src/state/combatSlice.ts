@@ -496,7 +496,7 @@ export function createCombatSlice(get: Get, set: Set) {
     // la borne de Round, première dans la chaîne, AFFAMAIT la reprise de tour d'une séquence FUSIONNÉE).
     // Les deux bornes ne sont PAS équivalentes : au franchissement, `advanceTurn` a DÉJÀ posé `{turn: 0, round}` et
     // joué les décomptes une-fois-par-Round (combatFlow.ts:5245-5246 → `resolveRoundBoundary` →
-    // `openRoundEndCascade`) ; le `roundBoundary` de la séquence ne porte plus QUE `enterRoundStartPause`.
+    // `openRoundEndCascade`) ; le `roundBoundary` de la séquence porte seulement `enterRoundStartPause`.
     // Lui céder la place SACRIFIE donc, pour le Round COURANT, la pause de début de Round et son reset
     // per-Round (`shotsThisTurn`/`acted`/`movementUsed`…) — au profit du tour EN COURS. Moindre mal :
     // l'inverse perd le tour définitivement (la pause pose `turn: -1` et GÈLE la machinerie,
@@ -1053,7 +1053,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const snap = battle.moveSnapshot;
       const active = activeCombatant(battle);
       // Aide PRÉ-Action uniquement : on n'annule que tant qu'aucune Action n'a été prise ce Tour (sinon
-      // l'Action aurait été résolue depuis une position désormais effacée). Rien à annuler sans segment.
+      // l'Action aurait été résolue depuis une position effacée). Rien à annuler sans segment.
       if (!snap || !active || !controlsCombatant(get(), active) || battle.acted || (battle.movementUsed ?? 0) === 0) return;
       for (const c of battle.combatants) {
         const p = snap.pos[c.id];
@@ -1640,7 +1640,7 @@ export function createCombatSlice(get: Get, set: Set) {
         : t('cs.courageNo', { name: c.label, src: pa.sourceName }), c.id, src?.id)];
       set({ battle: { ...get().battle!, fearGate: ok ? 'passed' : 'failed', log } });
       if (ok) {
-        // Relance l'intention différée (le gate est désormais 'passed') AVEC son verdict d'armement :
+        // Relance l'intention différée (le gate est 'passed') AVEC son verdict d'armement :
         // l'intention qui l'a produite a été dissoute par le premier clic, la relire ici refuserait le
         // geste que le joueur vient de gagner à son Test de Calme.
         if (pa.intent.kind === 'tile') get().battleClickTile(pa.intent.pt, { confirm: true, courseArmee: pa.intent.courseArmee });
@@ -1901,7 +1901,7 @@ export function createCombatSlice(get: Get, set: Set) {
      *  (engine/policy), pas dans le store → la passer en Auto/Rapide ne traverse NI la boucle de tours NI la
      *  souscription de `combatAuto` (aucun `set`) : le combat se figeait sur le tour courant. On RÉ-ENTRE donc
      *  explicitement : `tickCombatAuto` auto-résout une éventuelle modale ouverte, `maybeRunEnemyTurn` joue le
-     *  tour de l'acteur si l'IA le pilote désormais. No-op en mode manuel / hors combat (gardes internes). */
+     *  tour de l'acteur si l'IA le pilote. No-op en mode manuel / hors combat (gardes internes). */
     resumeCadence: () => {
       const b = get().battle;
       if (!b || b.over) return;
@@ -2596,7 +2596,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // étape `attack` (`pendingAttack` mis à jour par cleaveAttack/dualStrikeAttack) ; on n'avance qu'au bout.
       advanceCombatJet(get);
     },
-    // `attackCancel` (« Annuler » / défaire-charge) est désormais GÉNÉRÉ par la fabrique
+    // `attackCancel` (« Annuler » / défaire-charge) est GÉNÉRÉ par la fabrique
     // (`FLOWS.attack.onCancel`, cf. la liste de verbes ci-dessus) — plus d'action bespoke ici.
     // PILONNAGE INDIRECT (« viser une case », AA 10 l.169/171) : la case d'impact est déposée par le placeur
     // ('siege', commitPlacedZone). Ouvre la modale de tir de la pièce indirecte servie (`pendingAttack` siège) :

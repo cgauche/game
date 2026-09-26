@@ -152,8 +152,8 @@ describe('meuble à places ET fouillable — les deux affordances restent atteig
   it('AUCUNE affordance morte : le halo n’est allumé que si un geste reste possible', () => {
     // Halo ALLUMÉ = fouille non épuisée OU place libre — exactement ce que le store sert.
     posrFouillable(ABORD_NORD);
-    const el = { kind: 'prop', key: `prop:${PROP}`, cell: { x: 5, y: 5, z: 0 }, source: 'entity', entId: PROP,
-      ref: TABLE, foot: { offX: 0, offY: 0, scale: 1 },states: { visible: true } } as unknown as BillboardPropEl;
+    const el: BillboardPropEl = { kind: 'prop', key: `prop:${PROP}`, cell: { x: 5, y: 5, z: 0 }, source: 'entity', entId: PROP,
+      span: { w: 1, h: 1 }, ref: TABLE, foot: { offX: 0, offY: 0, scale: 1 }, states: { visible: true } };
     // RÉGIME de révélation (#1687) : Alt tenu, donc ce qui APPELLE est allumé — ce que le halo dit ici,
     // c'est l'appartenance à la liste des utilisables, pas la variante peinte.
     const sc = () => useGame.getState().scene!;

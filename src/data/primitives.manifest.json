@@ -900,6 +900,21 @@
     "verrou": "gameIso/stage/anim-css-branchee.test.ts — les keyframes sont importées par l’hôte du monde"
   },
   {
+    "id": "isoStage",
+    "type": "primitives.manifest",
+    "label": "GameStage3D/SurcoucheIso",
+    "fichier": "src/gameIso/stage/GameStage3D.tsx",
+    "css": "src/gameIso/stage/iso-stage.css",
+    "poseurs": [
+      "src/gameIso/stage/GameStage3D.tsx",
+      "src/gameIso/SurcoucheIso.tsx"
+    ],
+    "nature": "organisme",
+    "concept": "la BOÎTE du plateau : le rectangle commun au canevas 3D et au SVG de surcouche",
+    "perimetre": "campagne (canevas et surcouche), éditeur (canevas)",
+    "verrou": "gameIso/stage/anim-css-branchee.test.ts, volet « la BOÎTE du plateau » — tout module qui rend `.iso-stage` importe `stage/iso-stage.css`"
+  },
+  {
     "id": "stateChips",
     "type": "primitives.manifest",
     "label": "StateChips",

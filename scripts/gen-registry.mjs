@@ -679,9 +679,8 @@ function genIds() {
     `/**\n` +
     ` * Ids des décors dont le TYPE porte une recette VOLUMIQUE (\`props.json\`, \`volume.primitives\`) —\n` +
     ` * ce que la couche schémas doit savoir d'un \`ref\` de décor sans pouvoir lire le catalogue au\n` +
-    ` * runtime. Un tel décor ne prend qu'un cap CARDINAL : sa recette tourne là où son empreinte solide\n` +
-    ` * ne tourne pas (#1509), et une diagonale poserait son corps en travers de cases restées\n` +
-    ` * traversables. Refusé AU PARSE par \`sceneEntitySchema\` (\`defs-scenes/scene.ts\`).\n` +
+    ` * runtime. Un tel décor ne prend qu'un cap CARDINAL : \`data/props.types.ts\` \`capVolumique\`.\n` +
+    ` * Refusé AU PARSE par \`sceneEntitySchema\` (\`defs-scenes/scene.ts\`).\n` +
     ` */\n` +
     `export const PROPS_VOLUMIQUES: readonly string[] = [${volumiques.map(lit).join(', ')}];\n\n` +
     `/**\n` +

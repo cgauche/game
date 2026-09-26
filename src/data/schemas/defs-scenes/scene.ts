@@ -200,9 +200,8 @@ export const sceneEntitySchema = z.strictObject({
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['ref'], message: `décor « ${ent.id} » : ${souci.message}` });
   }
   // CAP D'UN DÉCOR VOLUMIQUE — verrou AU PARSE (#1680 ligne 3) : un décor dont le TYPE porte une
-  // recette ne prend qu'un cap CARDINAL. Sa recette tourne (`rotatePropLocal`) là où son empreinte
-  // solide ne tourne pas (#1509) : une diagonale poserait son corps en travers de cases restées
-  // traversables. Le cap lit le registre GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
+  // recette ne prend qu'un cap CARDINAL : `data/props.types.ts` `capVolumique`. Le cap lit le registre
+  // GÉNÉRÉ `PROPS_VOLUMIQUES`, dérivé de `props.json`.
   if (capDecorAdmis(ent.ref !== undefined && VOLUMIQUES.has(ent.ref), ent.facing)) return;
   ctx.addIssue({
     code: z.ZodIssueCode.custom,

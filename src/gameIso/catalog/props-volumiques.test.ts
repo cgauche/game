@@ -19,9 +19,9 @@ import { readCorpus } from '../../../scripts/guards/lib/sourceCorpus.mjs';
 
 /**
  * LE DÉCOR VOLUMIQUE — les refs de `props.json` dont le corps MONDE est leur recette, et dont le SVG
- * de catalogue n'est plus qu'une vignette de palette. Ce fichier tient les deux moitiés du contrat :
- * l'identité (vignette + recette + places) et l'EXCLUSIVITÉ de la voie monde (une ref volumique n'a
- * plus aucun sujet de billboard).
+ * de catalogue est la vignette de palette. Ce fichier tient les deux moitiés du contrat : l'identité
+ * (vignette + recette + places) et l'EXCLUSIVITÉ de la voie monde (une ref volumique n'a aucun sujet
+ * de billboard).
  *
  * La liste est DÉRIVÉE du catalogue : une recette de plus entre sous contrat par sa seule déclaration
  * en donnée — une liste manuscrite laisserait les suivantes hors garde en silence.
@@ -202,8 +202,8 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
 
   /**
    * EMPREINTE — les cases d'un décor à recette sont celles de son CORPS TOURNÉ, sièges exclus
-   * (`empreinteDeriveeDuProp`, #1509). Le `foot` déclaré n'est plus la vérité d'un volumique : il n'en
-   * reste QUE la vérité d'un billboard. Ces contrats mesurent donc la DÉRIVÉE, en positif.
+   * (`empreinteDeriveeDuProp`, #1509) ; le `foot` déclaré est la vérité d'un BILLBOARD seul. Ces
+   * contrats mesurent donc la DÉRIVÉE, en positif.
    *
    * L'exclusion des sièges EST le prédicat : un tabouret n'est pas un obstacle, c'est par lui qu'on
    * s'assoit — sans elle, la table ronde passerait de 1×1 à 2×2 solide et ses quatre abords
@@ -225,11 +225,13 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
 
   /**
    * LE CONTRAT DU SOCLE, en ATTENDUS NOMINAUX : l'empreinte de chaque recette, à chacun de ses quatre
-   * caps. Elle ne se compare à AUCUNE donnée — `foot` a disparu des recettes (migration
-   * `2026-09-03-1509-foot-volumique-mort.mjs`, refine `defs/props.ts`), et se comparer à ce que le
-   * code dérive lui-même ne rougirait jamais. La liste est CLOSE, et c'est la COUVERTURE qui la ferme
-   * (ses clés sont EXACTEMENT le catalogue) : une recette de plus s'y déclare avec ses cases mesurées,
-   * ou elle sort rouge sans être vue.
+   * caps. C'est un GOLDEN voulu : l'intention de l'auteur, écrite une fois, contre laquelle se mesure
+   * ce que la dérivation rend — aucune recette ne porte de `foot` (refine `defs/props.ts`), et se
+   * comparer à ce que le code dérive lui-même ne rougirait jamais. La liste est CLOSE, et c'est la
+   * COUVERTURE qui la ferme (ses clés sont EXACTEMENT le catalogue).
+   *
+   * COÛT D'UN MEUBLE N+1 : sa recette + sa vignette + sa pose en scène + UNE ligne d'attendu ici. Aucune
+   * ligne de CODE : `meuble-multicase-neuf.test.ts` le prouve sur une recette de fixture.
    */
   const EMPREINTES_ATTENDUES: Readonly<Record<string, { ns: [number, number]; eo: [number, number] }>> = {
     // Les deux recettes MULTI-CASE du catalogue : leur plateau (3,80 m pour la table longue, 3,00 m
@@ -284,7 +286,7 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
     }
   });
 
-  it('plus AUCUNE recette ne déclare de `foot` — c’est la vérité d’un BILLBOARD, et de lui seul (#1509)', () => {
+  it('AUCUNE recette ne déclare de `foot` — c’est la vérité d’un BILLBOARD, et de lui seul (#1509)', () => {
     expect(IDS.filter((id) => findPropById(id)!.foot !== undefined)).toEqual([]);
     // Et le champ vit toujours, chez ceux à qui il appartient : sans cette moitié, le contrat
     // ci-dessus passerait aussi sur un `foot` disparu du schéma.
@@ -347,8 +349,8 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
   });
 
   /**
-   * POPULATION — l'empreinte tourne désormais avec le cap (#1509), donc plus aucun cap n'est interdit
-   * à un meuble multi-case. Ce que ce contrat mesure à la place, c'est que le catalogue est authoré
+   * POPULATION — l'empreinte tourne avec le cap (#1509) : tout cap cardinal est licite pour un meuble
+   * multi-case. Ce que ce contrat mesure, c'est que le catalogue est authoré
    * POUR l'échelle de ses scènes : à l'échelle RÉELLE de la scène qui la porte, chaque instance
    * volumique couvre exactement les cases que le catalogue mesure à la grille terrestre (2 m/case,
    * `LDB 15 l.12`). Une scène à une AUTRE échelle — le monde naval est à 4 m/case et plus — y ferait
@@ -401,10 +403,9 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
 
 /**
  * CAP CARDINAL — LA CHAÎNE ENTIÈRE, sur une seule donnée fautive (#1680 ligne 3). Un décor dont le
- * TYPE porte une recette ne prend qu'un cap cardinal : sa recette tourne (`rotatePropLocal`) là où son
- * empreinte solide ne tourne pas (#1509). Quatre verrous, du plus AMONT au dernier filet, et ce test
- * les tient ENSEMBLE — la règle est celle du CATALOGUE (`refEstVolumique`), donc un BILLBOARD au même
- * cap reste licite à chaque étage :
+ * TYPE porte une recette ne prend qu'un cap cardinal : `data/props.types.ts` `capVolumique`. Quatre
+ * verrous, du plus AMONT au dernier filet, et ce test les tient ENSEMBLE — la règle est celle du
+ * CATALOGUE (`refEstVolumique`), donc un BILLBOARD au même cap reste licite à chaque étage :
  *   1. SCHÉMA (bloquant) : `sceneEntitySchema` refuse au parse, `parseProject` lève ;
  *   2. VALIDATEUR (signalant) : `validateScene` nomme l'entité à l'éditeur — il n'interdit rien, il
  *      montre (le panneau d'avertissements d'`Editor.tsx` est son seul consommateur) ;

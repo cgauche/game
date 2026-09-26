@@ -164,20 +164,6 @@
 }
 .zde-ants { animation: zdeMarch 0.9s linear infinite; }
 
-/* ── LE PLATEAU lui-même (`stage/GameStage3D.tsx`, `SurcoucheIso.tsx`) : il remplit tout l'espace
-   disponible (caméra responsive), et porte les animations de ce qui vit dessus. ── */
-.iso-stage {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: radial-gradient(circle at 50% 28%, var(--bg), var(--bg));
-  /* Aucun `cursor` au REPOS : le stage est le seul écrivain du curseur du monde
-     (`stage/useStagePointer.ts` — `'pointer'` sur un utilisable, `''` sinon), et une main posée ici
-     rendrait cet effacement invisible (#1687). */
-  touch-action: none;
-}
 /* Halo d'un décor magique ou d'une arme à feu (`.glow`, posé par les défs de `gameIso/catalog` et
    `rig/parts/weapons`) : pulsation lente, jamais une animation par déf. */
 .iso-stage .glow {

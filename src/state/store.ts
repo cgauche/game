@@ -2972,7 +2972,7 @@ export const useGame = create<GameState>((set, get) => ({
       const upkeepLines = runDailyUpkeep(get, set, { onDeferTest: (t) => deferred.push(t) });
       if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' });
       // La file porte des BANDES comme tout le reste de la nuit (#1117 L3) : la fenêtre est formée
-      // ICI, à l'émission — `openCombatEndCascade` n'a plus qu'à trier ses rangées par pilote.
+      // ICI, à l'émission — `openCombatEndCascade` a seulement à trier ses rangées par pilote.
       const steps = nightBands(restFlow.deferredUpkeepSteps(get().party, deferred));
       if (steps.length) set({ deferredUpkeepQueue: [...get().deferredUpkeepQueue, ...steps] });
     } else {

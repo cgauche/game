@@ -133,7 +133,8 @@ if (existsSync(MANIFESTE_PRIMITIVES)) {
 //   4a. chaque classe backtiquée `.foo` de la section doit exister comme sélecteur réel dans
 //       la COUCHE PARTAGÉE — sinon la doc ment (classe fantôme). Cette couche est celle que garde le
 //       cliquet (xiii) d'`src/ui/ui-ratchets.test.ts` (`SHARED_CSS_FILES`) : `src/ui/styles/*.css` ET
-//       la feuille du chrome du monde `src/gameIso/anim.css`, dont le catalogue est la SEULE sortie.
+//       la feuille du chrome du monde `src/gameIso/anim.css` et celle de la boîte du plateau
+//       `src/gameIso/stage/iso-stage.css`, dont le catalogue est la SEULE sortie.
 //   4b. chaque classe CANONIQUE (sélecteur de PREMIER NIVEAU, ni pseudo/combinateur/parenthèse) de
 //       la zone PARTAGÉE de `src/ui/styles/components.css` doit être citée dans la section — sinon
 //       la doc devient incomplète en silence. Zone PARTAGÉE = tout le fichier AVANT le premier bloc
@@ -152,7 +153,7 @@ if (existsSync(CHARTE_MD)) {
     if (endIdx < 0) endIdx = lines.length
     const section = lines.slice(startIdx, endIdx).join('\n')
 
-    const CSS_TEXT = [...fichiersSources('src/ui/styles', ['.css']), 'src/gameIso/anim.css']
+    const CSS_TEXT = [...fichiersSources('src/ui/styles', ['.css']), 'src/gameIso/anim.css', 'src/gameIso/stage/iso-stage.css']
       .map((f) => readFileSync(f, 'utf8'))
       .join('\n')
 

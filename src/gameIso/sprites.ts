@@ -31,7 +31,7 @@ export interface EntityViz {
 
 /**
  * Sprite d'une entité de scène pour le backend SPRITE (tokenBodyKind). Après le passage de tout le
- * bestiaire ET des PNJ au rig, ce backend ne sert plus que le DÉCOR (props → `propSvg`) ; tout autre
+ * bestiaire ET des PNJ au rig, ce backend sert seulement le DÉCOR (props → `propSvg`) ; tout autre
  * kind est routé vers le rig EN AMONT et n'arrive jamais ici → chaîne vide. Partagé par l'hôte du monde de campagne (jeu)
  * et l'éditeur (WYSIWYG) — source unique.
  * `ref` ABSENTE ou hors registre : `propSvg` pose le repli VISIBLE d'erreur (#877), jamais l'art d'un

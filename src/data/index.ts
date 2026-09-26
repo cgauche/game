@@ -2161,7 +2161,7 @@ export interface SpellData {
     consequences: string;
   };
   /** Famille d'incantation STABLE (id, multilangue) — DISCRIMINANT moteur (familyOf / isArcaneSpell /
-   *  canCastFromGrimoire / Chaos) ; `type` ci-dessus n'est plus qu'un libellé d'affichage. */
+   *  canCastFromGrimoire / Chaos) ; `type` ci-dessus est un libellé d'affichage. */
   family: import('../engine/combatFeatures/types').CastingKind;
   /** Niveau d'Incantation (NI). `null` pour les Prières (Béni/Invocation). */
   cn: number | null;

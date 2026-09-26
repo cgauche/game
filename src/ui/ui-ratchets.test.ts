@@ -304,6 +304,7 @@ const SHARED_CSS_FILES = [
   ...FEUILLES_PARTAGEES.map((f) => f.slice('src/ui/'.length)),
   'styles.css',
   '../gameIso/anim.css',
+  '../gameIso/stage/iso-stage.css',
 ];
 const SHARED_LEAK_BASELINE: Record<string, number> = {
   // #1372 : 16 → 15 — `.lazy-fallback` cesse d'être mono-consommateur (le voile d'entrée en scène du
@@ -338,6 +339,8 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   // sont cataloguées à la charte avec `.iso-stage`, et les règles à ZÉRO poseur (`.bob`, `.gush`,
   // `.crow` + `.crow .wing`) sont purgées (garde §5.2 de `primitive-owners-guard`).
   '../gameIso/anim.css': 22,
+  // La boîte du plateau : `.iso-stage`, cataloguée à la charte et posée par deux modules.
+  '../gameIso/stage/iso-stage.css': 0,
 };
 
 /** Classes `.foo` citées entre backticks dans le catalogue de la charte (contrat de couche atomique). */

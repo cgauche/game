@@ -1434,10 +1434,10 @@ registerCascadeApplier(TAVERN_TARGET_KIND, () => ({}));
 registerCascadeApplier(TAVERN_FOLD_KIND, () => ({}));
 
 /**
- * RÉDUCTEUR DE CLÔTURE d'un jeu de MISE (`NADJ 16 l.17`) : lit le tour clos, applique l'effet de
+ * RÉDUCTEUR DE CLÔTURE d'un jeu de MISE : lit le tour clos, applique l'effet de
  * pot DÉCLARÉ par sa plage, puis tient la manche — « La manche continue jusqu'à ce que le pot soit
  * vide, ou jusqu'à ce qu'il n'y ait plus qu'un seul joueur en jeu, qui empoche alors toutes les
- * mises restant dans le pot. » La partie s'achève au nombre de manches déclaré.
+ * mises restant dans le pot. » (`NADJ 16 l.17`). La partie s'achève au nombre de manches déclaré.
  */
 function potClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<TavernPayload> {
   const { get, seq, done } = ctx;

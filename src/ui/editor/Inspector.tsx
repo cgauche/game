@@ -1348,11 +1348,10 @@ function EntityPanel({
         </label>
         <label className="ed-field">
           Orientation
-          {/* Un décor VOLUMIQUE n'a que les quatre cardinaux À OFFRIR : sa recette tourne là où son
-              empreinte solide ne tourne pas (#1509), et une diagonale poserait son corps en travers
-              de cases restées traversables. Le geste n'a donc pas à être réparé après coup — il
-              n'est pas proposable. Source de la règle : le CATALOGUE (`refEstVolumique`), la même
-              que lit le schéma de scène au parse et `validateScene` à l'écran. */}
+          {/* Un décor VOLUMIQUE n'a que les quatre cardinaux À OFFRIR : `data/props.types.ts`
+              `capVolumique`. Le geste n'est pas proposable, donc jamais à réparer après coup. Source :
+              le CATALOGUE (`refEstVolumique`), la même que lit le schéma de scène au parse et
+              `validateScene` à l'écran. */}
           <select value={ent.facing ?? 'S'} onChange={(e) => updateSel({ facing: e.target.value as SceneEntity['facing'] })}>
             {(refEstVolumique(ent.ref) && ent.kind === 'prop' ? CAPS_OFFERTS_CARDINAUX : CAPS_OFFERTS).map(([cap, libelle]) => (
               <option key={cap} value={cap}>{libelle}</option>

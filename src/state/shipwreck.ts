@@ -159,9 +159,9 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
   }
 
   // Cascade influençable : une étape de Natation par nageur conscient. Le héros qu'aucun siège ne
-  // pilote voit son jet PRÉ-ROULÉ (même formule) et l'étape n'est plus qu'une lecture — c'est le jet
-  // POSÉ + la non-surface du porteur qui la rendent passive au socle (`rollFlowFactory.passive`),
-  // plus un drapeau d'étape. La clôture (dernière étape validée) exécute `finishShipwreck` —
+  // pilote voit son jet PRÉ-ROULÉ (même formule) et son étape est une lecture — c'est le jet POSÉ +
+  // la non-surface du porteur qui la rendent passive au socle (`rollFlowFactory.passive`), jamais un
+  // drapeau d'étape. La clôture (dernière étape validée) exécute `finishShipwreck` —
   // `purpose:'test'` : aucun crochet dédié requis dans le store (générique, `dispatchCascadeDone`
   // n'a rien à router).
   const meta = { shoreId: shore?.id ?? '', journalMark };

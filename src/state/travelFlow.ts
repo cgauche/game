@@ -207,7 +207,7 @@ export function currentTravelDayWeather(plan: TravelPlan, pendingRest: { travelD
 
 /** Entrées d'une journée de route terrestre, figées au build de la cascade `travelDay` : l'horloge/les
  *  km avancent AVANT la cascade (marche terrestre déterministe — heures × vitesse, comportement
- *  conservé ; seuls les JETS d'Étape/péripétie sont influençables), donc la clôture n'a plus qu'à
+ *  conservé ; seuls les JETS d'Étape/péripétie sont influençables), donc la clôture a seulement à
  *  enchaîner. Porte la destination, les héros en marche forcée (→ cascade de NUIT), le résultat
  *  d'INTERRUPTION d'une péripétie (combat/embuscade différé), et `arrived`. Jamais persisté au-delà d'une
  *  journée. La ligne de récap du jour vit dans `plan.recap.days[dernier]` (le `while` la relit). */
@@ -580,7 +580,7 @@ function runTravelDays(get: Get, set: Set): void {
 
     // Sous-système OPTIONNEL « Voyage par Étapes » (EDOC 8, parent `travel-etapes`) + PÉRIPÉTIES du
     // jour (d'auteur puis table d10 RAW). TOUS les JETS du jour (Activités d'Étape, Exposition de fin
-    // d'Étape, Survie/Perception des péripéties) sont désormais des ÉTAPES d'une CASCADE influençable
+    // d'Étape, Survie/Perception des péripéties) sont des ÉTAPES d'une CASCADE influençable
     // (`purpose:'travelDay'`, Chance/Pacte/Résilience) — plus d'auto-résolution inline. Ordre RAW (l.10)
     // : Météo (tirée ici, ambiance) → activités → péripéties. Quand aucun jet n'est produit (règle
     // Étapes éteinte ET pas de péripétie testable), la cascade est VIDE → on finalise directement (le

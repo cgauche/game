@@ -27,7 +27,7 @@ import type { RuleValue } from '../engine/policy';
 import type { Scene } from './scene';
 
 // 32 → 33 (L2 #1548, geste modèle) : une personne se RÉFÉRENCE. Le document de scène (`scene`) perd
-// les deux pseudo-PNJ écrits en clair — l'effet `medicalAid` ne porte plus que son `entityId` (la
+// les deux pseudo-PNJ écrits en clair — l'effet `medicalAid` porte seulement son `entityId` (la
 // Guérison et le Bonus d'Int se lisent sur la fiche du PNJ), et les adversaires de `startPursuit`
 // sont des références de vivant (`{ ref }`) là où vivaient `label`+`movement`+`skill`. Une save de 32
 // rouvrirait une infirmerie sans soigneur et une poursuite sans coureurs : elle se jette
@@ -41,7 +41,7 @@ import type { Scene } from './scene';
 // Caractéristique nue : la save se jette (politique 2 ci-dessus).
 // 34 → 35 (L2 #1548, commit 4bis) : la `SkillInstance` d'une créature SPAWNÉE change de forme. La
 // sentinelle `spec: "au choix"` du bestiaire descendait TELLE QUELLE dans l'instance persistée (une
-// spéc qu'aucun catalogue ne résout) ; elle est désormais DÉSIGNÉE au spawn (`skillsFromBook`, seedée
+// spéc qu'aucun catalogue ne résout) ; elle est DÉSIGNÉE au spawn (`skillsFromBook`, seedée
 // sur l'uid) et l'instance porte une spéc CONCRÈTE. PORTÉE EXACTE DE LA PERTE, mesurée à
 // `src/engine/skills.ts` (`s.id === skill && (spec == null || s.spec === spec)`) : un appelant
 // SANS spec appariait l'instance et lisait sa valeur — c'est le Test SPÉCIALISÉ qui n'appariait rien
@@ -58,7 +58,7 @@ import type { Scene } from './scene';
 // `pendingOuverture`/`pendingChapterRecap`. Une save de 36 rouvrirait sans borne : le récap de fin de
 // chapitre compterait les PX depuis le néant, et une séance déjà close se ré-armerait au premier lot
 // d'effets (la Condition de clôture, elle, est restée vraie).
-// 37 → 38 (#1552) : le document de SCÈNE change de forme — une scène s'annonce désormais
+// 37 → 38 (#1552) : le document de SCÈNE change de forme — une scène s'annonce
 // (`type: 'scene'`, exigé par `sceneSchema`). `snapshotSave` recopie le `state` ENTIER dans `data`,
 // `state.scene` comprise : une save de 37 rouvrirait sur une scène vivante sans `type`, que le seam
 // `parseProject` refuserait au prochain export/import de son projet. La save se jette
@@ -110,11 +110,11 @@ import type { Scene } from './scene';
 // ne sont plus ceux de la porte : une save de 45 rouvrirait une fenêtre déjà montée dont la cible est
 // celle d'avant (jusqu'à +30 en faveur du joueur sur un héros sous États), sans qu'aucun applier ne
 // puisse la recalculer. La save se jette (politique 2 ci-dessus).
-// 46 → 47 (#1599) : les États PORTÉS par un canal passif sont désormais MARQUÉS (`ConditionInstance.
+// 46 → 47 (#1599) : les États PORTÉS par un canal passif sont MARQUÉS (`ConditionInstance.
 // derivedFrom`) et réconciliés (`syncDerivedConditions`). Une save de 46 porte les mêmes pions SANS
 // marquage : à la première réconciliation, la cible (1) et les pions dérivés comptés (0) divergent — le
 // porteur regagne un Inconscient/Exténué par-dessus celui qu'il a déjà. La save se jette (politique 2).
-// 47 → 48 (#1599) : la suspension d'un fait passif est GÉNÉRALE — l'`ActiveEffect` porte désormais
+// 47 → 48 (#1599) : la suspension d'un fait passif est GÉNÉRALE — l'`ActiveEffect` porte
 // `suppressedSource` (identité Codex) là où il portait `suppressedSymptom` (id nu). Une save de 47 rouvre
 // avec des fenêtres de suspension (Racine de terre, fenêtre de Détermination) que plus aucun lecteur ne
 // voit : le symptôme réémet ses passifs et l'État qu'il porte revient, sans que rien ne le dise. La save
@@ -176,7 +176,7 @@ export const AUTO_SLOT = 'auto' as const;
 export type AnySlot = SaveSlot | typeof AUTO_SLOT;
 // #898 : la clé n'embarque plus la version (un bump de `SAVE_VERSION` rendait toute save existante
 // invisible — `readSlot`/`listSaves` sondaient une clé qui n'avait jamais été écrite). La version vit
-// SEULE dans le contenu (`SaveGame.version`). `LEGACY_KEY` ne sert plus qu'à NETTOYER les clés
+// SEULE dans le contenu (`SaveGame.version`). `LEGACY_KEY` sert seulement à NETTOYER les clés
 // versionnées écrites par le code d'avant #898 : aucune ne porte la version courante.
 const KEY = (slot: AnySlot) => `wfrp4.save.${slot}`;
 const LEGACY_KEY = (version: number, slot: AnySlot) => `wfrp4.save.v${version}.${slot}`;
@@ -307,9 +307,8 @@ export function takeObsoleteNotice(): ObsoleteCause | null {
   return c;
 }
 
-/** Clé de mise à l'écart d'une save FUTURE, écrite par le code d'AVANT l'arbitrage 2026-08-17 (une
- *  save plus récente que l'app y était sauvegardée avant écrasement). Plus personne ne l'écrit : elle
- *  n'est plus qu'à PURGER, comme le reste de l'emplacement. */
+/** Clé de mise à l'écart d'une save FUTURE, plus récente que l'app (arbitrage 2026-08-17). Aucun code
+ *  ne l'écrit : elle se PURGE avec le reste de l'emplacement. */
 const FUTURE_KEY = (slot: AnySlot) => `wfrp4.save.future.${slot}`;
 
 /** TOUTES les clés de stockage d'un emplacement : la clé stable, la clé de QUARANTAINE historique et

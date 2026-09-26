@@ -13,7 +13,7 @@
 //   1. `npm run gen`, puis les gates qui ÉCRIVENT dans l'arbre (`AVANT_LES_LANES`) — EN SÉRIE. Ce
 //      qu'elles réécrivent est NOMMÉ tout de suite, au lieu d'un « l'arbre a changé » sept minutes
 //      plus tard, et aucune lane ne peut lire un fichier pendant qu'une autre l'écrit.
-//   2. les LANES, qui ne contiennent plus que des LECTEURS.
+//   2. les LANES, qui contiennent seulement des LECTEURS.
 //   3. le RÉSUMÉ, puis la photo de l'arbre. Dans cet ordre : un résumé est ce qu'on vient de payer,
 //      il s'imprime AVANT tout ce qui pourrait encore échouer.
 //
@@ -56,7 +56,7 @@ const RACINE = fileURLToPath(new URL('../..', import.meta.url))
  * Ce que chaque gate ÉCRIT et LIT dans l'ARBRE, MESURÉ (sonde d'écritures transitives sur les
  * scripts atteints par la commande de `ci.yml`, 2026-09-04 ; chaque ligne re-vérifiée à la source).
  * Repassée le 2026-09-08 (#1709 E) à l'ENREGISTREUR DE LECTURES (`scripts/docs/lib/enregistreur-lectures.mjs`
- * posé en `--import` sur la commande de chaque gate) : `lit` déclare désormais aussi le CODE que la
+ * posé en `--import` sur la commande de chaque gate) : `lit` déclare aussi le CODE que la
  * gate exécute — le changer change son verdict, donc c'est une lecture. Angles morts de la sonde,
  * nommés : ce qu'un sous-processus NON-node lit (`git ls-files` de src/source-hygiene-guard.test.ts:76,
  * `tsc`/`eslint` binaires) lui échappe, et un chemin RELATIF écrit par un enfant dont le `cwd` est un

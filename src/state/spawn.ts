@@ -10,7 +10,9 @@ import { vehicleCombatant } from '../engine/vehicle';
 import { inanimateCombatant } from '../engine/inanimate';
 import { hullArmourBonus, hullNavalTraits } from '../engine/navalTraits';
 import { requiredTerrains } from '../engine/ops';
-import { CustomStatblock, type Scene, heightAt, tileAt } from './scene';
+import { CustomStatblock, type Scene, type SceneEntity, heightAt, tileAt } from './scene';
+import { footprintTiles, propFootTiles, sizeFootprint } from './footprint';
+import type { Pt } from './path';
 import { terrainAbsent } from './terrain';
 import { randomizeChars, type PorteurDeFiche } from '../engine/statblock';
 import type { EntityAppearance } from '../engine/authoringAppearance';
@@ -88,6 +90,13 @@ export function entitySize(ent: { ref?: string; statblock?: CustomStatblock }): 
   if (ent.statblock?.size) return ent.statblock.size;
   const traits = ent.statblock?.traits ?? (ent.ref ? findCreatureById(ent.ref)?.traits : undefined); // tous TraitInstance[]
   return (traits && sizeFromTraits(traits)) || undefined;
+}
+
+/** Les cases d'une entité de scène : l'empreinte dérivée au cap pour un DÉCOR (`propFootTiles`, la
+ *  couture unique de la marchabilité et de la ligne de vue), le carré de sa Taille pour une créature. */
+export function entiteFootTiles(ent: SceneEntity, mpt: number): Pt[] {
+  if (ent.kind === 'prop') return propFootTiles(ent.ref, ent.pos, ent.facing, mpt);
+  return footprintTiles(ent.pos, sizeFootprint(entitySize(ent)));
 }
 
 /** Nuée au spawn (LDB 85 l.253) : ×5 PB (« cinq fois plus de PB qu'une créature type ») + 10 CC sur

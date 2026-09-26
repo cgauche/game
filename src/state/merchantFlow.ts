@@ -148,7 +148,7 @@ function partyStatusBudgetBrass(party: Combatant[]): number {
 /** Valeur EFFECTIVE d'un des 3 flags Marché (LDB 59/60) POUR UNE ENTITÉ marchande (#93) : l'OVERRIDE
  *  d'entité (`SceneEntity.merchant.{guild,marketMode,tenirComptes}`) PRIME sur la règle maison globale
  *  (`engine/policy` `rule('market-*')`) ; absent = héritage du global, JAMAIS un 3ᵉ état ambigu. Couture
- *  UNIQUE : tout call-site qui lisait `rule('market-*')` directement lit désormais CETTE fonction. */
+ *  UNIQUE : tout call-site qui lisait `rule('market-*')` directement lit CETTE fonction. */
 function marketRule(ent: SceneEntity | undefined, key: 'guild' | 'marketMode' | 'tenirComptes'): RuleValue {
   const override = ent?.merchant?.[key];
   if (override !== undefined) return override;
@@ -526,7 +526,7 @@ export function payCart(get: Get, set: Set): void {
   // Crée les objets achetés (par UNITÉ) en attente de répartition + déplète le stock. Une ligne
   // UNITÉ (véhicule/créature-monture, #760) rejoint elle aussi `pendingDistribution` — le joueur
   // choisit le héros PROPRIÉTAIRE via le même écran de répartition que les objets de sac ;
-  // `dest` (= party[0]) n'est plus qu'une affectation PAR DÉFAUT, réassignable.
+  // `dest` (= party[0]) est l'affectation PAR DÉFAUT, réassignable.
   const dest = get().party[0]?.id ?? '';
   const staged: NonNullable<MerchantState['pendingDistribution']> = [];
   let newStock = m.stock;

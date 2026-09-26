@@ -23,7 +23,7 @@ import { combatantBodyTopFrac, combatantTokenScale, entityTokenScale } from '../
 import type { TokenSubject } from '../tokenBodyKind';
 import { teamRingDecor, type MarkCell } from './dynamicMarks';
 import type { OffreRendue, OffresRenduesParPorteur } from '../../state/offreRendue';
-import { estPropVolumique, type PropEl, type TokenEl, type TokenSubjectEl } from './types';
+import { estPropVolumique, type DecorDEntite, type PropEl, type TokenEl, type TokenSubjectEl } from './types';
 import type { PartyToken } from './tokens';
 
 /** ALVÉOLES RÉSERVÉES du chrome d'un jeton — autant de places que le rack d'États du portrait
@@ -149,13 +149,13 @@ export function ancrageDuJeton(tk: TokenEl): Ancrage | null {
   };
 }
 
-/** L'ancrage d'un DÉCOR posté (`PropEl` : le tas d'objets, le tonneau fouillé) — même repère que celui
+/** L'ancrage d'un DÉCOR d'entité posté (`DecorDEntite` : le tas d'objets, le tonneau fouillé) — même repère que celui
  *  d'un jeton, tiré de l'empreinte et de l'échelle au pied que le builder de décors a déjà calculées.
  *  Un décor VOLUMIQUE (`VolumePropEl`) n'a pas de `foot` — sa géométrie monde porte sa taille : échelle 1. */
-export function ancrageDuDecor(pr: PropEl): Ancrage {
+export function ancrageDuDecor(pr: DecorDEntite): Ancrage {
   return {
     cell: { x: pr.cell.x, y: pr.cell.y, z: pr.cell.z },
-    n: Math.max(pr.span?.w ?? 1, pr.span?.h ?? 1),
+    n: Math.max(pr.span.w, pr.span.h),
     scaleK: estPropVolumique(pr) ? 1 : pr.foot.scale,
     bodyTopFrac: 1,
   };
@@ -185,7 +185,7 @@ export function tokenGesteMarks(
   for (const groupe of offres) {
     if (!groupe.offres.length) continue;
     const tk = tokens.find((t) => porteurDuJeton(t) === groupe.porteurId);
-    const pr = tk ? undefined : props.find((p) => p.entId === groupe.porteurId);
+    const pr = tk ? undefined : props.find((p): p is DecorDEntite => p.source === 'entity' && p.entId === groupe.porteurId);
     const a = tk ? ancrageDuJeton(tk) : pr ? ancrageDuDecor(pr) : null;
     if (!a) continue;
     out.push({ id: `geste-${groupe.porteurId}`, entityId: groupe.porteurId, label: groupe.porteurLabel, gestes: groupe.offres, ...a });

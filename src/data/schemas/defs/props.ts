@@ -114,7 +114,7 @@ const doc = document(
      */
     affinerEntree: (entree) =>
       entree.superRefine((v, ctx) => {
-        const e = v as { id: string; light?: unknown; cover?: unknown; opaque?: unknown; source?: unknown; maison?: unknown; foot?: unknown; volume?: unknown };
+        const e = v as { id: string; light?: unknown; cover?: unknown; opaque?: unknown; source?: unknown; maison?: unknown; foot?: unknown; volume?: unknown; seatSlots?: unknown };
         const regles = (['light', 'cover', 'opaque'] as const).filter((k) => e[k] !== undefined);
         if (regles.length && e.source === undefined && (typeof e.maison !== 'string' || !e.maison))
           ctx.addIssue({
@@ -130,6 +130,13 @@ const doc = document(
             code: 'custom',
             path: ['foot'],
             message: `${e.id} : \`foot\` sur une recette volumique — les cases d’un décor à recette viennent de son CORPS tourné, pas d’une empreinte déclarée`,
+          });
+        // PLACES SANS RECETTE : `data/props.types.ts`, CAP D'IDENTITÉ.
+        if (e.seatSlots !== undefined && e.volume === undefined)
+          ctx.addIssue({
+            code: 'custom',
+            path: ['seatSlots'],
+            message: `${e.id} : places assises sans recette volumique — les \`seatSlots\` d’un décor s’écrivent dans le repère de sa recette (\`volume\`), un billboard n’en porte pas`,
           });
       }),
   },
