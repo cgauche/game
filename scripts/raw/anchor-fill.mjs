@@ -359,8 +359,7 @@ export function lireBoites(id) {
   const dir = mkdtempSync(join(tmpdir(), 'anchor-fill-'))
   try {
     const sortie = join(dir, 'boites.json')
-    // Sans bytecode : un `__pycache__` sous `scripts/raw/lib/` entrerait dans l'empreinte des sources.
-    execFileSync('python', [PDF_LIGNES_SCRIPT, id, sortie], { stdio: ['ignore', 'ignore', 'inherit'], env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } })
+    execFileSync('python', [PDF_LIGNES_SCRIPT, id, sortie], { stdio: ['ignore', 'ignore', 'inherit'] })
     return JSON.parse(readFileSync(sortie, 'utf8'))
   } finally {
     rmSync(dir, { recursive: true, force: true })

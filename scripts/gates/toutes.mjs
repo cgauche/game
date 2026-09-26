@@ -293,7 +293,7 @@ export const ECRIT_LU = {
     raison:
       '`--empreinte` sort avant toute génération (build-all.mjs, branche `--empreinte` de `main`) : les 9 ' +
       'lectures mesurées sont `docs/.sources-lues.json` et son propre code — les BLOBS qu’il compare sortent ' +
-      'de l’INDEX (`indexGit`, `git ls-files -s`, empreinte-sources.mjs:143), jamais du disque : angle mort ' +
+      'de l’INDEX (`indexGit` d’empreinte-sources.mjs, `git ls-files -s`), jamais du disque : angle mort ' +
       'de la sonde (sous-processus git), d’où `.claude/memory/` déclaré par LECTURE — les fiches `user-*.md` ' +
       'sont des sources de `docs/doctrines.md` (docs/.sources-lues.json) et leur blob entre dans le verdict (#1738)',
   },
