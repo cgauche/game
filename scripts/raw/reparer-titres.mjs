@@ -10,6 +10,7 @@
 //  — F, M : `titreMd` RETIRÉ de la tête de la ligne étrangère (vide, elle part avec les blancs), posé
 //    devant `cible` ;
 //  — B : le gras seul devient la ligne de titre ;
+//  — glyphe-fuite : la ligne `<glyphe> **X**` (`ligneMd`) devient la ligne de titre, le glyphe ôté ;
 //  — S′ : la ligne de titre restaurée posée devant `cible` ;
 //  — O : l'entrée entière (sa ligne de titre jusqu'au titre suivant) posée devant `devant` ;
 //  — doublon : le débris `texteMd` retiré de la tête de sa ligne ;
@@ -32,7 +33,8 @@
 // un S′ dont le fichier porte déjà autant de lignes de sa clé (`cle` de la sonde : ancres, `#`, emphase
 // ôtés) que ses pages en impriment (`comptage.auPdf`, une sans comptage),
 // deux gestes sur une ligne, ou un MULTI-ENSEMBLE DES MOTS du livre qui gagne autre chose que les mots
-// des S′ et des légendes absentes ou perd autre chose que les débris et les appels de figure.
+// des S′ et des légendes absentes ou perd autre chose que les débris, les appels de figure et les
+// glyphes fuités.
 //
 // Usage : node scripts/raw/reparer-titres.mjs <id du livre> [--sites <json> | --boites <json>] [--apply]
 // Sans `--apply`, rend ce qu'il ferait. Idempotent : rejoué sur un livre réparé, il n'écrit rien.
@@ -45,7 +47,7 @@ import { motsDe, ecartDeMots } from './reparer-mobilier.mjs'
 import { cle, enTete, sondeDuLivre } from './sonde-titres.mjs'
 import { cellulesDe, estSeparateur, stripSpans } from '../../src/data/source/decoupe.ts'
 
-const FORMES = new Set(['S', 'F', 'M', 'B', "S'", 'O', 'doublon', 'L', 'legende-absente'])
+const FORMES = new Set(['S', 'F', 'M', 'B', 'glyphe-fuite', "S'", 'O', 'doublon', 'L', 'legende-absente'])
 const LIGNE_DE_TABLE = /^\s*\|/
 
 /** L'en-tête d'une table rendu à `largeur` colonnes (`''` : en-tête VIDE), complété de cellules vides,
@@ -99,7 +101,7 @@ export function reparerLivre(textes, sites) {
   }
   for (const site of sites.filter((x) => FORMES.has(x.forme))) {
     const avant = refus.length
-    if (['S', 'F', 'M', 'B', "S'"].includes(site.forme) && !site.ligneTitre) refus.push(`${site.site ?? site.cible} ${site.forme} « ${site.titre} » : aucune ligne de titre à poser`)
+    if (['S', 'F', 'M', 'B', 'glyphe-fuite', "S'"].includes(site.forme) && !site.ligneTitre) refus.push(`${site.site ?? site.cible} ${site.forme} « ${site.titre} » : aucune ligne de titre à poser`)
     else if (site.forme === 'S') {
       const reste = detacher(site, site.titreMd)
       if (typeof reste === 'string') { retoucher(site.site, reste); poser(site.site, [site.ligneTitre]) }
@@ -108,6 +110,9 @@ export function reparerLivre(textes, sites) {
       if (typeof reste === 'string') { retoucher(site.site, reste); poser(site.cible, [site.ligneTitre]) }
     } else if (site.forme === 'B') {
       if (slot(site.site)?.texte.trim() !== site.titreMd) refus.push(`${site.site} B « ${site.titre} » : la ligne n'est plus « ${site.titreMd} »`)
+      else retoucher(site.site, site.ligneTitre)
+    } else if (site.forme === 'glyphe-fuite') {
+      if (slot(site.site)?.texte !== site.ligneMd) refus.push(`${site.site} glyphe-fuite « ${site.titre} » : la ligne n'est plus « ${site.ligneMd} »`)
       else retoucher(site.site, site.ligneTitre)
     } else if (site.forme === "S'") {
       const deja = lignes.get(lieu(site.cible).nnn).filter((l) => cle(l) === cle(site.ligneTitre))
@@ -243,14 +248,14 @@ export function ecartDuLivre(avant, apres) {
 }
 
 /** Le verdict de fidélité au livre : `null`, ou ce qui cloche. Ajoutés = les mots des S′ et des légendes
- *  absentes ; retirés = ceux des débris. PURE. */
+ *  absentes ; retirés = ceux des débris, des appels de figure et des glyphes fuités. PURE. */
 export function infidelite(avant, apres, sites) {
   const { retires, ajoutes } = ecartDuLivre(avant, apres)
   const dit = (m) => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([k, n]) => `${k}×${n}`).join(' ') || '∅'
   const poses = motsDe(sites.flatMap((s) => (s.forme === "S'" ? [s.ligneTitre] : s.forme === 'legende-absente' ? [s.ligneLegende] : [])).join('\n'))
   if (dit(ajoutes) !== dit(poses)) return `mots ajoutés ${dit(ajoutes)} ≠ mots des S′ et des légendes absentes ${dit(poses)}`
-  const retirables = motsDe(sites.flatMap((s) => (s.forme === 'doublon' ? [s.texteMd] : s.forme === 'A' ? [s.jeton] : [])).join('\n'))
-  if (dit(retires) !== dit(retirables)) return `mots retirés ${dit(retires)} ≠ mots des débris et des appels ${dit(retirables)}`
+  const retirables = motsDe(sites.flatMap((s) => (s.forme === 'doublon' ? [s.texteMd] : s.forme === 'A' ? [s.jeton] : s.forme === 'glyphe-fuite' ? [s.glyphe] : [])).join('\n'))
+  if (dit(retires) !== dit(retirables)) return `mots retirés ${dit(retires)} ≠ mots des débris, des appels et des glyphes fuités ${dit(retirables)}`
   return null
 }
 

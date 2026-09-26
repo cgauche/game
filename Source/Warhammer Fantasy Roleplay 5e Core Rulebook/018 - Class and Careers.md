@@ -50,10 +50,13 @@ The three marked h are Characteristics you can Advance in the Career's first lev
 
 ## **Career Path**
 
-- **Recruit — Brass 5**
-- **Skills:** Athletics, Climb, Cool, Dodge, Endurance, Gamble, Language (Battle), ***Melee (Any One)***, Melee (Basic), Ranged (Any One)
-- **Talents:** Drilled, Etiquette (Soldiers), Strong Back, Warrior Born
-- **Trappings:** Leather Breastplate, Uniform, Weapon (Any One)
+#### **Recruit — Brass 5**
+
+**Skills:** Athletics, Climb, Cool, Dodge, Endurance, Gamble, Language (Battle), ***Melee (Any One)***, Melee (Basic), Ranged (Any One)
+
+**Talents:** Drilled, Etiquette (Soldiers), Strong Back, Warrior Born
+
+**Trappings:** Leather Breastplate, Uniform, Weapon (Any One)
 
 ## <span id="page-43-0" data-folio="44"></span>**3. Skills**
 
@@ -1967,7 +1970,7 @@ Playing a Noble grants you privilege and power. Your title protects you from the
 
 ## **Career Path**
 
-h **Scion — Gold 1**
+#### **Scion — Gold 1**
 
 **Skills:** Consume Alcohol, Gamble, Gossip, Intimidate, Language (Classical), ***Leadership***, Lore (Heraldry), Melee (Fencing), Perform (Dancing), Ride (Horse)
 
