@@ -68,10 +68,10 @@
     {
       "famille": "ambigu",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/028 - Flattery, Bribery, and Status.md",
-      "ref": "stinking-drunk#1 :: p.183 :: rang 1",
+      "ref": "carousing#1 :: p.183 :: rang 1",
       "occurrence": 1,
-      "lot": "#1393 lot 1",
-      "date": "2026-09-25"
+      "lot": "#1393 #1739 étape 4",
+      "date": "2026-09-26"
     },
     {
       "famille": "ambigu",
@@ -107,24 +107,8 @@
     },
     {
       "famille": "ambigu",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/047 - Character Events.md",
-      "ref": "52-56-soothsayer#1 :: p.118 :: rang 1",
-      "occurrence": 1,
-      "lot": "#1393 lot 1",
-      "date": "2026-09-25"
-    },
-    {
-      "famille": "ambigu",
       "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/048 - Endeavours.md",
       "ref": "stash-the-loot#1 :: p.296 :: rang 1",
-      "occurrence": 1,
-      "lot": "#1393 lot 1",
-      "date": "2026-09-25"
-    },
-    {
-      "famille": "ambigu",
-      "fichier": "Source/Warhammer Fantasy Roleplay 5e Core Rulebook/070 - Magic Rules.md",
-      "ref": "magic-missiles#1 :: p.164 :: rang 1",
       "occurrence": 1,
       "lot": "#1393 lot 1",
       "date": "2026-09-25"

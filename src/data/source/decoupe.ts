@@ -516,10 +516,10 @@ export function parseTable(md: string): TableParse | null {
   return { ...corps(0), banniereRefusee: banniere };
 }
 
-/** Une table d'une section : le bloc qui la porte, sa lecture, et, TITRÉE, sa CLÉ d'adresse `titre#occ` —
- *  titre normalisé, `occ` = rang 1-based parmi les tables de même titre de la section. Sans titre, aucune
- *  clé : une position ne départage rien (#1739). */
-export interface TableDeSection { block: Bloc; table: TableParse; cle?: string }
+/** Une table d'une section : le bloc qui la porte, sa lecture, le bloc de sa LÉGENDE `**X**` quand son
+ *  titre en vient, et, TITRÉE, sa CLÉ d'adresse `titre#occ` — titre normalisé, `occ` = rang 1-based parmi
+ *  les tables de même titre de la section. Sans titre, aucune clé : une position ne départage rien (#1739). */
+export interface TableDeSection { block: Bloc; table: TableParse; legende?: Bloc; cle?: string }
 
 /** Paragraphe LÉGENDE : un seul span gras, tout le bloc (#1739). */
 const LEGENDE = /^\*\*([^*]+)\*\*$/;
@@ -533,11 +533,12 @@ export function tablesOf(section: Section): TableDeSection[] {
     if (!lue) return [];
     const legende = lue.titre == null ? LEGENDE.exec(section.blocks[i - 1]?.md ?? '')?.[1] : undefined;
     const table = legende == null ? lue : { ...lue, titre: legende };
+    const porte = legende == null ? { block: b, table } : { block: b, table, legende: section.blocks[i - 1] };
     const titre = normText(table.titre ?? '');
-    if (!titre) return [{ block: b, table }];
+    if (!titre) return [porte];
     const occ = (vus.get(titre) ?? 0) + 1;
     vus.set(titre, occ);
-    return [{ block: b, table, cle: `${titre}#${occ}` }];
+    return [{ ...porte, cle: `${titre}#${occ}` }];
   });
 }
 

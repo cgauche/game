@@ -27,6 +27,16 @@ function cible(r: RenvoiDuLivre): { ch: string; sec: string; secOcc: number } {
   return { ch: ref!.ch, sec: frag.sec, secOcc: frag.secOcc };
 }
 
+/** Blocs visés par une résolution de TABLE : le 1er (légende, ou la table sous bannière) et le dernier. */
+function blocsDe(r: RenvoiDuLivre): { debut: string; fin: string } {
+  const ref = r.resolution.cible!;
+  const [frag] = ref.parts;
+  if (frag.kind !== 'blocs') throw new Error('cible de table : un fragment de blocs');
+  const chapitre = livre.chapitres.get([...livre.chapitres.keys()].find((f) => f.startsWith(`${ref.ch} - `))!)!;
+  const section = chapitre.sections.find((s) => s.slug === frag.sec && s.occ === frag.secOcc)!;
+  return { debut: section.blocks[frag.b0].md.split('\n')[0], fin: section.blocks[frag.b1].md.split('\n')[0] };
+}
+
 describe('renvoisDe — motifs VO', () => {
   it('rend le folio, la fin de plage, la clause et la phrase', () => {
     const [r] = renvoisDe('After attacking, you may spend Momentum (page 168) to attack again.', 'VO');
@@ -86,16 +96,34 @@ describe('resoudreRenvoi — cas canoniques du CRB', () => {
     expect(r.resolution.table).toMatch(/characteristic and skill advance xp costs$/);
   });
 
-  it('070 « Hit Locations table (page 164) » → ambigu : l’en-tête de colonne n’est pas un titre', () => {
+  it('070 « Hit Locations table (page 164) » → table : la LÉGENDE de la table de 036 et son bloc', () => {
     const r = site('070', 164, 'Hit Locations');
-    expect(r.resolution.niveau).toBe('ambigu');
-    expect(r.resolution.table).toMatch(/hit locations$/);
+    expect(r.resolution.niveau).toBe('table');
+    expect(cible(r)).toEqual({ ch: '036', sec: '2-determine-hit-location', secOcc: 1 });
+    expect(blocsDe(r)).toEqual({ debut: '**HIT LOCATIONS**', fin: expect.stringMatching(/^\|/) });
   });
 
-  it('070 « Minor Miscast Table (page 238) » → table, la section de ce titre', () => {
+  it('070 « Minor Miscast Table (page 238) » → table : la légende et le bloc de MINOR MISCAST TABLE', () => {
     const r = site('070', 238, 'Minor Miscast Table');
     expect(r.resolution.niveau).toBe('table');
-    expect(cible(r)).toEqual({ ch: '070', sec: 'minor-miscast-table', secOcc: 1 });
+    expect(cible(r)).toEqual({ ch: '070', sec: 'multiple-arcane-lores', secOcc: 1 });
+    expect(blocsDe(r)).toEqual({ debut: '**MINOR MISCAST TABLE**', fin: expect.stringMatching(/^\|/) });
+  });
+
+  it('047 « roll on the table of *Doomings* (page 118) » → table : la légende DOOMINGS de 021 et son bloc', () => {
+    const r = site('047', 118, 'table of *Doomings*');
+    expect([r.resolution.niveau, r.resolution.table]).toEqual(['table', 'doomings']);
+    expect(cible(r).ch).toBe('021');
+    expect(blocsDe(r)).toEqual({ debut: '**DOOMINGS**', fin: expect.stringMatching(/^\|/) });
+  });
+
+  it('115 « Mental / Physical Corruption Table (page 189) » → table : chacune SA légende dans 043', () => {
+    const mentale = site('115', 189, 'Mental Corruption');
+    const physique = site('115', 189, 'Physical Corruption');
+    expect([mentale.resolution.niveau, physique.resolution.niveau]).toEqual(['table', 'table']);
+    expect([cible(mentale).ch, cible(physique).ch]).toEqual(['043', '043']);
+    expect(blocsDe(mentale).debut).toBe('**MENTAL CORRUPTION TABLE**');
+    expect(blocsDe(physique).debut).toBe('**PHYSICAL CORRUPTION TABLE**');
   });
 
   it('020 « See page 168 for rules on fighting mounted » → ambigu, candidats listés', () => {
@@ -198,5 +226,61 @@ describe('resoudreRenvoi — garde d’étendue', () => {
   it('un titre nommé HORS de toute autre étendue reste nommé', () => {
     const r = resoudre('Roll on the Miscast Table (page 10).');
     expect(r.cible!.parts[0].sec).toBe('miscast-table');
+  });
+});
+
+describe('resoudreRenvoi — tables TITRÉES (`tablesOf`)', () => {
+  const md = [
+    '# <span id="page-9-0" data-folio="10"></span>**Tumble**', '', 'Prose.', '',
+    '**TUMBLE TABLE**', '', '| d10 | Result |', '|---|---|', '| 1 | Slip |', '',
+    '| | FUMBLE TABLE |', '|---|---|', '| d10 | Result |', '| 1 | Drop |', '',
+    '# **Crowd Table**', '', 'Prose.', '',
+    '**CROWD TABLE**', '', '| d10 | Result |', '|---|---|', '| 1 | Cheer |',
+  ].join('\n');
+  const fixture = indexerLivre('fixture', 'VO', [{ fichier: '01 - Fixture.md', parse: parseChapitre(md) }]);
+  const resoudre = (t: string) => resoudreRenvoi(fixture, renvoisDe(t, 'VO')[0]);
+  const blocs = (r: ReturnType<typeof resoudre>) => { const f = r.cible!.parts[0]; return f.kind === 'blocs' ? [f.sec, f.b0, f.b1] : null; };
+
+  it('titre de LÉGENDE : la légende et la table', () => {
+    const r = resoudre('Roll on the Tumble Table (page 10).');
+    expect([r.niveau, blocs(r)]).toEqual(['table', ['tumble', 1, 2]]);
+  });
+
+  it('titre de BANNIÈRE : la table seule', () => {
+    const r = resoudre('Roll on the Fumble Table (page 10).');
+    expect([r.niveau, blocs(r)]).toEqual(['table', ['tumble', 3, 3]]);
+  });
+
+  it('une section et une table au même titre dans un fichier : UNE cible, la table', () => {
+    const r = resoudre('Roll on the Crowd Table (page 10).');
+    expect([r.niveau, blocs(r)]).toEqual(['table', ['crowd-table', 1, 2]]);
+  });
+
+  it('forme « table of X » : X est ce qui SUIT le mot table, jamais ce qui le précède', () => {
+    const r = resoudre('Otherwise roll on the table of *Tumble* (page 10).');
+    expect([r.niveau, r.table, blocs(r)]).toEqual(['table', 'tumble', ['tumble', 1, 2]]);
+  });
+
+  it('une section X d’un fichier et une table X d’un AUTRE, au même folio : deux cibles → ambigu', () => {
+    const a = ['# <span id="page-9-0" data-folio="10"></span>**Riot Table**', '', 'Prose.'].join('\n');
+    const b = ['# <span id="page-9-1" data-folio="10"></span>**Crowds**', '', 'Prose.', '', '**RIOT TABLE**', '', '| d10 | Result |', '|---|---|', '| 1 | Brawl |'].join('\n');
+    const deux = indexerLivre('fixture', 'VO', [{ fichier: '01 - A.md', parse: parseChapitre(a) }, { fichier: '02 - B.md', parse: parseChapitre(b) }]);
+    const r = resoudreRenvoi(deux, renvoisDe('Roll on the Riot Table (page 10).', 'VO')[0]);
+    expect([r.niveau, r.candidats]).toEqual(['ambigu', ['01 - A.md § Riot Table', '02 - B.md § RIOT TABLE']]);
+  });
+
+  it('aucun titre de section ni de table ne porte X → ambigu', () => {
+    expect(resoudre('Roll on the Riot Table (page 10).').niveau).toBe('ambigu');
+  });
+
+  it('une table ne répond qu’au folio que porte SON bloc, pas à tous ceux de sa section', () => {
+    const deux = [
+      '# <span id="page-9-0" data-folio="10"></span>**Brawling**', '', 'Prose.', '',
+      '<span id="page-10-0" data-folio="11"></span>More prose.', '',
+      '**BRAWL TABLE**', '', '| d10 | Result |', '|---|---|', '| 1 | Punch |',
+    ].join('\n');
+    const livre2 = indexerLivre('fixture', 'VO', [{ fichier: '01 - Fixture.md', parse: parseChapitre(deux) }]);
+    const r = (t: string) => resoudreRenvoi(livre2, renvoisDe(t, 'VO')[0]).niveau;
+    expect([r('Roll on the Brawl Table (page 10).'), r('Roll on the Brawl Table (page 11).')]).toEqual(['ambigu', 'table']);
   });
 });

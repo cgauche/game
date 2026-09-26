@@ -10,7 +10,10 @@
 // les bancs les lisent sur le disque par `scripts/source/lecteur-fs.mjs`.
 //
 // NIVEAUX, du plus au moins prouvé :
-//  - `table` : la clause nomme « X table », et UNE section du folio N a pour titre X ;
+//  - `table` : la clause nomme « X table », et UNE section du folio N, ou UNE table titrée (`tablesOf`)
+//    dont le bloc porte le folio N, a pour titre X ; la cible d'une table est sa légende `**X**` et son
+//    bloc, son bloc seul quand le titre est une bannière. Une table et une section d'un même fichier au
+//    même titre sont UNE cible : la table ;
 //  - `section-adjacente` : le titre de section du folio N le plus proche AVANT le renvoi, dans sa clause ;
 //  - `section-phrase` : aucun titre dans la clause, UN seul titre du folio N ailleurs dans la phrase ;
 //  - `page` : aucun titre, UN seul fichier porte du texte au folio N, la clause ne nomme pas de table ;
@@ -22,7 +25,17 @@
 // l'englobante. Un titre à parenthèse finale (`Fear (Rating)`) se compare aussi sans elle. Un titre
 // trouvé DANS l'étendue d'un autre titre trouvé n'est pas nommé (« Fate » dans « Fate and Fortune »).
 // Design : #1393, lot 1 (2026-09-25).
-import { empreinteDe, graphieDuFichier, normText, type ChapitreParse, type DescRef, type FragmentBlocs } from './decoupe.ts';
+import {
+  empreinteDe,
+  graphieDuFichier,
+  normText,
+  tablesOf,
+  type Bloc,
+  type ChapitreParse,
+  type DescRef,
+  type FragmentBlocs,
+  type TableDeSection,
+} from './decoupe.ts';
 import type { SourceRef } from '../schemas/grammaire/valeurs.ts';
 
 /** Formes d'un renvoi dans une LANGUE : mesurées sur le corpus, jamais écrites par livre. */
@@ -41,6 +54,8 @@ export interface MotifsDeRenvoi {
   liaisonsDeListe: string[];
   /** Le mot « table », singulier et pluriel. */
   tables: string[];
+  /** Liaisons de la forme « table de X » (le mot « table » AVANT X). */
+  liaisonsDeTable: string[];
   /** Marque du pluriel retirée en fin de mot (mot de 4 lettres ou plus) pour comparer les titres. */
   pluriel: string;
 }
@@ -49,7 +64,8 @@ export interface MotifsDeRenvoi {
  * Motifs par LANGUE (`books.json#language`). VO : comptage du CRB, mesure du 2026-09-25 sur 451 renvois —
  * introducteurs `(see` 143, `(` 129, `see` 85, `on` 26, `found on` 7, `listed on`, `described on`,
  * `explained on`, `presented on` 1 chacun ; plages `–` 8, `-` 1, `and` 3, `to` 1 ; listes `, ` 1
- * (`081 - Consumer Guide.md:13`), `, and ` 1 (`016 - 5. Talents, Trappings, and Final Game Details.md:45`).
+ * (`081 - Consumer Guide.md:13`), `, and ` 1 (`016 - 5. Talents, Trappings, and Final Game Details.md:45`) ;
+ * « table of X » : 2 occurrences au CRB le 2026-09-26, dont 1 renvoi (`047 - Character Events.md:53`).
  */
 export const MOTIFS_DE_RENVOI: Readonly<Partial<Record<string, MotifsDeRenvoi>>> = {
   VO: {
@@ -60,6 +76,7 @@ export const MOTIFS_DE_RENVOI: Readonly<Partial<Record<string, MotifsDeRenvoi>>>
     separateursDeListe: [','],
     liaisonsDeListe: ['and'],
     tables: ['table', 'tables'],
+    liaisonsDeTable: ['of'],
     pluriel: 's',
   },
 };
@@ -154,16 +171,16 @@ export interface LivreIndexe {
   parFolio: Map<number, SectionAuFolio[]>;
 }
 
+/** Les folios où un bloc porte du texte : celui où il ouvre, et ceux de ses marqueurs. */
+const foliosDuBloc = (b: Bloc): number[] => [...(b.folio == null ? [] : [b.folio]), ...b.folios];
+
 /** Indexe un livre : un folio porte une section dès qu'un de ses blocs y ouvre ou y a un marqueur. */
 export function indexerLivre(book: string, langue: string, chapitres: ChapitreDuLivre[]): LivreIndexe {
   const parFolio = new Map<number, SectionAuFolio[]>();
   for (const { fichier, parse } of chapitres) {
     parse.sections.forEach((s, rang) => {
       const folios = new Set<number>();
-      for (const b of s.blocks) {
-        if (b.folio != null) folios.add(b.folio);
-        for (const f of b.folios) folios.add(f);
-      }
+      for (const b of s.blocks) for (const f of foliosDuBloc(b)) folios.add(f);
       for (const f of folios) {
         if (!parFolio.has(f)) parFolio.set(f, []);
         parFolio.get(f)!.push({ fichier, slug: s.slug, occ: s.occ, titre: s.title, rang });
@@ -204,7 +221,11 @@ function unParTitre(sections: SectionAuFolio[]): SectionAuFolio[] {
   return sections.filter((s) => [...vues.values()].includes(s));
 }
 
-const nommer = (s: SectionAuFolio): string => `${s.fichier} § ${s.titre}`;
+/** Une cible du niveau `table` : une section, ou une table titrée d'une section. */
+interface Cible { s: SectionAuFolio; t?: TableDeSection }
+
+const nommer = ({ s, t }: Cible): string => `${s.fichier} § ${t?.table.titre ?? s.titre}`;
+
 
 /** Titre sans sa parenthèse finale (`Fear (Rating)` → `Fear`), ou `null` s'il n'en porte pas. */
 const sansParametre = (titre: string): string | null => {
@@ -224,8 +245,8 @@ interface Etendue { debut: number; fin: number }
 /** Titres NOMMÉS dans un texte bordé d'espaces : chaque occurrence ` k ` des clés de chaque section,
  *  hors celles qui tombent DANS l'étendue plus longue d'un autre titre trouvé (« Fate » dans
  *  « Fate and Fortune », `007 - Character Sheet Explained.md:14`). */
-function nommes(texte: string, cles: [SectionAuFolio, string[]][]): Map<SectionAuFolio, Etendue[]> {
-  const trouves: { s: SectionAuFolio; e: Etendue }[] = [];
+function nommes<T>(texte: string, cles: [T, string[]][]): Map<T, Etendue[]> {
+  const trouves: { s: T; e: Etendue }[] = [];
   for (const [s, ks] of cles) {
     for (const k of ks) {
       for (let j = texte.indexOf(` ${k} `); j >= 0; j = texte.indexOf(` ${k} `, j + 1)) {
@@ -233,7 +254,7 @@ function nommes(texte: string, cles: [SectionAuFolio, string[]][]): Map<SectionA
       }
     }
   }
-  const out = new Map<SectionAuFolio, Etendue[]>();
+  const out = new Map<T, Etendue[]>();
   for (const o of trouves) {
     const dedans = trouves.some((q) => q.s !== o.s && q.e.debut <= o.e.debut && o.e.fin <= q.e.fin
       && q.e.fin - q.e.debut > o.e.fin - o.e.debut);
@@ -242,13 +263,22 @@ function nommes(texte: string, cles: [SectionAuFolio, string[]][]): Map<SectionA
   return out;
 }
 
-/** Adresse d'une section entière, empreinte calculée au texte résolu. */
-function adresseDe(livre: LivreIndexe, s: SectionAuFolio): DescRef {
+/** La section parsée d'une section au folio, son chapitre et la graphie de son fichier. */
+function lue(livre: LivreIndexe, s: SectionAuFolio) {
   const chapitre = livre.chapitres.get(s.fichier);
   const section = chapitre?.sections.find((x) => x.slug === s.slug && x.occ === s.occ);
   const ch = graphieDuFichier(s.fichier);
   if (!chapitre || !section || ch == null) throw new Error(`renvoi : section inconnue ${s.fichier} §${s.slug}#${s.occ}`);
-  const frag: FragmentBlocs = { kind: 'blocs', sec: s.slug, secOcc: s.occ, b0: 0, b1: section.blocks.length - 1, sum: '' };
+  return { chapitre, section, ch };
+}
+
+/** Adresse d'une cible — section entière, ou légende et bloc d'une table —, empreinte calculée au texte
+ *  résolu. */
+function adresseDe(livre: LivreIndexe, { s, t }: Cible): DescRef {
+  const { chapitre, section, ch } = lue(livre, s);
+  const b1 = t ? section.blocks.indexOf(t.block) : section.blocks.length - 1;
+  const b0 = t ? section.blocks.indexOf(t.legende ?? t.block) : 0;
+  const frag: FragmentBlocs = { kind: 'blocs', sec: s.slug, secOcc: s.occ, b0, b1, sum: '' };
   const sum = empreinteDe(chapitre, frag);
   if (typeof sum !== 'string') throw new Error(`renvoi : ${sum.error} — ${sum.detail}`);
   return { book: livre.book, ch, parts: [{ ...frag, sum }] };
@@ -262,7 +292,9 @@ export function resoudreRenvoi(livre: LivreIndexe, renvoi: Renvoi): Resolution {
   if (!toutes.length) return { ...base, niveau: 'introuvable', cible: null, candidats: [] };
   const secs = unParTitre(toutes);
   const sg = (k: string): string => singulier(k, motifs.pluriel);
-  const rendre = (niveau: Niveau, elues: SectionAuFolio[], table: string | null = null): Resolution =>
+  const rendre = (niveau: Niveau, sections: SectionAuFolio[], table: string | null = null): Resolution =>
+    rendreCibles(niveau, sections.map((s) => ({ s })), table);
+  const rendreCibles = (niveau: Niveau, elues: Cible[], table: string | null): Resolution =>
     elues.length === 1
       ? { ...base, table, niveau, cible: adresseDe(livre, elues[0]), candidats: [nommer(elues[0])] }
       : { ...base, table, niveau: 'ambigu', cible: null, candidats: elues.map(nommer) };
@@ -271,13 +303,21 @@ export function resoudreRenvoi(livre: LivreIndexe, renvoi: Renvoi): Resolution {
   const motTable = `(?:${alternative(motifs.tables)})`;
   const nommee =
     new RegExp(` ([\\p{L}\\p{N} ]{2,60}?) ${motTable} $`, 'u').exec(clause) ??
+    new RegExp(` ${motTable} (?:${alternative(motifs.liaisonsDeTable)}) ([\\p{L}\\p{N} ]{2,60}?) $`, 'u').exec(clause) ??
     new RegExp(` ([\\p{L}\\p{N} ]{2,60}?) ${motTable} (?:[\\p{L}\\p{N}]+ ){0,3}$`, 'u').exec(clause);
   if (nommee) {
     const x = ` ${sg(nommee[1].trim())} `;
     const finTable = new RegExp(` ${motTable}$`, 'u');
-    const trouves = nommes(x, secs.map((s) => [s, [sg(cle(s.titre).replace(finTable, ''))].filter((k) => k.length > 3)]));
-    const elues = secs.filter((s) => trouves.get(s)?.some((e) => e.fin === x.length - 1));
-    return rendre('table', elues, nommee[1].trim());
+    const cleDe = ({ s, t }: Cible): string => sg(cle(t?.table.titre ?? s.titre).replace(finTable, ''));
+    const tables = toutes.flatMap((s) =>
+      tablesOf(lue(livre, s).section)
+        .filter((t) => t.cle != null && foliosDuBloc(t.block).includes(renvoi.folio))
+        .map((t): Cible => ({ s, t })));
+    const cibles: Cible[] = [...secs.map((s) => ({ s })), ...tables];
+    const trouves = nommes(x, cibles.map((c): [Cible, string[]] => [c, [cleDe(c)].filter((k) => k.length > 3)]));
+    const touchees = cibles.filter((c) => trouves.get(c)?.some((e) => e.fin === x.length - 1));
+    const elues = touchees.filter((c) => c.t || !touchees.some((u) => u.t && u.s.fichier === c.s.fichier && cleDe(u) === cleDe(c)));
+    return rendreCibles('table', elues, nommee[1].trim());
   }
 
   const cles = secs.map((s): [SectionAuFolio, string[]] => [s, clesDuTitre(s.titre).map(sg).filter((k) => k.length > 1)]);
