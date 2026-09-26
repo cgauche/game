@@ -4,7 +4,7 @@
 
 Poor quality room and board costs half the listed price, and fine quality costs double the listed price. Consuming poor quality food or drink comes with a 10% risk of exposure to the Galloping Trots (see page 180).
 
-#### **FOOD, DRINK, AND LODGING**
+**FOOD, DRINK, AND LODGING**
 
 | Item                    | Cost | Enc | Availability |
 |-------------------------|------|-----|--------------|

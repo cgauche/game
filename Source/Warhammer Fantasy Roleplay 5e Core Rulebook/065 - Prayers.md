@@ -36,7 +36,7 @@ Whenever you Fumble a Pray Test, or when the units die of a Pray Test is equal o
 
 When rolling on the **Wrath of the Gods** table, add +10 to the roll for each Sin Point you have accrued. After rolling and applying the result, reduce your Sin points by 1, to a minimum of 0.
 
-#### **WRATH OF THE GODS**
+**WRATH OF THE GODS**
 
 | d100    | Result                                                                                                                                                                                                                                                                                                                                                            |
 |---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

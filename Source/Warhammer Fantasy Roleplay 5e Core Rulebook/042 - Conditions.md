@@ -78,7 +78,7 @@ You are wrapped in something restricting your movement; it could be ropes, spide
 
 If you have an *Entangled* Condition as a result of being caught up with something that doesn't have a Strength characteristic, refer to the **Strength of Materials** Table to decide the Strength to use in an opposed test.
 
-#### **STRENGTH OF MATERIALS**
+**STRENGTH OF MATERIALS**
 
 | Material         | Strength |
 |------------------|----------|

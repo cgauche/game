@@ -155,7 +155,7 @@ On the best roads, roadside inns can frequently be found every fifteen to twenty
 
 River travel can be easy to secure, but dedicated passenger barges generally only travel between pre-determined docks at specific settlements. Getting off at an unscheduled destination will probably require some fast-talking and a modest bribe. Going almost anywhere else requires either a chartered boat, an expensive prospect, or arranging to travel with a cargo vessel, which will likely take a hefty inducement.
 
-#### **TRAVELLING BY ROAD**
+**TRAVELLING BY ROAD**
 
 | d10 | Encounter                                                                                                                                                                                                                                                 |  |
 |-----|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
@@ -182,7 +182,7 @@ One never knows just what the open road has to offer. Some of the things travell
 
 You may roll on the following tables to randomly determine what your Player Characters encounter while travelling by road or river, or while traversing a city. Feel free to adjust them to suit your particular game, or choose ones you like instead of rolling, if you prefer.
 
-#### **TRAVELLING BY RIVER**
+**TRAVELLING BY RIVER**
 
 | d10                 | Encounter                                                                                                                                                                                                                                                                                                                                |  |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
@@ -197,7 +197,7 @@ You may roll on the following tables to randomly determine what your Player Char
 | 9                   | Warning Shot: As the river passes through a heavily forested area, an arrow whistles from the trees and sticks into the side of the boat. It may be goblins taking potshots or a wood elf scout letting the Characters know not to attempt to land.                                                                                |  |
 | 0                   | Riverbank Gallows: Three wooden gallows stand on the muddy bank, each occupied by a fresh corpse. A painted sign warns that piracy and smuggling are punishable by death.                                                                                                                                                             |  |
 
-#### <span id="page-269-0" data-folio="270"></span>**FELLOW TRAVELLERS**
+<span id="page-269-0" data-folio="270"></span>**FELLOW TRAVELLERS**
 
 | d10 | Encounter                                                                                                                                                                                                                                                                                                                 |
 |-----|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -212,7 +212,7 @@ You may roll on the following tables to randomly determine what your Player Char
 | 9   | Elves: A small group of elegant high elves, likely merchants or with private business to which they are attending. Unless there is something particularly interesting about the Characters or their exploits, they will be politely dismissed. Wood elves will not be seen, unless they want to be for some reason. |
 | 0   | Travellers from Distant Lands: An Estalian diestro seeking a challenge worthy of his blade, a Bretonnian knight on a holy quest, a Norscan fascinated by the Empire, or a Kislevite that hopes to win a Hochland long rifle in an annual shooting contest.                                                          |
 
-#### <span id="page-270-0" data-folio="271"></span>**CITY LIFE**
+<span id="page-270-0" data-folio="271"></span>**CITY LIFE**
 
 | d10 | Encounter                                                                                                                                                                                                                                                                                    |  |
 |-----|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|

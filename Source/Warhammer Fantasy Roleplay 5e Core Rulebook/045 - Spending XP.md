@@ -30,7 +30,7 @@ Each Skill Advance adds +5 to your Skill level. XP Costs for Skills increase in 
 
 The full rules for how to use your Skills can be found in **Chapter 4: Skills and Talents**. Like Characteristic Advances, there is no upper limit to the number of Skill Advances that can be purchased. The table below presents costs for even the most ambitious campaigns and improbably successful characters.
 
-# **ADVANCEMENT XP COSTS**
+**ADVANCEMENT XP COSTS**
 
 | Increase | Characteristic Advance Cost |            | Skill Advance Cost |            |
 |----------|--------------------------------|------------|-----------------------|------------|

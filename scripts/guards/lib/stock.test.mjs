@@ -7,7 +7,14 @@
 // sont tenus par `src/stock-primitive.test.ts` (vitest).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { cleDeSite, ecartDuVolet, ecrireStockSousLot, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from './stock.mjs'
+import { cleDeSite, ecartDuVolet, ecrireStockSousLot, naissanceDu, phraseDeNaissance, refusDeCroissance, sitesEnEntrees, survieDeLecheance } from './stock.mjs'
+
+test('#1739 : « à la naissance » — `naissanceDu` relit ce que `phraseDeNaissance` écrit ; une famille absente rend null', () => {
+  const comptes = { a: 3, 'b-c': 148 }
+  assert.deepEqual(naissanceDu(`Stock. ${phraseDeNaissance(comptes, ['a', 'b-c'])} Suite.`, ['a', 'b-c']), comptes)
+  assert.equal(naissanceDu(phraseDeNaissance(comptes, ['a', 'b-c']), ['a', 'b-c', 'd']), null)
+  assert.equal(naissanceDu('sans phrase', ['a']), null)
+})
 
 test('sitesEnEntrees : deux sites de la MÊME réf dans le MÊME fichier se distinguent par leur OCCURRENCE', () => {
   const entrees = sitesEnEntrees([

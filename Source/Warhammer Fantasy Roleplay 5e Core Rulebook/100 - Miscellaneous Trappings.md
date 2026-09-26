@@ -4,7 +4,7 @@
 
 If players wish to buy something that is not included on this list, the GM can use these prices and availabilities for similar items.
 
-#### **MISCELLANEOUS TRAPPINGS**
+**MISCELLANEOUS TRAPPINGS**
 
 | Item                   | Cost      | Enc | Availability |
 |------------------------|-----------|-----|--------------|

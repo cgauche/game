@@ -56,6 +56,20 @@ export function ecartsDeStock({ observe, stock, cle, remede = {} }) {
   return { neuves, perimees, taille: tenues.size };
 }
 
+/** La phrase « à la naissance » d'un `quoi` de stock : les comptes par famille, dans l'ordre de `familles`.
+ *  SEULE écriture de cette phrase ; `naissanceDu` est sa lecture. PURE. */
+export const phraseDeNaissance = (comptes, familles) =>
+  `Compte par famille à la naissance : ${familles.map((f) => `${f} ${comptes[f]}`).join(', ')}.`
+
+/** Les comptes « à la naissance » que porte un `quoi` (`phraseDeNaissance`), ou `null` s'il n'en porte
+ *  pas pour chaque famille : un stock réécrit garde les siens, l'historique ne se réécrit pas. PURE. */
+export function naissanceDu(quoi, familles) {
+  const m = /Compte par famille à la naissance : ([^.]*)\./.exec(String(quoi ?? ''))
+  if (!m) return null
+  const comptes = Object.fromEntries(m[1].split(', ').map((x) => { const i = x.lastIndexOf(' '); return [x.slice(0, i), Number(x.slice(i + 1))] }))
+  return familles.every((f) => Number.isInteger(comptes[f])) ? comptes : null
+}
+
 /**
  * CLÉ NOMINATIVE d'une entrée ou d'un site : la famille quand la garde en distingue, le fichier, la
  * réf, et l'OCCURRENCE (ordinal du site parmi ses homonymes). Même clé des deux côtés de

@@ -202,7 +202,7 @@ You are trained in simple movements to distract or startle your opponent, drawin
 
 At the age of 10, you underwent the Dooming, a coming-of-age ritual observed by many humans in the Old World. During the incense-laden rite, a priest of Morr known as a doomsayer foretold the manner of your death. In conjunction with your GM, devise a suitable Doom. If your Character dies in the manner foretold, all allied Characters immediately refresh their Fortune, and your next Character begins play with an additional Fate Point.
 
-### **DOOMINGS**
+**DOOMINGS**
 
 | 1d100 | Dooming                                                                            | 1d100 | Dooming                                                                           |
 |-------|------------------------------------------------------------------------------------|-------|-----------------------------------------------------------------------------------|

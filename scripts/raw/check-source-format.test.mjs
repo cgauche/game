@@ -14,11 +14,11 @@ import {
   ecartsAuGrain, mobilierAll, rougesDuMobilier, titresSoudesAll, titresSoudesDuDossier,
   FAMILLES, STOCK_PATH, PREFIXES_FR,
 } from './check-source-format.mjs'
-import { readStock } from './stockNominatif.mjs'
+import { naissanceEnPlace, readStock } from './stockNominatif.mjs'
 import { BOOKS, decoupeDe, gabaritTitreDe, livreExtraitDe, livresDecoupes, nomsDeLaListe, ongletsDe, readText } from './_lib.mjs'
 import { chiffresDes, fenetreDe, mobilierDuDossier } from './lib/mobilier.mjs'
 import { EXEMPTIONS_MOBILIER } from '../guards/lib/mobilierExemptions.mjs'
-import { cleDeSite, sitesEnEntrees } from '../guards/lib/stock.mjs'
+import { cleDeSite, naissanceDu, sitesEnEntrees } from '../guards/lib/stock.mjs'
 import { estSeparateur, ligne1DePlage, titreDuFichier } from '../../src/data/source/decoupe.ts'
 
 const DIR = 'Source/Livre'
@@ -414,6 +414,15 @@ test('familles() n’est pas AVEUGLE : un dossier tout-défaut les rend TOUTES',
 // SURVIE de l'échéance (#1820) : régénérer pour ajouter UNE entrée ne redate pas les autres. La
 // règle est `survieDeLecheance` (`scripts/guards/lib/stock.mjs`) ; ce test-ci tient son CÂBLAGE —
 // `entreesDe`, puis `stockDe`, qui est ce que `--ecrire-stock` écrit sur le disque.
+test('--ecrire-stock CONSERVE les comptes « à la naissance » du stock en place (#1739)', () => {
+  const sites = sitesDuDossier(DIR, [{ nom: '01 - _GoBack.md', texte: '*Folio 3+*\n\n<span id="page-5-0" data-folio="3"></span>x\n' }], listePour(['01 - _GoBack.md']))
+  const naissance = Object.fromEntries(FAMILLES.map((f, i) => [f, 100 + i]))
+  const quoi = JSON.parse(stockDe(sites, { lot: '#9999 Z', date: '2030-01-01', dossiers: 1, naissance })).quoi
+  assert.deepEqual(naissanceDu(quoi, FAMILLES), naissance)
+  assert.notDeepEqual(naissanceDu(JSON.parse(stockDe(sites, { lot: '#9999 Z', date: '2030-01-01', dossiers: 1 })).quoi, FAMILLES), naissance)
+  assert.ok(naissanceEnPlace(STOCK_PATH, FAMILLES), 'le stock en place porte ses comptes à la naissance')
+})
+
 test('--ecrire-stock CONSERVE l’échéance d’une entrée existante, à clé identique', () => {
   const sites = sitesDuDossier(DIR, [{ nom: '01 - _GoBack.md', texte: '*Folio 3+*\n\n<span id="page-5-0" data-folio="3"></span>x\n' }], listePour(['01 - _GoBack.md']))
   const ancien = entreesDe(sites, { lot: '#1739 H-0', date: '2026-09-14' })

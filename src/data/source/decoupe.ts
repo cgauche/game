@@ -69,13 +69,15 @@ export interface FragmentBlocs {
   sum: string;
 }
 
-/** Fragment de CELLULE : case d'une table, adressée par clé de ligne × en-tête de colonne. */
+/** Fragment de CELLULE : case d'une table, adressée par clé de ligne × en-tête de colonne. `table`
+ *  (`TableDeSection.cle`) n'est posé que si la clé de ligne est ambiguë entre les tables de la section. */
 export interface FragmentCellule {
   kind: 'cellule';
   sec: string;
   secOcc: number;
   row: string;
   col: string;
+  table?: string;
   sum: string;
 }
 
@@ -465,7 +467,8 @@ export const estCleDePlage = (s: string): boolean => RANGE_KEY.test(s);
 export interface TableParse {
   headers: string[];
   rows: string[][];
-  /** Bannière ABSORBÉE : le titre imprimé en bandeau devant les en-têtes. */
+  /** TITRE de la table : bannière ABSORBÉE (titre imprimé en bandeau devant les en-têtes) ; `tablesOf` y
+   *  porte aussi la légende `**X**` du paragraphe qui précède la table (#1739). */
   titre?: string;
   /** Bannière RECONNUE mais NON absorbée (texte non majuscule, ou table sans donnée après le saut) :
    *  la première ligne reste les en-têtes, exactement comme avant. C'est un résidu à trier au PDF —
@@ -513,37 +516,66 @@ export function parseTable(md: string): TableParse | null {
   return { ...corps(0), banniereRefusee: banniere };
 }
 
-/** Une table d'une section : le bloc qui la porte, et sa lecture. */
-export interface TableDeSection { block: Bloc; table: TableParse }
+/** Une table d'une section : le bloc qui la porte, sa lecture, et, TITRÉE, sa CLÉ d'adresse `titre#occ` —
+ *  titre normalisé, `occ` = rang 1-based parmi les tables de même titre de la section. Sans titre, aucune
+ *  clé : une position ne départage rien (#1739). */
+export interface TableDeSection { block: Bloc; table: TableParse; cle?: string }
 
-/** Tables d'une section, dans l'ordre du document. */
-export const tablesOf = (section: Section): TableDeSection[] =>
-  section.blocks
-    .map((b) => ({ block: b, table: parseTable(b.md) }))
-    .filter((t): t is TableDeSection => t.table != null);
+/** Paragraphe LÉGENDE : un seul span gras, tout le bloc (#1739). */
+const LEGENDE = /^\*\*([^*]+)\*\*$/;
+
+/** Tables d'une section, dans l'ordre du document. Le `titre` est la bannière absorbée, sinon la
+ *  légende `**X**` du bloc qui précède immédiatement la table. */
+export function tablesOf(section: Section): TableDeSection[] {
+  const vus = new Map<string, number>();
+  return section.blocks.flatMap((b, i) => {
+    const lue = parseTable(b.md);
+    if (!lue) return [];
+    const legende = lue.titre == null ? LEGENDE.exec(section.blocks[i - 1]?.md ?? '')?.[1] : undefined;
+    const table = legende == null ? lue : { ...lue, titre: legende };
+    const titre = normText(table.titre ?? '');
+    if (!titre) return [{ block: b, table }];
+    const occ = (vus.get(titre) ?? 0) + 1;
+    vus.set(titre, occ);
+    return [{ block: b, table, cle: `${titre}#${occ}` }];
+  });
+}
 
 /** Ligne de table dont une cellule vaut la clé cherchée. */
-interface LigneTrouvee { block: Bloc; headers: string[]; row: string[]; cols: number[] }
+interface LigneTrouvee { block: Bloc; table?: string; headers: string[]; row: string[]; cols: number[] }
 
 /**
- * Lignes d'une section dont une cellule vaut `target` (déjà normalisé). Une ligne qui répond dans
- * plusieurs de ses colonnes ne compte qu'une fois.
+ * Lignes d'une section dont une cellule vaut `target` (déjà normalisé), dans la table de clé `table`
+ * si elle est donnée. Une ligne qui répond dans plusieurs de ses colonnes ne compte qu'une fois.
  */
-function rowsMatching(section: Section, target: string): LigneTrouvee[] {
+function rowsMatching(section: Section, target: string, table?: string): LigneTrouvee[] {
   const out: LigneTrouvee[] = [];
-  for (const { block, table } of tablesOf(section)) {
-    for (const row of table.rows) {
+  for (const t of tablesOf(section)) {
+    if (table != null && t.cle !== table) continue;
+    for (const row of t.table.rows) {
       const cols = row.map((c, i) => (normText(c) === target ? i : -1)).filter((i) => i >= 0);
-      if (cols.length) out.push({ block, headers: table.headers, row, cols });
+      if (cols.length) out.push({ block: t.block, ...(t.cle == null ? {} : { table: t.cle }), headers: t.table.headers, row, cols });
     }
   }
   return out;
 }
 
+/** Nombre de lignes de la section que la clé `target` (normalisée) désigne, dans la table de clé `table`
+ *  si elle est donnée — le critère d'adresse de `celluleBrute` et de `cellRefFor`. */
+export const lignesDesignees = (section: Section, target: string, table?: string): number =>
+  rowsMatching(section, target, table).length;
+
+/** Les tables de la section qui portent la clé de ligne `row` (brute), dans la table de clé `table` si elle
+ *  est donnée — celles des lignes de `rowsMatching`. */
+export function tablesDeLaLigne(section: Section, row: string, table?: string): TableDeSection[] {
+  const blocs = new Set(rowsMatching(section, normText(row), table).map((h) => h.block));
+  return tablesOf(section).filter((t) => blocs.has(t.block));
+}
+
 /** Désignation lisible d'un fragment, portée par ses erreurs. */
 const ouDe = (frag: Fragment): string =>
   frag.kind === 'cellule'
-    ? `§${frag.sec}#${frag.secOcc} [${frag.row}]×[${frag.col}]`
+    ? `§${frag.sec}#${frag.secOcc}${frag.table == null ? '' : ` table[${frag.table}]`} [${frag.row}]×[${frag.col}]`
     : `§${frag.sec}#${frag.secOcc} blocs ${frag.b0}-${frag.b1}`;
 
 /**
@@ -580,7 +612,7 @@ function celluleBrute(chapitre: ChapitreParse, frag: FragmentCellule): Resolu | 
   const section = sectionDe(chapitre, frag);
   if (!section) return { error: 'section-inconnue', detail: `§${frag.sec}#${frag.secOcc}` };
   const ou = ouDe(frag);
-  const hits = rowsMatching(section, normText(String(frag.row ?? '')));
+  const hits = rowsMatching(section, normText(String(frag.row ?? '')), frag.table);
   if (hits.length === 0) return { error: 'ligne-introuvable', detail: ou };
   if (hits.length > 1) return { error: 'ligne-ambigue', detail: `${ou} : ${hits.length} lignes` };
   const hit = hits[0];
@@ -697,7 +729,7 @@ export function findRuns(chapitre: ChapitreParse, targetNorm: string): FragmentB
 }
 
 /** Cellule d'un chapitre portant le texte cherché. */
-export interface CelluleTrouvee { sec: string; secOcc: number; headers: string[]; row: string[]; col: number }
+export interface CelluleTrouvee { sec: string; secOcc: number; table?: string; headers: string[]; row: string[]; col: number }
 
 /** Cellules du chapitre dont le texte normalisé vaut `targetNorm`. */
 export function findCells(chapitre: ChapitreParse, targetNorm: string): CelluleTrouvee[] {
@@ -705,7 +737,7 @@ export function findCells(chapitre: ChapitreParse, targetNorm: string): CelluleT
   for (const s of chapitre.sections) {
     for (const hit of rowsMatching(s, targetNorm)) {
       for (const col of hit.cols) {
-        out.push({ sec: s.slug, secOcc: s.occ, headers: hit.headers, row: hit.row, col });
+        out.push({ sec: s.slug, secOcc: s.occ, ...(hit.table == null ? {} : { table: hit.table }), headers: hit.headers, row: hit.row, col });
       }
     }
   }
@@ -715,7 +747,8 @@ export function findCells(chapitre: ChapitreParse, targetNorm: string): CelluleT
 /**
  * Bâtit le fragment de cellule d'un `findCells` : clé de ligne = première cellule de la ligne qui la
  * désigne SANS AMBIGUÏTÉ dans sa section, les clés positionnelles (fourchette d100) passant en
- * dernier recours. Rend `null` si la ligne n'a pas de clé sûre ou la table pas d'en-têtes.
+ * dernier recours ; à défaut, dans SA table (`table`, #1739). Rend `null` si la ligne n'a pas de clé
+ * sûre ou la table pas d'en-têtes.
  */
 export function cellRefFor(chapitre: ChapitreParse, hit: CelluleTrouvee): FragmentCellule | null {
   const col = hit.headers[hit.col];
@@ -727,14 +760,16 @@ export function cellRefFor(chapitre: ChapitreParse, hit: CelluleTrouvee): Fragme
     .map((c, i) => ({ c: c.trim(), i }))
     .filter(({ c, i }) => c && i !== hit.col)
     .sort((a, b) => Number(estCleDePlage(a.c)) - Number(estCleDePlage(b.c)));
-  for (const { c } of candidates) {
-    if (rowsMatching(section, normText(c)).length !== 1) continue;
-    const frag: FragmentCellule = { kind: 'cellule', sec: hit.sec, secOcc: hit.secOcc, row: c, col, sum: '' };
-    const sum = empreinteDe(chapitre, frag);
-    if (typeof sum !== 'string') continue;
-    const res = resoudreFragment(chapitre, { ...frag, sum });
-    if (estErreur(res) || normText(res.md) !== vise) continue;
-    return { ...frag, sum };
+  for (const table of hit.table == null ? [undefined] : [undefined, hit.table]) {
+    for (const { c } of candidates) {
+      if (rowsMatching(section, normText(c), table).length !== 1) continue;
+      const frag: FragmentCellule = { kind: 'cellule', sec: hit.sec, secOcc: hit.secOcc, row: c, col, ...(table == null ? {} : { table }), sum: '' };
+      const sum = empreinteDe(chapitre, frag);
+      if (typeof sum !== 'string') continue;
+      const res = resoudreFragment(chapitre, { ...frag, sum });
+      if (estErreur(res) || normText(res.md) !== vise) continue;
+      return { ...frag, sum };
+    }
   }
   return null;
 }
@@ -762,7 +797,7 @@ export function blocsCouverts(chapitre: ChapitreParse, frag: Fragment): Set<numb
     for (let i = Math.max(0, frag.b0); i <= Math.min(frag.b1, section.blocks.length - 1); i++) out.add(i);
     return out;
   }
-  const hits = rowsMatching(section, normText(String(frag.row ?? '')));
+  const hits = rowsMatching(section, normText(String(frag.row ?? '')), frag.table);
   if (hits.length !== 1) return out;
   const idx = section.blocks.indexOf(hits[0].block);
   if (idx >= 0) out.add(idx);
@@ -794,7 +829,7 @@ function chevauchementDe(chapitre: ChapitreParse, ref: DescRef): ErreurResolutio
       const b = ref.parts[j];
       if (!memeSection(a, b)) continue;
       const couvertsA = blocsCouverts(chapitre, a);
-      const memeCellule = a.kind === 'cellule' && b.kind === 'cellule' && a.row === b.row && a.col === b.col;
+      const memeCellule = a.kind === 'cellule' && b.kind === 'cellule' && a.row === b.row && a.col === b.col && a.table === b.table;
       const croise = memeCellule || [...blocsCouverts(chapitre, b)].some((k) => couvertsA.has(k));
       // Deux CELLULES du même bloc-table qui ne désignent PAS la même case citent bien deux textes.
       if (croise && !(a.kind === 'cellule' && b.kind === 'cellule' && !memeCellule)) {

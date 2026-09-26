@@ -33,9 +33,16 @@
 // Pour les encadrés, les tableaux et les capitales, seules S et F sont rendues (leur place dans le `.md`
 // suit la mise en page, pas l'ordre du PDF), et, des capitales, le S′ par COMPTAGE : un titre que les
 // pages de son fichier impriment PLUS de fois que son `.md` ne le porte (une fois au moins). Le même
-// comptage (zéro fois au moins), sur la légende UNIQUE d'un bloc de tableau, est RAPPORTÉ
-// (`legende-absente`) : la forme d'une légende n'est pas un titre, la réparation ne le pose pas.
-// Un corps en tableau se juge par la ligne qui précède l'EN-TÊTE de son bloc.
+// comptage (zéro fois au moins), sur une légende de tableau, est `legende-absente`.
+// Un corps en tableau se juge par la ligne qui précède l'EN-TÊTE de son bloc ; sa légende est un
+// paragraphe `**X**` seul (`TableParse.titre`, `src/data/source/decoupe.ts`), jamais un titre :
+//  — L : légende portée en ligne de titre `#` (`ligneLegende` : la même, `#` ôtés,
+//    ancres de page en tête), ou en BANNIÈRE (1re rangée de la table, une seule cellule pleine :
+//    `enTete` = `rangee`, la rangée suivante devient l'en-tête, ou `vide` quand une de ses cellules
+//    est une PHRASE, trois mots au moins et ponctuation finale — CRB 040:13 « A single dose counts as
+//    10 doses. » ; « Mod. », « Carac. » n'en sont pas).
+// Un titre d'encadré sur la LIGNE DE BASE d'un autre du même gabarit (même page, même y) est un EN-TÊTE
+// DE COLONNE (`colonne`), jamais une légende : non rendu.
 // Toute CIBLE (`cible`, `devant`) est le DÉBUT d'un bloc Markdown ; une ligne de tableau se remonte à
 // l'en-tête de son bloc ; sinon le site sort en `cible-invalide`, avec sa forme visée et la ligne visée.
 // `titreMd` : le texte EXACT du titre dans le `.md` (S, F, M, B, O), ce que la réparation déplace.
@@ -52,7 +59,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { decoupeDe, gabaritTitreDe, livreExtraitDe, nomsDeLaListe, normalize, readText } from './_lib.mjs'
 import { lignes } from './lib/colonnes.mjs'
-import { stripSpans } from '../../src/data/source/decoupe.ts'
+import { cellulesDe, estSeparateur, stripSpans } from '../../src/data/source/decoupe.ts'
 import { FOLIO_ATTR, foliosRoulants } from '../../src/data/source/ancre-vide.ts'
 import { grasOuvert, prosePrecedenteCoupee, recoller } from './lib/titres-soudes.mjs'
 import { canoniser, relatifSousRacine } from '../docs/lib/chemin-mesure.mjs'
@@ -129,6 +136,14 @@ export function enTete(ligne) {
   const m = /^(#{1,6})\s+(.*)$/.exec(stripSpans(ligne))
   if (!m) return null
   return { niveau: m[1].length, texte: cleDeTitre(m[2]), groupes: [...m[2].matchAll(/\*\*([^*]+)\*\*/g)].map((g) => cleDeTitre(g[1])) }
+}
+
+/** BANNIÈRE d'une ligne de table (≥ 2 cellules, une seule pleine) : sa clé de titre, ou null. PURE. */
+export const banniereDe = (ligne) => {
+  if (!/^\s*\|/.test(stripSpans(ligne ?? ''))) return null
+  const cellules = cellulesDe(stripSpans(ligne))
+  const pleines = cellules.filter(Boolean)
+  return cellules.length >= 2 && pleines.length === 1 ? cleDeTitre(pleines[0]) : null
 }
 
 /** Ligne FAITE d'un seul groupe gras (titre sans `#`) : son texte, ou null. PURE. */
@@ -232,10 +247,19 @@ export function classer(pages, fichiers, gabarit) {
     if (ligneDeTable(x[l])) while (l > 0 && ligneDeTable(x[l - 1])) l--
     return l
   }
-  /** Le nombre de clés `suite` que porte la section du `.md` ouverte à la ligne `v` (jusqu'au titre suivant). */
+  /** Une LÉGENDE de table : un gras seul dont la ligne non vide suivante est une ligne de tableau. */
+  const legendeDeTable = (f, l) => {
+    const x = fichiers[f].lignes
+    if (!grasSeul(x[l])) return false
+    let k = l + 1
+    while (k < x.length && !x[k].trim()) k++
+    return ligneDeTable(x[k])
+  }
+  /** Le nombre de clés `suite` que porte la section du `.md` ouverte à la ligne `v` (jusqu'au titre ou
+   *  à la légende de table suivants). */
   const corroboration = (v, suite) => {
     let fin = v.l + 1
-    while (fin < cles[v.f].length && !enTete(fichiers[v.f].lignes[fin])) fin++
+    while (fin < cles[v.f].length && !enTete(fichiers[v.f].lignes[fin]) && !legendeDeTable(v.f, fin)) fin++
     const section = cles[v.f].slice(v.l, fin).join(' ')
     return suite.filter((k) => section.includes(k)).length
   }
@@ -255,6 +279,19 @@ export function classer(pages, fichiers, gabarit) {
     const suivantes = morceaux.map((m) => m.sort((x, y) => x.x0 - y.x0).map((x) => x.texte).join(' '))
     t.corpsPdf = suivantes[0] ?? null
     t.cles = clesDeCorps(suivantes)
+    // Une table dont chaque colonne est lue en colonne de page (CRB p.175, p.366) : son corps se lit en
+    // RANGÉES, de haut en bas, sous le titre.
+    if (!t.cles.length && t.gabarit === 'encadre') {
+      const rangees = []
+      const dessous = flux.filter((x, i) => x.page === t.page && x.y0 < l.y0 && !estTitre.has(i)).sort((a, b) => b.y0 - a.y0 || a.x0 - b.x0)
+      for (const x of dessous) {
+        const r = rangees.at(-1)
+        if (r && Math.abs(r[0].y0 - x.y0) < 1) r.push(x)
+        else if (rangees.length < 6) rangees.push([x])
+        else break
+      }
+      t.cles = clesDeCorps(rangees.map((r) => r.map((x) => x.texte).join(' ')))
+    }
     t.corps = null
     // Une clé à PLUSIEURS candidats se départage par les clés suivantes que porte la section de chacun
     // (jusqu'au titre suivant) : le mieux corroboré l'emporte ; aucun corroboré, la clé suivante est
@@ -306,6 +343,7 @@ export function classer(pages, fichiers, gabarit) {
       const h = p && enTete(fichiers[p.f].lignes[p.l])
       if (h && h.texte === t.cle) {
         t.forme = 'ok'
+        if (t.famille === 'tableau') t.enTitre = true
         if (pos > 0 && !tousTitres.has(prefixe) && !/^\s*\|/.test(fichiers[f].lignes[li])) {
           t.debris = debris(prefixe, f)
           if (t.debris) t.debris.texteMd = texteExact(fichiers[f].lignes[li], prefixe)
@@ -315,9 +353,14 @@ export function classer(pages, fichiers, gabarit) {
         continue
       }
       if (p && grasSeul(fichiers[p.f].lignes[p.l]) === t.cle) {
-        t.forme = 'B'
+        t.forme = t.famille === 'tableau' ? 'ok' : 'B'
         t.titreMd = p
         pris.add(`titre ${p.f}:${p.l}`)
+        continue
+      }
+      if (t.famille === 'tableau' && banniereDe(fichiers[f].lignes[depuis]) === t.cle) {
+        t.forme = 'L'
+        t.banniere = { f, l: depuis }
         continue
       }
     }
@@ -337,13 +380,13 @@ export function classer(pages, fichiers, gabarit) {
     const auMd = cles[f].filter((c) => c === t.cle).length
     return auMd >= plancher && auPdf > auMd ? { auPdf, auMd } : null
   }
-  // Une table n'a qu'une LÉGENDE : plusieurs titres `tableau` sur le même bloc en sont les en-têtes de
-  // colonne (CRB p.149, p.188).
-  const legendeUnique = (t) => {
-    const bloc = (u) => `${u.corps.f}:${enteteDeTable(u.corps.f, u.corps.l)}`
-    return !titres.some((u) => u !== t && u.famille === 'tableau' && u.corps && bloc(u) === bloc(t))
-  }
   const jumeaux = (t) => titres.filter((u) => u !== t && u.page === t.page && Math.abs(u.y0 - t.y0) <= 2)
+  // EN-TÊTE DE COLONNE, jamais légende : un titre d'encadré sur la ligne de base d'un autre du même
+  // gabarit, même page (CRB p.149, p.188 : Δy 0 ; encadrés voisins p.130 : Δy 1,88, tables voisines
+  // p.189 : Δy 1,13).
+  const memeLigneDeBase = (t, u) => u !== t && u.page === t.page && Math.abs(u.y0 - t.y0) < 0.5
+  for (const t of titres) if (t.gabarit === 'encadre' && titres.some((u) => u.gabarit === 'encadre' && memeLigneDeBase(t, u))) t.forme = 'colonne'
+  for (const t of titres) if (t.enTitre && t.forme === 'ok') t.forme = 'L'
   const ordreDeRecherche = (p) => [...new Set([...fichiersDeLaPage(p), ...fichiers.keys()])]
   for (const t of titres.filter((x) => x.forme === 'absent')) {
     const siens = jumeaux(t)
@@ -373,7 +416,7 @@ export function classer(pages, fichiers, gabarit) {
       t.forme = "S'"
       t.mentions = fichiers.flatMap((fx, fi) => fx.lignes.flatMap((x, li) => (cles[fi][li].includes(t.cle) ? [adresse(fi, li)] : [])))
       if (t.famille === 'capitales' && t.corps) t.comptage = comptage(t, 1)
-      if (t.famille === 'tableau' && legendeUnique(t)) t.comptage = comptage(t, 0)
+      if (t.famille === 'tableau') t.comptage = comptage(t, 0)
     }
   }
 
@@ -426,7 +469,7 @@ export function classer(pages, fichiers, gabarit) {
   // casse du frère (le span SC700 n'en porte pas).
   const poser = (t, i, texteMd) => {
     let u = null
-    const frere = (j) => titres[j].gabarit === t.gabarit && titres[j].forme === 'ok' && titres[j].titreMd.f === t.corps.f
+    const frere = (j) => titres[j].gabarit === t.gabarit && titres[j].forme === 'ok' && titres[j].titreMd.niveau != null && titres[j].titreMd.f === t.corps.f
     for (let j = i - 1; j >= 0 && !u; j--) if (frere(j)) u = titres[j]
     for (let j = i + 1; j < titres.length && !u; j++) if (frere(j)) u = titres[j]
     if (!u) return { ligneTitre: null, frere: null }
@@ -434,6 +477,22 @@ export function classer(pages, fichiers, gabarit) {
     const nu = texteMd ? texteMd.replace(/^#{1,6}\s+/, '') : ENTREES.has(t.famille) ? t.texte : enCasse(t.texte, casseDe(ligneU.replace(/\*/g, '')))
     const texte = nu && /^\*\*[^*]+\*\*/.test(ligneU) && !nu.startsWith('**') ? `**${nu}**` : nu && grasOuvert(nu) ? `${nu}**` : nu
     return { ligneTitre: texte ? `${'#'.repeat(u.titreMd.niveau)} ${texte}` : null, frere: `${adresse(u.titreMd.f, u.titreMd.l)} « ${u.texte} »` }
+  }
+  // L : la ligne de titre, ou la bannière, et ce qu'elle devient.
+  const legende = (t) => {
+    if (!t.banniere) {
+      const ligne = fichiers[t.titreMd.f].lignes[t.titreMd.l]
+      const [, a, b, x] = /^((?:<span[^>]*>\s*<\/span>\s*)*)#{1,6}\s+((?:<span[^>]*>\s*<\/span>\s*)*)(.*)$/.exec(ligne)
+      const nu = x.replace(/\s+#+\s*$/, '').trim()
+      return { site: adresse(t.titreMd.f, t.titreMd.l), titreMd: ligne, ligneLegende: `${a}${b.trim()}${/^\*\*[^*]+\*\*$/.test(nu) ? nu : `**${nu}**`}` }
+    }
+    const { f, l } = t.banniere
+    const x = fichiers[f].lignes
+    let r = l + 1
+    while (r < x.length && estSeparateur(stripSpans(x[r]))) r++
+    const phrase = cellulesDe(stripSpans(x[r] ?? '')).some((c) => /[.!?]$/.test(c) && c.split(/\s+/).length >= 3)
+    const ligne = x[l]
+    return { site: adresse(f, l), titreMd: ligne, ligneLegende: `**${cellulesDe(stripSpans(ligne)).filter(Boolean).join(' ')}**`, enTete: phrase ? 'vide' : 'rangee' }
   }
   // Un titre DÉPLACÉ vers un autre fichier (F, M, O) : sa page doit tenir dans la découpe de celui-ci.
   const decoupe = (t, vers) => {
@@ -450,7 +509,8 @@ export function classer(pages, fichiers, gabarit) {
     if (!ENTREES.has(t.famille)) {
       if (t.forme === 'S') sites.push({ forme: 'S', site, titreMd: exact(t), ...pose(), ...base })
       else if (t.forme === 'F') emettre({ forme: 'F', site, titreMd: exact(t), cible: cible(t), ...pose(), ...decoupe(t, t.corps), comment: t.comment, ...base }, { cible: t.corps })
-      else if (t.forme === "S'" && t.comptage && t.famille === 'tableau') emettre({ forme: 'legende-absente', site: null, cible: cible(t), mentions: t.mentions, comptage: t.comptage, ...base }, { cible: t.corps })
+      else if (t.forme === 'L') sites.push({ forme: 'L', ...legende(t), ...base })
+      else if (t.forme === "S'" && t.comptage && t.famille === 'tableau') emettre({ forme: 'legende-absente', site: null, cible: cible(t), ligneLegende: `**${t.texte}**`, mentions: t.mentions, comptage: t.comptage, ...base }, { cible: t.corps })
       else if (t.forme === "S'" && t.comptage) emettre({ forme: "S'", site: null, cible: cible(t), ...pose(), mentions: t.mentions, comptage: t.comptage, ...base }, { cible: t.corps })
       return
     }
@@ -806,7 +866,7 @@ function boitesDuPdf(id) {
 }
 
 const RACINE = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'P', 'D', 'E', 'A', 'G', 'T', 'J', 'paragraphe-non-prouve', 'libelle-non-prouve', 'cesure', 'legende-absente', 'N', 'corps-introuvable', 'cible-invalide', 'doublon']
+const FORMES = ['S', 'F', 'M', "S'", 'B', 'O', 'L', 'P', 'D', 'E', 'A', 'G', 'T', 'J', 'paragraphe-non-prouve', 'libelle-non-prouve', 'cesure', 'legende-absente', 'N', 'corps-introuvable', 'cible-invalide', 'doublon']
 const FAMILLES = ['entree', 'encadre', 'tableau', 'capitales', 'intertitre']
 /** Les familles d'ENTRÉE : titres du fil du texte, dans l'ordre du PDF, sondés dans toutes leurs formes. */
 const ENTREES = new Set(['entree', 'intertitre'])

@@ -1050,6 +1050,26 @@ describe('matrice responsive canonique (design 2026-07-31 §12)', () => {
     expect(at700[0].corps).toMatch(/justify-content:\s*center/);
   });
 
+  // Une piste `fr` NUE vaut `minmax(auto, …)` : son plancher est le contenu, et la boîte déborde.
+  it('`Split` / `Grid` : aucune piste `fr` nue dans `layout.css` — toujours second terme d’un `minmax`', () => {
+    const nues = reglesCss(readFileSync(join(UI, 'styles', 'layout.css'), 'utf8')).flatMap((r) =>
+      declarations(r.corps)
+        .filter((d) => d.prop === 'grid-template-columns' && /(?<!,\s*)(?<![\d.])\d*\.?\d+fr\b/.test(d.valeur))
+        .map((d) => `${r.media ?? ''} ${r.selecteurs.join(', ')} : ${d.valeur}`));
+    expect(nues).toEqual([]);
+  });
+
+  // Une DÉCLARATION, pas une mesure : l'enroulement réel dépend des largeurs intrinsèques, que seul
+  // un navigateur calcule (`docs/recette-navigateur.md`). Ce contrat tient la condition NÉCESSAIRE —
+  // un enfant de la rangée qui ne peut pas rétrécir la fait déborder même enroulée.
+  it('≤360 : tout ENFANT de `.de-reflrow` peut rétrécir sous sa largeur intrinsèque, bornée à la rangée', () => {
+    const enfants = reglesCss(readFileSync(join(UI, 'styles', 'codex-edit.css'), 'utf8'))
+      .filter((r) => !r.media && r.selecteurs.includes('.de-reflrow > *'));
+    expect(enfants.length, '`.de-reflrow > *` a sa règle dans `codex-edit.css`').toBe(1);
+    expect(enfants[0].corps).toMatch(/min-width:\s*0\b/);
+    expect(enfants[0].corps).toMatch(/max-width:\s*100%/);
+  });
+
   it('les modales de jet occupent l’écran sous 560, corps défilable et pied fixe', () => {
     const css = read('roll-shell.css');
     expect(css).toMatch(/\.modal:has\(>\s*\.rs-scroll\)\s*\{[^}]*overflow:\s*hidden/); // le corps défile, pas la boîte

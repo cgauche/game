@@ -58,7 +58,7 @@ Not all Tests are as simple as the one above. The Success Level of a Test can be
 
 Combine any SL bonuses or penalties from the Difficulty with the Character's modifiers to arrive at the final SL modifier for the roll. This could turn a success into a failure, or prise victory from the jaws of defeat!
 
-#### **DIFFICULTY TABLE**
+**DIFFICULTY TABLE**
 
 | Difficulty  | Test Modifier | Example                                                         |
 |-------------|------------------|-----------------------------------------------------------------|
@@ -90,7 +90,7 @@ If an action isn't covered by a Skill, you can make a Characteristic Test instea
 
 Often, you will only need to know whether a Test results in a success or failure. If it's important to know just how well you have passed, or how badly you have failed, consult the **Outcomes Table** below. The GM uses the descriptions in the table to decide what happens as a result of your action. There are lots of example outcome tables for a variety of actions, along with specific advice on how to use the rules, later in this chapter.
 
-#### **OUTCOMES TABLE**
+**OUTCOMES TABLE**
 
 | SL            | Result                | Have You Succeeded?                                                                                                                                                                                                                          |
 |---------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

@@ -97,7 +97,7 @@ As the GM, you may not wish to track the details of injuries for all participant
 
 Sudden Death is useful for determining the fate of background NPCs such as brigands or low-tier cultists, but it should not be used to determine the fate of Player Characters, or for NPCs with the *Luck* Talent.
 
-# <span id="page-172-0" data-folio="173"></span>**HEAD CRITICAL WOUNDS**
+<span id="page-172-0" data-folio="173"></span>**HEAD CRITICAL WOUNDS**
 
 | d100          | Description         | Wounds | Additional Effects                                                                                                                                                                                                            |
 |---------------|---------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -122,7 +122,7 @@ Sudden Death is useful for determining the fate of background NPCs such as briga
 | 95–99         | Mangled Jaw         | 5      | The blow shatters your jaw and destroys your tongue, sending teeth flying. Gain 4 Bleeding and 3 Stunned Conditions. Suffer a Broken Bone (Major) Injury and lose your tongue and 1d10 teeth — Amputation (Hard -2 SL). |
 | 00 or more | Shattered Skull  | Death  | Your head is caved in and you collapse, instantly dead. A suitably bladed weapon may decapitate you instead, your severed head landing 1d10 yards away in a random direction.                                           |
 
-### <span id="page-173-0" data-folio="174"></span>**ARM CRITICAL WOUNDS**
+<span id="page-173-0" data-folio="174"></span>**ARM CRITICAL WOUNDS**
 
 | d100           | Description             | Wounds | Additional Effects                                                                                                                                                                                                                                                                              |
 |----------------|-------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -147,7 +147,7 @@ Sudden Death is useful for determining the fate of background NPCs such as briga
 | 131–135        | Sliced Tendons          | 5      | The blow leaves your arm useless — Amputation (Very Hard -3 SL). Gain 3 Bleeding and 1 Stunned Condition.                                                                                                                                                                                    |
 | 136 or more | Brutal Dismemberment | Death  | Your arm is severed or torn away. You expire from shock and blood loss almost instantly.                                                                                                                                                                                                     |
 
-# <span id="page-174-0" data-folio="175"></span>**BODY CRITICAL WOUNDS**
+<span id="page-174-0" data-folio="175"></span>**BODY CRITICAL WOUNDS**
 
 | d100           | Description                   | Wounds | Additional Effects                                                                                                                                                                                                                                                       |
 |----------------|-------------------------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -172,7 +172,7 @@ Sudden Death is useful for determining the fate of background NPCs such as briga
 | 111–115        | Internal Bleeding             | 5      | Gain a Bleeding Condition that can only be removed through Surgery. Contract Blood Rot (see Disease and Infection, page 179).                                                                                                                                         |
 | 116 or more | Torn Apart                    | Death  | You are hacked in two. The top half lands in a random direction, and all creatures within 2 yards are showered in blood.                                                                                                                                              |
 
-# <span id="page-175-0" data-folio="176"></span>**LEG CRITICAL WOUNDS**
+<span id="page-175-0" data-folio="176"></span>**LEG CRITICAL WOUNDS**
 
 | d100           | Description           | Wounds | Additional Effects                                                                                                                                                                                                                                                                       |
 |----------------|-----------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

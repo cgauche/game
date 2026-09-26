@@ -4,7 +4,7 @@
 
 Clothing styles in the Empire vary considerably. As a general guideline, commoners wear simple tunics with breeches or gowns. Middle-class citizens favour puff-and-slash fashions with hats and hosiery or dresses. The elites flaunt capes, furs, and flamboyant hats with extravagantly enormous feathers — the more exotic, the better!
 
-#### **CLOTHING AND ACCESSORIES**
+**CLOTHING AND ACCESSORIES**
 
 | Item             | Cost   | Enc | Availability |
 |------------------|--------|-----|--------------|

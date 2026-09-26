@@ -22,6 +22,8 @@ Jumping to reach high ledges, leaping from rooftop to rooftop, or failing both a
 
 Difficulty is determined by the Character's Movement, with values 3 or below increasing Difficulty, and values of 5 or greater reducing it.
 
+**EXAMPLE DIFFICULTIES OF COMMON MOVEMENT ACTIONS**
+
 | Difficulty             | Action                                                                                                                                                                                                                                      |
 |------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Very Easy (+6 SL)      | Ride (Horse): Bring a quiet horse for a gentle trot over a lush meadow.<br>Drive: Navigate a small obstacle with your horse and cart.<br>Athletics: Dash across town to catch the baker before she's sold out of fresh bread.               |
@@ -84,9 +86,10 @@ These rules are intended to create interesting narrative moments, and so work sl
 
 If the players are chasing one another, simply resolve the pursuit with an Opposed Athletics, Drive, Ride, Swim, or other appropriate Test instead.
 
-| PURSUIT FACTORS                                                          |                                                                         |
-|--------------------------------------------------------------------------|-------------------------------------------------------------------------|
+**PURSUIT FACTORS**
+
 | Positives while Quarry                                                   | Positives while Pursuers                                                |
+|--------------------------------------------------------------------------|-------------------------------------------------------------------------|
 | Won the Chase Test                                                       | Won the Chase Test                                                      |
 | Terrain is dense or crowded with places to hide                       | Terrain is open with few places to hide                              |
 | Your slowest member has a higher Movement than the fastest Pursuer | Your slowest member has a higher Movement than the fastest Quarry |
@@ -122,9 +125,10 @@ If you satisfy the outcome conditions imposed by your Pursuit Factors, you win, 
 
 **If you're the Pursuer and you lose:** The Quarry escapes. They may leave behind clues or evidence that could help you track them down later, but for now they have given you the slip. Any Pursuers who overcame their Obstacles may press on without the others, each gaining a single opportunity to attack or restrain the slowest member of the Quarry. Bear in mind this may leave a lone Character outnumbered and far from their companions.
 
-|     | OBSTACLE TABLE                                                                                               |                                                                               |
-|-----|--------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+**OBSTACLE TABLE**
+
 | d10 | Obstacle                                                                                                     | Example Tests                                                                 |
+|-----|--------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
 | 1   | A merchant's wagon overturns, spilling its goods across your path.                                        | Athletics to leap over the spilled goods, or Dodge to duck to one side.    |
 | 2   | An overly curious guard tries to stop you to see what the fuss is about.                                  | Charm or Intimidate to convince them to bother someone else.               |
 | 3   | A chest-deep pool, canal, or stream lies in your way.                                                        | Swim to dive in, or Athletics to leap across.                                 |

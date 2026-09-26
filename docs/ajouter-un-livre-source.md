@@ -240,9 +240,13 @@ intertitre ; entrée et intertitre sont les familles d'ENTRÉE. Formes des entr�
 d'ordre (à poser `devant` le titre qui la suit au PDF), N niveau, `corps-introuvable` avec sa cause ;
 des autres familles, S et F seuls, plus le S′ de capitales par COMPTAGE (imprimé sur les pages de son
 fichier plus de fois que son `.md` ne le porte, une fois au moins ; restauré dans la forme de ses
-frères du `.md`). La légende de tableau absente du `.md` (même comptage, zéro fois au moins, légende
-UNIQUE de son bloc — plusieurs titres sur un bloc en sont les en-têtes de colonne) est RAPPORTÉE,
-`legende-absente`, jamais posée : la forme d'une légende n'est pas celle d'un titre de section. Débris devant un corps à sa place, toutes familles : `doublon` — les folios sont
+frères du `.md`). La LÉGENDE d'un tableau (légende UNIQUE de son bloc — plusieurs titres sur un bloc
+en sont les en-têtes de colonne) s'écrit en paragraphe `**X**` seul au-dessus de la table, jamais en
+titre de section : `tablesOf` (`src/data/source/decoupe.ts`) la lit `TableParse.titre`, comme la
+bannière. En ligne de titre `#` ou en bannière de la table, forme **L** (`ligneLegende` ; bannière :
+en-tête suivant, ou VIDE quand la rangée suivante porte une phrase — trois mots au moins, ponctuation
+finale) ; absente du `.md` (même comptage,
+zéro fois au moins), `legende-absente`, posée `**X**` au-dessus de l'en-tête. Débris devant un corps à sa place, toutes familles : `doublon` — les folios sont
 du mobilier de page, jamais un débris de titre. Toute cible est le DÉBUT d'un bloc Markdown (en tête
 de fichier, après une ligne vide ou un titre ; une ligne de tableau se remonte à l'en-tête de son
 bloc) ; sinon le site sort en `cible-invalide`. Les ancres `<span id="page-…">` ne comptent pas
@@ -772,8 +776,8 @@ jugé). Une `preuve` vide, ou posée sur un site qui n'est plus mesuré, est rou
 | `br-litteral` | `\| Gagnez 3 États<br>Assourdi \|` | **RIEN par réflexe** : la lib absorbe la FORME (adressage `sansBr`, rendu de cellule `brEnSaut` → saut de ligne), le site n'est plus inadressable. Son SENS se **lit au PDF, site par site** : une simple **césure** typographique se recolle en espace dans `Source/` ; une **liste d'items** réellement imprimée en colonne se garde telle quelle et se solde par une `preuve` (« PDF p.N : … ») + `date` sur son entrée de stock |
 | marqueur de folio collé à une ligne de table — **PAS un défaut** | `<span … data-folio="7"></span>\| Lancer \| …` | **RIEN** : `toBlocks` retire les `<span>` AVANT `parseTable`, la table se lit entièrement (25 lignes sur 25 mesurées le 2026-09-14). L'ancre **reste où la page coupe** — la déplacer réécrirait `Source/` pour un défaut déjà absorbé |
 | `donnee-en-tete` | une table dont les « en-têtes » sont `\| 81-85 \| Bouche explosée \|` | c'est la **continuation** de la table précédente coupée par un saut de page : **fusionner** les deux blocs sous les en-têtes réels |
-| `cle-de-ligne-ambigue` | deux tables d'une même section partagent la clé `01-10` | restituer les **headings IMPRIMÉS** qui séparent les tables au livre (une section par localisation, par domaine…) — jamais inventer un titre |
-| `table-avalee-par-titre` | `## **BAILIFF ADVANCE SCHEME WS BS S T I Ag Dex Int WP Fel** h h h` — bandeau (gras ou nu), rangée de labels et valeurs à plat sur la ligne du titre | **restituer la table telle qu'imprimée**, à l'IMAGE de la page : bandeau → heading `####`, rangée de labels → en-têtes, valeurs → rangées. Une cellule **fusionnée** (pas de rowspan en GFM) voit sa valeur **répétée** sur chaque rangée qu'elle couvre — c'est de la FORME. Les paragraphes qui suivent le titre et portent la fin de la table (rangées orphelines) rentrent dans la table |
+| `cle-de-ligne-ambigue` | deux tables d'une même section partagent la clé `01-10`, et leurs TITRES ne les séparent pas | restituer les **titres IMPRIMÉS** qui séparent les tables au livre : heading de section, ou légende `**X**` de la table (la cellule s'adresse alors dans SA table, `FragmentCellule.table`) — jamais inventer un titre |
+| `table-avalee-par-titre` | `## **BAILIFF ADVANCE SCHEME WS BS S T I Ag Dex Int WP Fel** h h h` — bandeau (gras ou nu), rangée de labels et valeurs à plat sur la ligne du titre | **restituer la table telle qu'imprimée**, à l'IMAGE de la page : bandeau → légende `**X**`, rangée de labels → en-têtes, valeurs → rangées. Une cellule **fusionnée** (pas de rowspan en GFM) voit sa valeur **répétée** sur chaque rangée qu'elle couvre — c'est de la FORME. Les paragraphes qui suivent le titre et portent la fin de la table (rangées orphelines) rentrent dans la table |
 | catégorie en mauvaise colonne | `ARMES D'HAST` en 5ᵉ colonne | la ramener en **colonne 1**, comme le bandeau intérieur du PDF — la table reste **UNE et entière**, jamais découpée en headings |
 | bandeau de titre en MAJUSCULES | `\| \| TABLEAU DES MOUVEMENTS \| \|` devant les en-têtes | **RIEN** : le parseur l'absorbe (`parseTable` → `titre`), les en-têtes réels remontent tout seuls |
 | `banniere-suspecte`, bandeau **non majuscule** ou d'**une seule lettre** | `\| Effet \| \|` (en-tête réel d'une table à UNE colonne), `\| A \| \|` (séparateur d'index), `\| \| \| 159 \|` (folio capté) | **trier au PDF, un par un** : en-tête réel → on n'y touche pas ; folio capté ou séparateur d'index → se retire ou se sort de la table. Jamais d'élargissement de la garde, qui sauterait un en-tête réel |

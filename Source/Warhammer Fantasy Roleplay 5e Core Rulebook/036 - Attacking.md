@@ -20,6 +20,8 @@ If your attack hits, reverse the digits of your successful hit roll and compare 
 
 Creatures with unusual anatomies may use different **Hit Location** tables (see **Chapter 12: Bestiary**).
 
+**HIT LOCATIONS**
+
 | d100  | Location                    |
 |-------|-----------------------------|
 | 01–09 | Head                        |
@@ -77,9 +79,10 @@ Any failed Melee or Ranged Test that rolls a double is a Fumble.
 
 By default, you drop your weapon and must spend your next Action retrieving it. Alternatively, the GM may roll on the **Oops! Table**.
 
-| OOPS! TABLE |                                                                                                                                                                                                                                                          |
-|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+**OOPS! TABLE**
+
 | 1d10        | Result                                                                                                                                                                                                                                                   |
+|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1–2         | You catch a part of your anatomy (we recommend you play this for laughs) — lose 1 Wound, ignoring Toughness Bonus or Armour Points.                                                                                                                |
 | 3–4         | Your melee weapon jars badly, or ranged weapon malfunctions or slightly breaks — your weapon suffers 1 Damage. Next Round, you will act last regardless of Combat Initiative order, Talents, or special rules as you recover (see page 161). |
 | 5–6         | Your manoeuvre was misjudged, leaving you out of position, or you lose grip of a ranged weapon. Next Round, your Action suffers a penalty of -1 SL.                                                                                                |
@@ -101,6 +104,8 @@ If you are using a Blackpowder, Engineering, or Explosive weapon and roll 99 or 
 # **Ranged Combat**
 
 There are some extra considerations that apply to ranged attacks:
+
+**MISFIRE TABLE**
 
 | d10  | Result                                                                                                  |
 |------|---------------------------------------------------------------------------------------------------------|
@@ -145,7 +150,7 @@ Combat Tests are usually Challenging (+0 SL). Circumstances may grant an SL modi
 
 These modifiers apply to Attack Tests only, not to Tests made to oppose an attack. If an attacker gains Advantage on a Melee Test due to outnumbering their target, the defender does not automatically suffer Disadvantage on a Melee Test made to parry that blow simply because they are outnumbered.
 
-# **RANGED ATTACK MODIFIERS - ADD ALL THAT APPLY**
+**RANGED ATTACK MODIFIERS - ADD ALL THAT APPLY**
 
 | Positive Modifiers                                            | Negative Modifiers                                                                                   |
 |---------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
@@ -155,7 +160,7 @@ These modifiers apply to Attack Tests only, not to Tests made to oppose an attac
 | You spent an Action last Turn aiming at the target (+1 SL) | Fog or poor lighting (-1 SL), rain and wind (-2 SL) or extreme weather or pitch blackness (-3 SL) |
 |                                                               | Attacker moved before firing (-1 SL)                                                                 |
 
-# **MELEE ATTACK MODIFIERS**
+**MELEE ATTACK MODIFIERS**
 
 | Positive Modifiers                                  | Negative Modifiers                                                                             |
 |-----------------------------------------------------|------------------------------------------------------------------------------------------------|

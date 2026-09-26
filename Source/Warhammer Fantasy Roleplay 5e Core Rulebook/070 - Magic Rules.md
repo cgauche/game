@@ -78,7 +78,7 @@ If a Casting Test generates SL beyond those required to cast a spell, you can sp
 - Spells with a Range of 'You' only ever target the spellcaster. Spells with a range of 'Touch' or a duration of 'Instant' or 'Special' may not be extended. Spells with no Area of Effect may not have their area increased.
 - Petty Spells cannot be Overcast.
 
-#### **OVERCAST TABLE**
+**OVERCAST TABLE**
 
 | SL  | Targets | Damage    | Range | AoE | Duration |
 |-----|---------|-----------|-------|-----|----------|
@@ -90,7 +90,7 @@ If a Casting Test generates SL beyond those required to cast a spell, you can sp
 | 13  | +2      | +6 Damage | x 3   | x 2 | x 3      |
 | 18+ | +3      | +7 Damage | x 4   | x 3 | x 3      |
 
-#### **TYPES OF MAGIC IN THE OLD WORLD**
+**TYPES OF MAGIC IN THE OLD WORLD**
 
 | Specialisation                  | Used By                                                                       | Concentrated In                                                         |
 |---------------------------------|-------------------------------------------------------------------------------|-------------------------------------------------------------------------|
@@ -158,7 +158,7 @@ Multiple spellcasters attempting to dispel the same Spell make Tests separately.
 
 An elf spellcaster may learn a number of Arcane Lores equal to their Willpower Bonus. An elf Character may not purchase a new Arcane Magic Talent until they have learned at least 8 Spells from the previous Lore. Any spellcaster may learn a single Dark Lore in addition to another Lore.
 
-#### <span id="page-237-0" data-folio="238"></span>**MINOR MISCAST TABLE**
+<span id="page-237-0" data-folio="238"></span>**MINOR MISCAST TABLE**
 
 | d100       | Effect                                                                                                                                                                                                                                                                                                                                                            |
 |------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -183,7 +183,7 @@ An elf spellcaster may learn a number of Arcane Lores equal to their Willpower B
 | 91–95      | Multiplying Misfortune: Roll twice on this table, rerolling any results between 91–00 and ignoring modifiers.                                                                                                                                                                                                                                                     |
 | 96–00      | Cascading Chaos: Roll on the Major Miscast Table. If a Minor Miscast roll is positively modified, any overflow past 00 is carried over into the Major Miscast Table.                                                                                                                                                                                              |
 
-#### <span id="page-238-0" data-folio="239"></span>**MAJOR MISCAST TABLE**
+<span id="page-238-0" data-folio="239"></span>**MAJOR MISCAST TABLE**
 
 | d100       | Effect                                                                                                                                                                                                                                                                                                                                                                   |
 |------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

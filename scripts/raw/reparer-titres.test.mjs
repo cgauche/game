@@ -220,3 +220,33 @@ test('S′ déjà dans le fichier sous une AUTRE forme (ancre, niveau, emphase) 
   assert.deepEqual([deux.refus, deux.textes.get('013').split('\n').filter((l) => /RANDOM TABLE/.test(l)).length], [[], 2])
   assert.equal(reparerLivre(new Map([['013', texte]]), [site('#### **RANDOM TABLE**', '013:3', { auPdf: 1, auMd: 1 })]).refus.length, 1)
 })
+
+test('L et legende-absente (CRB 028:27, 036:23) : titre et bannière rendus en légende `**X**`, légende absente posée ; ajoutés = ses mots, rejoués : REFUSÉS', () => {
+  const md = [
+    'Prose.', '',
+    '### <span id="page-1-0"></span>**FIRST TABLE**', '',
+    '| Roll | Result |', '|---|---|', '| a | x |', '',
+    '| | BANNER TABLE | |', '|--|--|--|', '| d10 | Obstacle |', '| 1 | Wagon |', '',
+    '| d100 | Location |', '|---|---|', '| 01–09 | Head |',
+  ].join('\n')
+  const sites = [
+    { forme: 'L', site: '001:3', titreMd: '### <span id="page-1-0"></span>**FIRST TABLE**', ligneLegende: '<span id="page-1-0"></span>**FIRST TABLE**', titre: 'FIRST TABLE' },
+    { forme: 'L', site: '001:9', titreMd: '| | BANNER TABLE | |', ligneLegende: '**BANNER TABLE**', enTete: 'rangee', titre: 'BANNER TABLE' },
+    { forme: 'legende-absente', site: null, cible: '001:14', ligneLegende: '**HIT LOCATIONS**', comptage: { auPdf: 1, auMd: 0 }, titre: 'HIT LOCATIONS' },
+  ]
+  const textes = new Map([['001', md]])
+  const { textes: apres, refus } = reparerLivre(textes, sites)
+  assert.deepEqual(refus, [])
+  assert.equal(apres.get('001'), [
+    'Prose.', '',
+    '<span id="page-1-0"></span>**FIRST TABLE**', '',
+    '| Roll | Result |', '|---|---|', '| a | x |', '',
+    '**BANNER TABLE**', '',
+    '| d10 | Obstacle |   |', '|-----|----------|---|', '| 1 | Wagon |', '',
+    '**HIT LOCATIONS**', '',
+    '| d100 | Location |', '|---|---|', '| 01–09 | Head |',
+  ].join('\n'))
+  assert.equal(infidelite(textes, apres, sites), null)
+  assert.match(infidelite(textes, apres, sites.slice(0, 2)), /mots ajoutés HIT×1 LOCATIONS×1 ≠ mots des S′ et des légendes absentes ∅/)
+  assert.equal(reparerLivre(apres, sites).refus.length, 3)
+})

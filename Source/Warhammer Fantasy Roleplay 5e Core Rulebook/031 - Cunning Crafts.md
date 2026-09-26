@@ -36,7 +36,7 @@ In many villages and a few towns, you may buy herbal ingredients at a rate of 5 
 
 Unlike creating a herbal remedy, the ingredients for alchemical preparations are produced through painstaking processes and must be purchased rather than found. The typical costs for a given treatment are provided on the Remedy Creation Difficulty table.
 
-#### **LOCATING HERBS FOR REMEDIES**
+**LOCATING HERBS FOR REMEDIES**
 
 | Time of Year                                   | Required SL |
 |------------------------------------------------|-------------|
@@ -71,9 +71,10 @@ Concocting a poison is similar to concocting a remedy, involving the same Lore S
 
 When you make the Trade Test, refer to the following table for the results.
 
-| REMEDY EFFECTIVENESS       |                                                                                                                                                                           |
-|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+**REMEDY EFFECTIVENESS**
+
 | SL                         | Result                                                                                                                                                                    |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | +6 or more, or Critical | A highly effective preparation is created. The Symptom is alleviated for a period of TB days.                                                                       |
 | +1 to +5                   | The remedy is effective. The Symptom is alleviated for 24 hours.                                                                                                       |
 | +0                         | The Symptom is alleviated for 24 hours, but the patient suffers an undignified side effect, such as persistent hiccups or having their tongue turn green.        |
@@ -81,7 +82,7 @@ When you make the Trade Test, refer to the following table for the results.
 | –1 to –5                   | The remedy has no effect.                                                                                                                                                 |
 | –6 or less, or Fumble   | Not only does the remedy fail to alleviate the Symptom, the patient must Test to see if they contract the Galloping Trots in addition to their current ailments. |
 
-# <span id="page-154-0" data-folio="155"></span>**SELECTION OF POISONS**
+<span id="page-154-0" data-folio="155"></span>**SELECTION OF POISONS**
 
 | Name                    | Source                                                                | Resistance Test                                                                                | Effect                                                                                                                                                                                                                          |
 |-------------------------|-----------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

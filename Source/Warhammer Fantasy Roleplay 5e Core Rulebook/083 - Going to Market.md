@@ -16,7 +16,7 @@ All Trappings have an Availability: either *Common*, *Scarce*, *Rare*, or *Exoti
 
 Once you know an item's Availability, check it on the following table to see if it is in stock.
 
-#### **AVAILABILITY**
+**AVAILABILITY**
 
 |        | Village      | Town         | City         |
 |--------|--------------|--------------|--------------|

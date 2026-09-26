@@ -8,7 +8,7 @@ The magic items in this list are those created by the Colleges of Magic. They wi
 
 Using these items with Winds other than the one they are intended to work with has no effect, and may even be dangerous.
 
-#### **MAGICAL ITEMS**
+**MAGICAL ITEMS**
 
 | Item                        | Cost  | Enc | Availability |  |
 |-----------------------------|-------|-----|--------------|--|

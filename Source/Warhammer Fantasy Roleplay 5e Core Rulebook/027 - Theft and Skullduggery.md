@@ -32,9 +32,10 @@ To move unseen, make the appropriate Stealth Test (Rural, Underground, or Urban)
 
 A suitable distraction, such as a modest fire, a street brawl, or a blathering guest (page 115), grants Advantage on Stealth Tests.
 
-| COMMON FORMS OF SKULLDUGGERY | |
-|---|---|
+**COMMON FORMS OF SKULLDUGGERY**
+
 | Action | Test |
+|--------|------|
 | Pick a pocket | A Sleight of Hand Test, opposed by your target's Perception. |
 | Force open a door or window | A Strength Test to do it quickly, or a Stealth (Urban) Test with the right tools to do it quietly. |
 | Pick a lock | A Pick Lock Test, with a difficulty set by the lock's quality. Especially challenging locks might require an Extended Test, with one roll every round, or every minute. |
@@ -44,7 +45,7 @@ A suitable distraction, such as a modest fire, a street brawl, or a blathering g
 | Bribe a guard | A Bribery Test to find someone open to being bribed, at a price set by their status. You might Haggle with them over the price. |
 | Learn a thing's value | An Evaluate Test to learn something's value, or a Difficult (-1 SL) Evaluate Test to quickly spot the most valuable thing in a room. |
 
-## <span id="page-134-0" data-folio="135"></span>**EXAMPLE DIFFICULTIES OF COMMON UNDERHANDED TASKS**
+<span id="page-134-0" data-folio="135"></span>**EXAMPLE DIFFICULTIES OF COMMON UNDERHANDED TASKS**
 
 | Difficulty          | Action                                                                                                                                                                                                             |
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -148,7 +149,7 @@ Picking a lock is an Extended Test (page 131), with one Test allowed each round.
 
 If time is not an issue and discovery is unlikely, a character with the Pick Lock Skill and suitable tools can simply open the lock without making a Test.
 
-# <span id="page-136-0" data-folio="137"></span>**SELECTION OF TRAPS**
+<span id="page-136-0" data-folio="137"></span>**SELECTION OF TRAPS**
 
 | Trap                                             | Setting Difficulty                                                                          | Setting Fumble                                 | If Triggered                                                                                                   |
 |--------------------------------------------------|---------------------------------------------------------------------------------------------|------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
@@ -158,7 +159,7 @@ If time is not an issue and discovery is unlikely, a character with the Pick Loc
 | Pulling aside a branch triggers dropping rock | Challenging (+0 SL) Set Trap Test.                                                       | Setter takes 4 Damage to random Location.   | Target takes 1d10 + 5 Damage to Head Location and 1 Stunned Condition.                                   |
 | Loose floorboard triggers a swinging blade | Difficult (-1 SL) Set Trap Test. Requires a bladed weapon and one hour.               | Setter takes 5 Damage to random Location.   | Target and anyone else within 2 yards of them take 1d10 + Damage of the weapon used to random locations. |
 
-#### **LOCK DIFFICULTY**
+**LOCK DIFFICULTY**
 
 | Lock Type                                                | Difficulty             | SL |
 |----------------------------------------------------------|------------------------|----|
@@ -167,7 +168,7 @@ If time is not an issue and discovery is unlikely, a character with the Pick Loc
 | Siggurd Haffensnatch's Unassailable Tumblered Barrier | Difficult (–1 SL)      | 5  |
 | Dwarf-made Lock                                          | Very Hard (–3 SL)      | 8  |
 
-#### **TRAP SPOT DIFFICULTY**
+**TRAP SPOT DIFFICULTY**
 
 | Set Trap Result | Perception Test Difficulty |
 |---|---|

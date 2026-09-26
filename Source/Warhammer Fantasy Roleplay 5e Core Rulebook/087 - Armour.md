@@ -55,7 +55,7 @@ The armour has small weakpoints where a blade can slip in if your opponent is su
 
 Armour gets heavier and more expensive the larger the creature it is made for. For each step above Size (Average), a piece of armour gains +1 Encumbrance and doubles in price. Conversely, for each step below Size (Average), subtract –1 Encumbrance and halve the price.
 
-#### <span id="page-306-0" data-folio="307"></span>**ARMOUR**
+<span id="page-306-0" data-folio="307"></span>**ARMOUR**
 
 | Armour                          | Price     | Enc | Availability | Penalty          | Locations  | AP | Qualities and Flaws      |  |
 |---------------------------------|-----------|-----|--------------|------------------|------------|----|--------------------------|--|

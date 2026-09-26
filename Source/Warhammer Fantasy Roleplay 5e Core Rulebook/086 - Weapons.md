@@ -52,7 +52,7 @@ Hand Weapon is used to describe any of a number of basic weapons that, though di
 
 Swords are a special hand weapon, being slightly deadlier than the other hand weapons and required skilled forging. They also bring a certain prestige to the wielder as they are the weapon of choice of the gentlefolk.
 
-# <span id="page-300-0" data-folio="301"></span>**MELEE WEAPONS**
+<span id="page-300-0" data-folio="301"></span>**MELEE WEAPONS**
 
 | Weapon               | Price    | Enc    | Availability | Reach      | Damage  | Qualities and Flaws                           |
 |----------------------|----------|--------|--------------|------------|---------|-----------------------------------------------|
@@ -127,7 +127,7 @@ A weapon's range is its Medium range in yards. **Chapter 5: Rules** presents mod
 
 **Long** = Range x 2 **Extreme** = Range x 3
 
-# **EXAMPLE WEAPON RANGES**
+**EXAMPLE WEAPON RANGES**
 
 | Weapon              | Point Blank | Short | Med | Long | Extreme |
 |---------------------|----------------|-------|-----|------|---------|
@@ -140,7 +140,7 @@ A weapon's range is its Medium range in yards. **Chapter 5: Rules** presents mod
 
 Blunderbusses are the only weapons listed that use the Small Shot or Improvised Shot ammunition. All other Blackpowder and Engineering weapons use Bullets.
 
-#### **AMMUNITION**
+**AMMUNITION**
 
 | Weapon                      | Price | Enc | Availability | Range       | Damage | Qualities and Flaws |
 |-----------------------------|-------|-----|--------------|-------------|--------|---------------------|
@@ -157,7 +157,7 @@ Blunderbusses are the only weapons listed that use the Small Shot or Improvised 
 | Lead Bullet (12)            | 4d    | 0   | Common       | –           | +1     | Pummel              |
 | Stone Bullet (12)           | 1d    | 0   | Common       | As weapon   | –      | Pummel              |
 
-# <span id="page-302-0" data-folio="303"></span>**RANGED WEAPONS**
+<span id="page-302-0" data-folio="303"></span>**RANGED WEAPONS**
 
 | Weapon                  | Price  | Enc | Availability | Range  | Damage  | Qualities and Flaws                                       |  |  |  |
 |-------------------------|--------|-----|--------------|--------|---------|-----------------------------------------------------------|--|--|--|

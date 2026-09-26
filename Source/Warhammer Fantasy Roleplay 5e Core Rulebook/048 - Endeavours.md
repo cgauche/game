@@ -101,7 +101,7 @@ Crafting allows you to make any trapping from **Chapter 11: Consumer Guide** (or
 
 To craft the Trapping, attempt an Extended Trade Test, with a Difficulty set by the GM, typically using the Trapping's Availability as a loose guide.
 
-# **CRAFTING DIFFICULTY**
+**CRAFTING DIFFICULTY**
 
 | Availability | Difficulty          |
 |--------------|---------------------|
@@ -110,7 +110,7 @@ To craft the Trapping, attempt an Extended Trade Test, with a Difficulty set by 
 | Rare         | Difficult (-1 SL)   |
 | Exotic       | Very Hard (-3 SL)   |
 
-# **CRAFTING SL REQUIRED**
+**CRAFTING SL REQUIRED**
 
 | List Price | SL  |
 |------------|-----|
@@ -142,7 +142,7 @@ Most people resume their usual employment between bouts of adventuring. Bounty H
 
 Take the *Income* Endeavour to represent your Character working in their chosen Career. Make an Average (+2 SL) Test using the ***Earning Skill*** listed in bold italics in the first Level of your Career. On a success, you earn income based on the **Status**  of your current Career Level, as shown below.
 
-# **EARNED INCOME**
+**EARNED INCOME**
 
 | Status Tier | Income                                   |
 |-------------|------------------------------------------|

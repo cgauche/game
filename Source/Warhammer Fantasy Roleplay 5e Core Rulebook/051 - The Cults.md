@@ -24,7 +24,7 @@ Prayers to the gods are rarely answered by those not Blessed (see page 116), but
 
 Although many hundreds of gods are worshipped across the Empire, ten are of particular importance, each worshipped by cults spanning the grand provinces and granted a special position by Magnus the Pious over two hundred years ago.
 
-# <span id="page-203-0" data-folio="204"></span>**PRIMARY GODS OF THE EMPIRE**
+<span id="page-203-0" data-folio="204"></span>**PRIMARY GODS OF THE EMPIRE**
 
 | God      | Spheres                           | Worshippers                                        | Offerings                                       |
 |----------|-----------------------------------|----------------------------------------------------|-------------------------------------------------|

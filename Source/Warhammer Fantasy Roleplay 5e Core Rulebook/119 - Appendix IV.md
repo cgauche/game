@@ -42,7 +42,7 @@ You are wrapped in something restricting your movement. You may not Move, and al
 
 If you have an *Entangled* Condition as a result of being caught up in some material, refer to the **Strength of Materials** Table to decide the Strength to use in an opposed test.
 
-#### **STRENGTH OF MATERIALS**
+**STRENGTH OF MATERIALS**
 
 | Material         | Strength |
 |------------------|----------|

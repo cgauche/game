@@ -4,7 +4,7 @@
 
 Animals are used at all levels of society in the Empire. See **Chapter 12: Bestiary** for sample animal profiles. Like **Packs and Containers** (see page 308), all vehicles have an entry for the number of Encumbrance Points they can carry (Carries).
 
-#### **ANIMALS AND VEHICLES**
+**ANIMALS AND VEHICLES**
 
 | Item               | Cost   | Enc | Carries | Availability |
 |--------------------|--------|-----|---------|--------------|

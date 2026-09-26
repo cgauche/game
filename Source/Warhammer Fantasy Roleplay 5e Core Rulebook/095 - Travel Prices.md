@@ -12,7 +12,7 @@ High-class travel is available and fashionable among the wealthy. It may cost ma
 
 All the costs listed here are per mile travelled, and are loose guides only. Faster coaches and barges generally cost twice as much. Slower examples cost as little as half as much. Increase or decrease speed by +/– 1 for faster or slower examples.
 
-#### **TRAVEL PRICES**
+**TRAVEL PRICES**
 
 | Transport       | Movement      | Cost | Distance             |
 |-----------------|---------------|------|----------------------|

@@ -8,7 +8,7 @@ You may alternatively wish to use a grid or battle map, with tokens or Citadel M
 
 The **Movement Table** shows how many yards you can normally move in a single Turn, either Walking or Running, without having to make an Athletics Test to sprint. Doing this will use your Move for your Turn.
 
-# **MOVEMENT TABLE**
+**MOVEMENT TABLE**
 
 | Movement | Walk (yards) | Run (yards) |
 |----------|--------------|-------------|

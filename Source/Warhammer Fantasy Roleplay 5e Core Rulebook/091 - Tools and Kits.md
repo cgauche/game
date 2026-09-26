@@ -26,7 +26,7 @@ The majority of tools count as Improvised Weapons when used in combat, however G
 
 If you have an appropriate guild licence, you can use your special contacts to locate rare items. If you fail an Availability Test when trying to buy an item, you can make a **Challenging (+0 SL) Gossip** Test to talk with your fellow guilders and see if any of them know where you might find what you need. If you succeed, one of your contacts has a few useful suggestions, and you can reroll the Availability Test.
 
-#### **TOOLS AND KITS**
+**TOOLS AND KITS**
 
 | Item              | Cost     | Enc | Availability |
 |-------------------|----------|-----|--------------|

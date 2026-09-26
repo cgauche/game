@@ -26,7 +26,7 @@ For every +2 SL you score in a Pray Test when attempting a Blessing, you may cho
 
 If the Blessing in question has a Duration of 'Instant', you may not extend the Duration. You may choose the same option more than once. For instance, if you rolled +4 SL on a *Blessing of Healing*, you could heal three targets you were touching, two targets up to 6 yards away, or one target up to 12 yards away.
 
-# **BLESSINGS BY CULT**
+**BLESSINGS BY CULT**
 
 | Manann   | Battle     | Breath     | Courage    | Hardiness     | Savagery     | Tenacity      |
 |----------|------------|------------|------------|---------------|--------------|---------------|

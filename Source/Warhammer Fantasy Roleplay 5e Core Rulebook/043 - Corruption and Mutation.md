@@ -81,7 +81,7 @@ A soul can withstand only so much corruption before it finally gives way. If you
 | Body | –      | 01–10    | 01–50  | 01–05  |
 | Mind | 01–100 | 11–100   | 51–100 | 06–100 |
 
-# <span id="page-188-0" data-folio="189"></span>**PHYSICAL CORRUPTION TABLE**
+<span id="page-188-0" data-folio="189"></span>**PHYSICAL CORRUPTION TABLE**
 
 | d100 | Description | Effect |
 |---|---|---|
@@ -110,7 +110,7 @@ A soul can withstand only so much corruption before it finally gives way. If you
 
 As Corruption Points mount and the grip of the Ruinous Powers tightens around your soul, you may seek absolution. But forgiveness is not so easily won. A few words with a village priest cannot cleanse the stain of Chaos. The exact means of removing Corruption are left to the GM, but they might include:
 
-# **MENTAL CORRUPTION TABLE**
+**MENTAL CORRUPTION TABLE**
 
 | d100 | Description | Effect |
 |---|---|---|

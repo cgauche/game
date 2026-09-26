@@ -32,7 +32,7 @@ Other than that, Grouped Skills are handled in exactly the same way as normal Sk
 
 **Example:** *Sigrid has 1 Advance in the Basic Skill* Entertain (Singing)*, but nothing in* Entertain (Acting)*. This means she Tests her* Fellowship *of 41 when attempting to act, and Tests 46 when singing (41 + 5 = 46). By comparison, Theodora has a single Advance in the Advanced Skill* Animal Training (Pigeon)*, but no Advances in* Animal Training (Horse)*. This means she can use the Skill to train her pigeons to drop bombs on unsuspecting enemies, but she cannot train her horse to charge into a formation of enemy troops, as she has no idea how to train horses.*
 
-#### **COMPLETE SKILL LIST**
+**COMPLETE SKILL LIST**
 
 | Skill           | Desc | Rules      | Skill            | Desc | Rules      | Skill           | Desc | Rules      |
 |-----------------|------|------------|------------------|------|------------|-----------------|------|------------|

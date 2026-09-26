@@ -4,7 +4,7 @@
 
 Medicinal herbs can either be purchased or gathered from the wild (see **Locating Ingredients** on page 153). Preparation of remedies is explained in **Chapter 5: Rules** (see page 154).
 
-#### **HERBS AND REMEDIES**
+**HERBS AND REMEDIES**
 
 | Item                                              | Cost | Enc | Availability |  |
 |---------------------------------------------------|------|-----|--------------|--|

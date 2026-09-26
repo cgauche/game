@@ -55,8 +55,8 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listerDossier, parUnitesDeCode } from '../guards/lib/lister.mjs'
 import { BOOKS, readText } from './_lib.mjs'
-import { ecartDuVolet, ecrireStockSousLot, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
-import { readStock } from './stockNominatif.mjs'
+import { ecartDuVolet, ecrireStockSousLot, phraseDeNaissance, sitesEnEntrees, survieDeLecheance } from '../guards/lib/stock.mjs'
+import { naissanceEnPlace, readStock } from './stockNominatif.mjs'
 import { estSeparateur, graphieDeChapitre, graphieDuFichier, largeurDeChapitre, ligne1DePlage, numeroDuFichier, plageDeLigne1, titreDuFichier } from '../../src/data/source/decoupe.ts'
 import { estLigneDeTitre, ouvreSur } from './lib/titres.mjs'
 import { decoupeDe, gabaritTitreDe, livreDuDossier, livresDecoupes, nomsDeLaListe, ongletsDe, REGISTRE_LIVRES } from './_lib.mjs'
@@ -469,7 +469,7 @@ const QUOI = ({ comptes, dossiers, entrees }) =>
   'ENTRÉE par (famille, fichier, détail), clé `famille :: fichier :: ref :: occurrence` (régime ' +
   `#1711). Format DÉFINI par \`docs/ajouter-un-livre-source.md\` § « Format canonique ». ` +
   `${dossiers} dossier(s) FR balayé(s). ` +
-  `Compte par famille à la naissance : ${FAMILLES.map((f) => `${f} ${comptes[f]}`).join(', ')}. ` +
+  `${phraseDeNaissance(comptes, FAMILLES)} ` +
   'LE GESTE, UN SEUL — REJOUER la chaîne canonique sur le livre : re-découpe depuis la sortie ' +
   'Marker conservée sous `Source/_marker/`, ou ré-extraction quand cette sortie manque. Jamais un ' +
   'remède de chapitre (arbitrage utilisateur 2026-09-14 : « Il faut un format unifié pour toutes ' +
@@ -489,10 +489,11 @@ const QUOI = ({ comptes, dossiers, entrees }) =>
   '`data-folio` est déjà nommée par `sans-folio`, et la compter deux fois dirait deux réparations ' +
   'là où il n’y en a qu’une.'
 
-/** Rend le CONTENU du fichier de stock pour des sites mesurés (source unique de sa forme). */
-export const stockDe = (sites, { lot, date, dossiers, ancien = [] }) => {
+/** Rend le CONTENU du fichier de stock pour des sites mesurés (source unique de sa forme). Les comptes
+ *  à la naissance sont ceux du stock en place (`naissance`), sinon ceux du jour. */
+export const stockDe = (sites, { lot, date, dossiers, ancien = [], naissance = null }) => {
   const entrees = entreesDe(sites, { lot, date, ancien })
-  const quoi = QUOI({ comptes: comptesParFamille(sites), dossiers, entrees: entrees.length })
+  const quoi = QUOI({ comptes: naissance ?? comptesParFamille(sites), dossiers, entrees: entrees.length })
   return `${JSON.stringify({ quoi, entrees }, null, 2)}\n`
 }
 
@@ -506,7 +507,7 @@ function main() {
   if (args.includes('--ecrire-stock')) {
     const r = ecrireStockSousLot(
       args,
-      (lot, date) => ({ entrees: entreesDe(sites, { lot, date, ancien: stock }), texte: stockDe(sites, { lot, date, dossiers: dossiers.length, ancien: stock }) }),
+      (lot, date) => ({ entrees: entreesDe(sites, { lot, date, ancien: stock }), texte: stockDe(sites, { lot, date, dossiers: dossiers.length, ancien: stock, naissance: naissanceEnPlace(STOCK_PATH, FAMILLES) }) }),
       (texte) => writeFileSync(STOCK_PATH, texte),
       STOCK_PATH,
     )

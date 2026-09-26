@@ -24,9 +24,10 @@ Your Status is determined by your current Career level:
 
 The number after your Status is your Standing, your social position relative to others of your Status.
 
-|                                               | COMMON SOCIAL TESTS                                                                                                                                                                                                                                                                          |
-|-----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+**COMMON SOCIAL TESTS**
+
 | Action                                        | Test                                                                                                                                                                                                                                                                                         |
+|-----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Befriend a useful contact               | A Charm Test to make a good impression, discover what someone likes, or otherwise ingratiate yourself with them. This could yield useful information or grant Advantage on a future Test.                                                                                        |
 | Make someone Fear you                   | An Intimidate Test, opposed by the target's Cool.                                                                                                                                                                                                                                         |
 | Carouse with some soldiers              | A Perform, Play or Entertain Test to regale them with songs, music, or stories, or a Consume Alcohol Test to join the festivities and prove you can keep up.                                                                                                                        |
@@ -38,7 +39,7 @@ The number after your Status is your Standing, your social position relative to 
 | Spread a Nasty Rumour                   | A Gossip Test, with a difficulty depending on how hard the rumour is to believe and what evidence you might have to support it.                                                                                                                                                     |
 | Negotiate a Discount                       | A Haggle Test to convince the merchant to offer you a better rate.                                                                                                                                                                                                                        |
 
-### <span id="page-140-0" data-folio="141"></span>**EXAMPLE DIFFICULTIES OF COMMON SOCIAL ACTIONS**
+<span id="page-140-0" data-folio="141"></span>**EXAMPLE DIFFICULTIES OF COMMON SOCIAL ACTIONS**
 
 | Difficulty             | Action                                                                                                                                                                                                                                                       |
 |------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -50,7 +51,7 @@ The number after your Status is your Standing, your social position relative to 
 | Hard (-2 SL)           | Perform ( Juggling): Perform at swordpoint to please a bored and ruthless noble.<br>Haggle: Convince a blacksmith to cut you a deal on you on the eve of a siege.<br>Intimidate: Convince an ogre you're tougher than you look.                              |
 | Very Hard (-3 SL)      | Play (Bagpipe): Have your music leave a lasting impression at the court in Altdorf.<br>Charm: Convince a sneering courtier not to speak badly of you the instant you depart.<br>Intuition: Discern the true feelings of a stoic dwarf longbeard.             |
 
-### **SOCIAL TEST DIFFICULTY FACTORS**
+**SOCIAL TEST DIFFICULTY FACTORS**
 
 |         | Positive Factors                                  | Negative Factors                                                                           |
 |---------|---------------------------------------------------|--------------------------------------------------------------------------------------------|
@@ -212,7 +213,7 @@ When carousing, make a Consume Alcohol Test, with the Difficulty determined by t
 
 These effects last for two hours after you cease drinking, at which time they end, and you become hungover, suffering a *Fatigued*  Condition that lasts 12 - TB (Toughness Bonus) hours.
 
-#### <span id="page-144-0" data-folio="145"></span>**STINKING DRUNK**
+<span id="page-144-0" data-folio="145"></span>**STINKING DRUNK**
 
 | 1d10 | Outcome                                                                                                                                                                                                                                                                                           |
 |------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
