@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { cell2Schema, dir8Schema } from '../grammaire/valeurs';
 import { idDe } from '../grammaire/ref';
 import { document } from '../grammaire/document';
-import { CAP_IDENTITE_PROP, PROP_CYLINDER_SIDES } from '../../props.types';
+import { CAP_IDENTITE_PROP, PROP_CYLINDER_AXES, PROP_CYLINDER_SIDES } from '../../props.types';
 
 export const file = 'props.json';
 export const famille = 'entite';
@@ -33,7 +33,9 @@ const emetSchema = z.literal(true).optional();
 export const propPrimitiveSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('box'), center: propPoint3Schema, size: propSize3Schema, material: idDe('material', 'prop'), emet: emetSchema }),
   z.strictObject({
-    kind: z.literal('cylinder'), center: propPoint3Schema, radiusM: z.number().finite(), heightM: z.number().finite(),
+    kind: z.literal('cylinder'), center: propPoint3Schema,
+    // AXE REQUIS (#1343 lot C) : les clés de `REPERE_D_AXE` (`PROP_CYLINDER_AXES`) ; `longueurM` se mesure le long de lui.
+    axis: z.literal(PROP_CYLINDER_AXES), radiusM: z.number().finite(), longueurM: z.number().finite(),
     // CÔTÉS ADMIS : la même source que le type et le validateur de catalogue (`PROP_CYLINDER_SIDES`,
     // `src/data/props.types.ts`) — une union recopiée ici dériverait de l'union TS au premier ajout.
     sides: z.literal(PROP_CYLINDER_SIDES), material: idDe('material', 'prop'), emet: emetSchema,

@@ -3,7 +3,7 @@ import { propSvg } from './decor';
 import { scenarioEntities } from '../../scenes/opera/furnished';
 import { buildOperaFloorplan } from '../../scenes/opera/floorplan';
 import { findPropById, props } from '../../data';
-import { aretesNonAppariees, CAP_IDENTITE_PROP, empreinteDeriveeDuProp, placeAssiseDe, placesLocalesDuProp, rotatePropLocal, type PropData, type PropPrimitive } from '../../data/props.types';
+import { aretesNonAppariees, CAP_IDENTITE_PROP, empreinteDeriveeDuProp, empriseLocaleM, placeAssiseDe, placesLocalesDuProp, PROP_CYLINDER_AXES, REPERE_D_AXE, rotatePropLocal, type PropCylinderSides, type PropData, type PropPrimitive } from '../../data/props.types';
 import { decorFootGeometry } from '../../state/footprint';
 import { buildProps } from '../builders/props';
 import { buildPropVolumes } from '../builders/propVolumes';
@@ -83,14 +83,12 @@ function entitesAuthorees(): DecorAuthore[] {
   return moisson(CORPUS_SCENES());
 }
 
-/** Emprise d'une primitive : sa boîte englobante au sol en CASES (la recette est en mètres, #1507 —
- *  c'est l'échelle de la scène qui la ramène à la grille) et ses deux hauteurs, en mètres. */
+/** Emprise d'une primitive (`empriseLocaleM`, la seule) : sa boîte englobante au sol ramenée en CASES
+ *  (la recette est en mètres, #1507 — c'est l'échelle de la scène qui la ramène à la grille) et ses
+ *  deux hauteurs, en mètres. */
 function emprise(p: PropPrimitive): { x0: number; x1: number; y0: number; y1: number; bas: number; haut: number } {
-  const dx = (p.kind === 'cylinder' ? p.radiusM : p.size.xM / 2) / METRES_PAR_CASE;
-  const dy = (p.kind === 'cylinder' ? p.radiusM : p.size.yM / 2) / METRES_PAR_CASE;
-  const dh = (p.kind === 'cylinder' ? p.heightM : p.size.hM) / 2;
-  const cx = p.center.xM / METRES_PAR_CASE, cy = p.center.yM / METRES_PAR_CASE;
-  return { x0: cx - dx, x1: cx + dx, y0: cy - dy, y1: cy + dy, bas: p.center.hM - dh, haut: p.center.hM + dh };
+  const e = empriseLocaleM(p);
+  return { ...e, x0: e.x0 / METRES_PAR_CASE, x1: e.x1 / METRES_PAR_CASE, y0: e.y0 / METRES_PAR_CASE, y1: e.y1 / METRES_PAR_CASE };
 }
 type Emprise = ReturnType<typeof emprise>;
 const seChevauchent = (a: Emprise, b: Emprise): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
@@ -250,6 +248,9 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
     // La rangée de fauteuils du parterre : trois assises sous une même ménuiserie de 5,40 m, séparées
     // par quatre accoudoirs — son 3×1 vient de ce corps, là où elle le DÉCLARAIT en billboard.
     'rangee-sieges': { ns: [3, 1], eo: [1, 3] },
+    // Lot C (#1343) : la charrette à bras, plateau et brancards de 3,30 m — son 2×1 vient de ce corps,
+    // là où elle le DÉCLARAIT en billboard.
+    'charrette': { ns: [2, 1], eo: [1, 2] },
     // Toutes les autres tiennent sur UNE case, à tous les caps. La table ronde n'y tient que parce
     // que ses quatre tabourets sont exclus du corps (sans eux elle mesurerait 2×2 — cf. le contrat de
     // cache de `data/props-integrity.test.ts`).
@@ -264,6 +265,8 @@ describe('décor volumique — chaque recette du catalogue, sa vignette et son c
       // … et les deux BASES courtes, converties avec leurs variantes longues : une demi-migration
       // aurait laissé le même meuble en volume ici et en billboard là, selon sa longueur.
       'bureau', 'etabli',
+      // Lot C (#1343) — les décors organiques en volume sobre, chacun sur sa case à tous ses caps.
+      'plante-pot', 'statue', 'colonne-brisee', 'lustre-opera', 'mannequin', 'mannequin-couturier',
     ]).map((id) => [id, { ns: [1, 1], eo: [1, 1] }])),
   };
 
@@ -500,26 +503,40 @@ describe('décor volumique — chaque face regarde le DEHORS, de la recette au m
   });
 
   /**
-   * ARÊTE DE COUTEAU du modelé de forme : `shadeFamily` (`backends/webgl/worldTris.ts`) départage une
-   * normale par le plus grand de |nx| et |nz|, et une égalité exacte est indécidable — un fût y prend
-   * des tons de familles voisines sur des faces symétriques. C'est ce qui exclut `sides: 12` du type
-   * (`PropCylinderSides`) ; ce contrat le mesure sur la géométrie, jamais sur la valeur authorée.
+   * ARÊTE DE COUTEAU du modelé de forme : `shadeFamily` (`backends/webgl/worldTris.ts:127-130`)
+   * départage une normale par sa plus grande composante, et une égalité des DEUX plus grandes est
+   * indécidable — un fût y prend des tons de familles voisines sur des faces symétriques. C'est ce qui
+   * exclut `sides: 12` du type (`PropCylinderSides`). Une face LATÉRALE est une face dont la normale
+   * est orthogonale à l'AXE, lu dans `REPERE_D_AXE` comme la géométrie : le critère ne suppose aucun
+   * axe. Mesuré sur la géométrie CUITE, à chaque (côtés × axe), 12 compris.
    */
-  it.each(IDS)('%s : aucune face latérale de cylindre ne tombe sur |nx| == |nz|', (id) => {
-    const prop = findPropById(id)!;
-    const surLArete: string[] = [];
-    prop.volume!.primitives.forEach((primitive, ip) => {
-      if (primitive.kind !== 'cylinder') return;
-      const faces = cuire({ ...prop, volume: { ...prop.volume!, primitives: [primitive] } }, { ancre: { x: 0, y: 0 }, facing: 'N', baseHeightM: 0 });
-      faces.forEach((face, k) => {
-        const n = polyNormal(facePoly(face, METRES_PAR_CASE))!;
-        if (Math.abs(n.y) > 1e-6) return; // dessus / dessous : pas une face latérale
-        if (Math.abs(Math.abs(n.x) - Math.abs(n.z)) < 1e-6)
-          surLArete.push(`primitive ${ip} (${primitive.sides} côtés) face ${k} : nx=${n.x.toFixed(4)} nz=${n.z.toFixed(4)}`);
-      });
-    });
-    expect(surLArete, `${id} : faces latérales sur l’arête de couteau`).toEqual([]);
+  const COUTEAU_ATTENDU: Readonly<Record<number, number>> = { 8: 0, 12: 4, 16: 0 };
+  // Les cas ci-dessous ITÈRENT la table : un axe retiré y disparaîtrait sans rougir. L'énumération se fixe ici.
+  it('les axes mesurés sont exactement les trois de la table', () => {
+    expect(PROP_CYLINDER_AXES).toEqual(['h', 'x', 'y']);
   });
+  it.each(Object.keys(COUTEAU_ATTENDU).flatMap((s) => PROP_CYLINDER_AXES.map((axis) => [Number(s), axis] as const)))(
+    'cylindre à %i côtés, axe %s : ses `sides` faces latérales, et le compte attendu sur l’arête de couteau',
+    (sides, axis) => {
+      const primitive: PropPrimitive = { kind: 'cylinder', center: { xM: 0, yM: 0, hM: 0.3 }, axis, radiusM: 0.3, longueurM: 0.5, sides: sides as PropCylinderSides, material: 'fer-noirci' };
+      const prop: PropData = { id: 'cylindre-epreuve', type: 'props', label: 'Cylindre d’épreuve', volume: { capIdentite: CAP_IDENTITE_PROP, primitives: [primitive] } };
+      // L'axe en convention three (X = est, Y = haut, Z = sud), tiré de la MÊME table que la géométrie.
+      const d = REPERE_D_AXE[axis](0, 0, 1);
+      const axe = { x: d.xM, y: d.hM, z: d.yM };
+      let laterales = 0, couteau = 0;
+      for (const face of cuire(prop, { ancre: { x: 0, y: 0 }, facing: CAP_IDENTITE_PROP, baseHeightM: 0 })) {
+        const brute = polyNormal(facePoly(face, METRES_PAR_CASE))!;
+        const l = Math.hypot(brute.x, brute.y, brute.z);
+        const n = { x: brute.x / l, y: brute.y / l, z: brute.z / l };
+        if (Math.abs(n.x * axe.x + n.y * axe.y + n.z * axe.z) > 1e-6) continue; // un bout : pas une face latérale
+        laterales++;
+        const [g1, g2] = [Math.abs(n.x), Math.abs(n.y), Math.abs(n.z)].sort((u, v) => v - u);
+        if (g1 - g2 < 1e-6) couteau++;
+      }
+      expect(laterales, 'faces latérales mesurées').toBe(sides);
+      expect(couteau, 'faces latérales sur l’arête de couteau').toBe(COUTEAU_ATTENDU[sides]);
+    },
+  );
 
   it.each(IDS)('%s : la cuisson du monde ne RETOURNE aucune de ses faces', (id) => {
     const scene = sceneWith(propEntity({ id: 'e-1', ref: id, pos: { x: 3, y: 4 }, facing: 'N' }));
