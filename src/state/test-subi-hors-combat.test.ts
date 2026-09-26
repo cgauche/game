@@ -359,27 +359,27 @@ describe('#1874 C0 — un cycle de MALADIE hors combat : la conséquence tombe s
   /** Le nœud de cycle d'un symptôme, par son id STABLE d'entrée. */
   const cycleDe = (id: string) => noeudsDeTest().find((n) => n.fichier === 'symptoms.json' && n.entryId === id && n.chemin === '.onTick.test')!;
   const sansIds = (x: unknown): string => JSON.stringify(x).replace(/\b(it|lo)-\d+\b/g, '$1-#');
-  /** Une nuit du malade `h3`, Test de cycle RATÉ ; `brancheVide` = le TÉMOIN (même nuit, conséquence vidée).
-   *  La nuit touche tout le groupe (repas) : « personne d'autre » se mesure contre ce témoin. */
-  const nuit = (id: string, opts?: { brancheVide?: boolean; destin?: number }) => {
+  /** Une nuit du malade `h3`, Test de cycle RATÉ ; `temoin` = la MÊME nuit, Test RÉUSSI (l'applier
+   *  `diseaseTick` n'applique que l'échec). La nuit touche tout le groupe (repas) : « personne d'autre »
+   *  se mesure contre ce témoin. */
+  const nuit = (id: string, opts?: { temoin?: boolean; destin?: number }) => {
     decor();
-    if (opts?.destin != null) set({ party: get().party.map((c) => (c.id === 'h3' ? { ...c, fate: opts.destin } : c)) as never });
-    rendreMalade(get, set, cycleDe(id), 'h3');
-    nuitDuMalade(get, set, cycleDe(id), 'h3', { roll: 99, target: 50, sl: -2, success: false }, opts);
+    set({ party: get().party.map((c) => (c.id === 'h3' ? rendreMalade({ ...c, ...(opts?.destin != null ? { fate: opts.destin } : {}) }, cycleDe(id)) : c)) as never });
+    nuitDuMalade(get, cycleDe(id), 'h3', !!opts?.temoin);
     return { malade: sansIds(heros('h3')), autres: sansIds(get().party.filter((c) => c.id !== 'h3')) };
   };
 
   it('T7 — conséquence GRAVE (`kill` de « toxine ») : le malade meurt, personne d’autre', () => {
     // Sans Point de Destin, `kill` TUE (avec, il en brûle un : `fateSaveOrDie`) — on veut la mort nue.
-    const temoin = nuit('toxine', { brancheVide: true, destin: 0 });
-    expect(heros('h3').dead, 'le témoin (branche vide) ne tue personne').toBeFalsy();
+    const temoin = nuit('toxine', { temoin: true, destin: 0 });
+    expect(heros('h3').dead, 'le témoin (Test réussi) ne tue personne').toBeFalsy();
     const reel = nuit('toxine', { destin: 0 });
     expect(heros('h3').dead, 'la toxine tue SON porteur').toBe(true);
     expect(reel.autres, 'un camarade a encaissé la mort du malade').toBe(temoin.autres);
   });
 
   it('T7b — conséquence TIRÉE À LA TABLE (`rollTable` de « vers de carie ») : la rangée frappe le MALADE seul', () => {
-    const temoin = nuit('vers-de-carie', { brancheVide: true });
+    const temoin = nuit('vers-de-carie', { temoin: true });
     const reel = nuit('vers-de-carie');
     expect(reel.malade, 'la rangée tirée n’a rien fait au malade').not.toBe(temoin.malade);
     expect(reel.autres, 'la table a tiré sur un camarade').toBe(temoin.autres);

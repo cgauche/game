@@ -27,10 +27,9 @@ import { contractDisease, tickDisease } from '../engine/disease';
 import { dayIndex, MINUTES_PER_DAY } from '../engine/clock';
 import type { GameState } from './store';
 import type { Flow, FlowTest } from './flow';
-import type { Get, Set as SetFn } from './flowTypes';
-import type { CascadeRoll, CascadeStep } from './pendings';
+import type { Get } from './flowTypes';
+import type { CascadeStep } from './pendings';
 import { battleRng } from './battleRng';
-import { emptyScene } from './scene';
 import { draineCascade } from './cascadeTestKit';
 
 const DATA = join(fileURLToPath(new URL('.', import.meta.url)), '..', 'data');
@@ -105,12 +104,14 @@ export function groupeDeQuatre(): Combatant[] {
   }));
 }
 
-/** Décor HORS COMBAT des bancs de Test SUBI : aucune bataille, aucune scène, journal et files vides. */
+/** Décor HORS COMBAT des bancs de Test SUBI : aucune bataille, aucune scène, journal et files vides,
+ *  aucun repos ouvert, entretien à jour — la nuit suivante en traite exactement UN jour. */
 export function decorHorsCombat(): Partial<GameState> {
+  const gameTime = 480;
   return {
     battle: null, scene: null, flags: {}, journal: [],
-    pendingTest: null, pendingCascade: null, pendingLogQueue: [], scheduledEffects: [],
-    gameTime: 480, party: groupeDeQuatre(),
+    pendingTest: null, pendingCascade: null, pendingRest: null, pendingLogQueue: [], scheduledEffects: [],
+    gameTime, lastUpkeepDay: dayIndex(gameTime), party: groupeDeQuatre(),
   };
 }
 
@@ -135,24 +136,22 @@ export function porteDeMaladie(n: Noeud): { maladie: string; symptomId: string; 
   return undefined;
 }
 
-/** Rend `sujetId` MALADE de la maladie qui porte le nœud, par le VRAI cycle (phase active, jours
- *  écoulés jusqu'au premier jet dû), et aligne l'entretien sur aujourd'hui : la nuit suivante en traite
- *  exactement UN jour. */
-export function rendreMalade(get: Get, set: SetFn, n: Noeud, sujetId: string): void {
+/** Le héros `c` rendu MALADE de la maladie qui porte le nœud, par le VRAI cycle (phase active, jours
+ *  écoulés jusqu'au premier jet dû). Rend une COPIE : le banc la pose au décor. */
+export function rendreMalade(c: Combatant, n: Noeud): Combatant {
   const porte = porteDeMaladie(n);
   if (!porte) throw new Error(`${n.fichier} ${n.entryId}${n.chemin} : pas un nœud de maladie`);
-  const h = get().party.find((c) => c.id === sujetId)!;
   const dz = contractDisease(porte.maladie, battleRng(), { incubation: 0 });
   if (!dz) throw new Error(`maladie « ${porte.maladie} » inconnue de la base`);
-  h.diseases = [...(h.diseases ?? []), dz];
+  const h: Combatant = { ...structuredClone(c), diseases: [...(c.diseases ?? []), dz] };
   for (let j = 0; j < porte.jours; j++) tickDisease(h, MINUTES_PER_DAY, battleRng(), () => {});
-  set((st) => ({ party: [...st.party], scene: st.scene ?? emptyScene(10, 10), pendingRest: null, lastUpkeepDay: dayIndex(st.gameTime) }));
+  return h;
 }
 
-/** La NUIT du malade (repos → « Dormir ») : l'étape `diseaseTick` du nœud reçoit l'issue IMPOSÉE, toute
- *  autre rangée une réussite neutre (aucun dé tiré : deux nuits de même décor ne divergent que par la
- *  branche), puis la cascade est drainée. `brancheVide` = le TÉMOIN (conséquence `onFail` vidée). */
-export function nuitDuMalade(get: Get, set: SetFn, n: Noeud, sujetId: string, issue: CascadeRoll, opts?: { brancheVide?: boolean }): void {
+/** La NUIT du malade (repos → « Dormir »), par les gestes du joueur : l'étape `diseaseTick` du nœud reçoit
+ *  un dé POSÉ (« Dés fixés », `draineCascade`) — 1 pour une réussite, 100 pour un échec —, toute autre
+ *  rangée un 1. Aucun dé tiré : deux nuits de même décor ne divergent que par l'issue du jet du nœud. */
+export function nuitDuMalade(get: Get, n: Noeud, sujetId: string, reussite: boolean): void {
   const { symptomId } = porteDeMaladie(n)!;
   get().openRest();
   get().restSleep();
@@ -160,15 +159,5 @@ export function nuitDuMalade(get: Get, set: SetFn, n: Noeud, sujetId: string, is
   const vise = (s: CascadeStep): boolean => s.kind === 'diseaseTick' && s.meta?.symptomId === symptomId
     && (s.participants ? s.participants.some((r) => r.id === sujetId) : s.actorId === sujetId);
   if (!p?.participants.some(vise)) throw new Error(`${n.entryId} : la nuit n’a posé aucune étape \`diseaseTick\` de « ${symptomId} » chez ${sujetId} (nuit : ${(p?.participants ?? []).map((s) => `${s.kind}:${String(s.meta?.symptomId ?? '')}`).join(' ') || 'aucune cascade'} ; jour ${dayIndex(get().gameTime)}, entretien ${get().lastUpkeepDay})`);
-  const neutre: CascadeRoll = { roll: 1, target: 99, sl: 0, success: true };
-  set({ pendingCascade: { ...p, participants: p.participants.map((s) => {
-    const r = vise(s) ? issue : neutre;
-    // L'applier `diseaseTick` lit `onFail` au `meta` de la RANGÉE : le témoin le vide là (et à l'étape).
-    const vide = <M,>(meta: M): M => (vise(s) && opts?.brancheVide ? { ...meta, onFail: [] } as M : meta);
-    const pas: CascadeStep = s.participants
-      ? { ...s, meta: vide(s.meta), participants: s.participants.map((x) => ({ ...x, meta: vide(x.meta), result: r })) }
-      : { ...s, meta: vide(s.meta), result: r };
-    return pas;
-  }) } });
-  draineCascade(get);
+  draineCascade(get, 200, (etape, rangee) => (vise(etape) && (rangee ? rangee.id === sujetId : true) && !reussite ? 100 : 1));
 }

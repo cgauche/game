@@ -142,7 +142,10 @@ function preparerPorte(n: Noeud): { opsCtx: OpsCtx; poses: readonly string[] } {
     ...(groupes.length ? { groups: [...new Set([...(c.groups ?? []), ...groupes])] } : {}),
     conditions: [...c.conditions, ...aRetirer.map((id) => ({ id, value: 1 }))],
   } : c)) as never });
-  if (porteDe(n) === 'maladie') { rendreMalade(get, set, n, 'h3'); return { opsCtx, poses: [] }; }
+  if (porteDe(n) === 'maladie') {
+    set({ party: get().party.map((c) => (c.id === 'h3' ? rendreMalade(c, n) : c)) as never });
+    return { opsCtx, poses: [] };
+  }
   if (porteDe(n) !== 'bande') return { opsCtx, poses: [] };
   const station = /^\.tables\.([A-Za-z-]+)\[/.exec(n.chemin)?.[1];
   set({
@@ -157,9 +160,9 @@ function jouerParSaPorte(n: Noeud, sujet: Combatant, issue: boolean, branchesVid
   const { opsCtx, poses } = preparerPorte(n);
   switch (porteDe(n)) {
     case 'maladie': {
-      // L'ENTRETIEN réel de la nuit : l'étape `diseaseTick` reçoit l'issue imposée ; `brancheVide` vide son
-      // `onFail`, seul canal de la conséquence (`engine/disease.ts` `opsDeLEchec`).
-      nuitDuMalade(get, set, n, 'h3', { roll: issue ? 1 : 99, target: 50, sl: slDe(issue), success: issue }, { brancheVide: branchesVides });
+      // L'ENTRETIEN réel de la nuit : l'étape `diseaseTick` reçoit l'issue imposée par un dé POSÉ. Le témoin
+      // est la MÊME nuit réussie : l'applier `diseaseTick` (`state/restFlow.ts`) n'applique que l'échec.
+      nuitDuMalade(get, n, 'h3', branchesVides || issue);
       return { jouee: true, poses };
     }
     case 'bande': {
