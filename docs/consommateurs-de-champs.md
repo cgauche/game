@@ -139,26 +139,26 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 |---|---|---|
 | `stake` | 10 | `src/engine/flowCore.ts:841` |
 | `skill` | 30 | `src/engine/disease.ts:371` |
-| `sense` | 2 | `src/state/combatEffects.ts:954` |
+| `sense` | 2 | `src/state/combatEffects.ts:1011` |
 | `characteristic` | 24 | `src/engine/disease.ts:371` |
 | `difficulty` | 8 | `src/engine/disease.ts:358` |
-| `requireSL` | 2 | `src/state/combatEffects.ts:993` |
-| `label` | 11 | `src/state/combat/triggeredTest.ts:234` |
-| `tool` | 2 | `src/state/combatEffects.ts:956` |
-| `vsGroups` | 5 | `src/state/combatEffects.ts:861` |
-| `vsStatus` | 1 | `src/state/combatEffects.ts:860` |
-| `begging` | 3 | `src/state/combatEffects.ts:865` |
-| `vsCapricieux` | 1 | `src/state/combatEffects.ts:869` |
-| `easierIf` | 11 | `src/state/combatEffects.ts:910` |
+| `requireSL` | 2 | `src/state/combatEffects.ts:1050` |
+| `label` | 11 | `src/state/combat/triggeredTest.ts:235` |
+| `tool` | 2 | `src/state/combatEffects.ts:1013` |
+| `vsGroups` | 5 | `src/state/combatEffects.ts:918` |
+| `vsStatus` | 1 | `src/state/combatEffects.ts:917` |
+| `begging` | 3 | `src/state/combatEffects.ts:922` |
+| `vsCapricieux` | 1 | `src/state/combatEffects.ts:926` |
+| `easierIf` | 11 | `src/state/combatEffects.ts:967` |
 | `argDifficulty` | 1 | `src/state/triggeredEffects.ts:75` |
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:137` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:138` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:139` |
 | `gate` | 1 | `src/engine/flowCore.ts:384` |
-| `noSupport` | 4 | `src/state/combat/triggeredTest.ts:816` |
-| `menace` | 7 | `src/state/combat/triggeredTest.ts:244` |
+| `noSupport` | 4 | `src/state/combat/triggeredTest.ts:817` |
+| `menace` | 7 | `src/state/combat/triggeredTest.ts:245` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:378` |
-| `opposed` | 5 | `src/state/combat/triggeredTest.ts:303` |
+| `opposed` | 5 | `src/state/combat/triggeredTest.ts:304` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
 
@@ -300,4 +300,4 @@ Le détecteur SYNTAXIQUE qui a précédé (annotation littérale du type) rendai
 Le champ `spec` d'une référence de dotation a 2 lecteur(s) mesuré(s) — `src/engine/items.ts:309`, `src/engine/trappingChoices.ts:36`.
 
 `trappingRefLabel` (`src/data/index.ts`, SOURCE UNIQUE du libellé affiché d'une `TrappingRef`) ne lit PAS `ref.spec` — le rendu « base (spec) » passe par `refConcrete`, partagée par toute `Ref`.
-<!-- sources-empreinte: a5af14cfff8beda368f616fe654002197e21ca1e (2102 fichiers, 172 dossiers) corps: 2022681f412b574b2028bdba8e974cf1eaa0f674 -->
+<!-- sources-empreinte: d7f01489d90be7dfc8e3e601e4a6ac4d53058ffc (2104 fichiers, 172 dossiers) corps: c6ae89f2eafdeb22e64464f02fd8dfc40f05472c -->
