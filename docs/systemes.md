@@ -143,7 +143,10 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `LogDrawer` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `InspectPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `EquipmentPanel` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `GameStage3D` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U |  |
+| `MondeDeCampagne` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `GameStage3D/SurcoucheIso` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U |  |
+| `PlaquesDeNom` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `PastilleEntite` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `StateChips` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `InitiativeStrip` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | `PartyDock` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
@@ -179,6 +182,9 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 - `LogDrawer` (src/ui/LogDrawer.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `InspectPanel` (src/ui/InspectPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `EquipmentPanel` (src/ui/EquipmentPanel.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `MondeDeCampagne` (src/gameIso/stage/MondeDeCampagne.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `PlaquesDeNom` (src/gameIso/stage/PlaquesDeNom.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
+- `PastilleEntite` (src/gameIso/stage/PastilleEntite.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `InitiativeStrip` (src/ui/InitiativeStrip.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `PartyDock` (src/ui/PartyDock.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
 - `ObjectiveBanner` (src/ui/ObjectiveBanner.tsx) — signalé, pas forcément un défaut (ex. mécanisme/éditeur transverse).
@@ -209,4 +215,4 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/sceneEdit.testkit.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`
-<!-- sources-empreinte: 6d3736bbf3ab2a28c78061bef3dcc2d0bd3ea49b (1828 fichiers, 2 dossiers) corps: 2ede897b5146facf90d94314a1539e5e4bf07f4d -->
+<!-- sources-empreinte: 02d143eb18cd3a9fb065126cb7255d2b5a2dc1d4 (1828 fichiers, 2 dossiers) corps: c5dfb36efc7c0a94ce15c4e97c835fa812c089b9 -->
