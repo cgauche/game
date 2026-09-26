@@ -42,6 +42,7 @@ import {
   verifierCapture,
   estFichierEcran,
   estArbrePrincipal,
+  cheminDEcriture,
   evaluateFermetureHorsCommit,
   evaluateArbrePrincipal,
   evaluateHunksEmportes,
@@ -1997,6 +1998,51 @@ test('estArbrePrincipal : `.git` DOSSIER = principal, `.git` FICHIER = worktree 
   } finally {
     rmSync(base, { recursive: true, force: true })
   }
+})
+
+// ── Chemin d'écriture résolu UNE fois ; hors dépôt sur preuve positive seulement (#1973) ──────────────────
+/** Graphie MSYS (`/c/Users/…`) d'un chemin win32 absolu. */
+const versMsys = (p) => '/' + p[0].toLowerCase() + p.slice(2).replace(/\\/g, '/')
+const ecriture = (file_path, opts) => cheminDEcriture({ file_path }, opts)
+
+test('cheminDEcriture : dans un dépôt, racine + relatif, jamais hors dépôt — graphie native ou MSYS', () => {
+  const { racine } = instanceDeDepot()
+  try {
+    const cible = join(racine, 'src', 'data', 'x.json')
+    const natif = ecriture(cible)
+    assert.equal(natif.horsDepot, false)
+    assert.equal(natif.relatif, 'src/data/x.json')
+    assert.notEqual(natif.racine, null)
+    if (process.platform === 'win32') assert.deepEqual(ecriture(versMsys(cible)), natif, 'MSYS = natif')
+    assert.equal(cheminDEcriture({ path: cible }).horsDepot, false, '`path` quand `file_path` manque')
+  } finally {
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('cheminDEcriture : hors de tout arbre → `horsDepot`, graphie native, MSYS, ou relatif résolu contre `base`', () => {
+  const scratch = mkdtempSync(join(tmpdir(), 'wfrp-scratch-'))
+  const { racine } = instanceDeDepot()
+  try {
+    const vu = ecriture(join(scratch, 'note.md'))
+    assert.equal(vu.horsDepot, true)
+    assert.equal(vu.racine, null)
+    if (process.platform === 'win32') assert.equal(ecriture(versMsys(join(scratch, 'note.md'))).horsDepot, true, 'MSYS')
+    assert.equal(ecriture('note.md', { base: scratch }).horsDepot, true, 'relatif, base hors dépôt')
+    assert.equal(ecriture('src/data/x.json', { base: racine }).horsDepot, false, 'relatif, base dans un dépôt')
+  } finally {
+    rmSync(scratch, { recursive: true, force: true })
+    rmSync(racine, { recursive: true, force: true })
+  }
+})
+
+test('cheminDEcriture : sans preuve positive, le hook garde — aucun chemin, lecteur absent', () => {
+  assert.equal(cheminDEcriture({}), null)
+  assert.equal(ecriture(''), null)
+  const absent = process.platform === 'win32'
+    ? [...'ZYXWVUTSRQPONMLKJIHGFE'].find((l) => !existsSync(`${l}:\\`))
+    : null
+  if (absent) assert.equal(ecriture(`${absent}:\\nope\\x.json`).horsDepot, false, `lecteur ${absent}: absent`)
 })
 
 test('evaluateArbrePrincipal : `ask` (jamais deny) dans l\'arbre principal, silence en worktree', () => {

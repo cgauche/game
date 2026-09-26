@@ -2,8 +2,8 @@
 // POUR DE VRAI (spawnSync + stdin JSON). L'invariant tenu ici est celui que le hook PROMET en tête :
 // seule une écriture qui INTRODUIT un tag absent du fichier SUR DISQUE demande une validation —
 // re-sauver un fichier qui portait déjà ses tags ne redemande rien (#1754), pour `Write` comme pour
-// `Edit`. Les fichiers-cibles sont des fixtures jetables posées sous `os.tmpdir()` ; l'arbre
-// versionné n'est jamais écrit.
+// `Edit`. Les fichiers-cibles sont des fixtures jetables posées dans un dépôt forgé sous `os.tmpdir()`
+// (le hook garde le contenu d'un DÉPÔT, #1973) ; l'arbre versionné n'est jamais écrit.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
@@ -11,6 +11,7 @@ import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { instanceDeDepot } from '../guards/lib/depotGabarit.mjs'
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const HOOK = join(REPO, 'scripts', 'hooks', 'enterine-guard.mjs')
@@ -28,9 +29,10 @@ const demande = (r) => {
   return JSON.parse(r.out).hookSpecificOutput?.permissionDecision === 'ask'
 }
 
-/** Joue `fn(chemin)` sur un fichier-fixture posé sous `os.tmpdir()` (contenu `avant`, ou absent). */
-function avecFichier(avant, fn) {
-  const dossier = mkdtempSync(join(tmpdir(), 'wfrp-enterine-'))
+/** Joue `fn(chemin)` sur un fichier-fixture (contenu `avant`, ou absent) posé dans un DÉPÔT forgé —
+ *  ou, `horsDepot`, dans un dossier jetable qu'aucun arbre git ne contient (le scratchpad). */
+function avecFichier(avant, fn, { horsDepot = false } = {}) {
+  const dossier = horsDepot ? mkdtempSync(join(tmpdir(), 'wfrp-enterine-')) : instanceDeDepot().racine
   const cible = join(dossier, 'cible.ts')
   if (avant !== null) writeFileSync(cible, avant)
   try { return fn(cible) } finally { rmSync(dossier, { recursive: true, force: true }) }
@@ -60,6 +62,32 @@ test('Write d’un fichier NEUF portant un tag → ask ; sans tag → silence', 
   })
   // `file_path` absent (écriture dont la cible est inconnue) : on ne peut rien soustraire → ask.
   assert.equal(demande(lance({ content: `// raison ${TAG}\n` })), true)
+})
+
+test('HORS DÉPÔT (scratchpad) : le même tag introduit ne demande rien (#1973)', () => {
+  avecFichier(null, (cible) => {
+    assert.equal(demande(lance({ file_path: cible, content: `// raison ${TAG}\n` })), false, 'Write de création')
+  }, { horsDepot: true })
+  avecFichier('// raison\n', (cible) => {
+    assert.equal(demande(lance({ file_path: cible, old_string: '// raison', new_string: `// raison ${TAG}` })), false, 'Edit')
+  }, { horsDepot: true })
+})
+
+/** Graphie MSYS (`/c/Users/…`) d'un chemin win32 absolu. */
+const versMsys = (p) => '/' + p[0].toLowerCase() + p.slice(2).replace(/\\/g, '/')
+
+test('graphie MSYS `/c/…` d’un fichier DANS un dépôt → la garde reste active (ask)', { skip: process.platform !== 'win32' }, () => {
+  avecFichier(null, (cible) => {
+    assert.equal(demande(lance({ file_path: versMsys(cible), content: `// raison ${TAG}\n` })), true)
+  })
+})
+
+test('graphie MSYS : re-sauver un fichier qui porte DÉJÀ son tag décide comme le natif (silence, #1754)', { skip: process.platform !== 'win32' }, () => {
+  const contenu = `// raison ${TAG}\nexport const a = 1\n`
+  avecFichier(contenu, (cible) => {
+    assert.equal(demande(lance({ file_path: cible, content: contenu })), false, 'natif')
+    assert.equal(demande(lance({ file_path: versMsys(cible), content: contenu })), false, 'MSYS')
+  })
 })
 
 test('le message de la demande NOMME le credo et ce que confirmer VAUT', () => {

@@ -8,10 +8,24 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+/** Ancêtre EXISTANT le plus proche d'un chemin absolu (lui-même s'il existe), ou `null` quand rien
+ *  n'existe jusqu'à la racine (lecteur absent). */
+export function ancetreExistant(abs) {
+  let ancetre = abs
+  while (!fs.existsSync(ancetre)) {
+    const parent = path.dirname(ancetre)
+    if (parent === ancetre) return null
+    ancetre = parent
+  }
+  return ancetre
+}
+
 /**
  * Forme CANONIQUE d'un chemin : `fs.realpathSync.native` rend la casse telle que le disque la porte
- * et suit jonctions et noms courts 8.3. Un chemin ABSENT du disque (ou illisible) garde sa forme
- * résolue — `path.relative` compare déjà sans la casse sur win32, le repli reste juste.
+ * et suit jonctions et noms courts 8.3. Un chemin ABSENT du disque (le fichier d'un Write de
+ * création) se canonise par son ancêtre EXISTANT le plus proche, le reste recollé tel quel : la
+ * jonction traversée en amont est suivie quand même (#1973). Ancêtre illisible : la forme résolue —
+ * `path.relative` compare déjà sans la casse sur win32, le repli reste juste.
  *
  * DIRECTION de ce que suivre une jonction change : un fichier lu SOUS la racine par une jonction qui
  * pointe HORS d'elle devient un chemin hors racine — il est compté REJETÉ, pas retenu (mesuré sur une
@@ -20,8 +34,10 @@ import path from 'node:path'
  */
 export function canoniser(chemin) {
   const abs = path.resolve(chemin)
+  const ancetre = ancetreExistant(abs)
+  if (ancetre === null) return abs
   try {
-    return fs.realpathSync.native(abs)
+    return path.join(fs.realpathSync.native(ancetre), path.relative(ancetre, abs))
   } catch {
     return abs
   }

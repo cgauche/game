@@ -102,14 +102,24 @@ const ATTENDU = {
     // fixtures : des scripts jetables sous `os.tmpdir()` (`mkdtempSync` + `writeFileSync`, `rmSync`
     // en sortie) qui sortent avec le code du loader ; l'arbre n'est jamais écrit.
     'scripts/guards/lib/spawnResilient.test.mjs',
+    // +4 −1 le 2026-09-26 (#1973), net +3 : les hooks d'écriture se taisent hors de tout dépôt et lisent
+    // le disque au chemin RÉEL ; quatre bancs le mesurent sous `os.tmpdir()` (`rmSync` en finally,
+    // l'arbre versionné n'est jamais écrit). Data-edit ne pose que des DOSSIERS (`instanceDeDepot`,
+    // `mkdtempSync`) : le hook juge un chemin. Exception-add y écrit un fichier de garde EXISTANT
+    // (`writeFileSync`), memoire-tombale une fiche (`mkdirSync` + `writeFileSync`) et une jonction
+    // (`symlinkSync`), poison-postcheck le fichier scanné (`mkdirSync` + `writeFileSync`) : les trois
+    // lisent le disque, natif et MSYS doivent y lire le même fichier.
+    'scripts/hooks/data-edit-guard.test.mjs',
     // +1 le 2026-09-14 (#1754) : le banc du garde `[entériné]` pose ses fichiers-CIBLES (`mkdtempSync`
     // + `writeFileSync`, puis `rmSync`) sous `os.tmpdir()` — c'est l'état SUR DISQUE que le hook lit
     // désormais pour ne demander que sur un tag NEUF ; l'arbre versionné n'est jamais écrit.
     'scripts/hooks/enterine-guard.test.mjs',
-    'scripts/hooks/git-destructive-guard.test.mjs',
+    'scripts/hooks/exception-add-guard.test.mjs',
     'scripts/hooks/inject-project-credo.test.mjs',
+    'scripts/hooks/memoire-tombale-guard.test.mjs',
     'scripts/hooks/new-src-file-guard.mjs',
     'scripts/hooks/new-src-file-guard.test.mjs',
+    'scripts/hooks/poison-postcheck.test.mjs',
     'scripts/hooks/segments-profonds.test.mjs',
     'scripts/hooks/solde-ticket-guard-driver.test.mjs',
     'scripts/hooks/solde-ticket-guard.test.mjs',
@@ -232,6 +242,10 @@ const ATTENDU = {
     // hors de toute liste écrite à la main, donc jamais joué. Il forge ses sources (`mkdtempSync` +
     // `writeFileSync`) sous `os.tmpdir()` ; l'arbre n'est jamais écrit.
     'scripts/docs/lib/canauxMecaniques.test.mjs',
+    // +1 le 2026-09-26 (#1973) : le banc de `canoniser` pose deux dossiers (`mkdtempSync`,
+    // `mkdirSync`) et une jonction (`symlinkSync`) sous `os.tmpdir()`, `rmSync` en finally ; l'arbre
+    // n'est jamais écrit.
+    'scripts/docs/lib/chemin-mesure.test.mjs',
     'scripts/docs/lib/empreinte-sources.mjs',
     // +2 le 2026-09-14 (#1759) : le test de contrat importe `installer` pour
     // monter l'enveloppe de `fs` à nu (la casse d'un chemin lu se juge sans sous-processus).
